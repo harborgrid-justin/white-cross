@@ -1,61 +1,34 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { body, validationResult } from 'express-validator';
 import { auth } from '../middleware/auth';
+import { StudentService } from '../services/studentService';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Get all students
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
+    
+    const filters: any = {};
+    if (req.query.search) filters.search = req.query.search as string;
+    if (req.query.grade) filters.grade = req.query.grade as string;
+    if (req.query.isActive !== undefined) filters.isActive = req.query.isActive === 'true';
+    if (req.query.nurseId) filters.nurseId = req.query.nurseId as string;
+    if (req.query.hasAllergies !== undefined) filters.hasAllergies = req.query.hasAllergies === 'true';
+    if (req.query.hasMedications !== undefined) filters.hasMedications = req.query.hasMedications === 'true';
 
-    const students = await prisma.student.findMany({
-      skip,
-      take: limit,
-      include: {
-        emergencyContacts: true,
-        medications: {
-          include: {
-            medication: true
-          }
-        },
-        allergies: true,
-        nurse: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true
-          }
-        }
-      },
-      orderBy: {
-        lastName: 'asc'
-      }
-    });
-
-    const total = await prisma.student.count();
+    const result = await StudentService.getStudents(page, limit, filters);
 
     res.json({
       success: true,
-      data: {
-        students,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+      data: result
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: { message: 'Internal server error' }
+      error: { message: (error as Error).message }
     });
   }
 });
@@ -64,87 +37,23 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-
-    const student = await prisma.student.findUnique({
-      where: { id },
-      include: {
-        emergencyContacts: true,
-        medications: {
-          include: {
-            medication: true,
-            logs: {
-              include: {
-                nurse: {
-                  select: {
-                    firstName: true,
-                    lastName: true
-                  }
-                }
-              },
-              orderBy: {
-                timeGiven: 'desc'
-              }
-            }
-          }
-        },
-        healthRecords: {
-          orderBy: {
-            date: 'desc'
-          }
-        },
-        allergies: true,
-        appointments: {
-          include: {
-            nurse: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
-            }
-          },
-          orderBy: {
-            scheduledAt: 'desc'
-          }
-        },
-        incidentReports: {
-          include: {
-            reportedBy: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
-            }
-          },
-          orderBy: {
-            occurredAt: 'desc'
-          }
-        },
-        nurse: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true
-          }
-        }
-      }
-    });
-
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        error: { message: 'Student not found' }
-      });
-    }
+    const student = await StudentService.getStudentById(id);
 
     res.json({
       success: true,
       data: { student }
     });
-
   } catch (error) {
+    if ((error as Error).message === 'Student not found') {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Student not found' }
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      error: { message: 'Internal server error' }
+      error: { message: (error as Error).message }
     });
   }
 });
@@ -152,11 +61,11 @@ router.get('/:id', auth, async (req: Request, res: Response) => {
 // Create new student
 router.post('/', [
   auth,
-  body('studentNumber').notEmpty(),
+  body('studentNumber').notEmpty().trim(),
   body('firstName').notEmpty().trim(),
   body('lastName').notEmpty().trim(),
   body('dateOfBirth').isISO8601(),
-  body('grade').notEmpty(),
+  body('grade').notEmpty().trim(),
   body('gender').isIn(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'])
 ], async (req: Request, res: Response) => {
   try {
@@ -168,95 +77,167 @@ router.post('/', [
       });
     }
 
-    const studentData = req.body;
-
-    // Check if student number already exists
-    const existingStudent = await prisma.student.findUnique({
-      where: { studentNumber: studentData.studentNumber }
-    });
-
-    if (existingStudent) {
-      return res.status(409).json({
-        success: false,
-        error: { message: 'Student number already exists' }
-      });
-    }
-
-    const student = await prisma.student.create({
-      data: {
-        ...studentData,
-        dateOfBirth: new Date(studentData.dateOfBirth)
-      },
-      include: {
-        emergencyContacts: true,
-        allergies: true
-      }
+    const student = await StudentService.createStudent({
+      ...req.body,
+      dateOfBirth: new Date(req.body.dateOfBirth)
     });
 
     res.status(201).json({
       success: true,
       data: { student }
     });
-
   } catch (error) {
-    res.status(500).json({
+    const errorMessage = (error as Error).message;
+    if (errorMessage.includes('already exists')) {
+      return res.status(409).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    
+    res.status(400).json({
       success: false,
-      error: { message: 'Internal server error' }
+      error: { message: errorMessage }
     });
   }
 });
 
 // Update student
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', [
+  auth,
+  body('studentNumber').optional().trim(),
+  body('firstName').optional().trim(),
+  body('lastName').optional().trim(),
+  body('dateOfBirth').optional().isISO8601(),
+  body('grade').optional().trim(),
+  body('gender').optional().isIn(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY']),
+  body('isActive').optional().isBoolean()
+], async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
 
+    const { id } = req.params;
+    const updateData = { ...req.body };
+    
     if (updateData.dateOfBirth) {
       updateData.dateOfBirth = new Date(updateData.dateOfBirth);
     }
 
-    const student = await prisma.student.update({
-      where: { id },
-      data: updateData,
-      include: {
-        emergencyContacts: true,
-        allergies: true
-      }
-    });
+    const student = await StudentService.updateStudent(id, updateData);
 
     res.json({
       success: true,
       data: { student }
     });
-
   } catch (error) {
-    res.status(500).json({
+    const errorMessage = (error as Error).message;
+    if (errorMessage === 'Student not found') {
+      return res.status(404).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    if (errorMessage.includes('already exists')) {
+      return res.status(409).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    
+    res.status(400).json({
       success: false,
-      error: { message: 'Internal server error' }
+      error: { message: errorMessage }
     });
   }
 });
 
-// Delete student
-router.delete('/:id', auth, async (req, res) => {
+// Delete student (deactivate)
+router.delete('/:id', auth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-
-    await prisma.student.update({
-      where: { id },
-      data: { isActive: false }
-    });
+    await StudentService.deactivateStudent(id);
 
     res.json({
       success: true,
       message: 'Student deactivated successfully'
     });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
 
+// Transfer student to different nurse
+router.put('/:id/transfer', [
+  auth,
+  body('nurseId').notEmpty()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { nurseId } = req.body;
+    
+    const student = await StudentService.transferStudent(id, nurseId);
+
+    res.json({
+      success: true,
+      data: { student }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Get students by grade
+router.get('/grade/:grade', auth, async (req: Request, res: Response) => {
+  try {
+    const { grade } = req.params;
+    const students = await StudentService.getStudentsByGrade(grade);
+
+    res.json({
+      success: true,
+      data: { students }
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: { message: 'Internal server error' }
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Search students
+router.get('/search/:query', auth, async (req: Request, res: Response) => {
+  try {
+    const { query } = req.params;
+    const students = await StudentService.searchStudents(query);
+
+    res.json({
+      success: true,
+      data: { students }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
     });
   }
 });
