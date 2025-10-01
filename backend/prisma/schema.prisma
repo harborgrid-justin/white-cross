@@ -26,6 +26,8 @@ model User {
   appointments         Appointment[]
   inventoryTransactions InventoryTransaction[]
   maintenanceLogs      MaintenanceLog[]
+  messageTemplates     MessageTemplate[] @relation("MessageTemplateCreator")
+  messages             Message[] @relation("MessageSender")
   
   @@map("users")
 }
@@ -218,6 +220,69 @@ model MaintenanceLog {
   @@map("maintenance_logs")
 }
 
+model MessageTemplate {
+  id          String    @id @default(cuid())
+  name        String
+  subject     String?
+  content     String
+  type        MessageType
+  category    MessageCategory
+  variables   String[]
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  createdBy   User      @relation("MessageTemplateCreator", fields: [createdById], references: [id])
+  createdById String
+  messages    Message[]
+  
+  @@map("message_templates")
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  subject        String?
+  content        String
+  priority       MessagePriority
+  category       MessageCategory
+  recipientCount Int       @default(0)
+  scheduledAt    DateTime?
+  attachments    String[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  sender         User              @relation("MessageSender", fields: [senderId], references: [id])
+  senderId       String
+  template       MessageTemplate?  @relation(fields: [templateId], references: [id])
+  templateId     String?
+  deliveries     MessageDelivery[]
+  
+  @@map("messages")
+}
+
+model MessageDelivery {
+  id              String    @id @default(cuid())
+  recipientType   RecipientType
+  recipientId     String
+  channel         MessageType
+  status          DeliveryStatus
+  contactInfo     String?
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  failureReason   String?
+  externalId      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  message         Message   @relation(fields: [messageId], references: [id])
+  messageId       String
+  
+  @@map("message_deliveries")
+}
+
 model HealthRecord {
   id          String           @id @default(cuid())
   type        HealthRecordType
@@ -391,4 +456,44 @@ enum MaintenanceType {
   CALIBRATION
   INSPECTION
   CLEANING
+}
+
+enum MessageType {
+  EMAIL
+  SMS
+  PUSH_NOTIFICATION
+  VOICE
+}
+
+enum MessageCategory {
+  EMERGENCY
+  HEALTH_UPDATE
+  APPOINTMENT_REMINDER
+  MEDICATION_REMINDER
+  GENERAL
+  INCIDENT_NOTIFICATION
+  COMPLIANCE
+}
+
+enum MessagePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RecipientType {
+  STUDENT
+  EMERGENCY_CONTACT
+  PARENT
+  NURSE
+  ADMIN
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
 }

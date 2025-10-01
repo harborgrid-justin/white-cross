@@ -16,6 +16,7 @@ import emergencyContactRoutes from './routes/emergencyContacts';
 import appointmentRoutes from './routes/appointments';
 import incidentReportRoutes from './routes/incidentReports';
 import inventoryRoutes from './routes/inventory';
+import communicationRoutes from './routes/communication';
 import userRoutes from './routes/users';
 
 // Import middleware
@@ -74,6 +75,7 @@ app.use('/api/emergency-contacts', emergencyContactRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/incident-reports', incidentReportRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/communication', communicationRoutes);
 app.use('/api/users', userRoutes);
 
 // Error handling middleware
