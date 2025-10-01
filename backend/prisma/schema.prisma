@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  role        UserRole @default(NURSE)
+  isActive    Boolean  @default(true)
+  lastLogin   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  nurseManagedStudents Student[] @relation("NurseStudents")
+  incidentReports      IncidentReport[]
+  medicationLogs       MedicationLog[]
+  appointments         Appointment[]
+  
+  @@map("users")
+}
+
+model Student {
+  id                String    @id @default(cuid())
+  studentNumber     String    @unique
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime
+  grade             String
+  gender            Gender
+  photo             String?
+  medicalRecordNum  String?   @unique
+  isActive          Boolean   @default(true)
+  enrollmentDate    DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  nurse                User?           @relation("NurseStudents", fields: [nurseId], references: [id])
+  nurseId              String?
+  emergencyContacts    EmergencyContact[]
+  medications          StudentMedication[]
+  healthRecords        HealthRecord[]
+  appointments         Appointment[]
+  incidentReports      IncidentReport[]
+  allergies            Allergy[]
+  
+  @@map("students")
+}
+
+model EmergencyContact {
+  id           String            @id @default(cuid())
+  firstName    String
+  lastName     String
+  relationship String
+  phoneNumber  String
+  email        String?
+  address      String?
+  priority     ContactPriority   @default(PRIMARY)
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relations
+  student      Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  
+  @@map("emergency_contacts")
+}
+
+model Medication {
+  id              String    @id @default(cuid())
+  name            String
+  genericName     String?
+  dosageForm      String
+  strength        String
+  manufacturer    String?
+  ndc             String?   @unique
+  isControlled    Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  studentMedications StudentMedication[]
+  inventory          MedicationInventory[]
+  
+  @@map("medications")
+}
+
+model StudentMedication {
+  id              String    @id @default(cuid())
+  dosage          String
+  frequency       String
+  route           String
+  instructions    String?
+  startDate       DateTime
+  endDate         DateTime?
+  isActive        Boolean   @default(true)
+  prescribedBy    String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId       String
+  medication      Medication      @relation(fields: [medicationId], references: [id])
+  medicationId    String
+  logs            MedicationLog[]
+  
+  @@map("student_medications")
+}
+
+model MedicationLog {
+  id                    String    @id @default(cuid())
+  dosageGiven           String
+  timeGiven             DateTime
+  administeredBy        String
+  notes                 String?
+  sideEffects           String?
+  createdAt             DateTime  @default(now())
+
+  // Relations
+  studentMedication     StudentMedication @relation(fields: [studentMedicationId], references: [id])
+  studentMedicationId   String
+  nurse                 User      @relation(fields: [nurseId], references: [id])
+  nurseId               String
+  
+  @@map("medication_logs")
+}
+
+model MedicationInventory {
+  id              String    @id @default(cuid())
+  batchNumber     String
+  expirationDate  DateTime
+  quantity        Int
+  reorderLevel    Int       @default(10)
+  costPerUnit     Decimal?
+  supplier        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  medication      Medication @relation(fields: [medicationId], references: [id])
+  medicationId    String
+  
+  @@map("medication_inventory")
+}
+
+model HealthRecord {
+  id          String           @id @default(cuid())
+  type        HealthRecordType
+  date        DateTime
+  description String
+  vital       Json?            // Store vitals as JSON
+  provider    String?
+  notes       String?
+  attachments String[]         // Array of file URLs
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  
+  @@map("health_records")
+}
+
+model Allergy {
+  id          String        @id @default(cuid())
+  allergen    String
+  severity    AllergySeverity
+  reaction    String?
+  treatment   String?
+  verified    Boolean       @default(false)
+  verifiedBy  String?
+  verifiedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  student     Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  
+  @@map("allergies")
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  type        AppointmentType
+  scheduledAt DateTime
+  duration    Int               @default(30) // minutes
+  status      AppointmentStatus @default(SCHEDULED)
+  reason      String
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  nurse       User              @relation(fields: [nurseId], references: [id])
+  nurseId     String
+  
+  @@map("appointments")
+}
+
+model IncidentReport {
+  id              String            @id @default(cuid())
+  type            IncidentType
+  severity        IncidentSeverity
+  description     String
+  location        String
+  witnesses       String[]
+  actionsTaken    String
+  parentNotified  Boolean           @default(false)
+  followUpRequired Boolean          @default(false)
+  followUpNotes   String?
+  attachments     String[]          // Array of file URLs
+  occurredAt      DateTime
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId       String
+  reportedBy      User              @relation(fields: [reportedById], references: [id])
+  reportedById    String
+  
+  @@map("incident_reports")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  NURSE
+  SCHOOL_ADMIN
+  DISTRICT_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum ContactPriority {
+  PRIMARY
+  SECONDARY
+  EMERGENCY_ONLY
+}
+
+enum HealthRecordType {
+  CHECKUP
+  VACCINATION
+  ILLNESS
+  INJURY
+  SCREENING
+  PHYSICAL_EXAM
+  MENTAL_HEALTH
+  DENTAL
+  VISION
+  HEARING
+}
+
+enum AllergySeverity {
+  MILD
+  MODERATE
+  SEVERE
+  LIFE_THREATENING
+}
+
+enum AppointmentType {
+  ROUTINE_CHECKUP
+  MEDICATION_ADMINISTRATION
+  INJURY_ASSESSMENT
+  ILLNESS_EVALUATION
+  FOLLOW_UP
+  SCREENING
+  EMERGENCY
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum IncidentType {
+  INJURY
+  ILLNESS
+  BEHAVIORAL
+  MEDICATION_ERROR
+  ALLERGIC_REACTION
+  EMERGENCY
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
