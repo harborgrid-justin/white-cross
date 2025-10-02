@@ -49,6 +49,28 @@ export interface ReminderData {
   message?: string;
 }
 
+export interface NurseAvailabilityData {
+  nurseId: string;
+  dayOfWeek?: number;
+  startTime: string;
+  endTime: string;
+  isRecurring?: boolean;
+  specificDate?: Date;
+  isAvailable?: boolean;
+  reason?: string;
+}
+
+export interface WaitlistEntry {
+  studentId: string;
+  nurseId?: string;
+  type: 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
+  preferredDate?: Date;
+  duration?: number;
+  priority?: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  reason: string;
+  notes?: string;
+}
+
 export class AppointmentService {
   /**
    * Get appointments with pagination and filters
@@ -296,6 +318,19 @@ export class AppointmentService {
       });
 
       logger.info(`Appointment cancelled: ${appointment.type} for ${appointment.student.firstName} ${appointment.student.lastName}`);
+      
+      // Try to fill the slot from waitlist
+      try {
+        await this.fillSlotFromWaitlist({
+          scheduledAt: appointment.scheduledAt,
+          duration: appointment.duration,
+          nurseId: appointment.nurseId,
+          type: appointment.type
+        });
+      } catch (waitlistError) {
+        logger.warn('Could not fill slot from waitlist:', waitlistError);
+      }
+      
       return appointment;
     } catch (error) {
       logger.error('Error cancelling appointment:', error);
@@ -571,19 +606,25 @@ export class AppointmentService {
                 orderBy: { priority: 'asc' }
               }
             }
+          },
+          nurse: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
           }
         }
       });
 
       if (!appointment || !appointment.student.emergencyContacts.length) {
-        return;
+        return [];
       }
 
-      // Schedule reminders at different intervals
+      // Schedule reminders at different intervals with multiple channels
       const reminderIntervals = [
-        { hours: 24, message: '24-hour reminder' },
-        { hours: 2, message: '2-hour reminder' },
-        { hours: 0.5, message: '30-minute reminder' }
+        { hours: 24, type: 'EMAIL' as const, label: '24-hour' },
+        { hours: 2, type: 'SMS' as const, label: '2-hour' },
+        { hours: 0.5, type: 'SMS' as const, label: '30-minute' }
       ];
 
       const reminders = [];
@@ -593,16 +634,22 @@ export class AppointmentService {
         
         // Only schedule if reminder time is in the future
         if (reminderTime > new Date()) {
-          reminders.push({
-            appointmentId,
-            type: 'sms' as const,
-            scheduleTime: reminderTime,
-            message: `Appointment reminder: ${appointment.student.firstName} has a ${appointment.type} appointment on ${appointment.scheduledAt.toLocaleString()}`
+          const message = `Appointment reminder: ${appointment.student.firstName} ${appointment.student.lastName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse.firstName} ${appointment.nurse.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
+          
+          const reminder = await prisma.appointmentReminder.create({
+            data: {
+              appointmentId,
+              type: interval.type,
+              scheduledFor: reminderTime,
+              message,
+              status: 'SCHEDULED'
+            }
           });
+          
+          reminders.push(reminder);
         }
       }
 
-      // In a real implementation, these would be stored in a job queue (Redis/Bull)
       logger.info(`Scheduled ${reminders.length} reminders for appointment ${appointmentId}`);
       return reminders;
     } catch (error) {
@@ -625,7 +672,7 @@ export class AppointmentService {
   ) {
     try {
       const appointments = [];
-      let currentDate = new Date(baseData.scheduledAt);
+      const currentDate = new Date(baseData.scheduledAt);
       
       while (currentDate <= recurrencePattern.endDate) {
         // Check if we should create appointment on this date
@@ -667,5 +714,503 @@ export class AppointmentService {
       logger.error('Error creating recurring appointments:', error);
       throw error;
     }
+  }
+
+  /**
+   * Set nurse availability schedule
+   */
+  static async setNurseAvailability(data: NurseAvailabilityData) {
+    try {
+      const availability = await prisma.nurseAvailability.create({
+        data: {
+          nurseId: data.nurseId,
+          dayOfWeek: data.dayOfWeek ?? 0,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          isRecurring: data.isRecurring ?? true,
+          specificDate: data.specificDate,
+          isAvailable: data.isAvailable ?? true,
+          reason: data.reason
+        }
+      });
+
+      logger.info(`Availability set for nurse ${data.nurseId}`);
+      return availability;
+    } catch (error) {
+      logger.error('Error setting nurse availability:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get nurse availability schedule
+   */
+  static async getNurseAvailability(nurseId: string, date?: Date) {
+    try {
+      const whereClause: any = { nurseId };
+
+      if (date) {
+        const dayOfWeek = date.getDay();
+        whereClause.OR = [
+          { isRecurring: true, dayOfWeek },
+          { isRecurring: false, specificDate: date }
+        ];
+      }
+
+      const availability = await prisma.nurseAvailability.findMany({
+        where: whereClause,
+        orderBy: [
+          { dayOfWeek: 'asc' },
+          { startTime: 'asc' }
+        ]
+      });
+
+      return availability;
+    } catch (error) {
+      logger.error('Error fetching nurse availability:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update nurse availability
+   */
+  static async updateNurseAvailability(id: string, data: Partial<NurseAvailabilityData>) {
+    try {
+      const availability = await prisma.nurseAvailability.update({
+        where: { id },
+        data
+      });
+
+      logger.info(`Availability updated for schedule ${id}`);
+      return availability;
+    } catch (error) {
+      logger.error('Error updating nurse availability:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete nurse availability
+   */
+  static async deleteNurseAvailability(id: string) {
+    try {
+      await prisma.nurseAvailability.delete({
+        where: { id }
+      });
+
+      logger.info(`Availability schedule ${id} deleted`);
+    } catch (error) {
+      logger.error('Error deleting nurse availability:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add to waitlist
+   */
+  static async addToWaitlist(data: WaitlistEntry) {
+    try {
+      const student = await prisma.student.findUnique({
+        where: { id: data.studentId }
+      });
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      // Set expiration to 30 days from now
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      const waitlistEntry = await prisma.appointmentWaitlist.create({
+        data: {
+          studentId: data.studentId,
+          nurseId: data.nurseId,
+          type: data.type,
+          preferredDate: data.preferredDate,
+          duration: data.duration || 30,
+          priority: data.priority || 'NORMAL',
+          reason: data.reason,
+          notes: data.notes,
+          expiresAt
+        },
+        include: {
+          student: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      });
+
+      logger.info(`Added ${student.firstName} ${student.lastName} to waitlist for ${data.type}`);
+      return waitlistEntry;
+    } catch (error) {
+      logger.error('Error adding to waitlist:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get waitlist entries
+   */
+  static async getWaitlist(filters?: { nurseId?: string; status?: string; priority?: string }) {
+    try {
+      const whereClause: any = {};
+
+      if (filters?.nurseId) {
+        whereClause.nurseId = filters.nurseId;
+      }
+
+      if (filters?.status) {
+        whereClause.status = filters.status;
+      }
+
+      if (filters?.priority) {
+        whereClause.priority = filters.priority;
+      }
+
+      const waitlist = await prisma.appointmentWaitlist.findMany({
+        where: whereClause,
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentNumber: true,
+              grade: true
+            }
+          },
+          nurse: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        orderBy: [
+          { priority: 'desc' },
+          { createdAt: 'asc' }
+        ]
+      });
+
+      return waitlist;
+    } catch (error) {
+      logger.error('Error fetching waitlist:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove from waitlist
+   */
+  static async removeFromWaitlist(id: string, reason?: string) {
+    try {
+      const entry = await prisma.appointmentWaitlist.update({
+        where: { id },
+        data: {
+          status: 'CANCELLED',
+          notes: reason ? `Cancelled: ${reason}` : undefined
+        }
+      });
+
+      logger.info(`Removed entry ${id} from waitlist`);
+      return entry;
+    } catch (error) {
+      logger.error('Error removing from waitlist:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Automatically fill slots from waitlist when appointment is cancelled
+   */
+  static async fillSlotFromWaitlist(cancelledAppointment: { scheduledAt: Date; duration: number; nurseId: string; type: string }) {
+    try {
+      // Find matching waitlist entries
+      const waitlistEntries = await prisma.appointmentWaitlist.findMany({
+        where: {
+          status: 'WAITING',
+          type: cancelledAppointment.type as any,
+          OR: [
+            { nurseId: cancelledAppointment.nurseId },
+            { nurseId: null }
+          ]
+        },
+        include: {
+          student: {
+            include: {
+              emergencyContacts: {
+                where: { isActive: true },
+                orderBy: { priority: 'asc' },
+                take: 1
+              }
+            }
+          }
+        },
+        orderBy: [
+          { priority: 'desc' },
+          { createdAt: 'asc' }
+        ],
+        take: 5
+      });
+
+      for (const entry of waitlistEntries) {
+        try {
+          // Try to book the cancelled slot
+          const appointment = await this.createAppointment({
+            studentId: entry.studentId,
+            nurseId: cancelledAppointment.nurseId,
+            type: entry.type,
+            scheduledAt: cancelledAppointment.scheduledAt,
+            duration: entry.duration,
+            reason: entry.reason,
+            notes: `Auto-scheduled from waitlist: ${entry.notes || ''}`
+          });
+
+          // Update waitlist status
+          await prisma.appointmentWaitlist.update({
+            where: { id: entry.id },
+            data: {
+              status: 'SCHEDULED',
+              notifiedAt: new Date()
+            }
+          });
+
+          logger.info(`Auto-filled slot for ${entry.student.firstName} ${entry.student.lastName} from waitlist`);
+          
+          // Notify the contact
+          if (entry.student.emergencyContacts.length > 0) {
+            const contact = entry.student.emergencyContacts[0];
+            logger.info(`Would notify ${contact.firstName} ${contact.lastName} at ${contact.phoneNumber} about scheduled appointment`);
+          }
+
+          return appointment;
+        } catch (error) {
+          logger.warn(`Could not schedule waitlist entry ${entry.id}: ${(error as Error).message}`);
+          continue;
+        }
+      }
+
+      logger.info('No suitable waitlist entries found for the cancelled slot');
+      return null;
+    } catch (error) {
+      logger.error('Error filling slot from waitlist:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send appointment reminders through multiple channels
+   */
+  static async sendReminder(reminderId: string) {
+    try {
+      const reminder = await prisma.appointmentReminder.findUnique({
+        where: { id: reminderId },
+        include: {
+          appointment: {
+            include: {
+              student: {
+                include: {
+                  emergencyContacts: {
+                    where: { isActive: true },
+                    orderBy: { priority: 'asc' }
+                  }
+                }
+              },
+              nurse: {
+                select: {
+                  firstName: true,
+                  lastName: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!reminder || !reminder.appointment) {
+        throw new Error('Reminder or appointment not found');
+      }
+
+      const { appointment } = reminder;
+      const contact = appointment.student.emergencyContacts[0];
+
+      if (!contact) {
+        logger.warn(`No emergency contact found for student ${appointment.student.firstName} ${appointment.student.lastName}`);
+        await prisma.appointmentReminder.update({
+          where: { id: reminderId },
+          data: {
+            status: 'FAILED',
+            failureReason: 'No emergency contact available'
+          }
+        });
+        return;
+      }
+
+      // In a real implementation, integrate with SMS/Email/Voice services
+      const reminderMessage = reminder.message || 
+        `Reminder: ${appointment.student.firstName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse.firstName} ${appointment.nurse.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
+
+      logger.info(`Sending ${reminder.type} reminder to ${contact.firstName} ${contact.lastName}`);
+      
+      // Simulate sending through different channels
+      switch (reminder.type) {
+        case 'SMS':
+          logger.info(`SMS to ${contact.phoneNumber}: ${reminderMessage}`);
+          break;
+        case 'EMAIL':
+          logger.info(`Email to ${contact.email}: ${reminderMessage}`);
+          break;
+        case 'VOICE':
+          logger.info(`Voice call to ${contact.phoneNumber}: ${reminderMessage}`);
+          break;
+      }
+
+      await prisma.appointmentReminder.update({
+        where: { id: reminderId },
+        data: {
+          status: 'SENT',
+          sentAt: new Date()
+        }
+      });
+
+      logger.info(`Reminder ${reminderId} sent successfully`);
+    } catch (error) {
+      logger.error('Error sending reminder:', error);
+      
+      // Update reminder status to failed
+      try {
+        await prisma.appointmentReminder.update({
+          where: { id: reminderId },
+          data: {
+            status: 'FAILED',
+            failureReason: (error as Error).message
+          }
+        });
+      } catch (updateError) {
+        logger.error('Error updating reminder status:', updateError);
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Process pending reminders
+   */
+  static async processPendingReminders() {
+    try {
+      const now = new Date();
+      const pendingReminders = await prisma.appointmentReminder.findMany({
+        where: {
+          status: 'SCHEDULED',
+          scheduledFor: {
+            lte: now
+          }
+        },
+        take: 50 // Process in batches
+      });
+
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const reminder of pendingReminders) {
+        try {
+          await this.sendReminder(reminder.id);
+          successCount++;
+        } catch (error) {
+          logger.error(`Failed to send reminder ${reminder.id}:`, error);
+          failureCount++;
+        }
+      }
+
+      logger.info(`Processed ${pendingReminders.length} reminders: ${successCount} sent, ${failureCount} failed`);
+      
+      return {
+        total: pendingReminders.length,
+        sent: successCount,
+        failed: failureCount
+      };
+    } catch (error) {
+      logger.error('Error processing pending reminders:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate calendar export (iCal format) for appointments
+   */
+  static async generateCalendarExport(nurseId: string, dateFrom?: Date, dateTo?: Date) {
+    try {
+      const whereClause: any = { nurseId };
+
+      if (dateFrom || dateTo) {
+        whereClause.scheduledAt = {};
+        if (dateFrom) whereClause.scheduledAt.gte = dateFrom;
+        if (dateTo) whereClause.scheduledAt.lte = dateTo;
+      }
+
+      const appointments = await prisma.appointment.findMany({
+        where: whereClause,
+        include: {
+          student: {
+            select: {
+              firstName: true,
+              lastName: true,
+              studentNumber: true
+            }
+          }
+        },
+        orderBy: { scheduledAt: 'asc' }
+      });
+
+      // Generate iCal format
+      let ical = 'BEGIN:VCALENDAR\r\n';
+      ical += 'VERSION:2.0\r\n';
+      ical += 'PRODID:-//White Cross//School Nurse Platform//EN\r\n';
+      ical += 'CALSCALE:GREGORIAN\r\n';
+      ical += 'METHOD:PUBLISH\r\n';
+
+      for (const appointment of appointments) {
+        const startDate = appointment.scheduledAt;
+        const endDate = new Date(startDate.getTime() + appointment.duration * 60000);
+
+        ical += 'BEGIN:VEVENT\r\n';
+        ical += `UID:${appointment.id}@whitecross.com\r\n`;
+        ical += `DTSTAMP:${this.formatICalDate(new Date())}\r\n`;
+        ical += `DTSTART:${this.formatICalDate(startDate)}\r\n`;
+        ical += `DTEND:${this.formatICalDate(endDate)}\r\n`;
+        ical += `SUMMARY:${appointment.type.replace(/_/g, ' ')} - ${appointment.student.firstName} ${appointment.student.lastName}\r\n`;
+        ical += `DESCRIPTION:${appointment.reason}\\n\\nStudent: ${appointment.student.firstName} ${appointment.student.lastName} (${appointment.student.studentNumber})\\nStatus: ${appointment.status}\r\n`;
+        ical += `STATUS:${appointment.status === 'COMPLETED' ? 'CONFIRMED' : appointment.status === 'CANCELLED' ? 'CANCELLED' : 'TENTATIVE'}\r\n`;
+        ical += 'END:VEVENT\r\n';
+      }
+
+      ical += 'END:VCALENDAR\r\n';
+
+      logger.info(`Generated calendar export for nurse ${nurseId} with ${appointments.length} appointments`);
+      return ical;
+    } catch (error) {
+      logger.error('Error generating calendar export:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Helper method to format dates for iCal
+   */
+  private static formatICalDate(date: Date): string {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
   }
 }
