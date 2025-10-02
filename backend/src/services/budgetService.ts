@@ -51,7 +51,7 @@ export class BudgetService {
       });
 
       // Calculate remaining and utilization for each category
-      const enrichedCategories = categories.map(category => ({
+      const enrichedCategories = categories.map((category: any) => ({
         ...category,
         remainingAmount: Number(category.allocatedAmount) - Number(category.spentAmount),
         utilizationPercentage: Number(category.allocatedAmount) > 0 
