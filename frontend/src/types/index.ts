@@ -159,10 +159,18 @@ export interface IncidentReport {
   witnesses: string[]
   actionsTaken: string
   parentNotified: boolean
+  parentNotificationMethod?: string
+  parentNotifiedAt?: string
+  parentNotifiedBy?: string
   followUpRequired: boolean
   followUpNotes?: string
   attachments: string[]
+  evidencePhotos: string[]
+  evidenceVideos: string[]
   occurredAt: string
+  insuranceClaimNumber?: string
+  insuranceClaimStatus?: 'NOT_FILED' | 'FILED' | 'PENDING' | 'APPROVED' | 'DENIED' | 'CLOSED'
+  legalComplianceStatus: 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW'
   student: {
     id: string
     firstName: string
@@ -172,6 +180,31 @@ export interface IncidentReport {
     firstName: string
     lastName: string
   }
+  witnessStatements?: WitnessStatement[]
+  followUpActions?: FollowUpAction[]
+}
+
+export interface WitnessStatement {
+  id: string
+  witnessName: string
+  witnessType: 'STUDENT' | 'STAFF' | 'PARENT' | 'OTHER'
+  witnessContact?: string
+  statement: string
+  verified: boolean
+  verifiedBy?: string
+  verifiedAt?: string
+}
+
+export interface FollowUpAction {
+  id: string
+  action: string
+  dueDate: string
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  assignedTo?: string
+  completedAt?: string
+  completedBy?: string
+  notes?: string
 }
 
 export interface ApiResponse<T> {
