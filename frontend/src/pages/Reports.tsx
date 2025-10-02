@@ -599,7 +599,7 @@ export default function Reports() {
                 </div>
                 <div className="card p-6">
                   <Pill className="h-8 w-8 text-green-600 mb-2" />
-                  <p className="text-sm text-gray-600">Medication Compliance</p>
+                  <p className="text-sm text-gray-600">Total Medications</p>
                   <p className="text-2xl font-bold">
                     {complianceData.medicationCompliance?.reduce((acc: number, curr: any) => acc + curr._count.id, 0) || 0}
                   </p>
@@ -613,11 +613,13 @@ export default function Reports() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="card p-6">
-                  <h3 className="text-lg font-semibold mb-4">Medication Compliance by Status</h3>
+                  <h3 className="text-lg font-semibold mb-4">Medication Status</h3>
                   <div className="space-y-2">
                     {complianceData.medicationCompliance?.map((stat: any) => (
-                      <div key={stat.status} className="flex justify-between items-center py-2 border-b">
-                        <span className="font-medium">{stat.status}</span>
+                      <div key={stat.isActive.toString()} className="flex justify-between items-center py-2 border-b">
+                        <span className={`font-medium ${stat.isActive ? 'text-green-600' : 'text-gray-600'}`}>
+                          {stat.isActive ? 'Active Medications' : 'Inactive Medications'}
+                        </span>
                         <span className="text-blue-600 font-semibold">{stat._count.id}</span>
                       </div>
                     ))}
@@ -628,12 +630,12 @@ export default function Reports() {
                   <h3 className="text-lg font-semibold mb-4">Incident Compliance Status</h3>
                   <div className="space-y-2">
                     {complianceData.incidentCompliance?.map((stat: any) => (
-                      <div key={stat.complianceStatus} className="flex justify-between items-center py-2 border-b">
+                      <div key={stat.legalComplianceStatus} className="flex justify-between items-center py-2 border-b">
                         <span className={`font-medium ${
-                          stat.complianceStatus === 'COMPLIANT' ? 'text-green-600' :
-                          stat.complianceStatus === 'NON_COMPLIANT' ? 'text-red-600' : 'text-yellow-600'
+                          stat.legalComplianceStatus === 'COMPLIANT' ? 'text-green-600' :
+                          stat.legalComplianceStatus === 'NON_COMPLIANT' ? 'text-red-600' : 'text-yellow-600'
                         }`}>
-                          {stat.complianceStatus}
+                          {stat.legalComplianceStatus}
                         </span>
                         <span className="text-blue-600 font-semibold">{stat._count.id}</span>
                       </div>

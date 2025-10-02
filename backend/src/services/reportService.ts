@@ -424,14 +424,10 @@ export class ReportService {
         take: 100
       });
 
-      // Get medication compliance (count of logs)
-      const medicationCompliance = await prisma.medicationLog.count({
-        where: startDate || endDate ? {
-          timeGiven: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {})
-          }
-        } : {}
+      // Get medication compliance grouped by active status
+      const medicationCompliance = await prisma.studentMedication.groupBy({
+        by: ['isActive'],
+        _count: { id: true }
       });
 
       // Get incident compliance status
