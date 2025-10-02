@@ -59,6 +59,7 @@ model Student {
   appointments         Appointment[]
   incidentReports      IncidentReport[]
   allergies            Allergy[]
+  chronicConditions    ChronicCondition[]
   waitlistEntries      AppointmentWaitlist[]
 
   @@map("students")
@@ -421,6 +422,30 @@ model Allergy {
   studentId String
 
   @@map("allergies")
+}
+
+model ChronicCondition {
+  id            String   @id @default(cuid())
+  condition     String
+  diagnosedDate DateTime
+  status        String   @default("ACTIVE") // ACTIVE, MANAGED, RESOLVED
+  severity      String? // MILD, MODERATE, SEVERE
+  notes         String?
+  carePlan      String?
+  medications   String[] // Related medications
+  restrictions  String[] // Activity/dietary restrictions
+  triggers      String[] // Known triggers
+  diagnosedBy   String?
+  lastReviewDate DateTime?
+  nextReviewDate DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@map("chronic_conditions")
 }
 
 model Appointment {
