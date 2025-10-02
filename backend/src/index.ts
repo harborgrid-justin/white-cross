@@ -24,6 +24,9 @@ import userRoutes from './routes/users';
 import administrationRoutes from './routes/administration';
 import integrationRoutes from './routes/integration';
 import reportRoutes from './routes/reports';
+import complianceRoutes from './routes/compliance';
+import documentRoutes from './routes/documents';
+import accessControlRoutes from './routes/accessControl';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -89,6 +92,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', administrationRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/compliance', complianceRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/access-control', accessControlRoutes);
 
 // Error handling middleware
 app.use(notFound);
