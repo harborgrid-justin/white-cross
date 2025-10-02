@@ -1,8 +1,8 @@
-import { IntegrationService } from '../services/integrationService';
+// Mock Prisma BEFORE importing the service
+let mockPrisma: any;
 
-// Mock Prisma
-jest.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn().mockImplementation(() => ({
+jest.mock('@prisma/client', () => {
+  const mockInstance = {
     integrationConfig: {
       create: jest.fn(),
       findMany: jest.fn(),
@@ -17,11 +17,16 @@ jest.mock('@prisma/client', () => ({
       count: jest.fn(),
       groupBy: jest.fn(),
     },
-  })),
-}));
+  };
+  
+  mockPrisma = mockInstance; // Store reference
+  
+  return {
+    PrismaClient: jest.fn(() => mockInstance),
+  };
+});
 
-const { PrismaClient } = require('@prisma/client');
-const mockPrisma = new PrismaClient();
+import { IntegrationService } from '../services/integrationService';
 
 describe('IntegrationService', () => {
   let testIntegrationId: string;
@@ -29,6 +34,18 @@ describe('IntegrationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     testIntegrationId = 'test-integration-id';
+    
+    // Set up default return values to prevent undefined errors
+    mockPrisma.integrationConfig.create.mockResolvedValue({} as any);
+    mockPrisma.integrationConfig.findMany.mockResolvedValue([]);
+    mockPrisma.integrationConfig.findUnique.mockResolvedValue({} as any);
+    mockPrisma.integrationConfig.update.mockResolvedValue({} as any);
+    mockPrisma.integrationConfig.delete.mockResolvedValue({} as any);
+    mockPrisma.integrationConfig.count.mockResolvedValue(0);
+    mockPrisma.integrationLog.create.mockResolvedValue({} as any);
+    mockPrisma.integrationLog.findMany.mockResolvedValue([]);
+    mockPrisma.integrationLog.count.mockResolvedValue(0);
+    mockPrisma.integrationLog.groupBy.mockResolvedValue([]);
   });
 
   describe('Integration Configuration Management', () => {
@@ -280,7 +297,7 @@ describe('IntegrationService', () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.message).toContain('Successfully connected');
-      expect(result.responseTime).toBeGreaterThan(0);
+      expect(result.responseTime).toBeGreaterThanOrEqual(0); // Can be 0 in fast test execution
       expect(mockPrisma.integrationConfig.update).toHaveBeenCalled();
     });
 
