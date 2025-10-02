@@ -787,4 +787,58 @@ export const administrationApi = {
   }
 }
 
+// Integration Hub API
+export const integrationApi = {
+  getAll: async (type?: string): Promise<any> => {
+    const params = type ? `?type=${type}` : ''
+    const response = await api.get(`/integrations${params}`)
+    return response.data.data
+  },
+
+  getById: async (id: string): Promise<any> => {
+    const response = await api.get(`/integrations/${id}`)
+    return response.data.data
+  },
+
+  create: async (data: any): Promise<any> => {
+    const response = await api.post('/integrations', data)
+    return response.data.data
+  },
+
+  update: async (id: string, data: any): Promise<any> => {
+    const response = await api.put(`/integrations/${id}`, data)
+    return response.data.data
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/integrations/${id}`)
+  },
+
+  testConnection: async (id: string): Promise<any> => {
+    const response = await api.post(`/integrations/${id}/test`)
+    return response.data.data
+  },
+
+  sync: async (id: string): Promise<any> => {
+    const response = await api.post(`/integrations/${id}/sync`)
+    return response.data.data
+  },
+
+  getLogs: async (id: string, page = 1, limit = 20): Promise<any> => {
+    const response = await api.get(`/integrations/${id}/logs?page=${page}&limit=${limit}`)
+    return response.data.data
+  },
+
+  getAllLogs: async (type?: string, page = 1, limit = 20): Promise<any> => {
+    const params = type ? `&type=${type}` : ''
+    const response = await api.get(`/integrations/logs/all?page=${page}&limit=${limit}${params}`)
+    return response.data.data
+  },
+
+  getStatistics: async (): Promise<any> => {
+    const response = await api.get('/integrations/statistics/overview')
+    return response.data.data
+  },
+}
+
 export default api
