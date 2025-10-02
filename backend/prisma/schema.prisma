@@ -1040,3 +1040,73 @@ enum AuditAction {
   BACKUP
   RESTORE
 }
+
+// Integration Hub Models
+
+model IntegrationConfig {
+  id              String            @id @default(cuid())
+  name            String
+  type            IntegrationType
+  status          IntegrationStatus @default(INACTIVE)
+  endpoint        String?           // API endpoint or connection string
+  apiKey          String?           // Encrypted API key
+  username        String?
+  password        String?           // Encrypted password
+  settings        Json?             // Additional integration-specific settings
+  isActive        Boolean           @default(true)
+  lastSyncAt      DateTime?
+  lastSyncStatus  String?
+  syncFrequency   Int?              // Sync frequency in minutes (null for manual)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  logs            IntegrationLog[]
+  
+  @@map("integration_configs")
+}
+
+model IntegrationLog {
+  id              String   @id @default(cuid())
+  integrationType IntegrationType
+  action          String   // e.g., "sync", "test_connection", "import", "export"
+  status          String   // e.g., "success", "failed", "in_progress"
+  recordsProcessed Int?
+  recordsSucceeded Int?
+  recordsFailed    Int?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  duration        Int?     // Duration in milliseconds
+  errorMessage    String?
+  details         Json?    // Additional log details
+  createdAt       DateTime @default(now())
+
+  // Relations
+  integration     IntegrationConfig? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  integrationId   String?
+  
+  @@map("integration_logs")
+  @@index([integrationType, createdAt])
+  @@index([integrationId, createdAt])
+}
+
+// Integration Hub Enums
+
+enum IntegrationType {
+  SIS                    // Student Information System
+  EHR                    // Electronic Health Record
+  PHARMACY               // Pharmacy Management System
+  LABORATORY             // Laboratory Information System
+  INSURANCE              // Insurance Verification System
+  PARENT_PORTAL          // Parent Portal
+  HEALTH_APP             // Third-party Health Application
+  GOVERNMENT_REPORTING   // Government Reporting System
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  TESTING
+  SYNCING
+}
