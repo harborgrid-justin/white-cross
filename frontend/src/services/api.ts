@@ -594,6 +594,122 @@ export const appointmentsApi = {
   }
 }
 
+// Communication API
+export const communicationApi = {
+  // Templates
+  getTemplates: async (type?: string, category?: string, isActive = true): Promise<{ templates: any[] }> => {
+    const params = new URLSearchParams({ isActive: String(isActive) })
+    if (type) params.append('type', type)
+    if (category) params.append('category', category)
+    const response = await api.get<ApiResponse<{ templates: any[] }>>(`/communication/templates?${params.toString()}`)
+    return response.data.data!
+  },
+
+  createTemplate: async (data: {
+    name: string
+    subject?: string
+    content: string
+    type: string
+    category: string
+    variables?: string[]
+    isActive?: boolean
+  }): Promise<{ template: any }> => {
+    const response = await api.post<ApiResponse<{ template: any }>>('/communication/templates', data)
+    return response.data.data!
+  },
+
+  updateTemplate: async (id: string, data: any): Promise<{ template: any }> => {
+    const response = await api.put<ApiResponse<{ template: any }>>(`/communication/templates/${id}`, data)
+    return response.data.data!
+  },
+
+  deleteTemplate: async (id: string): Promise<void> => {
+    await api.delete(`/communication/templates/${id}`)
+  },
+
+  // Messages
+  sendMessage: async (data: {
+    recipients: any[]
+    channels: string[]
+    subject?: string
+    content: string
+    priority: string
+    category: string
+    templateId?: string
+    scheduledAt?: string
+    attachments?: string[]
+  }): Promise<{ message: any; deliveryStatuses: any[] }> => {
+    const response = await api.post<ApiResponse<{ message: any; deliveryStatuses: any[] }>>('/communication/send', data)
+    return response.data.data!
+  },
+
+  sendBroadcast: async (data: {
+    audience: {
+      grades?: string[]
+      nurseIds?: string[]
+      studentIds?: string[]
+      includeParents?: boolean
+      includeEmergencyContacts?: boolean
+    }
+    channels: string[]
+    subject?: string
+    content: string
+    priority: string
+    category: string
+    scheduledAt?: string
+  }): Promise<{ message: any; deliveryStatuses: any[] }> => {
+    const response = await api.post<ApiResponse<{ message: any; deliveryStatuses: any[] }>>('/communication/broadcast', data)
+    return response.data.data!
+  },
+
+  getMessages: async (page = 1, limit = 20, filters?: any): Promise<{ messages: any[]; pagination: any }> => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, String(value))
+      })
+    }
+    const response = await api.get<ApiResponse<{ messages: any[]; pagination: any }>>(`/communication/messages?${params.toString()}`)
+    return response.data.data!
+  },
+
+  getMessageDelivery: async (messageId: string): Promise<{ deliveries: any[]; summary: any }> => {
+    const response = await api.get<ApiResponse<{ deliveries: any[]; summary: any }>>(`/communication/messages/${messageId}/delivery`)
+    return response.data.data!
+  },
+
+  // Emergency Alert
+  sendEmergencyAlert: async (data: {
+    title: string
+    message: string
+    severity: string
+    audience: string
+    groups?: string[]
+    channels: string[]
+  }): Promise<{ message: any; deliveryStatuses: any[] }> => {
+    const response = await api.post<ApiResponse<{ message: any; deliveryStatuses: any[] }>>('/communication/emergency-alert', data)
+    return response.data.data!
+  },
+
+  // Statistics
+  getStatistics: async (dateFrom?: string, dateTo?: string): Promise<any> => {
+    const params = new URLSearchParams()
+    if (dateFrom) params.append('dateFrom', dateFrom)
+    if (dateTo) params.append('dateTo', dateTo)
+    const response = await api.get<ApiResponse<any>>(`/communication/statistics?${params.toString()}`)
+    return response.data.data!
+  },
+
+  // Translation
+  translateMessage: async (content: string, targetLanguage: string): Promise<{ translated: string }> => {
+    const response = await api.post<ApiResponse<{ translated: string }>>('/communication/translate', {
+      content,
+      targetLanguage
+    })
+    return response.data.data!
+  }
+}
+
 // Administration API
 export const administrationApi = {
   // Districts
