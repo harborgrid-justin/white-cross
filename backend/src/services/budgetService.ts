@@ -53,9 +53,9 @@ export class BudgetService {
       // Calculate remaining and utilization for each category
       const enrichedCategories = categories.map(category => ({
         ...category,
-        remainingAmount: category.allocatedAmount - category.spentAmount,
-        utilizationPercentage: category.allocatedAmount > 0 
-          ? (category.spentAmount / category.allocatedAmount) * 100 
+        remainingAmount: Number(category.allocatedAmount) - Number(category.spentAmount),
+        utilizationPercentage: Number(category.allocatedAmount) > 0 
+          ? (Number(category.spentAmount) / Number(category.allocatedAmount)) * 100 
           : 0
       }));
 
@@ -86,9 +86,9 @@ export class BudgetService {
 
       return {
         ...category,
-        remainingAmount: category.allocatedAmount - category.spentAmount,
-        utilizationPercentage: category.allocatedAmount > 0 
-          ? (category.spentAmount / category.allocatedAmount) * 100 
+        remainingAmount: Number(category.allocatedAmount) - Number(category.spentAmount),
+        utilizationPercentage: Number(category.allocatedAmount) > 0 
+          ? (Number(category.spentAmount) / Number(category.allocatedAmount)) * 100 
           : 0
       };
     } catch (error) {
@@ -160,8 +160,8 @@ export class BudgetService {
       }
 
       // Check if transaction would exceed budget
-      const newSpent = category.spentAmount + data.amount;
-      if (newSpent > category.allocatedAmount) {
+      const newSpent = Number(category.spentAmount) + data.amount;
+      if (newSpent > Number(category.allocatedAmount)) {
         logger.warn(`Transaction would exceed budget for ${category.name}: ${newSpent} > ${category.allocatedAmount}`);
       }
 
