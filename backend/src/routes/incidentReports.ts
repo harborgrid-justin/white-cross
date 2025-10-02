@@ -299,4 +299,253 @@ router.get('/:id/document', auth, async (req: Request, res: Response) => {
   }
 });
 
+// Add witness statement
+router.post('/:id/witness-statements', [
+  auth,
+  body('witnessName').notEmpty().trim(),
+  body('witnessType').isIn(['STUDENT', 'STAFF', 'PARENT', 'OTHER']),
+  body('witnessContact').optional().trim(),
+  body('statement').notEmpty().trim()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const statement = await IncidentReportService.addWitnessStatement(id, req.body);
+
+    res.status(201).json({
+      success: true,
+      data: { statement }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Verify witness statement
+router.put('/witness-statements/:statementId/verify', auth, async (req: Request, res: Response) => {
+  try {
+    const { statementId } = req.params;
+    const verifiedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
+    
+    const statement = await IncidentReportService.verifyWitnessStatement(statementId, verifiedBy);
+
+    res.json({
+      success: true,
+      data: { statement }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Add follow-up action
+router.post('/:id/follow-up-actions', [
+  auth,
+  body('action').notEmpty().trim(),
+  body('dueDate').isISO8601(),
+  body('priority').isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  body('assignedTo').optional().trim()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const actionData = {
+      ...req.body,
+      dueDate: new Date(req.body.dueDate)
+    };
+    
+    const action = await IncidentReportService.addFollowUpAction(id, actionData);
+
+    res.status(201).json({
+      success: true,
+      data: { action }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Update follow-up action status
+router.put('/follow-up-actions/:actionId', [
+  auth,
+  body('status').isIn(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+  body('notes').optional().trim()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { actionId } = req.params;
+    const { status, notes } = req.body;
+    const completedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
+    
+    const action = await IncidentReportService.updateFollowUpAction(actionId, status, completedBy, notes);
+
+    res.json({
+      success: true,
+      data: { action }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Add evidence (photos/videos)
+router.post('/:id/evidence', [
+  auth,
+  body('evidenceType').isIn(['photo', 'video']),
+  body('evidenceUrls').isArray().notEmpty()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { evidenceType, evidenceUrls } = req.body;
+    
+    const report = await IncidentReportService.addEvidence(id, evidenceType, evidenceUrls);
+
+    res.json({
+      success: true,
+      data: { report }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Update insurance claim
+router.put('/:id/insurance-claim', [
+  auth,
+  body('claimNumber').notEmpty().trim(),
+  body('status').isIn(['NOT_FILED', 'FILED', 'PENDING', 'APPROVED', 'DENIED', 'CLOSED'])
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { claimNumber, status } = req.body;
+    
+    const report = await IncidentReportService.updateInsuranceClaim(id, claimNumber, status);
+
+    res.json({
+      success: true,
+      data: { report }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Update compliance status
+router.put('/:id/compliance', [
+  auth,
+  body('status').isIn(['PENDING', 'COMPLIANT', 'NON_COMPLIANT', 'UNDER_REVIEW'])
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const report = await IncidentReportService.updateComplianceStatus(id, status);
+
+    res.json({
+      success: true,
+      data: { report }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Send parent notification
+router.post('/:id/notify-parent-automated', [
+  auth,
+  body('method').isIn(['email', 'sms', 'voice'])
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { method } = req.body;
+    const notifiedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
+    
+    const report = await IncidentReportService.notifyParent(id, method, notifiedBy);
+
+    res.json({
+      success: true,
+      data: { report }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;

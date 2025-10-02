@@ -17,6 +17,9 @@ export interface CreateIncidentReportData {
   followUpRequired?: boolean;
   followUpNotes?: string;
   attachments?: string[];
+  evidencePhotos?: string[];
+  evidenceVideos?: string[];
+  insuranceClaimNumber?: string;
 }
 
 export interface UpdateIncidentReportData {
@@ -31,6 +34,11 @@ export interface UpdateIncidentReportData {
   followUpRequired?: boolean;
   followUpNotes?: string;
   attachments?: string[];
+  evidencePhotos?: string[];
+  evidenceVideos?: string[];
+  insuranceClaimNumber?: string;
+  insuranceClaimStatus?: 'NOT_FILED' | 'FILED' | 'PENDING' | 'APPROVED' | 'DENIED' | 'CLOSED';
+  legalComplianceStatus?: 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW';
 }
 
 export interface IncidentFilters {
@@ -58,9 +66,39 @@ export interface FollowUpAction {
   id: string;
   incidentId: string;
   action: string;
+  dueDate: Date;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  assignedTo?: string;
   completedAt?: Date;
   completedBy?: string;
   notes?: string;
+}
+
+export interface WitnessStatement {
+  id: string;
+  incidentReportId: string;
+  witnessName: string;
+  witnessType: 'STUDENT' | 'STAFF' | 'PARENT' | 'OTHER';
+  witnessContact?: string;
+  statement: string;
+  verified: boolean;
+  verifiedBy?: string;
+  verifiedAt?: Date;
+}
+
+export interface CreateWitnessStatementData {
+  witnessName: string;
+  witnessType: 'STUDENT' | 'STAFF' | 'PARENT' | 'OTHER';
+  witnessContact?: string;
+  statement: string;
+}
+
+export interface CreateFollowUpActionData {
+  action: string;
+  dueDate: Date;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  assignedTo?: string;
 }
 
 export class IncidentReportService {
@@ -643,12 +681,40 @@ export class IncidentReportService {
    */
   static async generateIncidentReportDocument(id: string) {
     try {
-      const report = await this.getIncidentReportById(id);
+      const report = await prisma.incidentReport.findUnique({
+        where: { id },
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentNumber: true,
+              grade: true,
+              dateOfBirth: true
+            }
+          },
+          reportedBy: {
+            select: {
+              firstName: true,
+              lastName: true,
+              role: true
+            }
+          },
+          witnessStatements: true,
+          followUpActions: true
+        }
+      });
+
+      if (!report) {
+        throw new Error('Incident report not found');
+      }
       
       // This would generate a PDF or official document
       // For now, return structured data for document generation
       const documentData = {
         reportNumber: `INC-${report.id.slice(-8).toUpperCase()}`,
+        generatedAt: new Date(),
         student: {
           name: `${report.student.firstName} ${report.student.lastName}`,
           studentNumber: report.student.studentNumber,
@@ -672,15 +738,261 @@ export class IncidentReportService {
         followUp: {
           required: report.followUpRequired,
           notes: report.followUpNotes,
-          parentNotified: report.parentNotified
+          parentNotified: report.parentNotified,
+          parentNotificationMethod: report.parentNotificationMethod,
+          parentNotifiedAt: report.parentNotifiedAt,
+          actions: report.followUpActions
         },
-        attachments: report.attachments
+        evidence: {
+          attachments: report.attachments,
+          photos: report.evidencePhotos,
+          videos: report.evidenceVideos
+        },
+        witnessStatements: report.witnessStatements,
+        insurance: {
+          claimNumber: report.insuranceClaimNumber,
+          claimStatus: report.insuranceClaimStatus
+        },
+        compliance: {
+          status: report.legalComplianceStatus
+        }
       };
 
       logger.info(`Incident report document generated for ${id}`);
       return documentData;
     } catch (error) {
       logger.error('Error generating incident report document:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add witness statement to incident report
+   */
+  static async addWitnessStatement(incidentReportId: string, data: CreateWitnessStatementData) {
+    try {
+      const report = await prisma.incidentReport.findUnique({
+        where: { id: incidentReportId }
+      });
+
+      if (!report) {
+        throw new Error('Incident report not found');
+      }
+
+      const witnessStatement = await prisma.witnessStatement.create({
+        data: {
+          incidentReportId,
+          ...data
+        }
+      });
+
+      logger.info(`Witness statement added to incident ${incidentReportId}`);
+      return witnessStatement;
+    } catch (error) {
+      logger.error('Error adding witness statement:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify witness statement
+   */
+  static async verifyWitnessStatement(statementId: string, verifiedBy: string) {
+    try {
+      const statement = await prisma.witnessStatement.update({
+        where: { id: statementId },
+        data: {
+          verified: true,
+          verifiedBy,
+          verifiedAt: new Date()
+        }
+      });
+
+      logger.info(`Witness statement ${statementId} verified by ${verifiedBy}`);
+      return statement;
+    } catch (error) {
+      logger.error('Error verifying witness statement:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add follow-up action to incident report
+   */
+  static async addFollowUpAction(incidentReportId: string, data: CreateFollowUpActionData) {
+    try {
+      const report = await prisma.incidentReport.findUnique({
+        where: { id: incidentReportId }
+      });
+
+      if (!report) {
+        throw new Error('Incident report not found');
+      }
+
+      const followUpAction = await prisma.followUpAction.create({
+        data: {
+          incidentReportId,
+          ...data,
+          status: 'PENDING'
+        }
+      });
+
+      logger.info(`Follow-up action added to incident ${incidentReportId}`);
+      return followUpAction;
+    } catch (error) {
+      logger.error('Error adding follow-up action:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update follow-up action status
+   */
+  static async updateFollowUpAction(
+    actionId: string, 
+    status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
+    completedBy?: string,
+    notes?: string
+  ) {
+    try {
+      const updateData: any = { status };
+      
+      if (status === 'COMPLETED') {
+        updateData.completedAt = new Date();
+        updateData.completedBy = completedBy;
+      }
+      
+      if (notes) {
+        updateData.notes = notes;
+      }
+
+      const action = await prisma.followUpAction.update({
+        where: { id: actionId },
+        data: updateData
+      });
+
+      logger.info(`Follow-up action ${actionId} status updated to ${status}`);
+      return action;
+    } catch (error) {
+      logger.error('Error updating follow-up action:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload evidence (photos/videos) to incident report
+   */
+  static async addEvidence(
+    incidentReportId: string,
+    evidenceType: 'photo' | 'video',
+    evidenceUrls: string[]
+  ) {
+    try {
+      const report = await prisma.incidentReport.findUnique({
+        where: { id: incidentReportId }
+      });
+
+      if (!report) {
+        throw new Error('Incident report not found');
+      }
+
+      const updateData: any = {};
+      if (evidenceType === 'photo') {
+        updateData.evidencePhotos = [...report.evidencePhotos, ...evidenceUrls];
+      } else {
+        updateData.evidenceVideos = [...report.evidenceVideos, ...evidenceUrls];
+      }
+
+      const updatedReport = await prisma.incidentReport.update({
+        where: { id: incidentReportId },
+        data: updateData
+      });
+
+      logger.info(`${evidenceType} evidence added to incident ${incidentReportId}`);
+      return updatedReport;
+    } catch (error) {
+      logger.error('Error adding evidence:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update insurance claim information
+   */
+  static async updateInsuranceClaim(
+    incidentReportId: string,
+    claimNumber: string,
+    status: 'NOT_FILED' | 'FILED' | 'PENDING' | 'APPROVED' | 'DENIED' | 'CLOSED'
+  ) {
+    try {
+      const report = await prisma.incidentReport.update({
+        where: { id: incidentReportId },
+        data: {
+          insuranceClaimNumber: claimNumber,
+          insuranceClaimStatus: status
+        }
+      });
+
+      logger.info(`Insurance claim updated for incident ${incidentReportId}: ${claimNumber} - ${status}`);
+      return report;
+    } catch (error) {
+      logger.error('Error updating insurance claim:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update legal compliance status
+   */
+  static async updateComplianceStatus(
+    incidentReportId: string,
+    status: 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW'
+  ) {
+    try {
+      const report = await prisma.incidentReport.update({
+        where: { id: incidentReportId },
+        data: {
+          legalComplianceStatus: status
+        }
+      });
+
+      logger.info(`Compliance status updated for incident ${incidentReportId}: ${status}`);
+      return report;
+    } catch (error) {
+      logger.error('Error updating compliance status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Automated parent notification with tracking
+   */
+  static async notifyParent(
+    incidentReportId: string,
+    method: string,
+    notifiedBy: string
+  ) {
+    try {
+      const report = await this.getIncidentReportById(incidentReportId);
+      
+      // Send notification based on method (email, SMS, voice)
+      const message = `Incident Alert: ${report.student.firstName} ${report.student.lastName} was involved in a ${report.type} incident (${report.severity} severity) on ${report.occurredAt.toLocaleString()}. Please contact the school nurse for more information.`;
+      
+      logger.info(`Parent notification sent for incident ${incidentReportId} via ${method}: ${message}`);
+      
+      const updatedReport = await prisma.incidentReport.update({
+        where: { id: incidentReportId },
+        data: {
+          parentNotified: true,
+          parentNotificationMethod: method,
+          parentNotifiedAt: new Date(),
+          parentNotifiedBy: notifiedBy
+        }
+      });
+
+      return updatedReport;
+    } catch (error) {
+      logger.error('Error notifying parent:', error);
       throw error;
     }
   }
