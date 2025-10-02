@@ -70,8 +70,8 @@ describe('IntegrationService', () => {
       };
 
       // Create needs to return the integration first, then log
-      mockPrisma.integrationConfig.create.mockResolvedValueOnce(mockIntegration);
-      mockPrisma.integrationLog.create.mockResolvedValueOnce(mockLog);
+      mockPrisma.integrationConfig.create.mockResolvedValue(mockIntegration);
+      mockPrisma.integrationLog.create.mockResolvedValue(mockLog);
 
       const integration = await IntegrationService.createIntegration(integrationData);
 
@@ -477,8 +477,8 @@ describe('IntegrationService', () => {
           createdAt: new Date()
         };
 
-        mockPrisma.integrationConfig.create.mockResolvedValueOnce(mockIntegration);
-        mockPrisma.integrationLog.create.mockResolvedValueOnce(mockLog);
+        mockPrisma.integrationConfig.create.mockResolvedValue(mockIntegration);
+        mockPrisma.integrationLog.create.mockResolvedValue(mockLog);
 
         const integration = await IntegrationService.createIntegration({
           name: `Test ${type} Integration`,
