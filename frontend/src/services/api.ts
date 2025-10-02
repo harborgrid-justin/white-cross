@@ -78,6 +78,84 @@ export const authApi = {
   },
 }
 
+// Medications API
+export const medicationsApi = {
+  getAll: async (page = 1, limit = 20, search?: string) => {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
+    if (search) params.append('search', search)
+    const response = await api.get(`/medications?${params}`)
+    return response.data.data
+  },
+
+  create: async (medicationData: any) => {
+    const response = await api.post('/medications', medicationData)
+    return response.data.data
+  },
+
+  assignToStudent: async (data: any) => {
+    const response = await api.post('/medications/assign', data)
+    return response.data.data
+  },
+
+  logAdministration: async (data: any) => {
+    const response = await api.post('/medications/administration', data)
+    return response.data.data
+  },
+
+  getStudentLogs: async (studentId: string, page = 1, limit = 20) => {
+    const response = await api.get(`/medications/logs/${studentId}?page=${page}&limit=${limit}`)
+    return response.data.data
+  },
+
+  getInventory: async () => {
+    const response = await api.get('/medications/inventory')
+    return response.data.data
+  },
+
+  addToInventory: async (data: any) => {
+    const response = await api.post('/medications/inventory', data)
+    return response.data.data
+  },
+
+  updateInventory: async (id: string, quantity: number, reason?: string) => {
+    const response = await api.put(`/medications/inventory/${id}`, { quantity, reason })
+    return response.data.data
+  },
+
+  getSchedule: async (startDate?: Date, endDate?: Date, nurseId?: string) => {
+    const params = new URLSearchParams()
+    if (startDate) params.append('startDate', startDate.toISOString())
+    if (endDate) params.append('endDate', endDate.toISOString())
+    if (nurseId) params.append('nurseId', nurseId)
+    const response = await api.get(`/medications/schedule?${params}`)
+    return response.data.data
+  },
+
+  getReminders: async (date?: Date) => {
+    const params = date ? `?date=${date.toISOString()}` : ''
+    const response = await api.get(`/medications/reminders${params}`)
+    return response.data.data
+  },
+
+  reportAdverseReaction: async (data: any) => {
+    const response = await api.post('/medications/adverse-reaction', data)
+    return response.data.data
+  },
+
+  getAdverseReactions: async (medicationId?: string, studentId?: string) => {
+    const params = new URLSearchParams()
+    if (medicationId) params.append('medicationId', medicationId)
+    if (studentId) params.append('studentId', studentId)
+    const response = await api.get(`/medications/adverse-reactions?${params}`)
+    return response.data.data
+  },
+
+  deactivateStudentMedication: async (id: string, reason?: string) => {
+    const response = await api.put(`/medications/student-medication/${id}/deactivate`, { reason })
+    return response.data.data
+  }
+}
+
 // Students API
 export const studentsApi = {
   getAll: async (page = 1, limit = 10): Promise<{
