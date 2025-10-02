@@ -116,6 +116,221 @@ export const studentsApi = {
   },
 }
 
+// Inventory API
+export const inventoryApi = {
+  getItems: async (page = 1, limit = 20, filters?: any) => {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined) params.append(key, filters[key].toString())
+      })
+    }
+    const response = await api.get(`/inventory?${params}`)
+    return response.data.data
+  },
+
+  getItemById: async (id: string) => {
+    const response = await api.get(`/inventory/${id}`)
+    return response.data.data
+  },
+
+  createItem: async (data: any) => {
+    const response = await api.post('/inventory', data)
+    return response.data.data
+  },
+
+  updateItem: async (id: string, data: any) => {
+    const response = await api.put(`/inventory/${id}`, data)
+    return response.data.data
+  },
+
+  createTransaction: async (data: any) => {
+    const response = await api.post('/inventory/transactions', data)
+    return response.data.data
+  },
+
+  getAlerts: async () => {
+    const response = await api.get('/inventory/alerts')
+    return response.data.data
+  },
+
+  createMaintenanceLog: async (data: any) => {
+    const response = await api.post('/inventory/maintenance', data)
+    return response.data.data
+  },
+
+  getMaintenanceSchedule: async (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams()
+    if (startDate) params.append('startDate', startDate)
+    if (endDate) params.append('endDate', endDate)
+    const response = await api.get(`/inventory/maintenance/schedule?${params}`)
+    return response.data.data
+  },
+
+  getValuation: async () => {
+    const response = await api.get('/inventory/valuation')
+    return response.data.data
+  },
+
+  getUsageAnalytics: async (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams()
+    if (startDate) params.append('startDate', startDate)
+    if (endDate) params.append('endDate', endDate)
+    const response = await api.get(`/inventory/analytics/usage?${params}`)
+    return response.data.data
+  },
+
+  getSupplierPerformance: async () => {
+    const response = await api.get('/inventory/analytics/suppliers')
+    return response.data.data
+  },
+
+  searchItems: async (query: string, limit = 20) => {
+    const response = await api.get(`/inventory/search/${query}?limit=${limit}`)
+    return response.data.data
+  },
+
+  getCurrentStock: async (id: string) => {
+    const response = await api.get(`/inventory/${id}/stock`)
+    return response.data.data
+  }
+}
+
+// Vendor API
+export const vendorApi = {
+  getAll: async (page = 1, limit = 20, activeOnly = true) => {
+    const response = await api.get(`/vendors?page=${page}&limit=${limit}&activeOnly=${activeOnly}`)
+    return response.data.data
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/vendors/${id}`)
+    return response.data.data
+  },
+
+  create: async (data: any) => {
+    const response = await api.post('/vendors', data)
+    return response.data.data
+  },
+
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/vendors/${id}`, data)
+    return response.data.data
+  },
+
+  compare: async (itemName: string) => {
+    const response = await api.get(`/vendors/compare/${itemName}`)
+    return response.data.data
+  },
+
+  search: async (query: string, limit = 20) => {
+    const response = await api.get(`/vendors/search/${query}?limit=${limit}`)
+    return response.data.data
+  }
+}
+
+// Purchase Order API
+export const purchaseOrderApi = {
+  getAll: async (page = 1, limit = 20, filters?: any) => {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined) params.append(key, filters[key].toString())
+      })
+    }
+    const response = await api.get(`/purchase-orders?${params}`)
+    return response.data.data
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/purchase-orders/${id}`)
+    return response.data.data
+  },
+
+  create: async (data: any) => {
+    const response = await api.post('/purchase-orders', data)
+    return response.data.data
+  },
+
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/purchase-orders/${id}`, data)
+    return response.data.data
+  },
+
+  approve: async (id: string) => {
+    const response = await api.post(`/purchase-orders/${id}/approve`)
+    return response.data.data
+  },
+
+  receiveItems: async (id: string, items: any) => {
+    const response = await api.post(`/purchase-orders/${id}/receive`, { items })
+    return response.data.data
+  },
+
+  cancel: async (id: string, reason?: string) => {
+    const response = await api.post(`/purchase-orders/${id}/cancel`, { reason })
+    return response.data.data
+  },
+
+  getItemsNeedingReorder: async () => {
+    const response = await api.get('/purchase-orders/reorder/needed')
+    return response.data.data
+  }
+}
+
+// Budget API
+export const budgetApi = {
+  getCategories: async (fiscalYear?: number, activeOnly = true) => {
+    const params = new URLSearchParams()
+    if (fiscalYear) params.append('fiscalYear', fiscalYear.toString())
+    params.append('activeOnly', activeOnly.toString())
+    const response = await api.get(`/budget/categories?${params}`)
+    return response.data.data
+  },
+
+  getCategoryById: async (id: string) => {
+    const response = await api.get(`/budget/categories/${id}`)
+    return response.data.data
+  },
+
+  createCategory: async (data: any) => {
+    const response = await api.post('/budget/categories', data)
+    return response.data.data
+  },
+
+  updateCategory: async (id: string, data: any) => {
+    const response = await api.put(`/budget/categories/${id}`, data)
+    return response.data.data
+  },
+
+  getSummary: async (fiscalYear?: number) => {
+    const params = fiscalYear ? `?fiscalYear=${fiscalYear}` : ''
+    const response = await api.get(`/budget/summary${params}`)
+    return response.data.data
+  },
+
+  getTransactions: async (page = 1, limit = 20, filters?: any) => {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined) params.append(key, filters[key].toString())
+      })
+    }
+    const response = await api.get(`/budget/transactions?${params}`)
+    return response.data.data
+  },
+
+  createTransaction: async (data: any) => {
+    const response = await api.post('/budget/transactions', data)
+    return response.data.data
+  },
+
+  getTrends: async (fiscalYear?: number, categoryId?: string) => {
+    const params = new URLSearchParams()
+    if (fiscalYear) params.append('fiscalYear', fiscalYear.toString())
+    if (categoryId) params.append('categoryId', categoryId)
+    const response = await api.get(`/budget/trends?${params}`)
+    return response.data.data
 // Appointments API
 export const appointmentsApi = {
   getAll: async (filters?: {
