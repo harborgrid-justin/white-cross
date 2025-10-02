@@ -23,6 +23,7 @@ import communicationRoutes from './routes/communication';
 import userRoutes from './routes/users';
 import administrationRoutes from './routes/administration';
 import integrationRoutes from './routes/integration';
+import reportRoutes from './routes/reports';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -87,6 +88,7 @@ app.use('/api/communication', communicationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', administrationRoutes);
 app.use('/api/integrations', integrationRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Error handling middleware
 app.use(notFound);
