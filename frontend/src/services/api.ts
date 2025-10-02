@@ -409,6 +409,185 @@ export const budgetApi = {
     if (categoryId) params.append('categoryId', categoryId)
     const response = await api.get(`/budget/trends?${params}`)
     return response.data.data
+// Appointments API
+export const appointmentsApi = {
+  getAll: async (filters?: {
+    page?: number
+    limit?: number
+    nurseId?: string
+    studentId?: string
+    status?: string
+    type?: string
+    dateFrom?: string
+    dateTo?: string
+  }): Promise<{
+    appointments: any[]
+    pagination: any
+  }> => {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, String(value))
+      })
+    }
+    const response = await api.get<ApiResponse<{
+      appointments: any[]
+      pagination: any
+    }>>(`/appointments?${params.toString()}`)
+    return response.data.data!
+  },
+
+  create: async (appointmentData: {
+    studentId: string
+    nurseId: string
+    type: string
+    scheduledAt: string
+    reason: string
+    duration?: number
+    notes?: string
+  }): Promise<{ appointment: any }> => {
+    const response = await api.post<ApiResponse<{ appointment: any }>>('/appointments', appointmentData)
+    return response.data.data!
+  },
+
+  update: async (id: string, data: any): Promise<{ appointment: any }> => {
+    const response = await api.put<ApiResponse<{ appointment: any }>>(`/appointments/${id}`, data)
+    return response.data.data!
+  },
+
+  cancel: async (id: string, reason?: string): Promise<{ appointment: any }> => {
+    const response = await api.put<ApiResponse<{ appointment: any }>>(`/appointments/${id}/cancel`, { reason })
+    return response.data.data!
+  },
+
+  markNoShow: async (id: string): Promise<{ appointment: any }> => {
+    const response = await api.put<ApiResponse<{ appointment: any }>>(`/appointments/${id}/no-show`, {})
+    return response.data.data!
+  },
+
+  getAvailability: async (nurseId: string, date?: string, duration?: number): Promise<{ slots: any[] }> => {
+    const params = new URLSearchParams()
+    if (date) params.append('date', date)
+    if (duration) params.append('duration', String(duration))
+    const response = await api.get<ApiResponse<{ slots: any[] }>>(`/appointments/availability/${nurseId}?${params.toString()}`)
+    return response.data.data!
+  },
+
+  getUpcoming: async (nurseId: string, limit?: number): Promise<{ appointments: any[] }> => {
+    const params = limit ? `?limit=${limit}` : ''
+    const response = await api.get<ApiResponse<{ appointments: any[] }>>(`/appointments/upcoming/${nurseId}${params}`)
+    return response.data.data!
+  },
+
+  getStatistics: async (filters?: {
+    nurseId?: string
+    dateFrom?: string
+    dateTo?: string
+  }): Promise<any> => {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, value)
+      })
+    }
+    const response = await api.get<ApiResponse<any>>(`/appointments/statistics?${params.toString()}`)
+    return response.data.data!
+  },
+
+  createRecurring: async (data: {
+    studentId: string
+    nurseId: string
+    type: string
+    scheduledAt: string
+    reason: string
+    duration?: number
+    recurrence: {
+      frequency: 'daily' | 'weekly' | 'monthly'
+      interval: number
+      endDate: string
+      daysOfWeek?: number[]
+    }
+  }): Promise<{ appointments: any[]; count: number }> => {
+    const response = await api.post<ApiResponse<{ appointments: any[]; count: number }>>('/appointments/recurring', data)
+    return response.data.data!
+  },
+
+  // Nurse Availability
+  setAvailability: async (data: {
+    nurseId: string
+    startTime: string
+    endTime: string
+    dayOfWeek?: number
+    isRecurring?: boolean
+    specificDate?: string
+    isAvailable?: boolean
+    reason?: string
+  }): Promise<{ availability: any }> => {
+    const response = await api.post<ApiResponse<{ availability: any }>>('/appointments/availability', data)
+    return response.data.data!
+  },
+
+  getNurseAvailability: async (nurseId: string, date?: string): Promise<{ availability: any[] }> => {
+    const params = date ? `?date=${date}` : ''
+    const response = await api.get<ApiResponse<{ availability: any[] }>>(`/appointments/availability/nurse/${nurseId}${params}`)
+    return response.data.data!
+  },
+
+  updateAvailability: async (id: string, data: any): Promise<{ availability: any }> => {
+    const response = await api.put<ApiResponse<{ availability: any }>>(`/appointments/availability/${id}`, data)
+    return response.data.data!
+  },
+
+  deleteAvailability: async (id: string): Promise<void> => {
+    await api.delete(`/appointments/availability/${id}`)
+  },
+
+  // Waitlist
+  addToWaitlist: async (data: {
+    studentId: string
+    nurseId?: string
+    type: string
+    reason: string
+    priority?: string
+    preferredDate?: string
+    duration?: number
+    notes?: string
+  }): Promise<{ entry: any }> => {
+    const response = await api.post<ApiResponse<{ entry: any }>>('/appointments/waitlist', data)
+    return response.data.data!
+  },
+
+  getWaitlist: async (filters?: {
+    nurseId?: string
+    status?: string
+    priority?: string
+  }): Promise<{ waitlist: any[] }> => {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, value)
+      })
+    }
+    const response = await api.get<ApiResponse<{ waitlist: any[] }>>(`/appointments/waitlist?${params.toString()}`)
+    return response.data.data!
+  },
+
+  removeFromWaitlist: async (id: string, reason?: string): Promise<{ entry: any }> => {
+    const response = await api.delete<ApiResponse<{ entry: any }>>(`/appointments/waitlist/${id}`, {
+      data: { reason }
+    })
+    return response.data.data!
+  },
+
+  // Calendar Export
+  exportCalendar: async (nurseId: string, dateFrom?: string, dateTo?: string): Promise<Blob> => {
+    const params = new URLSearchParams()
+    if (dateFrom) params.append('dateFrom', dateFrom)
+    if (dateTo) params.append('dateTo', dateTo)
+    const response = await api.get(`/appointments/calendar/${nurseId}?${params.toString()}`, {
+      responseType: 'blob'
+    })
+    return response.data
   }
 }
 
