@@ -271,6 +271,13 @@ export class MedicationService {
         data: {
           ...data,
           administeredBy: `${nurse.firstName} ${nurse.lastName}`
+          studentMedicationId: data.studentMedicationId,
+          nurseId: data.nurseId,
+          dosageGiven: data.dosageGiven,
+          timeGiven: data.timeGiven,
+          administeredBy: nurse.firstName + ' ' + nurse.lastName,
+          notes: data.notes,
+          sideEffects: data.sideEffects
         },
         include: {
           nurse: {
