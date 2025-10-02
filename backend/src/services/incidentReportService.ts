@@ -514,7 +514,7 @@ export class IncidentReportService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause = {
+      const whereClause: any = {
         OR: [
           { description: { contains: query, mode: 'insensitive' } },
           { location: { contains: query, mode: 'insensitive' } },
