@@ -220,6 +220,104 @@ model MaintenanceLog {
   @@map("maintenance_logs")
 }
 
+model Vendor {
+  id                String    @id @default(cuid())
+  name              String
+  contactName       String?
+  email             String?
+  phone             String?
+  address           String?
+  website           String?
+  taxId             String?
+  paymentTerms      String?
+  notes             String?
+  isActive          Boolean   @default(true)
+  rating            Int?      // 1-5 rating
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  purchaseOrders    PurchaseOrder[]
+  
+  @@map("vendors")
+}
+
+model PurchaseOrder {
+  id              String              @id @default(cuid())
+  orderNumber     String              @unique
+  status          PurchaseOrderStatus @default(PENDING)
+  orderDate       DateTime            @default(now())
+  expectedDate    DateTime?
+  receivedDate    DateTime?
+  subtotal        Decimal             @default(0)
+  tax             Decimal             @default(0)
+  shipping        Decimal             @default(0)
+  total           Decimal             @default(0)
+  notes           String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Relations
+  vendor          Vendor              @relation(fields: [vendorId], references: [id])
+  vendorId        String
+  items           PurchaseOrderItem[]
+  
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  quantity        Int
+  unitCost        Decimal
+  totalCost       Decimal
+  receivedQty     Int           @default(0)
+  notes           String?
+  createdAt       DateTime      @default(now())
+
+  // Relations
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  purchaseOrderId String
+  inventoryItemId String
+  
+  @@map("purchase_order_items")
+}
+
+model BudgetCategory {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  fiscalYear      Int
+  allocatedAmount Decimal
+  spentAmount     Decimal   @default(0)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  transactions    BudgetTransaction[]
+  
+  @@map("budget_categories")
+}
+
+model BudgetTransaction {
+  id              String    @id @default(cuid())
+  amount          Decimal
+  description     String
+  transactionDate DateTime  @default(now())
+  referenceId     String?   // Link to purchase order or other transaction
+  referenceType   String?   // 'PURCHASE_ORDER', 'INVENTORY_TRANSACTION', etc.
+  notes           String?
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  category        BudgetCategory @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  
+  @@map("budget_transactions")
+}
+
 model MessageTemplate {
   id          String    @id @default(cuid())
   name        String
@@ -496,4 +594,13 @@ enum DeliveryStatus {
   DELIVERED
   FAILED
   BOUNCED
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  APPROVED
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
 }
