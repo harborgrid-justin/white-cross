@@ -755,6 +755,9 @@ enum PurchaseOrderStatus {
   ORDERED
   PARTIALLY_RECEIVED
   RECEIVED
+  CANCELLED
+}
+
 enum WaitlistPriority {
   LOW
   NORMAL
@@ -775,4 +778,240 @@ enum ReminderStatus {
   SENT
   FAILED
   CANCELLED
+}
+
+// Administration Panel Models
+
+model District {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  phone       String?
+  email       String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  schools     School[]
+  licenses    License[]
+  
+  @@map("districts")
+}
+
+model School {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  phone       String?
+  email       String?
+  principal   String?
+  studentCount Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  district    District @relation(fields: [districtId], references: [id])
+  districtId  String
+  
+  @@map("schools")
+}
+
+model SystemConfiguration {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  category    ConfigCategory
+  description String?
+  isPublic    Boolean  @default(false) // Whether non-admin users can view
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("system_configurations")
+}
+
+model BackupLog {
+  id          String       @id @default(cuid())
+  type        BackupType
+  status      BackupStatus
+  fileName    String?
+  fileSize    Int?         // Size in bytes
+  location    String?
+  startedAt   DateTime
+  completedAt DateTime?
+  error       String?
+  triggeredBy String?      // User ID who triggered manual backup
+  createdAt   DateTime     @default(now())
+  
+  @@map("backup_logs")
+}
+
+model PerformanceMetric {
+  id          String     @id @default(cuid())
+  metricType  MetricType
+  value       Float
+  unit        String?
+  context     Json?      // Additional context data
+  recordedAt  DateTime   @default(now())
+  
+  @@map("performance_metrics")
+  @@index([metricType, recordedAt])
+}
+
+model License {
+  id            String        @id @default(cuid())
+  licenseKey    String        @unique
+  type          LicenseType
+  status        LicenseStatus @default(ACTIVE)
+  maxUsers      Int?
+  maxSchools    Int?
+  features      String[]      // Array of enabled features
+  issuedTo      String?
+  issuedAt      DateTime      @default(now())
+  expiresAt     DateTime?
+  activatedAt   DateTime?
+  deactivatedAt DateTime?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  district      District? @relation(fields: [districtId], references: [id])
+  districtId    String?
+  
+  @@map("licenses")
+}
+
+model TrainingModule {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  content     String   // Can store markdown or HTML
+  duration    Int?     // Duration in minutes
+  category    TrainingCategory
+  isRequired  Boolean  @default(false)
+  order       Int      @default(0)
+  attachments String[] // URLs to training materials
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  completions TrainingCompletion[]
+  
+  @@map("training_modules")
+}
+
+model TrainingCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  score       Int?     // Score out of 100
+  completedAt DateTime @default(now())
+  expiresAt   DateTime? // For certifications that expire
+  certificateUrl String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  module      TrainingModule @relation(fields: [moduleId], references: [id])
+  moduleId    String
+  
+  @@unique([userId, moduleId])
+  @@map("training_completions")
+}
+
+model AuditLog {
+  id          String     @id @default(cuid())
+  userId      String?
+  action      AuditAction
+  entityType  String     // e.g., "User", "Student", "Medication"
+  entityId    String?
+  changes     Json?      // Store before/after values
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime   @default(now())
+  
+  @@map("audit_logs")
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+}
+
+// Administration Enums
+
+enum ConfigCategory {
+  GENERAL
+  SECURITY
+  NOTIFICATION
+  INTEGRATION
+  BACKUP
+  PERFORMANCE
+}
+
+enum BackupType {
+  AUTOMATIC
+  MANUAL
+  SCHEDULED
+}
+
+enum BackupStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum MetricType {
+  CPU_USAGE
+  MEMORY_USAGE
+  DISK_USAGE
+  API_RESPONSE_TIME
+  DATABASE_QUERY_TIME
+  ACTIVE_USERS
+  ERROR_RATE
+  REQUEST_COUNT
+}
+
+enum LicenseType {
+  TRIAL
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum LicenseStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  CANCELLED
+}
+
+enum TrainingCategory {
+  HIPAA_COMPLIANCE
+  MEDICATION_MANAGEMENT
+  EMERGENCY_PROCEDURES
+  SYSTEM_TRAINING
+  SAFETY_PROTOCOLS
+  DATA_SECURITY
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  BACKUP
+  RESTORE
 }
