@@ -21,6 +21,7 @@ export interface CreateMessageData {
     email?: string;
     phoneNumber?: string;
     pushToken?: string;
+    preferredLanguage?: string; // Language code for translation
   }>;
   channels: ('EMAIL' | 'SMS' | 'PUSH_NOTIFICATION' | 'VOICE')[];
   subject?: string;
@@ -31,6 +32,7 @@ export interface CreateMessageData {
   scheduledAt?: Date;
   attachments?: string[];
   senderId: string;
+  translateTo?: string[]; // Language codes for translation
 }
 
 export interface MessageDeliveryStatus {
@@ -59,6 +61,7 @@ export interface BroadcastMessageData {
   category: 'EMERGENCY' | 'HEALTH_UPDATE' | 'APPOINTMENT_REMINDER' | 'MEDICATION_REMINDER' | 'GENERAL' | 'INCIDENT_NOTIFICATION' | 'COMPLIANCE';
   senderId: string;
   scheduledAt?: Date;
+  translateTo?: string[]; // Language codes for translation
 }
 
 export interface MessageFilters {
@@ -346,7 +349,7 @@ export class CommunicationService {
               recipients.push({
                 type: 'EMERGENCY_CONTACT' as const,
                 id: contact.id,
-                email: contact.email,
+                email: contact.email || undefined,
                 phoneNumber: contact.phoneNumber
               });
             }
@@ -518,7 +521,7 @@ export class CommunicationService {
           try {
             const result = await this.sendViaChannel(delivery.channel as any, {
               to: delivery.contactInfo!,
-              subject: message.subject,
+              subject: message.subject || undefined,
               content: message.content,
               priority: message.priority as any
             });
@@ -639,18 +642,24 @@ export class CommunicationService {
   }) {
     try {
       // Build recipient list based on audience
-      let recipients = [];
+      const recipients: Array<{
+        type: 'STUDENT' | 'EMERGENCY_CONTACT' | 'PARENT' | 'NURSE' | 'ADMIN';
+        id: string;
+        email?: string;
+        phoneNumber?: string;
+        pushToken?: string;
+      }> = [];
 
       if (alert.audience === 'ALL_STAFF') {
         const staff = await prisma.user.findMany({
           where: { isActive: true },
           select: { id: true, email: true }
         });
-        recipients = staff.map((s: any) => ({
+        recipients.push(...staff.map((s: any) => ({
           type: 'NURSE' as const,
           id: s.id,
           email: s.email
-        }));
+        })));
       } else if (alert.audience === 'NURSES_ONLY') {
         const nurses = await prisma.user.findMany({
           where: { 
@@ -659,11 +668,11 @@ export class CommunicationService {
           },
           select: { id: true, email: true }
         });
-        recipients = nurses.map((n: any) => ({
+        recipients.push(...nurses.map((n: any) => ({
           type: 'NURSE' as const,
           id: n.id,
           email: n.email
-        }));
+        })));
       }
 
       // Send with highest priority
@@ -678,6 +687,95 @@ export class CommunicationService {
       });
     } catch (error) {
       logger.error('Error sending emergency alert:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Translate message content to target language
+   */
+  static async translateMessage(content: string, targetLanguage: string): Promise<string> {
+    try {
+      // Mock implementation - replace with actual translation service (Google Translate, AWS Translate, etc.)
+      logger.info(`Translating message to ${targetLanguage}: ${content.substring(0, 50)}...`);
+      
+      // In production, integrate with translation API like:
+      // - Google Cloud Translation API
+      // - AWS Translate
+      // - Microsoft Translator Text API
+      
+      return `[${targetLanguage.toUpperCase()}] ${content}`;
+    } catch (error) {
+      logger.error('Error translating message:', error);
+      // Return original content if translation fails
+      return content;
+    }
+  }
+
+  /**
+   * Update message template
+   */
+  static async updateMessageTemplate(id: string, data: Partial<CreateMessageTemplateData>) {
+    try {
+      const template = await prisma.messageTemplate.findUnique({
+        where: { id }
+      });
+
+      if (!template) {
+        throw new Error('Message template not found');
+      }
+
+      const updated = await prisma.messageTemplate.update({
+        where: { id },
+        data: {
+          name: data.name,
+          subject: data.subject,
+          content: data.content,
+          type: data.type,
+          category: data.category,
+          variables: data.variables,
+          isActive: data.isActive
+        },
+        include: {
+          createdBy: {
+            select: {
+              firstName: true,
+              lastName: true,
+              role: true
+            }
+          }
+        }
+      });
+
+      logger.info(`Message template updated: ${updated.name} (${updated.id})`);
+      return updated;
+    } catch (error) {
+      logger.error('Error updating message template:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete message template
+   */
+  static async deleteMessageTemplate(id: string) {
+    try {
+      const template = await prisma.messageTemplate.findUnique({
+        where: { id }
+      });
+
+      if (!template) {
+        throw new Error('Message template not found');
+      }
+
+      await prisma.messageTemplate.delete({
+        where: { id }
+      });
+
+      logger.info(`Message template deleted: ${template.name} (${id})`);
+      return { success: true };
+    } catch (error) {
+      logger.error('Error deleting message template:', error);
       throw error;
     }
   }

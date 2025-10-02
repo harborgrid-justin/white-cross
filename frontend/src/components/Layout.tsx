@@ -13,7 +13,8 @@ import {
   Menu, 
   X,
   LogOut,
-  Home
+  Home,
+  MessageSquare
 } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Health Records', href: '/health-records', icon: FileText },
   { name: 'Incident Reports', href: '/incident-reports', icon: AlertTriangle },
   { name: 'Emergency Contacts', href: '/emergency-contacts', icon: Phone },
+  { name: 'Communication', href: '/communication', icon: MessageSquare },
   { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Administration', href: '/admin', icon: Settings },
