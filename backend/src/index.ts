@@ -16,6 +16,9 @@ import emergencyContactRoutes from './routes/emergencyContacts';
 import appointmentRoutes from './routes/appointments';
 import incidentReportRoutes from './routes/incidentReports';
 import inventoryRoutes from './routes/inventory';
+import vendorRoutes from './routes/vendor';
+import purchaseOrderRoutes from './routes/purchaseOrder';
+import budgetRoutes from './routes/budget';
 import communicationRoutes from './routes/communication';
 import userRoutes from './routes/users';
 
@@ -75,6 +78,9 @@ app.use('/api/emergency-contacts', emergencyContactRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/incident-reports', incidentReportRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/budget', budgetRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/users', userRoutes);
 

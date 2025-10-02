@@ -231,12 +231,19 @@ export class InventoryService {
 
       const transaction = await prisma.inventoryTransaction.create({
         data: {
-          ...data,
-          quantity
+          inventoryItemId: data.inventoryItemId,
+          type: data.type,
+          quantity,
+          unitCost: data.unitCost,
+          reason: data.reason,
+          batchNumber: data.batchNumber,
+          expirationDate: data.expirationDate,
+          notes: data.notes,
+          performedById: data.performedBy
         },
         include: {
           inventoryItem: true,
-          performedByUser: {
+          performedBy: {
             select: {
               firstName: true,
               lastName: true
@@ -406,10 +413,19 @@ export class InventoryService {
       }
 
       const maintenanceLog = await prisma.maintenanceLog.create({
-        data,
+        data: {
+          inventoryItemId: data.inventoryItemId,
+          type: data.type,
+          description: data.description,
+          cost: data.cost,
+          nextMaintenanceDate: data.nextMaintenanceDate,
+          vendor: data.vendor,
+          notes: data.notes,
+          performedById: data.performedBy
+        },
         include: {
           inventoryItem: true,
-          performedByUser: {
+          performedBy: {
             select: {
               firstName: true,
               lastName: true
@@ -475,7 +491,7 @@ export class InventoryService {
           throw new Error(`Inventory item not found: ${item.inventoryItemId}`);
         }
 
-        const itemTotal = (inventoryItem.unitCost || 0) * item.quantity;
+        const itemTotal = (Number(inventoryItem.unitCost) || 0) * item.quantity;
         totalCost += itemTotal;
 
         orderItems.push({

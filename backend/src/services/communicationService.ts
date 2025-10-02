@@ -86,9 +86,18 @@ export class CommunicationService {
       }
 
       const template = await prisma.messageTemplate.create({
-        data,
+        data: {
+          name: data.name,
+          subject: data.subject,
+          content: data.content,
+          type: data.type,
+          category: data.category,
+          variables: data.variables || [],
+          isActive: data.isActive !== undefined ? data.isActive : true,
+          createdById: data.createdBy
+        },
         include: {
-          createdByUser: {
+          createdBy: {
             select: {
               firstName: true,
               lastName: true,
@@ -128,7 +137,7 @@ export class CommunicationService {
       const templates = await prisma.messageTemplate.findMany({
         where: whereClause,
         include: {
-          createdByUser: {
+          createdBy: {
             select: {
               firstName: true,
               lastName: true,
