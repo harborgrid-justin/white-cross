@@ -672,7 +672,7 @@ export class AppointmentService {
   ) {
     try {
       const appointments = [];
-      let currentDate = new Date(baseData.scheduledAt);
+      const currentDate = new Date(baseData.scheduledAt);
       
       while (currentDate <= recurrencePattern.endDate) {
         // Check if we should create appointment on this date
