@@ -269,8 +269,6 @@ export class MedicationService {
 
       const medicationLog = await prisma.medicationLog.create({
         data: {
-          ...data,
-          administeredBy: `${nurse.firstName} ${nurse.lastName}`
           studentMedicationId: data.studentMedicationId,
           nurseId: data.nurseId,
           dosageGiven: data.dosageGiven,
