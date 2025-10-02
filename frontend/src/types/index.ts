@@ -207,6 +207,144 @@ export interface FollowUpAction {
   notes?: string
 }
 
+// Inventory Management Types
+export interface InventoryItem {
+  id: string
+  name: string
+  category: string
+  description?: string
+  sku?: string
+  supplier?: string
+  unitCost?: number
+  reorderLevel: number
+  reorderQuantity: number
+  location?: string
+  notes?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  currentStock?: number
+  earliestExpiration?: string
+}
+
+export interface InventoryTransaction {
+  id: string
+  type: 'PURCHASE' | 'USAGE' | 'ADJUSTMENT' | 'TRANSFER' | 'DISPOSAL'
+  quantity: number
+  unitCost?: number
+  reason?: string
+  batchNumber?: string
+  expirationDate?: string
+  notes?: string
+  createdAt: string
+  inventoryItem: InventoryItem
+  performedBy: {
+    firstName: string
+    lastName: string
+  }
+}
+
+export interface MaintenanceLog {
+  id: string
+  type: 'ROUTINE' | 'REPAIR' | 'CALIBRATION' | 'INSPECTION' | 'CLEANING'
+  description: string
+  cost?: number
+  nextMaintenanceDate?: string
+  vendor?: string
+  notes?: string
+  createdAt: string
+  inventoryItem: InventoryItem
+  performedBy: {
+    firstName: string
+    lastName: string
+  }
+}
+
+export interface InventoryAlert {
+  id: string
+  type: 'LOW_STOCK' | 'EXPIRED' | 'NEAR_EXPIRY' | 'MAINTENANCE_DUE' | 'OUT_OF_STOCK'
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  message: string
+  itemId: string
+  itemName: string
+  daysUntilAction?: number
+}
+
+export interface Vendor {
+  id: string
+  name: string
+  contactName?: string
+  email?: string
+  phone?: string
+  address?: string
+  website?: string
+  taxId?: string
+  paymentTerms?: string
+  notes?: string
+  isActive: boolean
+  rating?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PurchaseOrder {
+  id: string
+  orderNumber: string
+  status: 'PENDING' | 'APPROVED' | 'ORDERED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
+  orderDate: string
+  expectedDate?: string
+  receivedDate?: string
+  subtotal: number
+  tax: number
+  shipping: number
+  total: number
+  notes?: string
+  approvedBy?: string
+  approvedAt?: string
+  createdAt: string
+  updatedAt: string
+  vendor: Vendor
+  items: PurchaseOrderItem[]
+}
+
+export interface PurchaseOrderItem {
+  id: string
+  quantity: number
+  unitCost: number
+  totalCost: number
+  receivedQty: number
+  notes?: string
+  inventoryItemId: string
+  inventoryItem?: InventoryItem
+}
+
+export interface BudgetCategory {
+  id: string
+  name: string
+  description?: string
+  fiscalYear: number
+  allocatedAmount: number
+  spentAmount: number
+  remainingAmount?: number
+  utilizationPercentage?: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  transactions?: BudgetTransaction[]
+}
+
+export interface BudgetTransaction {
+  id: string
+  amount: number
+  description: string
+  transactionDate: string
+  referenceId?: string
+  referenceType?: string
+  notes?: string
+  createdAt: string
+  category: BudgetCategory
+}
+
 export interface ApiResponse<T> {
   success: boolean
   data?: T
