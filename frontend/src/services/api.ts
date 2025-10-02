@@ -409,6 +409,9 @@ export const budgetApi = {
     if (categoryId) params.append('categoryId', categoryId)
     const response = await api.get(`/budget/trends?${params}`)
     return response.data.data
+  }
+}
+
 // Appointments API
 export const appointmentsApi = {
   getAll: async (filters?: {
