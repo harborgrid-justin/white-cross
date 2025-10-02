@@ -282,4 +282,81 @@ router.put('/student-medication/:id/deactivate', [
   }
 });
 
+// Get medication reminders for a date
+router.get('/reminders', auth, async (req: Request, res: Response) => {
+  try {
+    const date = req.query.date ? new Date(req.query.date as string) : new Date();
+    
+    const reminders = await MedicationService.getMedicationReminders(date);
+
+    res.json({
+      success: true,
+      data: { reminders }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Report adverse reaction
+router.post('/adverse-reaction', [
+  auth,
+  body('studentMedicationId').notEmpty(),
+  body('severity').isIn(['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING']),
+  body('reaction').notEmpty().trim(),
+  body('actionTaken').notEmpty().trim(),
+  body('reportedAt').isISO8601()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const reportedBy = (req as any).user.userId;
+
+    const report = await MedicationService.reportAdverseReaction({
+      ...req.body,
+      reportedBy,
+      reportedAt: new Date(req.body.reportedAt)
+    });
+
+    res.status(201).json({
+      success: true,
+      data: { report }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Get adverse reactions
+router.get('/adverse-reactions', auth, async (req: Request, res: Response) => {
+  try {
+    const medicationId = req.query.medicationId as string;
+    const studentId = req.query.studentId as string;
+
+    const reactions = await MedicationService.getAdverseReactions(medicationId, studentId);
+
+    res.json({
+      success: true,
+      data: { reactions }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;
