@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -22,6 +22,22 @@ export interface CreateAllergyData {
   treatment?: string;
   verified?: boolean;
   verifiedBy?: string;
+}
+
+export interface CreateChronicConditionData {
+  studentId: string;
+  condition: string;
+  diagnosedDate: Date;
+  status?: string;
+  severity?: string;
+  notes?: string;
+  carePlan?: string;
+  medications?: string[];
+  restrictions?: string[];
+  triggers?: string[];
+  diagnosedBy?: string;
+  lastReviewDate?: Date;
+  nextReviewDate?: Date;
 }
 
 export interface VitalSigns {
@@ -397,7 +413,7 @@ export class HealthRecordService {
           studentId,
           vital: {
             path: ['height'],
-            not: null
+            not: Prisma.JsonNull
           }
         },
         select: {
@@ -439,7 +455,7 @@ export class HealthRecordService {
         where: {
           studentId,
           vital: {
-            not: null
+            not: Prisma.JsonNull
           }
         },
         select: {
@@ -576,6 +592,238 @@ export class HealthRecordService {
       };
     } catch (error) {
       logger.error('Error searching health records:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add chronic condition to student
+   */
+  static async addChronicCondition(data: CreateChronicConditionData) {
+    try {
+      // Verify student exists
+      const student = await prisma.student.findUnique({
+        where: { id: data.studentId }
+      });
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      const chronicCondition = await prisma.chronicCondition.create({
+        data: {
+          ...data,
+          status: data.status || 'ACTIVE',
+          medications: data.medications || [],
+          restrictions: data.restrictions || [],
+          triggers: data.triggers || []
+        },
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentNumber: true
+            }
+          }
+        }
+      });
+
+      logger.info(`Chronic condition added: ${data.condition} for ${student.firstName} ${student.lastName}`);
+      return chronicCondition;
+    } catch (error) {
+      logger.error('Error adding chronic condition:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get student chronic conditions
+   */
+  static async getStudentChronicConditions(studentId: string) {
+    try {
+      const conditions = await prisma.chronicCondition.findMany({
+        where: { studentId },
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentNumber: true
+            }
+          }
+        },
+        orderBy: [
+          { status: 'asc' }, // Active first
+          { condition: 'asc' }
+        ]
+      });
+
+      return conditions;
+    } catch (error) {
+      logger.error('Error fetching student chronic conditions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update chronic condition
+   */
+  static async updateChronicCondition(id: string, data: Partial<CreateChronicConditionData>) {
+    try {
+      const existingCondition = await prisma.chronicCondition.findUnique({
+        where: { id },
+        include: { student: true }
+      });
+
+      if (!existingCondition) {
+        throw new Error('Chronic condition not found');
+      }
+
+      const condition = await prisma.chronicCondition.update({
+        where: { id },
+        data,
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentNumber: true
+            }
+          }
+        }
+      });
+
+      logger.info(`Chronic condition updated: ${condition.condition} for ${existingCondition.student.firstName} ${existingCondition.student.lastName}`);
+      return condition;
+    } catch (error) {
+      logger.error('Error updating chronic condition:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete chronic condition
+   */
+  static async deleteChronicCondition(id: string) {
+    try {
+      const condition = await prisma.chronicCondition.findUnique({
+        where: { id },
+        include: { student: true }
+      });
+
+      if (!condition) {
+        throw new Error('Chronic condition not found');
+      }
+
+      await prisma.chronicCondition.delete({
+        where: { id }
+      });
+
+      logger.info(`Chronic condition deleted: ${condition.condition} for ${condition.student.firstName} ${condition.student.lastName}`);
+      return { success: true };
+    } catch (error) {
+      logger.error('Error deleting chronic condition:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export health history for a student (JSON format)
+   */
+  static async exportHealthHistory(studentId: string) {
+    try {
+      const [student, healthRecords, allergies, chronicConditions, vaccinations, growthData] = await Promise.all([
+        prisma.student.findUnique({
+          where: { id: studentId },
+          select: {
+            id: true,
+            studentNumber: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            gender: true,
+            grade: true
+          }
+        }),
+        this.getStudentHealthRecords(studentId, 1, 1000),
+        this.getStudentAllergies(studentId),
+        this.getStudentChronicConditions(studentId),
+        this.getVaccinationRecords(studentId),
+        this.getGrowthChartData(studentId)
+      ]);
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        student,
+        healthRecords: healthRecords.records,
+        allergies,
+        chronicConditions,
+        vaccinations,
+        growthData
+      };
+
+      logger.info(`Health history exported for ${student.firstName} ${student.lastName}`);
+      return exportData;
+    } catch (error) {
+      logger.error('Error exporting health history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Import health records from JSON (basic import functionality)
+   */
+  static async importHealthRecords(studentId: string, importData: any) {
+    try {
+      // Verify student exists
+      const student = await prisma.student.findUnique({
+        where: { id: studentId }
+      });
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      const results = {
+        imported: 0,
+        skipped: 0,
+        errors: [] as string[]
+      };
+
+      // Import health records
+      if (importData.healthRecords && Array.isArray(importData.healthRecords)) {
+        for (const record of importData.healthRecords) {
+          try {
+            await this.createHealthRecord({
+              studentId,
+              type: record.type,
+              date: new Date(record.date),
+              description: record.description,
+              vital: record.vital,
+              provider: record.provider,
+              notes: record.notes,
+              attachments: record.attachments
+            });
+            results.imported++;
+          } catch (error) {
+            results.skipped++;
+            results.errors.push(`Record ${record.description}: ${(error as Error).message}`);
+          }
+        }
+      }
+
+      logger.info(`Health records imported for ${student.firstName} ${student.lastName}: ${results.imported} imported, ${results.skipped} skipped`);
+      return results;
+    } catch (error) {
+      logger.error('Error importing health records:', error);
       throw error;
     }
   }
