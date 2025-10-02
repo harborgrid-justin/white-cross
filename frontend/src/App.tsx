@@ -9,6 +9,7 @@ import Appointments from './pages/Appointments'
 import HealthRecords from './pages/HealthRecords'
 import IncidentReports from './pages/IncidentReports'
 import EmergencyContacts from './pages/EmergencyContacts'
+import Communication from './pages/Communication'
 import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
@@ -41,6 +42,7 @@ function AppRoutes() {
                 <Route path="/health-records/*" element={<HealthRecords />} />
                 <Route path="/incident-reports/*" element={<IncidentReports />} />
                 <Route path="/emergency-contacts/*" element={<EmergencyContacts />} />
+                <Route path="/communication/*" element={<Communication />} />
                 <Route path="/inventory/*" element={<Inventory />} />
                 <Route path="/reports/*" element={<Reports />} />
                 <Route path="/admin/*" element={<Settings />} />
