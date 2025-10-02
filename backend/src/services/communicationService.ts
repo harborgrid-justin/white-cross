@@ -349,7 +349,7 @@ export class CommunicationService {
               recipients.push({
                 type: 'EMERGENCY_CONTACT' as const,
                 id: contact.id,
-                email: contact.email,
+                email: contact.email || undefined,
                 phoneNumber: contact.phoneNumber
               });
             }
@@ -521,7 +521,7 @@ export class CommunicationService {
           try {
             const result = await this.sendViaChannel(delivery.channel as any, {
               to: delivery.contactInfo!,
-              subject: message.subject,
+              subject: message.subject || undefined,
               content: message.content,
               priority: message.priority as any
             });
@@ -642,18 +642,24 @@ export class CommunicationService {
   }) {
     try {
       // Build recipient list based on audience
-      let recipients = [];
+      const recipients: Array<{
+        type: 'STUDENT' | 'EMERGENCY_CONTACT' | 'PARENT' | 'NURSE' | 'ADMIN';
+        id: string;
+        email?: string;
+        phoneNumber?: string;
+        pushToken?: string;
+      }> = [];
 
       if (alert.audience === 'ALL_STAFF') {
         const staff = await prisma.user.findMany({
           where: { isActive: true },
           select: { id: true, email: true }
         });
-        recipients = staff.map((s: any) => ({
+        recipients.push(...staff.map((s: any) => ({
           type: 'NURSE' as const,
           id: s.id,
           email: s.email
-        }));
+        })));
       } else if (alert.audience === 'NURSES_ONLY') {
         const nurses = await prisma.user.findMany({
           where: { 
@@ -662,11 +668,11 @@ export class CommunicationService {
           },
           select: { id: true, email: true }
         });
-        recipients = nurses.map((n: any) => ({
+        recipients.push(...nurses.map((n: any) => ({
           type: 'NURSE' as const,
           id: n.id,
           email: n.email
-        }));
+        })));
       }
 
       // Send with highest priority
