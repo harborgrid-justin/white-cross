@@ -183,9 +183,17 @@ export class DocumentService {
    */
   static async updateDocument(id: string, data: UpdateDocumentData, updatedBy: string) {
     try {
+      const updateData: any = {};
+      if (data.title) updateData.title = data.title;
+      if (data.description) updateData.description = data.description;
+      if (data.status) updateData.status = data.status;
+      if (data.tags) updateData.tags = data.tags;
+      if (data.retentionDate) updateData.retentionDate = data.retentionDate;
+      if (data.accessLevel) updateData.accessLevel = data.accessLevel;
+
       const document = await prisma.document.update({
         where: { id },
-        data,
+        data: updateData,
         include: {
           signatures: true,
           versions: true,
@@ -405,10 +413,9 @@ export class DocumentService {
       }
 
       // Merge template data with provided data
-      const mergedTemplateData = {
-        ...template.templateData,
-        ...data.templateData,
-      };
+      const mergedTemplateData = data.templateData 
+        ? { ...(template.templateData as object || {}), ...(data.templateData as object) }
+        : template.templateData;
 
       const document = await prisma.document.create({
         data: {
@@ -423,7 +430,7 @@ export class DocumentService {
           studentId: data.studentId,
           tags: template.tags,
           isTemplate: false,
-          templateData: mergedTemplateData,
+          templateData: mergedTemplateData || undefined,
           status: 'DRAFT',
           version: 1,
           accessLevel: template.accessLevel,
