@@ -28,6 +28,8 @@ model User {
   maintenanceLogs      MaintenanceLog[]
   messageTemplates     MessageTemplate[] @relation("MessageTemplateCreator")
   messages             Message[] @relation("MessageSender")
+  availability         NurseAvailability[] @relation("NurseAvailability")
+  waitlistEntries      AppointmentWaitlist[] @relation("WaitlistNurse")
   
   @@map("users")
 }
@@ -56,6 +58,7 @@ model Student {
   appointments         Appointment[]
   incidentReports      IncidentReport[]
   allergies            Allergy[]
+  waitlistEntries      AppointmentWaitlist[]
   
   @@map("students")
 }
@@ -435,8 +438,69 @@ model Appointment {
   studentId   String
   nurse       User              @relation(fields: [nurseId], references: [id])
   nurseId     String
+  reminders   AppointmentReminder[]
   
   @@map("appointments")
+}
+
+model NurseAvailability {
+  id          String   @id @default(cuid())
+  dayOfWeek   Int      // 0=Sunday, 1=Monday, etc.
+  startTime   String   // Format: "HH:MM"
+  endTime     String   // Format: "HH:MM"
+  isRecurring Boolean  @default(true)
+  specificDate DateTime? // For non-recurring availability
+  isAvailable Boolean  @default(true)
+  reason      String?  // Reason for unavailability
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  nurse       User     @relation("NurseAvailability", fields: [nurseId], references: [id])
+  nurseId     String
+  
+  @@map("nurse_availability")
+}
+
+model AppointmentWaitlist {
+  id          String            @id @default(cuid())
+  type        AppointmentType
+  preferredDate DateTime?
+  duration    Int               @default(30)
+  priority    WaitlistPriority  @default(NORMAL)
+  reason      String
+  notes       String?
+  status      WaitlistStatus    @default(WAITING)
+  notifiedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  nurse       User?             @relation("WaitlistNurse", fields: [nurseId], references: [id])
+  nurseId     String?
+  
+  @@map("appointment_waitlist")
+}
+
+model AppointmentReminder {
+  id              String         @id @default(cuid())
+  type            MessageType
+  scheduledFor    DateTime
+  status          ReminderStatus @default(SCHEDULED)
+  sentAt          DateTime?
+  failureReason   String?
+  message         String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  appointment     Appointment    @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointmentId   String
+  
+  @@map("appointment_reminders")
 }
 
 model IncidentReport {
@@ -595,12 +659,30 @@ enum DeliveryStatus {
   FAILED
   BOUNCED
 }
-
 enum PurchaseOrderStatus {
   PENDING
   APPROVED
   ORDERED
   PARTIALLY_RECEIVED
   RECEIVED
+enum WaitlistPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum WaitlistStatus {
+  WAITING
+  NOTIFIED
+  SCHEDULED
+  EXPIRED
+  CANCELLED
+}
+
+enum ReminderStatus {
+  SCHEDULED
+  SENT
+  FAILED
   CANCELLED
 }
