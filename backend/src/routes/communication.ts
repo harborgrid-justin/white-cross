@@ -26,6 +26,58 @@ router.get('/templates', auth, async (req: Request, res: Response) => {
   }
 });
 
+// Update message template
+router.put('/templates/:id', [
+  auth,
+  body('name').optional().trim(),
+  body('content').optional().trim(),
+  body('type').optional().isIn(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE']),
+  body('category').optional().isIn(['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE']),
+  body('variables').optional().isArray(),
+  body('isActive').optional().isBoolean()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const template = await CommunicationService.updateMessageTemplate(id, req.body);
+
+    res.json({
+      success: true,
+      data: { template }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Delete message template
+router.delete('/templates/:id', auth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const result = await CommunicationService.deleteMessageTemplate(id);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 // Create message template
 router.post('/templates', [
   auth,
@@ -256,6 +308,36 @@ router.get('/statistics', auth, async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Translate message
+router.post('/translate', [
+  auth,
+  body('content').notEmpty().trim(),
+  body('targetLanguage').notEmpty().trim()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { content, targetLanguage } = req.body;
+    const translated = await CommunicationService.translateMessage(content, targetLanguage);
+
+    res.json({
+      success: true,
+      data: { translated }
     });
   } catch (error) {
     res.status(500).json({
