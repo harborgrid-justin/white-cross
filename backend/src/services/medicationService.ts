@@ -44,6 +44,26 @@ export interface CreateInventoryData {
   supplier?: string;
 }
 
+export interface CreateAdverseReactionData {
+  studentMedicationId: string;
+  reportedBy: string;
+  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
+  reaction: string;
+  actionTaken: string;
+  notes?: string;
+  reportedAt: Date;
+}
+
+export interface MedicationReminder {
+  id: string;
+  studentMedicationId: string;
+  studentName: string;
+  medicationName: string;
+  dosage: string;
+  scheduledTime: Date;
+  status: 'PENDING' | 'COMPLETED' | 'MISSED';
+}
+
 export class MedicationService {
   /**
    * Get all medications with pagination
@@ -249,6 +269,8 @@ export class MedicationService {
 
       const medicationLog = await prisma.medicationLog.create({
         data: {
+          ...data,
+          administeredBy: `${nurse.firstName} ${nurse.lastName}`
           studentMedicationId: data.studentMedicationId,
           nurseId: data.nurseId,
           dosageGiven: data.dosageGiven,
@@ -526,6 +548,280 @@ export class MedicationService {
       return studentMedication;
     } catch (error) {
       logger.error('Error deactivating student medication:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get medication reminders for today and upcoming doses
+   */
+  static async getMedicationReminders(date: Date = new Date()): Promise<MedicationReminder[]> {
+    try {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Get active student medications
+      const activeMedications = await prisma.studentMedication.findMany({
+        where: {
+          isActive: true,
+          startDate: { lte: endOfDay },
+          OR: [
+            { endDate: null },
+            { endDate: { gte: startOfDay } }
+          ]
+        },
+        include: {
+          medication: true,
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          },
+          logs: {
+            where: {
+              timeGiven: {
+                gte: startOfDay,
+                lte: endOfDay
+              }
+            }
+          }
+        }
+      });
+
+      // Parse frequency and generate reminders
+      const reminders: MedicationReminder[] = [];
+      
+      for (const med of activeMedications) {
+        // Parse frequency (e.g., "2x daily", "3 times daily", "every 8 hours")
+        const scheduledTimes = this.parseFrequencyToTimes(med.frequency);
+        
+        for (const time of scheduledTimes) {
+          const scheduledDateTime = new Date(date);
+          scheduledDateTime.setHours(time.hour, time.minute, 0, 0);
+          
+          // Check if already administered
+          const wasAdministered = med.logs.some(log => {
+            const logTime = new Date(log.timeGiven);
+            const timeDiff = Math.abs(logTime.getTime() - scheduledDateTime.getTime());
+            return timeDiff < 3600000; // Within 1 hour
+          });
+          
+          let status: 'PENDING' | 'COMPLETED' | 'MISSED' = 'PENDING';
+          if (wasAdministered) {
+            status = 'COMPLETED';
+          } else if (scheduledDateTime < new Date()) {
+            status = 'MISSED';
+          }
+          
+          reminders.push({
+            id: `${med.id}_${scheduledDateTime.toISOString()}`,
+            studentMedicationId: med.id,
+            studentName: `${med.student.firstName} ${med.student.lastName}`,
+            medicationName: med.medication.name,
+            dosage: med.dosage,
+            scheduledTime: scheduledDateTime,
+            status
+          });
+        }
+      }
+      
+      return reminders.sort((a, b) => 
+        a.scheduledTime.getTime() - b.scheduledTime.getTime()
+      );
+    } catch (error) {
+      logger.error('Error fetching medication reminders:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Parse medication frequency to scheduled times
+   */
+  private static parseFrequencyToTimes(frequency: string): Array<{ hour: number; minute: number }> {
+    const freq = frequency.toLowerCase();
+    
+    // Common medication schedules
+    if (freq.includes('once') || freq.includes('1x') || freq === 'daily') {
+      return [{ hour: 9, minute: 0 }]; // 9 AM
+    }
+    
+    if (freq.includes('twice') || freq.includes('2x') || freq.includes('bid')) {
+      return [
+        { hour: 9, minute: 0 },  // 9 AM
+        { hour: 21, minute: 0 }  // 9 PM
+      ];
+    }
+    
+    if (freq.includes('3') || freq.includes('three') || freq.includes('tid')) {
+      return [
+        { hour: 8, minute: 0 },  // 8 AM
+        { hour: 14, minute: 0 }, // 2 PM
+        { hour: 20, minute: 0 }  // 8 PM
+      ];
+    }
+    
+    if (freq.includes('4') || freq.includes('four') || freq.includes('qid')) {
+      return [
+        { hour: 8, minute: 0 },  // 8 AM
+        { hour: 12, minute: 0 }, // 12 PM
+        { hour: 16, minute: 0 }, // 4 PM
+        { hour: 20, minute: 0 }  // 8 PM
+      ];
+    }
+    
+    if (freq.includes('every 6 hours') || freq.includes('q6h')) {
+      return [
+        { hour: 6, minute: 0 },
+        { hour: 12, minute: 0 },
+        { hour: 18, minute: 0 },
+        { hour: 0, minute: 0 }
+      ];
+    }
+    
+    if (freq.includes('every 8 hours') || freq.includes('q8h')) {
+      return [
+        { hour: 8, minute: 0 },
+        { hour: 16, minute: 0 },
+        { hour: 0, minute: 0 }
+      ];
+    }
+    
+    // Default to once daily if can't parse
+    return [{ hour: 9, minute: 0 }];
+  }
+
+  /**
+   * Report adverse reaction to medication
+   */
+  static async reportAdverseReaction(data: CreateAdverseReactionData) {
+    try {
+      // Verify student medication exists
+      const studentMedication = await prisma.studentMedication.findUnique({
+        where: { id: data.studentMedicationId },
+        include: {
+          medication: true,
+          student: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      });
+
+      if (!studentMedication) {
+        throw new Error('Student medication not found');
+      }
+
+      // Create incident report for adverse reaction
+      const nurse = await prisma.user.findUnique({
+        where: { id: data.reportedBy }
+      });
+
+      if (!nurse) {
+        throw new Error('Reporter not found');
+      }
+
+      const incidentReport = await prisma.incidentReport.create({
+        data: {
+          type: 'ALLERGIC_REACTION',
+          severity: data.severity as any,
+          description: `Adverse reaction to ${studentMedication.medication.name}: ${data.reaction}`,
+          location: 'School Nurse Office',
+          witnesses: [],
+          actionsTaken: data.actionTaken,
+          parentNotified: data.severity === 'SEVERE' || data.severity === 'LIFE_THREATENING',
+          followUpRequired: data.severity !== 'MILD',
+          followUpNotes: data.notes || undefined,
+          attachments: [],
+          occurredAt: data.reportedAt,
+          studentId: studentMedication.studentId,
+          reportedById: data.reportedBy
+        },
+        include: {
+          student: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          },
+          reportedBy: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      });
+
+      logger.info(`Adverse reaction reported: ${studentMedication.medication.name} for ${studentMedication.student.firstName} ${studentMedication.student.lastName}`);
+      
+      return incidentReport;
+    } catch (error) {
+      logger.error('Error reporting adverse reaction:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get adverse reaction reports for a medication
+   */
+  static async getAdverseReactions(medicationId?: string, studentId?: string) {
+    try {
+      const whereClause: any = {
+        type: 'ALLERGIC_REACTION'
+      };
+
+      if (studentId) {
+        whereClause.studentId = studentId;
+      }
+
+      const reports = await prisma.incidentReport.findMany({
+        where: whereClause,
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              medications: medicationId ? {
+                where: {
+                  medicationId
+                },
+                include: {
+                  medication: true
+                }
+              } : undefined
+            }
+          },
+          reportedBy: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        orderBy: {
+          occurredAt: 'desc'
+        }
+      });
+
+      // Filter by medication if specified
+      if (medicationId) {
+        return reports.filter(report => 
+          report.student.medications && 
+          report.student.medications.length > 0
+        );
+      }
+
+      return reports;
+    } catch (error) {
+      logger.error('Error fetching adverse reactions:', error);
       throw error;
     }
   }

@@ -49,6 +49,48 @@ export interface Medication {
   manufacturer?: string
   ndc?: string
   isControlled: boolean
+  inventory?: MedicationInventory[]
+  _count?: {
+    studentMedications: number
+  }
+}
+
+export interface MedicationInventory {
+  id: string
+  batchNumber: string
+  expirationDate: string
+  quantity: number
+  reorderLevel: number
+  costPerUnit?: number
+  supplier?: string
+}
+
+export interface MedicationReminder {
+  id: string
+  studentMedicationId: string
+  studentName: string
+  medicationName: string
+  dosage: string
+  scheduledTime: string
+  status: 'PENDING' | 'COMPLETED' | 'MISSED'
+}
+
+export interface AdverseReaction {
+  id: string
+  type: string
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  description: string
+  actionsTaken: string
+  occurredAt: string
+  student: {
+    id: string
+    firstName: string
+    lastName: string
+  }
+  reportedBy: {
+    firstName: string
+    lastName: string
+  }
 }
 
 export interface StudentMedication {
@@ -117,10 +159,18 @@ export interface IncidentReport {
   witnesses: string[]
   actionsTaken: string
   parentNotified: boolean
+  parentNotificationMethod?: string
+  parentNotifiedAt?: string
+  parentNotifiedBy?: string
   followUpRequired: boolean
   followUpNotes?: string
   attachments: string[]
+  evidencePhotos: string[]
+  evidenceVideos: string[]
   occurredAt: string
+  insuranceClaimNumber?: string
+  insuranceClaimStatus?: 'NOT_FILED' | 'FILED' | 'PENDING' | 'APPROVED' | 'DENIED' | 'CLOSED'
+  legalComplianceStatus: 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW'
   student: {
     id: string
     firstName: string
@@ -130,6 +180,31 @@ export interface IncidentReport {
     firstName: string
     lastName: string
   }
+  witnessStatements?: WitnessStatement[]
+  followUpActions?: FollowUpAction[]
+}
+
+export interface WitnessStatement {
+  id: string
+  witnessName: string
+  witnessType: 'STUDENT' | 'STAFF' | 'PARENT' | 'OTHER'
+  witnessContact?: string
+  statement: string
+  verified: boolean
+  verifiedBy?: string
+  verifiedAt?: string
+}
+
+export interface FollowUpAction {
+  id: string
+  action: string
+  dueDate: string
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  assignedTo?: string
+  completedAt?: string
+  completedBy?: string
+  notes?: string
 }
 
 // Inventory Management Types

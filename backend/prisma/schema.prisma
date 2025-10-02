@@ -8,23 +8,24 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String
-  firstName   String
-  lastName    String
-  role        UserRole @default(NURSE)
-  isActive    Boolean  @default(true)
-  lastLogin   DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole  @default(NURSE)
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   // Relations
-  nurseManagedStudents Student[] @relation("NurseStudents")
-  incidentReports      IncidentReport[]
-  medicationLogs       MedicationLog[]
-  appointments         Appointment[]
+  nurseManagedStudents  Student[]              @relation("NurseStudents")
+  incidentReports       IncidentReport[]
+  medicationLogs        MedicationLog[]
+  appointments          Appointment[]
   inventoryTransactions InventoryTransaction[]
+
   maintenanceLogs      MaintenanceLog[]
   messageTemplates     MessageTemplate[] @relation("MessageTemplateCreator")
   messages             Message[] @relation("MessageSender")
@@ -35,19 +36,19 @@ model User {
 }
 
 model Student {
-  id                String    @id @default(cuid())
-  studentNumber     String    @unique
-  firstName         String
-  lastName          String
-  dateOfBirth       DateTime
-  grade             String
-  gender            Gender
-  photo             String?
-  medicalRecordNum  String?   @unique
-  isActive          Boolean   @default(true)
-  enrollmentDate    DateTime  @default(now())
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String   @id @default(cuid())
+  studentNumber    String   @unique
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime
+  grade            String
+  gender           Gender
+  photo            String?
+  medicalRecordNum String?  @unique
+  isActive         Boolean  @default(true)
+  enrollmentDate   DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relations
   nurse                User?           @relation("NurseStudents", fields: [nurseId], references: [id])
@@ -59,167 +60,167 @@ model Student {
   incidentReports      IncidentReport[]
   allergies            Allergy[]
   waitlistEntries      AppointmentWaitlist[]
-  
+
   @@map("students")
 }
 
 model EmergencyContact {
-  id           String            @id @default(cuid())
+  id           String          @id @default(cuid())
   firstName    String
   lastName     String
   relationship String
   phoneNumber  String
   email        String?
   address      String?
-  priority     ContactPriority   @default(PRIMARY)
-  isActive     Boolean           @default(true)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  priority     ContactPriority @default(PRIMARY)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   // Relations
-  student      Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId    String
-  
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
   @@map("emergency_contacts")
 }
 
 model Medication {
-  id              String    @id @default(cuid())
-  name            String
-  genericName     String?
-  dosageForm      String
-  strength        String
-  manufacturer    String?
-  ndc             String?   @unique
-  isControlled    Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  genericName  String?
+  dosageForm   String
+  strength     String
+  manufacturer String?
+  ndc          String?  @unique
+  isControlled Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   studentMedications StudentMedication[]
   inventory          MedicationInventory[]
-  
+
   @@map("medications")
 }
 
 model StudentMedication {
-  id              String    @id @default(cuid())
-  dosage          String
-  frequency       String
-  route           String
-  instructions    String?
-  startDate       DateTime
-  endDate         DateTime?
-  isActive        Boolean   @default(true)
-  prescribedBy    String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  dosage       String
+  frequency    String
+  route        String
+  instructions String?
+  startDate    DateTime
+  endDate      DateTime?
+  isActive     Boolean   @default(true)
+  prescribedBy String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
-  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId       String
-  medication      Medication      @relation(fields: [medicationId], references: [id])
-  medicationId    String
-  logs            MedicationLog[]
-  
+  student      Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  medication   Medication      @relation(fields: [medicationId], references: [id])
+  medicationId String
+  logs         MedicationLog[]
+
   @@map("student_medications")
 }
 
 model MedicationLog {
-  id                    String    @id @default(cuid())
-  dosageGiven           String
-  timeGiven             DateTime
-  administeredBy        String
-  notes                 String?
-  sideEffects           String?
-  createdAt             DateTime  @default(now())
+  id             String   @id @default(cuid())
+  dosageGiven    String
+  timeGiven      DateTime
+  administeredBy String
+  notes          String?
+  sideEffects    String?
+  createdAt      DateTime @default(now())
 
   // Relations
-  studentMedication     StudentMedication @relation(fields: [studentMedicationId], references: [id])
-  studentMedicationId   String
-  nurse                 User      @relation(fields: [nurseId], references: [id])
-  nurseId               String
-  
+  studentMedication   StudentMedication @relation(fields: [studentMedicationId], references: [id])
+  studentMedicationId String
+  nurse               User              @relation(fields: [nurseId], references: [id])
+  nurseId             String
+
   @@map("medication_logs")
 }
 
 model MedicationInventory {
-  id              String    @id @default(cuid())
-  batchNumber     String
-  expirationDate  DateTime
-  quantity        Int
-  reorderLevel    Int       @default(10)
-  costPerUnit     Decimal?
-  supplier        String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String   @id @default(cuid())
+  batchNumber    String
+  expirationDate DateTime
+  quantity       Int
+  reorderLevel   Int      @default(10)
+  costPerUnit    Decimal?
+  supplier       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  medication      Medication @relation(fields: [medicationId], references: [id])
-  medicationId    String
-  
+  medication   Medication @relation(fields: [medicationId], references: [id])
+  medicationId String
+
   @@map("medication_inventory")
 }
 
 model InventoryItem {
-  id              String    @id @default(cuid())
+  id              String   @id @default(cuid())
   name            String
   category        String
   description     String?
-  sku             String?   @unique
+  sku             String?  @unique
   supplier        String?
   unitCost        Decimal?
-  reorderLevel    Int       @default(10)
-  reorderQuantity Int       @default(50)
+  reorderLevel    Int      @default(10)
+  reorderQuantity Int      @default(50)
   location        String?
   notes           String?
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   transactions    InventoryTransaction[]
   maintenanceLogs MaintenanceLog[]
-  
+
   @@map("inventory_items")
 }
 
 model InventoryTransaction {
-  id              String    @id @default(cuid())
-  type            InventoryTransactionType
-  quantity        Int
-  unitCost        Decimal?
-  reason          String?
-  batchNumber     String?
-  expirationDate  DateTime?
-  notes           String?
-  createdAt       DateTime  @default(now())
+  id             String                   @id @default(cuid())
+  type           InventoryTransactionType
+  quantity       Int
+  unitCost       Decimal?
+  reason         String?
+  batchNumber    String?
+  expirationDate DateTime?
+  notes          String?
+  createdAt      DateTime                 @default(now())
 
   // Relations
   inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
   inventoryItemId String
-  performedBy     User      @relation(fields: [performedById], references: [id])
+  performedBy     User          @relation(fields: [performedById], references: [id])
   performedById   String
-  
+
   @@map("inventory_transactions")
 }
 
 model MaintenanceLog {
-  id                  String            @id @default(cuid())
+  id                  String          @id @default(cuid())
   type                MaintenanceType
   description         String
   cost                Decimal?
   nextMaintenanceDate DateTime?
   vendor              String?
   notes               String?
-  createdAt           DateTime          @default(now())
+  createdAt           DateTime        @default(now())
 
   // Relations
-  inventoryItem       InventoryItem     @relation(fields: [inventoryItemId], references: [id])
-  inventoryItemId     String
-  performedBy         User              @relation(fields: [performedById], references: [id])
-  performedById       String
-  
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  inventoryItemId String
+  performedBy     User          @relation(fields: [performedById], references: [id])
+  performedById   String
+
   @@map("maintenance_logs")
 }
 
@@ -322,65 +323,65 @@ model BudgetTransaction {
 }
 
 model MessageTemplate {
-  id          String    @id @default(cuid())
-  name        String
-  subject     String?
-  content     String
-  type        MessageType
-  category    MessageCategory
-  variables   String[]
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String          @id @default(cuid())
+  name      String
+  subject   String?
+  content   String
+  type      MessageType
+  category  MessageCategory
+  variables String[]
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   // Relations
   createdBy   User      @relation("MessageTemplateCreator", fields: [createdById], references: [id])
   createdById String
   messages    Message[]
-  
+
   @@map("message_templates")
 }
 
 model Message {
-  id             String    @id @default(cuid())
+  id             String          @id @default(cuid())
   subject        String?
   content        String
   priority       MessagePriority
   category       MessageCategory
-  recipientCount Int       @default(0)
+  recipientCount Int             @default(0)
   scheduledAt    DateTime?
   attachments    String[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   // Relations
-  sender         User              @relation("MessageSender", fields: [senderId], references: [id])
-  senderId       String
-  template       MessageTemplate?  @relation(fields: [templateId], references: [id])
-  templateId     String?
-  deliveries     MessageDelivery[]
-  
+  sender     User              @relation("MessageSender", fields: [senderId], references: [id])
+  senderId   String
+  template   MessageTemplate?  @relation(fields: [templateId], references: [id])
+  templateId String?
+  deliveries MessageDelivery[]
+
   @@map("messages")
 }
 
 model MessageDelivery {
-  id              String    @id @default(cuid())
-  recipientType   RecipientType
-  recipientId     String
-  channel         MessageType
-  status          DeliveryStatus
-  contactInfo     String?
-  sentAt          DateTime?
-  deliveredAt     DateTime?
-  failureReason   String?
-  externalId      String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id            String         @id @default(cuid())
+  recipientType RecipientType
+  recipientId   String
+  channel       MessageType
+  status        DeliveryStatus
+  contactInfo   String?
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  failureReason String?
+  externalId    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   // Relations
-  message         Message   @relation(fields: [messageId], references: [id])
-  messageId       String
-  
+  message   Message @relation(fields: [messageId], references: [id])
+  messageId String
+
   @@map("message_deliveries")
 }
 
@@ -389,36 +390,36 @@ model HealthRecord {
   type        HealthRecordType
   date        DateTime
   description String
-  vital       Json?            // Store vitals as JSON
+  vital       Json? // Store vitals as JSON
   provider    String?
   notes       String?
-  attachments String[]         // Array of file URLs
+  attachments String[] // Array of file URLs
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
   // Relations
-  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId   String
-  
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
   @@map("health_records")
 }
 
 model Allergy {
-  id          String        @id @default(cuid())
-  allergen    String
-  severity    AllergySeverity
-  reaction    String?
-  treatment   String?
-  verified    Boolean       @default(false)
-  verifiedBy  String?
-  verifiedAt  DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id         String          @id @default(cuid())
+  allergen   String
+  severity   AllergySeverity
+  reaction   String?
+  treatment  String?
+  verified   Boolean         @default(false)
+  verifiedBy String?
+  verifiedAt DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
   // Relations
-  student     Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId   String
-  
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
   @@map("allergies")
 }
 
@@ -434,12 +435,13 @@ model Appointment {
   updatedAt   DateTime          @updatedAt
 
   // Relations
+
   student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId   String
   nurse       User              @relation(fields: [nurseId], references: [id])
   nurseId     String
   reminders   AppointmentReminder[]
-  
+ 
   @@map("appointments")
 }
 
@@ -504,28 +506,77 @@ model AppointmentReminder {
 }
 
 model IncidentReport {
-  id              String            @id @default(cuid())
-  type            IncidentType
-  severity        IncidentSeverity
-  description     String
-  location        String
-  witnesses       String[]
-  actionsTaken    String
-  parentNotified  Boolean           @default(false)
-  followUpRequired Boolean          @default(false)
-  followUpNotes   String?
-  attachments     String[]          // Array of file URLs
-  occurredAt      DateTime
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                       String                @id @default(cuid())
+  type                     IncidentType
+  severity                 IncidentSeverity
+  description              String
+  location                 String
+  witnesses                String[]
+  actionsTaken             String
+  parentNotified           Boolean               @default(false)
+  parentNotificationMethod String?
+  parentNotifiedAt         DateTime?
+  parentNotifiedBy         String?
+  followUpRequired         Boolean               @default(false)
+  followUpNotes            String?
+  attachments              String[] // Array of file URLs
+  evidencePhotos           String[] // Photo evidence URLs
+  evidenceVideos           String[] // Video evidence URLs
+  occurredAt               DateTime
+  insuranceClaimNumber     String?
+  insuranceClaimStatus     InsuranceClaimStatus?
+  legalComplianceStatus    ComplianceStatus      @default(PENDING)
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
 
   // Relations
-  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId       String
-  reportedBy      User              @relation(fields: [reportedById], references: [id])
-  reportedById    String
-  
+  student           Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId         String
+  reportedBy        User               @relation(fields: [reportedById], references: [id])
+  reportedById      String
+  witnessStatements WitnessStatement[]
+  followUpActions   FollowUpAction[]
+
   @@map("incident_reports")
+}
+
+model WitnessStatement {
+  id             String      @id @default(cuid())
+  witnessName    String
+  witnessType    WitnessType
+  witnessContact String?
+  statement      String
+  verified       Boolean     @default(false)
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  incidentReport   IncidentReport @relation(fields: [incidentReportId], references: [id], onDelete: Cascade)
+  incidentReportId String
+
+  @@map("witness_statements")
+}
+
+model FollowUpAction {
+  id          String         @id @default(cuid())
+  action      String
+  dueDate     DateTime
+  priority    ActionPriority @default(MEDIUM)
+  status      ActionStatus   @default(PENDING)
+  assignedTo  String?
+  completedAt DateTime?
+  completedBy String?
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  incidentReport   IncidentReport @relation(fields: [incidentReportId], references: [id], onDelete: Cascade)
+  incidentReportId String
+
+  @@map("follow_up_actions")
 }
 
 // Enums
@@ -659,6 +710,45 @@ enum DeliveryStatus {
   FAILED
   BOUNCED
 }
+
+enum WitnessType {
+  STUDENT
+  STAFF
+  PARENT
+  OTHER
+}
+
+enum InsuranceClaimStatus {
+  NOT_FILED
+  FILED
+  PENDING
+  APPROVED
+  DENIED
+  CLOSED
+}
+
+enum ComplianceStatus {
+  PENDING
+  COMPLIANT
+  NON_COMPLIANT
+  UNDER_REVIEW
+}
+
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ActionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+
 enum PurchaseOrderStatus {
   PENDING
   APPROVED
