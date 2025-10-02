@@ -112,7 +112,7 @@ export class PurchaseOrderService {
 
       // Enrich items with inventory item details
       const enrichedItems = await Promise.all(
-        order.items.map(async (item) => {
+        order.items.map(async (item: any) => {
           const inventoryItem = await prisma.inventoryItem.findUnique({
             where: { id: item.inventoryItemId }
           });
@@ -277,7 +277,7 @@ export class PurchaseOrderService {
 
       // Update received quantities and create inventory transactions
       for (const receivedItem of data.items) {
-        const poItem = order.items.find(item => item.id === receivedItem.purchaseOrderItemId);
+        const poItem = order.items.find((item: any) => item.id === receivedItem.purchaseOrderItemId);
         
         if (!poItem) {
           throw new Error(`Purchase order item not found: ${receivedItem.purchaseOrderItemId}`);
@@ -312,8 +312,8 @@ export class PurchaseOrderService {
         include: { items: true }
       });
 
-      const allReceived = updatedOrder!.items.every(item => item.receivedQty >= item.quantity);
-      const partiallyReceived = updatedOrder!.items.some(item => item.receivedQty > 0);
+      const allReceived = updatedOrder!.items.every((item: any) => item.receivedQty >= item.quantity);
+      const partiallyReceived = updatedOrder!.items.some((item: any) => item.receivedQty > 0);
 
       const newStatus = allReceived ? 'RECEIVED' : partiallyReceived ? 'PARTIALLY_RECEIVED' : order.status;
 

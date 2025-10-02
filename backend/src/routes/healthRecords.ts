@@ -303,4 +303,166 @@ router.get('/search', auth, async (req: Request, res: Response) => {
   }
 });
 
+// Get student chronic conditions
+router.get('/chronic-conditions/:studentId', auth, async (req: Request, res: Response) => {
+  try {
+    const { studentId } = req.params;
+    const conditions = await HealthRecordService.getStudentChronicConditions(studentId);
+
+    res.json({
+      success: true,
+      data: { conditions }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Add chronic condition to student
+router.post('/chronic-conditions', [
+  auth,
+  body('studentId').notEmpty(),
+  body('condition').notEmpty().trim(),
+  body('diagnosedDate').isISO8601(),
+  body('status').optional().trim(),
+  body('severity').optional().trim()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const condition = await HealthRecordService.addChronicCondition({
+      ...req.body,
+      diagnosedDate: new Date(req.body.diagnosedDate),
+      lastReviewDate: req.body.lastReviewDate ? new Date(req.body.lastReviewDate) : undefined,
+      nextReviewDate: req.body.nextReviewDate ? new Date(req.body.nextReviewDate) : undefined
+    });
+
+    res.status(201).json({
+      success: true,
+      data: { condition }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Update chronic condition
+router.put('/chronic-conditions/:id', [
+  auth,
+  body('condition').optional().trim(),
+  body('diagnosedDate').optional().isISO8601(),
+  body('status').optional().trim(),
+  body('severity').optional().trim()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const updateData: any = { ...req.body };
+    
+    if (updateData.diagnosedDate) {
+      updateData.diagnosedDate = new Date(updateData.diagnosedDate);
+    }
+    if (updateData.lastReviewDate) {
+      updateData.lastReviewDate = new Date(updateData.lastReviewDate);
+    }
+    if (updateData.nextReviewDate) {
+      updateData.nextReviewDate = new Date(updateData.nextReviewDate);
+    }
+
+    const condition = await HealthRecordService.updateChronicCondition(id, updateData);
+
+    res.json({
+      success: true,
+      data: { condition }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Delete chronic condition
+router.delete('/chronic-conditions/:id', auth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await HealthRecordService.deleteChronicCondition(id);
+
+    res.json({
+      success: true,
+      message: 'Chronic condition deleted successfully'
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Export health history
+router.get('/export/:studentId', auth, async (req: Request, res: Response) => {
+  try {
+    const { studentId } = req.params;
+    const exportData = await HealthRecordService.exportHealthHistory(studentId);
+
+    res.json({
+      success: true,
+      data: exportData
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Import health records
+router.post('/import/:studentId', auth, async (req: Request, res: Response) => {
+  try {
+    const { studentId } = req.params;
+    const importData = req.body;
+
+    if (!importData || typeof importData !== 'object') {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Invalid import data' }
+      });
+    }
+
+    const results = await HealthRecordService.importHealthRecords(studentId, importData);
+
+    res.json({
+      success: true,
+      data: results
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;
