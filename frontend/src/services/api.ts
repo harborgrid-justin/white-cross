@@ -594,4 +594,197 @@ export const appointmentsApi = {
   }
 }
 
+// Administration API
+export const administrationApi = {
+  // Districts
+  getDistricts: async (page?: number, limit?: number): Promise<any> => {
+    const params = new URLSearchParams()
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    const response = await api.get(`/admin/districts?${params}`)
+    return response.data.data
+  },
+
+  getDistrictById: async (id: string): Promise<any> => {
+    const response = await api.get(`/admin/districts/${id}`)
+    return response.data.data
+  },
+
+  createDistrict: async (data: any): Promise<any> => {
+    const response = await api.post('/admin/districts', data)
+    return response.data.data
+  },
+
+  updateDistrict: async (id: string, data: any): Promise<any> => {
+    const response = await api.put(`/admin/districts/${id}`, data)
+    return response.data.data
+  },
+
+  deleteDistrict: async (id: string): Promise<any> => {
+    const response = await api.delete(`/admin/districts/${id}`)
+    return response.data.data
+  },
+
+  // Schools
+  getSchools: async (page?: number, limit?: number, districtId?: string): Promise<any> => {
+    const params = new URLSearchParams()
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    if (districtId) params.append('districtId', districtId)
+    const response = await api.get(`/admin/schools?${params}`)
+    return response.data.data
+  },
+
+  getSchoolById: async (id: string): Promise<any> => {
+    const response = await api.get(`/admin/schools/${id}`)
+    return response.data.data
+  },
+
+  createSchool: async (data: any): Promise<any> => {
+    const response = await api.post('/admin/schools', data)
+    return response.data.data
+  },
+
+  updateSchool: async (id: string, data: any): Promise<any> => {
+    const response = await api.put(`/admin/schools/${id}`, data)
+    return response.data.data
+  },
+
+  deleteSchool: async (id: string): Promise<any> => {
+    const response = await api.delete(`/admin/schools/${id}`)
+    return response.data.data
+  },
+
+  // System Configuration
+  getAllConfigurations: async (category?: string): Promise<any> => {
+    const params = category ? `?category=${category}` : ''
+    const response = await api.get(`/admin/config${params}`)
+    return response.data.data
+  },
+
+  getConfiguration: async (key: string): Promise<any> => {
+    const response = await api.get(`/admin/config/${key}`)
+    return response.data.data
+  },
+
+  setConfiguration: async (data: any): Promise<any> => {
+    const response = await api.post('/admin/config', data)
+    return response.data.data
+  },
+
+  deleteConfiguration: async (key: string): Promise<any> => {
+    const response = await api.delete(`/admin/config/${key}`)
+    return response.data.data
+  },
+
+  // Backups
+  createBackup: async (): Promise<any> => {
+    const response = await api.post('/admin/backups', {})
+    return response.data.data
+  },
+
+  getBackupLogs: async (page?: number, limit?: number): Promise<any> => {
+    const params = new URLSearchParams()
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    const response = await api.get(`/admin/backups?${params}`)
+    return response.data.data
+  },
+
+  // Performance Monitoring
+  getSystemHealth: async (): Promise<any> => {
+    const response = await api.get('/admin/health')
+    return response.data.data
+  },
+
+  getMetrics: async (metricType?: string, startDate?: string, endDate?: string): Promise<any> => {
+    const params = new URLSearchParams()
+    if (metricType) params.append('metricType', metricType)
+    if (startDate) params.append('startDate', startDate)
+    if (endDate) params.append('endDate', endDate)
+    const response = await api.get(`/admin/metrics?${params}`)
+    return response.data.data
+  },
+
+  // Licenses
+  getLicenses: async (page?: number, limit?: number): Promise<any> => {
+    const params = new URLSearchParams()
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    const response = await api.get(`/admin/licenses?${params}`)
+    return response.data.data
+  },
+
+  getLicenseById: async (id: string): Promise<any> => {
+    const response = await api.get(`/admin/licenses/${id}`)
+    return response.data.data
+  },
+
+  createLicense: async (data: any): Promise<any> => {
+    const response = await api.post('/admin/licenses', data)
+    return response.data.data
+  },
+
+  updateLicense: async (id: string, data: any): Promise<any> => {
+    const response = await api.put(`/admin/licenses/${id}`, data)
+    return response.data.data
+  },
+
+  deactivateLicense: async (id: string): Promise<any> => {
+    const response = await api.post(`/admin/licenses/${id}/deactivate`, {})
+    return response.data.data
+  },
+
+  // Training Modules
+  getTrainingModules: async (category?: string): Promise<any> => {
+    const params = category ? `?category=${category}` : ''
+    const response = await api.get(`/admin/training${params}`)
+    return response.data.data
+  },
+
+  getTrainingModuleById: async (id: string): Promise<any> => {
+    const response = await api.get(`/admin/training/${id}`)
+    return response.data.data
+  },
+
+  createTrainingModule: async (data: any): Promise<any> => {
+    const response = await api.post('/admin/training', data)
+    return response.data.data
+  },
+
+  updateTrainingModule: async (id: string, data: any): Promise<any> => {
+    const response = await api.put(`/admin/training/${id}`, data)
+    return response.data.data
+  },
+
+  deleteTrainingModule: async (id: string): Promise<any> => {
+    const response = await api.delete(`/admin/training/${id}`)
+    return response.data.data
+  },
+
+  completeTraining: async (id: string, score?: number): Promise<any> => {
+    const response = await api.post(`/admin/training/${id}/complete`, { score })
+    return response.data.data
+  },
+
+  getUserTrainingProgress: async (userId: string): Promise<any> => {
+    const response = await api.get(`/admin/training-progress/${userId}`)
+    return response.data.data
+  },
+
+  // Audit Logs
+  getAuditLogs: async (page?: number, limit?: number, filters?: any): Promise<any> => {
+    const params = new URLSearchParams()
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        if (filters[key]) params.append(key, filters[key])
+      })
+    }
+    const response = await api.get(`/admin/audit-logs?${params}`)
+    return response.data.data
+  }
+}
+
 export default api

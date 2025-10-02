@@ -269,11 +269,12 @@ export class MedicationService {
 
       const medicationLog = await prisma.medicationLog.create({
         data: {
+          ...data,
+          administeredBy: `${nurse.firstName} ${nurse.lastName}`,
           studentMedicationId: data.studentMedicationId,
           nurseId: data.nurseId,
           dosageGiven: data.dosageGiven,
           timeGiven: data.timeGiven,
-          administeredBy: `${nurse.firstName} ${nurse.lastName}`,
           notes: data.notes,
           sideEffects: data.sideEffects
         },
@@ -603,7 +604,7 @@ export class MedicationService {
           scheduledDateTime.setHours(time.hour, time.minute, 0, 0);
           
           // Check if already administered
-          const wasAdministered = med.logs.some(log => {
+          const wasAdministered = med.logs.some((log: any) => {
             const logTime = new Date(log.timeGiven);
             const timeDiff = Math.abs(logTime.getTime() - scheduledDateTime.getTime());
             return timeDiff < 3600000; // Within 1 hour
@@ -811,7 +812,7 @@ export class MedicationService {
 
       // Filter by medication if specified
       if (medicationId) {
-        return reports.filter(report => 
+        return reports.filter((report: any) => 
           report.student.medications && 
           report.student.medications.length > 0
         );
