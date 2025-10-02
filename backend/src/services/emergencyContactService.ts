@@ -99,7 +99,7 @@ export class EmergencyContactService {
       }
 
       // Validate phone number format (basic validation)
-      const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+      const phoneRegex = /^\+?[\d\s\-()]+$/;
       if (!phoneRegex.test(data.phoneNumber)) {
         throw new Error('Invalid phone number format');
       }
@@ -150,7 +150,7 @@ export class EmergencyContactService {
 
       // Validate phone number format if being updated
       if (data.phoneNumber) {
-        const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+        const phoneRegex = /^\+?[\d\s\-()]+$/;
         if (!phoneRegex.test(data.phoneNumber)) {
           throw new Error('Invalid phone number format');
         }
@@ -500,7 +500,7 @@ export class EmergencyContactService {
     };
   }
 
-  private static async sendEmail(email: string, subject: string, message: string, attachments?: string[]) {
+  private static async sendEmail(email: string, subject: string, _message: string, _attachments?: string[]) {
     // Mock implementation - replace with actual email service
     logger.info(`Email would be sent to ${email}: ${subject}`);
     return {
