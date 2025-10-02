@@ -1110,3 +1110,437 @@ enum IntegrationStatus {
   TESTING
   SYNCING
 }
+
+// Document Management Models
+
+model Document {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?
+  category        DocumentCategory
+  fileType        String           // e.g., "pdf", "docx", "jpg"
+  fileName        String
+  fileSize        Int              // Size in bytes
+  fileUrl         String
+  version         Int              @default(1)
+  status          DocumentStatus   @default(DRAFT)
+  tags            String[]
+  isTemplate      Boolean          @default(false)
+  templateData    Json?            // For document templates
+  parentId        String?          // For version control
+  retentionDate   DateTime?        // When document should be deleted per policy
+  accessLevel     DocumentAccessLevel @default(STAFF_ONLY)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  parent          Document?        @relation("DocumentVersions", fields: [parentId], references: [id])
+  versions        Document[]       @relation("DocumentVersions")
+  uploadedBy      String
+  studentId       String?
+  signatures      DocumentSignature[]
+  auditTrail      DocumentAuditTrail[]
+  
+  @@map("documents")
+  @@index([category, status])
+  @@index([studentId])
+  @@index([createdAt])
+}
+
+model DocumentSignature {
+  id            String   @id @default(cuid())
+  signedBy      String   // User ID or name
+  signedByRole  String
+  signatureData String?  // Digital signature data
+  signedAt      DateTime @default(now())
+  ipAddress     String?
+  
+  // Relations
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId    String
+  
+  @@map("document_signatures")
+}
+
+model DocumentAuditTrail {
+  id          String   @id @default(cuid())
+  action      DocumentAction
+  performedBy String   // User ID
+  changes     Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  String
+  
+  @@map("document_audit_trail")
+  @@index([documentId, createdAt])
+}
+
+// Compliance & Regulatory Models
+
+model ComplianceReport {
+  id              String            @id @default(cuid())
+  reportType      ComplianceReportType
+  title           String
+  description     String?
+  status          ComplianceStatus
+  period          String            // e.g., "2024-Q1", "2024-01"
+  findings        Json?             // Detailed findings
+  recommendations Json?
+  dueDate         DateTime?
+  submittedAt     DateTime?
+  submittedBy     String?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  createdById     String
+  items           ComplianceChecklistItem[]
+  
+  @@map("compliance_reports")
+  @@index([reportType, status])
+  @@index([period])
+}
+
+model ComplianceChecklistItem {
+  id            String            @id @default(cuid())
+  requirement   String
+  description   String?
+  category      ComplianceCategory
+  status        ChecklistItemStatus @default(PENDING)
+  evidence      String?           // URL or description of evidence
+  notes         String?
+  dueDate       DateTime?
+  completedAt   DateTime?
+  completedBy   String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  
+  // Relations
+  report        ComplianceReport? @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId      String?
+  
+  @@map("compliance_checklist_items")
+}
+
+model ConsentForm {
+  id              String        @id @default(cuid())
+  type            ConsentType
+  title           String
+  description     String
+  content         String        // Form content/terms
+  version         String        @default("1.0")
+  isActive        Boolean       @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  signatures      ConsentSignature[]
+  
+  @@map("consent_forms")
+}
+
+model ConsentSignature {
+  id              String      @id @default(cuid())
+  studentId       String
+  signedBy        String      // Parent/guardian name
+  relationship    String
+  signatureData   String?     // Digital signature
+  signedAt        DateTime    @default(now())
+  ipAddress       String?
+  withdrawnAt     DateTime?
+  withdrawnBy     String?
+  
+  // Relations
+  consentForm     ConsentForm @relation(fields: [consentFormId], references: [id])
+  consentFormId   String
+  
+  @@map("consent_signatures")
+  @@unique([consentFormId, studentId])
+}
+
+model PolicyDocument {
+  id              String        @id @default(cuid())
+  title           String
+  category        PolicyCategory
+  content         String
+  version         String        @default("1.0")
+  effectiveDate   DateTime
+  reviewDate      DateTime?
+  status          PolicyStatus  @default(DRAFT)
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  acknowledgments PolicyAcknowledgment[]
+  
+  @@map("policy_documents")
+}
+
+model PolicyAcknowledgment {
+  id              String          @id @default(cuid())
+  userId          String
+  acknowledgedAt  DateTime        @default(now())
+  ipAddress       String?
+  
+  // Relations
+  policy          PolicyDocument  @relation(fields: [policyId], references: [id])
+  policyId        String
+  
+  @@map("policy_acknowledgments")
+  @@unique([policyId, userId])
+}
+
+// Access Control & Security Models
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) // System roles cannot be deleted
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  permissions RolePermission[]
+  userRoles   UserRoleAssignment[]
+  
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  resource    String   // e.g., "students", "medications", "reports"
+  action      String   // e.g., "read", "create", "update", "delete"
+  description String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  rolePermissions RolePermission[]
+  
+  @@map("permissions")
+  @@unique([resource, action])
+}
+
+model RolePermission {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Relations
+  role      Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  
+  @@map("role_permissions")
+  @@unique([roleId, permissionId])
+}
+
+model UserRoleAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String
+  
+  @@map("user_role_assignments")
+  @@unique([userId, roleId])
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  userId      String
+  token       String    @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  lastActivity DateTime @default(now())
+  createdAt   DateTime  @default(now())
+  
+  @@map("sessions")
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model LoginAttempt {
+  id          String    @id @default(cuid())
+  email       String
+  success     Boolean
+  ipAddress   String?
+  userAgent   String?
+  failureReason String?
+  createdAt   DateTime  @default(now())
+  
+  @@map("login_attempts")
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+}
+
+model SecurityIncident {
+  id          String            @id @default(cuid())
+  type        SecurityIncidentType
+  severity    IncidentSeverity
+  description String
+  affectedResources String[]
+  detectedBy  String?           // User ID or system
+  status      SecurityIncidentStatus @default(OPEN)
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  resolution  String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  @@map("security_incidents")
+  @@index([type, status])
+  @@index([createdAt])
+}
+
+model IpRestriction {
+  id          String   @id @default(cuid())
+  ipAddress   String
+  type        IpRestrictionType @default(WHITELIST)
+  reason      String?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("ip_restrictions")
+  @@index([ipAddress])
+}
+
+// Document Management Enums
+
+enum DocumentCategory {
+  MEDICAL_RECORD
+  INCIDENT_REPORT
+  CONSENT_FORM
+  POLICY
+  TRAINING
+  ADMINISTRATIVE
+  STUDENT_FILE
+  INSURANCE
+  OTHER
+}
+
+enum DocumentStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  ARCHIVED
+  EXPIRED
+}
+
+enum DocumentAccessLevel {
+  PUBLIC
+  STAFF_ONLY
+  ADMIN_ONLY
+  RESTRICTED
+}
+
+enum DocumentAction {
+  CREATED
+  VIEWED
+  DOWNLOADED
+  UPDATED
+  DELETED
+  SHARED
+  SIGNED
+}
+
+// Compliance & Regulatory Enums
+
+enum ComplianceReportType {
+  HIPAA
+  FERPA
+  STATE_HEALTH
+  MEDICATION_AUDIT
+  SAFETY_INSPECTION
+  TRAINING_COMPLIANCE
+  DATA_PRIVACY
+  CUSTOM
+}
+
+enum ComplianceCategory {
+  PRIVACY
+  SECURITY
+  DOCUMENTATION
+  TRAINING
+  SAFETY
+  MEDICATION
+  HEALTH_RECORDS
+  CONSENT
+}
+
+enum ChecklistItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  NOT_APPLICABLE
+  FAILED
+}
+
+enum ConsentType {
+  MEDICAL_TREATMENT
+  MEDICATION_ADMINISTRATION
+  EMERGENCY_CARE
+  PHOTO_RELEASE
+  DATA_SHARING
+  TELEHEALTH
+  RESEARCH
+  OTHER
+}
+
+enum PolicyCategory {
+  HIPAA
+  FERPA
+  MEDICATION
+  EMERGENCY
+  SAFETY
+  DATA_SECURITY
+  OPERATIONAL
+  TRAINING
+}
+
+enum PolicyStatus {
+  DRAFT
+  UNDER_REVIEW
+  ACTIVE
+  ARCHIVED
+  SUPERSEDED
+}
+
+// Access Control & Security Enums
+
+enum SecurityIncidentType {
+  UNAUTHORIZED_ACCESS
+  DATA_BREACH
+  FAILED_LOGIN_ATTEMPTS
+  SUSPICIOUS_ACTIVITY
+  MALWARE
+  PHISHING
+  POLICY_VIOLATION
+  OTHER
+}
+
+enum SecurityIncidentStatus {
+  OPEN
+  INVESTIGATING
+  CONTAINED
+  RESOLVED
+  CLOSED
+}
+
+enum IpRestrictionType {
+  WHITELIST
+  BLACKLIST
+}
