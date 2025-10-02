@@ -21,6 +21,7 @@ import purchaseOrderRoutes from './routes/purchaseOrder';
 import budgetRoutes from './routes/budget';
 import communicationRoutes from './routes/communication';
 import userRoutes from './routes/users';
+import administrationRoutes from './routes/administration';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -83,6 +84,7 @@ app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api/budget', budgetRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/admin', administrationRoutes);
 
 // Error handling middleware
 app.use(notFound);
