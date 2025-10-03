@@ -31,6 +31,8 @@
   "author": "HarborGrid",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
     "concurrently": "^8.2.2"
   },
   "engines": {

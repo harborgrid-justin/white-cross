@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1",
+    "studentId": "1",
+    "type": "Physical_Exam",
+    "date": "2025-09-15",
+    "providedBy": "Dr. Smith",
+    "notes": "Annual physical examination - all normal",
+    "vitals": {
+      "height": "58 inches",
+      "weight": "95 lbs",
+      "bloodPressure": "110/70",
+      "heartRate": "85 bpm"
+    }
+  },
+  {
+    "id": "2", 
+    "studentId": "1",
+    "type": "Vision_Screening",
+    "date": "2025-08-22",
+    "providedBy": "School Nurse",
+    "notes": "Vision screening - 20/20 vision",
+    "results": {
+      "leftEye": "20/20",
+      "rightEye": "20/20"
+    }
+  }
+]

@@ -25,6 +25,16 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           toastOptions={{
             duration: 4000,
             className: 'text-sm',
+            success: {
+              className: 'text-sm',
+            },
+            error: {
+              className: 'text-sm',
+            },
+          }}
+          containerStyle={{
+            top: 20,
+            right: 20,
           }}
         />
       </BrowserRouter>

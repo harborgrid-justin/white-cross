@@ -138,7 +138,7 @@ export default function Layout({ children }: LayoutProps) {
               </h2>
             </div>
             
-            <div className="ml-4 flex items-center space-x-4">
+            <div className="ml-4 flex items-center space-x-4" data-testid="user-menu">
               <div className="text-sm text-gray-700">
                 <span className="font-medium">{user?.firstName} {user?.lastName}</span>
                 <span className="text-gray-500 ml-2">({user?.role})</span>
@@ -146,6 +146,7 @@ export default function Layout({ children }: LayoutProps) {
               <button
                 onClick={logout}
                 className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                data-testid="logout-button"
               >
                 <LogOut className="h-5 w-5" />
               </button>
