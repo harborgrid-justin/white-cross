@@ -1,0 +1,127 @@
+{
+  "success": true,
+  "data": {
+    "vaccinations": [
+      {
+        "id": "1",
+        "studentId": "student-1",
+        "vaccineName": "MMR (Measles, Mumps, Rubella)",
+        "manufacturer": "Merck",
+        "lotNumber": "MMR2024A",
+        "dateAdministered": "2024-08-15",
+        "administeredBy": "Nurse Johnson",
+        "site": "Left deltoid",
+        "dose": "0.5 mL",
+        "route": "Intramuscular",
+        "nextDueDate": null,
+        "reactions": [],
+        "notes": "No adverse reactions observed",
+        "compliant": true,
+        "required": true,
+        "createdAt": "2024-08-15T10:30:00Z"
+      },
+      {
+        "id": "2",
+        "studentId": "student-1",
+        "vaccineName": "Tdap (Tetanus, Diphtheria, Pertussis)",
+        "manufacturer": "Sanofi Pasteur",
+        "lotNumber": "TDAP2024B",
+        "dateAdministered": "2024-07-10",
+        "administeredBy": "Dr. Smith",
+        "site": "Right deltoid",
+        "dose": "0.5 mL",
+        "route": "Intramuscular",
+        "nextDueDate": "2034-07-10",
+        "reactions": ["Mild soreness at injection site"],
+        "notes": "Mild local reaction, resolved in 24 hours",
+        "compliant": true,
+        "required": true,
+        "createdAt": "2024-07-10T14:15:00Z"
+      },
+      {
+        "id": "3",
+        "studentId": "student-2",
+        "vaccineName": "Influenza",
+        "manufacturer": "Seqirus",
+        "lotNumber": "FLU2024C",
+        "dateAdministered": "2024-09-20",
+        "administeredBy": "Nurse Williams",
+        "site": "Left deltoid",
+        "dose": "0.5 mL",
+        "route": "Intramuscular",
+        "nextDueDate": "2025-09-01",
+        "reactions": [],
+        "notes": "Annual flu vaccine - no reactions",
+        "compliant": true,
+        "required": false,
+        "createdAt": "2024-09-20T11:00:00Z"
+      },
+      {
+        "id": "4",
+        "studentId": "student-2",
+        "vaccineName": "HPV (Human Papillomavirus)",
+        "manufacturer": "Merck",
+        "lotNumber": "HPV2024D",
+        "dateAdministered": "2024-06-05",
+        "administeredBy": "Dr. Anderson",
+        "site": "Right deltoid",
+        "dose": "0.5 mL",
+        "route": "Intramuscular",
+        "nextDueDate": "2024-12-05",
+        "reactions": [],
+        "notes": "First dose of HPV series",
+        "compliant": true,
+        "required": true,
+        "createdAt": "2024-06-05T09:45:00Z"
+      },
+      {
+        "id": "5",
+        "studentId": "student-3",
+        "vaccineName": "Meningococcal ACWY",
+        "manufacturer": "GSK",
+        "lotNumber": "MEN2024E",
+        "dateAdministered": "2024-05-12",
+        "administeredBy": "Nurse Thompson",
+        "site": "Left deltoid",
+        "dose": "0.5 mL",
+        "route": "Intramuscular",
+        "nextDueDate": "2029-05-12",
+        "reactions": ["Mild fever for 1 day"],
+        "notes": "Low-grade fever resolved without treatment",
+        "compliant": true,
+        "required": true,
+        "createdAt": "2024-05-12T13:20:00Z"
+      }
+    ],
+    "upcomingVaccinations": [
+      {
+        "studentId": "student-2",
+        "studentName": "Sarah Johnson",
+        "vaccineName": "HPV (Second Dose)",
+        "dueDate": "2024-12-05",
+        "overdue": false,
+        "daysPastDue": 0
+      },
+      {
+        "studentId": "student-4",
+        "studentName": "Michael Davis",
+        "vaccineName": "Tdap Booster",
+        "dueDate": "2024-10-15",
+        "overdue": true,
+        "daysPastDue": 12
+      }
+    ],
+    "complianceStats": {
+      "totalStudents": 4,
+      "compliantStudents": 3,
+      "complianceRate": 75,
+      "overdueVaccinations": 1
+    },
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 5,
+      "pages": 1
+    }
+  }
+}

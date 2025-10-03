@@ -56,6 +56,7 @@ export default function Login() {
                   type="email"
                   className="input-field"
                   placeholder="Enter your email"
+                  data-testid="email-input"
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -79,6 +80,7 @@ export default function Login() {
                   type="password"
                   className="input-field"
                   placeholder="Enter your password"
+                  data-testid="password-input"
                 />
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
@@ -91,6 +93,7 @@ export default function Login() {
                 type="submit"
                 disabled={loading}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="login-button"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>

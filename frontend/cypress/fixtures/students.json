@@ -1,0 +1,112 @@
+[
+  {
+    "id": "1",
+    "firstName": "Emma",
+    "lastName": "Johnson",
+    "dateOfBirth": "2010-03-15",
+    "grade": "8",
+    "studentId": "EJ001",
+    "email": "emma.johnson@school.edu",
+    "phone": "555-0101",
+    "emergencyContacts": [
+      {
+        "id": "1",
+        "name": "Sarah Johnson",
+        "relationship": "Mother",
+        "phone": "555-0102",
+        "email": "sarah.johnson@email.com",
+        "isPrimary": true
+      },
+      {
+        "id": "2",
+        "name": "Michael Johnson",
+        "relationship": "Father",
+        "phone": "555-0103",
+        "email": "michael.johnson@email.com",
+        "isPrimary": false
+      }
+    ],
+    "allergies": [
+      {
+        "id": "1",
+        "allergen": "Peanuts",
+        "severity": "severe",
+        "reaction": "Anaphylaxis"
+      }
+    ],
+    "medications": [
+      {
+        "id": "1",
+        "name": "EpiPen",
+        "dosage": "0.3mg",
+        "frequency": "As needed",
+        "prescribedBy": "Dr. Smith"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "firstName": "Liam",
+    "lastName": "Davis",
+    "dateOfBirth": "2009-07-22",
+    "grade": "9",
+    "studentId": "LD002",
+    "email": "liam.davis@school.edu",
+    "phone": "555-0201",
+    "emergencyContacts": [
+      {
+        "id": "3",
+        "name": "Jennifer Davis",
+        "relationship": "Mother",
+        "phone": "555-0202",
+        "email": "jennifer.davis@email.com",
+        "isPrimary": true
+      }
+    ],
+    "medicalConditions": [
+      {
+        "id": "1",
+        "condition": "Asthma",
+        "description": "Exercise-induced asthma",
+        "severity": "medium"
+      }
+    ],
+    "medications": [
+      {
+        "id": "2",
+        "name": "Albuterol Inhaler",
+        "dosage": "90mcg",
+        "frequency": "As needed",
+        "prescribedBy": "Dr. Wilson"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "firstName": "Sophia",
+    "lastName": "Martinez",
+    "dateOfBirth": "2011-12-03",
+    "grade": "7",
+    "studentId": "SM003",
+    "email": "sophia.martinez@school.edu",
+    "phone": "555-0301",
+    "emergencyContacts": [
+      {
+        "id": "4",
+        "name": "Maria Martinez",
+        "relationship": "Mother",
+        "phone": "555-0302",
+        "email": "maria.martinez@email.com",
+        "isPrimary": true
+      },
+      {
+        "id": "5",
+        "name": "Carlos Martinez",
+        "relationship": "Father",
+        "phone": "555-0303",
+        "email": "carlos.martinez@email.com",
+        "isPrimary": false
+      }
+    ]
+  }
+]

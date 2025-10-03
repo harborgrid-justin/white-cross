@@ -1,0 +1,47 @@
+{
+  "success": true,
+  "data": {
+    "records": [
+      {
+        "id": "1",
+        "studentId": "student-1",
+        "type": "PHYSICAL_EXAM",
+        "title": "Annual Physical Examination",
+        "provider": "Dr. Smith",
+        "facility": "Valley Medical Center",
+        "date": "2024-08-15",
+        "description": "Comprehensive annual physical examination with all systems reviewed",
+        "findings": "Normal physical examination. All systems within normal limits.",
+        "recommendations": "Continue current activity level. Return for annual exam next year.",
+        "attachments": ["physical_exam_2024.pdf"],
+        "isConfidential": false,
+        "recordedBy": "Nurse Johnson",
+        "recordedAt": "2024-08-15T14:30:00Z",
+        "updatedAt": "2024-08-15T14:30:00Z"
+      },
+      {
+        "id": "2",
+        "studentId": "student-2",
+        "type": "PHYSICAL_EXAM",
+        "title": "Sports Physical",
+        "provider": "Dr. Anderson",
+        "facility": "Sports Medicine Clinic",
+        "date": "2024-07-20",
+        "description": "Pre-participation sports physical examination",
+        "findings": "Excellent cardiovascular fitness. No restrictions for athletic participation.",
+        "recommendations": "Cleared for all sports activities. Maintain current fitness level.",
+        "attachments": ["sports_physical_2024.pdf"],
+        "isConfidential": false,
+        "recordedBy": "Nurse Williams",
+        "recordedAt": "2024-07-20T10:15:00Z",
+        "updatedAt": "2024-07-20T10:15:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 2,
+      "pages": 1
+    }
+  }
+}
