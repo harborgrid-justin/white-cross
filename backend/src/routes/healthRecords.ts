@@ -3,10 +3,61 @@ import { body, validationResult } from 'express-validator';
 import { auth } from '../middleware/auth';
 import { HealthRecordService } from '../services/healthRecordService';
 
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
 const router = Router();
 
+// Log access to student records
+router.post('/audit/access', [
+  auth,
+  body('action').isIn(['VIEW_STUDENT_RECORD', 'EDIT_STUDENT_RECORD', 'DELETE_STUDENT_RECORD']),
+  body('studentId').notEmpty(),
+  body('resourceId').optional(),
+  body('details').optional()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const auditLog = {
+      userId: req.user?.id,
+      action: req.body.action,
+      resource: 'STUDENT_HEALTH_RECORD',
+      resourceId: req.body.resourceId || req.body.studentId,
+      details: req.body.details || {},
+      timestamp: new Date(),
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent')
+    };
+
+    // In a real implementation, this would save to an audit log table
+    console.log('Audit Log:', auditLog);
+
+    res.json({
+      success: true,
+      data: { logged: true }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 // Get health records for a student
-router.get('/student/:studentId', auth, async (req: Request, res: Response) => {
+router.get('/student/:studentId', auth, async (req: AuthRequest, res: Response) => {
   try {
     const { studentId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
@@ -459,6 +510,87 @@ router.post('/import/:studentId', auth, async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(400).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Bulk delete health records
+router.post('/bulk-delete', [
+  auth,
+  body('recordIds').isArray().notEmpty()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    // Check user permissions - only admin and nurse roles can bulk delete
+    if (!req.user || !['ADMIN', 'NURSE'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
+      });
+    }
+
+    const { recordIds } = req.body;
+    const results = await HealthRecordService.bulkDeleteHealthRecords(recordIds);
+
+    res.json({
+      success: true,
+      data: results
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Log security events
+router.post('/security/log', [
+  auth,
+  body('event').notEmpty(),
+  body('resourceType').notEmpty(),
+  body('studentId').optional(),
+  body('details').optional()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const securityEvent = {
+      userId: req.user?.id,
+      userRole: req.user?.role,
+      event: req.body.event,
+      resourceType: req.body.resourceType,
+      studentId: req.body.studentId,
+      details: req.body.details || {},
+      timestamp: new Date(),
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent')
+    };
+
+    // In a real implementation, this would save to a security log table
+    console.log('Security Event:', securityEvent);
+
+    res.json({
+      success: true,
+      data: { logged: true }
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
     });

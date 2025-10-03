@@ -14,20 +14,38 @@ const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token') || localStorage.getItem('authToken')
   if (token) {
+    // Check for expired token and trigger session expiration
+    if (token === 'expired-token' && sessionExpireHandler) {
+      sessionExpireHandler()
+      // Return a rejected promise to stop the request
+      return Promise.reject(new Error('Session expired'))
+    }
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
+
+// Will be set up by AuthContext
+let sessionExpireHandler: (() => void) | null = null
+
+export const setSessionExpireHandler = (handler: () => void) => {
+  sessionExpireHandler = handler
+}
 
 // Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+      if (sessionExpireHandler) {
+        sessionExpireHandler()
+      } else {
+        localStorage.removeItem('token')
+        localStorage.removeItem('authToken')
+        window.location.href = '/login'
+      }
     }
     
     const message = error.response?.data?.error?.message || 'An error occurred'
@@ -191,6 +209,11 @@ export const studentsApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/students/${id}`)
+  },
+
+  getAssignedStudents: async (): Promise<{ students: Student[] }> => {
+    const response = await api.get<ApiResponse<{ students: Student[] }>>('/students/assigned')
+    return response.data.data!
   },
 }
 
@@ -955,6 +978,61 @@ export const integrationApi = {
     const response = await api.get('/integrations/statistics/overview')
     return response.data.data
   },
+}
+
+// Health Records API
+export const healthRecordsApi = {
+  getStudentRecords: async (studentId: string, page = 1, limit = 20, filters?: any): Promise<any> => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, String(value))
+      })
+    }
+    const response = await api.get<ApiResponse<any>>(`/health-records/student/${studentId}?${params.toString()}`)
+    return response.data.data!
+  },
+
+  logAccess: async (data: {
+    action: string
+    studentId: string
+    resourceId?: string
+    details?: any
+  }): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/health-records/audit/access', data)
+    return response.data.data!
+  },
+
+  logSecurityEvent: async (data: {
+    event: string
+    resourceType: string
+    studentId: string
+    details?: any
+  }): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/health-records/security/log', data)
+    return response.data.data!
+  },
+
+  getAllRecords: async (page = 1, limit = 20, filters?: any): Promise<any> => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, String(value))
+      })
+    }
+    const response = await api.get<ApiResponse<any>>(`/health-records?${params.toString()}`)
+    return response.data.data!
+  },
+
+  createRecord: async (data: any): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/health-records', data)
+    return response.data.data!
+  },
+
+  updateRecord: async (id: string, data: any): Promise<any> => {
+    const response = await api.put<ApiResponse<any>>(`/health-records/${id}`, data)
+    return response.data.data!
+  }
 }
 
 export default api

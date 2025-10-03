@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useAuthContext } from '../contexts/AuthContext'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 interface LoginForm {
@@ -10,16 +11,34 @@ interface LoginForm {
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
+  const [authError, setAuthError] = useState('')
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const { login } = useAuthContext()
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>()
 
+  const redirectPath = searchParams.get('redirect')
+
+  useEffect(() => {
+    if (redirectPath === '/health-records') {
+      setAuthError('Please log in to access health records')
+    }
+  }, [redirectPath])
+
   const onSubmit = async (data: LoginForm) => {
     setLoading(true)
+    setAuthError('')
     try {
       await login(data.email, data.password)
       toast.success('Login successful!')
-    } catch (error) {
-      // Error handling is done in the API interceptor
+      
+      // Redirect to the intended page after successful login
+      if (redirectPath) {
+        navigate(redirectPath, { replace: true })
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error?.message || 'Invalid credentials'
+      setAuthError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -39,7 +58,13 @@ export default function Login() {
         </div>
         
         <div className="card p-8">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-testid="login-form">
+            {authError && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3" data-testid="error-message">
+                <p className="text-sm text-red-600">{authError}</p>
+              </div>
+            )}
+            
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address

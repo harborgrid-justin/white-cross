@@ -1,0 +1,5 @@
+export { OverviewTab } from './OverviewTab'
+export { MedicationsTab } from './MedicationsTab'
+export { InventoryTab } from './InventoryTab'
+export { RemindersTab } from './RemindersTab'
+export { AdverseReactionsTab } from './AdverseReactionsTab'

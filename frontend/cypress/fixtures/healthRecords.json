@@ -2,7 +2,7 @@
   {
     "id": "1",
     "studentId": "1",
-    "type": "Physical_Exam",
+    "type": "Physical Exam",
     "date": "2025-09-15",
     "providedBy": "Dr. Smith",
     "notes": "Annual physical examination - all normal",
@@ -11,18 +11,49 @@
       "weight": "95 lbs",
       "bloodPressure": "110/70",
       "heartRate": "85 bpm"
-    }
+    },
+    "patientInfo": {
+      "ssn": "123-45-6789",
+      "insuranceId": "INS123456789",
+      "diagnosis": "Routine physical examination"
+    },
+    "recordType": "Medical",
+    "content": "Complete physical examination with normal findings"
   },
   {
     "id": "2", 
     "studentId": "1",
-    "type": "Vision_Screening",
+    "type": "Vision Screening",
     "date": "2025-08-22",
     "providedBy": "School Nurse",
     "notes": "Vision screening - 20/20 vision",
     "results": {
       "leftEye": "20/20",
       "rightEye": "20/20"
-    }
+    },
+    "patientInfo": {
+      "ssn": "123-45-6789",
+      "insuranceId": "INS123456789",
+      "diagnosis": "Routine vision screening"
+    },
+    "recordType": "Screening",
+    "content": "Annual vision screening with normal results"
+  },
+  {
+    "id": "3",
+    "studentId": "1",
+    "type": "Mental Health",
+    "date": "2025-07-10",
+    "providedBy": "Dr. Johnson, Licensed Psychologist",
+    "notes": "[MENTAL HEALTH - RESTRICTED ACCESS]",
+    "patientInfo": {
+      "ssn": "***-**-****",
+      "insuranceId": "****",
+      "diagnosis": "[RESTRICTED]"
+    },
+    "recordType": "Mental Health",
+    "content": "[MENTAL HEALTH - RESTRICTED ACCESS]",
+    "isRestricted": true,
+    "restrictionLevel": "MENTAL_HEALTH"
   }
 ]

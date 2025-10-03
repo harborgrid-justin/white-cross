@@ -103,6 +103,36 @@ async function main() {
     },
   });
 
+  // Create additional test users for readonly and counselor roles
+  const testReadOnlyPassword = await bcrypt.hash('ReadOnlyPassword123!', 10);
+  const testCounselorPassword = await bcrypt.hash('CounselorPassword123!', 10);
+
+  const testReadOnlyUser = await prisma.user.upsert({
+    where: { email: 'readonly@school.edu' },
+    update: {},
+    create: {
+      email: 'readonly@school.edu',
+      password: testReadOnlyPassword,
+      firstName: 'Test',
+      lastName: 'ReadOnly',
+      role: 'VIEWER',
+      isActive: true,
+    },
+  });
+
+  const testCounselorUser = await prisma.user.upsert({
+    where: { email: 'counselor@school.edu' },
+    update: {},
+    create: {
+      email: 'counselor@school.edu',
+      password: testCounselorPassword,
+      firstName: 'Test',
+      lastName: 'Counselor',
+      role: 'COUNSELOR',
+      isActive: true,
+    },
+  });
+
   // Create some demo students
   const students = await Promise.all([
     prisma.student.upsert({
@@ -464,6 +494,28 @@ async function main() {
     },
   });
 
+  // Create read-only role with view-only permissions
+  const readOnlyRole = await prisma.role.upsert({
+    where: { name: 'Read Only' },
+    update: {},
+    create: {
+      name: 'Read Only',
+      description: 'View-only access to records',
+      isSystem: true,
+    },
+  });
+
+  // Create counselor role with limited access
+  const counselorRole = await prisma.role.upsert({
+    where: { name: 'School Counselor' },
+    update: {},
+    create: {
+      name: 'School Counselor',
+      description: 'Counselor access to student records',
+      isSystem: true,
+    },
+  });
+
   // Assign all permissions to admin role
   await Promise.all(
     createdPermissions.map((permission) =>
@@ -514,6 +566,40 @@ async function main() {
     },
   });
 
+  // Assign read-only permissions to read-only role
+  const readOnlyPermissions = createdPermissions.filter(
+    (p) => p.action === 'read'
+  );
+  await Promise.all(
+    readOnlyPermissions.map((permission) =>
+      prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: readOnlyRole.id, permissionId: permission.id } },
+        update: {},
+        create: {
+          roleId: readOnlyRole.id,
+          permissionId: permission.id,
+        },
+      })
+    )
+  );
+
+  // Assign counselor-specific permissions to counselor role (read/create/update students and health records)
+  const counselorPermissions = createdPermissions.filter(
+    (p) => (p.resource === 'students' || p.resource === 'health_records') && p.action !== 'delete'
+  );
+  await Promise.all(
+    counselorPermissions.map((permission) =>
+      prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: counselorRole.id, permissionId: permission.id } },
+        update: {},
+        create: {
+          roleId: counselorRole.id,
+          permissionId: permission.id,
+        },
+      })
+    )
+  );
+
   // Assign roles to test users
   await prisma.userRoleAssignment.upsert({
     where: { userId_roleId: { userId: testAdminUser.id, roleId: adminRole.id } },
@@ -533,6 +619,24 @@ async function main() {
     },
   });
 
+  await prisma.userRoleAssignment.upsert({
+    where: { userId_roleId: { userId: testReadOnlyUser.id, roleId: readOnlyRole.id } },
+    update: {},
+    create: {
+      userId: testReadOnlyUser.id,
+      roleId: readOnlyRole.id,
+    },
+  });
+
+  await prisma.userRoleAssignment.upsert({
+    where: { userId_roleId: { userId: testCounselorUser.id, roleId: counselorRole.id } },
+    update: {},
+    create: {
+      userId: testCounselorUser.id,
+      roleId: counselorRole.id,
+    },
+  });
+
   console.log('✅ Database seeding completed successfully!');
   console.log('\n📋 Created:');
   console.log(`   • District: ${district.name}`);
@@ -549,6 +653,8 @@ async function main() {
   console.log('\n🧪 Test user credentials (for Cypress):');
   console.log('   Test Admin: admin@school.edu / AdminPassword123!');
   console.log('   Test Nurse: nurse@school.edu / NursePassword123!');
+  console.log('   Test ReadOnly: readonly@school.edu / ReadOnlyPassword123!');
+  console.log('   Test Counselor: counselor@school.edu / CounselorPassword123!');
 }
 
 main()

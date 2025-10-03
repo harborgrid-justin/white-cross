@@ -827,4 +827,58 @@ export class HealthRecordService {
       throw error;
     }
   }
+
+  /**
+   * Bulk delete health records
+   */
+  static async bulkDeleteHealthRecords(recordIds: string[]) {
+    try {
+      if (!recordIds || recordIds.length === 0) {
+        throw new Error('No record IDs provided');
+      }
+
+      // Get records to be deleted for logging
+      const recordsToDelete = await prisma.healthRecord.findMany({
+        where: {
+          id: { in: recordIds }
+        },
+        include: {
+          student: {
+            select: {
+              firstName: true,
+              lastName: true,
+              studentNumber: true
+            }
+          }
+        }
+      });
+
+      // Delete the records
+      const result = await prisma.healthRecord.deleteMany({
+        where: {
+          id: { in: recordIds }
+        }
+      });
+
+      const deletedCount = result.count;
+      const notFoundCount = recordIds.length - deletedCount;
+
+      // Log the bulk deletion
+      logger.info(`Bulk delete completed: ${deletedCount} records deleted, ${notFoundCount} not found`);
+
+      if (recordsToDelete.length > 0) {
+        const studentNames = [...new Set(recordsToDelete.map(r => `${r.student.firstName} ${r.student.lastName}`))];
+        logger.info(`Records deleted for students: ${studentNames.join(', ')}`);
+      }
+
+      return {
+        deleted: deletedCount,
+        notFound: notFoundCount,
+        success: true
+      };
+    } catch (error) {
+      logger.error('Error in bulk delete operation:', error);
+      throw error;
+    }
+  }
 }

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "student-123",
+    "studentNumber": "STU001",
+    "firstName": "Emma",
+    "lastName": "Wilson",
+    "grade": "6th Grade",
+    "dateOfBirth": "2010-03-15",
+    "gender": "FEMALE",
+    "isActive": true,
+    "nurseId": "nurse-1",
+    "hasAllergies": true,
+    "hasChronicConditions": false,
+    "hasActiveMedications": true,
+    "lastVisit": "2024-10-01T10:30:00Z"
+  },
+  {
+    "id": "student-456",
+    "studentNumber": "STU002",
+    "firstName": "Liam",
+    "lastName": "Davis",
+    "grade": "5th Grade",
+    "dateOfBirth": "2011-07-22",
+    "gender": "MALE",
+    "isActive": true,
+    "nurseId": "nurse-1",
+    "hasAllergies": true,
+    "hasChronicConditions": true,
+    "hasActiveMedications": false,
+    "lastVisit": "2024-09-28T14:15:00Z"
+  },
+  {
+    "id": "student-789",
+    "studentNumber": "STU003",
+    "firstName": "Sophia",
+    "lastName": "Miller",
+    "grade": "7th Grade",
+    "dateOfBirth": "2009-11-08",
+    "gender": "FEMALE",
+    "isActive": true,
+    "nurseId": "nurse-1",
+    "hasAllergies": false,
+    "hasChronicConditions": false,
+    "hasActiveMedications": false,
+    "lastVisit": "2024-09-30T09:45:00Z"
+  }
+]
