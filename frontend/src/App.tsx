@@ -14,6 +14,8 @@ import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import LoadingSpinner from './components/LoadingSpinner'
+import AccessDeniedPage from './components/AccessDeniedPage'
+import { StudentHealthRecord } from './components/StudentHealthRecord'
 import { AuthProvider } from './contexts/AuthContext'
 
 function AppRoutes() {
@@ -39,6 +41,8 @@ function AppRoutes() {
                 <Route path="/students/*" element={<Students />} />
                 <Route path="/medications/*" element={<Medications />} />
                 <Route path="/appointments/*" element={<Appointments />} />
+                <Route path="/health-records/student/restricted-*" element={<AccessDeniedPage />} />
+                <Route path="/health-records/student/:studentId" element={<StudentHealthRecord />} />
                 <Route path="/health-records/*" element={<HealthRecords />} />
                 <Route path="/incident-reports/*" element={<IncidentReports />} />
                 <Route path="/emergency-contacts/*" element={<EmergencyContacts />} />
@@ -50,7 +54,7 @@ function AppRoutes() {
               </Routes>
             </Layout>
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to={`/login?redirect=${encodeURIComponent(window.location.pathname)}`} replace />
           )
         }
       />

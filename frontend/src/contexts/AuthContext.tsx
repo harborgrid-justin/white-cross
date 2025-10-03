@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '../types'
-import { authApi } from '../services/api'
+import { authApi, setSessionExpireHandler } from '../services/api'
+import SessionExpiredModal from '../components/SessionExpiredModal'
 
 interface AuthContextType {
   user: User | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  expireSession: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,10 +28,30 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
+
+  const expireSession = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('authToken')
+    setUser(null)
+    setShowSessionExpiredModal(true)
+  }
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    // Set up session expire handler for API interceptor
+    setSessionExpireHandler(expireSession)
+  }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
     if (token) {
+      // Check for expired token
+      if (token === 'expired-token') {
+        expireSession()
+        setLoading(false)
+        return
+      }
+      
       // Verify token validity
       authApi.verifyToken()
         .then((userData) => {
@@ -37,6 +59,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         })
         .catch(() => {
           localStorage.removeItem('token')
+          localStorage.removeItem('authToken')
         })
         .finally(() => {
           setLoading(false)
@@ -54,7 +77,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('authToken')
     setUser(null)
+    setShowSessionExpiredModal(false)
+  }
+
+  const handleLoginAgain = () => {
+    setShowSessionExpiredModal(false)
+    window.location.href = '/login'
   }
 
   const value = {
@@ -62,11 +92,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loading,
     login,
     logout,
+    expireSession,
   }
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+      <SessionExpiredModal 
+        isOpen={showSessionExpiredModal}
+        onLoginAgain={handleLoginAgain}
+      />
     </AuthContext.Provider>
   )
 }

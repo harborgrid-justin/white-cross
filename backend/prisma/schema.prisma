@@ -610,6 +610,8 @@ enum UserRole {
   NURSE
   SCHOOL_ADMIN
   DISTRICT_ADMIN
+  VIEWER
+  COUNSELOR
 }
 
 enum Gender {

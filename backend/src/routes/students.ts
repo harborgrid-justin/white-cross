@@ -242,4 +242,31 @@ router.get('/search/:query', auth, async (req: Request, res: Response) => {
   }
 });
 
+// Get assigned students for current user
+router.get('/assigned', auth, async (req: Request, res: Response) => {
+  try {
+    const authReq = req as any;
+    const userId = authReq.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'User not authenticated' }
+      });
+    }
+
+    const students = await StudentService.getAssignedStudents(userId);
+
+    res.json({
+      success: true,
+      data: { students }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;

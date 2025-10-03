@@ -440,4 +440,35 @@ export class StudentService {
       throw error;
     }
   }
+
+  /**
+   * Get students assigned to a specific nurse/user
+   */
+  static async getAssignedStudents(userId: string) {
+    try {
+      const students = await prisma.student.findMany({
+        where: {
+          isActive: true,
+          nurseId: userId
+        },
+        select: {
+          id: true,
+          studentNumber: true,
+          firstName: true,
+          lastName: true,
+          grade: true,
+          dateOfBirth: true
+        },
+        orderBy: [
+          { lastName: 'asc' },
+          { firstName: 'asc' }
+        ]
+      });
+
+      return students;
+    } catch (error) {
+      logger.error('Error fetching assigned students:', error);
+      throw error;
+    }
+  }
 }

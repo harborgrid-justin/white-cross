@@ -3,7 +3,7 @@ export interface User {
   email: string
   firstName: string
   lastName: string
-  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN'
+  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'READ_ONLY' | 'COUNSELOR'
 }
 
 export interface Student {
@@ -129,6 +129,7 @@ export interface Allergy {
   verified: boolean
   verifiedBy?: string
   verifiedAt?: string
+  providerName?: string
 }
 
 export interface Appointment {
