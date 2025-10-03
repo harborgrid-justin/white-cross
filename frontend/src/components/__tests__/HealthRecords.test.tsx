@@ -1,12 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import HealthRecords from '../../pages/HealthRecords';
 import { healthRecordApi } from '../../services/healthRecordApi';
 
 // Mock the API
-jest.mock('../../services/healthRecordApi');
-const mockHealthRecordApi = healthRecordApi as jest.Mocked<typeof healthRecordApi>;
+vi.mock('../../services/healthRecordApi');
+const mockHealthRecordApi = healthRecordApi as any;
 
 // Mock data
 const mockHealthRecords = [
