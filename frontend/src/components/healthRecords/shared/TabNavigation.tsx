@@ -37,7 +37,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
-                data-testid={tab.id === 'vaccinations' ? 'vaccinations-tab' : `tab-${tab.id}`}
+                data-testid={`tab-${tab.id}`}
                 className={`px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap flex items-center gap-2 ${
                   activeTab === tab.id
                     ? 'border-blue-600 text-blue-600'

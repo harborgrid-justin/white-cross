@@ -597,4 +597,69 @@ router.post('/security/log', [
   }
 });
 
+// Admin settings endpoint
+router.get('/admin/settings', [auth], async (req: AuthRequest, res: Response) => {
+  try {
+    // Check admin permissions
+    if (!req.user || !['ADMIN', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { settings: {} }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Audit access log endpoint
+router.post('/audit/access', [
+  auth,
+  body('action').notEmpty(),
+  body('studentId').optional(),
+  body('details').optional()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const auditLog = {
+      userId: req.user?.id,
+      userRole: req.user?.role,
+      action: req.body.action,
+      resourceType: req.body.resourceType || 'HEALTH_RECORD',
+      studentId: req.body.studentId,
+      details: req.body.details || {},
+      timestamp: new Date(),
+      ipAddress: req.ip || req.connection.remoteAddress
+    };
+
+    // In a real implementation, this would save to an audit log table
+    console.log('Audit Log:', auditLog);
+
+    res.json({
+      success: true,
+      data: { logged: true }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;

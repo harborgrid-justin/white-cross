@@ -27,6 +27,7 @@ import reportRoutes from './routes/reports';
 import complianceRoutes from './routes/compliance';
 import documentRoutes from './routes/documents';
 import accessControlRoutes from './routes/accessControl';
+import auditRoutes from './routes/audit';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -95,6 +96,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/access-control', accessControlRoutes);
+app.use('/api/audit', auditRoutes);
 
 // Error handling middleware
 app.use(notFound);

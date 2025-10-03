@@ -204,3 +204,64 @@ describe('Medications - Overview Tab', () => {
     })
   })
 })
+
+// Additional session management tests for Medications module
+describe('Medications - Session Management', () => {
+  beforeEach(() => {
+    cy.clearCookies()
+    cy.clearLocalStorage()
+  })
+
+  it('should redirect unauthenticated users to login', () => {
+    cy.visit('/medications')
+    cy.url().should('include', '/login')
+  })
+
+  it('should handle session expiration during medication operations', () => {
+    cy.loginAsNurse()
+    cy.interceptMedicationAPI()
+    cy.visit('/medications')
+    
+    // Verify initial load
+    cy.get('[data-testid="medications-title"]').should('be.visible')
+    
+    // Simulate session expiration
+    cy.window().then((win) => {
+      win.localStorage.removeItem('authToken')
+      win.localStorage.removeItem('token')
+    })
+    
+    // Mock expired auth response
+    cy.intercept('GET', '**/api/**', {
+      statusCode: 401,
+      body: {
+        success: false,
+        error: { message: 'Token expired', code: 'TOKEN_EXPIRED' }
+      }
+    }).as('expiredRequest')
+    
+    // Try to navigate between tabs (should handle gracefully)
+    cy.get('[data-testid="medications-tab"]').click()
+    
+    // Should handle gracefully
+    cy.url().should('include', '/login')
+  })
+
+  it('should maintain authentication state across medication pages', () => {
+    cy.loginAsNurse()
+    cy.interceptMedicationAPI()
+    cy.visit('/medications')
+    
+    cy.get('[data-testid="medications-title"]').should('be.visible')
+    
+    // Navigate between tabs
+    cy.get('[data-testid="medications-tab"]').click()
+    cy.get('[data-testid="medications-search"]').should('be.visible')
+    
+    cy.get('[data-testid="inventory-tab"]').click()
+    cy.get('[data-testid="inventory-table"]').should('be.visible')
+    
+    // Should maintain authentication throughout
+    cy.url().should('not.include', '/login')
+  })
+})

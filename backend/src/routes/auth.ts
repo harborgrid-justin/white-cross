@@ -151,4 +151,51 @@ router.post('/login', [
   }
 });
 
+// Verify token endpoint
+router.get('/verify', async (req: Request, res: Response) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'Access token required' }
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+    
+    // Verify user still exists and is active
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true
+      }
+    });
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'User not found or inactive' }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user
+    });
+
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      error: { message: 'Invalid or expired token' }
+    });
+  }
+});
+
 export default router;

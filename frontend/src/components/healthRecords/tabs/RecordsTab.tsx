@@ -142,13 +142,33 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
                     </div>
                   </div>
                 </div>
-                <button 
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium" 
-                  data-testid="view-details-button"
-                  onClick={onViewDetails}
-                >
-                  View Details
-                </button>
+                <div className="flex space-x-2">
+                  <button 
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium" 
+                    data-testid="view-details-button"
+                    onClick={onViewDetails}
+                  >
+                    View Details
+                  </button>
+                  {user?.role !== 'READ_ONLY' && (
+                    <>
+                      <button 
+                        className="text-green-600 hover:text-green-700 text-sm font-medium" 
+                        data-testid="edit-record-button"
+                        onClick={() => {}}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="text-red-600 hover:text-red-700 text-sm font-medium" 
+                        data-testid="delete-record-button"
+                        onClick={() => {}}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))

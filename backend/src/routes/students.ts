@@ -269,4 +269,96 @@ router.get('/assigned', auth, async (req: Request, res: Response) => {
   }
 });
 
+// Get health records for a student (including sensitive records)
+router.get('/:studentId/health-records', auth, async (req: Request, res: Response) => {
+  try {
+    const authReq = req as any;
+    const { studentId } = req.params;
+    const sensitive = req.query.sensitive === 'true';
+    
+    // If accessing sensitive records, require additional permissions
+    if (sensitive && (!authReq.user || !['ADMIN', 'NURSE', 'COUNSELOR'].includes(authReq.user.role))) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions to access sensitive health records'
+      });
+    }
+
+    // Mock health records data
+    const healthRecords = {
+      studentId,
+      records: [
+        {
+          id: '1',
+          type: 'GENERAL_CHECKUP',
+          date: '2025-01-15',
+          provider: 'School Nurse',
+          notes: 'Regular health checkup completed'
+        }
+      ]
+    };
+
+    // Add sensitive record if requested and authorized
+    if (sensitive) {
+      healthRecords.records.push({
+        id: '2',
+        type: 'MENTAL_HEALTH',
+        date: '2025-01-10',
+        provider: 'School Counselor',
+        notes: '[SENSITIVE] Mental health evaluation completed'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: healthRecords
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Get mental health records for a student
+router.get('/:studentId/mental-health-records', auth, async (req: Request, res: Response) => {
+  try {
+    const authReq = req as any;
+    const { studentId } = req.params;
+    
+    // Check if user has mental health access permissions
+    if (!authReq.user || !['ADMIN', 'COUNSELOR', 'MENTAL_HEALTH_SPECIALIST'].includes(authReq.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions to access mental health records'
+      });
+    }
+
+    // In a real implementation, this would fetch mental health records
+    const records = {
+      studentId,
+      records: [
+        {
+          id: '1',
+          type: 'COUNSELING_SESSION',
+          date: '2025-01-15',
+          provider: 'School Counselor',
+          notes: '[CONFIDENTIAL MENTAL HEALTH INFORMATION]'
+        }
+      ]
+    };
+
+    res.json({
+      success: true,
+      data: records
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;

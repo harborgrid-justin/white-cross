@@ -77,22 +77,8 @@ export const authApi = {
   },
 
   verifyToken: async (): Promise<User> => {
-    // This would be implemented to verify the current token
-    // For now, we'll extract user info from the token
-    const token = localStorage.getItem('token')
-    if (!token) {
-      throw new Error('No token found')
-    }
-    
-    // In a real implementation, you would decode the JWT or make an API call
-    // For now, return mock data
-    return {
-      id: '1',
-      email: 'nurse@school.edu',
-      firstName: 'Jane',
-      lastName: 'Doe',
-      role: 'NURSE'
-    }
+    const response = await api.get<ApiResponse<User>>('/auth/verify')
+    return response.data.data!
   },
 }
 
@@ -993,13 +979,24 @@ export const healthRecordsApi = {
     return response.data.data!
   },
 
+  getStudentHealthRecords: async (studentId: string, options?: { sensitive?: boolean }): Promise<any> => {
+    const params = new URLSearchParams()
+    if (options?.sensitive) params.append('sensitive', 'true')
+    const response = await api.get<ApiResponse<any>>(`/students/${studentId}/health-records?${params.toString()}`)
+    return response.data.data!
+  },
+
   logAccess: async (data: {
     action: string
     studentId: string
+    resourceType?: string
     resourceId?: string
     details?: any
   }): Promise<any> => {
-    const response = await api.post<ApiResponse<any>>('/health-records/audit/access', data)
+    const response = await api.post<ApiResponse<any>>('/audit/access-log', {
+      ...data,
+      resourceType: data.resourceType || 'HEALTH_RECORD'
+    })
     return response.data.data!
   },
 
@@ -1009,7 +1006,7 @@ export const healthRecordsApi = {
     studentId: string
     details?: any
   }): Promise<any> => {
-    const response = await api.post<ApiResponse<any>>('/health-records/security/log', data)
+    const response = await api.post<ApiResponse<any>>('/audit/security-log', data)
     return response.data.data!
   },
 
