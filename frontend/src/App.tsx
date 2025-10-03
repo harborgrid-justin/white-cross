@@ -14,7 +14,7 @@ import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import LoadingSpinner from './components/LoadingSpinner'
-import AccessDeniedPage from './components/AccessDeniedPage'
+import AccessDenied from './pages/AccessDenied'
 import { StudentHealthRecord } from './components/StudentHealthRecord'
 import { AuthProvider } from './contexts/AuthContext'
 
@@ -41,7 +41,7 @@ function AppRoutes() {
                 <Route path="/students/*" element={<Students />} />
                 <Route path="/medications/*" element={<Medications />} />
                 <Route path="/appointments/*" element={<Appointments />} />
-                <Route path="/health-records/student/restricted-*" element={<AccessDeniedPage />} />
+                <Route path="/health-records/student/restricted-*" element={<AccessDenied />} />
                 <Route path="/health-records/student/:studentId" element={<StudentHealthRecord />} />
                 <Route path="/health-records/*" element={<HealthRecords />} />
                 <Route path="/incident-reports/*" element={<IncidentReports />} />

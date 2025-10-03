@@ -1,58 +1,78 @@
-[
-  {
-    "id": "1",
-    "studentId": "1",
-    "medicationId": "med-1",
-    "medication": {
-      "name": "EpiPen",
-      "genericName": "Epinephrine",
-      "type": "Emergency"
-    },
-    "dosage": "0.3mg",
-    "frequency": "As needed",
-    "prescribedBy": "Dr. Johnson",
-    "prescribedDate": "2025-01-15",
-    "isActive": true,
-    "administrationLogs": [
+{
+  "success": true,
+  "data": {
+    "medications": [
       {
-        "id": "log-1",
-        "timeGiven": "2025-09-20T10:30:00Z",
-        "dosageGiven": "0.3mg",
-        "nurseId": "nurse-1",
-        "nurse": {
-          "firstName": "Sarah",
-          "lastName": "Wilson"
-        },
-        "notes": "Emergency administration due to allergic reaction"
-      }
-    ]
-  },
-  {
-    "id": "2",
-    "studentId": "2", 
-    "medicationId": "med-2",
-    "medication": {
-      "name": "Albuterol Inhaler",
-      "genericName": "Albuterol",
-      "type": "Rescue"
-    },
-    "dosage": "90mcg",
-    "frequency": "As needed for asthma",
-    "prescribedBy": "Dr. Wilson",
-    "prescribedDate": "2025-02-10",
-    "isActive": true,
-    "administrationLogs": [
+        "id": "1",
+        "name": "EpiPen",
+        "genericName": "Epinephrine",
+        "dosageForm": "Auto-injector",
+        "strength": "0.3mg",
+        "manufacturer": "Mylan",
+        "isControlled": false,
+        "inventory": [
+          { "id": "1", "quantity": 5, "reorderLevel": 2, "expirationDate": "2025-12-31" }
+        ],
+        "_count": { "studentMedications": 3 }
+      },
       {
-        "id": "log-2",
-        "timeGiven": "2025-09-18T14:15:00Z",
-        "dosageGiven": "90mcg",
-        "nurseId": "nurse-1",
-        "nurse": {
-          "firstName": "Sarah", 
-          "lastName": "Wilson"
-        },
-        "notes": "Pre-exercise prophylaxis"
+        "id": "2",
+        "name": "Albuterol Inhaler",
+        "genericName": "Albuterol sulfate",
+        "dosageForm": "Inhaler",
+        "strength": "90mcg",
+        "manufacturer": "ProAir",
+        "isControlled": false,
+        "inventory": [
+          { "id": "2", "quantity": 15, "reorderLevel": 10, "expirationDate": "2025-08-15" }
+        ],
+        "_count": { "studentMedications": 12 }
+      },
+      {
+        "id": "3",
+        "name": "Tylenol",
+        "genericName": "Acetaminophen",
+        "dosageForm": "Tablet",
+        "strength": "500mg",
+        "manufacturer": "Johnson & Johnson",
+        "isControlled": false,
+        "inventory": [
+          { "id": "3", "quantity": 200, "reorderLevel": 25, "expirationDate": "2025-11-30" }
+        ],
+        "_count": { "studentMedications": 15 }
+      },
+      {
+        "id": "4",
+        "name": "Aspirin",
+        "genericName": "Acetylsalicylic acid",
+        "dosageForm": "Tablet",
+        "strength": "325mg",
+        "manufacturer": "Bayer",
+        "isControlled": false,
+        "inventory": [
+          { "id": "4", "quantity": 100, "reorderLevel": 20, "expirationDate": "2025-10-15" }
+        ],
+        "_count": { "studentMedications": 8 }
+      },
+      {
+        "id": "5",
+        "name": "Methylphenidate",
+        "genericName": "methylphenidate HCl",
+        "dosageForm": "Tablet",
+        "strength": "10mg",
+        "manufacturer": "Ritalin",
+        "isControlled": true,
+        "inventory": [
+          { "id": "5", "quantity": 5, "reorderLevel": 15, "expirationDate": "2025-06-30" }
+        ],
+        "_count": { "studentMedications": 8 }
       }
-    ]
+    ],
+    "pagination": { 
+      "page": 1, 
+      "limit": 20, 
+      "total": 5, 
+      "pages": 1 
+    }
   }
-]
+}

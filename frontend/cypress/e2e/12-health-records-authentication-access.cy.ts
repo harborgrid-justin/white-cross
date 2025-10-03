@@ -4,6 +4,231 @@ describe('Health Records - Authentication and Access Control (Tests 101-110)', (
   beforeEach(() => {
     cy.clearCookies()
     cy.clearLocalStorage()
+    
+    // Mock authentication API calls using actual backend structure
+    cy.intercept('POST', 'http://localhost:3001/api/auth/login', (req) => {
+      const { email, password } = req.body
+      
+      // Mock different user types based on email - matching actual backend responses
+      if (email === 'nurse@school.edu' && password === 'NursePassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJudXJzZUBzY2hvb2wuZWR1Iiwicm9sZSI6Ik5VUlNFIiwiaWF0IjoxNjk3MDAwMDAwLCJleHAiOjk5OTk5OTk5OTl9.mock',
+              user: {
+                id: '1',
+                email: 'nurse@school.edu',
+                firstName: 'Sarah',
+                lastName: 'Johnson',
+                role: 'NURSE'
+              }
+            }
+          }
+        })
+      } else if (email === 'admin@school.edu' && password === 'AdminPassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwiZW1haWwiOiJhZG1pbkBzY2hvb2wuZWR1Iiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNjk3MDAwMDAwLCJleHAiOjk5OTk5OTk5OTl9.mock',
+              user: {
+                id: '2',
+                email: 'admin@school.edu',
+                firstName: 'John',
+                lastName: 'Admin',
+                role: 'ADMIN'
+              }
+            }
+          }
+        })
+      } else if (email === 'readonly@school.edu' && password === 'ReadOnlyPassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzIiwiZW1haWwiOiJyZWFkb25seUBzY2hvb2wuZWR1Iiwicm9sZSI6IlJFQURfT05MWSIsImlhdCI6MTY5NzAwMDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ.mock',
+              user: {
+                id: '3',
+                email: 'readonly@school.edu',
+                firstName: 'View',
+                lastName: 'Only',
+                role: 'READ_ONLY'
+              }
+            }
+          }
+        })
+      } else if (email === 'counselor@school.edu' && password === 'CounselorPassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0IiwiZW1haWwiOiJjb3Vuc2Vsb3JAc2Nob29sLmVkdSIsInJvbGUiOiJDT1VOU0VMT1IiLCJpYXQiOjE2OTcwMDAwMDAsImV4cCI6OTk5OTk5OTk5OX0.mock',
+              user: {
+                id: '4',
+                email: 'counselor@school.edu',
+                firstName: 'Mary',
+                lastName: 'Counselor',
+                role: 'COUNSELOR'
+              }
+            }
+          }
+        })
+      } else {
+        req.reply({
+          statusCode: 401,
+          body: {
+            success: false,
+            error: { message: 'Invalid credentials' }
+          }
+        })
+      }
+    }).as('loginRequest')
+    
+    // Mock token verification
+    cy.intercept('GET', '**/api/auth/verify', (req) => {
+      const authHeader = req.headers.authorization
+      const token = Array.isArray(authHeader) ? authHeader[0]?.replace('Bearer ', '') : authHeader?.replace('Bearer ', '')
+      
+      if (token === 'mock-nurse-token') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '1',
+              email: 'nurse@school.edu',
+              firstName: 'Sarah',
+              lastName: 'Johnson',
+              role: 'NURSE'
+            }
+          }
+        })
+      } else if (token === 'mock-admin-token') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '2',
+              email: 'admin@school.edu',
+              firstName: 'John',
+              lastName: 'Admin',
+              role: 'ADMIN'
+            }
+          }
+        })
+      } else if (token === 'mock-readonly-token') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '3',
+              email: 'readonly@school.edu',
+              firstName: 'View',
+              lastName: 'Only',
+              role: 'READ_ONLY'
+            }
+          }
+        })
+      } else if (token === 'mock-counselor-token') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '4',
+              email: 'counselor@school.edu',
+              firstName: 'Mary',
+              lastName: 'Counselor',
+              role: 'COUNSELOR'
+            }
+          }
+        })
+      } else {
+        req.reply({
+          statusCode: 401,
+          body: {
+            success: false,
+            error: { message: 'Invalid token' }
+          }
+        })
+      }
+    }).as('verifyToken')
+    
+    // Mock health records API endpoints using actual backend structure
+    cy.intercept('GET', 'http://localhost:3001/api/health-records/**', { 
+      statusCode: 200, 
+      body: { success: true, data: {} } 
+    }).as('healthRecordsAPI')
+    
+    // Mock students API endpoints
+    cy.intercept('GET', 'http://localhost:3001/api/students/assigned', { 
+      fixture: 'assignedStudents.json'
+    }).as('getAssignedStudents')
+    
+    cy.intercept('GET', 'http://localhost:3001/api/students/**', { 
+      statusCode: 200, 
+      body: { success: true, data: { students: [] } } 
+    }).as('studentsAPI')
+    
+    // Mock bulk delete with proper permission checking
+    cy.intercept('POST', 'http://localhost:3001/api/health-records/bulk-delete', (req) => {
+      const authHeader = req.headers.authorization
+      const token = Array.isArray(authHeader) ? authHeader[0]?.replace('Bearer ', '') : authHeader?.replace('Bearer ', '')
+      
+      if (token && token.includes('readonly')) {
+        req.reply({
+          statusCode: 403,
+          body: {
+            success: false,
+            error: 'Insufficient permissions'
+          }
+        })
+      } else {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: { deleted: [] }
+          }
+        })
+      }
+    }).as('bulkDelete')
+    
+    // Mock audit endpoints
+    cy.intercept('POST', 'http://localhost:3001/api/audit/access-log', { 
+      statusCode: 201, 
+      body: { success: true, data: { logged: true } } 
+    }).as('auditLog')
+    
+    cy.intercept('POST', 'http://localhost:3001/api/audit/security-log', { 
+      statusCode: 201, 
+      body: { success: true, data: { logged: true } } 
+    }).as('securityLog')
+    
+    // Mock admin settings endpoint
+    cy.intercept('GET', '/api/health-records/admin/settings', (req) => {
+      const authHeader = req.headers.authorization
+      const token = Array.isArray(authHeader) ? authHeader[0]?.replace('Bearer ', '') : authHeader?.replace('Bearer ', '')
+      
+      if (token && (token.includes('admin') || token.includes('ADMIN'))) {
+        req.reply({
+          statusCode: 200,
+          body: { success: true, data: { settings: {} } }
+        })
+      } else {
+        req.reply({
+          statusCode: 403,
+          body: { success: false, error: 'Insufficient permissions' }
+        })
+      }
+    }).as('adminSettings')
   })
 
   describe('Authentication Requirements (Tests 101-105)', () => {
@@ -76,7 +301,7 @@ describe('Health Records - Authentication and Access Control (Tests 101-110)', (
     })
 
     it('Test 107: Should restrict access for read-only users', () => {
-      cy.login('readonly@school.edu', 'ReadOnlyPassword123!')
+      cy.loginAsReadOnly()
       cy.visit('/health-records')
       
       cy.get('[data-testid="new-record-button"]').should('not.exist')
@@ -100,11 +325,11 @@ describe('Health Records - Authentication and Access Control (Tests 101-110)', (
       cy.get('[data-testid="tab-records"]').click()
       
       // But should access analytics
-      cy.get('[data-testid="analytics-tab"]').should('be.visible')
+      cy.get('[data-testid="tab-analytics"]').should('be.visible')
     })
 
     it('Test 109: Should prevent unauthorized API access', () => {
-      cy.login('readonly@school.edu', 'ReadOnlyPassword123!')
+      cy.loginAsReadOnly()
       cy.visit('/health-records')
       
       // Attempt to access admin endpoints should fail
@@ -128,7 +353,7 @@ describe('Health Records - Authentication and Access Control (Tests 101-110)', (
     })
 
     it('Test 110: Should validate permissions on page actions', () => {
-      cy.login('readonly@school.edu', 'ReadOnlyPassword123!')
+      cy.loginAsReadOnly()
       cy.visit('/health-records')
       
       cy.get('[data-testid="tab-allergies"]').click()
@@ -148,12 +373,233 @@ describe('Health Records - Student Data Privacy and Access (Tests 111-120)', () 
   beforeEach(() => {
     cy.clearCookies()
     cy.clearLocalStorage()
+    
+    // Mock authentication API calls using actual backend structure  
+    cy.intercept('POST', 'http://localhost:3001/api/auth/login', (req) => {
+      const { email, password } = req.body
+      
+      if (email === 'nurse@school.edu' && password === 'NursePassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJudXJzZUBzY2hvb2wuZWR1Iiwicm9sZSI6Ik5VUlNFIiwiaWF0IjoxNjk3MDAwMDAwLCJleHAiOjk5OTk5OTk5OTl9.mock',
+              user: {
+                id: '1',
+                email: 'nurse@school.edu',
+                firstName: 'Sarah',
+                lastName: 'Johnson',
+                role: 'NURSE'
+              }
+            }
+          }
+        })
+      } else if (email === 'admin@school.edu' && password === 'AdminPassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwiZW1haWwiOiJhZG1pbkBzY2hvb2wuZWR1Iiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNjk3MDAwMDAwLCJleHAiOjk5OTk5OTk5OTl9.mock',
+              user: {
+                id: '2',
+                email: 'admin@school.edu',
+                firstName: 'John',
+                lastName: 'Admin',
+                role: 'ADMIN'
+              }
+            }
+          }
+        })
+      } else if (email === 'readonly@school.edu' && password === 'ReadOnlyPassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzIiwiZW1haWwiOiJyZWFkb25seUBzY2hvb2wuZWR1Iiwicm9sZSI6IlJFQURfT05MWSIsImlhdCI6MTY5NzAwMDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ.mock',
+              user: {
+                id: '3',
+                email: 'readonly@school.edu',
+                firstName: 'View',
+                lastName: 'Only',
+                role: 'READ_ONLY'
+              }
+            }
+          }
+        })
+      } else if (email === 'counselor@school.edu' && password === 'CounselorPassword123!') {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0IiwiZW1haWwiOiJjb3Vuc2Vsb3JAc2Nob29sLmVkdSIsInJvbGUiOiJDT1VOU0VMT1IiLCJpYXQiOjE2OTcwMDAwMDAsImV4cCI6OTk5OTk5OTk5OX0.mock',
+              user: {
+                id: '4',
+                email: 'counselor@school.edu',
+                firstName: 'Mary',
+                lastName: 'Counselor',
+                role: 'COUNSELOR'
+              }
+            }
+          }
+        })
+      } else {
+        req.reply({
+          statusCode: 401,
+          body: {
+            success: false,
+            error: { message: 'Invalid credentials' }
+          }
+        })
+      }
+    }).as('loginRequest')
+    
+    // Mock token verification using actual backend endpoint
+    cy.intercept('GET', 'http://localhost:3001/api/auth/verify', (req) => {
+      const authHeader = req.headers.authorization
+      const token = Array.isArray(authHeader) ? authHeader[0]?.replace('Bearer ', '') : authHeader?.replace('Bearer ', '')
+      
+      if (token && token.includes('nurse')) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '1',
+              email: 'nurse@school.edu',
+              firstName: 'Sarah',
+              lastName: 'Johnson',
+              role: 'NURSE',
+              isActive: true
+            }
+          }
+        })
+      } else if (token && token.includes('admin')) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '2',
+              email: 'admin@school.edu',
+              firstName: 'John',
+              lastName: 'Admin',
+              role: 'ADMIN',
+              isActive: true
+            }
+          }
+        })
+      } else if (token && token.includes('readonly')) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '3',
+              email: 'readonly@school.edu',
+              firstName: 'View',
+              lastName: 'Only',
+              role: 'READ_ONLY',
+              isActive: true
+            }
+          }
+        })
+      } else if (token && token.includes('counselor')) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            success: true,
+            data: {
+              id: '4',
+              email: 'counselor@school.edu',
+              firstName: 'Mary',
+              lastName: 'Counselor',
+              role: 'COUNSELOR',
+              isActive: true
+            }
+          }
+        })
+      } else {
+        req.reply({
+          statusCode: 401,
+          body: {
+            success: false,
+            error: { message: 'Invalid or expired token' }
+          }
+        })
+      }
+    }).as('verifyToken')
+    
+    // Mock health records API endpoints using actual backend structure
+    cy.intercept('GET', 'http://localhost:3001/api/health-records/**', { 
+      statusCode: 200, 
+      body: { success: true, data: {} } 
+    }).as('healthRecordsAPI')
+    
+    // Mock students API endpoints
+    cy.intercept('GET', 'http://localhost:3001/api/students/assigned', { 
+      fixture: 'assignedStudents.json'
+    }).as('getAssignedStudents')
+    
+    cy.intercept('GET', 'http://localhost:3001/api/students/**', { 
+      statusCode: 200, 
+      body: { success: true, data: { students: [] } } 
+    }).as('studentsAPI')
+    
+    // Mock audit endpoints
+    cy.intercept('POST', '**/audit/access-log', (req) => {
+      req.reply({
+        statusCode: 201,
+        body: {
+          success: true,
+          data: {
+            logged: true,
+            action: req.body.action,
+            studentId: req.body.studentId,
+            resourceType: req.body.resourceType || 'HEALTH_RECORD'
+          }
+        }
+      })
+    }).as('logAccess')
+    
+    cy.intercept('POST', '**/audit/security-log', (req) => {
+      req.reply({
+        statusCode: 201,
+        body: {
+          success: true,
+          data: {
+            logged: true,
+            event: req.body.event,
+            resourceType: req.body.resourceType,
+            securityLevel: req.body.securityLevel || 'MEDIUM'
+          }
+        }
+      })
+    }).as('logSecurityEvent')
+    
     cy.loginAsNurse()
   })
 
   describe('Student Record Access Control (Tests 111-115)', () => {
     it('Test 111: Should display only assigned students for regular nurse', () => {
-      cy.intercept('GET', '**/api/students/assigned', { fixture: 'assignedStudents.json' }).as('getAssignedStudents')
+      cy.intercept('GET', '**/api/students/assigned', {
+        statusCode: 200,
+        body: {
+          success: true,
+          data: {
+            students: [
+              { id: '1', name: 'Emma Wilson' },
+              { id: '2', name: 'John Smith' },
+              { id: '3', name: 'Sarah Johnson' },
+              { id: '4', name: 'Michael Brown' },
+              { id: '5', name: 'Lisa Davis' }
+            ]
+          }
+        }
+      }).as('getAssignedStudents')
       cy.visit('/health-records')
       
       cy.wait('@getAssignedStudents')

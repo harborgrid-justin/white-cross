@@ -104,3 +104,61 @@ describe('Students - Core CRUD Operations', () => {
     // For now, just verify the checkbox functionality works
   })
 })
+
+// Additional session management tests for Students module
+describe('Students - Session Management', () => {
+  beforeEach(() => {
+    cy.clearCookies()
+    cy.clearLocalStorage()
+  })
+
+  it('should redirect unauthenticated users to login', () => {
+    cy.visit('/students')
+    cy.url().should('include', '/login')
+  })
+
+  it('should handle session expiration during student operations', () => {
+    cy.loginAsNurse()
+    cy.interceptStudentAPI()
+    cy.visit('/students')
+    
+    // Verify initial load
+    cy.get('[data-testid="student-table"]').should('be.visible')
+    
+    // Simulate session expiration
+    cy.window().then((win) => {
+      win.localStorage.removeItem('authToken')
+      win.localStorage.removeItem('token')
+    })
+    
+    // Mock expired auth response for any API calls
+    cy.intercept('GET', '**/api/**', {
+      statusCode: 401,
+      body: {
+        success: false,
+        error: { message: 'Token expired', code: 'TOKEN_EXPIRED' }
+      }
+    }).as('expiredRequest')
+    
+    // Try to perform an operation that requires authentication
+    cy.get('[data-testid="add-student-button"]').click()
+    
+    // Should handle gracefully (either redirect or show modal)
+    cy.url().should('include', '/login')
+  })
+
+  it('should maintain authentication across page refreshes', () => {
+    cy.loginAsNurse()
+    cy.interceptStudentAPI()
+    cy.visit('/students')
+    
+    cy.get('[data-testid="student-table"]').should('be.visible')
+    
+    // Refresh page
+    cy.reload()
+    
+    // Should still be authenticated and show content
+    cy.get('[data-testid="student-table"]').should('be.visible')
+    cy.url().should('not.include', '/login')
+  })
+})

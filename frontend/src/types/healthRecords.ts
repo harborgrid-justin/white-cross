@@ -1,4 +1,4 @@
-export type TabType = 'overview' | 'records' | 'allergies' | 'chronic' | 'vaccinations' | 'growth' | 'screenings'
+export type TabType = 'overview' | 'records' | 'allergies' | 'chronic' | 'vaccinations' | 'growth' | 'screenings' | 'analytics'
 
 export type RecordType = 'CHECKUP' | 'VACCINATION' | 'ILLNESS' | 'INJURY' | 'SCREENING' | 'VISION' | 'HEARING' | 'PHYSICAL_EXAM'
 

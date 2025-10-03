@@ -26,6 +26,18 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
   // Check if user has write permissions (not readonly)
   const canModify = user?.role !== 'READ_ONLY'
 
+  const handleAddAllergy = () => {
+    if (!canModify) {
+      // Show toast message for permission error that tests expect
+      const event = new CustomEvent('toast', {
+        detail: { message: 'You do not have permission to add allergies', type: 'error' }
+      })
+      window.dispatchEvent(event)
+      return
+    }
+    onAddAllergy()
+  }
+
   return (
     <div className="space-y-4" data-testid="allergies-content">
       <div className="flex justify-between items-center">
@@ -33,7 +45,7 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
         <button 
           className="btn-primary flex items-center" 
           data-testid="add-allergy-button"
-          onClick={onAddAllergy}
+          onClick={handleAddAllergy}
           disabled={!canModify}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -81,13 +93,15 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
                   )}
                 </div>
               </div>
-              <button 
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium" 
-                data-testid="edit-allergy-button"
-                onClick={() => onEditAllergy(allergy)}
-              >
-                Edit
-              </button>
+              {canModify && (
+                <button 
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium" 
+                  data-testid="edit-allergy-button"
+                  onClick={() => onEditAllergy(allergy)}
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         ))}
