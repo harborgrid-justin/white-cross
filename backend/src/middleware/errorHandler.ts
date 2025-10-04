@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, ResponseToolkit } from '@hapi/hapi';
+import * as Boom from '@hapi/boom';
 import { logger } from '../utils/logger';
 
 interface ErrorWithStatus extends Error {
@@ -6,34 +7,58 @@ interface ErrorWithStatus extends Error {
   statusCode?: number;
 }
 
-export const errorHandler = (
-  err: ErrorWithStatus,
-  req: Request,
-  res: Response,
-  _next: NextFunction
-) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+export const errorHandler = (request: Request, h: ResponseToolkit) => {
+  const response = request.response;
 
-  logger.error({
-    error: {
-      message: err.message,
-      stack: err.stack,
-      status
-    },
-    request: {
-      method: req.method,
-      url: req.url,
-      headers: req.headers,
-      body: req.body
-    }
-  });
+  // Handle Boom errors (Hapi's error objects)
+  if (Boom.isBoom(response)) {
+    const boomError = response as Boom.Boom;
 
-  res.status(status).json({
-    success: false,
-    error: {
-      message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
-  });
+    logger.error({
+      error: {
+        message: boomError.message,
+        stack: boomError.stack,
+        status: boomError.output.statusCode
+      },
+      request: {
+        method: request.method,
+        url: request.url,
+        headers: request.headers,
+        payload: request.payload
+      }
+    });
+
+    return h.continue;
+  }
+
+  // Handle regular errors
+  if (response instanceof Error) {
+    const error = response as ErrorWithStatus;
+    const status = error.status || error.statusCode || 500;
+    const message = error.message || 'Internal Server Error';
+
+    logger.error({
+      error: {
+        message: error.message,
+        stack: error.stack,
+        status
+      },
+      request: {
+        method: request.method,
+        url: request.url,
+        headers: request.headers,
+        payload: request.payload
+      }
+    });
+
+    return h.response({
+      success: false,
+      error: {
+        message,
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      }
+    }).code(status);
+  }
+
+  return h.continue;
 };

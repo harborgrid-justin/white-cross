@@ -1,238 +1,183 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { AppointmentService } from '../services/appointmentService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get appointments
-router.get('/', auth, async (req: Request, res: Response) => {
+const getAppointmentsHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.nurseId) filters.nurseId = req.query.nurseId as string;
-    if (req.query.studentId) filters.studentId = req.query.studentId as string;
-    if (req.query.status) filters.status = req.query.status as string;
-    if (req.query.type) filters.type = req.query.type as string;
-    if (req.query.dateFrom) filters.dateFrom = new Date(req.query.dateFrom as string);
-    if (req.query.dateTo) filters.dateTo = new Date(req.query.dateTo as string);
+    if (request.query.nurseId) filters.nurseId = request.query.nurseId;
+    if (request.query.studentId) filters.studentId = request.query.studentId;
+    if (request.query.status) filters.status = request.query.status;
+    if (request.query.type) filters.type = request.query.type;
+    if (request.query.dateFrom) filters.dateFrom = new Date(request.query.dateFrom);
+    if (request.query.dateTo) filters.dateTo = new Date(request.query.dateTo);
 
     const result = await AppointmentService.getAppointments(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new appointment
-router.post('/', [
-  auth,
-  body('studentId').notEmpty(),
-  body('nurseId').notEmpty(),
-  body('type').isIn(['ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY']),
-  body('scheduledAt').isISO8601(),
-  body('reason').notEmpty().trim(),
-  body('duration').optional().isInt({ min: 15, max: 180 })
-], async (req: Request, res: Response) => {
+const createAppointmentHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     const appointment = await AppointmentService.createAppointment({
-      ...req.body,
-      scheduledAt: new Date(req.body.scheduledAt)
+      ...request.payload,
+      scheduledAt: new Date(request.payload.scheduledAt)
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { appointment }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update appointment
-router.put('/:id', [
-  auth,
-  body('type').optional().isIn(['ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY']),
-  body('scheduledAt').optional().isISO8601(),
-  body('reason').optional().trim(),
-  body('duration').optional().isInt({ min: 15, max: 180 }),
-  body('status').optional().isIn(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'])
-], async (req: Request, res: Response) => {
+const updateAppointmentHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const updateData = { ...request.payload };
 
-    const { id } = req.params;
-    const updateData = { ...req.body };
-    
     if (updateData.scheduledAt) {
       updateData.scheduledAt = new Date(updateData.scheduledAt);
     }
 
     const appointment = await AppointmentService.updateAppointment(id, updateData);
 
-    res.json({
+    return h.response({
       success: true,
       data: { appointment }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Cancel appointment
-router.put('/:id/cancel', [
-  auth,
-  body('reason').optional().trim()
-], async (req: Request, res: Response) => {
+const cancelAppointmentHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
-    const { reason } = req.body;
-    
+    const { id } = request.params;
+    const { reason } = request.payload;
+
     const appointment = await AppointmentService.cancelAppointment(id, reason);
 
-    res.json({
+    return h.response({
       success: true,
       data: { appointment }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Mark as no-show
-router.put('/:id/no-show', auth, async (req: Request, res: Response) => {
+const markNoShowHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const appointment = await AppointmentService.markNoShow(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { appointment }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Check availability
-router.get('/availability/:nurseId', auth, async (req: Request, res: Response) => {
+const getAvailableSlotsHandler = async (request: any, h: any) => {
   try {
-    const { nurseId } = req.params;
-    const date = req.query.date ? new Date(req.query.date as string) : new Date();
-    const duration = parseInt(req.query.duration as string) || 30;
+    const { nurseId } = request.params;
+    const date = request.query.date ? new Date(request.query.date) : new Date();
+    const duration = parseInt(request.query.duration) || 30;
 
     const slots = await AppointmentService.getAvailableSlots(nurseId, date, duration);
 
-    res.json({
+    return h.response({
       success: true,
       data: { slots }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get upcoming appointments for a nurse
-router.get('/upcoming/:nurseId', auth, async (req: Request, res: Response) => {
+const getUpcomingAppointmentsHandler = async (request: any, h: any) => {
   try {
-    const { nurseId } = req.params;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const { nurseId } = request.params;
+    const limit = parseInt(request.query.limit) || 10;
 
     const appointments = await AppointmentService.getUpcomingAppointments(nurseId, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: { appointments }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get appointment statistics
-router.get('/statistics', auth, async (req: Request, res: Response) => {
+const getAppointmentStatisticsHandler = async (request: any, h: any) => {
   try {
-    const nurseId = req.query.nurseId as string;
-    const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
-    const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+    const nurseId = request.query.nurseId;
+    const dateFrom = request.query.dateFrom ? new Date(request.query.dateFrom) : undefined;
+    const dateTo = request.query.dateTo ? new Date(request.query.dateTo) : undefined;
 
     const stats = await AppointmentService.getAppointmentStatistics(nurseId, dateFrom, dateTo);
 
-    res.json({
+    return h.response({
       success: true,
       data: stats
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create recurring appointments
-router.post('/recurring', [
-  auth,
-  body('studentId').notEmpty(),
-  body('nurseId').notEmpty(),
-  body('type').isIn(['ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY']),
-  body('scheduledAt').isISO8601(),
-  body('reason').notEmpty().trim(),
-  body('recurrence.frequency').isIn(['daily', 'weekly', 'monthly']),
-  body('recurrence.interval').isInt({ min: 1 }),
-  body('recurrence.endDate').isISO8601()
-], async (req: Request, res: Response) => {
+const createRecurringAppointmentsHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { recurrence, ...appointmentData } = req.body;
+    const { recurrence, ...appointmentData } = request.payload;
 
     const appointments = await AppointmentService.createRecurringAppointments(
       {
@@ -245,248 +190,456 @@ router.post('/recurring', [
       }
     );
 
-    res.status(201).json({
+    return h.response({
       success: true,
-      data: { 
+      data: {
         appointments,
         count: appointments.length
       }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
-
-// Nurse Availability Endpoints
+};
 
 // Set nurse availability
-router.post('/availability', [
-  auth,
-  body('nurseId').notEmpty(),
-  body('startTime').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-  body('endTime').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-  body('dayOfWeek').optional().isInt({ min: 0, max: 6 }),
-  body('isRecurring').optional().isBoolean(),
-  body('specificDate').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const setNurseAvailabilityHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const availability = await AppointmentService.setNurseAvailability(request.payload);
 
-    const availability = await AppointmentService.setNurseAvailability(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { availability }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get nurse availability
-router.get('/availability/nurse/:nurseId', auth, async (req: Request, res: Response) => {
+const getNurseAvailabilityHandler = async (request: any, h: any) => {
   try {
-    const { nurseId } = req.params;
-    const date = req.query.date ? new Date(req.query.date as string) : undefined;
+    const { nurseId } = request.params;
+    const date = request.query.date ? new Date(request.query.date) : undefined;
 
     const availability = await AppointmentService.getNurseAvailability(nurseId, date);
 
-    res.json({
+    return h.response({
       success: true,
       data: { availability }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Update nurse availability
-router.put('/availability/:id', [
-  auth,
-  body('startTime').optional().matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-  body('endTime').optional().matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-  body('isAvailable').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateNurseAvailabilityHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const availability = await AppointmentService.updateNurseAvailability(id, request.payload);
 
-    const { id } = req.params;
-    const availability = await AppointmentService.updateNurseAvailability(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { availability }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Delete nurse availability
-router.delete('/availability/:id', auth, async (req: Request, res: Response) => {
+const deleteNurseAvailabilityHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     await AppointmentService.deleteNurseAvailability(id);
 
-    res.json({
+    return h.response({
       success: true,
       message: 'Availability schedule deleted'
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
-
-// Waitlist Endpoints
+};
 
 // Add to waitlist
-router.post('/waitlist', [
-  auth,
-  body('studentId').notEmpty(),
-  body('type').isIn(['ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY']),
-  body('reason').notEmpty().trim(),
-  body('priority').optional().isIn(['LOW', 'NORMAL', 'HIGH', 'URGENT']),
-  body('preferredDate').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const addToWaitlistHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const data = { ...req.body };
+    const data = { ...request.payload };
     if (data.preferredDate) {
       data.preferredDate = new Date(data.preferredDate);
     }
 
     const entry = await AppointmentService.addToWaitlist(data);
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { entry }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get waitlist
-router.get('/waitlist', auth, async (req: Request, res: Response) => {
+const getWaitlistHandler = async (request: any, h: any) => {
   try {
     const filters: any = {};
-    if (req.query.nurseId) filters.nurseId = req.query.nurseId as string;
-    if (req.query.status) filters.status = req.query.status as string;
-    if (req.query.priority) filters.priority = req.query.priority as string;
+    if (request.query.nurseId) filters.nurseId = request.query.nurseId;
+    if (request.query.status) filters.status = request.query.status;
+    if (request.query.priority) filters.priority = request.query.priority;
 
     const waitlist = await AppointmentService.getWaitlist(filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: { waitlist }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Remove from waitlist
-router.delete('/waitlist/:id', [
-  auth,
-  body('reason').optional().trim()
-], async (req: Request, res: Response) => {
+const removeFromWaitlistHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
-    const { reason } = req.body;
+    const { id } = request.params;
+    const { reason } = request.payload;
 
     const entry = await AppointmentService.removeFromWaitlist(id, reason);
 
-    res.json({
+    return h.response({
       success: true,
       data: { entry }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
-// Reminder Endpoints
-
-// Process pending reminders (typically called by a cron job)
-router.post('/reminders/process', auth, async (req: Request, res: Response) => {
+// Process pending reminders
+const processPendingRemindersHandler = async (request: any, h: any) => {
   try {
     const result = await AppointmentService.processPendingReminders();
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
-
-// Calendar Export
+};
 
 // Generate calendar export
-router.get('/calendar/:nurseId', auth, async (req: Request, res: Response) => {
+const generateCalendarExportHandler = async (request: any, h: any) => {
   try {
-    const { nurseId } = req.params;
-    const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
-    const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+    const { nurseId } = request.params;
+    const dateFrom = request.query.dateFrom ? new Date(request.query.dateFrom) : undefined;
+    const dateTo = request.query.dateTo ? new Date(request.query.dateTo) : undefined;
 
     const ical = await AppointmentService.generateCalendarExport(nurseId, dateFrom, dateTo);
 
-    res.setHeader('Content-Type', 'text/calendar');
-    res.setHeader('Content-Disposition', `attachment; filename="appointments-${nurseId}.ics"`);
-    res.send(ical);
+    return h.response(ical)
+      .type('text/calendar')
+      .header('Content-Disposition', `attachment; filename="appointments-${nurseId}.ics"`);
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define appointment routes for Hapi
+export const appointmentRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/appointments',
+    handler: getAppointmentsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          nurseId: Joi.string().optional(),
+          studentId: Joi.string().optional(),
+          status: Joi.string().optional(),
+          type: Joi.string().optional(),
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/appointments',
+    handler: createAppointmentHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          nurseId: Joi.string().required(),
+          type: Joi.string().valid('ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY').required(),
+          scheduledAt: Joi.date().iso().required(),
+          reason: Joi.string().trim().required(),
+          duration: Joi.number().integer().min(15).max(180).optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/appointments/{id}',
+    handler: updateAppointmentHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          type: Joi.string().valid('ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY').optional(),
+          scheduledAt: Joi.date().iso().optional(),
+          reason: Joi.string().trim().optional(),
+          duration: Joi.number().integer().min(15).max(180).optional(),
+          status: Joi.string().valid('SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW').optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/appointments/{id}/cancel',
+    handler: cancelAppointmentHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          reason: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/appointments/{id}/no-show',
+    handler: markNoShowHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/appointments/availability/{nurseId}',
+    handler: getAvailableSlotsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          date: Joi.date().iso().optional(),
+          duration: Joi.number().integer().min(15).default(30)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/appointments/upcoming/{nurseId}',
+    handler: getUpcomingAppointmentsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          limit: Joi.number().integer().min(1).max(50).default(10)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/appointments/statistics',
+    handler: getAppointmentStatisticsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          nurseId: Joi.string().optional(),
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/appointments/recurring',
+    handler: createRecurringAppointmentsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          nurseId: Joi.string().required(),
+          type: Joi.string().valid('ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY').required(),
+          scheduledAt: Joi.date().iso().required(),
+          reason: Joi.string().trim().required(),
+          recurrence: Joi.object({
+            frequency: Joi.string().valid('daily', 'weekly', 'monthly').required(),
+            interval: Joi.number().integer().min(1).required(),
+            endDate: Joi.date().iso().required()
+          }).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/appointments/availability',
+    handler: setNurseAvailabilityHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          nurseId: Joi.string().required(),
+          startTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+          endTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+          dayOfWeek: Joi.number().integer().min(0).max(6).optional(),
+          isRecurring: Joi.boolean().optional(),
+          specificDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/appointments/availability/nurse/{nurseId}',
+    handler: getNurseAvailabilityHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          date: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/appointments/availability/{id}',
+    handler: updateNurseAvailabilityHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          startTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+          endTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+          isAvailable: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/appointments/availability/{id}',
+    handler: deleteNurseAvailabilityHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/appointments/waitlist',
+    handler: addToWaitlistHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          type: Joi.string().valid('ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY').required(),
+          reason: Joi.string().trim().required(),
+          priority: Joi.string().valid('LOW', 'NORMAL', 'HIGH', 'URGENT').optional(),
+          preferredDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/appointments/waitlist',
+    handler: getWaitlistHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          nurseId: Joi.string().optional(),
+          status: Joi.string().optional(),
+          priority: Joi.string().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/appointments/waitlist/{id}',
+    handler: removeFromWaitlistHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          reason: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/appointments/reminders/process',
+    handler: processPendingRemindersHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/appointments/calendar/{nurseId}',
+    handler: generateCalendarExportHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional()
+        })
+      }
+    }
+  }
+];

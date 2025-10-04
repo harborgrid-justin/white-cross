@@ -1,237 +1,264 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { EmergencyContactService } from '../services/emergencyContactService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get emergency contacts for a student
-router.get('/student/:studentId', auth, async (req: Request, res: Response) => {
+const getStudentEmergencyContactsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const contacts = await EmergencyContactService.getStudentEmergencyContacts(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { contacts }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new emergency contact
-router.post('/', [
-  auth,
-  body('studentId').notEmpty(),
-  body('firstName').notEmpty().trim(),
-  body('lastName').notEmpty().trim(),
-  body('relationship').notEmpty().trim(),
-  body('phoneNumber').notEmpty().trim(),
-  body('priority').isIn(['PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY']),
-  body('email').optional().isEmail()
-], async (req: Request, res: Response) => {
+const createEmergencyContactHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const contact = await EmergencyContactService.createEmergencyContact(request.payload);
 
-    const contact = await EmergencyContactService.createEmergencyContact(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { contact }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update emergency contact
-router.put('/:id', [
-  auth,
-  body('firstName').optional().trim(),
-  body('lastName').optional().trim(),
-  body('relationship').optional().trim(),
-  body('phoneNumber').optional().trim(),
-  body('priority').optional().isIn(['PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY']),
-  body('email').optional().isEmail(),
-  body('isActive').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateEmergencyContactHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const contact = await EmergencyContactService.updateEmergencyContact(id, request.payload);
 
-    const { id } = req.params;
-    const contact = await EmergencyContactService.updateEmergencyContact(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { contact }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Delete emergency contact
-router.delete('/:id', auth, async (req: Request, res: Response) => {
+const deleteEmergencyContactHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     await EmergencyContactService.deleteEmergencyContact(id);
 
-    res.json({
+    return h.response({
       success: true,
       message: 'Emergency contact deleted successfully'
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Send emergency notification to all contacts
-router.post('/notify/:studentId', [
-  auth,
-  body('message').notEmpty().trim(),
-  body('type').isIn(['emergency', 'health', 'medication', 'general']),
-  body('priority').isIn(['low', 'medium', 'high', 'critical']),
-  body('channels').isArray().custom((channels: string[]) => {
-    const validChannels = ['sms', 'email', 'voice'];
-    return channels.every(channel => validChannels.includes(channel));
-  })
-], async (req: Request, res: Response) => {
+const sendEmergencyNotificationHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const results = await EmergencyContactService.sendEmergencyNotification(studentId, {
-      ...req.body,
+      ...request.payload,
       studentId
     });
 
-    res.json({
+    return h.response({
       success: true,
       data: { results }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Send notification to specific contact
-router.post('/notify/contact/:contactId', [
-  auth,
-  body('message').notEmpty().trim(),
-  body('type').isIn(['emergency', 'health', 'medication', 'general']),
-  body('priority').isIn(['low', 'medium', 'high', 'critical']),
-  body('channels').isArray().custom((channels: string[]) => {
-    const validChannels = ['sms', 'email', 'voice'];
-    return channels.every(channel => validChannels.includes(channel));
-  })
-], async (req: Request, res: Response) => {
+const sendContactNotificationHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { contactId } = req.params;
+    const { contactId } = request.params;
     const result = await EmergencyContactService.sendContactNotification(contactId, {
-      ...req.body,
+      ...request.payload,
       studentId: '' // Will be fetched from contact
     });
 
-    res.json({
+    return h.response({
       success: true,
       data: { result }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Verify contact information
-router.post('/verify/:contactId', [
-  auth,
-  body('method').isIn(['sms', 'email', 'voice'])
-], async (req: Request, res: Response) => {
+const verifyContactHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { contactId } = request.params;
+    const { method } = request.payload;
 
-    const { contactId } = req.params;
-    const { method } = req.body;
-    
     const result = await EmergencyContactService.verifyContact(contactId, method);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get contact statistics
-router.get('/statistics', auth, async (_req: Request, res: Response) => {
+const getContactStatisticsHandler = async (request: any, h: any) => {
   try {
     const stats = await EmergencyContactService.getContactStatistics();
 
-    res.json({
+    return h.response({
       success: true,
       data: stats
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define emergency contact routes for Hapi
+export const emergencyContactRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/emergency-contacts/student/{studentId}',
+    handler: getStudentEmergencyContactsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/emergency-contacts',
+    handler: createEmergencyContactHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          firstName: Joi.string().trim().required(),
+          lastName: Joi.string().trim().required(),
+          relationship: Joi.string().trim().required(),
+          phoneNumber: Joi.string().trim().required(),
+          priority: Joi.string().valid('PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY').required(),
+          email: Joi.string().email().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/emergency-contacts/{id}',
+    handler: updateEmergencyContactHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          firstName: Joi.string().trim().optional(),
+          lastName: Joi.string().trim().optional(),
+          relationship: Joi.string().trim().optional(),
+          phoneNumber: Joi.string().trim().optional(),
+          priority: Joi.string().valid('PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY').optional(),
+          email: Joi.string().email().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/emergency-contacts/{id}',
+    handler: deleteEmergencyContactHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/emergency-contacts/notify/{studentId}',
+    handler: sendEmergencyNotificationHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          message: Joi.string().trim().required(),
+          type: Joi.string().valid('emergency', 'health', 'medication', 'general').required(),
+          priority: Joi.string().valid('low', 'medium', 'high', 'critical').required(),
+          channels: Joi.array().items(Joi.string().valid('sms', 'email', 'voice')).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/emergency-contacts/notify/contact/{contactId}',
+    handler: sendContactNotificationHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          message: Joi.string().trim().required(),
+          type: Joi.string().valid('emergency', 'health', 'medication', 'general').required(),
+          priority: Joi.string().valid('low', 'medium', 'high', 'critical').required(),
+          channels: Joi.array().items(Joi.string().valid('sms', 'email', 'voice')).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/emergency-contacts/verify/{contactId}',
+    handler: verifyContactHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          method: Joi.string().valid('sms', 'email', 'voice').required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/emergency-contacts/statistics',
+    handler: getContactStatisticsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  }
+];

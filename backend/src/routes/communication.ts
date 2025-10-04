@@ -1,350 +1,431 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { CommunicationService } from '../services/communicationService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get message templates
-router.get('/templates', auth, async (req: Request, res: Response) => {
+const getMessageTemplatesHandler = async (request: any, h: any) => {
   try {
-    const type = req.query.type as any;
-    const category = req.query.category as string;
-    const isActive = req.query.isActive !== 'false';
+    const type = request.query.type;
+    const category = request.query.category;
+    const isActive = request.query.isActive !== 'false';
 
     const templates = await CommunicationService.getMessageTemplates(type, category, isActive);
 
-    res.json({
+    return h.response({
       success: true,
       data: { templates }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Update message template
-router.put('/templates/:id', [
-  auth,
-  body('name').optional().trim(),
-  body('content').optional().trim(),
-  body('type').optional().isIn(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE']),
-  body('category').optional().isIn(['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE']),
-  body('variables').optional().isArray(),
-  body('isActive').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateMessageTemplateHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const template = await CommunicationService.updateMessageTemplate(id, request.payload);
 
-    const { id } = req.params;
-    const template = await CommunicationService.updateMessageTemplate(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { template }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Delete message template
-router.delete('/templates/:id', auth, async (req: Request, res: Response) => {
+const deleteMessageTemplateHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const result = await CommunicationService.deleteMessageTemplate(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Create message template
-router.post('/templates', [
-  auth,
-  body('name').notEmpty().trim(),
-  body('content').notEmpty().trim(),
-  body('type').isIn(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE']),
-  body('category').isIn(['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE']),
-  body('variables').optional().isArray()
-], async (req: Request, res: Response) => {
+const createMessageTemplateHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const createdBy = (req as any).user.userId; // From auth middleware
+    const createdBy = request.auth.credentials?.userId;
 
     const template = await CommunicationService.createMessageTemplate({
-      ...req.body,
+      ...request.payload,
       createdBy
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { template }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Send message to specific recipients
-router.post('/send', [
-  auth,
-  body('recipients').isArray({ min: 1 }),
-  body('recipients.*.type').isIn(['STUDENT', 'EMERGENCY_CONTACT', 'PARENT', 'NURSE', 'ADMIN']),
-  body('recipients.*.id').notEmpty(),
-  body('channels').isArray({ min: 1 }),
-  body('channels.*').isIn(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE']),
-  body('content').notEmpty().trim(),
-  body('priority').isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  body('category').isIn(['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE']),
-  body('scheduledAt').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const sendMessageHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const senderId = (req as any).user.userId; // From auth middleware
+    const senderId = request.auth.credentials?.userId;
 
     const result = await CommunicationService.sendMessage({
-      ...req.body,
+      ...request.payload,
       senderId,
-      scheduledAt: req.body.scheduledAt ? new Date(req.body.scheduledAt) : undefined
+      scheduledAt: request.payload.scheduledAt ? new Date(request.payload.scheduledAt) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: result
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Send broadcast message
-router.post('/broadcast', [
-  auth,
-  body('audience').isObject(),
-  body('channels').isArray({ min: 1 }),
-  body('channels.*').isIn(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE']),
-  body('content').notEmpty().trim(),
-  body('priority').isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  body('category').isIn(['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE']),
-  body('scheduledAt').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const sendBroadcastMessageHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const senderId = (req as any).user.userId; // From auth middleware
+    const senderId = request.auth.credentials?.userId;
 
     const result = await CommunicationService.sendBroadcastMessage({
-      ...req.body,
+      ...request.payload,
       senderId,
-      scheduledAt: req.body.scheduledAt ? new Date(req.body.scheduledAt) : undefined
+      scheduledAt: request.payload.scheduledAt ? new Date(request.payload.scheduledAt) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: result
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get messages
-router.get('/messages', auth, async (req: Request, res: Response) => {
+const getMessagesHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.senderId) filters.senderId = req.query.senderId as string;
-    if (req.query.category) filters.category = req.query.category as string;
-    if (req.query.priority) filters.priority = req.query.priority as string;
-    if (req.query.dateFrom) filters.dateFrom = new Date(req.query.dateFrom as string);
-    if (req.query.dateTo) filters.dateTo = new Date(req.query.dateTo as string);
+    if (request.query.senderId) filters.senderId = request.query.senderId;
+    if (request.query.category) filters.category = request.query.category;
+    if (request.query.priority) filters.priority = request.query.priority;
+    if (request.query.dateFrom) filters.dateFrom = new Date(request.query.dateFrom);
+    if (request.query.dateTo) filters.dateTo = new Date(request.query.dateTo);
 
     const result = await CommunicationService.getMessages(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get message delivery status
-router.get('/messages/:messageId/delivery', auth, async (req: Request, res: Response) => {
+const getMessageDeliveryStatusHandler = async (request: any, h: any) => {
   try {
-    const { messageId } = req.params;
+    const { messageId } = request.params;
     const result = await CommunicationService.getMessageDeliveryStatus(messageId);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Send emergency alert
-router.post('/emergency-alert', [
-  auth,
-  body('title').notEmpty().trim(),
-  body('message').notEmpty().trim(),
-  body('severity').isIn(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
-  body('audience').isIn(['ALL_STAFF', 'NURSES_ONLY', 'SPECIFIC_GROUPS']),
-  body('channels').isArray({ min: 1 }),
-  body('channels.*').isIn(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'])
-], async (req: Request, res: Response) => {
+const sendEmergencyAlertHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const senderId = (req as any).user.userId; // From auth middleware
+    const senderId = request.auth.credentials?.userId;
 
     const result = await CommunicationService.sendEmergencyAlert({
-      ...req.body,
+      ...request.payload,
       senderId
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: result
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
-// Process scheduled messages (for cron job)
-router.post('/process-scheduled', auth, async (_req: Request, res: Response) => {
+// Process scheduled messages
+const processScheduledMessagesHandler = async (request: any, h: any) => {
   try {
     const processedCount = await CommunicationService.processScheduledMessages();
 
-    res.json({
+    return h.response({
       success: true,
       data: { processedCount }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get communication statistics
-router.get('/statistics', auth, async (req: Request, res: Response) => {
+const getCommunicationStatisticsHandler = async (request: any, h: any) => {
   try {
-    const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
-    const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+    const dateFrom = request.query.dateFrom ? new Date(request.query.dateFrom) : undefined;
+    const dateTo = request.query.dateTo ? new Date(request.query.dateTo) : undefined;
 
     const stats = await CommunicationService.getCommunicationStatistics(dateFrom, dateTo);
 
-    res.json({
+    return h.response({
       success: true,
       data: stats
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Translate message
-router.post('/translate', [
-  auth,
-  body('content').notEmpty().trim(),
-  body('targetLanguage').notEmpty().trim()
-], async (req: Request, res: Response) => {
+const translateMessageHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { content, targetLanguage } = req.body;
+    const { content, targetLanguage } = request.payload;
     const translated = await CommunicationService.translateMessage(content, targetLanguage);
 
-    res.json({
+    return h.response({
       success: true,
       data: { translated }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define communication routes for Hapi
+export const communicationRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/communication/templates',
+    handler: getMessageTemplatesHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          type: Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE').optional(),
+          category: Joi.string().valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE').optional(),
+          isActive: Joi.boolean().default(true)
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/communication/templates/{id}',
+    handler: updateMessageTemplateHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().optional(),
+          content: Joi.string().trim().optional(),
+          type: Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE').optional(),
+          category: Joi.string().valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE').optional(),
+          variables: Joi.array().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/communication/templates/{id}',
+    handler: deleteMessageTemplateHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/communication/templates',
+    handler: createMessageTemplateHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().required(),
+          content: Joi.string().trim().required(),
+          type: Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE').required(),
+          category: Joi.string().valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE').required(),
+          variables: Joi.array().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/communication/send',
+    handler: sendMessageHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          recipients: Joi.array().items(Joi.object({
+            type: Joi.string().valid('STUDENT', 'EMERGENCY_CONTACT', 'PARENT', 'NURSE', 'ADMIN').required(),
+            id: Joi.string().required()
+          })).min(1).required(),
+          channels: Joi.array().items(Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE')).min(1).required(),
+          content: Joi.string().trim().required(),
+          priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').required(),
+          category: Joi.string().valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE').required(),
+          scheduledAt: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/communication/broadcast',
+    handler: sendBroadcastMessageHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          audience: Joi.object().required(),
+          channels: Joi.array().items(Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE')).min(1).required(),
+          content: Joi.string().trim().required(),
+          priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').required(),
+          category: Joi.string().valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE').required(),
+          scheduledAt: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/communication/messages',
+    handler: getMessagesHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          senderId: Joi.string().optional(),
+          category: Joi.string().optional(),
+          priority: Joi.string().optional(),
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/communication/messages/{messageId}/delivery',
+    handler: getMessageDeliveryStatusHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/communication/emergency-alert',
+    handler: sendEmergencyAlertHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          title: Joi.string().trim().required(),
+          message: Joi.string().trim().required(),
+          severity: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL').required(),
+          audience: Joi.string().valid('ALL_STAFF', 'NURSES_ONLY', 'SPECIFIC_GROUPS').required(),
+          channels: Joi.array().items(Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE')).min(1).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/communication/process-scheduled',
+    handler: processScheduledMessagesHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/communication/statistics',
+    handler: getCommunicationStatisticsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/communication/translate',
+    handler: translateMessageHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          content: Joi.string().trim().required(),
+          targetLanguage: Joi.string().trim().required()
+        })
+      }
+    }
+  }
+];

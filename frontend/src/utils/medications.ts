@@ -6,13 +6,13 @@ import {
   MEDICATION_STATUSES,
   INVENTORY_STATUSES 
 } from '../constants/medications'
-import type { 
-  Medication, 
-  InventoryItem, 
-  AdverseReaction, 
+import type {
+  Medication,
+  MedicationInventory,
+  AdverseReaction,
   MedicationReminder,
-  SeverityLevel 
-} from '../types/medications'
+  Priority
+} from '../types/api'
 
 /**
  * Date formatting utilities
@@ -258,7 +258,7 @@ export const calculateTotalInventory = (medication: Medication): {
 /**
  * Get severity level color
  */
-export const getSeverityColor = (severity: SeverityLevel): string => {
+export const getSeverityColor = (severity: Priority): string => {
   const severityConfig = SEVERITY_LEVELS.find(level => level.value === severity)
   return severityConfig?.color || 'text-gray-600 bg-gray-100'
 }

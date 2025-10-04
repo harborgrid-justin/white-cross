@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import type {
-  FormErrors,
   MedicationFormData,
-  AdverseReactionFormData,
+  AdverseReactionFormData
+} from '../types/api'
+import type {
+  FormErrors,
   InventoryFormData,
   UseFormValidationReturn
 } from '../types/medications'

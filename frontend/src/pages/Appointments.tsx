@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { Calendar, Clock, Users, Plus, Download, CheckCircle, XCircle, AlertCircle, Search, Filter } from 'lucide-react'
 import { appointmentsApi, studentsApi } from '../services/api'
+import { Appointment } from '../types'
 import toast from 'react-hot-toast'
 
 type ViewMode = 'calendar' | 'list' | 'waitlist' | 'availability'
 
 export default function Appointments() {
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [appointments, setAppointments] = useState<any[]>([])
-  const [waitlist, setWaitlist] = useState<any[]>([])
-  const [statistics, setStatistics] = useState<any>(null)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [waitlist, setWaitlist] = useState<Appointment[]>([])
+  const [statistics, setStatistics] = useState<{
+    total: number
+    completionRate: number
+    noShowRate: number
+    scheduledToday: number
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showWaitlistModal, setShowWaitlistModal] = useState(false)
@@ -31,7 +37,7 @@ export default function Appointments() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const filters: any = {}
+      const filters: Record<string, string> = {}
       if (filterStatus !== 'all') filters.status = filterStatus.toUpperCase()
       if (filterType !== 'all') filters.type = filterType.toUpperCase()
 

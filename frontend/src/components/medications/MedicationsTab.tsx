@@ -2,12 +2,12 @@ import { Pill } from 'lucide-react'
 import { SearchInput, LoadingSpinner, EmptyState } from '../shared'
 import { useMedicationsData } from '../../hooks/useMedicationsData'
 import { formatMedicationForDisplay } from '../../utils/medications'
-import type { Medication } from '../../types/medications'
+import type { LegacyMedicationWithCount } from '../../types'
 
 interface MedicationsTabProps {
   searchTerm: string
   onSearchChange: (term: string) => void
-  onMedicationSelect: (medication: Medication) => void
+  onMedicationSelect: (medication: LegacyMedicationWithCount) => void
   className?: string
   testId?: string
 }
@@ -19,7 +19,7 @@ export const MedicationsTab: React.FC<MedicationsTabProps> = ({
   className = '',
   testId
 }) => {
-  const { medications, medicationsLoading } = useMedicationsData()
+  const { medications, isLoading: medicationsLoading } = useMedicationsData()
 
   // Filter medications based on search term
   const filteredMedications = medications?.filter(med => 
@@ -121,7 +121,7 @@ export const MedicationsTab: React.FC<MedicationsTabProps> = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMedications.map((medication: Medication) => {
+              {filteredMedications.map((medication: LegacyMedicationWithCount) => {
                 const inventoryStats = formatMedicationForDisplay(medication).inventory
                 const totalStock = inventoryStats.totalQuantity
                 const hasLowStock = inventoryStats.lowStock > 0

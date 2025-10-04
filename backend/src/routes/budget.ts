@@ -1,200 +1,271 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { BudgetService } from '../services/budgetService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get budget categories
-router.get('/categories', auth, async (req: Request, res: Response) => {
+const getBudgetCategoriesHandler = async (request: any, h: any) => {
   try {
-    const fiscalYear = req.query.fiscalYear ? parseInt(req.query.fiscalYear as string) : undefined;
-    const activeOnly = req.query.activeOnly !== 'false';
+    const fiscalYear = request.query.fiscalYear ? parseInt(request.query.fiscalYear) : undefined;
+    const activeOnly = request.query.activeOnly !== 'false';
 
     const categories = await BudgetService.getBudgetCategories(fiscalYear, activeOnly);
 
-    res.json({
+    return h.response({
       success: true,
       data: { categories }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get budget category by ID
-router.get('/categories/:id', auth, async (req: Request, res: Response) => {
+const getBudgetCategoryByIdHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const category = await BudgetService.getBudgetCategoryById(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { category }
     });
   } catch (error) {
-    res.status(404).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(404);
   }
-});
+};
 
 // Create budget category
-router.post('/categories', [
-  auth,
-  body('name').notEmpty().trim(),
-  body('fiscalYear').isInt({ min: 2000, max: 2100 }),
-  body('allocatedAmount').isNumeric()
-], async (req: Request, res: Response) => {
+const createBudgetCategoryHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const category = await BudgetService.createBudgetCategory(request.payload);
 
-    const category = await BudgetService.createBudgetCategory(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { category }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update budget category
-router.put('/categories/:id', [
-  auth,
-  body('name').optional().trim(),
-  body('allocatedAmount').optional().isNumeric(),
-  body('isActive').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateBudgetCategoryHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const category = await BudgetService.updateBudgetCategory(id, request.payload);
 
-    const { id } = req.params;
-    const category = await BudgetService.updateBudgetCategory(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { category }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get budget summary
-router.get('/summary', auth, async (req: Request, res: Response) => {
+const getBudgetSummaryHandler = async (request: any, h: any) => {
   try {
-    const fiscalYear = req.query.fiscalYear ? parseInt(req.query.fiscalYear as string) : undefined;
+    const fiscalYear = request.query.fiscalYear ? parseInt(request.query.fiscalYear) : undefined;
     const summary = await BudgetService.getBudgetSummary(fiscalYear);
 
-    res.json({
+    return h.response({
       success: true,
       data: { summary }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get budget transactions
-router.get('/transactions', auth, async (req: Request, res: Response) => {
+const getBudgetTransactionsHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.categoryId) filters.categoryId = req.query.categoryId as string;
-    if (req.query.startDate) filters.startDate = new Date(req.query.startDate as string);
-    if (req.query.endDate) filters.endDate = new Date(req.query.endDate as string);
+    if (request.query.categoryId) filters.categoryId = request.query.categoryId;
+    if (request.query.startDate) filters.startDate = new Date(request.query.startDate);
+    if (request.query.endDate) filters.endDate = new Date(request.query.endDate);
 
     const result = await BudgetService.getBudgetTransactions(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create budget transaction
-router.post('/transactions', [
-  auth,
-  body('categoryId').notEmpty(),
-  body('amount').isNumeric(),
-  body('description').notEmpty().trim()
-], async (req: Request, res: Response) => {
+const createBudgetTransactionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const transaction = await BudgetService.createBudgetTransaction(request.payload);
 
-    const transaction = await BudgetService.createBudgetTransaction(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { transaction }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get spending trends
-router.get('/trends', auth, async (req: Request, res: Response) => {
+const getSpendingTrendsHandler = async (request: any, h: any) => {
   try {
-    const fiscalYear = req.query.fiscalYear ? parseInt(req.query.fiscalYear as string) : undefined;
-    const categoryId = req.query.categoryId as string | undefined;
+    const fiscalYear = request.query.fiscalYear ? parseInt(request.query.fiscalYear) : undefined;
+    const categoryId = request.query.categoryId;
 
     const trends = await BudgetService.getSpendingTrends(fiscalYear, categoryId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { trends }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define budget routes for Hapi
+export const budgetRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/budget/categories',
+    handler: getBudgetCategoriesHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          fiscalYear: Joi.number().integer().min(2000).max(2100).optional(),
+          activeOnly: Joi.boolean().default(true)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/budget/categories/{id}',
+    handler: getBudgetCategoryByIdHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/budget/categories',
+    handler: createBudgetCategoryHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().required(),
+          fiscalYear: Joi.number().integer().min(2000).max(2100).required(),
+          allocatedAmount: Joi.number().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/budget/categories/{id}',
+    handler: updateBudgetCategoryHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().optional(),
+          allocatedAmount: Joi.number().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/budget/summary',
+    handler: getBudgetSummaryHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          fiscalYear: Joi.number().integer().min(2000).max(2100).optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/budget/transactions',
+    handler: getBudgetTransactionsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          categoryId: Joi.string().optional(),
+          startDate: Joi.date().iso().optional(),
+          endDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/budget/transactions',
+    handler: createBudgetTransactionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          categoryId: Joi.string().required(),
+          amount: Joi.number().required(),
+          description: Joi.string().trim().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/budget/trends',
+    handler: getSpendingTrendsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          fiscalYear: Joi.number().integer().min(2000).max(2100).optional(),
+          categoryId: Joi.string().optional()
+        })
+      }
+    }
+  }
+];

@@ -40,14 +40,14 @@ export interface SearchParams {
   filters?: Record<string, any>;
 }
 
-// User Types
+// User Types - Aligned with main types
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
-  isActive: boolean;
+  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'READ_ONLY' | 'COUNSELOR';
+  isActive?: boolean;
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;

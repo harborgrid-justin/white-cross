@@ -1,362 +1,463 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { MedicationService } from '../services/medicationService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get all medications
-router.get('/', auth, async (req: Request, res: Response) => {
+const getMedicationsHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const search = req.query.search as string;
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+    const search = request.query.search;
 
     const result = await MedicationService.getMedications(page, limit, search);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new medication
-router.post('/', [
-  auth,
-  body('name').notEmpty().trim(),
-  body('dosageForm').notEmpty().trim(),
-  body('strength').notEmpty().trim(),
-  body('isControlled').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const createMedicationHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const medication = await MedicationService.createMedication(request.payload);
 
-    const medication = await MedicationService.createMedication(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { medication }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Assign medication to student
-router.post('/assign', [
-  auth,
-  body('studentId').notEmpty(),
-  body('medicationId').notEmpty(),
-  body('dosage').notEmpty().trim(),
-  body('frequency').notEmpty().trim(),
-  body('route').notEmpty().trim(),
-  body('startDate').isISO8601(),
-  body('prescribedBy').notEmpty().trim()
-], async (req: Request, res: Response) => {
+const assignMedicationHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     const studentMedication = await MedicationService.assignMedicationToStudent({
-      ...req.body,
-      startDate: new Date(req.body.startDate),
-      endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
+      ...request.payload,
+      startDate: new Date(request.payload.startDate),
+      endDate: request.payload.endDate ? new Date(request.payload.endDate) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { studentMedication }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Log medication administration
-router.post('/administration', [
-  auth,
-  body('studentMedicationId').notEmpty(),
-  body('dosageGiven').notEmpty().trim(),
-  body('timeGiven').isISO8601()
-], async (req: Request, res: Response) => {
+const logAdministrationHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const nurseId = (req as any).user.userId; // From auth middleware
+    const nurseId = request.auth.credentials?.userId;
 
     const medicationLog = await MedicationService.logMedicationAdministration({
-      ...req.body,
+      ...request.payload,
       nurseId,
-      timeGiven: new Date(req.body.timeGiven)
+      timeGiven: new Date(request.payload.timeGiven)
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { medicationLog }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get medication logs for a student
-router.get('/logs/:studentId', auth, async (req: Request, res: Response) => {
+const getStudentMedicationLogsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
+    const { studentId } = request.params;
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
 
     const result = await MedicationService.getStudentMedicationLogs(studentId, page, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get inventory with alerts
-router.get('/inventory', auth, async (_req: Request, res: Response) => {
+const getInventoryHandler = async (request: any, h: any) => {
   try {
     const result = await MedicationService.getInventoryWithAlerts();
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Add to inventory
-router.post('/inventory', [
-  auth,
-  body('medicationId').notEmpty(),
-  body('batchNumber').notEmpty().trim(),
-  body('expirationDate').isISO8601(),
-  body('quantity').isInt({ min: 1 }),
-  body('reorderLevel').optional().isInt({ min: 0 }),
-  body('costPerUnit').optional().isNumeric()
-], async (req: Request, res: Response) => {
+const addToInventoryHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     const inventory = await MedicationService.addToInventory({
-      ...req.body,
-      expirationDate: new Date(req.body.expirationDate),
-      costPerUnit: req.body.costPerUnit ? parseFloat(req.body.costPerUnit) : undefined
+      ...request.payload,
+      expirationDate: new Date(request.payload.expirationDate),
+      costPerUnit: request.payload.costPerUnit ? parseFloat(request.payload.costPerUnit) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { inventory }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get medication schedule
-router.get('/schedule', auth, async (req: Request, res: Response) => {
+const getMedicationScheduleHandler = async (request: any, h: any) => {
   try {
-    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : new Date();
-    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
-    const nurseId = req.query.nurseId as string;
+    const startDate = request.query.startDate ? new Date(request.query.startDate) : new Date();
+    const endDate = request.query.endDate ? new Date(request.query.endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const nurseId = request.query.nurseId;
 
     const schedule = await MedicationService.getMedicationSchedule(startDate, endDate, nurseId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { schedule }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Update inventory quantity
-router.put('/inventory/:id', [
-  auth,
-  body('quantity').isInt({ min: 0 }),
-  body('reason').optional().trim()
-], async (req: Request, res: Response) => {
+const updateInventoryQuantityHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { id } = req.params;
-    const { quantity, reason } = req.body;
+    const { id } = request.params;
+    const { quantity, reason } = request.payload;
 
     const inventory = await MedicationService.updateInventoryQuantity(id, quantity, reason);
 
-    res.json({
+    return h.response({
       success: true,
       data: { inventory }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Deactivate student medication
-router.put('/student-medication/:id/deactivate', [
-  auth,
-  body('reason').optional().trim()
-], async (req: Request, res: Response) => {
+const deactivateStudentMedicationHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
-    const { reason } = req.body;
+    const { id } = request.params;
+    const { reason } = request.payload;
 
     const studentMedication = await MedicationService.deactivateStudentMedication(id, reason);
 
-    res.json({
+    return h.response({
       success: true,
       data: { studentMedication }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get medication reminders for a date
-router.get('/reminders', auth, async (req: Request, res: Response) => {
+const getMedicationRemindersHandler = async (request: any, h: any) => {
   try {
-    const date = req.query.date ? new Date(req.query.date as string) : new Date();
-    
+    const date = request.query.date ? new Date(request.query.date) : new Date();
+
     const reminders = await MedicationService.getMedicationReminders(date);
 
-    res.json({
+    return h.response({
       success: true,
       data: { reminders }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Report adverse reaction
-router.post('/adverse-reaction', [
-  auth,
-  body('studentMedicationId').notEmpty(),
-  body('severity').isIn(['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING']),
-  body('reaction').notEmpty().trim(),
-  body('actionTaken').notEmpty().trim(),
-  body('reportedAt').isISO8601()
-], async (req: Request, res: Response) => {
+const reportAdverseReactionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const reportedBy = (req as any).user.userId;
+    const reportedBy = request.auth.credentials?.userId;
 
     const report = await MedicationService.reportAdverseReaction({
-      ...req.body,
+      ...request.payload,
       reportedBy,
-      reportedAt: new Date(req.body.reportedAt)
+      reportedAt: new Date(request.payload.reportedAt)
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { report }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get adverse reactions
-router.get('/adverse-reactions', auth, async (req: Request, res: Response) => {
+const getAdverseReactionsHandler = async (request: any, h: any) => {
   try {
-    const medicationId = req.query.medicationId as string;
-    const studentId = req.query.studentId as string;
+    const medicationId = request.query.medicationId;
+    const studentId = request.query.studentId;
 
     const reactions = await MedicationService.getAdverseReactions(medicationId, studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { reactions }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define medication routes for Hapi
+export const medicationRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/medications',
+    handler: getMedicationsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          search: Joi.string().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/medications',
+    handler: createMedicationHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().required(),
+          dosageForm: Joi.string().trim().required(),
+          strength: Joi.string().trim().required(),
+          isControlled: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/medications/assign',
+    handler: assignMedicationHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          medicationId: Joi.string().required(),
+          dosage: Joi.string().trim().required(),
+          frequency: Joi.string().trim().required(),
+          route: Joi.string().trim().required(),
+          startDate: Joi.date().iso().required(),
+          endDate: Joi.date().iso().optional(),
+          prescribedBy: Joi.string().trim().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/medications/administration',
+    handler: logAdministrationHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentMedicationId: Joi.string().required(),
+          dosageGiven: Joi.string().trim().required(),
+          timeGiven: Joi.date().iso().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/logs/{studentId}',
+    handler: getStudentMedicationLogsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/inventory',
+    handler: getInventoryHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/medications/inventory',
+    handler: addToInventoryHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          medicationId: Joi.string().required(),
+          batchNumber: Joi.string().trim().required(),
+          expirationDate: Joi.date().iso().required(),
+          quantity: Joi.number().integer().min(1).required(),
+          reorderLevel: Joi.number().integer().min(0).optional(),
+          costPerUnit: Joi.number().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/schedule',
+    handler: getMedicationScheduleHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          startDate: Joi.date().iso().optional(),
+          endDate: Joi.date().iso().optional(),
+          nurseId: Joi.string().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/medications/inventory/{id}',
+    handler: updateInventoryQuantityHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          quantity: Joi.number().integer().min(0).required(),
+          reason: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/medications/student-medication/{id}/deactivate',
+    handler: deactivateStudentMedicationHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          reason: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/reminders',
+    handler: getMedicationRemindersHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          date: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/medications/adverse-reaction',
+    handler: reportAdverseReactionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentMedicationId: Joi.string().required(),
+          severity: Joi.string().valid('MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING').required(),
+          reaction: Joi.string().trim().required(),
+          actionTaken: Joi.string().trim().required(),
+          reportedAt: Joi.date().iso().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/adverse-reactions',
+    handler: getAdverseReactionsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          medicationId: Joi.string().optional(),
+          studentId: Joi.string().optional()
+        })
+      }
+    }
+  }
+];

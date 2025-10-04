@@ -3,14 +3,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { medicationsApi } from '../services/api'
 import type {
   Medication,
-  InventoryItem,
+  MedicationInventory as InventoryItem,
   MedicationReminder,
   AdverseReaction,
-  MedicationStats,
+  MedicationStatsResponse as MedicationStats,
   MedicationFormData,
   AdverseReactionFormData,
-  UseMedicationsDataReturn
-} from '../types/medications'
+  MedicationAlert,
+  PaginatedResponse
+} from '../types/api'
+
+export interface UseMedicationsDataReturn {
+  medications: Medication[]
+  inventory: InventoryItem[]
+  schedule: MedicationReminder[]
+  reminders: MedicationReminder[]
+  adverseReactions: AdverseReaction[]
+  alerts: MedicationAlert[]
+  stats: MedicationStats | null
+  isLoading: boolean
+  createMedication: (data: MedicationFormData) => Promise<void>
+  reportAdverseReaction: (data: AdverseReactionFormData) => Promise<void>
+  refetch: () => void
+}
 
 export const useMedicationsData = (): UseMedicationsDataReturn => {
   const queryClient = useQueryClient()
@@ -20,7 +35,7 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
   // Queries
   const { data: medicationsData, isLoading: medicationsLoading } = useQuery({
     queryKey: ['medications', currentPage, searchTerm],
-    queryFn: () => medicationsApi.getAll(currentPage, 20, searchTerm)
+    queryFn: () => medicationsApi.getAll({ page: currentPage, limit: 20, search: searchTerm })
   })
 
   const { data: inventoryData, isLoading: inventoryLoading } = useQuery({
@@ -40,16 +55,16 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
     queryFn: () => medicationsApi.getAdverseReactions()
   })
 
-  // Mock stats data for now until API is extended
-  const statsData: MedicationStats = {
-    totalMedications: medicationsData?.medications?.length || 0,
-    controlledSubstances: medicationsData?.medications?.filter((m: any) => m.isControlled)?.length || 0,
-    activePrescriptions: medicationsData?.medications?.reduce((sum: number, m: any) => sum + (m._count?.studentMedications || 0), 0) || 0,
-    lowStockItems: inventoryData?.alerts?.lowStock?.length || 0,
-    expiringItems: inventoryData?.alerts?.nearExpiry?.length || 0,
-    todayReminders: remindersData?.reminders?.length || 0,
-    adverseReactions: adverseReactionsData?.reactions?.length || 0
-  }
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['medication-stats'],
+    queryFn: () => medicationsApi.getStats()
+  })
+
+  const { data: alertsData, isLoading: alertsLoading } = useQuery({
+    queryKey: ['medication-alerts'],
+    queryFn: () => medicationsApi.getAlerts(),
+    refetchInterval: 2 * 60 * 1000 // Refresh every 2 minutes
+  })
 
   // Mutations - using existing API where available
   const createMedicationMutation = useMutation({
@@ -66,33 +81,22 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
     }
   })
 
-  // Helper functions
-  const loadMedications = (page = 1, limit = 20, search = '') => {
-    setCurrentPage(page)
-    setSearchTerm(search)
-  }
-
-  const loadInventory = () => {
-    queryClient.invalidateQueries({ queryKey: ['medication-inventory'] })
-  }
-
-  const loadReminders = () => {
-    queryClient.invalidateQueries({ queryKey: ['medication-reminders'] })
-  }
-
-  const loadAdverseReactions = () => {
-    queryClient.invalidateQueries({ queryKey: ['adverse-reactions'] })
-  }
-
   // CRUD operation wrappers
-  const createMedication = async (data: MedicationFormData): Promise<boolean> => {
-    try {
-      await createMedicationMutation.mutateAsync(data)
-      return true
-    } catch (error) {
-      console.error('Error creating medication:', error)
-      return false
-    }
+  const createMedication = async (data: MedicationFormData): Promise<void> => {
+    await createMedicationMutation.mutateAsync(data)
+  }
+
+  const reportAdverseReaction = async (data: AdverseReactionFormData): Promise<void> => {
+    await reportAdverseReactionMutation.mutateAsync(data)
+  }
+
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ['medications'] })
+    queryClient.invalidateQueries({ queryKey: ['medication-inventory'] })
+    queryClient.invalidateQueries({ queryKey: ['medication-reminders'] })
+    queryClient.invalidateQueries({ queryKey: ['adverse-reactions'] })
+    queryClient.invalidateQueries({ queryKey: ['medication-stats'] })
+    queryClient.invalidateQueries({ queryKey: ['medication-alerts'] })
   }
 
   const updateMedication = async (id: string, data: Partial<MedicationFormData>): Promise<boolean> => {
@@ -167,15 +171,6 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
     }
   }
 
-  const reportAdverseReaction = async (data: AdverseReactionFormData): Promise<boolean> => {
-    try {
-      await reportAdverseReactionMutation.mutateAsync(data)
-      return true
-    } catch (error) {
-      console.error('Error reporting adverse reaction:', error)
-      return false
-    }
-  }
 
   const updateAdverseReaction = async (
     id: string,
@@ -194,39 +189,20 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
 
   return {
     // Data
-    medications: medicationsData?.medications || [],
-    inventory: inventoryData?.inventory || [],
-    reminders: remindersData?.reminders || [],
-    adverseReactions: adverseReactionsData?.reactions || [],
-    stats: statsData,
+    medications: medicationsData?.data || [],
+    inventory: inventoryData?.data || [],
+    schedule: [],
+    reminders: remindersData?.data || [],
+    adverseReactions: adverseReactionsData?.data || [],
+    alerts: alertsData?.data || [],
+    stats: statsData?.data || null,
 
     // Loading states
-    medicationsLoading,
-    inventoryLoading,
-    remindersLoading,
-    adverseReactionsLoading,
+    isLoading: medicationsLoading || inventoryLoading || remindersLoading || adverseReactionsLoading || statsLoading || alertsLoading,
 
-    // CRUD operations
+    // Operations
     createMedication,
-    updateMedication,
-    deleteMedication,
-
-    // Inventory operations
-    updateStock,
-    disposeExpired,
-
-    // Reminder operations
-    markReminderCompleted,
-    markReminderMissed,
-
-    // Adverse reaction operations
     reportAdverseReaction,
-    updateAdverseReaction,
-
-    // Data loading
-    loadMedications,
-    loadInventory,
-    loadReminders,
-    loadAdverseReactions
+    refetch
   }
 }

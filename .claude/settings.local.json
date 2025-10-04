@@ -38,7 +38,10 @@
       "Bash(then)",
       "Bash(else)",
       "Bash(echo:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

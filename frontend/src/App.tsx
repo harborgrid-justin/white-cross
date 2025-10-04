@@ -1,76 +1,85 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthContext } from './contexts/AuthContext'
-import Layout from './components/Layout'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import Students from './pages/Students'
-import Medications from './pages/Medications'
-import Appointments from './pages/Appointments'
-import HealthRecords from './pages/HealthRecords'
-import IncidentReports from './pages/IncidentReports'
-import EmergencyContacts from './pages/EmergencyContacts'
-import Communication from './pages/Communication'
-import Inventory from './pages/Inventory'
-import Reports from './pages/Reports'
-import Settings from './pages/Settings'
-import Documents from './pages/Documents'
-import LoadingSpinner from './components/LoadingSpinner'
-import AccessDenied from './pages/AccessDenied'
-import { StudentHealthRecord } from './components/StudentHealthRecord'
-import { AuthProvider } from './contexts/AuthContext'
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'react-hot-toast';
+import { useAuthStore } from './stores/authStore';
+import AppRoutes from './routes';
+import LoadingSpinner from './components/LoadingSpinner';
+import ErrorBoundary from './components/ErrorBoundary';
 
-function AppRoutes() {
-  const { user, loading } = useAuthContext()
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors except 429 (rate limit)
+        if (error?.status >= 400 && error?.status < 500 && error?.status !== 429) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
-  if (loading) {
-    return <LoadingSpinner />
+// Auth Provider Component
+const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoading } = useAuthStore();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
-  return (
-    <Routes>
-      <Route 
-        path="/login" 
-        element={user ? <Navigate to="/dashboard" replace /> : <Login />} 
-      />
-      <Route
-        path="/*"
-        element={
-          user ? (
-            <Layout>
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/students/*" element={<Students />} />
-                <Route path="/medications/*" element={<Medications />} />
-                <Route path="/appointments/*" element={<Appointments />} />
-                <Route path="/health-records/student/restricted-*" element={<AccessDenied />} />
-                <Route path="/health-records/student/:studentId" element={<StudentHealthRecord />} />
-                <Route path="/health-records/*" element={<HealthRecords />} />
-                <Route path="/incident-reports/*" element={<IncidentReports />} />
-                <Route path="/emergency-contacts/*" element={<EmergencyContacts />} />
-                <Route path="/communication/*" element={<Communication />} />
-                <Route path="/documents/*" element={<Documents />} />
-                <Route path="/inventory/*" element={<Inventory />} />
-                <Route path="/reports/*" element={<Reports />} />
-                <Route path="/admin/*" element={<Settings />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </Layout>
-          ) : (
-            <Navigate to={`/login?redirect=${encodeURIComponent(window.location.pathname)}`} replace />
-          )
-        }
-      />
-    </Routes>
-  )
-}
+  return <>{children}</>;
+};
 
+// Main App Component
 function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
-  )
+    <ErrorBoundary>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#10B981',
+                    secondary: '#fff',
+                  },
+                },
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: '#EF4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
+          </AuthProvider>
+          {import.meta.env.DEV && (
+            <ReactQueryDevtools initialIsOpen={false} />
+          )}
+        </QueryClientProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
 }
 
-export default App
+export default App;
