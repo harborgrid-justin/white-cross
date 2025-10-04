@@ -55,7 +55,7 @@ export default function Settings() {
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8 overflow-x-auto">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto" style={{ overflow: 'visible' }}>
           {[
             { id: 'overview', label: 'Overview', icon: SettingsIcon },
             { id: 'districts', label: 'Districts', icon: Building2 },
