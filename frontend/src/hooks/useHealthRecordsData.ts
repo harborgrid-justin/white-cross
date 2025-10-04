@@ -23,48 +23,54 @@ export const useHealthRecordsData = () => {
     
     try {
       switch (tab) {
-        case 'records':
+        case 'records': {
           const response = await fetch(`/api/health-records/${studentId}${searchQuery ? `?search=${searchQuery}` : ''}`)
           if (response.ok) {
             const data = await response.json()
             setHealthRecords(data.data?.records || [])
           }
           break
-        case 'allergies':
+        }
+        case 'allergies': {
           const allergyResponse = await fetch(`/api/health-records/allergies/${studentId}`)
           if (allergyResponse.ok) {
             const allergyData = await allergyResponse.json()
             setAllergies(allergyData.data?.allergies || [])
           }
           break
-        case 'chronic':
+        }
+        case 'chronic': {
           const conditionResponse = await fetch(`/api/health-records/chronic-conditions/${studentId}`)
           if (conditionResponse.ok) {
             const conditionData = await conditionResponse.json()
             setChronicConditions(conditionData.data?.conditions || [])
           }
           break
-        case 'vaccinations':
+        }
+        case 'vaccinations': {
           const vaccinationResponse = await fetch(`/api/health-records/vaccinations/${studentId}`)
           if (vaccinationResponse.ok) {
             const vaccinationData = await vaccinationResponse.json()
             setVaccinations(vaccinationData.data?.vaccinations || [])
           }
           break
-        case 'growth':
+        }
+        case 'growth': {
           const growthResponse = await fetch(`/api/health-records/growth/${studentId}`)
           if (growthResponse.ok) {
             const growthData = await growthResponse.json()
             setGrowthMeasurements(growthData.data?.measurements || [])
           }
           break
-        case 'screenings':
+        }
+        case 'screenings': {
           const screeningResponse = await fetch(`/api/health-records/vitals/${studentId}`)
           if (screeningResponse.ok) {
             const screeningData = await screeningResponse.json()
             setScreenings(screeningData.data?.screenings || [])
           }
           break
+        }
       }
     } catch (error) {
       console.error('Error loading tab data:', error)

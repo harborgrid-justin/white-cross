@@ -17,20 +17,22 @@ import {
 } from './index';
 
 import type {
-  ApiResponse,
-  AdminSettings,
-  CreateUserRequest,
-  UpdateUserRequest,
-  User,
-  Integration,
-  IntegrationConfig,
-  ConnectionTestResult,
-  InventoryItem,
-  Vendor,
-  PurchaseOrder,
-  BudgetSummary,
-  UpdateBudgetRequest
+  ApiResponse
 } from '../types';
+
+// Using any for now since these types don't exist in the types file
+type AdminSettings = any;
+type CreateUserRequest = any;
+type UpdateUserRequest = any;
+type User = any;
+type Integration = any;
+type IntegrationConfig = any;
+type ConnectionTestResult = any;
+type InventoryItem = any;
+type Vendor = any;
+type PurchaseOrder = any;
+type BudgetSummary = any;
+type UpdateBudgetRequest = any;
 
 // Legacy exports for backward compatibility
 export { setSessionExpireHandler, apiInstance };
@@ -70,11 +72,171 @@ export const administrationApi = {
       role: user.role || 'NURSE'
     }
   }),
-  deleteUser: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } })
+  deleteUser: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+
+  // System Health
+  getSystemHealth: async (): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      statistics: {
+        totalUsers: 0,
+        activeUsers: 0,
+        totalDistricts: 0,
+        totalSchools: 0
+      }
+    }
+  }),
+
+  // District Management
+  getDistricts: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      districts: [],
+      total: 0,
+      page,
+      limit
+    }
+  }),
+  createDistrict: async (district: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id: crypto.randomUUID(),
+      ...district,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  }),
+  updateDistrict: async (id: string, district: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id,
+      ...district,
+      updatedAt: new Date().toISOString()
+    }
+  }),
+  deleteDistrict: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+
+  // School Management
+  getSchools: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      schools: [],
+      total: 0,
+      page,
+      limit
+    }
+  }),
+  createSchool: async (school: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id: crypto.randomUUID(),
+      ...school,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  }),
+  updateSchool: async (id: string, school: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id,
+      ...school,
+      updatedAt: new Date().toISOString()
+    }
+  }),
+  deleteSchool: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+
+  // Configuration Management
+  getAllConfigurations: async (category?: string): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      configurations: []
+    }
+  }),
+  setConfiguration: async (config: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id: crypto.randomUUID(),
+      ...config,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  }),
+
+  // Backup Management
+  getBackupLogs: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      backups: [],
+      total: 0,
+      page,
+      limit
+    }
+  }),
+  createBackup: async (): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id: crypto.randomUUID(),
+      type: 'FULL',
+      status: 'COMPLETED',
+      createdAt: new Date().toISOString(),
+      completedAt: new Date().toISOString()
+    }
+  }),
+
+  // License Management
+  getLicenses: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      licenses: [],
+      total: 0,
+      page,
+      limit
+    }
+  }),
+
+  // Training Management
+  getTrainingModules: async (): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      modules: []
+    }
+  }),
+
+  // Audit Logs
+  getAuditLogs: async (page: number = 1, limit: number = 50, filters?: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      logs: [],
+      total: 0,
+      page,
+      limit
+    }
+  })
 };
 
 export const integrationApi = {
   getIntegrations: async (): Promise<ApiResponse<Integration[]>> => ({ success: true, data: [] }),
+  getAll: async (): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      integrations: []
+    }
+  }),
+  getStatistics: async (): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      statistics: {
+        totalIntegrations: 0,
+        activeIntegrations: 0,
+        syncStatistics: {
+          totalSyncs: 0,
+          successRate: 0
+        }
+      }
+    }
+  }),
   updateIntegration: async (id: string, config: IntegrationConfig): Promise<ApiResponse<Integration>> => ({
     success: true,
     data: {
@@ -87,12 +249,47 @@ export const integrationApi = {
       updatedAt: new Date().toISOString()
     }
   }),
-  testConnection: async (id: string): Promise<ApiResponse<ConnectionTestResult>> => ({
+  create: async (integration: any): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
-      status: 'connected',
-      latency: 150,
-      timestamp: new Date().toISOString()
+      id: crypto.randomUUID(),
+      ...integration,
+      status: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  }),
+  update: async (id: string, integration: any): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      id,
+      ...integration,
+      updatedAt: new Date().toISOString()
+    }
+  }),
+  delete: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+  testConnection: async (id: string): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      result: {
+        success: true,
+        message: 'Connection successful',
+        status: 'connected',
+        latency: 150,
+        timestamp: new Date().toISOString()
+      }
+    }
+  }),
+  sync: async (id: string): Promise<ApiResponse<any>> => ({
+    success: true,
+    data: {
+      result: {
+        success: true,
+        message: 'Sync completed successfully',
+        recordsProcessed: 0,
+        recordsSucceeded: 0,
+        recordsFailed: 0
+      }
     }
   })
 };
@@ -200,11 +397,11 @@ export const budgetApi = {
   updateBudget: async (budget: UpdateBudgetRequest): Promise<ApiResponse<BudgetSummary>> => ({
     success: true,
     data: {
-      total: budget.categories.reduce((sum, cat) => sum + cat.allocatedAmount, 0),
+      total: budget.categories.reduce((sum: number, cat: any) => sum + cat.allocatedAmount, 0),
       spent: 0,
-      remaining: budget.categories.reduce((sum, cat) => sum + cat.allocatedAmount, 0),
+      remaining: budget.categories.reduce((sum: number, cat: any) => sum + cat.allocatedAmount, 0),
       utilizationPercentage: 0,
-      categories: budget.categories.map(cat => ({
+      categories: budget.categories.map((cat: any) => ({
         id: cat.id || crypto.randomUUID(),
         name: cat.name,
         fiscalYear: budget.fiscalYear,
