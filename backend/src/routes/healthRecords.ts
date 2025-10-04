@@ -1,434 +1,328 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { HealthRecordService } from '../services/healthRecordService';
-
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
-
-const router = Router();
+import Joi from 'joi';
 
 // Log access to student records
-router.post('/audit/access', [
-  auth,
-  body('action').isIn(['VIEW_STUDENT_RECORD', 'EDIT_STUDENT_RECORD', 'DELETE_STUDENT_RECORD']),
-  body('studentId').notEmpty(),
-  body('resourceId').optional(),
-  body('details').optional()
-], async (req: AuthRequest, res: Response) => {
+const logAuditAccessHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const user = request.auth.credentials;
 
     const auditLog = {
-      userId: req.user?.id,
-      action: req.body.action,
+      userId: user?.userId,
+      action: request.payload.action,
       resource: 'STUDENT_HEALTH_RECORD',
-      resourceId: req.body.resourceId || req.body.studentId,
-      details: req.body.details || {},
+      resourceId: request.payload.resourceId || request.payload.studentId,
+      details: request.payload.details || {},
       timestamp: new Date(),
-      ipAddress: req.ip || req.connection.remoteAddress,
-      userAgent: req.get('User-Agent')
+      ipAddress: request.info.remoteAddress,
+      userAgent: request.headers['user-agent']
     };
 
     // In a real implementation, this would save to an audit log table
     console.log('Audit Log:', auditLog);
 
-    res.json({
+    return h.response({
       success: true,
       data: { logged: true }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get health records for a student
-router.get('/student/:studentId', auth, async (req: AuthRequest, res: Response) => {
+const getStudentHealthRecordsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const { studentId } = request.params;
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.type) filters.type = req.query.type;
-    if (req.query.dateFrom) filters.dateFrom = new Date(req.query.dateFrom as string);
-    if (req.query.dateTo) filters.dateTo = new Date(req.query.dateTo as string);
-    if (req.query.provider) filters.provider = req.query.provider;
+    if (request.query.type) filters.type = request.query.type;
+    if (request.query.dateFrom) filters.dateFrom = new Date(request.query.dateFrom);
+    if (request.query.dateTo) filters.dateTo = new Date(request.query.dateTo);
+    if (request.query.provider) filters.provider = request.query.provider;
 
     const result = await HealthRecordService.getStudentHealthRecords(studentId, page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new health record
-router.post('/', [
-  auth,
-  body('studentId').notEmpty(),
-  body('type').isIn(['CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING']),
-  body('date').isISO8601(),
-  body('description').notEmpty().trim()
-], async (req: Request, res: Response) => {
+const createHealthRecordHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     const healthRecord = await HealthRecordService.createHealthRecord({
-      ...req.body,
-      date: new Date(req.body.date)
+      ...request.payload,
+      date: new Date(request.payload.date)
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { healthRecord }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update health record
-router.put('/:id', [
-  auth,
-  body('type').optional().isIn(['CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING']),
-  body('date').optional().isISO8601(),
-  body('description').optional().trim()
-], async (req: Request, res: Response) => {
+const updateHealthRecordHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const updateData = { ...request.payload };
 
-    const { id } = req.params;
-    const updateData = { ...req.body };
-    
     if (updateData.date) {
       updateData.date = new Date(updateData.date);
     }
 
     const healthRecord = await HealthRecordService.updateHealthRecord(id, updateData);
 
-    res.json({
+    return h.response({
       success: true,
       data: { healthRecord }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get student allergies
-router.get('/allergies/:studentId', auth, async (req: Request, res: Response) => {
+const getStudentAllergiesHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const allergies = await HealthRecordService.getStudentAllergies(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { allergies }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Add allergy to student
-router.post('/allergies', [
-  auth,
-  body('studentId').notEmpty(),
-  body('allergen').notEmpty().trim(),
-  body('severity').isIn(['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING']),
-  body('verified').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const addAllergyHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const allergy = await HealthRecordService.addAllergy(request.payload);
 
-    const allergy = await HealthRecordService.addAllergy(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { allergy }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update allergy
-router.put('/allergies/:id', [
-  auth,
-  body('allergen').optional().trim(),
-  body('severity').optional().isIn(['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING']),
-  body('verified').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateAllergyHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const allergy = await HealthRecordService.updateAllergy(id, request.payload);
 
-    const { id } = req.params;
-    const allergy = await HealthRecordService.updateAllergy(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { allergy }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Delete allergy
-router.delete('/allergies/:id', auth, async (req: Request, res: Response) => {
+const deleteAllergyHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     await HealthRecordService.deleteAllergy(id);
 
-    res.json({
+    return h.response({
       success: true,
       message: 'Allergy deleted successfully'
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get vaccination records
-router.get('/vaccinations/:studentId', auth, async (req: Request, res: Response) => {
+const getVaccinationRecordsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const vaccinations = await HealthRecordService.getVaccinationRecords(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { vaccinations }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get growth chart data
-router.get('/growth/:studentId', auth, async (req: Request, res: Response) => {
+const getGrowthChartDataHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const growthData = await HealthRecordService.getGrowthChartData(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { growthData }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get recent vitals
-router.get('/vitals/:studentId', auth, async (req: Request, res: Response) => {
+const getRecentVitalsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const { studentId } = request.params;
+    const limit = parseInt(request.query.limit) || 10;
     const vitals = await HealthRecordService.getRecentVitals(studentId, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: { vitals }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get health summary
-router.get('/summary/:studentId', auth, async (req: Request, res: Response) => {
+const getHealthSummaryHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const summary = await HealthRecordService.getHealthSummary(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: summary
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Search health records
-router.get('/search', auth, async (req: Request, res: Response) => {
+const searchHealthRecordsHandler = async (request: any, h: any) => {
   try {
-    const query = req.query.q as string;
-    const type = req.query.type as any;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
+    const query = request.query.q;
+    const type = request.query.type;
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
 
     if (!query) {
-      return res.status(400).json({
+      return h.response({
         success: false,
         error: { message: 'Search query is required' }
-      });
+      }).code(400);
     }
 
     const result = await HealthRecordService.searchHealthRecords(query, type, page, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get student chronic conditions
-router.get('/chronic-conditions/:studentId', auth, async (req: Request, res: Response) => {
+const getStudentChronicConditionsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const conditions = await HealthRecordService.getStudentChronicConditions(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: { conditions }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Add chronic condition to student
-router.post('/chronic-conditions', [
-  auth,
-  body('studentId').notEmpty(),
-  body('condition').notEmpty().trim(),
-  body('diagnosedDate').isISO8601(),
-  body('status').optional().trim(),
-  body('severity').optional().trim()
-], async (req: Request, res: Response) => {
+const addChronicConditionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     const condition = await HealthRecordService.addChronicCondition({
-      ...req.body,
-      diagnosedDate: new Date(req.body.diagnosedDate),
-      lastReviewDate: req.body.lastReviewDate ? new Date(req.body.lastReviewDate) : undefined,
-      nextReviewDate: req.body.nextReviewDate ? new Date(req.body.nextReviewDate) : undefined
+      ...request.payload,
+      diagnosedDate: new Date(request.payload.diagnosedDate),
+      lastReviewDate: request.payload.lastReviewDate ? new Date(request.payload.lastReviewDate) : undefined,
+      nextReviewDate: request.payload.nextReviewDate ? new Date(request.payload.nextReviewDate) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { condition }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update chronic condition
-router.put('/chronic-conditions/:id', [
-  auth,
-  body('condition').optional().trim(),
-  body('diagnosedDate').optional().isISO8601(),
-  body('status').optional().trim(),
-  body('severity').optional().trim()
-], async (req: Request, res: Response) => {
+const updateChronicConditionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const updateData: any = { ...request.payload };
 
-    const { id } = req.params;
-    const updateData: any = { ...req.body };
-    
     if (updateData.diagnosedDate) {
       updateData.diagnosedDate = new Date(updateData.diagnosedDate);
     }
@@ -441,240 +335,213 @@ router.put('/chronic-conditions/:id', [
 
     const condition = await HealthRecordService.updateChronicCondition(id, updateData);
 
-    res.json({
+    return h.response({
       success: true,
       data: { condition }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Delete chronic condition
-router.delete('/chronic-conditions/:id', auth, async (req: Request, res: Response) => {
+const deleteChronicConditionHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     await HealthRecordService.deleteChronicCondition(id);
 
-    res.json({
+    return h.response({
       success: true,
       message: 'Chronic condition deleted successfully'
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Export health history
-router.get('/export/:studentId', auth, async (req: Request, res: Response) => {
+const exportHealthHistoryHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
+    const { studentId } = request.params;
     const exportData = await HealthRecordService.exportHealthHistory(studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: exportData
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Import health records
-router.post('/import/:studentId', auth, async (req: Request, res: Response) => {
+const importHealthRecordsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
-    const importData = req.body;
+    const { studentId } = request.params;
+    const importData = request.payload;
 
     if (!importData || typeof importData !== 'object') {
-      return res.status(400).json({
+      return h.response({
         success: false,
         error: { message: 'Invalid import data' }
-      });
+      }).code(400);
     }
 
     const results = await HealthRecordService.importHealthRecords(studentId, importData);
 
-    res.json({
+    return h.response({
       success: true,
       data: results
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Bulk delete health records
-router.post('/bulk-delete', [
-  auth,
-  body('recordIds').isArray().notEmpty()
-], async (req: AuthRequest, res: Response) => {
+const bulkDeleteHealthRecordsHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const user = request.auth.credentials;
 
     // Check user permissions - only admin and nurse roles can bulk delete
-    if (!req.user || !['ADMIN', 'NURSE'].includes(req.user.role)) {
-      return res.status(403).json({
+    if (!user || !['ADMIN', 'NURSE'].includes(user.role)) {
+      return h.response({
         success: false,
         error: 'Insufficient permissions'
-      });
+      }).code(403);
     }
 
-    const { recordIds } = req.body;
+    const { recordIds } = request.payload;
     const results = await HealthRecordService.bulkDeleteHealthRecords(recordIds);
 
-    res.json({
+    return h.response({
       success: true,
       data: results
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Log security events
-router.post('/security/log', [
-  auth,
-  body('event').notEmpty(),
-  body('resourceType').notEmpty(),
-  body('studentId').optional(),
-  body('details').optional()
-], async (req: AuthRequest, res: Response) => {
+const logSecurityEventHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const user = request.auth.credentials;
 
     const securityEvent = {
-      userId: req.user?.id,
-      userRole: req.user?.role,
-      event: req.body.event,
-      resourceType: req.body.resourceType,
-      studentId: req.body.studentId,
-      details: req.body.details || {},
+      userId: user?.userId,
+      userRole: user?.role,
+      event: request.payload.event,
+      resourceType: request.payload.resourceType,
+      studentId: request.payload.studentId,
+      details: request.payload.details || {},
       timestamp: new Date(),
-      ipAddress: req.ip || req.connection.remoteAddress,
-      userAgent: req.get('User-Agent')
+      ipAddress: request.info.remoteAddress,
+      userAgent: request.headers['user-agent']
     };
 
     // In a real implementation, this would save to a security log table
     console.log('Security Event:', securityEvent);
 
-    res.json({
+    return h.response({
       success: true,
       data: { logged: true }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Admin settings endpoint
-router.get('/admin/settings', [auth], async (req: AuthRequest, res: Response) => {
+const getAdminSettingsHandler = async (request: any, h: any) => {
   try {
+    const user = request.auth.credentials;
+
     // Check admin permissions
-    if (!req.user || !['ADMIN', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'].includes(req.user.role)) {
-      return res.status(403).json({
+    if (!user || !['ADMIN', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
+      return h.response({
         success: false,
         error: 'Insufficient permissions'
-      });
+      }).code(403);
     }
 
-    res.json({
+    return h.response({
       success: true,
       data: { settings: {} }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Audit access log endpoint
-router.post('/audit/access', [
-  auth,
-  body('action').notEmpty(),
-  body('studentId').optional(),
-  body('details').optional()
-], async (req: AuthRequest, res: Response) => {
+const logAuditAccessHandler2 = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const user = request.auth.credentials;
 
     const auditLog = {
-      userId: req.user?.id,
-      userRole: req.user?.role,
-      action: req.body.action,
-      resourceType: req.body.resourceType || 'HEALTH_RECORD',
-      studentId: req.body.studentId,
-      details: req.body.details || {},
+      userId: user?.userId,
+      userRole: user?.role,
+      action: request.payload.action,
+      resourceType: request.payload.resourceType || 'HEALTH_RECORD',
+      studentId: request.payload.studentId,
+      details: request.payload.details || {},
       timestamp: new Date(),
-      ipAddress: req.ip || req.connection.remoteAddress
+      ipAddress: request.info.remoteAddress,
+      userAgent: request.headers['user-agent']
     };
 
     // In a real implementation, this would save to an audit log table
     console.log('Audit Log:', auditLog);
 
-    res.json({
+    return h.response({
       success: true,
       data: { logged: true }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Admin settings endpoint
-router.get('/admin/settings', auth, async (req: AuthRequest, res: Response) => {
+const getAdminSettingsHandler2 = async (request: any, h: any) => {
   try {
+    const user = request.auth.credentials;
+
     // Check user permissions - only admin can access settings
-    if (!req.user || req.user.role !== 'ADMIN') {
-      return res.status(403).json({
+    if (!user || user.role !== 'ADMIN') {
+      return h.response({
         success: false,
         error: 'Insufficient permissions'
-      });
+      }).code(403);
     }
 
     // Return admin settings
-    res.json({
+    return h.response({
       success: true,
       data: {
         settings: {
@@ -685,11 +552,303 @@ router.get('/admin/settings', auth, async (req: AuthRequest, res: Response) => {
       }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define health record routes for Hapi
+export const healthRecordRoutes: ServerRoute[] = [
+  {
+    method: 'POST',
+    path: '/api/health-records/audit/access',
+    handler: logAuditAccessHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          action: Joi.string().valid('VIEW_STUDENT_RECORD', 'EDIT_STUDENT_RECORD', 'DELETE_STUDENT_RECORD').required(),
+          studentId: Joi.string().required(),
+          resourceId: Joi.string().optional(),
+          details: Joi.object().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/student/{studentId}',
+    handler: getStudentHealthRecordsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          type: Joi.string().optional(),
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional(),
+          provider: Joi.string().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records',
+    handler: createHealthRecordHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          type: Joi.string().valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING').required(),
+          date: Joi.date().iso().required(),
+          description: Joi.string().trim().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/health-records/{id}',
+    handler: updateHealthRecordHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          type: Joi.string().valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING').optional(),
+          date: Joi.date().iso().optional(),
+          description: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/allergies/{studentId}',
+    handler: getStudentAllergiesHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records/allergies',
+    handler: addAllergyHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          allergen: Joi.string().trim().required(),
+          severity: Joi.string().valid('MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING').required(),
+          verified: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/health-records/allergies/{id}',
+    handler: updateAllergyHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          allergen: Joi.string().trim().optional(),
+          severity: Joi.string().valid('MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING').optional(),
+          verified: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/health-records/allergies/{id}',
+    handler: deleteAllergyHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/vaccinations/{studentId}',
+    handler: getVaccinationRecordsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/growth/{studentId}',
+    handler: getGrowthChartDataHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/vitals/{studentId}',
+    handler: getRecentVitalsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          limit: Joi.number().integer().min(1).max(100).default(10)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/summary/{studentId}',
+    handler: getHealthSummaryHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/search',
+    handler: searchHealthRecordsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          q: Joi.string().required(),
+          type: Joi.string().optional(),
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/chronic-conditions/{studentId}',
+    handler: getStudentChronicConditionsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records/chronic-conditions',
+    handler: addChronicConditionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          condition: Joi.string().trim().required(),
+          diagnosedDate: Joi.date().iso().required(),
+          status: Joi.string().trim().optional(),
+          severity: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/health-records/chronic-conditions/{id}',
+    handler: updateChronicConditionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          condition: Joi.string().trim().optional(),
+          diagnosedDate: Joi.date().iso().optional(),
+          status: Joi.string().trim().optional(),
+          severity: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/health-records/chronic-conditions/{id}',
+    handler: deleteChronicConditionHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/export/{studentId}',
+    handler: exportHealthHistoryHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records/import/{studentId}',
+    handler: importHealthRecordsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records/bulk-delete',
+    handler: bulkDeleteHealthRecordsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          recordIds: Joi.array().items(Joi.string()).min(1).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records/security/log',
+    handler: logSecurityEventHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          event: Joi.string().required(),
+          resourceType: Joi.string().required(),
+          studentId: Joi.string().optional(),
+          details: Joi.object().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/admin/settings',
+    handler: getAdminSettingsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/health-records/audit/access',
+    handler: logAuditAccessHandler2,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          action: Joi.string().required(),
+          studentId: Joi.string().optional(),
+          details: Joi.object().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/admin/settings',
+    handler: getAdminSettingsHandler2,
+    options: {
+      auth: 'jwt'
+    }
+  }
+];

@@ -1,8 +1,8 @@
-import type { 
-  MedicationTab, 
-  DosageForm, 
-  SeverityLevel
+import type {
+  MedicationTab,
+  DosageForm
 } from '../types/medications'
+import type { Priority } from '../types/api'
 
 // Tab configuration
 export const MEDICATION_TABS: { value: MedicationTab; label: string }[] = [
@@ -40,10 +40,11 @@ export const ADMINISTRATION_ROUTES: { value: string; label: string }[] = [
 ]
 
 // Severity levels
-export const SEVERITY_LEVELS: { value: SeverityLevel; label: string; color: string }[] = [
+export const SEVERITY_LEVELS: { value: Priority; label: string; color: string }[] = [
   { value: 'LOW', label: 'Low', color: 'text-yellow-600 bg-yellow-100' },
   { value: 'MEDIUM', label: 'Medium', color: 'text-orange-600 bg-orange-100' },
   { value: 'HIGH', label: 'High', color: 'text-red-600 bg-red-100' },
+  { value: 'URGENT', label: 'Urgent', color: 'text-red-700 bg-red-150' },
   { value: 'CRITICAL', label: 'Critical', color: 'text-red-800 bg-red-200' }
 ]
 

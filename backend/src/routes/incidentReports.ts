@@ -1,551 +1,676 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { IncidentReportService } from '../services/incidentReportService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get incident reports
-router.get('/', auth, async (req: Request, res: Response) => {
+const getIncidentReportsHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.studentId) filters.studentId = req.query.studentId as string;
-    if (req.query.reportedById) filters.reportedById = req.query.reportedById as string;
-    if (req.query.type) filters.type = req.query.type as string;
-    if (req.query.severity) filters.severity = req.query.severity as string;
-    if (req.query.dateFrom) filters.dateFrom = new Date(req.query.dateFrom as string);
-    if (req.query.dateTo) filters.dateTo = new Date(req.query.dateTo as string);
-    if (req.query.parentNotified !== undefined) filters.parentNotified = req.query.parentNotified === 'true';
-    if (req.query.followUpRequired !== undefined) filters.followUpRequired = req.query.followUpRequired === 'true';
+    if (request.query.studentId) filters.studentId = request.query.studentId;
+    if (request.query.reportedById) filters.reportedById = request.query.reportedById;
+    if (request.query.type) filters.type = request.query.type;
+    if (request.query.severity) filters.severity = request.query.severity;
+    if (request.query.dateFrom) filters.dateFrom = new Date(request.query.dateFrom);
+    if (request.query.dateTo) filters.dateTo = new Date(request.query.dateTo);
+    if (request.query.parentNotified !== undefined) filters.parentNotified = request.query.parentNotified === 'true';
+    if (request.query.followUpRequired !== undefined) filters.followUpRequired = request.query.followUpRequired === 'true';
 
     const result = await IncidentReportService.getIncidentReports(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get incident report by ID
-router.get('/:id', auth, async (req: Request, res: Response) => {
+const getIncidentReportByIdHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const report = await IncidentReportService.getIncidentReportById(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
     if ((error as Error).message === 'Incident report not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'Incident report not found' }
-      });
+      }).code(404);
     }
-    
-    res.status(500).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new incident report
-router.post('/', [
-  auth,
-  body('studentId').notEmpty(),
-  body('type').isIn(['INJURY', 'ILLNESS', 'BEHAVIORAL', 'MEDICATION_ERROR', 'ALLERGIC_REACTION', 'EMERGENCY', 'OTHER']),
-  body('severity').isIn(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
-  body('description').notEmpty().trim(),
-  body('location').notEmpty().trim(),
-  body('actionsTaken').notEmpty().trim(),
-  body('occurredAt').isISO8601(),
-  body('witnesses').optional().isArray(),
-  body('parentNotified').optional().isBoolean(),
-  body('followUpRequired').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const createIncidentReportHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const reportedById = (req as any).user.userId; // From auth middleware
+    const reportedById = request.auth.credentials?.userId;
 
     const report = await IncidentReportService.createIncidentReport({
-      ...req.body,
+      ...request.payload,
       reportedById,
-      occurredAt: new Date(req.body.occurredAt)
+      occurredAt: new Date(request.payload.occurredAt)
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { report }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update incident report
-router.put('/:id', [
-  auth,
-  body('type').optional().isIn(['INJURY', 'ILLNESS', 'BEHAVIORAL', 'MEDICATION_ERROR', 'ALLERGIC_REACTION', 'EMERGENCY', 'OTHER']),
-  body('severity').optional().isIn(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
-  body('description').optional().trim(),
-  body('location').optional().trim(),
-  body('actionsTaken').optional().trim(),
-  body('occurredAt').optional().isISO8601(),
-  body('witnesses').optional().isArray(),
-  body('parentNotified').optional().isBoolean(),
-  body('followUpRequired').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateIncidentReportHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const updateData = { ...request.payload };
 
-    const { id } = req.params;
-    const updateData = { ...req.body };
-    
     if (updateData.occurredAt) {
       updateData.occurredAt = new Date(updateData.occurredAt);
     }
 
     const report = await IncidentReportService.updateIncidentReport(id, updateData);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Mark parent as notified
-router.put('/:id/notify-parent', [
-  auth,
-  body('notificationMethod').optional().trim(),
-  body('notifiedBy').optional().trim()
-], async (req: Request, res: Response) => {
+const markParentNotifiedHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
-    const { notificationMethod, notifiedBy } = req.body;
-    
+    const { id } = request.params;
+    const { notificationMethod, notifiedBy } = request.payload;
+
     const report = await IncidentReportService.markParentNotified(id, notificationMethod, notifiedBy);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Add follow-up notes
-router.put('/:id/follow-up', [
-  auth,
-  body('notes').notEmpty().trim()
-], async (req: Request, res: Response) => {
+const addFollowUpNotesHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const { notes } = request.payload;
+    const completedBy = request.auth.credentials?.firstName + ' ' + request.auth.credentials?.lastName;
 
-    const { id } = req.params;
-    const { notes } = req.body;
-    const completedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
-    
     const report = await IncidentReportService.addFollowUpNotes(id, notes, completedBy);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get incident statistics
-router.get('/statistics/overview', auth, async (req: Request, res: Response) => {
+const getIncidentStatisticsHandler = async (request: any, h: any) => {
   try {
-    const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
-    const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
-    const studentId = req.query.studentId as string;
+    const dateFrom = request.query.dateFrom ? new Date(request.query.dateFrom) : undefined;
+    const dateTo = request.query.dateTo ? new Date(request.query.dateTo) : undefined;
+    const studentId = request.query.studentId;
 
     const stats = await IncidentReportService.getIncidentStatistics(dateFrom, dateTo, studentId);
 
-    res.json({
+    return h.response({
       success: true,
       data: stats
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Search incident reports
-router.get('/search/:query', auth, async (req: Request, res: Response) => {
+const searchIncidentReportsHandler = async (request: any, h: any) => {
   try {
-    const { query } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
+    const { query } = request.params;
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
 
     const result = await IncidentReportService.searchIncidentReports(query, page, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get incidents requiring follow-up
-router.get('/follow-up/pending', auth, async (_req: Request, res: Response) => {
+const getIncidentsRequiringFollowUpHandler = async (request: any, h: any) => {
   try {
     const reports = await IncidentReportService.getIncidentsRequiringFollowUp();
 
-    res.json({
+    return h.response({
       success: true,
       data: { reports }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get recent incidents for a student
-router.get('/student/:studentId/recent', auth, async (req: Request, res: Response) => {
+const getStudentRecentIncidentsHandler = async (request: any, h: any) => {
   try {
-    const { studentId } = req.params;
-    const limit = parseInt(req.query.limit as string) || 5;
+    const { studentId } = request.params;
+    const limit = parseInt(request.query.limit) || 5;
 
     const reports = await IncidentReportService.getStudentRecentIncidents(studentId, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: { reports }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Generate incident report document
-router.get('/:id/document', auth, async (req: Request, res: Response) => {
+const generateIncidentReportDocumentHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const documentData = await IncidentReportService.generateIncidentReportDocument(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { document: documentData }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Add witness statement
-router.post('/:id/witness-statements', [
-  auth,
-  body('witnessName').notEmpty().trim(),
-  body('witnessType').isIn(['STUDENT', 'STAFF', 'PARENT', 'OTHER']),
-  body('witnessContact').optional().trim(),
-  body('statement').notEmpty().trim()
-], async (req: Request, res: Response) => {
+const addWitnessStatementHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const statement = await IncidentReportService.addWitnessStatement(id, request.payload);
 
-    const { id } = req.params;
-    const statement = await IncidentReportService.addWitnessStatement(id, req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { statement }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Verify witness statement
-router.put('/witness-statements/:statementId/verify', auth, async (req: Request, res: Response) => {
+const verifyWitnessStatementHandler = async (request: any, h: any) => {
   try {
-    const { statementId } = req.params;
-    const verifiedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
-    
+    const { statementId } = request.params;
+    const verifiedBy = request.auth.credentials?.firstName + ' ' + request.auth.credentials?.lastName;
+
     const statement = await IncidentReportService.verifyWitnessStatement(statementId, verifiedBy);
 
-    res.json({
+    return h.response({
       success: true,
       data: { statement }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Add follow-up action
-router.post('/:id/follow-up-actions', [
-  auth,
-  body('action').notEmpty().trim(),
-  body('dueDate').isISO8601(),
-  body('priority').isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  body('assignedTo').optional().trim()
-], async (req: Request, res: Response) => {
+const addFollowUpActionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { id } = req.params;
+    const { id } = request.params;
     const actionData = {
-      ...req.body,
-      dueDate: new Date(req.body.dueDate)
+      ...request.payload,
+      dueDate: new Date(request.payload.dueDate)
     };
-    
+
     const action = await IncidentReportService.addFollowUpAction(id, actionData);
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { action }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update follow-up action status
-router.put('/follow-up-actions/:actionId', [
-  auth,
-  body('status').isIn(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
-  body('notes').optional().trim()
-], async (req: Request, res: Response) => {
+const updateFollowUpActionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { actionId } = request.params;
+    const { status, notes } = request.payload;
+    const completedBy = request.auth.credentials?.firstName + ' ' + request.auth.credentials?.lastName;
 
-    const { actionId } = req.params;
-    const { status, notes } = req.body;
-    const completedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
-    
     const action = await IncidentReportService.updateFollowUpAction(actionId, status, completedBy, notes);
 
-    res.json({
+    return h.response({
       success: true,
       data: { action }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Add evidence (photos/videos)
-router.post('/:id/evidence', [
-  auth,
-  body('evidenceType').isIn(['photo', 'video']),
-  body('evidenceUrls').isArray().notEmpty()
-], async (req: Request, res: Response) => {
+const addEvidenceHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const { evidenceType, evidenceUrls } = request.payload;
 
-    const { id } = req.params;
-    const { evidenceType, evidenceUrls } = req.body;
-    
     const report = await IncidentReportService.addEvidence(id, evidenceType, evidenceUrls);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update insurance claim
-router.put('/:id/insurance-claim', [
-  auth,
-  body('claimNumber').notEmpty().trim(),
-  body('status').isIn(['NOT_FILED', 'FILED', 'PENDING', 'APPROVED', 'DENIED', 'CLOSED'])
-], async (req: Request, res: Response) => {
+const updateInsuranceClaimHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const { claimNumber, status } = request.payload;
 
-    const { id } = req.params;
-    const { claimNumber, status } = req.body;
-    
     const report = await IncidentReportService.updateInsuranceClaim(id, claimNumber, status);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update compliance status
-router.put('/:id/compliance', [
-  auth,
-  body('status').isIn(['PENDING', 'COMPLIANT', 'NON_COMPLIANT', 'UNDER_REVIEW'])
-], async (req: Request, res: Response) => {
+const updateComplianceStatusHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const { status } = request.payload;
 
-    const { id } = req.params;
-    const { status } = req.body;
-    
     const report = await IncidentReportService.updateComplianceStatus(id, status);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Send parent notification
-router.post('/:id/notify-parent-automated', [
-  auth,
-  body('method').isIn(['email', 'sms', 'voice'])
-], async (req: Request, res: Response) => {
+const notifyParentHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const { method } = request.payload;
+    const notifiedBy = request.auth.credentials?.firstName + ' ' + request.auth.credentials?.lastName;
 
-    const { id } = req.params;
-    const { method } = req.body;
-    const notifiedBy = (req as any).user.firstName + ' ' + (req as any).user.lastName;
-    
     const report = await IncidentReportService.notifyParent(id, method, notifiedBy);
 
-    res.json({
+    return h.response({
       success: true,
       data: { report }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
-export default router;
+// Define incident report routes for Hapi
+export const incidentReportRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/incident-reports',
+    handler: getIncidentReportsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          studentId: Joi.string().optional(),
+          reportedById: Joi.string().optional(),
+          type: Joi.string().optional(),
+          severity: Joi.string().optional(),
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional(),
+          parentNotified: Joi.boolean().optional(),
+          followUpRequired: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/incident-reports/{id}',
+    handler: getIncidentReportByIdHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/incident-reports',
+    handler: createIncidentReportHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          studentId: Joi.string().required(),
+          type: Joi.string().valid('INJURY', 'ILLNESS', 'BEHAVIORAL', 'MEDICATION_ERROR', 'ALLERGIC_REACTION', 'EMERGENCY', 'OTHER').required(),
+          severity: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL').required(),
+          description: Joi.string().trim().required(),
+          location: Joi.string().trim().required(),
+          actionsTaken: Joi.string().trim().required(),
+          occurredAt: Joi.date().iso().required(),
+          witnesses: Joi.array().optional(),
+          parentNotified: Joi.boolean().optional(),
+          followUpRequired: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/{id}',
+    handler: updateIncidentReportHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          type: Joi.string().valid('INJURY', 'ILLNESS', 'BEHAVIORAL', 'MEDICATION_ERROR', 'ALLERGIC_REACTION', 'EMERGENCY', 'OTHER').optional(),
+          severity: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL').optional(),
+          description: Joi.string().trim().optional(),
+          location: Joi.string().trim().optional(),
+          actionsTaken: Joi.string().trim().optional(),
+          occurredAt: Joi.date().iso().optional(),
+          witnesses: Joi.array().optional(),
+          parentNotified: Joi.boolean().optional(),
+          followUpRequired: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/{id}/notify-parent',
+    handler: markParentNotifiedHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          notificationMethod: Joi.string().trim().optional(),
+          notifiedBy: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/{id}/follow-up',
+    handler: addFollowUpNotesHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          notes: Joi.string().trim().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/incident-reports/statistics/overview',
+    handler: getIncidentStatisticsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          dateFrom: Joi.date().iso().optional(),
+          dateTo: Joi.date().iso().optional(),
+          studentId: Joi.string().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/incident-reports/search/{query}',
+    handler: searchIncidentReportsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/incident-reports/follow-up/pending',
+    handler: getIncidentsRequiringFollowUpHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/incident-reports/student/{studentId}/recent',
+    handler: getStudentRecentIncidentsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          limit: Joi.number().integer().min(1).max(20).default(5)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/incident-reports/{id}/document',
+    handler: generateIncidentReportDocumentHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/incident-reports/{id}/witness-statements',
+    handler: addWitnessStatementHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          witnessName: Joi.string().trim().required(),
+          witnessType: Joi.string().valid('STUDENT', 'STAFF', 'PARENT', 'OTHER').required(),
+          witnessContact: Joi.string().trim().optional(),
+          statement: Joi.string().trim().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/witness-statements/{statementId}/verify',
+    handler: verifyWitnessStatementHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/incident-reports/{id}/follow-up-actions',
+    handler: addFollowUpActionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          action: Joi.string().trim().required(),
+          dueDate: Joi.date().iso().required(),
+          priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').required(),
+          assignedTo: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/follow-up-actions/{actionId}',
+    handler: updateFollowUpActionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          status: Joi.string().valid('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED').required(),
+          notes: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/incident-reports/{id}/evidence',
+    handler: addEvidenceHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          evidenceType: Joi.string().valid('photo', 'video').required(),
+          evidenceUrls: Joi.array().items(Joi.string()).min(1).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/{id}/insurance-claim',
+    handler: updateInsuranceClaimHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          claimNumber: Joi.string().trim().required(),
+          status: Joi.string().valid('NOT_FILED', 'FILED', 'PENDING', 'APPROVED', 'DENIED', 'CLOSED').required()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/incident-reports/{id}/compliance',
+    handler: updateComplianceStatusHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          status: Joi.string().valid('PENDING', 'COMPLIANT', 'NON_COMPLIANT', 'UNDER_REVIEW').required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/incident-reports/{id}/notify-parent-automated',
+    handler: notifyParentHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          method: Joi.string().valid('email', 'sms', 'voice').required()
+        })
+      }
+    }
+  }
+];

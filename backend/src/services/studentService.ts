@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../utils/logger';
+import _ from 'lodash';
 
 const prisma = new PrismaClient();
 
@@ -51,7 +52,7 @@ export class StudentService {
       
       // Build where clause based on filters
       const whereClause: any = {};
-      
+
       if (filters.search) {
         whereClause.OR = [
           { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -59,23 +60,23 @@ export class StudentService {
           { studentNumber: { contains: filters.search, mode: 'insensitive' } }
         ];
       }
-      
+
       if (filters.grade) {
         whereClause.grade = filters.grade;
       }
-      
+
       if (filters.isActive !== undefined) {
         whereClause.isActive = filters.isActive;
       }
-      
+
       if (filters.nurseId) {
         whereClause.nurseId = filters.nurseId;
       }
-      
+
       if (filters.hasAllergies) {
         whereClause.allergies = { some: {} };
       }
-      
+
       if (filters.hasMedications) {
         whereClause.medications = { some: { isActive: true } };
       }
@@ -126,7 +127,7 @@ export class StudentService {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit)
+          pages: _.ceil(total / limit)
         }
       };
     } catch (error) {

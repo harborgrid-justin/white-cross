@@ -2,10 +2,10 @@ import { AlertTriangle, Package } from 'lucide-react'
 import { AlertBanner, LoadingSpinner, EmptyState } from '../shared'
 import { useMedicationsData } from '../../hooks/useMedicationsData'
 import { getExpirationStatus, getStockStatus, formatDate } from '../../utils/medications'
-import type { InventoryItem } from '../../types/medications'
+import type { MedicationInventory } from '../../types/api'
 
 interface InventoryTabProps {
-  onInventoryItemSelect?: (item: InventoryItem) => void
+  onInventoryItemSelect?: (item: MedicationInventory) => void
   className?: string
   testId?: string
 }
@@ -15,7 +15,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   className = '',
   testId
 }) => {
-  const { inventory, inventoryLoading } = useMedicationsData()
+  const { inventory, isLoading: inventoryLoading } = useMedicationsData()
 
   if (inventoryLoading) {
     return (
@@ -126,10 +126,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                   <td className="px-6 py-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {item.medication.name}
+                        {item.medication?.name || 'Unknown Medication'}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {item.medication.dosageForm} • {item.medication.strength}
+                        {item.medication?.dosageForm} • {item.medication?.strength}
                       </div>
                     </div>
                   </td>

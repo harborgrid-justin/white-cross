@@ -1,30 +1,15 @@
-import { Router, Request, Response } from 'express';
+import { ServerRoute } from '@hapi/hapi';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { body, validationResult } from 'express-validator';
+import Joi from 'joi';
 
-const router = Router();
 const prisma = new PrismaClient();
 
 // Register endpoint
-router.post('/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 8 }),
-  body('firstName').notEmpty().trim(),
-  body('lastName').notEmpty().trim(),
-  body('role').isIn(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'])
-], async (req: Request, res: Response) => {
+const registerHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, firstName, lastName, role } = request.payload;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -32,10 +17,10 @@ router.post('/register', [
     });
 
     if (existingUser) {
-      return res.status(409).json({
+      return h.response({
         success: false,
         error: { message: 'User already exists with this email' }
-      });
+      }).code(409);
     }
 
     // Hash password
@@ -60,54 +45,43 @@ router.post('/register', [
       }
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { user }
-    });
+    }).code(201);
 
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: 'Internal server error' }
-    });
+    }).code(500);
   }
-});
+};
 
 // Login endpoint
-router.post('/login', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').notEmpty()
-], async (req: Request, res: Response) => {
+const loginHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { email, password } = request.payload;
 
-    const { email, password } = req.body;
-
-    // Find user
+    // Find user by email
     const user = await prisma.user.findUnique({
       where: { email }
     });
 
-    if (!user) {
-      return res.status(401).json({
+    if (!user || !user.isActive) {
+      return h.response({
         success: false,
         error: { message: 'Invalid credentials' }
-      });
+      }).code(401);
     }
 
-    // Check password
+    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({
+      return h.response({
         success: false,
         error: { message: 'Invalid credentials' }
-      });
+      }).code(401);
     }
 
     // Update last login
@@ -116,20 +90,20 @@ router.post('/login', [
       data: { lastLogin: new Date() }
     });
 
-    // Generate JWT
+    // Generate JWT for API access
     const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        role: user.role 
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role
       },
       process.env.JWT_SECRET as string,
-      { 
+      {
         expiresIn: '24h'
       }
     );
 
-    res.json({
+    return h.response({
       success: true,
       data: {
         token,
@@ -144,27 +118,27 @@ router.post('/login', [
     });
 
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: 'Internal server error' }
-    });
+    }).code(500);
   }
-});
+};
 
 // Verify token endpoint
-router.get('/verify', async (req: Request, res: Response) => {
+const verifyHandler = async (request: any, h: any) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = request.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      return res.status(401).json({
+      return h.response({
         success: false,
         error: { message: 'Access token required' }
-      });
+      }).code(401);
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
-    
+
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -179,23 +153,88 @@ router.get('/verify', async (req: Request, res: Response) => {
     });
 
     if (!user || !user.isActive) {
-      return res.status(401).json({
+      return h.response({
         success: false,
         error: { message: 'User not found or inactive' }
-      });
+      }).code(401);
     }
 
-    res.json({
+    return h.response({
       success: true,
       data: user
     });
 
   } catch (error) {
-    res.status(401).json({
+    return h.response({
       success: false,
       error: { message: 'Invalid or expired token' }
-    });
+    }).code(401);
   }
-});
+};
 
-export default router;
+// Get current user endpoint
+const meHandler = async (request: any, h: any) => {
+  const user = request.auth.credentials;
+
+  if (user) {
+    return h.response({
+      success: true,
+      data: user
+    });
+  } else {
+    return h.response({
+      success: false,
+      error: { message: 'Not authenticated' }
+    }).code(401);
+  }
+};
+
+// Define auth routes for Hapi
+export const authRoutes: ServerRoute[] = [
+  {
+    method: 'POST',
+    path: '/api/auth/register',
+    handler: registerHandler,
+    options: {
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email().required(),
+          password: Joi.string().min(8).required(),
+          firstName: Joi.string().trim().required(),
+          lastName: Joi.string().trim().required(),
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/auth/login',
+    handler: loginHandler,
+    options: {
+      auth: false, // Disable auth for login
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email().required(),
+          password: Joi.string().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/verify',
+    handler: verifyHandler,
+    options: {
+      auth: false // Disable auth for token verification
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/me',
+    handler: meHandler,
+    options: {
+      auth: 'jwt' // Require authentication
+    }
+  }
+];

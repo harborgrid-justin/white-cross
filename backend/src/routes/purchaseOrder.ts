@@ -1,222 +1,281 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { PurchaseOrderService } from '../services/purchaseOrderService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get purchase orders
-router.get('/', auth, async (req: Request, res: Response) => {
+const getPurchaseOrdersHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.status) filters.status = req.query.status as string;
-    if (req.query.vendorId) filters.vendorId = req.query.vendorId as string;
-    if (req.query.startDate) filters.startDate = new Date(req.query.startDate as string);
-    if (req.query.endDate) filters.endDate = new Date(req.query.endDate as string);
+    if (request.query.status) filters.status = request.query.status;
+    if (request.query.vendorId) filters.vendorId = request.query.vendorId;
+    if (request.query.startDate) filters.startDate = new Date(request.query.startDate);
+    if (request.query.endDate) filters.endDate = new Date(request.query.endDate);
 
     const result = await PurchaseOrderService.getPurchaseOrders(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get purchase order by ID
-router.get('/:id', auth, async (req: Request, res: Response) => {
+const getPurchaseOrderByIdHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const order = await PurchaseOrderService.getPurchaseOrderById(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { order }
     });
   } catch (error) {
-    res.status(404).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(404);
   }
-});
+};
 
 // Create purchase order
-router.post('/', [
-  auth,
-  body('vendorId').notEmpty(),
-  body('items').isArray({ min: 1 }),
-  body('items.*.inventoryItemId').notEmpty(),
-  body('items.*.quantity').isInt({ min: 1 }),
-  body('items.*.unitCost').isNumeric(),
-  body('expectedDate').optional().isISO8601(),
-  body('tax').optional().isNumeric(),
-  body('shipping').optional().isNumeric()
-], async (req: Request, res: Response) => {
+const createPurchaseOrderHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     const orderData = {
-      ...req.body,
-      expectedDate: req.body.expectedDate ? new Date(req.body.expectedDate) : undefined
+      ...request.payload,
+      expectedDate: request.payload.expectedDate ? new Date(request.payload.expectedDate) : undefined
     };
 
     const order = await PurchaseOrderService.createPurchaseOrder(orderData);
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { order }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update purchase order
-router.put('/:id', [
-  auth,
-  body('status').optional().isIn(['PENDING', 'APPROVED', 'ORDERED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CANCELLED']),
-  body('expectedDate').optional().isISO8601(),
-  body('receivedDate').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const updatePurchaseOrderHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { id } = req.params;
+    const { id } = request.params;
     const updateData = {
-      ...req.body,
-      expectedDate: req.body.expectedDate ? new Date(req.body.expectedDate) : undefined,
-      receivedDate: req.body.receivedDate ? new Date(req.body.receivedDate) : undefined
+      ...request.payload,
+      expectedDate: request.payload.expectedDate ? new Date(request.payload.expectedDate) : undefined,
+      receivedDate: request.payload.receivedDate ? new Date(request.payload.receivedDate) : undefined
     };
 
     const order = await PurchaseOrderService.updatePurchaseOrder(id, updateData);
 
-    res.json({
+    return h.response({
       success: true,
       data: { order }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Approve purchase order
-router.post('/:id/approve', auth, async (req: Request, res: Response) => {
+const approvePurchaseOrderHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
-    const approvedBy = (req as any).user.userId; // From auth middleware
+    const { id } = request.params;
+    const approvedBy = request.auth.credentials?.userId;
 
     const order = await PurchaseOrderService.approvePurchaseOrder(id, approvedBy);
 
-    res.json({
+    return h.response({
       success: true,
       data: { order }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Receive items
-router.post('/:id/receive', [
-  auth,
-  body('items').isArray({ min: 1 }),
-  body('items.*.purchaseOrderItemId').notEmpty(),
-  body('items.*.receivedQty').isInt({ min: 1 })
-], async (req: Request, res: Response) => {
+const receiveItemsHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const performedBy = request.auth.credentials?.userId;
 
-    const { id } = req.params;
-    const performedBy = (req as any).user.userId;
+    const order = await PurchaseOrderService.receiveItems(id, request.payload, performedBy);
 
-    const order = await PurchaseOrderService.receiveItems(id, req.body, performedBy);
-
-    res.json({
+    return h.response({
       success: true,
       data: { order }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Cancel purchase order
-router.post('/:id/cancel', [
-  auth,
-  body('reason').optional().trim()
-], async (req: Request, res: Response) => {
+const cancelPurchaseOrderHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
-    const { reason } = req.body;
+    const { id } = request.params;
+    const { reason } = request.payload;
 
     const order = await PurchaseOrderService.cancelPurchaseOrder(id, reason);
 
-    res.json({
+    return h.response({
       success: true,
       data: { order }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get items needing reorder
-router.get('/reorder/needed', auth, async (_req: Request, res: Response) => {
+const getItemsNeedingReorderHandler = async (request: any, h: any) => {
   try {
     const items = await PurchaseOrderService.getItemsNeedingReorder();
 
-    res.json({
+    return h.response({
       success: true,
       data: { items }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define purchase order routes for Hapi
+export const purchaseOrderRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/purchase-orders',
+    handler: getPurchaseOrdersHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          status: Joi.string().optional(),
+          vendorId: Joi.string().optional(),
+          startDate: Joi.date().iso().optional(),
+          endDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/purchase-orders/{id}',
+    handler: getPurchaseOrderByIdHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/purchase-orders',
+    handler: createPurchaseOrderHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          vendorId: Joi.string().required(),
+          items: Joi.array().items(Joi.object({
+            inventoryItemId: Joi.string().required(),
+            quantity: Joi.number().integer().min(1).required(),
+            unitCost: Joi.number().required()
+          })).min(1).required(),
+          expectedDate: Joi.date().iso().optional(),
+          tax: Joi.number().optional(),
+          shipping: Joi.number().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/purchase-orders/{id}',
+    handler: updatePurchaseOrderHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          status: Joi.string().valid('PENDING', 'APPROVED', 'ORDERED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CANCELLED').optional(),
+          expectedDate: Joi.date().iso().optional(),
+          receivedDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/purchase-orders/{id}/approve',
+    handler: approvePurchaseOrderHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/purchase-orders/{id}/receive',
+    handler: receiveItemsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          items: Joi.array().items(Joi.object({
+            purchaseOrderItemId: Joi.string().required(),
+            receivedQty: Joi.number().integer().min(1).required()
+          })).min(1).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/purchase-orders/{id}/cancel',
+    handler: cancelPurchaseOrderHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          reason: Joi.string().trim().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/purchase-orders/reorder/needed',
+    handler: getItemsNeedingReorderHandler,
+    options: {
+      auth: 'jwt'
+    }
+  }
+];

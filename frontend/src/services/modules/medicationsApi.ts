@@ -1,19 +1,24 @@
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
-import { extractApiData } from '../utils/apiUtils';
-import { buildUrlParams } from '../utils/apiUtils';
-import { 
-  Medication, 
-  MedicationAdministration, 
-  ApiResponse, 
-  PaginationParams,
-  DateRangeFilter 
-} from '../types';
+import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
+import { z } from 'zod';
+import moment from 'moment';
+import debug from 'debug';
 
-export interface MedicationFilters extends PaginationParams {
-  search?: string;
-  isControlled?: boolean;
-  category?: string;
-  expirationWarning?: boolean;
+const log = debug('whitecross:medications-api');
+
+// Types
+export interface Medication {
+  id: string;
+  name: string;
+  genericName?: string;
+  strength: string;
+  form: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'inhaler' | 'topical' | 'drops';
+  category: string;
+  controlledSubstance: boolean;
+  requiresPrescription: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface StudentMedication {
@@ -25,15 +30,27 @@ export interface StudentMedication {
   startDate: string;
   endDate?: string;
   instructions: string;
-  prescribedBy: string;
+  prescribedBy?: string;
   isActive: boolean;
-  medication: Medication;
-  student: {
+  createdAt: string;
+  updatedAt: string;
+  medication?: Medication;
+  student?: {
     id: string;
     firstName: string;
     lastName: string;
-    studentNumber: string;
   };
+}
+
+export interface MedicationAdministration {
+  id: string;
+  studentMedicationId: string;
+  administeredBy: string;
+  administeredAt: string;
+  dosage: string;
+  notes?: string;
+  status: 'administered' | 'missed' | 'refused' | 'held';
+  createdAt: string;
 }
 
 export interface MedicationSchedule {
@@ -41,389 +58,380 @@ export interface MedicationSchedule {
   studentMedicationId: string;
   scheduledTime: string;
   dosage: string;
-  administered: boolean;
-  administeredBy?: string;
+  status: 'pending' | 'completed' | 'missed' | 'cancelled';
   administeredAt?: string;
+  administeredBy?: string;
   notes?: string;
-  student: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-  medication: {
-    id: string;
-    name: string;
-    dosage: string;
-  };
 }
 
-export interface InventoryItem {
-  id: string;
-  medicationId: string;
-  quantity: number;
-  lotNumber?: string;
-  expirationDate: string;
-  location?: string;
-  medication: Medication;
+export interface MedicationFilters {
+  search?: string;
+  category?: string;
+  isActive?: boolean;
+  controlledSubstance?: boolean;
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
 }
 
-export interface AdverseReaction {
-  id: string;
+export interface CreateMedicationRequest {
+  name: string;
+  genericName?: string;
+  strength: string;
+  form: Medication['form'];
+  category: string;
+  controlledSubstance?: boolean;
+  requiresPrescription?: boolean;
+}
+
+export interface AssignMedicationRequest {
   studentId: string;
   medicationId: string;
-  reaction: string;
-  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
-  onset: string;
-  treatment?: string;
-  reportedBy: string;
-  reportedAt: string;
+  dosage: string;
+  frequency: string;
+  startDate: string;
+  endDate?: string;
+  instructions: string;
+  prescribedBy?: string;
 }
 
-export interface MedicationsApi {
-  // Medications CRUD
-  getAll(filters?: MedicationFilters): Promise<{ medications: Medication[]; pagination: any }>;
-  getById(id: string): Promise<{ medication: Medication }>;
-  create(medicationData: Partial<Medication>): Promise<{ medication: Medication }>;
-  update(id: string, medicationData: Partial<Medication>): Promise<{ medication: Medication }>;
-  delete(id: string): Promise<void>;
-  search(query: string, limit?: number): Promise<{ medications: Medication[] }>;
-
-  // Student Medications
-  assignToStudent(data: {
-    studentId: string;
-    medicationId: string;
-    dosage: string;
-    frequency: string;
-    startDate: string;
-    endDate?: string;
-    instructions: string;
-    prescribedBy: string;
-  }): Promise<{ studentMedication: StudentMedication }>;
-  
-  getStudentMedications(studentId: string): Promise<{ medications: StudentMedication[] }>;
-  updateStudentMedication(id: string, data: Partial<StudentMedication>): Promise<{ studentMedication: StudentMedication }>;
-  deactivateStudentMedication(id: string, reason?: string): Promise<{ studentMedication: StudentMedication }>;
-
-  // Administration
-  logAdministration(data: {
-    studentMedicationId: string;
-    administeredTime: string;
-    dosageGiven: string;
-    notes?: string;
-    sideEffects?: string[];
-  }): Promise<{ administration: MedicationAdministration }>;
-  
-  getStudentLogs(studentId: string, pagination?: PaginationParams): Promise<{ logs: MedicationAdministration[]; pagination: any }>;
-  updateAdministrationLog(id: string, data: Partial<MedicationAdministration>): Promise<{ administration: MedicationAdministration }>;
-
-  // Scheduling
-  getSchedule(filters?: {
-    startDate?: string;
-    endDate?: string;
-    nurseId?: string;
-    studentId?: string;
-  }): Promise<{ schedule: MedicationSchedule[] }>;
-  
-  getReminders(date?: string): Promise<{ reminders: MedicationSchedule[] }>;
-  markAsAdministered(scheduleId: string, data: { administeredBy: string; notes?: string }): Promise<{ schedule: MedicationSchedule }>;
-  markAsMissed(scheduleId: string, reason: string): Promise<{ schedule: MedicationSchedule }>;
-
-  // Inventory Management
-  getInventory(): Promise<{ inventory: InventoryItem[] }>;
-  addToInventory(data: {
-    medicationId: string;
-    quantity: number;
-    lotNumber?: string;
-    expirationDate: string;
-    location?: string;
-  }): Promise<{ inventoryItem: InventoryItem }>;
-  
-  updateInventory(id: string, quantity: number, reason?: string): Promise<{ inventoryItem: InventoryItem }>;
-  getInventoryByMedication(medicationId: string): Promise<{ inventory: InventoryItem[] }>;
-  getLowStockAlerts(): Promise<{ alerts: any[] }>;
-  getExpirationAlerts(days?: number): Promise<{ alerts: any[] }>;
-
-  // Adverse Reactions
-  reportAdverseReaction(data: {
-    studentId: string;
-    medicationId: string;
-    reaction: string;
-    severity: string;
-    onset: string;
-    treatment?: string;
-  }): Promise<{ adverseReaction: AdverseReaction }>;
-  
-  getAdverseReactions(filters?: {
-    medicationId?: string;
-    studentId?: string;
-    severity?: string;
-  }): Promise<{ reactions: AdverseReaction[] }>;
-
-  // Analytics and Reports
-  getComplianceReport(dateRange?: DateRangeFilter): Promise<{ compliance: any }>;
-  getUsageStatistics(dateRange?: DateRangeFilter): Promise<{ statistics: any }>;
-  getMedicationEffectiveness(medicationId: string, dateRange?: DateRangeFilter): Promise<{ effectiveness: any }>;
+export interface LogAdministrationRequest {
+  studentMedicationId: string;
+  scheduledTime: string;
+  dosage: string;
+  status: MedicationAdministration['status'];
+  notes?: string;
 }
 
-class MedicationsApiImpl implements MedicationsApi {
-  // Medications CRUD
-  async getAll(filters: MedicationFilters = {}): Promise<{ medications: Medication[]; pagination: any }> {
-    const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ medications: Medication[]; pagination: any }>>(
-      `${API_ENDPOINTS.MEDICATIONS}?${params.toString()}`
-    );
-    return extractApiData(response);
+// Validation schemas
+const createMedicationSchema = z.object({
+  name: z.string().min(1, 'Medication name is required'),
+  genericName: z.string().optional(),
+  strength: z.string().min(1, 'Strength is required'),
+  form: z.enum(['tablet', 'capsule', 'liquid', 'injection', 'inhaler', 'topical', 'drops']),
+  category: z.string().min(1, 'Category is required'),
+  controlledSubstance: z.boolean().optional(),
+  requiresPrescription: z.boolean().optional(),
+});
+
+const assignMedicationSchema = z.object({
+  studentId: z.string().min(1, 'Student ID is required'),
+  medicationId: z.string().min(1, 'Medication ID is required'),
+  dosage: z.string().min(1, 'Dosage is required'),
+  frequency: z.string().min(1, 'Frequency is required'),
+  startDate: z.string().min(1, 'Start date is required'),
+  endDate: z.string().optional(),
+  instructions: z.string().min(1, 'Instructions are required'),
+  prescribedBy: z.string().optional(),
+});
+
+const logAdministrationSchema = z.object({
+  studentMedicationId: z.string().min(1, 'Student medication ID is required'),
+  scheduledTime: z.string().min(1, 'Scheduled time is required'),
+  dosage: z.string().min(1, 'Dosage is required'),
+  status: z.enum(['administered', 'missed', 'refused', 'held']),
+  notes: z.string().optional(),
+});
+
+// Medications API class
+export class MedicationsApi {
+  /**
+   * Get all medications with optional filtering
+   */
+  async getAll(filters: MedicationFilters = {}): Promise<PaginatedResponse<Medication>> {
+    try {
+      const params = buildPaginationParams(
+        filters.page,
+        filters.limit,
+        filters.sort,
+        filters.order
+      );
+
+      const queryString = new URLSearchParams();
+      if (filters.search) queryString.append('search', filters.search);
+      if (filters.category) queryString.append('category', filters.category);
+      if (filters.isActive !== undefined) queryString.append('isActive', String(filters.isActive));
+      if (filters.controlledSubstance !== undefined) queryString.append('controlledSubstance', String(filters.controlledSubstance));
+
+      const finalParams = queryString.toString()
+        ? `${params}&${queryString.toString()}`
+        : params;
+
+      const response = await apiInstance.get<ApiResponse<PaginatedResponse<Medication>>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}?${finalParams}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch medications');
+    }
   }
 
-  async getById(id: string): Promise<{ medication: Medication }> {
-    const response = await apiInstance.get<ApiResponse<{ medication: Medication }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/${id}`
-    );
-    return extractApiData(response);
+  /**
+   * Get medication by ID
+   */
+  async getById(id: string): Promise<Medication> {
+    try {
+      if (!id) throw new Error('Medication ID is required');
+
+      const response = await apiInstance.get<ApiResponse<Medication>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch medication');
+    }
   }
 
-  async create(medicationData: Partial<Medication>): Promise<{ medication: Medication }> {
-    const response = await apiInstance.post<ApiResponse<{ medication: Medication }>>(
-      API_ENDPOINTS.MEDICATIONS,
-      medicationData
-    );
-    return extractApiData(response);
+  /**
+   * Create new medication
+   */
+  async create(medicationData: CreateMedicationRequest): Promise<Medication> {
+    try {
+      createMedicationSchema.parse(medicationData);
+
+      const response = await apiInstance.post<ApiResponse<Medication>>(
+        API_ENDPOINTS.MEDICATIONS.BASE,
+        medicationData
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        throw new Error(`Validation error: ${error.errors[0].message}`);
+      }
+      throw new Error(error.response?.data?.message || 'Failed to create medication');
+    }
   }
 
-  async update(id: string, medicationData: Partial<Medication>): Promise<{ medication: Medication }> {
-    const response = await apiInstance.put<ApiResponse<{ medication: Medication }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/${id}`,
-      medicationData
-    );
-    return extractApiData(response);
+  /**
+   * Update medication
+   */
+  async update(id: string, medicationData: Partial<CreateMedicationRequest>): Promise<Medication> {
+    try {
+      if (!id) throw new Error('Medication ID is required');
+
+      const response = await apiInstance.put<ApiResponse<Medication>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`,
+        medicationData
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to update medication');
+    }
   }
 
-  async delete(id: string): Promise<void> {
-    await apiInstance.delete(`${API_ENDPOINTS.MEDICATIONS}/${id}`);
+  /**
+   * Delete medication
+   */
+  async delete(id: string): Promise<{ id: string }> {
+    try {
+      if (!id) throw new Error('Medication ID is required');
+
+      const response = await apiInstance.delete<ApiResponse<{ id: string }>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to delete medication');
+    }
   }
 
-  async search(query: string, limit: number = 20): Promise<{ medications: Medication[] }> {
-    const params = buildUrlParams({ search: query, limit });
-    const response = await apiInstance.get<ApiResponse<{ medications: Medication[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/search?${params.toString()}`
-    );
-    return extractApiData(response);
+  /**
+   * Assign medication to student
+   */
+  async assignToStudent(assignmentData: AssignMedicationRequest): Promise<StudentMedication> {
+    try {
+      assignMedicationSchema.parse(assignmentData);
+
+      const response = await apiInstance.post<ApiResponse<StudentMedication>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/assign`,
+        assignmentData
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        throw new Error(`Validation error: ${error.errors[0].message}`);
+      }
+      throw new Error(error.response?.data?.message || 'Failed to assign medication');
+    }
   }
 
-  // Student Medications
-  async assignToStudent(data: {
-    studentId: string;
-    medicationId: string;
-    dosage: string;
-    frequency: string;
-    startDate: string;
-    endDate?: string;
-    instructions: string;
-    prescribedBy: string;
-  }): Promise<{ studentMedication: StudentMedication }> {
-    const response = await apiInstance.post<ApiResponse<{ studentMedication: StudentMedication }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/assign`,
-      data
-    );
-    return extractApiData(response);
+  /**
+   * Get student medications
+   */
+  async getStudentMedications(studentId: string): Promise<StudentMedication[]> {
+    try {
+      if (!studentId) throw new Error('Student ID is required');
+
+      const response = await apiInstance.get<ApiResponse<StudentMedication[]>>(
+        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch student medications');
+    }
   }
 
-  async getStudentMedications(studentId: string): Promise<{ medications: StudentMedication[] }> {
-    const response = await apiInstance.get<ApiResponse<{ medications: StudentMedication[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/student/${studentId}`
-    );
-    return extractApiData(response);
+  /**
+   * Log medication administration
+   */
+  async logAdministration(logData: LogAdministrationRequest): Promise<MedicationAdministration> {
+    try {
+      logAdministrationSchema.parse(logData);
+
+      const response = await apiInstance.post<ApiResponse<MedicationAdministration>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/administer`,
+        logData
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        throw new Error(`Validation error: ${error.errors[0].message}`);
+      }
+      throw new Error(error.response?.data?.message || 'Failed to log administration');
+    }
   }
 
-  async updateStudentMedication(id: string, data: Partial<StudentMedication>): Promise<{ studentMedication: StudentMedication }> {
-    const response = await apiInstance.put<ApiResponse<{ studentMedication: StudentMedication }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/student-medication/${id}`,
-      data
-    );
-    return extractApiData(response);
+  /**
+   * Get administration logs for a student
+   */
+  async getStudentLogs(studentId: string, filters: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<MedicationAdministration>> {
+    try {
+      if (!studentId) throw new Error('Student ID is required');
+
+      const params = buildPaginationParams(filters.page, filters.limit);
+
+      const response = await apiInstance.get<ApiResponse<PaginatedResponse<MedicationAdministration>>>(
+        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}/logs?${params}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch administration logs');
+    }
   }
 
-  async deactivateStudentMedication(id: string, reason?: string): Promise<{ studentMedication: StudentMedication }> {
-    const response = await apiInstance.put<ApiResponse<{ studentMedication: StudentMedication }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/student-medication/${id}/deactivate`,
-      { reason }
-    );
-    return extractApiData(response);
+  /**
+   * Get medication inventory
+   */
+  async getInventory(): Promise<any[]> {
+    try {
+      const response = await apiInstance.get<ApiResponse<any[]>>(
+        API_ENDPOINTS.MEDICATIONS.INVENTORY
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch inventory');
+    }
   }
 
-  // Administration
-  async logAdministration(data: {
-    studentMedicationId: string;
-    administeredTime: string;
-    dosageGiven: string;
-    notes?: string;
-    sideEffects?: string[];
-  }): Promise<{ administration: MedicationAdministration }> {
-    const response = await apiInstance.post<ApiResponse<{ administration: MedicationAdministration }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/administration`,
-      data
-    );
-    return extractApiData(response);
+  /**
+   * Get medication schedule for a date range
+   */
+  async getSchedule(startDate?: string, endDate?: string, nurseId?: string): Promise<MedicationSchedule[]> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      if (nurseId) params.append('nurseId', nurseId);
+
+      const response = await apiInstance.get<ApiResponse<MedicationSchedule[]>>(
+        `${API_ENDPOINTS.MEDICATIONS.SCHEDULE}?${params.toString()}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch schedule');
+    }
   }
 
-  async getStudentLogs(studentId: string, pagination: PaginationParams = {}): Promise<{ logs: MedicationAdministration[]; pagination: any }> {
-    const params = buildUrlParams(pagination);
-    const response = await apiInstance.get<ApiResponse<{ logs: MedicationAdministration[]; pagination: any }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/logs/${studentId}?${params.toString()}`
-    );
-    return extractApiData(response);
+  /**
+   * Get medication reminders for a specific date
+   */
+  async getReminders(date?: string): Promise<MedicationSchedule[]> {
+    try {
+      const params = date ? `?date=${date}` : '';
+
+      const response = await apiInstance.get<ApiResponse<MedicationSchedule[]>>(
+        `${API_ENDPOINTS.MEDICATIONS.REMINDERS}${params}`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch reminders');
+    }
   }
 
-  async updateAdministrationLog(id: string, data: Partial<MedicationAdministration>): Promise<{ administration: MedicationAdministration }> {
-    const response = await apiInstance.put<ApiResponse<{ administration: MedicationAdministration }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/administration/${id}`,
-      data
-    );
-    return extractApiData(response);
+  /**
+   * Report adverse reaction
+   */
+  async reportAdverseReaction(studentMedicationId: string, reaction: {
+    description: string;
+    severity: 'mild' | 'moderate' | 'severe';
+    symptoms: string[];
+    actionTaken: string;
+  }): Promise<any> {
+    try {
+      if (!studentMedicationId) throw new Error('Student medication ID is required');
+
+      const response = await apiInstance.post<ApiResponse<any>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/adverse-reaction`,
+        {
+          studentMedicationId,
+          ...reaction,
+        }
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to report adverse reaction');
+    }
   }
 
-  // Scheduling
-  async getSchedule(filters: {
-    startDate?: string;
-    endDate?: string;
-    nurseId?: string;
-    studentId?: string;
-  } = {}): Promise<{ schedule: MedicationSchedule[] }> {
-    const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ schedule: MedicationSchedule[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/schedule?${params.toString()}`
-    );
-    return extractApiData(response);
+  /**
+   * Get adverse reactions for a student
+   */
+  async getAdverseReactions(studentId: string): Promise<any[]> {
+    try {
+      if (!studentId) throw new Error('Student ID is required');
+
+      const response = await apiInstance.get<ApiResponse<any[]>>(
+        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}/adverse-reactions`
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch adverse reactions');
+    }
   }
 
-  async getReminders(date?: string): Promise<{ reminders: MedicationSchedule[] }> {
-    const params = date ? buildUrlParams({ date }) : '';
-    const response = await apiInstance.get<ApiResponse<{ reminders: MedicationSchedule[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/reminders?${params.toString()}`
-    );
-    return extractApiData(response);
-  }
+  /**
+   * Deactivate student medication
+   */
+  async deactivateStudentMedication(studentMedicationId: string, reason: string): Promise<StudentMedication> {
+    try {
+      if (!studentMedicationId) throw new Error('Student medication ID is required');
 
-  async markAsAdministered(scheduleId: string, data: { administeredBy: string; notes?: string }): Promise<{ schedule: MedicationSchedule }> {
-    const response = await apiInstance.post<ApiResponse<{ schedule: MedicationSchedule }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/schedule/${scheduleId}/administered`,
-      data
-    );
-    return extractApiData(response);
-  }
+      const response = await apiInstance.patch<ApiResponse<StudentMedication>>(
+        `${API_ENDPOINTS.MEDICATIONS.BASE}/student-medication/${studentMedicationId}/deactivate`,
+        { reason }
+      );
 
-  async markAsMissed(scheduleId: string, reason: string): Promise<{ schedule: MedicationSchedule }> {
-    const response = await apiInstance.post<ApiResponse<{ schedule: MedicationSchedule }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/schedule/${scheduleId}/missed`,
-      { reason }
-    );
-    return extractApiData(response);
-  }
-
-  // Inventory Management
-  async getInventory(): Promise<{ inventory: InventoryItem[] }> {
-    const response = await apiInstance.get<ApiResponse<{ inventory: InventoryItem[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/inventory`
-    );
-    return extractApiData(response);
-  }
-
-  async addToInventory(data: {
-    medicationId: string;
-    quantity: number;
-    lotNumber?: string;
-    expirationDate: string;
-    location?: string;
-  }): Promise<{ inventoryItem: InventoryItem }> {
-    const response = await apiInstance.post<ApiResponse<{ inventoryItem: InventoryItem }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/inventory`,
-      data
-    );
-    return extractApiData(response);
-  }
-
-  async updateInventory(id: string, quantity: number, reason?: string): Promise<{ inventoryItem: InventoryItem }> {
-    const response = await apiInstance.put<ApiResponse<{ inventoryItem: InventoryItem }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/inventory/${id}`,
-      { quantity, reason }
-    );
-    return extractApiData(response);
-  }
-
-  async getInventoryByMedication(medicationId: string): Promise<{ inventory: InventoryItem[] }> {
-    const response = await apiInstance.get<ApiResponse<{ inventory: InventoryItem[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/inventory/medication/${medicationId}`
-    );
-    return extractApiData(response);
-  }
-
-  async getLowStockAlerts(): Promise<{ alerts: any[] }> {
-    const response = await apiInstance.get<ApiResponse<{ alerts: any[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/inventory/alerts/low-stock`
-    );
-    return extractApiData(response);
-  }
-
-  async getExpirationAlerts(days: number = 30): Promise<{ alerts: any[] }> {
-    const params = buildUrlParams({ days });
-    const response = await apiInstance.get<ApiResponse<{ alerts: any[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/inventory/alerts/expiration?${params.toString()}`
-    );
-    return extractApiData(response);
-  }
-
-  // Adverse Reactions
-  async reportAdverseReaction(data: {
-    studentId: string;
-    medicationId: string;
-    reaction: string;
-    severity: string;
-    onset: string;
-    treatment?: string;
-  }): Promise<{ adverseReaction: AdverseReaction }> {
-    const response = await apiInstance.post<ApiResponse<{ adverseReaction: AdverseReaction }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/adverse-reaction`,
-      data
-    );
-    return extractApiData(response);
-  }
-
-  async getAdverseReactions(filters: {
-    medicationId?: string;
-    studentId?: string;
-    severity?: string;
-  } = {}): Promise<{ reactions: AdverseReaction[] }> {
-    const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ reactions: AdverseReaction[] }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/adverse-reactions?${params.toString()}`
-    );
-    return extractApiData(response);
-  }
-
-  // Analytics and Reports
-  async getComplianceReport(dateRange: DateRangeFilter = {}): Promise<{ compliance: any }> {
-    const params = buildUrlParams(dateRange);
-    const response = await apiInstance.get<ApiResponse<{ compliance: any }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/reports/compliance?${params.toString()}`
-    );
-    return extractApiData(response);
-  }
-
-  async getUsageStatistics(dateRange: DateRangeFilter = {}): Promise<{ statistics: any }> {
-    const params = buildUrlParams(dateRange);
-    const response = await apiInstance.get<ApiResponse<{ statistics: any }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/reports/usage?${params.toString()}`
-    );
-    return extractApiData(response);
-  }
-
-  async getMedicationEffectiveness(medicationId: string, dateRange: DateRangeFilter = {}): Promise<{ effectiveness: any }> {
-    const params = buildUrlParams(dateRange);
-    const response = await apiInstance.get<ApiResponse<{ effectiveness: any }>>(
-      `${API_ENDPOINTS.MEDICATIONS}/${medicationId}/effectiveness?${params.toString()}`
-    );
-    return extractApiData(response);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to deactivate medication');
+    }
   }
 }
 
-export const medicationsApi = new MedicationsApiImpl();
+// Export singleton instance
+export const medicationsApi = new MedicationsApi();

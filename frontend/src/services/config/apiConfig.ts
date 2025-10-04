@@ -1,9 +1,11 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import toast from 'react-hot-toast';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import debug from 'debug';
+
+const log = debug('whitecross:api-config');
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: (import.meta as any).env.VITE_API_URL || 'http://localhost:3001',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
   TIMEOUT: 30000,
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
@@ -11,108 +13,141 @@ export const API_CONFIG = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  AUTH: '/auth',
-  STUDENTS: '/students',
-  MEDICATIONS: '/medications',
-  APPOINTMENTS: '/appointments',
-  HEALTH_RECORDS: '/health-records',
-  DOCUMENTS: '/documents',
-  REPORTS: '/reports',
-  INVENTORY: '/inventory',
-  VENDORS: '/vendors',
-  PURCHASE_ORDERS: '/purchase-orders',
-  BUDGET: '/budget',
-  COMMUNICATION: '/communication',
-  ADMINISTRATION: '/admin',
-  INTEGRATIONS: '/integrations',
-  COMPLIANCE: '/compliance',
-  INCIDENT_REPORTS: '/incident-reports',
-  ACCESS_CONTROL: '/access-control',
-  EMERGENCY_CONTACTS: '/emergency-contacts',
-  AUDIT: '/audit',
+  AUTH: {
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    VERIFY: '/auth/verify',
+    REGISTER: '/auth/register',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+  },
+  STUDENTS: {
+    BASE: '/students',
+    BY_ID: (id: string) => `/students/${id}`,
+    ASSIGNED: '/students/assigned',
+    SEARCH: '/students/search',
+  },
+  HEALTH_RECORDS: {
+    BASE: '/health-records',
+    STUDENT: (studentId: string) => `/health-records/student/${studentId}`,
+    ALLERGIES: (studentId: string) => `/health-records/student/${studentId}/allergies`,
+    CHRONIC_CONDITIONS: (studentId: string) => `/health-records/student/${studentId}/chronic-conditions`,
+    VACCINATIONS: (studentId: string) => `/health-records/student/${studentId}/vaccinations`,
+    GROWTH_CHART: (studentId: string) => `/health-records/student/${studentId}/growth-chart`,
+    VITALS: (studentId: string) => `/health-records/student/${studentId}/vitals`,
+  },
+  MEDICATIONS: {
+    BASE: '/medications',
+    INVENTORY: '/medications/inventory',
+    SCHEDULE: '/medications/schedule',
+    REMINDERS: '/medications/reminders',
+    STUDENT: (studentId: string) => `/medications/student/${studentId}`,
+    ADMINISTER: (id: string) => `/medications/${id}/administer`,
+  },
+  APPOINTMENTS: {
+    BASE: '/appointments',
+    UPCOMING: '/appointments/upcoming',
+    TODAY: '/appointments/today',
+  },
+  COMMUNICATION: {
+    BASE: '/communication',
+    MESSAGES: '/communication/messages',
+    NOTIFICATIONS: '/communication/notifications',
+  },
+  DOCUMENTS: {
+    BASE: '/documents',
+    UPLOAD: '/documents/upload',
+    DOWNLOAD: (id: string) => `/documents/${id}/download`,
+  },
+  REPORTS: {
+    BASE: '/reports',
+    GENERATE: '/reports/generate',
+    EXPORT: (id: string) => `/reports/${id}/export`,
+  },
+  ADMIN: {
+    BASE: '/admin',
+    SETTINGS: '/admin/settings',
+    USERS: '/admin/users',
+    INTEGRATIONS: '/admin/integrations',
+  },
 } as const;
 
-// Session management
-let sessionExpireHandler: (() => void) | null = null;
-
-export const setSessionExpireHandler = (handler: () => void): void => {
-  sessionExpireHandler = handler;
-};
-
-// Token management utilities
-export const tokenUtils = {
-  getToken: (): string | null => {
-    return localStorage.getItem('token') || localStorage.getItem('authToken');
+// Create axios instance
+export const apiInstance: AxiosInstance = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
   },
+  withCredentials: true,
+});
 
-  setToken: (token: string): void => {
-    localStorage.setItem('token', token);
-  },
-
-  removeToken: (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-  },
-
-  isTokenExpired: (token: string): boolean => {
-    return token === 'expired-token';
-  },
-};
-
-// Create axios instance factory
-export const createApiInstance = (): AxiosInstance => {
-  const instance = axios.create({
-    baseURL: `${API_CONFIG.BASE_URL}/api`,
-    timeout: API_CONFIG.TIMEOUT,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  // Request interceptor
-  instance.interceptors.request.use(
-    (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-      const token = tokenUtils.getToken();
-      
-      if (token) {
-        // Check for expired token
-        if (tokenUtils.isTokenExpired(token) && sessionExpireHandler) {
-          sessionExpireHandler();
-          throw new Error('Session expired');
-        }
-        
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
-
-  // Response interceptor
-  instance.interceptors.response.use(
-    (response: AxiosResponse): AxiosResponse => response,
-    (error) => {
-      // Handle 401 Unauthorized
-      if (error.response?.status === 401) {
-        if (sessionExpireHandler) {
-          sessionExpireHandler();
-        } else {
-          tokenUtils.removeToken();
-          window.location.href = '/login';
-        }
-      }
-
-      // Show error message
-      const message = error.response?.data?.error?.message || 'An error occurred';
-      toast.error(message);
-
-      return Promise.reject(error);
+// Request interceptor for auth tokens
+apiInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  );
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-  return instance;
+// Response interceptor for error handling
+apiInstance.interceptors.response.use(
+  (response: AxiosResponse) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Handle token refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (refreshToken) {
+          const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, {
+            refreshToken,
+          });
+
+          const { token } = response.data;
+          localStorage.setItem('auth_token', token);
+
+          // Retry original request
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiInstance(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, redirect to login
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// Utility functions
+export const tokenUtils = {
+  getToken: () => localStorage.getItem('auth_token'),
+  setToken: (token: string) => localStorage.setItem('auth_token', token),
+  removeToken: () => localStorage.removeItem('auth_token'),
+  getRefreshToken: () => localStorage.getItem('refresh_token'),
+  setRefreshToken: (token: string) => localStorage.setItem('refresh_token', token),
+  removeRefreshToken: () => localStorage.removeItem('refresh_token'),
+  clearAll: () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
+  },
 };
 
-// Default API instance
-export const apiInstance = createApiInstance();
+export default apiInstance;

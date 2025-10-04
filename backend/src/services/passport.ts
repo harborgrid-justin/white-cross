@@ -1,0 +1,178 @@
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as MicrosoftStrategy } from 'passport-microsoft';
+import { PrismaClient, UserRole } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { User } from '../types';
+
+const prisma = new PrismaClient();
+
+// JWT options
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET || 'your-secret-key',
+};
+
+// Local Strategy for email/password authentication
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+    },
+    async (email, passwordInput, done) => {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (!user || !user.isActive) {
+          return done(null, false, { message: 'Invalid email or password' });
+        }
+
+        const isValidPassword = await bcrypt.compare(passwordInput, user.password);
+
+        if (!isValidPassword) {
+          return done(null, false, { message: 'Invalid email or password' });
+        }
+
+        // Remove password from user object
+        const userWithoutPassword = { ...user };
+        delete (userWithoutPassword as any).password;
+        return done(null, userWithoutPassword);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+// JWT Strategy for token-based authentication
+passport.use(
+  new JwtStrategy(jwtOptions, async (payload, done) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: payload.id },
+      });
+
+      if (user && user.isActive) {
+        const userWithoutPassword = { ...user };
+        delete (userWithoutPassword as any).password;
+        return done(null, userWithoutPassword);
+      }
+
+      return done(null, false);
+    } catch (error) {
+      return done(error);
+    }
+  })
+);
+
+// Google OAuth Strategy
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/auth/google/callback`,
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          let user = await prisma.user.findUnique({
+            where: { email: profile.emails?.[0]?.value || '' },
+          });
+
+          if (!user) {
+            // Create new user from Google profile
+            user = await prisma.user.create({
+              data: {
+                email: profile.emails?.[0]?.value || '',
+                firstName: profile.name?.givenName || '',
+                lastName: profile.name?.familyName || '',
+                password: '', // OAuth users won't use password login
+                role: UserRole.NURSE, // Default role
+                isActive: true,
+              },
+            });
+          }
+
+          const userWithoutPassword = { ...user };
+          delete (userWithoutPassword as any).password;
+          return done(null, userWithoutPassword);
+        } catch (error) {
+          return done(error);
+        }
+      }
+    )
+  );
+}
+
+// Microsoft OAuth Strategy
+if (process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET) {
+  passport.use(
+    new MicrosoftStrategy(
+      {
+        clientID: process.env.MICROSOFT_CLIENT_ID,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/auth/microsoft/callback`,
+        scope: ['user.read'],
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          let user = await prisma.user.findUnique({
+            where: { email: profile.emails?.[0]?.value || '' },
+          });
+
+          if (!user) {
+            // Create new user from Microsoft profile
+            user = await prisma.user.create({
+              data: {
+                email: profile.emails?.[0]?.value || '',
+                firstName: profile.name?.givenName || '',
+                lastName: profile.name?.familyName || '',
+                password: '', // OAuth users won't use password login
+                role: UserRole.NURSE, // Default role
+                isActive: true,
+              },
+            });
+          }
+
+          const userWithoutPassword = { ...user };
+          delete (userWithoutPassword as any).password;
+          return done(null, userWithoutPassword);
+        } catch (error) {
+          return done(error);
+        }
+      }
+    )
+  );
+}
+
+// Serialize user for session
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+// Deserialize user from session
+passport.deserializeUser(async (id: string, done) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (user && user.isActive) {
+      const userWithoutPassword = { ...user };
+      delete (userWithoutPassword as any).password;
+      return done(null, userWithoutPassword);
+    }
+
+    return done(null, false);
+  } catch (error) {
+    return done(error);
+  }
+});
+
+export default passport;

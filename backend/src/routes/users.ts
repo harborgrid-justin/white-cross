@@ -1,417 +1,494 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { UserService } from '../services/userService';
-
-const router = Router();
-
-interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    email: string;
-    role: string;
-  };
-}
+import Joi from 'joi';
 
 // Get all users
-router.get('/', auth, async (req: AuthRequest, res: Response) => {
+const getUsersHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.search) filters.search = req.query.search as string;
-    if (req.query.role) filters.role = req.query.role as string;
-    if (req.query.isActive !== undefined) filters.isActive = req.query.isActive === 'true';
+    if (request.query.search) filters.search = request.query.search;
+    if (request.query.role) filters.role = request.query.role;
+    if (request.query.isActive !== undefined) filters.isActive = request.query.isActive === 'true';
 
     const result = await UserService.getUsers(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get user by ID
-router.get('/:id', auth, async (req: AuthRequest, res: Response) => {
+const getUserByIdHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const user = await UserService.getUserById(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { user }
     });
   } catch (error) {
     if ((error as Error).message === 'User not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'User not found' }
-      });
+      }).code(404);
     }
-    
-    res.status(500).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new user
-router.post('/', [
-  auth,
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 8 }),
-  body('firstName').notEmpty().trim(),
-  body('lastName').notEmpty().trim(),
-  body('role').isIn(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'])
-], async (req: AuthRequest, res: Response) => {
+const createUserHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const user = request.auth.credentials;
 
     // Check if user has permission to create users (ADMIN or DISTRICT_ADMIN only)
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role)) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
+      return h.response({
         success: false,
         error: { message: 'Insufficient permissions to create users' }
-      });
+      }).code(403);
     }
 
-    const user = await UserService.createUser(req.body);
+    const newUser = await UserService.createUser(request.payload);
 
-    res.status(201).json({
+    return h.response({
       success: true,
-      data: { user }
-    });
+      data: { user: newUser }
+    }).code(201);
   } catch (error) {
     if ((error as Error).message === 'User already exists with this email') {
-      return res.status(409).json({
+      return h.response({
         success: false,
         error: { message: 'User already exists with this email' }
-      });
+      }).code(409);
     }
-    
-    res.status(400).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update user
-router.put('/:id', [
-  auth,
-  body('email').optional().isEmail().normalizeEmail(),
-  body('firstName').optional().notEmpty().trim(),
-  body('lastName').optional().notEmpty().trim(),
-  body('role').optional().isIn(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']),
-  body('isActive').optional().isBoolean()
-], async (req: AuthRequest, res: Response) => {
+const updateUserHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { id } = req.params;
+    const { id } = request.params;
+    const user = request.auth.credentials;
 
     // Check if user has permission to update users
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role) && req.user!.userId !== id) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role) && user.userId !== id) {
+      return h.response({
         success: false,
         error: { message: 'Insufficient permissions to update this user' }
-      });
+      }).code(403);
     }
 
     // Non-admins can only update their own basic info, not role or active status
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role)) {
-      delete req.body.role;
-      delete req.body.isActive;
+    const updateData = { ...request.payload };
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
+      delete updateData.role;
+      delete updateData.isActive;
     }
 
-    const user = await UserService.updateUser(id, req.body);
+    const updatedUser = await UserService.updateUser(id, updateData);
 
-    res.json({
+    return h.response({
       success: true,
-      data: { user }
+      data: { user: updatedUser }
     });
   } catch (error) {
     if ((error as Error).message === 'User not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'User not found' }
-      });
+      }).code(404);
     }
 
     if ((error as Error).message === 'Email address is already in use') {
-      return res.status(409).json({
+      return h.response({
         success: false,
         error: { message: 'Email address is already in use' }
-      });
+      }).code(409);
     }
-    
-    res.status(400).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Change password
-router.post('/:id/change-password', [
-  auth,
-  body('currentPassword').notEmpty(),
-  body('newPassword').isLength({ min: 8 })
-], async (req: AuthRequest, res: Response) => {
+const changePasswordHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { id } = req.params;
+    const { id } = request.params;
+    const user = request.auth.credentials;
 
     // Users can only change their own password unless they're admin
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role) && req.user!.userId !== id) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role) && user.userId !== id) {
+      return h.response({
         success: false,
         error: { message: 'You can only change your own password' }
-      });
+      }).code(403);
     }
 
-    const result = await UserService.changePassword(id, req.body);
+    const result = await UserService.changePassword(id, request.payload);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
     if ((error as Error).message === 'User not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'User not found' }
-      });
+      }).code(404);
     }
 
     if ((error as Error).message === 'Current password is incorrect') {
-      return res.status(400).json({
+      return h.response({
         success: false,
         error: { message: 'Current password is incorrect' }
-      });
+      }).code(400);
     }
-    
-    res.status(400).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Reset user password (admin only)
-router.post('/:id/reset-password', [
-  auth,
-  body('newPassword').isLength({ min: 8 })
-], async (req: AuthRequest, res: Response) => {
+const resetPasswordHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const user = request.auth.credentials;
 
     // Only admins can reset passwords
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role)) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
+      return h.response({
         success: false,
         error: { message: 'Insufficient permissions to reset passwords' }
-      });
+      }).code(403);
     }
 
-    const { id } = req.params;
-    const { newPassword } = req.body;
+    const { id } = request.params;
+    const { newPassword } = request.payload;
 
     const result = await UserService.resetUserPassword(id, newPassword);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
     if ((error as Error).message === 'User not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'User not found' }
-      });
+      }).code(404);
     }
-    
-    res.status(400).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Deactivate user
-router.post('/:id/deactivate', auth, async (req: AuthRequest, res: Response) => {
+const deactivateUserHandler = async (request: any, h: any) => {
   try {
+    const user = request.auth.credentials;
+
     // Only admins can deactivate users
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role)) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
+      return h.response({
         success: false,
         error: { message: 'Insufficient permissions to deactivate users' }
-      });
+      }).code(403);
     }
 
-    const { id } = req.params;
+    const { id } = request.params;
 
     // Prevent users from deactivating themselves
-    if (req.user!.userId === id) {
-      return res.status(400).json({
+    if (user.userId === id) {
+      return h.response({
         success: false,
         error: { message: 'You cannot deactivate your own account' }
-      });
+      }).code(400);
     }
 
-    const user = await UserService.deactivateUser(id);
+    const deactivatedUser = await UserService.deactivateUser(id);
 
-    res.json({
+    return h.response({
       success: true,
-      data: { user }
+      data: { user: deactivatedUser }
     });
   } catch (error) {
     if ((error as Error).message === 'User not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'User not found' }
-      });
+      }).code(404);
     }
-    
-    res.status(400).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Reactivate user
-router.post('/:id/reactivate', auth, async (req: AuthRequest, res: Response) => {
+const reactivateUserHandler = async (request: any, h: any) => {
   try {
+    const user = request.auth.credentials;
+
     // Only admins can reactivate users
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user!.role)) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
+      return h.response({
         success: false,
         error: { message: 'Insufficient permissions to reactivate users' }
-      });
+      }).code(403);
     }
 
-    const { id } = req.params;
-    const user = await UserService.reactivateUser(id);
+    const { id } = request.params;
+    const reactivatedUser = await UserService.reactivateUser(id);
 
-    res.json({
+    return h.response({
       success: true,
-      data: { user }
+      data: { user: reactivatedUser }
     });
   } catch (error) {
     if ((error as Error).message === 'User not found') {
-      return res.status(404).json({
+      return h.response({
         success: false,
         error: { message: 'User not found' }
-      });
+      }).code(404);
     }
-    
-    res.status(400).json({
+
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get user statistics
-router.get('/statistics/overview', auth, async (req: AuthRequest, res: Response) => {
+const getUserStatisticsHandler = async (request: any, h: any) => {
   try {
+    const user = request.auth.credentials;
+
     // Only admins can view user statistics
-    if (!['ADMIN', 'DISTRICT_ADMIN', 'SCHOOL_ADMIN'].includes(req.user!.role)) {
-      return res.status(403).json({
+    if (!['ADMIN', 'DISTRICT_ADMIN', 'SCHOOL_ADMIN'].includes(user.role)) {
+      return h.response({
         success: false,
         error: { message: 'Insufficient permissions to view user statistics' }
-      });
+      }).code(403);
     }
 
     const stats = await UserService.getUserStatistics();
 
-    res.json({
+    return h.response({
       success: true,
       data: stats
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get users by role
-router.get('/role/:role', auth, async (req: AuthRequest, res: Response) => {
+const getUsersByRoleHandler = async (request: any, h: any) => {
   try {
-    const { role } = req.params;
-    
+    const { role } = request.params;
+
     if (!['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'].includes(role)) {
-      return res.status(400).json({
+      return h.response({
         success: false,
         error: { message: 'Invalid role specified' }
-      });
+      }).code(400);
     }
 
     const users = await UserService.getUsersByRole(role as any);
 
-    res.json({
+    return h.response({
       success: true,
       data: { users }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get available nurses for student assignment
-router.get('/nurses/available', auth, async (req: AuthRequest, res: Response) => {
+const getAvailableNursesHandler = async (request: any, h: any) => {
   try {
     const nurses = await UserService.getAvailableNurses();
 
-    res.json({
+    return h.response({
       success: true,
       data: { nurses }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define user routes for Hapi
+export const userRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/users',
+    handler: getUsersHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          search: Joi.string().optional(),
+          role: Joi.string().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/users/{id}',
+    handler: getUserByIdHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/users',
+    handler: createUserHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email().required(),
+          password: Joi.string().min(8).required(),
+          firstName: Joi.string().trim().required(),
+          lastName: Joi.string().trim().required(),
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').required()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/users/{id}',
+    handler: updateUserHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email().optional(),
+          firstName: Joi.string().trim().optional(),
+          lastName: Joi.string().trim().optional(),
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/users/{id}/change-password',
+    handler: changePasswordHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          currentPassword: Joi.string().required(),
+          newPassword: Joi.string().min(8).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/users/{id}/reset-password',
+    handler: resetPasswordHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          newPassword: Joi.string().min(8).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/users/{id}/deactivate',
+    handler: deactivateUserHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/users/{id}/reactivate',
+    handler: reactivateUserHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/users/statistics/overview',
+    handler: getUserStatisticsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/users/role/{role}',
+    handler: getUsersByRoleHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/users/nurses/available',
+    handler: getAvailableNursesHandler,
+    options: {
+      auth: 'jwt'
+    }
+  }
+];

@@ -1,338 +1,441 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { InventoryService } from '../services/inventoryService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get inventory items
-router.get('/', auth, async (req: Request, res: Response) => {
+const getInventoryItemsHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+
     const filters: any = {};
-    if (req.query.category) filters.category = req.query.category as string;
-    if (req.query.supplier) filters.supplier = req.query.supplier as string;
-    if (req.query.location) filters.location = req.query.location as string;
-    if (req.query.lowStock !== undefined) filters.lowStock = req.query.lowStock === 'true';
-    if (req.query.needsMaintenance !== undefined) filters.needsMaintenance = req.query.needsMaintenance === 'true';
-    if (req.query.isActive !== undefined) filters.isActive = req.query.isActive === 'true';
+    if (request.query.category) filters.category = request.query.category;
+    if (request.query.supplier) filters.supplier = request.query.supplier;
+    if (request.query.location) filters.location = request.query.location;
+    if (request.query.lowStock !== undefined) filters.lowStock = request.query.lowStock === 'true';
+    if (request.query.needsMaintenance !== undefined) filters.needsMaintenance = request.query.needsMaintenance === 'true';
+    if (request.query.isActive !== undefined) filters.isActive = request.query.isActive === 'true';
 
     const result = await InventoryService.getInventoryItems(page, limit, filters);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create new inventory item
-router.post('/', [
-  auth,
-  body('name').notEmpty().trim(),
-  body('category').notEmpty().trim(),
-  body('reorderLevel').isInt({ min: 0 }),
-  body('reorderQuantity').isInt({ min: 1 }),
-  body('unitCost').optional().isNumeric()
-], async (req: Request, res: Response) => {
+const createInventoryItemHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const item = await InventoryService.createInventoryItem(request.payload);
 
-    const item = await InventoryService.createInventoryItem(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { item }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update inventory item
-router.put('/:id', [
-  auth,
-  body('name').optional().trim(),
-  body('category').optional().trim(),
-  body('reorderLevel').optional().isInt({ min: 0 }),
-  body('reorderQuantity').optional().isInt({ min: 1 }),
-  body('unitCost').optional().isNumeric(),
-  body('isActive').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateInventoryItemHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const item = await InventoryService.updateInventoryItem(id, request.payload);
 
-    const { id } = req.params;
-    const item = await InventoryService.updateInventoryItem(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { item }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Create inventory transaction
-router.post('/transactions', [
-  auth,
-  body('inventoryItemId').notEmpty(),
-  body('type').isIn(['PURCHASE', 'USAGE', 'ADJUSTMENT', 'TRANSFER', 'DISPOSAL']),
-  body('quantity').isInt({ min: 1 }),
-  body('unitCost').optional().isNumeric(),
-  body('expirationDate').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const createInventoryTransactionHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const performedBy = (req as any).user.userId; // From auth middleware
+    const performedBy = request.auth.credentials?.userId;
 
     const transaction = await InventoryService.createInventoryTransaction({
-      ...req.body,
+      ...request.payload,
       performedBy,
-      expirationDate: req.body.expirationDate ? new Date(req.body.expirationDate) : undefined
+      expirationDate: request.payload.expirationDate ? new Date(request.payload.expirationDate) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { transaction }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get current stock for an item
-router.get('/:id/stock', auth, async (req: Request, res: Response) => {
+const getCurrentStockHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const currentStock = await InventoryService.getCurrentStock(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: { currentStock }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get inventory alerts
-router.get('/alerts', auth, async (_req: Request, res: Response) => {
+const getInventoryAlertsHandler = async (request: any, h: any) => {
   try {
     const alerts = await InventoryService.getInventoryAlerts();
 
-    res.json({
+    return h.response({
       success: true,
       data: { alerts }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Create maintenance log
-router.post('/maintenance', [
-  auth,
-  body('inventoryItemId').notEmpty(),
-  body('type').isIn(['ROUTINE', 'REPAIR', 'CALIBRATION', 'INSPECTION', 'CLEANING']),
-  body('description').notEmpty().trim(),
-  body('cost').optional().isNumeric(),
-  body('nextMaintenanceDate').optional().isISO8601()
-], async (req: Request, res: Response) => {
+const createMaintenanceLogHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const performedBy = (req as any).user.userId; // From auth middleware
+    const performedBy = request.auth.credentials?.userId;
 
     const maintenanceLog = await InventoryService.createMaintenanceLog({
-      ...req.body,
+      ...request.payload,
       performedBy,
-      nextMaintenanceDate: req.body.nextMaintenanceDate ? new Date(req.body.nextMaintenanceDate) : undefined
+      nextMaintenanceDate: request.payload.nextMaintenanceDate ? new Date(request.payload.nextMaintenanceDate) : undefined
     });
 
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { maintenanceLog }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get maintenance schedule
-router.get('/maintenance/schedule', auth, async (req: Request, res: Response) => {
+const getMaintenanceScheduleHandler = async (request: any, h: any) => {
   try {
-    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : new Date();
-    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    const startDate = request.query.startDate ? new Date(request.query.startDate) : new Date();
+    const endDate = request.query.endDate ? new Date(request.query.endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const schedule = await InventoryService.getMaintenanceSchedule(startDate, endDate);
 
-    res.json({
+    return h.response({
       success: true,
       data: { schedule }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Generate purchase order
-router.post('/purchase-order', [
-  auth,
-  body('items').isArray({ min: 1 }),
-  body('items.*.inventoryItemId').notEmpty(),
-  body('items.*.quantity').isInt({ min: 1 })
-], async (req: Request, res: Response) => {
+const generatePurchaseOrderHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
-    const { items } = req.body;
+    const { items } = request.payload;
     const purchaseOrder = await InventoryService.generatePurchaseOrder(items);
 
-    res.json({
+    return h.response({
       success: true,
       data: { purchaseOrder }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Get inventory valuation
-router.get('/valuation', auth, async (_req: Request, res: Response) => {
+const getInventoryValuationHandler = async (request: any, h: any) => {
   try {
     const valuation = await InventoryService.getInventoryValuation();
 
-    res.json({
+    return h.response({
       success: true,
       data: { valuation }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get usage analytics
-router.get('/analytics/usage', auth, async (req: Request, res: Response) => {
+const getUsageAnalyticsHandler = async (request: any, h: any) => {
   try {
-    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
+    const startDate = request.query.startDate ? new Date(request.query.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const endDate = request.query.endDate ? new Date(request.query.endDate) : new Date();
 
     const analytics = await InventoryService.getUsageAnalytics(startDate, endDate);
 
-    res.json({
+    return h.response({
       success: true,
       data: { analytics }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get supplier performance
-router.get('/analytics/suppliers', auth, async (_req: Request, res: Response) => {
+const getSupplierPerformanceHandler = async (request: any, h: any) => {
   try {
     const performance = await InventoryService.getSupplierPerformance();
 
-    res.json({
+    return h.response({
       success: true,
       data: { performance }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Search inventory items
-router.get('/search/:query', auth, async (req: Request, res: Response) => {
+const searchInventoryItemsHandler = async (request: any, h: any) => {
   try {
-    const { query } = req.params;
-    const limit = parseInt(req.query.limit as string) || 20;
+    const { query } = request.params;
+    const limit = parseInt(request.query.limit) || 20;
 
     const items = await InventoryService.searchInventoryItems(query, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: { items }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define inventory routes for Hapi
+export const inventoryRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/inventory',
+    handler: getInventoryItemsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          category: Joi.string().optional(),
+          supplier: Joi.string().optional(),
+          location: Joi.string().optional(),
+          lowStock: Joi.boolean().optional(),
+          needsMaintenance: Joi.boolean().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/inventory',
+    handler: createInventoryItemHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().required(),
+          category: Joi.string().trim().required(),
+          reorderLevel: Joi.number().integer().min(0).required(),
+          reorderQuantity: Joi.number().integer().min(1).required(),
+          unitCost: Joi.number().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/inventory/{id}',
+    handler: updateInventoryItemHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().optional(),
+          category: Joi.string().trim().optional(),
+          reorderLevel: Joi.number().integer().min(0).optional(),
+          reorderQuantity: Joi.number().integer().min(1).optional(),
+          unitCost: Joi.number().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/inventory/transactions',
+    handler: createInventoryTransactionHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          inventoryItemId: Joi.string().required(),
+          type: Joi.string().valid('PURCHASE', 'USAGE', 'ADJUSTMENT', 'TRANSFER', 'DISPOSAL').required(),
+          quantity: Joi.number().integer().min(1).required(),
+          unitCost: Joi.number().optional(),
+          expirationDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/{id}/stock',
+    handler: getCurrentStockHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/alerts',
+    handler: getInventoryAlertsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/inventory/maintenance',
+    handler: createMaintenanceLogHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          inventoryItemId: Joi.string().required(),
+          type: Joi.string().valid('ROUTINE', 'REPAIR', 'CALIBRATION', 'INSPECTION', 'CLEANING').required(),
+          description: Joi.string().trim().required(),
+          cost: Joi.number().optional(),
+          nextMaintenanceDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/maintenance/schedule',
+    handler: getMaintenanceScheduleHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          startDate: Joi.date().iso().optional(),
+          endDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/inventory/purchase-order',
+    handler: generatePurchaseOrderHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          items: Joi.array().items(Joi.object({
+            inventoryItemId: Joi.string().required(),
+            quantity: Joi.number().integer().min(1).required()
+          })).min(1).required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/valuation',
+    handler: getInventoryValuationHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/analytics/usage',
+    handler: getUsageAnalyticsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          startDate: Joi.date().iso().optional(),
+          endDate: Joi.date().iso().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/analytics/suppliers',
+    handler: getSupplierPerformanceHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/search/{query}',
+    handler: searchInventoryItemsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          limit: Joi.number().integer().min(1).max(100).default(20)
+        })
+      }
+    }
+  }
+];

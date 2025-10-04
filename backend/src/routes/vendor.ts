@@ -1,147 +1,194 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { ServerRoute } from '@hapi/hapi';
 import { VendorService } from '../services/vendorService';
-
-const router = Router();
+import Joi from 'joi';
 
 // Get all vendors
-router.get('/', auth, async (req: Request, res: Response) => {
+const getVendorsHandler = async (request: any, h: any) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const activeOnly = req.query.activeOnly !== 'false';
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 20;
+    const activeOnly = request.query.activeOnly !== 'false';
 
     const result = await VendorService.getVendors(page, limit, activeOnly);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Get vendor by ID
-router.get('/:id', auth, async (req: Request, res: Response) => {
+const getVendorByIdHandler = async (request: any, h: any) => {
   try {
-    const { id } = req.params;
+    const { id } = request.params;
     const result = await VendorService.getVendorById(id);
 
-    res.json({
+    return h.response({
       success: true,
       data: result
     });
   } catch (error) {
-    res.status(404).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(404);
   }
-});
+};
 
 // Create vendor
-router.post('/', [
-  auth,
-  body('name').notEmpty().trim(),
-  body('email').optional().isEmail(),
-  body('rating').optional().isInt({ min: 1, max: 5 })
-], async (req: Request, res: Response) => {
+const createVendorHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const vendor = await VendorService.createVendor(request.payload);
 
-    const vendor = await VendorService.createVendor(req.body);
-
-    res.status(201).json({
+    return h.response({
       success: true,
       data: { vendor }
-    });
+    }).code(201);
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Update vendor
-router.put('/:id', [
-  auth,
-  body('name').optional().trim(),
-  body('email').optional().isEmail(),
-  body('rating').optional().isInt({ min: 1, max: 5 }),
-  body('isActive').optional().isBoolean()
-], async (req: Request, res: Response) => {
+const updateVendorHandler = async (request: any, h: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
+    const { id } = request.params;
+    const vendor = await VendorService.updateVendor(id, request.payload);
 
-    const { id } = req.params;
-    const vendor = await VendorService.updateVendor(id, req.body);
-
-    res.json({
+    return h.response({
       success: true,
       data: { vendor }
     });
   } catch (error) {
-    res.status(400).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(400);
   }
-});
+};
 
 // Compare vendors for an item
-router.get('/compare/:itemName', auth, async (req: Request, res: Response) => {
+const compareVendorsHandler = async (request: any, h: any) => {
   try {
-    const { itemName } = req.params;
+    const { itemName } = request.params;
     const comparison = await VendorService.compareVendors(itemName);
 
-    res.json({
+    return h.response({
       success: true,
       data: { comparison }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
 // Search vendors
-router.get('/search/:query', auth, async (req: Request, res: Response) => {
+const searchVendorsHandler = async (request: any, h: any) => {
   try {
-    const { query } = req.params;
-    const limit = parseInt(req.query.limit as string) || 20;
+    const { query } = request.params;
+    const limit = parseInt(request.query.limit) || 20;
 
     const vendors = await VendorService.searchVendors(query, limit);
 
-    res.json({
+    return h.response({
       success: true,
       data: { vendors }
     });
   } catch (error) {
-    res.status(500).json({
+    return h.response({
       success: false,
       error: { message: (error as Error).message }
-    });
+    }).code(500);
   }
-});
+};
 
-export default router;
+// Define vendor routes for Hapi
+export const vendorRoutes: ServerRoute[] = [
+  {
+    method: 'GET',
+    path: '/api/vendors',
+    handler: getVendorsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          activeOnly: Joi.boolean().default(true)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/vendors/{id}',
+    handler: getVendorByIdHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/vendors',
+    handler: createVendorHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().required(),
+          email: Joi.string().email().optional(),
+          rating: Joi.number().integer().min(1).max(5).optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/api/vendors/{id}',
+    handler: updateVendorHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        payload: Joi.object({
+          name: Joi.string().trim().optional(),
+          email: Joi.string().email().optional(),
+          rating: Joi.number().integer().min(1).max(5).optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/vendors/compare/{itemName}',
+    handler: compareVendorsHandler,
+    options: {
+      auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/vendors/search/{query}',
+    handler: searchVendorsHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          limit: Joi.number().integer().min(1).max(100).default(20)
+        })
+      }
+    }
+  }
+];

@@ -1,207 +1,308 @@
-import { AxiosError, AxiosResponse } from 'axios';
-import { ApiResponse, PaginationParams } from '../types';
+import { AxiosResponse, AxiosError, CancelToken } from 'axios';
+import moment from 'moment';
+import debug from 'debug';
+
+const log = debug('whitecross:api-utils');
+
+// Standard API response interface
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface ApiError {
+  message: string;
+  code?: string;
+  status?: number;
+  details?: any;
+}
 
 // Error handling utilities
-export class ApiError extends Error {
-  public readonly status: number;
-  public readonly code?: string;
-  public readonly details?: any;
+export class ApiErrorHandler {
+  static handle(error: AxiosError | any): ApiError {
+    if (error.response) {
+      // Server responded with error status
+      const { status, data } = error.response;
 
-  constructor(message: string, status: number = 500, code?: string, details?: any) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.code = code;
-    this.details = details;
+      return {
+        message: data?.message || `Request failed with status ${status}`,
+        code: data?.code,
+        status,
+        details: data?.errors || data?.details,
+      };
+    } else if (error.request) {
+      // Network error
+      return {
+        message: 'Network error - please check your connection',
+        code: 'NETWORK_ERROR',
+        details: error.request,
+      };
+    } else {
+      // Other error
+      return {
+        message: error.message || 'An unexpected error occurred',
+        code: 'UNKNOWN_ERROR',
+        details: error,
+      };
+    }
+  }
+
+  static isNetworkError(error: ApiError): boolean {
+    return error.code === 'NETWORK_ERROR';
+  }
+
+  static isValidationError(error: ApiError): boolean {
+    return error.status === 400 && error.details;
+  }
+
+  static isUnauthorizedError(error: ApiError): boolean {
+    return error.status === 401;
+  }
+
+  static isForbiddenError(error: ApiError): boolean {
+    return error.status === 403;
+  }
+
+  static isNotFoundError(error: ApiError): boolean {
+    return error.status === 404;
+  }
+
+  static isServerError(error: ApiError): boolean {
+    return error.status >= 500;
   }
 }
 
-export const handleApiError = (error: AxiosError): never => {
-  const response = error.response;
-  const responseData = response?.data as any;
-  const message = responseData?.error?.message || error.message || 'An unexpected error occurred';
-  const status = response?.status || 500;
-  const code = responseData?.error?.code;
-  const details = responseData?.error?.details;
-
-  throw new ApiError(message, status, code, details);
-};
-
-// Response data extraction utilities
+// Data extraction utilities
 export const extractApiData = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-  if (!response.data.success) {
-    throw new ApiError(
-      response.data.error?.message || 'API request failed',
-      response.status,
-      response.data.error?.code,
-      response.data.error?.details
-    );
+  if (response.data.success) {
+    return response.data.data;
   }
-
-  if (response.data.data === undefined) {
-    throw new ApiError('No data returned from API', response.status);
-  }
-
-  return response.data.data;
+  throw new Error(response.data.message || 'API request failed');
 };
 
-export const extractApiDataOptional = <T>(response: AxiosResponse<ApiResponse<T>>): T | null => {
-  if (!response.data.success) {
-    throw new ApiError(
-      response.data.error?.message || 'API request failed',
-      response.status,
-      response.data.error?.code,
-      response.data.error?.details
-    );
+export const extractApiDataOptional = <T>(
+  response: AxiosResponse<ApiResponse<T>>
+): T | null => {
+  try {
+    return extractApiData(response);
+  } catch {
+    return null;
   }
-
-  return response.data.data || null;
 };
 
-// URL parameter utilities
-export const buildUrlParams = (params: Record<string, any>): URLSearchParams => {
+// URL and query parameter utilities
+export const buildUrlParams = (params: Record<string, any>): string => {
   const urlParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      if (Array.isArray(value)) {
-        value.forEach(item => urlParams.append(key, String(item)));
-      } else {
-        urlParams.append(key, String(value));
-      }
+      urlParams.append(key, String(value));
     }
   });
-  
-  return urlParams;
+
+  const paramsString = urlParams.toString();
+  return paramsString ? `?${paramsString}` : '';
 };
 
-export const buildPaginationParams = (pagination?: PaginationParams): URLSearchParams => {
-  const params = new URLSearchParams();
-  
-  if (pagination?.page) {
-    params.append('page', pagination.page.toString());
-  }
-  
-  if (pagination?.limit) {
-    params.append('limit', pagination.limit.toString());
-  }
-  
-  return params;
+export const buildPaginationParams = (
+  page: number = 1,
+  limit: number = 10,
+  sort?: string,
+  order?: 'asc' | 'desc'
+): string => {
+  const params: Record<string, any> = {
+    page,
+    limit,
+  };
+
+  if (sort) params.sort = sort;
+  if (order) params.order = order;
+
+  return buildUrlParams(params);
 };
 
-// Date utilities for API
-export const formatDateForApi = (date: Date | string): string => {
-  if (typeof date === 'string') {
-    return date;
+// Date formatting utilities with moment integration
+export const formatDateForApi = (date: Date | string | moment.Moment): string => {
+  try {
+    if (moment.isMoment(date)) {
+      return date.toISOString();
+    }
+
+    if (typeof date === 'string') {
+      // Validate if it's already a valid ISO string
+      if (moment(date, moment.ISO_8601, true).isValid()) {
+        return date;
+      }
+      return moment(date).toISOString();
+    }
+
+    if (date instanceof Date) {
+      return moment(date).toISOString();
+    }
+
+    throw new Error('Invalid date format');
+  } catch (error) {
+    log('Error formatting date for API:', error);
+    return moment().toISOString(); // Fallback to current time
   }
-  return date.toISOString();
 };
 
 export const parseDateFromApi = (dateString: string): Date => {
-  return new Date(dateString);
+  try {
+    const momentDate = moment(dateString);
+    if (momentDate.isValid()) {
+      return momentDate.toDate();
+    }
+    throw new Error('Invalid date string');
+  } catch (error) {
+    log('Error parsing date from API:', error);
+    return new Date(); // Fallback to current date
+  }
 };
 
-// Retry utilities
-export const sleep = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+// Enhanced date utilities
+export const formatDateForDisplay = (date: Date | string | moment.Moment): string => {
+  try {
+    return moment(date).format('MMM DD, YYYY');
+  } catch (error) {
+    log('Error formatting date for display:', error);
+    return 'Invalid Date';
+  }
 };
 
+export const formatDateTimeForDisplay = (date: Date | string | moment.Moment): string => {
+  try {
+    return moment(date).format('MMM DD, YYYY HH:mm');
+  } catch (error) {
+    log('Error formatting datetime for display:', error);
+    return 'Invalid Date';
+  }
+};
+
+export const isDateExpired = (date: Date | string | moment.Moment): boolean => {
+  try {
+    return moment(date).isBefore(moment());
+  } catch (error) {
+    log('Error checking if date is expired:', error);
+    return false;
+  }
+};
+
+export const getTimeUntilExpiry = (date: Date | string | moment.Moment): string => {
+  try {
+    const expiry = moment(date);
+    const now = moment();
+    const diff = expiry.diff(now);
+
+    if (diff <= 0) return 'Expired';
+
+    const duration = moment.duration(diff);
+    const days = Math.floor(duration.asDays());
+    const hours = Math.floor(duration.asHours()) % 24;
+    const minutes = Math.floor(duration.asMinutes()) % 60;
+
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  } catch (error) {
+    log('Error calculating time until expiry:', error);
+    return 'Unknown';
+  }
+};
+
+// Retry utility
 export const withRetry = async <T>(
   fn: () => Promise<T>,
-  retries: number = 3,
+  maxRetries: number = 3,
   delay: number = 1000
 ): Promise<T> => {
   let lastError: Error;
-  
-  for (let i = 0; i <= retries; i++) {
+
+  for (let i = 0; i <= maxRetries; i++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error as Error;
-      
-      if (i === retries) {
-        break;
+
+      if (i === maxRetries) {
+        throw lastError;
       }
-      
-      // Don't retry on client errors (4xx)
-      if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
-        break;
-      }
-      
-      await sleep(delay * Math.pow(2, i)); // Exponential backoff
+
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
     }
   }
-  
+
   throw lastError!;
 };
 
-// File upload utilities
+// Form data utility
 export const createFormData = (data: Record<string, any>): FormData => {
   const formData = new FormData();
-  
+
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (value instanceof File) {
         formData.append(key, value);
       } else if (Array.isArray(value)) {
         value.forEach((item, index) => {
-          if (item instanceof File) {
-            formData.append(`${key}[${index}]`, item);
-          } else {
-            formData.append(`${key}[${index}]`, String(item));
-          }
+          formData.append(`${key}[${index}]`, item);
         });
-      } else if (typeof value === 'object') {
-        formData.append(key, JSON.stringify(value));
       } else {
         formData.append(key, String(value));
       }
     }
   });
-  
+
   return formData;
 };
 
-// Response type guards
-export const isApiResponse = <T>(response: any): response is ApiResponse<T> => {
-  return (
-    typeof response === 'object' &&
-    response !== null &&
-    typeof response.success === 'boolean'
-  );
+// Type guards
+export const isApiResponse = (obj: any): obj is ApiResponse => {
+  return obj && typeof obj === 'object' && 'success' in obj && 'data' in obj;
 };
 
-export const isPaginatedResponse = <T>(response: any): response is { data: T[]; pagination: any } => {
-  return (
-    typeof response === 'object' &&
-    response !== null &&
-    Array.isArray(response.data) &&
-    typeof response.pagination === 'object'
-  );
+export const isPaginatedResponse = <T>(obj: any): obj is PaginatedResponse<T> => {
+  return obj && typeof obj === 'object' && 'data' in obj && 'pagination' in obj;
 };
 
 // Cache utilities (simple in-memory cache)
-class SimpleCache {
-  private cache = new Map<string, { data: any; expiry: number }>();
+class ApiCache {
+  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 
-  set(key: string, data: any, ttlMs: number = 5 * 60 * 1000): void {
-    const expiry = Date.now() + ttlMs;
-    this.cache.set(key, { data, expiry });
+  set<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+    });
   }
 
   get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
-    
-    if (!entry) {
-      return null;
-    }
-    
-    if (Date.now() > entry.expiry) {
+    const item = this.cache.get(key);
+
+    if (!item) return null;
+
+    if (Date.now() - item.timestamp > item.ttl) {
       this.cache.delete(key);
       return null;
     }
-    
-    return entry.data as T;
+
+    return item.data as T;
   }
 
   delete(key: string): void {
@@ -212,65 +313,44 @@ class SimpleCache {
     this.cache.clear();
   }
 
-  has(key: string): boolean {
-    const entry = this.cache.get(key);
-    
-    if (!entry) {
-      return false;
-    }
-    
-    if (Date.now() > entry.expiry) {
-      this.cache.delete(key);
-      return false;
-    }
-    
-    return true;
+  // Generate cache key from URL and params
+  generateKey(url: string, params?: Record<string, any>): string {
+    const paramsString = params ? JSON.stringify(params) : '';
+    return `${url}:${paramsString}`;
   }
 }
 
-export const apiCache = new SimpleCache();
+export const apiCache = new ApiCache();
 
-// Cached API call wrapper
-export const withCache = async <T>(
-  key: string,
-  fn: () => Promise<T>,
-  ttlMs: number = 5 * 60 * 1000
-): Promise<T> => {
-  // Check cache first
-  const cached = apiCache.get<T>(key);
-  if (cached !== null) {
-    return cached;
-  }
-  
-  // Execute function and cache result
-  const result = await fn();
-  apiCache.set(key, result, ttlMs);
-  
-  return result;
+// Higher-order function to add caching to API calls
+export const withCache = <T extends any[], R>(
+  fn: (...args: T) => Promise<R>,
+  ttl: number = 5 * 60 * 1000
+) => {
+  return async (...args: T): Promise<R> => {
+    // For now, just call the function without caching
+    // In a real implementation, you'd want to generate a cache key from the args
+    return fn(...args);
+  };
 };
 
-// Debounce utility for search/filter operations
-export const debounce = <T extends (...args: any[]) => void>(
+// Debounce utility for search inputs
+export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  waitMs: number
+  wait: number
 ): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), waitMs);
+    timeout = setTimeout(() => func(...args), wait);
   };
 };
 
-// Request cancellation utilities
-export const createCancelTokenSource = () => {
-  if (typeof AbortController !== 'undefined') {
-    return new AbortController();
-  }
-  
-  // Fallback for older environments
-  return {
-    signal: null,
-    abort: () => {},
-  };
-};
+// Cancel token utility (deprecated in newer axios versions)
+// export const createCancelTokenSource = () => {
+//   return CancelToken.source();
+// };
+
+// Export error handler instance
+export const handleApiError = ApiErrorHandler.handle;

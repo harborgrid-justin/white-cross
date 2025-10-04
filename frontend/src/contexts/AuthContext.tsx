@@ -2,11 +2,15 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '../types'
 import { authApi, setSessionExpireHandler } from '../services/api'
 import SessionExpiredModal from '../components/SessionExpiredModal'
+import { tokenSecurityManager, legacyTokenUtils, validateTokenFormat, isTokenExpired } from '../utils/tokenSecurity'
 
 // Extend Window interface for Cypress
 declare global {
   interface Window {
-    Cypress?: any
+    Cypress?: {
+      env: (key: string) => string | undefined
+      config: (key: string) => unknown
+    }
   }
 }
 
@@ -38,12 +42,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
 
   const expireSession = () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
-    localStorage.removeItem('token')
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
+    const token = legacyTokenUtils.getToken()
+
+    // Clear all token storage (both secure and legacy)
+    tokenSecurityManager.clearToken()
     setUser(null)
-    
+
     // Only show session expired modal for real tokens, not mock tokens
     if (!token || (!token.startsWith('mock-') || window.Cypress)) {
       setShowSessionExpiredModal(true)
@@ -59,68 +63,100 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
-    if (token) {
-      // Check for expired token
-      if (token === 'expired-token') {
-        expireSession()
-        setLoading(false)
-        return
-      }
-      
-      // Handle mock tokens for testing
-      if (token.startsWith('mock-') && window.Cypress) {
-        // In test environment with mock token, use stored user data
-        const storedUser = localStorage.getItem('user')
-        if (storedUser) {
+    const initializeAuth = async () => {
+      try {
+        // Initialize secure token manager
+        await tokenSecurityManager.init()
+
+        // Check for secure token first
+        const secureTokenData = await tokenSecurityManager.getValidToken()
+        if (secureTokenData) {
+          setUser(secureTokenData.user)
+          setLoading(false)
+          return
+        }
+
+        // Fallback to legacy token storage
+        const legacyToken = legacyTokenUtils.getToken()
+        if (legacyToken) {
+          // Validate token format
+          if (!validateTokenFormat(legacyToken) && !legacyToken.startsWith('mock-')) {
+            console.warn('Invalid token format detected')
+            expireSession()
+            setLoading(false)
+            return
+          }
+
+          // Check for explicitly expired token
+          if (legacyToken === 'expired-token') {
+            expireSession()
+            setLoading(false)
+            return
+          }
+
+          // Check if JWT token is expired
+          if (!legacyToken.startsWith('mock-') && isTokenExpired(legacyToken)) {
+            console.warn('Token has expired')
+            expireSession()
+            setLoading(false)
+            return
+          }
+
+          // Handle mock tokens for testing
+          if (legacyToken.startsWith('mock-') && window.Cypress) {
+            const storedUser = legacyTokenUtils.getUser()
+            if (storedUser) {
+              setUser(storedUser)
+              // Migrate to secure storage
+              await tokenSecurityManager.storeToken(legacyToken, storedUser)
+            }
+            setLoading(false)
+            return
+          }
+
+          // Clear mock tokens when not in test environment
+          if (legacyToken.startsWith('mock-') && !window.Cypress) {
+            tokenSecurityManager.clearToken()
+            setLoading(false)
+            return
+          }
+
+          // Verify token validity for real tokens
           try {
-            const userData = JSON.parse(storedUser)
+            const userData = await authApi.verifyToken()
             setUser(userData)
+            // Migrate to secure storage
+            await tokenSecurityManager.storeToken(legacyToken, userData)
+            // Clean up legacy storage
+            legacyTokenUtils.removeToken()
+            legacyTokenUtils.removeUser()
           } catch (error) {
-            console.error('Failed to parse stored user data:', error)
+            console.error('Token verification failed:', error)
+            expireSession()
           }
         }
+      } catch (error) {
+        console.error('Auth initialization failed:', error)
+        expireSession()
+      } finally {
         setLoading(false)
-        return
       }
-      
-      // Clear mock tokens when not in test environment
-      if (token.startsWith('mock-') && !window.Cypress) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('authToken')
-        localStorage.removeItem('user')
-        setLoading(false)
-        return
-      }
-      
-      // Verify token validity for real tokens
-      authApi.verifyToken()
-        .then((userData) => {
-          setUser(userData)
-        })
-        .catch((error) => {
-          console.error('Token verification failed:', error)
-          localStorage.removeItem('token')
-          localStorage.removeItem('authToken')
-          localStorage.removeItem('user')
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    } else {
-      setLoading(false)
     }
+
+    initializeAuth()
   }, [])
 
   const login = async (email: string, password: string) => {
     const response = await authApi.login(email, password)
-    localStorage.setItem('token', response.token)
+
+    // Store token securely
+    await tokenSecurityManager.storeToken(response.token, response.user)
     setUser(response.user)
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('authToken')
+    // Clear all token storage
+    tokenSecurityManager.clearToken()
     setUser(null)
     setShowSessionExpiredModal(false)
   }

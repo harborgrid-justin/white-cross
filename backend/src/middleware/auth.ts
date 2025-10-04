@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Server, Request, ResponseToolkit } from '@hapi/hapi';
+import * as jwt from '@hapi/jwt';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -12,45 +12,62 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const auth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+export const configureAuth = async (server: Server) => {
+  // Register JWT plugin
+  await server.register(jwt);
 
-    if (!token) {
-      res.status(401).json({
-        success: false,
-        error: { message: 'Access token required' }
-      });
-      return;
+  // Set JWT secret
+  server.auth.strategy('jwt', 'jwt', {
+    keys: process.env.JWT_SECRET || 'your-secret-key',
+    verify: {
+      aud: 'urn:audience:api',
+      iss: 'urn:issuer:api',
+      sub: false,
+      nbf: true,
+      exp: true,
+      maxAgeSec: 14400, // 4 hours
+      timeSkewSec: 15
+    },
+    validate: async (artifacts, _request, _h) => {
+      try {
+        const decoded = artifacts.decoded;
+
+        // Verify user still exists and is active
+        const user = await prisma.user.findUnique({
+          where: { id: (decoded as any).userId },
+          select: { id: true, email: true, role: true, isActive: true }
+        });
+
+        if (!user || !user.isActive) {
+          return { isValid: false };
+        }
+
+        return {
+          isValid: true,
+          credentials: {
+            userId: user.id,
+            email: user.email,
+            role: user.role
+          }
+        };
+      } catch (error) {
+        return { isValid: false };
+      }
     }
+  });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    
-    // Verify user still exists and is active
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, role: true, isActive: true }
-    });
+  // Set default auth strategy
+  server.auth.default('jwt');
+};
 
-    if (!user || !user.isActive) {
-      res.status(401).json({
-        success: false,
-        error: { message: 'Invalid token' }
-      });
-      return;
-    }
+// Middleware function for routes that need authentication
+export const authMiddleware = (request: AuthRequest, h: ResponseToolkit) => {
+  const user = request.auth.credentials;
 
-    req.user = {
-      userId: user.id,
-      email: user.email,
-      role: user.role
-    };
-
-    next();
-  } catch (error) {
-    res.status(401).json({
-      success: false,
-      error: { message: 'Invalid token' }
-    });
+  if (!user) {
+    throw new Error('Authentication required');
   }
+
+  request.user = user as any;
+  return h.continue;
 };

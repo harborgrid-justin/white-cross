@@ -2,7 +2,7 @@ import { AlertTriangle } from 'lucide-react'
 import { LoadingSpinner, EmptyState } from '../shared'
 import { useMedicationsData } from '../../hooks/useMedicationsData'
 import { getSeverityColor, formatDate } from '../../utils/medications'
-import type { AdverseReaction } from '../../types/medications'
+import type { AdverseReaction } from '../../types/api'
 
 interface AdverseReactionsTabProps {
   onReactionSelect?: (reaction: AdverseReaction) => void
@@ -15,7 +15,7 @@ export const AdverseReactionsTab: React.FC<AdverseReactionsTabProps> = ({
   className = '',
   testId
 }) => {
-  const { adverseReactions, adverseReactionsLoading } = useMedicationsData()
+  const { adverseReactions, isLoading: adverseReactionsLoading } = useMedicationsData()
 
   if (adverseReactionsLoading) {
     return (
@@ -125,12 +125,12 @@ export const AdverseReactionsTab: React.FC<AdverseReactionsTabProps> = ({
               >
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-gray-900">
-                    {reaction.student.firstName} {reaction.student.lastName}
+                    {reaction.student?.firstName} {reaction.student?.lastName}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-gray-900">
-                    {reaction.medication.name}
+                    {reaction.medication?.name || 'Unknown Medication'}
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -142,17 +142,17 @@ export const AdverseReactionsTab: React.FC<AdverseReactionsTabProps> = ({
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900 max-w-xs truncate">
-                    {reaction.description}
+                    {reaction.reaction}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">
-                    {formatDate(reaction.occurredAt, 'datetime')}
+                    {formatDate(reaction.onset, 'datetime')}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">
-                    {reaction.reportedBy.firstName} {reaction.reportedBy.lastName}
+                    {reaction.reportedBy || 'Unknown Reporter'}
                   </div>
                   <div className="text-xs text-gray-500">
                     {formatDate(reaction.createdAt, 'datetime')}
