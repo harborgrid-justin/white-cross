@@ -1,11 +1,16 @@
-import { 
-  STOCK_THRESHOLDS, 
-  EXPIRATION_WARNINGS, 
+import {
+  STOCK_THRESHOLDS,
+  EXPIRATION_WARNINGS,
   DATE_FORMATS,
   SEVERITY_LEVELS,
   MEDICATION_STATUSES,
-  INVENTORY_STATUSES 
+  INVENTORY_STATUSES
 } from '../constants/medications'
+
+// Use the imported constants in utility functions
+const CRITICAL_STOCK_LEVEL = STOCK_THRESHOLDS.critical;
+const LOW_STOCK_LEVEL = STOCK_THRESHOLDS.low;
+const REORDER_STOCK_LEVEL = STOCK_THRESHOLDS.reorder;
 import type {
   Medication,
   MedicationInventory,
@@ -221,34 +226,37 @@ export const calculateTotalInventory = (medication: Medication): {
   expired: number
   lowStock: number
 } => {
-  if (!medication.inventory || medication.inventory.length === 0) {
+  // Check if medication has inventory property (it might be optional in the type)
+  const inventory = (medication as any).inventory || []
+
+  if (!inventory || inventory.length === 0) {
     return { totalQuantity: 0, totalBatches: 0, nearExpiry: 0, expired: 0, lowStock: 0 }
   }
-  
+
   let totalQuantity = 0
   let nearExpiry = 0
   let expired = 0
   let lowStock = 0
-  
-  medication.inventory.forEach(item => {
-    totalQuantity += item.quantity
-    
+
+  inventory.forEach((item: any) => {
+    totalQuantity += item.quantity || 0
+
     const expirationStatus = getExpirationStatus(item.expirationDate)
     if (expirationStatus.status === 'expired') {
       expired++
     } else if (expirationStatus.status === 'critical' || expirationStatus.status === 'warning') {
       nearExpiry++
     }
-    
-    const stockStatus = getStockStatus(item.quantity, item.reorderLevel)
+
+    const stockStatus = getStockStatus(item.quantity || 0, item.reorderLevel)
     if (stockStatus.status === 'critical' || stockStatus.status === 'low') {
       lowStock++
     }
   })
-  
+
   return {
     totalQuantity,
-    totalBatches: medication.inventory.length,
+    totalBatches: inventory.length,
     nearExpiry,
     expired,
     lowStock
@@ -416,13 +424,16 @@ export const validateMedicationData = (data: Partial<Medication>): string[] => {
 export const formatMedicationForDisplay = (medication: Medication) => {
   const inventory = calculateTotalInventory(medication)
   const displayName = getMedicationDisplayName(medication)
-  
+
   return {
     ...medication,
     displayName,
-    inventory: {
-      ...inventory,
-      status: getStockStatus(inventory.totalQuantity)
+    // Add display-specific properties without modifying the original type
+    _display: {
+      inventory: {
+        ...inventory,
+        status: getStockStatus(inventory.totalQuantity)
+      }
     }
   }
 }

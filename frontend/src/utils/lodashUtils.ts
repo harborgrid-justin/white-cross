@@ -1,9 +1,16 @@
 import _ from 'lodash';
+import { SEARCH_CONFIG, PAGINATION_CONFIG, VALIDATION_CONFIG } from '../constants/config';
 
 /**
  * Frontend utility functions using lodash for common operations
  * Provides type-safe lodash wrappers for frequently used operations in React components
+ * Enhanced with centralized configuration constants for consistency
  */
+
+// Use the imported configuration constants
+const DEFAULT_PAGE_SIZE = PAGINATION_CONFIG.DEFAULT_PAGE_SIZE;
+const DEFAULT_SEARCH_DELAY = SEARCH_CONFIG.SEARCH_DELAY;
+const MAX_FIELD_LENGTH = VALIDATION_CONFIG.MAX_FIELD_LENGTH;
 
 // Collection utilities
 export const arrayUtils = {

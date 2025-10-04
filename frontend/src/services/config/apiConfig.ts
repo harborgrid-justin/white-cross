@@ -1,77 +1,9 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import debug from 'debug';
+import { API_CONFIG } from '../../constants/config';
+import { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG } from '../../constants/api';
 
 const log = debug('whitecross:api-config');
-
-// API Configuration
-export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
-  TIMEOUT: 30000,
-  RETRY_ATTEMPTS: 3,
-  RETRY_DELAY: 1000,
-} as const;
-
-// API Endpoints
-export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh',
-    VERIFY: '/auth/verify',
-    REGISTER: '/auth/register',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-  },
-  STUDENTS: {
-    BASE: '/students',
-    BY_ID: (id: string) => `/students/${id}`,
-    ASSIGNED: '/students/assigned',
-    SEARCH: '/students/search',
-  },
-  HEALTH_RECORDS: {
-    BASE: '/health-records',
-    STUDENT: (studentId: string) => `/health-records/student/${studentId}`,
-    ALLERGIES: (studentId: string) => `/health-records/student/${studentId}/allergies`,
-    CHRONIC_CONDITIONS: (studentId: string) => `/health-records/student/${studentId}/chronic-conditions`,
-    VACCINATIONS: (studentId: string) => `/health-records/student/${studentId}/vaccinations`,
-    GROWTH_CHART: (studentId: string) => `/health-records/student/${studentId}/growth-chart`,
-    VITALS: (studentId: string) => `/health-records/student/${studentId}/vitals`,
-  },
-  MEDICATIONS: {
-    BASE: '/medications',
-    INVENTORY: '/medications/inventory',
-    SCHEDULE: '/medications/schedule',
-    REMINDERS: '/medications/reminders',
-    STUDENT: (studentId: string) => `/medications/student/${studentId}`,
-    ADMINISTER: (id: string) => `/medications/${id}/administer`,
-  },
-  APPOINTMENTS: {
-    BASE: '/appointments',
-    UPCOMING: '/appointments/upcoming',
-    TODAY: '/appointments/today',
-  },
-  COMMUNICATION: {
-    BASE: '/communication',
-    MESSAGES: '/communication/messages',
-    NOTIFICATIONS: '/communication/notifications',
-  },
-  DOCUMENTS: {
-    BASE: '/documents',
-    UPLOAD: '/documents/upload',
-    DOWNLOAD: (id: string) => `/documents/${id}/download`,
-  },
-  REPORTS: {
-    BASE: '/reports',
-    GENERATE: '/reports/generate',
-    EXPORT: (id: string) => `/reports/${id}/export`,
-  },
-  ADMIN: {
-    BASE: '/admin',
-    SETTINGS: '/admin/settings',
-    USERS: '/admin/users',
-    INTEGRATIONS: '/admin/integrations',
-  },
-} as const;
 
 // Create axios instance
 export const apiInstance: AxiosInstance = axios.create({
