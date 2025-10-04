@@ -65,7 +65,7 @@ describe('Medication Management - Inventory', () => {
       }
     }).as('getInventory')
     
-    cy.login()
+    cy.setupAuthenticationForTests()
     cy.visit('/medications')
     cy.wait('@verifyAuth')
     

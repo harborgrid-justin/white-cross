@@ -5,6 +5,9 @@ describe('Medication Management - Overview', () => {
     cy.clearCookies()
     cy.clearLocalStorage()
     
+    // Use proper session management
+    cy.loginAsNurse()
+    
     // Mock authentication
     cy.intercept('GET', '**/api/auth/verify', {
       statusCode: 200,
@@ -15,10 +18,30 @@ describe('Medication Management - Overview', () => {
           email: 'nurse@school.edu',
           role: 'NURSE',
           firstName: 'Test',
-          lastName: 'Nurse'
+          lastName: 'Nurse',
+          isActive: true
         }
       }
     }).as('verifyAuth')
+    
+    // Mock students/assigned endpoint
+    cy.intercept('GET', '**/api/students/assigned', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          students: [
+            {
+              id: '1',
+              studentNumber: 'STU001',
+              firstName: 'Emma',
+              lastName: 'Wilson',
+              grade: '8'
+            }
+          ]
+        }
+      }
+    }).as('getAssignedStudents')
     
     // Mock medications API
     cy.intercept('GET', '**/api/medications*', {
@@ -55,9 +78,9 @@ describe('Medication Management - Overview', () => {
       }
     }).as('getMedications')
     
-    cy.login()
     cy.visit('/medications')
     cy.wait('@verifyAuth')
+    cy.wait('@getAssignedStudents')
   })
 
   describe('Overview Page', () => {

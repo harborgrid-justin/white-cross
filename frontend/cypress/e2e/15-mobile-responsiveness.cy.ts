@@ -13,7 +13,7 @@ describe('Mobile Application - Responsiveness & Touch', () => {
       }
     }).as('verifyAuth')
     
-    cy.login()
+    cy.setupAuthenticationForTests()
   })
 
   describe('Mobile Viewport - iPhone X', () => {

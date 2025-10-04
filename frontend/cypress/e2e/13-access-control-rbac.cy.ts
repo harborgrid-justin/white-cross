@@ -21,7 +21,7 @@ describe('Access Control & Security - RBAC', () => {
         }
       }).as('verifyAuth')
       
-      cy.login()
+      cy.setupAuthenticationForTests()
       cy.visit('/students')
       cy.wait('@verifyAuth')
       

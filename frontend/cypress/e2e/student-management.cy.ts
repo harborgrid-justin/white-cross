@@ -2,7 +2,13 @@
 
 describe('Student Management', () => {
   beforeEach(() => {
-    // Set up API interceptors first
+    cy.clearCookies()
+    cy.clearLocalStorage()
+    
+    // Use proper session management
+    cy.loginAsNurse()
+    
+    // Set up API interceptors
     cy.intercept('GET', '**/api/auth/verify', {
       statusCode: 200,
       body: {
@@ -17,6 +23,25 @@ describe('Student Management', () => {
         }
       }
     }).as('verifyAuth')
+    
+    // Mock students/assigned endpoint
+    cy.intercept('GET', '**/api/students/assigned', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          students: [
+            {
+              id: '1',
+              studentNumber: 'STU001',
+              firstName: 'Emma',
+              lastName: 'Wilson',
+              grade: '8'
+            }
+          ]
+        }
+      }
+    }).as('getAssignedStudents')
     
     // Mock students API
     cy.intercept('GET', '**/api/students*', {
