@@ -1,0 +1,40 @@
+{
+  "appointments": [
+    {
+      "id": "1",
+      "studentId": "STU001",
+      "studentName": "Emma Wilson",
+      "appointmentType": "Routine Checkup",
+      "dateTime": "2024-02-15T10:00:00Z",
+      "duration": 30,
+      "status": "SCHEDULED",
+      "nurseId": "1",
+      "nurseName": "Test Nurse",
+      "notes": "Annual physical examination"
+    },
+    {
+      "id": "2",
+      "studentId": "STU002",
+      "studentName": "Jake Davis",
+      "appointmentType": "Medication Administration",
+      "dateTime": "2024-02-15T14:00:00Z",
+      "duration": 15,
+      "status": "SCHEDULED",
+      "nurseId": "1",
+      "nurseName": "Test Nurse",
+      "notes": "Insulin administration"
+    },
+    {
+      "id": "3",
+      "studentId": "STU003",
+      "studentName": "Sarah Johnson",
+      "appointmentType": "Vaccination",
+      "dateTime": "2024-02-16T09:00:00Z",
+      "duration": 20,
+      "status": "COMPLETED",
+      "nurseId": "1",
+      "nurseName": "Test Nurse",
+      "notes": "Flu vaccine administered"
+    }
+  ]
+}
