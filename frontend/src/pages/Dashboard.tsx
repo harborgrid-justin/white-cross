@@ -64,12 +64,12 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">Good morning! 👋</h1>
+        <h1 className="text-2xl font-bold mb-2" data-cy="dashboard-title">Good morning! 👋</h1>
         <p className="text-primary-100">Here's your school health overview for today</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-cy="quick-stats">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -100,7 +100,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activities */}
-        <div className="card p-6">
+        <div className="card p-6" data-cy="recent-activities">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activities</h3>
           <div className="space-y-4">
             {recentActivities.map((activity) => (

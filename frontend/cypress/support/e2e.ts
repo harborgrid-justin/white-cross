@@ -1,88 +1,87 @@
-// Import commands.js using ES2015 syntax:
+// Import Cypress types and custom commands
+/// <reference types="cypress" />
 import './commands'
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+/**
+ * Global Cypress Configuration for E2E Tests
+ * White Cross Healthcare Management System
+ */
 
-// Add global error handling for uncaught exceptions
-Cypress.on('uncaught:exception', (err, runnable) => {
-  // Healthcare apps may have non-critical third-party errors
-  // Return false to prevent Cypress from failing the test
+// Handle uncaught exceptions gracefully
+Cypress.on('uncaught:exception', (err: Error) => {
+  // Don't fail tests on ResizeObserver errors (common in React apps)
   if (err.message.includes('ResizeObserver loop limit exceeded')) {
     return false
   }
+  
+  // Don't fail tests on non-critical console errors
   if (err.message.includes('Non-Error promise rejection captured')) {
     return false
   }
+  
+  // Don't fail on network timeout errors during testing
+  if (err.message.includes('Loading chunk') || err.message.includes('Loading CSS chunk')) {
+    return false
+  }
+  
+  // Log the error for debugging but don't fail the test for known issues
+  console.warn('Uncaught exception:', err.message)
   return true
 })
 
-// Add support for coverage if needed
-beforeEach(() => {
-  // Reset any test state
-  cy.clearCookies()
-  cy.clearLocalStorage()
+// Configure request/response logging for debugging and suppress console noise
+Cypress.on('window:before:load', (win: any) => {
+  // Suppress console noise in test environment
+  if (win.console) {
+    cy.stub(win.console, 'warn').as('consoleWarn')
+    cy.stub(win.console, 'error').as('consoleError')
+  }
 })
 
-// Add global types for better TypeScript support
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      login(email?: string, password?: string): Chainable<void>
-      loginAsNurse(): Chainable<void>
-      loginAsAdmin(): Chainable<void>
-      waitForStudentTable(): Chainable<void>
-      interceptStudentAPI(): Chainable<void>
-      createTestStudent(student?: Partial<Student>): Chainable<void>
-      deleteTestStudent(studentId: string): Chainable<void>
-      seedStudentData(): Chainable<void>
-      cleanupTestData(): Chainable<void>
+// Add custom assertions for healthcare-specific testing
+Cypress.Commands.add('shouldBeAccessible', () => {
+  // Basic accessibility checks for healthcare applications
+  cy.get('body').should('exist')
+  cy.get('[role="main"], main, #root').should('exist')
+})
+
+// Add support for session-based authentication
+Cypress.Commands.add('preserveSession', () => {
+  cy.window().then((win: any) => {
+    if (win.sessionStorage) {
+      win.sessionStorage.clear()
     }
-  }
-}
+  })
+})
 
-export interface Student {
-  id: string
-  firstName: string
-  lastName: string
-  dateOfBirth: string
-  grade: string
-  studentId: string
-  email?: string
-  phone?: string
-  emergencyContacts: EmergencyContact[]
-  medicalConditions?: MedicalCondition[]
-  allergies?: Allergy[]
-  medications?: Medication[]
-}
+// Healthcare-specific test utilities
+Cypress.Commands.add('waitForHealthcareData', () => {
+  // Set up intercepts for common healthcare data endpoints
+  cy.intercept('GET', '**/api/students*').as('loadStudents')
+  cy.intercept('GET', '**/api/appointments*').as('loadAppointments')
+  cy.intercept('GET', '**/api/medications*').as('loadMedications')
+  cy.intercept('GET', '**/api/users*').as('loadUsers')
+})
 
-export interface EmergencyContact {
-  id: string
-  name: string
-  relationship: string
-  phone: string
-  email?: string
-  isPrimary: boolean
-}
+// Global test configuration
+beforeEach(() => {
+  // Set consistent viewport for healthcare application testing
+  cy.viewport(1280, 720)
+  
+  // Clear storage for test isolation
+  cy.clearLocalStorage()
+  cy.clearCookies()
+  
+  // Set up common healthcare data intercepts
+  cy.waitForHealthcareData()
+})
 
-export interface MedicalCondition {
-  id: string
-  condition: string
-  description?: string
-  severity: 'low' | 'medium' | 'high'
-}
-
-export interface Allergy {
-  id: string
-  allergen: string
-  severity: 'mild' | 'moderate' | 'severe'
-  reaction?: string
-}
-
-export interface Medication {
-  id: string
-  name: string
-  dosage: string
-  frequency: string
-  prescribedBy: string
-}
+// Global cleanup after each test
+afterEach(() => {
+  // Clean up any test-specific data
+  cy.window().then((win: any) => {
+    if (win.localStorage && win.localStorage.getItem('test-mode')) {
+      win.localStorage.removeItem('test-mode')
+    }
+  })
+})

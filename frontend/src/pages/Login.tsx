@@ -58,9 +58,9 @@ export default function Login() {
         </div>
         
         <div className="card p-8">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-testid="login-form">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-cy="login-form">
             {authError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3" data-testid="error-message">
+              <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message">
                 <p className="text-sm text-red-600">{authError}</p>
               </div>
             )}
@@ -81,7 +81,7 @@ export default function Login() {
                   type="email"
                   className="input-field"
                   placeholder="Enter your email"
-                  data-testid="email-input"
+                  data-cy="email-input"
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -105,7 +105,7 @@ export default function Login() {
                   type="password"
                   className="input-field"
                   placeholder="Enter your password"
-                  data-testid="password-input"
+                  data-cy="password-input"
                 />
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
@@ -118,7 +118,7 @@ export default function Login() {
                 type="submit"
                 disabled={loading}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                data-testid="login-button"
+                data-cy="login-button"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
