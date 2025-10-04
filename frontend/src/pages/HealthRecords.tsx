@@ -184,6 +184,41 @@ const HealthRecords: React.FC = () => {
         />
       </div>
 
+      {/* Overview Cards - Feature Highlights */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+          <div className="flex items-center mb-4">
+            <FileText className="h-8 w-8 text-blue-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Electronic Health Records</h3>
+          </div>
+          <p className="text-gray-600 text-sm">Digital medical examination records and comprehensive health documentation system.</p>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+          <div className="flex items-center mb-4">
+            <Shield className="h-8 w-8 text-green-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Vaccination Tracking</h3>
+          </div>
+          <p className="text-gray-600 text-sm">Compliance monitoring and vaccination schedule management for all students.</p>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+          <div className="flex items-center mb-4">
+            <AlertTriangle className="h-8 w-8 text-red-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Allergy Management</h3>
+          </div>
+          <p className="text-gray-600 text-sm">Comprehensive allergy management system with emergency response protocols.</p>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+          <div className="flex items-center mb-4">
+            <Activity className="h-8 w-8 text-orange-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Chronic Condition Monitoring</h3>
+          </div>
+          <p className="text-gray-600 text-sm">Care plans and ongoing monitoring for students with chronic health conditions.</p>
+        </div>
+      </div>
+
       {/* Summary Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatsCard title="Total Records" value="247" trend="+12 this month" icon={FileText} iconColor="text-blue-600" />
@@ -225,9 +260,57 @@ const HealthRecords: React.FC = () => {
                 I acknowledge that I will only access health information for legitimate medical purposes and in accordance with HIPAA regulations.
               </label>
             </div>
+            {user?.role === 'ADMIN' && (
+              <div className="mt-3">
+                <button
+                  className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded hover:bg-blue-200"
+                  data-testid="view-sensitive-data"
+                  onClick={() => setShowSensitiveRecordWarning(true)}
+                >
+                  View Sensitive PHI Data
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Quick Actions Section */}
+      {activeTab === 'overview' && (
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button 
+              className="btn-primary flex items-center justify-center py-3"
+              onClick={() => {
+                setEditingRecord(null)
+                setShowHealthRecordModal(true)
+              }}
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              Add New Record
+            </button>
+            <button 
+              className="btn-secondary flex items-center justify-center py-3"
+              onClick={() => {
+                handleTabChange('records')
+              }}
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              View Records
+            </button>
+            <button 
+              className="btn-secondary flex items-center justify-center py-3"
+              onClick={() => {
+                handleTabChange('vaccinations')
+              }}
+            >
+              <Shield className="h-5 w-5 mr-2" />
+              Vaccination Schedule
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="bg-white rounded-lg shadow">
@@ -242,6 +325,61 @@ const HealthRecords: React.FC = () => {
         />
 
         <div className="p-6">
+          {/* Search and Filter Section */}
+          {(activeTab === 'records' || activeTab === 'overview') && (
+            <div className="mb-6 space-y-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search health records by student name..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    data-testid="health-records-search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select 
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    data-testid="record-type-filter"
+                  >
+                    <option value="">All Record Types</option>
+                    <option value="EXAMINATION">EXAMINATION</option>
+                    <option value="VACCINATION">Vaccination</option>
+                    <option value="ALLERGY">Allergy</option>
+                    <option value="MEDICATION">Medication</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                  <input
+                    type="date"
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    data-testid="date-from"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                  <input
+                    type="date"
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    data-testid="date-to"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button 
+                    className="btn-primary px-6 py-2"
+                    data-testid="apply-date-filter"
+                  >
+                    Apply Filter
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {activeTab === 'overview' && (
             <OverviewTab onShowEditAllergyModal={() => console.log('Edit allergy')} />
           )}

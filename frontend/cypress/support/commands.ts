@@ -102,23 +102,7 @@ Cypress.Commands.add('loginWithSessionValidation', (email?: string, password?: s
 
 Cypress.Commands.add('loginAsNurse', () => {
   cy.session(['nurse@school.edu', 'NursePassword123!'], () => {
-    // Mock the auth verification endpoint to return success
-    cy.intercept('GET', '**/api/auth/verify', {
-      statusCode: 200,
-      body: {
-        success: true,
-        data: {
-          id: '1',
-          email: 'nurse@school.edu',
-          role: 'NURSE',
-          firstName: 'Test',
-          lastName: 'Nurse',
-          isActive: true
-        }
-      }
-    }).as('verifyNurseToken')
-    
-    // Visit a page to set up the session properly
+    // Visit login page to set up the session properly
     cy.visit('/login')
     
     // Store the mock token that matches the interceptor expectations
@@ -128,7 +112,9 @@ Cypress.Commands.add('loginAsNurse', () => {
       win.localStorage.setItem('user', JSON.stringify({
         id: '1',
         email: 'nurse@school.edu',
-        role: 'NURSE'
+        role: 'NURSE',
+        firstName: 'Test',
+        lastName: 'Nurse'
       }))
     })
   }, {
@@ -137,7 +123,8 @@ Cypress.Commands.add('loginAsNurse', () => {
         const token = win.localStorage.getItem('authToken')
         expect(token).to.exist
       })
-    }
+    },
+    cacheAcrossSpecs: false
   })
 })
 
@@ -159,6 +146,27 @@ Cypress.Commands.add('loginAsAdmin', () => {
       }
     }).as('verifyAdminToken')
     
+    // Mock students/assigned endpoint
+    cy.intercept('GET', '**/api/students/assigned', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          students: [
+            {
+              id: '1',
+              studentNumber: 'STU001',
+              firstName: 'Emma',
+              lastName: 'Wilson',
+              grade: '8',
+              dateOfBirth: '2010-03-15',
+              gender: 'FEMALE'
+            }
+          ]
+        }
+      }
+    }).as('getAssignedStudents')
+    
     // Visit a page to set up the session properly
     cy.visit('/login')
     
@@ -178,7 +186,8 @@ Cypress.Commands.add('loginAsAdmin', () => {
         const token = win.localStorage.getItem('authToken')
         expect(token).to.exist
       })
-    }
+    },
+    cacheAcrossSpecs: false
   })
 })
 
@@ -200,6 +209,27 @@ Cypress.Commands.add('loginAsReadOnly', () => {
       }
     }).as('verifyReadOnlyToken')
     
+    // Mock students/assigned endpoint
+    cy.intercept('GET', '**/api/students/assigned', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          students: [
+            {
+              id: '1',
+              studentNumber: 'STU001',
+              firstName: 'Emma',
+              lastName: 'Wilson',
+              grade: '8',
+              dateOfBirth: '2010-03-15',
+              gender: 'FEMALE'
+            }
+          ]
+        }
+      }
+    }).as('getAssignedStudents')
+    
     // Visit a page to set up the session properly
     cy.visit('/login')
     
@@ -219,7 +249,8 @@ Cypress.Commands.add('loginAsReadOnly', () => {
         const token = win.localStorage.getItem('authToken')
         expect(token).to.exist
       })
-    }
+    },
+    cacheAcrossSpecs: false
   })
 })
 
@@ -343,6 +374,67 @@ Cypress.Commands.add('testUnauthorizedAccess', (route: string) => {
   cy.get('[data-testid="auth-required-message"]', { timeout: 10000 })
     .should('be.visible')
     .and('contain.text', 'Please log in to access')
+})
+
+// Global API interceptors for consistent session management
+Cypress.Commands.add('setupGlobalAPIInterceptors', () => {
+  // Mock students/assigned endpoint - required by StudentSelector on most pages
+  cy.intercept('GET', '**/api/students/assigned', {
+    statusCode: 200,
+    body: {
+      success: true,
+      data: {
+        students: [
+          {
+            id: '1',
+            studentNumber: 'STU001',
+            firstName: 'Emma',
+            lastName: 'Wilson',
+            grade: '8',
+            dateOfBirth: '2010-03-15',
+            gender: 'FEMALE'
+          },
+          {
+            id: '2',
+            studentNumber: 'STU002',
+            firstName: 'John',
+            lastName: 'Smith',
+            grade: '7',
+            dateOfBirth: '2011-05-20',
+            gender: 'MALE'
+          }
+        ]
+      }
+    }
+  }).as('getAssignedStudents')
+
+  // Mock auth/verify endpoint
+  cy.intercept('GET', '**/api/auth/verify', {
+    statusCode: 200,
+    body: {
+      success: true,
+      data: {
+        id: '1',
+        email: 'nurse@school.edu',
+        role: 'NURSE',
+        firstName: 'Test',
+        lastName: 'Nurse',
+        isActive: true
+      }
+    }
+  }).as('verifyAuth')
+})
+
+// Comprehensive authentication setup for all tests
+Cypress.Commands.add('setupAuthenticationForTests', () => {
+  cy.clearCookies()
+  cy.clearLocalStorage()
+  
+  // Use session-based authentication
+  cy.loginAsNurse()
+  
+  // Set up global API interceptors
+  cy.setupGlobalAPIInterceptors()
 })
 
 // Student-specific commands
@@ -753,6 +845,7 @@ declare global {
     expectAuthenticationRequired(): Cypress.Chainable<void>
     verifyAuthenticationPersistence(): Cypress.Chainable<void>
     testUnauthorizedAccess(route: string): Cypress.Chainable<void>
+    setupGlobalAPIInterceptors(): Cypress.Chainable<void>
     waitForStudentTable(): Cypress.Chainable<void>
     interceptStudentAPI(): Cypress.Chainable<void>
     createTestStudent(student?: Partial<Record<string, any>>): Cypress.Chainable<void>
@@ -764,6 +857,7 @@ declare global {
     selectFromDropdown(selector: string, value: string): Cypress.Chainable<void>
     uploadFile(selector: string, fileName: string): Cypress.Chainable<void>
     waitForToast(message?: string): Cypress.Chainable<void>
+    setupAuthenticationForTests(): Cypress.Chainable<void>
   }
 }
 

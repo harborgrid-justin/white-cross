@@ -37,7 +37,71 @@ describe('Emergency Contacts - CRUD Operations', () => {
       }
     }).as('getContacts')
     
-    cy.login()
+    // Mock emergency contacts by student endpoint
+    cy.intercept('GET', '**/api/emergency-contacts/student/**', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          contacts: [
+            {
+              id: '1',
+              studentId: '1',
+              firstName: 'Jennifer',
+              lastName: 'Wilson',
+              relationship: 'Mother',
+              phoneNumber: '(555) 123-4567',
+              email: 'jennifer@email.com',
+              isPrimary: true,
+              address: '123 Main St',
+              city: 'Springfield',
+              state: 'IL',
+              zipCode: '62701'
+            }
+          ]
+        }
+      }
+    }).as('getStudentContacts')
+    
+    // Mock statistics endpoint
+    cy.intercept('GET', '**/api/emergency-contacts/statistics', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          totalContacts: 3,
+          primaryContacts: 2,
+          secondaryContacts: 1,
+          averageContactsPerStudent: 2.5
+        }
+      }
+    }).as('getStatistics')
+    
+    // Mock students endpoint
+    cy.intercept('GET', '**/api/students**', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          students: [
+            {
+              id: '1',
+              studentNumber: 'STU001',
+              firstName: 'Emma',
+              lastName: 'Wilson',
+              grade: '8',
+              dateOfBirth: '2010-03-15',
+              gender: 'FEMALE'
+            }
+          ],
+          total: 1,
+          totalPages: 1,
+          currentPage: 1
+        }
+      }
+    }).as('getStudents')
+    
+    cy.loginAsNurse()
     cy.visit('/emergency-contacts')
     cy.wait('@verifyAuth')
   })
@@ -48,32 +112,32 @@ describe('Emergency Contacts - CRUD Operations', () => {
     })
 
     it('should show contact list', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.contains('Jennifer Wilson').should('be.visible')
       cy.contains('Mother').should('be.visible')
     })
 
     it('should display contact details', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.contains('(555) 123-4567').should('be.visible')
       cy.contains('jennifer@email.com').should('be.visible')
     })
 
     it('should indicate primary contacts', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.get('[data-testid="primary-badge-1"]').should('be.visible')
     })
   })
 
   describe('Add Emergency Contact', () => {
     it('should open add contact modal', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.get('[data-testid="add-contact-button"]').click()
       cy.get('[data-testid="contact-modal"]').should('be.visible')
     })
 
     it('should validate required fields', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.get('[data-testid="add-contact-button"]').click()
       cy.get('[data-testid="save-contact"]').click()
       
@@ -84,7 +148,7 @@ describe('Emergency Contacts - CRUD Operations', () => {
     })
 
     it('should validate phone number format', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.get('[data-testid="add-contact-button"]').click()
       
       cy.get('[data-testid="phone-number"]').type('invalid')
@@ -94,7 +158,7 @@ describe('Emergency Contacts - CRUD Operations', () => {
     })
 
     it('should validate email format', () => {
-      cy.wait('@getContacts')
+      cy.wait(['@getContacts', '@getStudentContacts'])
       cy.get('[data-testid="add-contact-button"]').click()
       
       cy.get('[data-testid="email"]').type('invalid-email')
