@@ -13,6 +13,7 @@ import Communication from './pages/Communication'
 import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import Documents from './pages/Documents'
 import LoadingSpinner from './components/LoadingSpinner'
 import AccessDenied from './pages/AccessDenied'
 import { StudentHealthRecord } from './components/StudentHealthRecord'
@@ -47,6 +48,7 @@ function AppRoutes() {
                 <Route path="/incident-reports/*" element={<IncidentReports />} />
                 <Route path="/emergency-contacts/*" element={<EmergencyContacts />} />
                 <Route path="/communication/*" element={<Communication />} />
+                <Route path="/documents/*" element={<Documents />} />
                 <Route path="/inventory/*" element={<Inventory />} />
                 <Route path="/reports/*" element={<Reports />} />
                 <Route path="/admin/*" element={<Settings />} />

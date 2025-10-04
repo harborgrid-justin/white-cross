@@ -5,6 +5,7 @@ describe('Document Management', () => {
     cy.clearCookies()
     cy.clearLocalStorage()
     
+    // Set up authentication intercepts first
     cy.intercept('GET', '**/api/auth/verify', {
       statusCode: 200,
       body: {
@@ -35,8 +36,21 @@ describe('Document Management', () => {
       }
     }).as('getDocuments')
     
-    cy.login()
+    // Visit page and set up authentication state
     cy.visit('/documents')
+    
+    // Set authentication tokens in localStorage
+    cy.window().then((win) => {
+      win.localStorage.setItem('authToken', 'mock-nurse-token')
+      win.localStorage.setItem('user', JSON.stringify({
+        id: '1',
+        email: 'nurse@school.edu',
+        role: 'NURSE'
+      }))
+    })
+    
+    // Reload to ensure authentication state is properly loaded
+    cy.reload()
     cy.wait('@verifyAuth')
   })
 
@@ -118,14 +132,10 @@ describe('Document Management', () => {
       cy.wait('@getDocuments')
       cy.get('[data-testid="upload-document-button"]').click()
       
-      cy.intercept('POST', '**/api/documents/upload', (req) => {
-        req.on('progress', (state) => {
-          // Simulate progress
-        })
-        req.reply({
-          statusCode: 201,
-          body: { success: true }
-        })
+      cy.intercept('POST', '**/api/documents/upload', {
+        statusCode: 201,
+        delay: 1000, // Simulate upload delay
+        body: { success: true }
       }).as('uploadProgress')
       
       cy.get('[data-testid="file-input"]').selectFile('cypress/fixtures/test-document.pdf', { force: true })
