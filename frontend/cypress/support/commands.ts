@@ -7,19 +7,39 @@ Cypress.Commands.add('login', (email?: string, password?: string) => {
   const testPassword = password || Cypress.env('TEST_USER_PASSWORD') || 'TestPassword123!'
 
   cy.session([testEmail, testPassword], () => {
+    // Set up intercepts first
+    cy.intercept('POST', '**/api/auth/login', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          token: 'mock-session-token',
+          user: { id: '1', email: testEmail, role: 'NURSE' },
+          expiresAt: new Date(Date.now() + 3600000).toISOString()
+        }
+      }
+    }).as('loginRequest')
+    
+    cy.intercept('GET', '**/api/auth/verify', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: { id: '1', email: testEmail, role: 'NURSE', isActive: true }
+      }
+    }).as('verifyToken')
+    
     cy.visit('/login')
     cy.get('[data-testid="email-input"]').type(testEmail)
     cy.get('[data-testid="password-input"]').type(testPassword)
     cy.get('[data-testid="login-button"]').click()
+    cy.wait('@loginRequest')
     cy.url().should('not.include', '/login')
     cy.get('[data-testid="user-menu"]').should('be.visible')
   }, {
     validate: () => {
-      // Validate session is still active by checking for auth token
-      cy.window().then((win) => {
-        const token = win.localStorage.getItem('authToken')
-        expect(token).to.exist
-      })
+      // More robust validation that doesn't rely on window being available immediately
+      cy.visit('/dashboard')
+      cy.get('[data-testid="user-menu"]').should('be.visible')
     }
   })
 })
