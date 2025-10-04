@@ -1,0 +1,65 @@
+{
+  "incidents": [
+    {
+      "id": "1",
+      "studentId": "STU001",
+      "studentName": "Emma Wilson",
+      "incidentType": "INJURY",
+      "location": "Playground",
+      "dateTime": "2024-01-15T10:30:00Z",
+      "severity": "MINOR",
+      "status": "REPORTED",
+      "description": "Student fell on playground equipment and scraped knee. Applied first aid and monitored. No further medical attention needed.",
+      "reportedBy": "Test Nurse",
+      "witnesses": [
+        {
+          "name": "Teacher Smith",
+          "statement": "I saw the student slip on the wet surface"
+        }
+      ],
+      "photos": [],
+      "followUpActions": []
+    },
+    {
+      "id": "2",
+      "studentId": "STU002",
+      "studentName": "Jake Davis",
+      "incidentType": "ILLNESS",
+      "location": "Classroom 101",
+      "dateTime": "2024-01-16T13:15:00Z",
+      "severity": "MINOR",
+      "status": "UNDER_REVIEW",
+      "description": "Student complained of headache and mild fever. Temperature taken: 99.8°F. Parent contacted and student sent home.",
+      "reportedBy": "Test Nurse",
+      "witnesses": [],
+      "photos": [],
+      "followUpActions": [
+        {
+          "action": "Follow up with parent tomorrow",
+          "dueDate": "2024-01-17",
+          "status": "PENDING"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "studentId": "STU003",
+      "studentName": "Sarah Johnson",
+      "incidentType": "ALLERGIC_REACTION",
+      "location": "Cafeteria",
+      "dateTime": "2024-01-17T12:00:00Z",
+      "severity": "MODERATE",
+      "status": "RESOLVED",
+      "description": "Student experienced mild allergic reaction after lunch. Benadryl administered per action plan. Symptoms resolved within 30 minutes. Parent notified.",
+      "reportedBy": "Test Nurse",
+      "witnesses": [
+        {
+          "name": "Cafeteria Staff",
+          "statement": "Student mentioned feeling itchy after eating"
+        }
+      ],
+      "photos": [],
+      "followUpActions": []
+    }
+  ]
+}
