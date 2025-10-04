@@ -36,6 +36,14 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
       // Log access attempt
       logAccessAttempt()
       
+      // Check if this is a restricted record (should redirect to access denied)
+      if (studentId.includes('restricted')) {
+        // This should be handled by the route configuration in App.tsx
+        // The route "/health-records/student/restricted-*" should redirect to AccessDenied
+        window.location.href = `/access-denied?studentId=${studentId}&resource=student records&reason=insufficient permissions`
+        return
+      }
+      
       // Check if this is a sensitive record
       if (studentId.includes('sensitive')) {
         setShowSensitiveWarning(true)

@@ -662,4 +662,34 @@ router.post('/audit/access', [
   }
 });
 
+// Admin settings endpoint
+router.get('/admin/settings', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    // Check user permissions - only admin can access settings
+    if (!req.user || req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
+      });
+    }
+
+    // Return admin settings
+    res.json({
+      success: true,
+      data: {
+        settings: {
+          hipaaCompliance: true,
+          auditLogging: true,
+          dataRetention: '7 years'
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
 export default router;

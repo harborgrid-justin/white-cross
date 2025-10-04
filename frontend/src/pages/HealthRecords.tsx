@@ -31,6 +31,7 @@ import { ChronicConditionsTab } from '../components/healthRecords/tabs/ChronicCo
 import { VaccinationsTab } from '../components/healthRecords/tabs/VaccinationsTab'
 import { GrowthChartsTab } from '../components/healthRecords/tabs/GrowthChartsTab'
 import { ScreeningsTab } from '../components/healthRecords/tabs/ScreeningsTab'
+import { AnalyticsTab } from '../components/healthRecords/tabs/AnalyticsTab'
 
 // Import modal components
 import { SessionExpiredModal } from '../components/modals/SessionExpiredModal'
@@ -295,10 +296,7 @@ const HealthRecords: React.FC = () => {
             />
           )}
           {activeTab === 'analytics' && user?.role === 'ADMIN' && (
-            <div data-testid="analytics-tab">
-              <h3 className="text-lg font-semibold mb-4">Health Analytics</h3>
-              <p className="text-gray-600">Analytics dashboard for health data trends and insights.</p>
-            </div>
+            <AnalyticsTab />
           )}
         </div>
       </div>
