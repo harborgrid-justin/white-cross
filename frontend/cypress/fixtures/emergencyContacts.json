@@ -1,0 +1,64 @@
+{
+  "contacts": [
+    {
+      "id": "1",
+      "studentId": "STU001",
+      "studentName": "Emma Wilson",
+      "firstName": "Jennifer",
+      "lastName": "Wilson",
+      "relationship": "Mother",
+      "phoneNumber": "(555) 123-4567",
+      "email": "jennifer@email.com",
+      "isPrimary": true,
+      "canPickup": true,
+      "priority": 1,
+      "verified": true,
+      "verifiedAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "studentId": "STU001",
+      "studentName": "Emma Wilson",
+      "firstName": "John",
+      "lastName": "Wilson",
+      "relationship": "Father",
+      "phoneNumber": "(555) 234-5678",
+      "email": "john@email.com",
+      "isPrimary": false,
+      "canPickup": true,
+      "priority": 2,
+      "verified": true,
+      "verifiedAt": "2024-01-01T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "studentId": "STU002",
+      "studentName": "Jake Davis",
+      "firstName": "Mary",
+      "lastName": "Davis",
+      "relationship": "Mother",
+      "phoneNumber": "(555) 345-6789",
+      "email": "mary@email.com",
+      "isPrimary": true,
+      "canPickup": true,
+      "priority": 1,
+      "verified": false,
+      "verifiedAt": null
+    },
+    {
+      "id": "4",
+      "studentId": "STU002",
+      "studentName": "Jake Davis",
+      "firstName": "Robert",
+      "lastName": "Davis",
+      "relationship": "Father",
+      "phoneNumber": "(555) 456-7890",
+      "email": "robert@email.com",
+      "isPrimary": false,
+      "canPickup": true,
+      "priority": 2,
+      "verified": false,
+      "verifiedAt": null
+    }
+  ]
+}
