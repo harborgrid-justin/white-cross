@@ -251,7 +251,8 @@ function DistrictsTab() {
     description: '',
     email: '',
     phoneNumber: '',
-    address: ''
+    address: '',
+    superintendent: ''
   })
 
   useEffect(() => {
@@ -296,20 +297,32 @@ function DistrictsTab() {
       description: district.description || '',
       email: district.email || '',
       phoneNumber: district.phoneNumber || '',
-      address: district.address || ''
+      address: district.address || '',
+      superintendent: district.superintendent || ''
     })
     setShowModal(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this district?')) return
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletingDistrictId, setDeletingDistrictId] = useState<string | null>(null)
+
+  const handleDelete = (id: string) => {
+    setDeletingDistrictId(id)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingDistrictId) return
     
     try {
-      await administrationApi.deleteDistrict(id)
+      await administrationApi.deleteDistrict(deletingDistrictId)
       toast.success('District deleted successfully')
       loadDistricts()
     } catch (error) {
       toast.error('Failed to delete district')
+    } finally {
+      setShowDeleteModal(false)
+      setDeletingDistrictId(null)
     }
   }
 
@@ -320,7 +333,8 @@ function DistrictsTab() {
       description: '',
       email: '',
       phoneNumber: '',
-      address: ''
+      address: '',
+      superintendent: ''
     })
     setEditingDistrict(null)
   }
@@ -332,6 +346,7 @@ function DistrictsTab() {
         <button
           onClick={() => setShowModal(true)}
           className="btn-primary flex items-center"
+          data-testid="add-district-button"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add District
@@ -371,12 +386,14 @@ function DistrictsTab() {
                 <button
                   onClick={() => handleEdit(district)}
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                  data-testid={`edit-district-${district.id}`}
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(district.id)}
                   className="flex-1 px-3 py-2 text-sm border border-red-300 text-red-600 rounded-md hover:bg-red-50"
+                  data-testid={`delete-district-${district.id}`}
                 >
                   Delete
                 </button>
@@ -403,6 +420,7 @@ function DistrictsTab() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    data-testid="district-name"
                     required
                   />
                 </div>
@@ -415,6 +433,7 @@ function DistrictsTab() {
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    data-testid="district-code"
                     required
                   />
                 </div>
@@ -446,13 +465,14 @@ function DistrictsTab() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number
+                    Superintendent
                   </label>
                   <input
-                    type="tel"
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    type="text"
+                    value={formData.superintendent}
+                    onChange={(e) => setFormData({ ...formData, superintendent: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    data-testid="superintendent"
                   />
                 </div>
               </div>
@@ -466,6 +486,7 @@ function DistrictsTab() {
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   rows={2}
+                  data-testid="address"
                 />
               </div>
 
@@ -480,11 +501,36 @@ function DistrictsTab() {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn-primary" data-testid="save-district">
                   {editingDistrict ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this district? This action cannot be undone.</p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                data-testid="confirm-delete"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

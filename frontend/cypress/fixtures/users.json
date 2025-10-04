@@ -1,0 +1,20 @@
+{
+  "nurse": {
+    "email": "nurse@school.edu",
+    "password": "NursePassword123!",
+    "name": "School Nurse",
+    "role": "nurse"
+  },
+  "admin": {
+    "email": "admin@school.edu",
+    "password": "AdminPassword123!",
+    "name": "System Administrator",
+    "role": "admin"
+  },
+  "doctor": {
+    "email": "doctor@school.edu",
+    "password": "DoctorPassword123!",
+    "name": "Dr. Johnson",
+    "role": "doctor"
+  }
+}

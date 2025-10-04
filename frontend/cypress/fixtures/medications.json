@@ -1,78 +1,29 @@
 {
-  "success": true,
-  "data": {
-    "medications": [
-      {
-        "id": "1",
-        "name": "EpiPen",
-        "genericName": "Epinephrine",
-        "dosageForm": "Auto-injector",
-        "strength": "0.3mg",
-        "manufacturer": "Mylan",
-        "isControlled": false,
-        "inventory": [
-          { "id": "1", "quantity": 5, "reorderLevel": 2, "expirationDate": "2025-12-31" }
-        ],
-        "_count": { "studentMedications": 3 }
-      },
-      {
-        "id": "2",
-        "name": "Albuterol Inhaler",
-        "genericName": "Albuterol sulfate",
-        "dosageForm": "Inhaler",
-        "strength": "90mcg",
-        "manufacturer": "ProAir",
-        "isControlled": false,
-        "inventory": [
-          { "id": "2", "quantity": 15, "reorderLevel": 10, "expirationDate": "2025-08-15" }
-        ],
-        "_count": { "studentMedications": 12 }
-      },
-      {
-        "id": "3",
-        "name": "Tylenol",
-        "genericName": "Acetaminophen",
-        "dosageForm": "Tablet",
-        "strength": "500mg",
-        "manufacturer": "Johnson & Johnson",
-        "isControlled": false,
-        "inventory": [
-          { "id": "3", "quantity": 200, "reorderLevel": 25, "expirationDate": "2025-11-30" }
-        ],
-        "_count": { "studentMedications": 15 }
-      },
-      {
-        "id": "4",
-        "name": "Aspirin",
-        "genericName": "Acetylsalicylic acid",
-        "dosageForm": "Tablet",
-        "strength": "325mg",
-        "manufacturer": "Bayer",
-        "isControlled": false,
-        "inventory": [
-          { "id": "4", "quantity": 100, "reorderLevel": 20, "expirationDate": "2025-10-15" }
-        ],
-        "_count": { "studentMedications": 8 }
-      },
-      {
-        "id": "5",
-        "name": "Methylphenidate",
-        "genericName": "methylphenidate HCl",
-        "dosageForm": "Tablet",
-        "strength": "10mg",
-        "manufacturer": "Ritalin",
-        "isControlled": true,
-        "inventory": [
-          { "id": "5", "quantity": 5, "reorderLevel": 15, "expirationDate": "2025-06-30" }
-        ],
-        "_count": { "studentMedications": 8 }
-      }
-    ],
-    "pagination": { 
-      "page": 1, 
-      "limit": 20, 
-      "total": 5, 
-      "pages": 1 
-    }
+  "inhaler": {
+    "name": "Albuterol Inhaler",
+    "dosage": "2 puffs",
+    "frequency": "As needed for asthma symptoms",
+    "studentName": "John Doe",
+    "prescribedBy": "Dr. Smith",
+    "startDate": "2024-01-01",
+    "instructions": "Use during breathing difficulties or before physical activity"
+  },
+  "insulin": {
+    "name": "Insulin Pen",
+    "dosage": "10 units",
+    "frequency": "Before meals",
+    "studentName": "Sarah Smith",
+    "prescribedBy": "Dr. Johnson",
+    "startDate": "2023-09-15",
+    "instructions": "Administer 15 minutes before eating"
+  },
+  "epipen": {
+    "name": "EpiPen Auto-Injector",
+    "dosage": "0.3mg",
+    "frequency": "Emergency use only",
+    "studentName": "Alex Johnson",
+    "prescribedBy": "Dr. Williams",
+    "startDate": "2023-08-20",
+    "instructions": "Use immediately in case of severe allergic reaction"
   }
 }

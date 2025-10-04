@@ -14,7 +14,7 @@ import {
   reportsApi,
   setSessionExpireHandler,
   apiInstance
-} from './index';
+} from './index.ts';
 
 // Legacy exports for backward compatibility
 export { setSessionExpireHandler, apiInstance };
@@ -24,49 +24,45 @@ export { healthRecordsApi };
 export { medicationsApi };
 export { appointmentsApi };
 export { communicationApi };
-export { emergencyContactsApi };
-export { incidentReportsApi };
-export { documentsApi };
-export { reportsApi };
 
 // Create additional API objects for modules that expect specific structures
 export const administrationApi = {
   getSettings: async () => ({ data: [] }),
-  updateSettings: async (settings: any) => ({ data: settings }),
+  updateSettings: async (settings) => ({ data: settings }),
   getUsers: async () => ({ data: [] }),
-  createUser: async (user: any) => ({ data: user }),
-  updateUser: async (id: string, user: any) => ({ data: { ...user, id } }),
-  deleteUser: async (id: string) => ({ data: { id } })
+  createUser: async (user) => ({ data: user }),
+  updateUser: async (id, user) => ({ data: { ...user, id } }),
+  deleteUser: async (id) => ({ data: { id } })
 };
 
 export const integrationApi = {
   getIntegrations: async () => ({ data: [] }),
-  updateIntegration: async (id: string, config: any) => ({ data: { id, ...config } }),
-  testConnection: async (id: string) => ({ data: { status: 'connected' } })
+  updateIntegration: async (id, config) => ({ data: { id, ...config } }),
+  testConnection: async (id) => ({ data: { status: 'connected' } })
 };
 
 export const inventoryApi = {
   getAll: async () => ({ data: [] }),
-  create: async (item: any) => ({ data: item }),
-  update: async (id: string, item: any) => ({ data: { ...item, id } }),
-  delete: async (id: string) => ({ data: { id } })
+  create: async (item) => ({ data: item }),
+  update: async (id, item) => ({ data: { ...item, id } }),
+  delete: async (id) => ({ data: { id } })
 };
 
 export const vendorApi = {
   getAll: async () => ({ data: [] }),
-  create: async (vendor: any) => ({ data: vendor }),
-  update: async (id: string, vendor: any) => ({ data: { ...vendor, id } })
+  create: async (vendor) => ({ data: vendor }),
+  update: async (id, vendor) => ({ data: { ...vendor, id } })
 };
 
 export const purchaseOrderApi = {
   getAll: async () => ({ data: [] }),
-  create: async (order: any) => ({ data: order }),
-  update: async (id: string, order: any) => ({ data: { ...order, id } })
+  create: async (order) => ({ data: order }),
+  update: async (id, order) => ({ data: { ...order, id } })
 };
 
 export const budgetApi = {
   getBudget: async () => ({ data: { total: 0, spent: 0, remaining: 0 } }),
-  updateBudget: async (budget: any) => ({ data: budget })
+  updateBudget: async (budget) => ({ data: budget })
 };
 
 // Default export for the main API instance

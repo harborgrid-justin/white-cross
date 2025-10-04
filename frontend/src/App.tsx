@@ -52,6 +52,7 @@ function AppRoutes() {
                 <Route path="/inventory/*" element={<Inventory />} />
                 <Route path="/reports/*" element={<Reports />} />
                 <Route path="/admin/*" element={<Settings />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Layout>

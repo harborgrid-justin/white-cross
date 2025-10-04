@@ -1,40 +1,26 @@
 {
-  "appointments": [
-    {
-      "id": "1",
-      "studentId": "STU001",
-      "studentName": "Emma Wilson",
-      "appointmentType": "Routine Checkup",
-      "dateTime": "2024-02-15T10:00:00Z",
-      "duration": 30,
-      "status": "SCHEDULED",
-      "nurseId": "1",
-      "nurseName": "Test Nurse",
-      "notes": "Annual physical examination"
-    },
-    {
-      "id": "2",
-      "studentId": "STU002",
-      "studentName": "Jake Davis",
-      "appointmentType": "Medication Administration",
-      "dateTime": "2024-02-15T14:00:00Z",
-      "duration": 15,
-      "status": "SCHEDULED",
-      "nurseId": "1",
-      "nurseName": "Test Nurse",
-      "notes": "Insulin administration"
-    },
-    {
-      "id": "3",
-      "studentId": "STU003",
-      "studentName": "Sarah Johnson",
-      "appointmentType": "Vaccination",
-      "dateTime": "2024-02-16T09:00:00Z",
-      "duration": 20,
-      "status": "COMPLETED",
-      "nurseId": "1",
-      "nurseName": "Test Nurse",
-      "notes": "Flu vaccine administered"
-    }
-  ]
+  "checkup": {
+    "studentName": "John Doe",
+    "date": "2024-01-15",
+    "time": "10:00",
+    "type": "Annual Checkup",
+    "notes": "Regular annual health checkup for student",
+    "duration": 30
+  },
+  "medication": {
+    "studentName": "Sarah Smith",
+    "date": "2024-01-16",
+    "time": "14:30",
+    "type": "Medication Review",
+    "notes": "Review current medication dosage and effectiveness",
+    "duration": 15
+  },
+  "emergency": {
+    "studentName": "Alex Johnson",
+    "date": "2024-01-14",
+    "time": "09:15",
+    "type": "Emergency Visit",
+    "notes": "Student injured during PE class - knee examination",
+    "duration": 45
+  }
 }
