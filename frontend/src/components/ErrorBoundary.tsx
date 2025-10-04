@@ -1,5 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ApiErrorHandler } from '../services/utils/apiUtils';
+import { processError, createErrorNotification, ProcessedError } from '../utils/errorHandling';
+import { ERROR_CODES, getUserMessage, getErrorTitle } from '../constants/errors';
 import debug from 'debug';
 
 const log = debug('whitecross:error-boundary');
@@ -85,8 +87,8 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="mb-6">
               <p className="text-sm text-gray-600 mb-2">
                 {isApiError
-                  ? 'There was a problem connecting to our servers. Please check your internet connection and try again.'
-                  : 'An unexpected error occurred. Our team has been notified.'
+                  ? getUserMessage(ERROR_CODES.NETWORK_ERROR)
+                  : getUserMessage(ERROR_CODES.SERVER_ERROR)
                 }
               </p>
 

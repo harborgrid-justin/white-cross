@@ -1,8 +1,10 @@
 import _ from 'lodash';
+import { VALIDATION_CONFIG } from '../constants/config';
 
 /**
  * Security utilities for sanitizing and validating user input in healthcare platform
  * Prevents XSS attacks and ensures data integrity
+ * Enhanced with lodash utilities for better performance and consistency
  */
 
 /**
@@ -25,7 +27,8 @@ export function sanitizeText(input: unknown): string {
       };
       return htmlEntities[match] || match;
     })
-    .trim();
+    .trim()
+    .substring(0, VALIDATION_CONFIG.MAX_FIELD_LENGTH); // Limit length using config
 }
 
 /**
@@ -98,7 +101,7 @@ export function sanitizeNumber(input: unknown, options: {
     num = input
   } else if (typeof input === 'string') {
     const parsed = allowDecimal ? parseFloat(input) : parseInt(input, 10)
-    if (isNaN(parsed)) return null
+    if (Number.isNaN(parsed)) return null
     num = parsed
   } else {
     return null
@@ -115,12 +118,12 @@ export function sanitizeNumber(input: unknown, options: {
  */
 export function sanitizeDate(date: unknown): Date | null {
   if (date instanceof Date) {
-    return isNaN(date.getTime()) ? null : date
+    return Number.isNaN(date.getTime()) ? null : date
   }
 
   if (typeof date === 'string' || typeof date === 'number') {
     const parsed = new Date(date)
-    return isNaN(parsed.getTime()) ? null : parsed
+    return Number.isNaN(parsed.getTime()) ? null : parsed
   }
 
   return null
@@ -222,7 +225,7 @@ export function validateSafeHealthcareText(text: unknown): boolean {
   if (typeof text !== 'string') return false
 
   // Allow letters, numbers, spaces, basic punctuation, but no script-injectable characters
-  const safePattern = /^[a-zA-Z0-9\s\-_.,;:()\[\]/\\'"\\u00C0-\u017F]*$/
+  const safePattern = /^[a-zA-Z0-9\s\-_.,;:()[\]/\\'"\\u00C0-\u017F]*$/
 
   return safePattern.test(text) &&
          text.length <= 1000 && // Reasonable length limit
@@ -238,7 +241,7 @@ export function sanitizeSearchQuery(query: unknown): string {
   if (typeof query !== 'string') return ''
 
   return query
-    .replace(/[<>&"'%;()+={}[\]|\\:"`~,]/g, '') // Remove potentially dangerous characters
+    .replace(/[<>&"'%;()+={}[\]\\:"`~,]/g, '') // Remove potentially dangerous characters
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim()
     .substring(0, 100) // Limit length
