@@ -3,6 +3,13 @@ import { Pill, Plus, Package, AlertTriangle, Clock, Search, Calendar, Bell } fro
 import { useQuery } from '@tanstack/react-query'
 import { medicationsApi } from '../services/api'
 import toast from 'react-hot-toast'
+import MedicationsOverviewTab from '../components/medications/tabs/MedicationsOverviewTab'
+import MedicationsListTab from '../components/medications/tabs/MedicationsListTab'
+import MedicationsInventoryTab from '../components/medications/tabs/MedicationsInventoryTab'
+import MedicationsRemindersTab from '../components/medications/tabs/MedicationsRemindersTab'
+import MedicationsAdverseReactionsTab from '../components/medications/tabs/MedicationsAdverseReactionsTab'
+import MedicationFormModal from '../components/medications/MedicationFormModal'
+import MedicationDetailsModal from '../components/medications/MedicationDetailsModal'
 
 type Tab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions'
 
@@ -120,474 +127,45 @@ export default function Medications() {
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div data-testid="overview-cards" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div data-testid="prescription-card" className="card p-6 hover:shadow-lg" role="article">
-              <Pill className="h-8 w-8 text-blue-600 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Prescription Management</h3>
-              <ul data-testid="prescription-features" className="text-sm text-gray-600 space-y-1">
-                <li>• Digital prescription tracking</li>
-                <li>• Dosage scheduling</li>
-                <li>• Administration logging</li>
-                <li>• Compliance monitoring</li>
-              </ul>
-            </div>
-
-            <div data-testid="inventory-card" className="card p-6 hover:shadow-lg" role="article">
-              <Package className="h-8 w-8 text-green-600 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Inventory Tracking</h3>
-              <ul data-testid="inventory-features" className="text-sm text-gray-600 space-y-1">
-                <li>• Stock level monitoring</li>
-                <li>• Expiration date alerts</li>
-                <li>• Automated reorder points</li>
-                <li>• Supplier management</li>
-              </ul>
-            </div>
-
-            <div data-testid="safety-card" className="card p-6 hover:shadow-lg" role="article">
-              <AlertTriangle className="h-8 w-8 text-red-600 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Safety & Compliance</h3>
-              <ul data-testid="safety-features" className="text-sm text-gray-600 space-y-1">
-                <li>• Controlled substance tracking</li>
-                <li>• Side effect monitoring</li>
-                <li>• Drug interaction alerts</li>
-                <li>• Regulatory compliance</li>
-              </ul>
-            </div>
-
-            <div data-testid="reminders-card" className="card p-6 hover:shadow-lg" role="article">
-              <Bell className="h-8 w-8 text-purple-600 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Automated Reminders</h3>
-              <ul data-testid="reminder-features" className="text-sm text-gray-600 space-y-1">
-                <li>• Time-stamped records</li>
-                <li>• Nurse verification</li>
-                <li>• Student response tracking</li>
-                <li>• Dosage reminders</li>
-              </ul>
-            </div>
-          </div>
-
-          <div data-testid="quick-actions" className="card p-6">
-            <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button 
-                data-testid="view-medications-action"
-                onClick={() => setActiveTab('medications')}
-                className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
-              >
-                <Pill className="h-6 w-6 text-blue-600 mb-2" />
-                <h4 className="font-semibold">View Medications</h4>
-                <p className="text-sm text-gray-600">Browse medication database</p>
-              </button>
-              <button 
-                data-testid="todays-reminders-action"
-                onClick={() => setActiveTab('reminders')}
-                className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
-              >
-                <Clock className="h-6 w-6 text-blue-600 mb-2" />
-                <h4 className="font-semibold">Today's Reminders</h4>
-                <p className="text-sm text-gray-600">View scheduled medications</p>
-              </button>
-              <button 
-                data-testid="check-inventory-action"
-                onClick={() => setActiveTab('inventory')}
-                className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
-              >
-                <Package className="h-6 w-6 text-blue-600 mb-2" />
-                <h4 className="font-semibold">Check Inventory</h4>
-                <p className="text-sm text-gray-600">Monitor stock levels</p>
-              </button>
-            </div>
-          </div>
-        </div>
+        <MedicationsOverviewTab onTabChange={(tab: string) => setActiveTab(tab as Tab)} />
       )}
 
       {/* Medications Tab */}
       {activeTab === 'medications' && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                data-testid="medications-search"
-                type="text"
-                placeholder="Search medications by name, generic name, or manufacturer..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {medicationsLoading ? (
-            <div className="text-center py-12">
-              <div data-testid="loading-spinner" className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p data-testid="loading-text" className="mt-4 text-gray-600">Loading medications...</p>
-            </div>
-          ) : !medicationsData?.medications?.length ? (
-            searchTerm ? (
-              <div data-testid="no-results" className="text-center py-12">
-                <Pill className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No medications match your search</p>
-                <p className="text-sm text-gray-400 mt-2">Try adjusting your search terms</p>
-              </div>
-            ) : (
-              <div data-testid="empty-state" className="text-center py-12">
-                <Pill className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No medications found</p>
-                <p className="text-sm text-gray-400 mt-2">Add your first medication to get started</p>
-              </div>
-            )
-          ) : (
-            <div className="card overflow-hidden">
-              <table data-testid="medications-table" className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th data-testid="medication-name-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medication</th>
-                    <th data-testid="dosage-form-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosage Form</th>
-                    <th data-testid="strength-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Strength</th>
-                    <th data-testid="stock-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                    <th data-testid="status-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th data-testid="prescriptions-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Prescriptions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {medicationsData?.medications?.map((med: any) => {
-                    const totalStock = med.inventory?.reduce((sum: number, inv: any) => sum + inv.quantity, 0) || 0
-                    const hasLowStock = med.inventory?.some((inv: any) => inv.quantity <= inv.reorderLevel)
-                    
-                    return (
-                      <tr 
-                        key={med.id} 
-                        data-testid="medication-row" 
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => {
-                          setSelectedMedication(med)
-                          setShowMedicationDetails(true)
-                        }}
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <div>
-                              <div data-testid="medication-name" className="text-sm font-medium text-gray-900">{med.name}</div>
-                              {med.genericName && (
-                                <div data-testid="medication-generic" className="text-sm text-gray-500">{med.genericName}</div>
-                              )}
-                              {med.manufacturer && (
-                                <div className="text-xs text-gray-400">{med.manufacturer}</div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td data-testid="dosage-form" className="px-6 py-4 text-sm text-gray-900">{med.dosageForm}</td>
-                        <td data-testid="strength" className="px-6 py-4 text-sm text-gray-900">{med.strength}</td>
-                        <td className="px-6 py-4">
-                          <span data-testid={hasLowStock ? "low-stock-indicator" : "stock-amount"} className={`text-sm ${hasLowStock ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
-                            {totalStock} units
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span 
-                            data-testid="medication-status"
-                            className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          >
-                            <span 
-                              data-testid={med.isControlled ? "controlled-badge" : "standard-badge"}
-                              className={med.isControlled 
-                                ? 'bg-red-100 text-red-800' 
-                                : 'bg-green-100 text-green-800'}
-                            >
-                              {med.isControlled ? 'Controlled' : 'Standard'}
-                            </span>
-                          </span>
-                        </td>
-                        <td data-testid="active-prescriptions" className="px-6 py-4 text-sm text-gray-900">
-                          {med._count?.studentMedications || 0}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <MedicationsListTab
+          medications={(medicationsData as any)?.data || []}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onMedicationSelect={(medication) => {
+            setSelectedMedication(medication)
+            setShowMedicationDetails(true)
+          }}
+          loading={medicationsLoading}
+        />
       )}
 
       {/* Inventory Tab */}
       {activeTab === 'inventory' && (
-        <div className="space-y-4">
-          {inventoryLoading ? (
-            <div className="text-center py-12">
-              <div data-testid="loading-spinner" className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p data-testid="loading-text" className="mt-4 text-gray-600">Loading inventory...</p>
-            </div>
-          ) : (
-            <>
-              {/* Alerts */}
-              {(inventoryData?.alerts?.expired?.length > 0 || inventoryData?.alerts?.nearExpiry?.length > 0 || inventoryData?.alerts?.lowStock?.length > 0) && (
-                <div data-testid="inventory-alerts" className="space-y-3">
-                  {inventoryData?.alerts?.expired?.length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3" />
-                        <div>
-                          <h3 className="text-sm font-semibold text-red-900">Expired Medications</h3>
-                          <p className="text-sm text-red-700 mt-1">
-                            {inventoryData.alerts.expired.length} medication(s) have expired and should be disposed of
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {inventoryData?.alerts?.nearExpiry?.length > 0 && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 mr-3" />
-                        <div>
-                          <h3 className="text-sm font-semibold text-yellow-900">Near Expiry</h3>
-                          <p className="text-sm text-yellow-700 mt-1">
-                            {inventoryData.alerts.nearExpiry.length} medication(s) expiring within 30 days
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {inventoryData?.alerts?.lowStock?.length > 0 && (
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <Package className="h-5 w-5 text-orange-600 mt-0.5 mr-3" />
-                        <div>
-                          <h3 className="text-sm font-semibold text-orange-900">Low Stock</h3>
-                          <p className="text-sm text-orange-700 mt-1">
-                            {inventoryData.alerts.lowStock.length} medication(s) below reorder level
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Inventory Table */}
-              <div className="card overflow-hidden">
-                <table data-testid="inventory-table" className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medication</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiration</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {inventoryData?.inventory?.map((item: any) => {
-                      const expirationDate = new Date(item.expirationDate)
-                      const daysUntilExpiry = Math.ceil((expirationDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-                      
-                      return (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900">{item.medication.name}</div>
-                            <div className="text-sm text-gray-500">{item.medication.strength}</div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">{item.batchNumber}</td>
-                          <td className="px-6 py-4">
-                            <span className={`text-sm ${item.alerts?.lowStock ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
-                              {item.quantity} / {item.reorderLevel}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className={`text-sm ${
-                              item.alerts?.expired ? 'text-red-600 font-semibold' :
-                              item.alerts?.nearExpiry ? 'text-yellow-600 font-semibold' :
-                              'text-gray-900'
-                            }`}>
-                              {expirationDate.toLocaleDateString()}
-                            </div>
-                            {!item.alerts?.expired && (
-                              <div className="text-xs text-gray-500">
-                                {daysUntilExpiry > 0 ? `${daysUntilExpiry} days` : 'Expired'}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">{item.supplier || '-'}</td>
-                          <td className="px-6 py-4">
-                            {item.alerts?.expired && (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Expired
-                              </span>
-                            )}
-                            {item.alerts?.nearExpiry && !item.alerts?.expired && (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                Near Expiry
-                              </span>
-                            )}
-                            {item.alerts?.lowStock && (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 ml-1">
-                                Low Stock
-                              </span>
-                            )}
-                            {!item.alerts?.expired && !item.alerts?.nearExpiry && !item.alerts?.lowStock && (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Good
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </div>
+        <MedicationsInventoryTab
+          data={(inventoryData as any)?.data || { inventory: [], alerts: {} }}
+          loading={inventoryLoading}
+        />
       )}
 
       {/* Reminders Tab */}
       {activeTab === 'reminders' && (
-        <div className="space-y-4">
-          {remindersLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading reminders...</p>
-            </div>
-          ) : (
-            <div data-testid="todays-schedule" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-lg font-semibold">Today's Medication Schedule</h3>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </div>
-              </div>
-
-              {remindersData?.reminders?.length === 0 ? (
-                <div className="card p-12 text-center">
-                  <Bell className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No medication reminders for today</p>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {remindersData?.reminders?.map((reminder: any) => (
-                    <div 
-                      key={reminder.id}
-                      className={`card p-4 border-l-4 ${
-                        reminder.status === 'COMPLETED' ? 'border-green-500 bg-green-50' :
-                        reminder.status === 'MISSED' ? 'border-red-500 bg-red-50' :
-                        'border-blue-500 bg-blue-50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-full ${
-                            reminder.status === 'COMPLETED' ? 'bg-green-100' :
-                            reminder.status === 'MISSED' ? 'bg-red-100' :
-                            'bg-blue-100'
-                          }`}>
-                            <Clock className={`h-6 w-6 ${
-                              reminder.status === 'COMPLETED' ? 'text-green-600' :
-                              reminder.status === 'MISSED' ? 'text-red-600' :
-                              'text-blue-600'
-                            }`} />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">{reminder.studentName}</h4>
-                            <p className="text-sm text-gray-600">{reminder.medicationName} - {reminder.dosage}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-gray-900">
-                            {new Date(reminder.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            reminder.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                            reminder.status === 'MISSED' ? 'bg-red-100 text-red-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {reminder.status}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <MedicationsRemindersTab
+          data={(remindersData as any)?.data || { reminders: [] }}
+          loading={remindersLoading}
+        />
       )}
 
       {/* Adverse Reactions Tab */}
       {activeTab === 'adverse-reactions' && (
-        <div className="space-y-4">
-          {adverseReactionsLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading adverse reactions...</p>
-            </div>
-          ) : adverseReactionsData?.reactions?.length === 0 ? (
-            <div className="card p-12 text-center">
-              <AlertTriangle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No adverse reactions reported</p>
-            </div>
-          ) : (
-            <div className="card overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reaction</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action Taken</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reported By</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {adverseReactionsData?.reactions?.map((reaction: any) => (
-                    <tr key={reaction.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {new Date(reaction.occurredAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {reaction.student.firstName} {reaction.student.lastName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          reaction.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' :
-                          reaction.severity === 'HIGH' ? 'bg-orange-100 text-orange-800' :
-                          reaction.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {reaction.severity}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {reaction.description}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {reaction.actionsTaken}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {reaction.reportedBy.firstName} {reaction.reportedBy.lastName}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <MedicationsAdverseReactionsTab
+          data={(adverseReactionsData as any)?.data || { reactions: [] }}
+          loading={adverseReactionsLoading}
+        />
       )}
 
       {/* Add Medication Modal */}

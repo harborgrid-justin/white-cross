@@ -37,7 +37,7 @@ export function sanitizeHtml(input: string, allowedTags: string[] = []): string 
 
   // Remove all HTML tags except explicitly allowed ones
   const allowedTagsRegex = allowedTags.length > 0
-    ? new RegExp(`<(?!\/?(?:${allowedTags.join('|')})\s*\/?>)[^>]+>`, 'gi')
+    ? new RegExp(`<(?!/?(?:${allowedTags.join('|')})\\s*/?>)[^>]+>`, 'gi')
     : /<[^>]+>/g
 
   return input
@@ -66,7 +66,7 @@ export function sanitizePhoneNumber(phone: unknown): string {
   if (typeof phone !== 'string') return ''
 
   // Remove all non-digit characters except parentheses, spaces, hyphens, and plus
-  const cleaned = phone.replace(/[^\d\s\-\(\)\+]/g, '').trim()
+  const cleaned = phone.replace(/[^\d\s\-()]/g, '').trim()
 
   // Basic validation - should have at least 10 digits
   const digitCount = cleaned.replace(/\D/g, '').length
@@ -133,9 +133,9 @@ export function sanitizeFileName(fileName: unknown): string {
   if (typeof fileName !== 'string') return ''
 
   return fileName
-    .replace(/[^a-zA-Z0-9\-_\.]/g, '_')
+    .replace(/[^a-zA-Z0-9\-_.]/g, '_')
     .replace(/_{2,}/g, '_')
-    .replace(/^[_\-\.]+|[_\-\.]+$/g, '')
+    .replace(/^[_\-.]+|[_\-.]+$/g, '')
     .substring(0, 255) // Limit length
     .toLowerCase()
 }
@@ -222,7 +222,7 @@ export function validateSafeHealthcareText(text: unknown): boolean {
   if (typeof text !== 'string') return false
 
   // Allow letters, numbers, spaces, basic punctuation, but no script-injectable characters
-  const safePattern = /^[a-zA-Z0-9\s\-_.,;:()\[\]\/\\'"\u00C0-\u017F]*$/
+  const safePattern = /^[a-zA-Z0-9\s\-_.,;:()\[\]/\\'"\\u00C0-\u017F]*$/
 
   return safePattern.test(text) &&
          text.length <= 1000 && // Reasonable length limit

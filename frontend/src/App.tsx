@@ -3,7 +3,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
-import { useAuthStore } from './stores/authStore';
+import { Provider } from 'react-redux';
+import { store } from './stores/reduxStore';
+import { useAuthLoading } from './stores/hooks/reduxHooks';
 import AppRoutes from './routes';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -31,7 +33,7 @@ const queryClient = new QueryClient({
 
 // Auth Provider Component
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isLoading } = useAuthStore();
+  const isLoading = useAuthLoading();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -44,40 +46,42 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <AppRoutes />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-                success: {
-                  duration: 3000,
-                  iconTheme: {
-                    primary: '#10B981',
-                    secondary: '#fff',
+      <Provider store={store}>
+        <BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <AppRoutes />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
                   },
-                },
-                error: {
-                  duration: 5000,
-                  iconTheme: {
-                    primary: '#EF4444',
-                    secondary: '#fff',
+                  success: {
+                    duration: 3000,
+                    iconTheme: {
+                      primary: '#10B981',
+                      secondary: '#fff',
+                    },
                   },
-                },
-              }}
-            />
-          </AuthProvider>
-          {import.meta.env.DEV && (
-            <ReactQueryDevtools initialIsOpen={false} />
-          )}
-        </QueryClientProvider>
-      </BrowserRouter>
+                  error: {
+                    duration: 5000,
+                    iconTheme: {
+                      primary: '#EF4444',
+                      secondary: '#fff',
+                    },
+                  },
+                }}
+              />
+            </AuthProvider>
+            {import.meta.env.DEV && (
+              <ReactQueryDevtools initialIsOpen={false} />
+            )}
+          </QueryClientProvider>
+        </BrowserRouter>
+      </Provider>
     </ErrorBoundary>
   );
 }
