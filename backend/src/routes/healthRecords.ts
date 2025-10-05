@@ -2,37 +2,6 @@ import { ServerRoute } from '@hapi/hapi';
 import { HealthRecordService } from '../services/healthRecordService';
 import Joi from 'joi';
 
-// Log access to student records
-const logAuditAccessHandler = async (request: any, h: any) => {
-  try {
-    const user = request.auth.credentials;
-
-    const auditLog = {
-      userId: user?.userId,
-      action: request.payload.action,
-      resource: 'STUDENT_HEALTH_RECORD',
-      resourceId: request.payload.resourceId || request.payload.studentId,
-      details: request.payload.details || {},
-      timestamp: new Date(),
-      ipAddress: request.info.remoteAddress,
-      userAgent: request.headers['user-agent']
-    };
-
-    // In a real implementation, this would save to an audit log table
-    console.log('Audit Log:', auditLog);
-
-    return h.response({
-      success: true,
-      data: { logged: true }
-    });
-  } catch (error) {
-    return h.response({
-      success: false,
-      error: { message: (error as Error).message }
-    }).code(500);
-  }
-};
-
 // Get health records for a student
 const getStudentHealthRecordsHandler = async (request: any, h: any) => {
   try {
@@ -470,62 +439,9 @@ const logSecurityEventHandler = async (request: any, h: any) => {
   }
 };
 
-// Admin settings endpoint
-const getAdminSettingsHandler = async (request: any, h: any) => {
-  try {
-    const user = request.auth.credentials;
 
-    // Check admin permissions
-    if (!user || !['ADMIN', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Insufficient permissions'
-      }).code(403);
-    }
 
-    return h.response({
-      success: true,
-      data: { settings: {} }
-    });
-  } catch (error) {
-    return h.response({
-      success: false,
-      error: { message: (error as Error).message }
-    }).code(500);
-  }
-};
 
-// Audit access log endpoint
-const logAuditAccessHandler2 = async (request: any, h: any) => {
-  try {
-    const user = request.auth.credentials;
-
-    const auditLog = {
-      userId: user?.userId,
-      userRole: user?.role,
-      action: request.payload.action,
-      resourceType: request.payload.resourceType || 'HEALTH_RECORD',
-      studentId: request.payload.studentId,
-      details: request.payload.details || {},
-      timestamp: new Date(),
-      ipAddress: request.info.remoteAddress,
-      userAgent: request.headers['user-agent']
-    };
-
-    // In a real implementation, this would save to an audit log table
-    console.log('Audit Log:', auditLog);
-
-    return h.response({
-      success: true,
-      data: { logged: true }
-    });
-  } catch (error) {
-    return h.response({
-      success: false,
-      error: { message: (error as Error).message }
-    }).code(500);
-  }
-};
 
 // Admin settings endpoint
 const getAdminSettingsHandler2 = async (request: any, h: any) => {
@@ -561,22 +477,7 @@ const getAdminSettingsHandler2 = async (request: any, h: any) => {
 
 // Define health record routes for Hapi
 export const healthRecordRoutes: ServerRoute[] = [
-  {
-    method: 'POST',
-    path: '/api/health-records/audit/access',
-    handler: logAuditAccessHandler,
-    options: {
-      auth: 'jwt',
-      validate: {
-        payload: Joi.object({
-          action: Joi.string().valid('VIEW_STUDENT_RECORD', 'EDIT_STUDENT_RECORD', 'DELETE_STUDENT_RECORD').required(),
-          studentId: Joi.string().required(),
-          resourceId: Joi.string().optional(),
-          details: Joi.object().optional()
-        })
-      }
-    }
-  },
+
   {
     method: 'GET',
     path: '/api/health-records/student/{studentId}',
@@ -814,29 +715,6 @@ export const healthRecordRoutes: ServerRoute[] = [
         payload: Joi.object({
           event: Joi.string().required(),
           resourceType: Joi.string().required(),
-          studentId: Joi.string().optional(),
-          details: Joi.object().optional()
-        })
-      }
-    }
-  },
-  {
-    method: 'GET',
-    path: '/api/health-records/admin/settings',
-    handler: getAdminSettingsHandler,
-    options: {
-      auth: 'jwt'
-    }
-  },
-  {
-    method: 'POST',
-    path: '/api/health-records/audit/access',
-    handler: logAuditAccessHandler2,
-    options: {
-      auth: 'jwt',
-      validate: {
-        payload: Joi.object({
-          action: Joi.string().required(),
           studentId: Joi.string().optional(),
           details: Joi.object().optional()
         })

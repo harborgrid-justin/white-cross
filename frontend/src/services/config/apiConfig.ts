@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import debug from 'debug';
 import { API_CONFIG } from '../../constants/config';
-import { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG } from '../../constants/api';
+import { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG, API_CONSTANTS } from '../../constants/api';
 
 const log = debug('whitecross:api-config');
 
@@ -81,5 +81,11 @@ export const tokenUtils = {
     localStorage.removeItem('refresh_token');
   },
 };
+
+// Export API constants for use in other modules
+export { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG, API_CONSTANTS };
+
+// Export API_CONFIG from constants
+export { API_CONFIG } from '../../constants/config';
 
 export default apiInstance;
