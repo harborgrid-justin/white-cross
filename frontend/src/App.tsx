@@ -5,9 +5,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 import { Provider } from 'react-redux';
 import { store } from './stores/reduxStore';
-import { useAuthLoading } from './stores/hooks/reduxHooks';
+import { AuthProvider } from './contexts/AuthContext';
 import AppRoutes from './routes';
-import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Create a client
@@ -31,25 +30,14 @@ const queryClient = new QueryClient({
   },
 });
 
-// Auth Provider Component
-const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const isLoading = useAuthLoading();
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  return <>{children}</>;
-};
-
 // Main App Component
 function App() {
   return (
     <ErrorBoundary>
-      <Provider store={store}>
-        <BrowserRouter>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <Provider store={store}>
+          <AuthProvider>
+            <BrowserRouter>
               <AppRoutes />
               <Toaster
                 position="top-right"
@@ -75,13 +63,13 @@ function App() {
                   },
                 }}
               />
-            </AuthProvider>
-            {import.meta.env.DEV && (
-              <ReactQueryDevtools initialIsOpen={false} />
-            )}
-          </QueryClientProvider>
-        </BrowserRouter>
-      </Provider>
+              {import.meta.env.DEV && (
+                <ReactQueryDevtools initialIsOpen={false} />
+              )}
+            </BrowserRouter>
+          </AuthProvider>
+        </Provider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

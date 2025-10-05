@@ -10,7 +10,6 @@ export {
 } from './config/apiConfig';
 
 export {
-  ApiError,
   handleApiError,
   extractApiData,
   extractApiDataOptional,
@@ -24,9 +23,11 @@ export {
   isPaginatedResponse,
   apiCache,
   withCache,
-  debounce,
-  createCancelTokenSource
+  debounce
 } from './utils/apiUtils';
+
+// Export ApiError type from utils
+export type { ApiError } from './utils/apiUtils';
 
 // Type exports
 export * from './types';
@@ -38,7 +39,6 @@ export type { LoginCredentials, RegisterData, AuthApi } from './modules/authApi'
 export { studentsApi } from './modules/studentsApi';
 export type { 
   StudentFilters, 
-  StudentsListResponse, 
   StudentsApi 
 } from './modules/studentsApi';
 
@@ -56,7 +56,6 @@ export type {
   MedicationFilters,
   StudentMedication,
   MedicationSchedule,
-  AdverseReaction,
   MedicationsApi
 } from './modules/medicationsApi';
 
@@ -154,14 +153,12 @@ export const legacyApi = {
     getStudentLogs: (studentId: string, page = 1, limit = 20) =>
       medicationsApi.getStudentLogs(studentId, { page, limit }),
     getInventory: medicationsApi.getInventory.bind(medicationsApi),
-    addToInventory: medicationsApi.addToInventory.bind(medicationsApi),
-    updateInventory: medicationsApi.updateInventory.bind(medicationsApi),
     getSchedule: (startDate?: Date, endDate?: Date, nurseId?: string) =>
-      medicationsApi.getSchedule({
-        startDate: startDate?.toISOString(),
-        endDate: endDate?.toISOString(),
+      medicationsApi.getSchedule(
+        startDate?.toISOString(),
+        endDate?.toISOString(),
         nurseId
-      }),
+      ),
     getReminders: (date?: Date) =>
       medicationsApi.getReminders(date?.toISOString()),
     reportAdverseReaction: medicationsApi.reportAdverseReaction.bind(medicationsApi),

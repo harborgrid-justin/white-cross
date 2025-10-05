@@ -95,7 +95,9 @@ const loginHandler = async (request: any, h: any) => {
       {
         userId: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        aud: 'urn:audience:api',
+        iss: 'urn:issuer:api'
       },
       process.env.JWT_SECRET as string,
       {

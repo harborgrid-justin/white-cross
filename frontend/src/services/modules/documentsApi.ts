@@ -1,7 +1,7 @@
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { extractApiData } from '../utils/apiUtils';
 import { buildUrlParams } from '../utils/apiUtils';
-import type { Document, DocumentSignature, ApiResponse, PaginationParams } from '../types';
+import type { Document, ApiResponse, PaginationParams } from '../types';
 
 export interface DocumentFilters extends PaginationParams {
   category?: string;
@@ -98,24 +98,24 @@ class DocumentsApiImpl implements DocumentsApi {
   async getDocuments(filters: DocumentFilters = {}): Promise<{ documents: Document[]; pagination: any }> {
     const params = buildUrlParams(filters);
     const response = await apiInstance.get<ApiResponse<{ documents: Document[]; pagination: any }>>(
-      `${API_ENDPOINTS.DOCUMENTS}?${params.toString()}`
+      `${API_ENDPOINTS.DOCUMENTS.BASE}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getDocumentById(id: string): Promise<{ document: Document }> {
     const response = await apiInstance.get<ApiResponse<{ document: Document }>>(
       `${API_ENDPOINTS.DOCUMENTS}/${id}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async createDocument(data: Partial<Document>): Promise<{ document: Document }> {
     const response = await apiInstance.post<ApiResponse<{ document: Document }>>(
-      API_ENDPOINTS.DOCUMENTS,
+      API_ENDPOINTS.DOCUMENTS.BASE,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async updateDocument(id: string, data: Partial<Document>): Promise<{ document: Document }> {
@@ -123,7 +123,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/${id}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async deleteDocument(id: string): Promise<void> {
@@ -135,7 +135,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ versions: DocumentVersion[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/${parentId}/versions`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async createDocumentVersion(parentId: string, data: FormData): Promise<{ version: DocumentVersion }> {
@@ -148,14 +148,14 @@ class DocumentsApiImpl implements DocumentsApi {
         },
       }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getDocumentVersion(versionId: string): Promise<{ version: DocumentVersion }> {
     const response = await apiInstance.get<ApiResponse<{ version: DocumentVersion }>>(
       `${API_ENDPOINTS.DOCUMENTS}/version/${versionId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async deleteDocumentVersion(versionId: string): Promise<void> {
@@ -168,7 +168,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/${id}/sign`,
       { signatureData }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async downloadDocument(id: string, version?: number): Promise<Blob> {
@@ -184,7 +184,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ previewUrl: string }>>(
       `${API_ENDPOINTS.DOCUMENTS}/${id}/preview`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async duplicateDocument(id: string, newTitle?: string): Promise<{ document: Document }> {
@@ -192,23 +192,23 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/${id}/duplicate`,
       { title: newTitle }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Templates
   async getTemplates(category?: string): Promise<{ templates: DocumentTemplate[] }> {
-    const params = category ? buildUrlParams({ category }) : '';
+    const params = buildUrlParams({ category });
     const response = await apiInstance.get<ApiResponse<{ templates: DocumentTemplate[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/templates/list?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getTemplateById(id: string): Promise<{ template: DocumentTemplate }> {
     const response = await apiInstance.get<ApiResponse<{ template: DocumentTemplate }>>(
       `${API_ENDPOINTS.DOCUMENTS}/templates/${id}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async createTemplate(data: Partial<DocumentTemplate>): Promise<{ template: DocumentTemplate }> {
@@ -216,7 +216,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/templates`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async updateTemplate(id: string, data: Partial<DocumentTemplate>): Promise<{ template: DocumentTemplate }> {
@@ -224,7 +224,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/templates/${id}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async deleteTemplate(id: string): Promise<void> {
@@ -236,7 +236,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/templates/${templateId}/create`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Student Documents
@@ -245,7 +245,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ documents: Document[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/student/${studentId}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async addDocumentToStudent(studentId: string, documentData: Partial<Document>): Promise<{ document: Document }> {
@@ -253,7 +253,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/student/${studentId}`,
       documentData
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async removeDocumentFromStudent(studentId: string, documentId: string): Promise<void> {
@@ -266,7 +266,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ documents: Document[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/search/query?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getDocumentsByCategory(category: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
@@ -274,7 +274,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ documents: Document[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/category/${category}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getDocumentsByTag(tag: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
@@ -282,7 +282,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ documents: Document[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/tag/${tag}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getExpiringDocuments(days: number = 30): Promise<{ documents: Document[] }> {
@@ -290,7 +290,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ documents: Document[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/expiring/list?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getRecentDocuments(limit: number = 10): Promise<{ documents: Document[] }> {
@@ -298,7 +298,7 @@ class DocumentsApiImpl implements DocumentsApi {
     const response = await apiInstance.get<ApiResponse<{ documents: Document[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/recent?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Bulk Operations
@@ -307,7 +307,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/bulk-update`,
       { updates }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async bulkDeleteDocuments(documentIds: string[]): Promise<{ deleted: number }> {
@@ -315,7 +315,7 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/bulk-delete`,
       { data: { documentIds } }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async bulkDownload(documentIds: string[]): Promise<Blob> {
@@ -333,44 +333,44 @@ class DocumentsApiImpl implements DocumentsApi {
       `${API_ENDPOINTS.DOCUMENTS}/${id}/share`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async revokeAccess(id: string, userId: string): Promise<{ revoked: boolean }> {
     const response = await apiInstance.delete<ApiResponse<{ revoked: boolean }>>(
       `${API_ENDPOINTS.DOCUMENTS}/${id}/share/${userId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getDocumentPermissions(id: string): Promise<{ permissions: any[] }> {
     const response = await apiInstance.get<ApiResponse<{ permissions: any[] }>>(
       `${API_ENDPOINTS.DOCUMENTS}/${id}/permissions`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Statistics and Analytics
   async getStatistics(dateRange?: { startDate: string; endDate: string }): Promise<{ statistics: any }> {
-    const params = dateRange ? buildUrlParams(dateRange) : '';
+    const params = buildUrlParams(dateRange || {});
     const response = await apiInstance.get<ApiResponse<{ statistics: any }>>(
       `${API_ENDPOINTS.DOCUMENTS}/statistics/overview?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getUsageAnalytics(documentId: string): Promise<{ analytics: any }> {
     const response = await apiInstance.get<ApiResponse<{ analytics: any }>>(
       `${API_ENDPOINTS.DOCUMENTS}/${documentId}/analytics`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getStorageUsage(): Promise<{ usage: any }> {
     const response = await apiInstance.get<ApiResponse<{ usage: any }>>(
       `${API_ENDPOINTS.DOCUMENTS}/storage/usage`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Import/Export
@@ -396,7 +396,7 @@ class DocumentsApiImpl implements DocumentsApi {
         },
       }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 }
 

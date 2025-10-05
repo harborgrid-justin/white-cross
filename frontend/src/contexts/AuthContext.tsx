@@ -147,7 +147,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    const response = await authApi.login(email, password)
+    const response = await authApi.login({ email, password })
 
     // Store token securely
     await tokenSecurityManager.storeToken(response.token, response.user)
