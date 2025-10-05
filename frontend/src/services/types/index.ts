@@ -612,6 +612,98 @@ export interface Permission {
   createdAt: string;
 }
 
+// Missing types that are being imported
+export interface InventoryAlert {
+  id: string;
+  medicationId: string;
+  alertType: 'LOW_STOCK' | 'EXPIRING' | 'EXPIRED' | 'OUT_OF_STOCK';
+  message: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BudgetCategory {
+  id: string;
+  name: string;
+  description?: string;
+  budgetAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  period: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  orderNumber: string;
+  vendorId: string;
+  status: 'PENDING' | 'APPROVED' | 'ORDERED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
+  orderDate: string;
+  expectedDeliveryDate?: string;
+  actualDeliveryDate?: string;
+  totalAmount: number;
+  taxAmount: number;
+  shippingAmount: number;
+  discountAmount: number;
+  notes?: string;
+  items: PurchaseOrderItem[];
+  vendor: Vendor;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  purchaseOrderId: string;
+  medicationId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  receivedQuantity: number;
+  notes?: string;
+  medication: Medication;
+}
+
+export interface Vendor {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  website?: string;
+  notes?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Medication {
+  id: string;
+  name: string;
+  genericName?: string;
+  dosage: string;
+  form: string;
+  manufacturer?: string;
+  ndcNumber?: string;
+  lotNumber?: string;
+  expirationDate: string;
+  instructions: string;
+  sideEffects?: string[];
+  contraindications?: string[];
+  isControlled: boolean;
+  storageRequirements?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface RolePermission {
   id: string;
   roleId: string;
