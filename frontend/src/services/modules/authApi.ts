@@ -2,23 +2,9 @@ import { apiInstance, API_ENDPOINTS, tokenUtils, API_CONFIG } from '../config/ap
 import { z } from 'zod';
 import moment from 'moment';
 import debug from 'debug';
+import { User } from '../types';
 
 const log = debug('whitecross:auth-api');
-
-// Types
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: 'ADMIN' | 'NURSE' | 'STAFF';
-  schoolId?: string;
-  isActive: boolean;
-  permissions?: string[];
-  lastLoginAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface LoginCredentials {
   email: string;
@@ -31,7 +17,7 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'NURSE' | 'STAFF';
+  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'READ_ONLY' | 'COUNSELOR';
   schoolId?: string;
 }
 
@@ -60,7 +46,7 @@ const registerSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  role: z.enum(['ADMIN', 'NURSE', 'STAFF']),
+  role: z.enum(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR']),
   schoolId: z.string().optional(),
 });
 
@@ -73,23 +59,33 @@ export class AuthApi {
     try {
       loginSchema.parse(credentials);
 
-      const response = await apiInstance.post<AuthResponse>(
+      const response = await apiInstance.post<{success: boolean; data: {token: string; user: User}}>(
         API_ENDPOINTS.AUTH.LOGIN,
         credentials
       );
 
-      const { user, token, refreshToken } = response.data;
+      if (!response.data.success || !response.data.data) {
+        throw new Error('Login failed');
+      }
+
+      const { user, token } = response.data.data;
 
       // Store tokens
       tokenUtils.setToken(token);
-      tokenUtils.setRefreshToken(refreshToken);
+      // Note: Backend doesn't provide refreshToken yet, using token as placeholder
+      tokenUtils.setRefreshToken(token);
 
-      return response.data;
+      return {
+        user,
+        token,
+        refreshToken: token, // Placeholder until backend implements refresh tokens
+        expiresIn: 86400 // 24 hours in seconds
+      };
     } catch (error: any) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.message || 'Login failed');
+      throw new Error(error.response?.data?.error?.message || error.response?.data?.message || 'Login failed');
     }
   }
 

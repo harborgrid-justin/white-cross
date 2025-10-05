@@ -82,7 +82,7 @@ export class ApiErrorHandler {
   }
 
   static isServerError(error: ApiError): boolean {
-    return error.status >= 500;
+    return (error.status ?? 0) >= 500;
   }
 }
 

@@ -70,6 +70,9 @@ const init = async () => {
           uptime: process.uptime(),
           environment: process.env.NODE_ENV || 'development'
         });
+      },
+      options: {
+        auth: false // Disable authentication for health check
       }
     });
 

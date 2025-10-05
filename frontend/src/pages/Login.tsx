@@ -15,7 +15,9 @@ export default function Login() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { login } = useAuthContext()
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>()
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
+    mode: 'onSubmit'
+  })
 
   const redirectPath = searchParams.get('redirect')
 
@@ -25,6 +27,15 @@ export default function Login() {
     }
   }, [redirectPath])
 
+  // Update error message when form validation errors change
+  useEffect(() => {
+    if (errors.email) {
+      setAuthError(errors.email.message || 'Invalid email format')
+    } else if (errors.password) {
+      setAuthError(errors.password.message || 'Invalid password')
+    }
+  }, [errors.email, errors.password])
+
   const onSubmit = async (data: LoginForm) => {
     setLoading(true)
     setAuthError('')
@@ -33,14 +44,22 @@ export default function Login() {
       toast.success('Login successful!')
       
       // Redirect to the intended page after successful login
-      if (redirectPath) {
-        navigate(redirectPath, { replace: true })
-      }
+      // Default to dashboard if no redirect path is specified
+      navigate(redirectPath || '/dashboard', { replace: true })
     } catch (error: any) {
       const errorMessage = error.response?.data?.error?.message || 'Invalid credentials'
       setAuthError(errorMessage)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const onError = () => {
+    // This is called by react-hook-form when validation fails
+    if (errors.email) {
+      setAuthError(errors.email.message || 'Invalid email format')
+    } else if (errors.password) {
+      setAuthError(errors.password.message || 'Invalid password')
     }
   }
 
@@ -58,7 +77,7 @@ export default function Login() {
         </div>
         
         <div className="card p-8">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-cy="login-form">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit, onError)} data-cy="login-form">
             {authError && (
               <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message">
                 <p className="text-sm text-red-600">{authError}</p>
@@ -75,7 +94,7 @@ export default function Login() {
                     required: 'Email is required',
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
+                      message: 'Invalid email format'
                     }
                   })}
                   type="email"

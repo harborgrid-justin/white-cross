@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthContext } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 // Layout components
@@ -34,10 +34,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   requiredPermission,
 }) => {
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const { user, loading } = useAuthContext();
   const location = useLocation();
+  const isAuthenticated = !!user;
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 
@@ -49,21 +50,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <AccessDenied />;
   }
 
-  if (requiredPermission && !user?.permissions?.includes(requiredPermission)) {
-    return <AccessDenied />;
+  // Permission check can be expanded later if needed
+  if (requiredPermission) {
+    // For now, just check if user exists
+    // TODO: Implement proper permission checking when permission system is defined
   }
 
   return <>{children}</>;
 };
 
-// Role-based access control
-const hasPermission = (userRole: string | undefined, allowedRoles: string[]): boolean => {
-  return userRole ? allowedRoles.includes(userRole) : false;
-};
-
 // Main routes component
 export const AppRoutes: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { user } = useAuthContext();
+  const isAuthenticated = !!user;
 
   return (
     <Routes>

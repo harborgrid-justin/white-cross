@@ -68,6 +68,13 @@ apiInstance.interceptors.response.use(
   }
 );
 
+// Session expire handler
+let sessionExpireHandler: (() => void) | null = null;
+
+export const setSessionExpireHandler = (handler: () => void) => {
+  sessionExpireHandler = handler;
+};
+
 // Utility functions
 export const tokenUtils = {
   getToken: () => localStorage.getItem('auth_token'),
