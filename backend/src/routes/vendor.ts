@@ -1,12 +1,12 @@
-import { ServerRoute } from '@hapi/hapi';
-import { VendorService } from '../services/vendorService';
+import { ServerRoute, Request, ResponseToolkit } from '@hapi/hapi';
+import { VendorService, CreateVendorData, UpdateVendorData } from '../services/vendorService';
 import Joi from 'joi';
 
 // Get all vendors
-const getVendorsHandler = async (request: any, h: any) => {
+const getVendorsHandler = async (request: Request, h: ResponseToolkit) => {
   try {
-    const page = parseInt(request.query.page) || 1;
-    const limit = parseInt(request.query.limit) || 20;
+    const page = parseInt(request.query.page as string) || 1;
+    const limit = parseInt(request.query.limit as string) || 20;
     const activeOnly = request.query.activeOnly !== 'false';
 
     const result = await VendorService.getVendors(page, limit, activeOnly);
@@ -24,7 +24,7 @@ const getVendorsHandler = async (request: any, h: any) => {
 };
 
 // Get vendor by ID
-const getVendorByIdHandler = async (request: any, h: any) => {
+const getVendorByIdHandler = async (request: Request, h: ResponseToolkit) => {
   try {
     const { id } = request.params;
     const result = await VendorService.getVendorById(id);
@@ -42,9 +42,9 @@ const getVendorByIdHandler = async (request: any, h: any) => {
 };
 
 // Create vendor
-const createVendorHandler = async (request: any, h: any) => {
+const createVendorHandler = async (request: Request, h: ResponseToolkit) => {
   try {
-    const vendor = await VendorService.createVendor(request.payload);
+    const vendor = await VendorService.createVendor(request.payload as CreateVendorData);
 
     return h.response({
       success: true,
@@ -59,10 +59,28 @@ const createVendorHandler = async (request: any, h: any) => {
 };
 
 // Update vendor
-const updateVendorHandler = async (request: any, h: any) => {
+const updateVendorHandler = async (request: Request, h: ResponseToolkit) => {
   try {
     const { id } = request.params;
-    const vendor = await VendorService.updateVendor(id, request.payload);
+    const vendor = await VendorService.updateVendor(id, request.payload as UpdateVendorData);
+
+    return h.response({
+      success: true,
+      data: { vendor }
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(400);
+  }
+};
+
+// Delete vendor
+const deleteVendorHandler = async (request: Request, h: ResponseToolkit) => {
+  try {
+    const { id } = request.params;
+    const vendor = await VendorService.deleteVendor(id);
 
     return h.response({
       success: true,
@@ -77,7 +95,7 @@ const updateVendorHandler = async (request: any, h: any) => {
 };
 
 // Compare vendors for an item
-const compareVendorsHandler = async (request: any, h: any) => {
+const compareVendorsHandler = async (request: Request, h: ResponseToolkit) => {
   try {
     const { itemName } = request.params;
     const comparison = await VendorService.compareVendors(itemName);
@@ -95,10 +113,10 @@ const compareVendorsHandler = async (request: any, h: any) => {
 };
 
 // Search vendors
-const searchVendorsHandler = async (request: any, h: any) => {
+const searchVendorsHandler = async (request: Request, h: ResponseToolkit) => {
   try {
     const { query } = request.params;
-    const limit = parseInt(request.query.limit) || 20;
+    const limit = parseInt(request.query.limit as string) || 20;
 
     const vendors = await VendorService.searchVendors(query, limit);
 
@@ -148,7 +166,14 @@ export const vendorRoutes: ServerRoute[] = [
       validate: {
         payload: Joi.object({
           name: Joi.string().trim().required(),
+          contactName: Joi.string().trim().optional(),
           email: Joi.string().email().optional(),
+          phone: Joi.string().trim().optional(),
+          address: Joi.string().trim().optional(),
+          website: Joi.string().uri().optional(),
+          taxId: Joi.string().trim().optional(),
+          paymentTerms: Joi.string().trim().optional(),
+          notes: Joi.string().trim().optional(),
           rating: Joi.number().integer().min(1).max(5).optional()
         })
       }
@@ -163,11 +188,26 @@ export const vendorRoutes: ServerRoute[] = [
       validate: {
         payload: Joi.object({
           name: Joi.string().trim().optional(),
+          contactName: Joi.string().trim().optional(),
           email: Joi.string().email().optional(),
+          phone: Joi.string().trim().optional(),
+          address: Joi.string().trim().optional(),
+          website: Joi.string().uri().optional(),
+          taxId: Joi.string().trim().optional(),
+          paymentTerms: Joi.string().trim().optional(),
+          notes: Joi.string().trim().optional(),
           rating: Joi.number().integer().min(1).max(5).optional(),
           isActive: Joi.boolean().optional()
         })
       }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/vendors/{id}',
+    handler: deleteVendorHandler,
+    options: {
+      auth: 'jwt'
     }
   },
   {

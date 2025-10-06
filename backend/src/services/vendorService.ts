@@ -185,6 +185,24 @@ export class VendorService {
   }
 
   /**
+   * Delete vendor (soft delete)
+   */
+  static async deleteVendor(id: string) {
+    try {
+      const vendor = await prisma.vendor.update({
+        where: { id },
+        data: { isActive: false }
+      });
+
+      logger.info(`Vendor deleted (soft): ${vendor.name}`);
+      return vendor;
+    } catch (error) {
+      logger.error('Error deleting vendor:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Search vendors
    */
   static async searchVendors(query: string, limit: number = 20) {
