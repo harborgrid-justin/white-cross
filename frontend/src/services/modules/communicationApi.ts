@@ -1,11 +1,10 @@
 import type { ICommunicationApi } from '../types'
 import type { 
   CommunicationTemplate, 
-  CommunicationMessage,
-  PaginatedResponse
+  CommunicationMessage
 } from '../types'
 import { apiInstance } from '../config/apiConfig'
-import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtils'
+import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
  * Communication API implementation

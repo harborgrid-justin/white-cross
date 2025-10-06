@@ -1,10 +1,6 @@
-import { apiInstance, API_ENDPOINTS, tokenUtils, API_CONFIG } from '../config/apiConfig';
+import { apiInstance, API_ENDPOINTS, tokenUtils } from '../config/apiConfig';
 import { z } from 'zod';
-import moment from 'moment';
-import debug from 'debug';
 import { User } from '../types';
-
-const log = debug('whitecross:auth-api');
 
 export interface LoginCredentials {
   email: string;
@@ -101,7 +97,7 @@ export class AuthApi {
         userData
       );
 
-      const { user, token, refreshToken } = response.data;
+      const { token, refreshToken } = response.data;
 
       // Store tokens
       tokenUtils.setToken(token);

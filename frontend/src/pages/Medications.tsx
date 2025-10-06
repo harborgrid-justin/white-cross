@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Pill, Plus, Package, AlertTriangle, Clock, Search, Calendar, Bell } from 'lucide-react'
+import { Pill, Plus, Package, AlertTriangle } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { medicationsApi } from '../services/api'
 import toast from 'react-hot-toast'
@@ -8,8 +8,6 @@ import MedicationsListTab from '../components/medications/tabs/MedicationsListTa
 import MedicationsInventoryTab from '../components/medications/tabs/MedicationsInventoryTab'
 import MedicationsRemindersTab from '../components/medications/tabs/MedicationsRemindersTab'
 import MedicationsAdverseReactionsTab from '../components/medications/tabs/MedicationsAdverseReactionsTab'
-import MedicationFormModal from '../components/medications/MedicationFormModal'
-import MedicationDetailsModal from '../components/medications/MedicationDetailsModal'
 
 type Tab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions'
 
@@ -17,7 +15,6 @@ export default function Medications() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddMedication, setShowAddMedication] = useState(false)
-  const [showAdverseReactionForm, setShowAdverseReactionForm] = useState(false)
   const [showMedicationDetails, setShowMedicationDetails] = useState(false)
   const [selectedMedication, setSelectedMedication] = useState<any>(null)
   const [formData, setFormData] = useState({

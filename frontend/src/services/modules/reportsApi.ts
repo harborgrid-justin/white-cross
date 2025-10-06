@@ -377,7 +377,6 @@ class ReportsApiImpl implements ReportsApi {
   }
 
   async generateComplianceAudit(filters: ReportFilters = {}): Promise<{ audit: any }> {
-    const params = buildUrlParams(filters);
     const response = await apiInstance.post<ApiResponse<{ audit: any }>>(
       `${API_ENDPOINTS.REPORTS}/compliance/audit`,
       filters

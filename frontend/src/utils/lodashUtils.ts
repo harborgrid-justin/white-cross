@@ -1,16 +1,9 @@
 import _ from 'lodash';
-import { SEARCH_CONFIG, PAGINATION_CONFIG, VALIDATION_CONFIG } from '../constants/config';
 
 /**
  * Frontend utility functions using lodash for common operations
  * Provides type-safe lodash wrappers for frequently used operations in React components
- * Enhanced with centralized configuration constants for consistency
  */
-
-// Use the imported configuration constants
-const DEFAULT_PAGE_SIZE = PAGINATION_CONFIG.DEFAULT_PAGE_SIZE;
-const DEFAULT_SEARCH_DELAY = SEARCH_CONFIG.SEARCH_DELAY;
-const MAX_FIELD_LENGTH = VALIDATION_CONFIG.MAX_FIELD_LENGTH;
 
 // Collection utilities
 export const arrayUtils = {
@@ -234,17 +227,17 @@ export const functionUtils = {
   /**
    * Creates a function that performs a partial deep comparison
    */
-  matches: <T>(source: T) => (object: any) => _.matches(source),
+  matches: <T>(source: T) => () => _.matches(source),
 
   /**
    * Creates a function that checks if all predicates return truthy
    */
-  overEvery: <T>(predicates: ((...args: T[]) => boolean)[]) => (...args: T[]) => _.overEvery(predicates),
+  overEvery: <T>(predicates: (() => boolean)[]) => () => _.overEvery(predicates),
 
   /**
    * Creates a function that checks if some predicates return truthy
    */
-  overSome: <T>(predicates: ((...args: T[]) => boolean)[]) => (...args: T[]) => _.overSome(predicates),
+  overSome: <T>(predicates: (() => boolean)[]) => () => _.overSome(predicates),
 };
 
 // Date utilities
