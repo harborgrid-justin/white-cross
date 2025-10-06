@@ -215,7 +215,7 @@ router.post('/security-incidents', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const detectedBy = (req as any).user.id;
+    const detectedBy = (req).user.id;
     const incident = await AccessControlService.createSecurityIncident({
       ...req.body,
       detectedBy,
@@ -256,7 +256,7 @@ router.post('/ip-restrictions', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const createdBy = (req as any).user.id;
+    const createdBy = (req).user.id;
     const restriction = await AccessControlService.addIpRestriction({
       ...req.body,
       createdBy,
