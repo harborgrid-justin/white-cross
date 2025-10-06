@@ -40,7 +40,7 @@ export const arrayUtils = {
   /**
    * Deep flattens nested arrays
    */
-  flattenDeep: <T>(array: any[]) => _.flattenDeep(array),
+  flattenDeep: (array: any[]) => _.flattenDeep(array),
 };
 
 // Object utilities
@@ -196,10 +196,11 @@ export const dateUtils = {
       switch (period) {
         case 'day':
           return date.toDateString();
-        case 'week':
+        case 'week': {
           const weekStart = new Date(date);
           weekStart.setDate(date.getDate() - date.getDay());
           return weekStart.toDateString();
+        }
         case 'month':
           return `${date.getFullYear()}-${date.getMonth()}`;
         default:
