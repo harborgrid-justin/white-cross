@@ -122,7 +122,7 @@ export const MedicationsTab: React.FC<MedicationsTabProps> = ({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredMedications.map((medication: LegacyMedicationWithCount) => {
-                const inventoryStats = formatMedicationForDisplay(medication).inventory
+                const inventoryStats = formatMedicationForDisplay(medication)._display.inventory
                 const totalStock = inventoryStats.totalQuantity
                 const hasLowStock = inventoryStats.lowStock > 0
                 
