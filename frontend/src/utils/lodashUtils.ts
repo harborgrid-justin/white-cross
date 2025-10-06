@@ -278,7 +278,7 @@ export const dateUtils = {
     items: T[],
     period: 'day' | 'week' | 'month'
   ) => {
-    return _.groupBy(items, item => {
+    return _.groupBy(items, (item: T) => {
       const date = new Date(item.date);
       switch (period) {
         case 'day':
@@ -299,8 +299,9 @@ export const dateUtils = {
   /**
    * Formats date for display
    */
-  formatDate: (date: Date | string, format: string = 'MM/DD/YYYY') => {
-    return _.isDate(date) ? date.toLocaleDateString() : new Date(date).toLocaleDateString();
+  formatDate: (date: Date | string, _format: string = 'MM/DD/YYYY') => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString();
   },
 
   /**
@@ -477,8 +478,8 @@ export const reactUtils = {
   /**
    * Filters out empty form fields
    */
-  filterEmptyFields: <T extends Record<string, any>>(data: T) => {
-    return _.pickBy(data, value => !_.isEmpty(value));
+  filterEmptyFields: <T extends Record<string, unknown>>(data: T) => {
+    return _.pickBy(data, (value: unknown) => !_.isEmpty(value));
   },
 
   /**
@@ -523,11 +524,11 @@ export const reactUtils = {
   /**
    * Filters data for table display
    */
-  filterTableData: <T extends Record<string, any>>(
+  filterTableData: <T extends Record<string, unknown>>(
     data: T[],
-    filters: Record<string, any>
+    filters: Record<string, unknown>
   ) => {
-    return _.filter(data, item => {
+    return _.filter(data, (item: T) => {
       return Object.entries(filters).every(([key, value]) => {
         if (_.isEmpty(value)) return true;
         return _.get(item, key) === value;
@@ -641,7 +642,7 @@ export const healthcareUtils = {
    * Categorizes health records by urgency
    */
   categorizeByUrgency: <T extends { severity?: string; priority?: string }>(records: T[]) => {
-    return _.groupBy(records, record => {
+    return _.groupBy(records, (record: T) => {
       const severity = _.get(record, 'severity', 'low');
       const priority = _.get(record, 'priority', 'normal');
 
