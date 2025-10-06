@@ -477,7 +477,7 @@ export class EmergencyContactService {
       return {
         totalContacts,
         studentsWithoutContacts,
-        byPriority: stats.reduce((acc: Record<string, number>, curr: any) => {
+        byPriority: stats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.priority] = curr._count.priority;
           return acc;
         }, {} as Record<string, number>)
