@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, SecurityIncidentType, IncidentSeverity, IpRestrictionType, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -518,8 +518,8 @@ export class AccessControlService {
     try {
       const incident = await prisma.securityIncident.create({
         data: {
-          type: data.type as any,
-          severity: data.severity as any,
+          type: data.type as SecurityIncidentType,
+          severity: data.severity as IncidentSeverity,
           description: data.description,
           affectedResources: data.affectedResources || [],
           detectedBy: data.detectedBy,
@@ -547,7 +547,7 @@ export class AccessControlService {
     }
   ) {
     try {
-      const updateData: any = { ...data };
+      const updateData: Prisma.SecurityIncidentUpdateInput = { ...data };
       
       if (data.status === 'RESOLVED' && !updateData.resolvedAt) {
         updateData.resolvedAt = new Date();
@@ -580,16 +580,16 @@ export class AccessControlService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      const where: any = {};
+      const where: Prisma.SecurityIncidentWhereInput = {};
 
       if (filters.type) {
-        where.type = filters.type;
+        where.type = filters.type as SecurityIncidentType;
       }
       if (filters.severity) {
-        where.severity = filters.severity;
+        where.severity = filters.severity as IncidentSeverity;
       }
       if (filters.status) {
-        where.status = filters.status;
+        where.status = filters.status as Prisma.EnumSecurityIncidentStatusFilter;
       }
 
       const [incidents, total] = await Promise.all([
@@ -650,7 +650,7 @@ export class AccessControlService {
       const restriction = await prisma.ipRestriction.create({
         data: {
           ipAddress: data.ipAddress,
-          type: data.type as any,
+          type: data.type as IpRestrictionType,
           reason: data.reason,
           isActive: true,
           createdBy: data.createdBy,

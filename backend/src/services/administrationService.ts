@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, MetricType, AuditAction, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -435,12 +435,12 @@ export class AdministrationService {
     metricType: string,
     value: number,
     unit?: string,
-    context?: any
+    context?: Prisma.InputJsonValue
   ) {
     try {
       const metric = await prisma.performanceMetric.create({
         data: {
-          metricType: metricType as any,
+          metricType: metricType as MetricType,
           value,
           unit,
           context
@@ -460,10 +460,10 @@ export class AdministrationService {
     endDate?: Date
   ) {
     try {
-      const where: any = {};
+      const where: Prisma.PerformanceMetricWhereInput = {};
       
       if (metricType) {
-        where.metricType = metricType;
+        where.metricType = metricType as MetricType;
       }
       
       if (startDate || endDate) {
@@ -502,15 +502,15 @@ export class AdministrationService {
       });
 
       // Calculate averages
-      const metricsByType: any = {};
-      metrics.forEach((metric: any) => {
+      const metricsByType: Record<string, number[]> = {};
+      metrics.forEach((metric) => {
         if (!metricsByType[metric.metricType]) {
           metricsByType[metric.metricType] = [];
         }
         metricsByType[metric.metricType].push(metric.value);
       });
 
-      const averages: any = {};
+      const averages: Record<string, number> = {};
       Object.keys(metricsByType).forEach(type => {
         const values = metricsByType[type];
         averages[type] = values.reduce((a: number, b: number) => a + b, 0) / values.length;
@@ -776,7 +776,7 @@ export class AdministrationService {
       const requiredModules = await prisma.trainingModule.count({ 
         where: { isActive: true, isRequired: true } 
       });
-      const completedRequired = completions.filter((c: any) => c.module.isRequired).length;
+      const completedRequired = completions.filter((c) => c.module.isRequired).length;
 
       return {
         completions,
@@ -799,14 +799,14 @@ export class AdministrationService {
     entityType: string,
     entityId?: string,
     userId?: string,
-    changes?: any,
+    changes?: Prisma.InputJsonValue,
     ipAddress?: string,
     userAgent?: string
   ) {
     try {
       const audit = await prisma.auditLog.create({
         data: {
-          action: action as any,
+          action: action as AuditAction,
           entityType,
           entityId,
           userId,
@@ -837,13 +837,13 @@ export class AdministrationService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      const where: any = {};
+      const where: Prisma.AuditLogWhereInput = {};
 
       if (filters) {
         if (filters.userId) where.userId = filters.userId;
         if (filters.entityType) where.entityType = filters.entityType;
         if (filters.entityId) where.entityId = filters.entityId;
-        if (filters.action) where.action = filters.action;
+        if (filters.action) where.action = filters.action as AuditAction;
         
         if (filters.startDate || filters.endDate) {
           where.createdAt = {};
