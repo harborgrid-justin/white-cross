@@ -11,7 +11,7 @@ export interface CreateIntegrationConfigData {
   apiKey?: string;
   username?: string;
   password?: string;
-  settings?: Prisma.InputJsonValue;
+  settings?: any;
   syncFrequency?: number;
 }
 
@@ -21,7 +21,7 @@ export interface UpdateIntegrationConfigData {
   apiKey?: string;
   username?: string;
   password?: string;
-  settings?: Prisma.InputJsonValue;
+  settings?: any;
   syncFrequency?: number;
   isActive?: boolean;
 }
@@ -30,7 +30,7 @@ export interface IntegrationTestResult {
   success: boolean;
   message: string;
   responseTime?: number;
-  details?: Prisma.InputJsonValue;
+  details?: any;
 }
 
 export interface IntegrationSyncResult {
@@ -289,7 +289,7 @@ export class IntegrationService {
   /**
    * Perform actual connection test based on integration type
    */
-  private static async performConnectionTest(integration: { type: string; settings?: Prisma.JsonValue }): Promise<IntegrationTestResult> {
+  private static async performConnectionTest(integration: any): Promise<IntegrationTestResult> {
     // Mock implementation - in production, this would make real API calls
     
     // Validate required fields
@@ -474,7 +474,7 @@ export class IntegrationService {
   /**
    * Perform actual sync operation
    */
-  private static async performSync(_integration: { type: string; settings?: Prisma.JsonValue }): Promise<IntegrationSyncResult> {
+  private static async performSync(_integration: any): Promise<IntegrationSyncResult> {
     // Mock implementation - in production, this would perform real data synchronization
     
     // Simulate processing records
@@ -520,7 +520,7 @@ export class IntegrationService {
     recordsFailed?: number;
     duration?: number;
     errorMessage?: string;
-    details?: Prisma.InputJsonValue;
+    details?: any;
   }) {
     try {
       const log = await prisma.integrationLog.create({
@@ -557,7 +557,7 @@ export class IntegrationService {
     limit: number = 20
   ) {
     try {
-      const where: Prisma.IntegrationLogWhereInput = {};
+      const where: any = {};
       if (integrationId) where.integrationId = integrationId;
       if (type) where.integrationType = type;
 
@@ -645,7 +645,7 @@ export class IntegrationService {
       const totalRecordsFailed = recentLogs.reduce((sum, log) => sum + (log.recordsFailed || 0), 0);
 
       // Group stats by type
-      const statsByType: Record<string, { success: number; failed: number; total: number }> = {};
+      const statsByType: any = {};
       syncStats.forEach(stat => {
         if (!statsByType[stat.integrationType]) {
           statsByType[stat.integrationType] = {
