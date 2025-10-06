@@ -63,7 +63,7 @@ export const objectUtils = {
   /**
    * Omits specific properties from object
    */
-  omit: <T, K extends keyof T>(obj: T, keys: K[]) => _.omit(obj, keys),
+  omit: <T extends object, K extends keyof T>(obj: T, keys: K[]) => _.omit(obj, keys),
 
   /**
    * Checks if object has all specified keys
@@ -78,7 +78,7 @@ export const objectUtils = {
   /**
    * Sets nested property value safely
    */
-  set: <T>(obj: T, path: string, value: any) => _.set(obj, path, value),
+  set: <T extends object>(obj: T, path: string, value: unknown) => _.set(obj, path, value),
 
   /**
    * Checks if path exists in object
@@ -191,7 +191,7 @@ export const dateUtils = {
     items: T[],
     period: 'day' | 'week' | 'month'
   ) => {
-    return _.groupBy(items, item => {
+    return _.groupBy(items, (item: T) => {
       const date = new Date(item.date);
       switch (period) {
         case 'day':

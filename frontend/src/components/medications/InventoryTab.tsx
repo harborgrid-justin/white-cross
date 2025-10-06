@@ -1,4 +1,4 @@
-import { AlertTriangle, Package } from 'lucide-react'
+import { Package } from 'lucide-react'
 import { AlertBanner, LoadingSpinner, EmptyState } from '../shared'
 import { useMedicationsData } from '../../hooks/useMedicationsData'
 import { getExpirationStatus, getStockStatus, formatDate } from '../../utils/medications'

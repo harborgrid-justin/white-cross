@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 import { ComplianceService } from '../services/complianceService';
-import { auth } from '../middleware/auth';
+import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
 
 const router = Router();
 
