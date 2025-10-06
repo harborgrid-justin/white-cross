@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   School,
   Plus
@@ -23,12 +23,7 @@ export default function SchoolsTab() {
     totalEnrollment: 0
   })
 
-  useEffect(() => {
-    loadSchools()
-    loadDistricts()
-  }, [])
-
-  const loadSchools = async () => {
+  const loadSchools = useCallback(async () => {
     try {
       setLoading(true)
       const data = await administrationApi.getSchools(1, 50)
@@ -38,9 +33,9 @@ export default function SchoolsTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const loadDistricts = async () => {
+  const loadDistricts = useCallback(async () => {
     try {
       const data = await administrationApi.getDistricts(1, 100)
       setDistricts(data.districts || [])
@@ -50,7 +45,12 @@ export default function SchoolsTab() {
     } catch (error) {
       console.error('Error loading districts:', error)
     }
-  }
+  }, [formData.districtId])
+
+  useEffect(() => {
+    loadSchools()
+    loadDistricts()
+  }, [loadSchools, loadDistricts])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

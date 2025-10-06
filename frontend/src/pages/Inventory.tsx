@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Package,
   TrendingDown,
@@ -15,7 +15,6 @@ import {
 import { inventoryApi, vendorApi, purchaseOrderApi, budgetApi } from '../services/api'
 import toast from 'react-hot-toast'
 import InventoryStats from '../components/inventory/InventoryStats'
-import InventoryAlerts from '../components/inventory/InventoryAlerts'
 import InventoryItemsTab from '../components/inventory/tabs/InventoryItemsTab'
 import InventoryVendorsTab from '../components/inventory/tabs/InventoryVendorsTab'
 import InventoryOrdersTab from '../components/inventory/tabs/InventoryOrdersTab'
@@ -38,14 +37,9 @@ export default function Inventory() {
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [showAddModal, setShowAddModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
-  useEffect(() => {
-    loadData()
-  }, [activeTab])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       switch (activeTab) {
