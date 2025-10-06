@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { Calendar, Clock, Users, Plus, Download, CheckCircle, XCircle, AlertCircle, Search, Filter } from 'lucide-react'
-import { appointmentsApi, studentsApi } from '../services/api'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Calendar, Clock, Users, Plus, Download, CheckCircle, XCircle, Filter } from 'lucide-react'
+import { appointmentsApi } from '../services/api'
 import { Appointment } from '../types'
 import toast from 'react-hot-toast'
 
@@ -30,11 +30,7 @@ export default function Appointments() {
     role: 'NURSE'
   }
 
-  useEffect(() => {
-    loadData()
-  }, [filterStatus, filterType])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       const filters: Record<string, string> = {}
@@ -56,7 +52,11 @@ export default function Appointments() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filterStatus, filterType])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleCancelAppointment = async (id: string) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return

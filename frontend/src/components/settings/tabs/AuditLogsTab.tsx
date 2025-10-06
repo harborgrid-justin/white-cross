@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   FileText
 } from 'lucide-react'
@@ -9,11 +9,7 @@ export default function AuditLogsTab() {
   const [loading, setLoading] = useState(false)
   const [actionFilter, setActionFilter] = useState('')
 
-  useEffect(() => {
-    loadLogs()
-  }, [actionFilter])
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setLoading(true)
       const filters = actionFilter ? { action: actionFilter } : {}
@@ -24,7 +20,11 @@ export default function AuditLogsTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [actionFilter])
+
+  useEffect(() => {
+    loadLogs()
+  }, [loadLogs])
 
   return (
     <div className="space-y-6">

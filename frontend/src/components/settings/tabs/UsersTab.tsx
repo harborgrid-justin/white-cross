@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Users,
   Plus,
@@ -21,11 +21,7 @@ export default function UsersTab() {
     role: 'NURSE' as 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN'
   })
 
-  useEffect(() => {
-    loadUsers()
-  }, [roleFilter])
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true)
       const filters: any = {}
@@ -43,7 +39,11 @@ export default function UsersTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [roleFilter])
+
+  useEffect(() => {
+    loadUsers()
+  }, [loadUsers])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
