@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -83,7 +83,7 @@ export class AppointmentService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {};
+      const whereClause: Prisma.AppointmentWhereInput = {};
       
       if (filters.nurseId) {
         whereClause.nurseId = filters.nurseId;
@@ -376,7 +376,7 @@ export class AppointmentService {
     try {
       const endTime = new Date(startTime.getTime() + duration * 60000);
       
-      const whereClause: any = {
+      const whereClause: Prisma.AppointmentWhereInput = {
         nurseId,
         status: {
           in: ['SCHEDULED', 'IN_PROGRESS']
@@ -468,7 +468,7 @@ export class AppointmentService {
         const slotEnd = new Date(currentTime.getTime() + slotDuration * 60000);
         
         // Check if this slot conflicts with any appointment
-        const conflict = appointments.find((appointment: any) => {
+        const conflict = appointments.find((appointment) => {
           const appointmentEnd = new Date(appointment.scheduledAt.getTime() + appointment.duration * 60000);
           return (
             currentTime < appointmentEnd &&
@@ -539,7 +539,7 @@ export class AppointmentService {
    */
   static async getAppointmentStatistics(nurseId?: string, dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: any = {};
+      const whereClause: Prisma.AppointmentWhereInput = {};
       
       if (nurseId) {
         whereClause.nurseId = nurseId;
@@ -569,16 +569,16 @@ export class AppointmentService {
         prisma.appointment.count({ where: whereClause })
       ]);
 
-      const noShowRate = statusStats.find((s: any) => s.status === 'NO_SHOW')?._count.status || 0;
-      const completedCount = statusStats.find((s: any) => s.status === 'COMPLETED')?._count.status || 0;
+      const noShowRate = statusStats.find((s) => s.status === 'NO_SHOW')?._count.status || 0;
+      const completedCount = statusStats.find((s) => s.status === 'COMPLETED')?._count.status || 0;
 
       return {
         total: totalAppointments,
-        byStatus: statusStats.reduce((acc: Record<string, number>, curr: any) => {
+        byStatus: statusStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.status] = curr._count.status;
           return acc;
         }, {}),
-        byType: typeStats.reduce((acc: Record<string, number>, curr: any) => {
+        byType: typeStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.type] = curr._count.type;
           return acc;
         }, {}),
@@ -747,7 +747,7 @@ export class AppointmentService {
    */
   static async getNurseAvailability(nurseId: string, date?: Date) {
     try {
-      const whereClause: any = { nurseId };
+      const whereClause: Prisma.NurseAvailabilityWhereInput = { nurseId };
 
       if (date) {
         const dayOfWeek = date.getDay();
@@ -858,7 +858,7 @@ export class AppointmentService {
    */
   static async getWaitlist(filters?: { nurseId?: string; status?: string; priority?: string }) {
     try {
-      const whereClause: any = {};
+      const whereClause: Prisma.WaitlistEntryWhereInput = {};
 
       if (filters?.nurseId) {
         whereClause.nurseId = filters.nurseId;
@@ -1147,7 +1147,7 @@ export class AppointmentService {
    */
   static async generateCalendarExport(nurseId: string, dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: any = { nurseId };
+      const whereClause: Prisma.AppointmentWhereInput = { nurseId };
 
       if (dateFrom || dateTo) {
         whereClause.scheduledAt = {};
