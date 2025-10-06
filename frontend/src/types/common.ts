@@ -7,12 +7,17 @@
 export type {
   ApiResponse,
   PaginatedResponse,
-  PaginationParams,
   PaginationResponse,
   DateRangeFilter,
   SearchParams,
   User
 } from '../services/types';
+
+// Define PaginationParams here to avoid circular dependency
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
 
 // Application-specific common types
 export type UserRole = 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'READ_ONLY' | 'COUNSELOR';

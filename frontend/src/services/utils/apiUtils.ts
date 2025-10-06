@@ -88,10 +88,10 @@ export class ApiErrorHandler {
 
 // Data extraction utilities
 export const extractApiData = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-  if (response.data.success) {
+  if (response.data.success && response.data.data !== undefined) {
     return response.data.data;
   }
-  throw new Error(response.data.message || 'API request failed');
+  throw new Error('API request failed');
 };
 
 export const extractApiDataOptional = <T>(
