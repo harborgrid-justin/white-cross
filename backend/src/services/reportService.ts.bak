@@ -8,7 +8,7 @@ export class ReportService {
   
   static async getHealthTrends(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: any = {};
       
       if (startDate || endDate) {
         where.createdAt = {};
@@ -68,7 +68,7 @@ export class ReportService {
   
   static async getMedicationUsageReport(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: any = {};
       
       if (startDate || endDate) {
         where.timeGiven = {};
@@ -152,7 +152,7 @@ export class ReportService {
   
   static async getIncidentStatistics(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: any = {};
       
       if (startDate || endDate) {
         where.occurredAt = {};
@@ -239,7 +239,7 @@ export class ReportService {
   
   static async getAttendanceCorrelation(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: any = {};
       
       if (startDate || endDate) {
         where.occurredAt = {};
@@ -315,7 +315,7 @@ export class ReportService {
   
   static async getPerformanceMetrics(metricType?: string, startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: any = {};
       
       if (metricType) {
         where.metricType = metricType;
@@ -469,7 +469,7 @@ export class ReportService {
 
   // ==================== Custom Report Data ====================
   
-  static async getCustomReportData(reportType: string, filters: Record<string, unknown> = {}) {
+  static async getCustomReportData(reportType: string, filters: any = {}) {
     try {
       const { startDate, endDate, ...otherFilters } = filters;
 
