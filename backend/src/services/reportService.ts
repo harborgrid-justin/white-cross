@@ -491,8 +491,8 @@ export class ReportService {
               ...otherFilters,
               ...(startDate || endDate ? {
                 timeGiven: {
-                  ...(startDate ? { gte: new Date(startDate) } : {}),
-                  ...(endDate ? { lte: new Date(endDate) } : {})
+                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
+                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
                 }
               } : {})
             },
@@ -513,8 +513,8 @@ export class ReportService {
               ...otherFilters,
               ...(startDate || endDate ? {
                 occurredAt: {
-                  ...(startDate ? { gte: new Date(startDate) } : {}),
-                  ...(endDate ? { lte: new Date(endDate) } : {})
+                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
+                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
                 }
               } : {})
             },
@@ -531,8 +531,8 @@ export class ReportService {
               ...otherFilters,
               ...(startDate || endDate ? {
                 scheduledAt: {
-                  ...(startDate ? { gte: new Date(startDate) } : {}),
-                  ...(endDate ? { lte: new Date(endDate) } : {})
+                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
+                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
                 }
               } : {})
             },
