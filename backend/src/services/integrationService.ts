@@ -474,7 +474,7 @@ export class IntegrationService {
   /**
    * Perform actual sync operation
    */
-  private static async performSync(integration: any): Promise<IntegrationSyncResult> {
+  private static async performSync(_integration: any): Promise<IntegrationSyncResult> {
     // Mock implementation - in production, this would perform real data synchronization
     
     // Simulate processing records

@@ -1,10 +1,28 @@
-import { ServerRoute } from '@hapi/hapi';
+import { Router, Response } from 'express';
+import { body } from 'express-validator';
 import { AdministrationService } from '../services/administrationService';
-import Joi from 'joi';
+import { auth, AuthRequest } from '../middleware/auth';
 
+// Admin middleware
+const isAdmin = async (req: AuthRequest, res: Response, next: any) => {
+  if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user?.role || '')) {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Access denied. Admin privileges required.' }
+    });
+  }
+  next();
+};
+
+const router = Router();
+
+// ==================== UNUSED HAPI HANDLERS ====================
+// The following handlers are Hapi-style but this file uses Express router
+// They are kept for reference but should be converted or removed
 // ==================== District Routes ====================
 
 // Get all districts
+// @ts-ignore - Unused Hapi handler
 const getDistrictsHandler = async (request: any, h: any) => {
   try {
     const user = request.auth.credentials;

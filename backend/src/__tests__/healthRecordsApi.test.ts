@@ -1,4 +1,4 @@
-YESimport request from 'supertest';
+import request from 'supertest';
 import { app } from '../../index';
 import { HealthRecordService } from '../../services/healthRecordService';
 import jwt from 'jsonwebtoken';
