@@ -9,8 +9,7 @@ import type {
   MedicationStatsResponse as MedicationStats,
   MedicationFormData,
   AdverseReactionFormData,
-  MedicationAlert,
-  PaginatedResponse
+  MedicationAlert
 } from '../types/api'
 
 export interface UseMedicationsDataReturn {
@@ -29,8 +28,8 @@ export interface UseMedicationsDataReturn {
 
 export const useMedicationsData = (): UseMedicationsDataReturn => {
   const queryClient = useQueryClient()
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage] = useState(1)
+  const [searchTerm] = useState('')
 
   // Queries
   const { data: medicationsData, isLoading: medicationsLoading } = useQuery({
@@ -97,94 +96,6 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
     queryClient.invalidateQueries({ queryKey: ['adverse-reactions'] })
     queryClient.invalidateQueries({ queryKey: ['medication-stats'] })
     queryClient.invalidateQueries({ queryKey: ['medication-alerts'] })
-  }
-
-  const updateMedication = async (id: string, data: Partial<MedicationFormData>): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Updating medication', id, data)
-      queryClient.invalidateQueries({ queryKey: ['medications'] })
-      return true
-    } catch (error) {
-      console.error('Error updating medication:', error)
-      return false
-    }
-  }
-
-  const deleteMedication = async (id: string): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Deleting medication', id)
-      queryClient.invalidateQueries({ queryKey: ['medications'] })
-      return true
-    } catch (error) {
-      console.error('Error deleting medication:', error)
-      return false
-    }
-  }
-
-  const updateStock = async (itemId: string, quantity: number): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Updating stock', itemId, quantity)
-      queryClient.invalidateQueries({ queryKey: ['medication-inventory'] })
-      return true
-    } catch (error) {
-      console.error('Error updating stock:', error)
-      return false
-    }
-  }
-
-  const disposeExpired = async (itemId: string): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Disposing expired medication', itemId)
-      queryClient.invalidateQueries({ queryKey: ['medication-inventory'] })
-      return true
-    } catch (error) {
-      console.error('Error disposing expired medication:', error)
-      return false
-    }
-  }
-
-  const markReminderCompleted = async (reminderId: string): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Marking reminder completed', reminderId)
-      queryClient.invalidateQueries({ queryKey: ['medication-reminders'] })
-      return true
-    } catch (error) {
-      console.error('Error marking reminder completed:', error)
-      return false
-    }
-  }
-
-  const markReminderMissed = async (reminderId: string): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Marking reminder missed', reminderId)
-      queryClient.invalidateQueries({ queryKey: ['medication-reminders'] })
-      return true
-    } catch (error) {
-      console.error('Error marking reminder missed:', error)
-      return false
-    }
-  }
-
-
-  const updateAdverseReaction = async (
-    id: string,
-    data: Partial<AdverseReactionFormData>
-  ): Promise<boolean> => {
-    try {
-      // Mock implementation - API endpoint not available yet
-      console.log('Mock: Updating adverse reaction', id, data)
-      queryClient.invalidateQueries({ queryKey: ['adverse-reactions'] })
-      return true
-    } catch (error) {
-      console.error('Error updating adverse reaction:', error)
-      return false
-    }
   }
 
   return {
