@@ -1,25 +1,18 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
-import { auth } from '../middleware/auth';
+import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 import { IntegrationService } from '../services/integrationService';
 
 const router = Router();
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
-
 // Middleware to check if user is admin
-const isAdmin = (req: AuthRequest, res: Response, next: any) => {
+const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (req.user?.role !== 'ADMIN' && req.user?.role !== 'DISTRICT_ADMIN') {
-    return res.status(403).json({
+    res.status(403).json({
       success: false,
       error: { message: 'Access denied. Admin privileges required.' }
     });
+    return;
   }
   next();
 };
