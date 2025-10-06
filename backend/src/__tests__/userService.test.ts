@@ -150,7 +150,7 @@ describe('UserService', () => {
       };
 
       const hashedPassword = 'hashed-password';
-      mockBcrypt.hash.mockResolvedValue(hashedPassword);
+      bcryptMock.hash.mockResolvedValue(hashedPassword);
 
       testPrisma.user.findUnique = jest.fn().mockResolvedValue(null);
       testPrisma.user.create = jest.fn().mockResolvedValue({
@@ -369,12 +369,12 @@ describe('UserService', () => {
       const newPassword = 'new-password';
 
       testPrisma.user.findUnique = jest.fn().mockResolvedValue(user);
-      mockBcrypt.hash.mockResolvedValue('hashed-password');
+      bcryptMock.hash.mockResolvedValue('hashed-password');
       testPrisma.user.update = jest.fn().mockResolvedValue(user);
 
       const result = await UserService.resetUserPassword('1', newPassword);
 
-      expect(mockBcrypt.hash).toHaveBeenCalledWith(newPassword, 12);
+      expect(bcryptMock.hash).toHaveBeenCalledWith(newPassword, 12);
       expect(testPrisma.user.update).toHaveBeenCalledWith({
         where: { id: '1' },
         data: { password: 'hashed-password' }

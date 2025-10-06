@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { body, query, param, validationResult } from 'express-validator';
+import { body, query, validationResult } from 'express-validator';
 import { AccessControlService } from '../services/accessControlService';
 import { auth } from '../middleware/auth';
 
