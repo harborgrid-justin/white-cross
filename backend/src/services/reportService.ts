@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -8,7 +8,7 @@ export class ReportService {
   
   static async getHealthTrends(startDate?: Date, endDate?: Date) {
     try {
-      const where: any = {};
+      const where: Prisma.StudentWhereInput = {};
       
       if (startDate || endDate) {
         where.createdAt = {};
@@ -68,7 +68,7 @@ export class ReportService {
   
   static async getMedicationUsageReport(startDate?: Date, endDate?: Date) {
     try {
-      const where: any = {};
+      const where: Prisma.StudentWhereInput = {};
       
       if (startDate || endDate) {
         where.timeGiven = {};
@@ -152,7 +152,7 @@ export class ReportService {
   
   static async getIncidentStatistics(startDate?: Date, endDate?: Date) {
     try {
-      const where: any = {};
+      const where: Prisma.StudentWhereInput = {};
       
       if (startDate || endDate) {
         where.occurredAt = {};
@@ -239,7 +239,7 @@ export class ReportService {
   
   static async getAttendanceCorrelation(startDate?: Date, endDate?: Date) {
     try {
-      const where: any = {};
+      const where: Prisma.StudentWhereInput = {};
       
       if (startDate || endDate) {
         where.occurredAt = {};
@@ -315,7 +315,7 @@ export class ReportService {
   
   static async getPerformanceMetrics(metricType?: string, startDate?: Date, endDate?: Date) {
     try {
-      const where: any = {};
+      const where: Prisma.StudentWhereInput = {};
       
       if (metricType) {
         where.metricType = metricType;
@@ -469,7 +469,7 @@ export class ReportService {
 
   // ==================== Custom Report Data ====================
   
-  static async getCustomReportData(reportType: string, filters: any = {}) {
+  static async getCustomReportData(reportType: string, filters: Record<string, unknown> = {}) {
     try {
       const { startDate, endDate, ...otherFilters } = filters;
 
@@ -491,8 +491,8 @@ export class ReportService {
               ...otherFilters,
               ...(startDate || endDate ? {
                 timeGiven: {
-                  ...(startDate ? { gte: new Date(startDate) } : {}),
-                  ...(endDate ? { lte: new Date(endDate) } : {})
+                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
+                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
                 }
               } : {})
             },
@@ -513,8 +513,8 @@ export class ReportService {
               ...otherFilters,
               ...(startDate || endDate ? {
                 occurredAt: {
-                  ...(startDate ? { gte: new Date(startDate) } : {}),
-                  ...(endDate ? { lte: new Date(endDate) } : {})
+                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
+                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
                 }
               } : {})
             },
@@ -531,8 +531,8 @@ export class ReportService {
               ...otherFilters,
               ...(startDate || endDate ? {
                 scheduledAt: {
-                  ...(startDate ? { gte: new Date(startDate) } : {}),
-                  ...(endDate ? { lte: new Date(endDate) } : {})
+                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
+                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
                 }
               } : {})
             },

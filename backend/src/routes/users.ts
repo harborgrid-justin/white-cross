@@ -332,7 +332,7 @@ const getUsersByRoleHandler = async (request: any, h: any) => {
       }).code(400);
     }
 
-    const users = await UserService.getUsersByRole(role as any);
+    const users = await UserService.getUsersByRole(role);
 
     return h.response({
       success: true,

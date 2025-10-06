@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -11,7 +11,7 @@ export interface CreateIntegrationConfigData {
   apiKey?: string;
   username?: string;
   password?: string;
-  settings?: any;
+  settings?: Prisma.InputJsonValue;
   syncFrequency?: number;
 }
 
@@ -21,7 +21,7 @@ export interface UpdateIntegrationConfigData {
   apiKey?: string;
   username?: string;
   password?: string;
-  settings?: any;
+  settings?: Prisma.InputJsonValue;
   syncFrequency?: number;
   isActive?: boolean;
 }
@@ -30,7 +30,7 @@ export interface IntegrationTestResult {
   success: boolean;
   message: string;
   responseTime?: number;
-  details?: any;
+  details?: Prisma.InputJsonValue;
 }
 
 export interface IntegrationSyncResult {
@@ -289,7 +289,7 @@ export class IntegrationService {
   /**
    * Perform actual connection test based on integration type
    */
-  private static async performConnectionTest(integration: any): Promise<IntegrationTestResult> {
+  private static async performConnectionTest(integration: { type: string; settings?: Prisma.JsonValue }): Promise<IntegrationTestResult> {
     // Mock implementation - in production, this would make real API calls
     
     // Validate required fields
@@ -474,7 +474,7 @@ export class IntegrationService {
   /**
    * Perform actual sync operation
    */
-  private static async performSync(_integration: any): Promise<IntegrationSyncResult> {
+  private static async performSync(_integration: { type: string; settings?: Prisma.JsonValue }): Promise<IntegrationSyncResult> {
     // Mock implementation - in production, this would perform real data synchronization
     
     // Simulate processing records
@@ -520,7 +520,7 @@ export class IntegrationService {
     recordsFailed?: number;
     duration?: number;
     errorMessage?: string;
-    details?: any;
+    details?: Prisma.InputJsonValue;
   }) {
     try {
       const log = await prisma.integrationLog.create({
@@ -557,7 +557,7 @@ export class IntegrationService {
     limit: number = 20
   ) {
     try {
-      const where: any = {};
+      const where: Prisma.IntegrationLogWhereInput = {};
       if (integrationId) where.integrationId = integrationId;
       if (type) where.integrationType = type;
 
@@ -645,7 +645,7 @@ export class IntegrationService {
       const totalRecordsFailed = recentLogs.reduce((sum, log) => sum + (log.recordsFailed || 0), 0);
 
       // Group stats by type
-      const statsByType: any = {};
+      const statsByType: Record<string, { success: number; failed: number; total: number }> = {};
       syncStats.forEach(stat => {
         if (!statsByType[stat.integrationType]) {
           statsByType[stat.integrationType] = {

@@ -97,7 +97,7 @@ export class VendorService {
 
       return {
         vendor,
-        metrics: (metrics as any[])[0]
+        metrics: (metrics as Array<Record<string, unknown>>)[0]
       };
     } catch (error) {
       logger.error('Error fetching vendor:', error);

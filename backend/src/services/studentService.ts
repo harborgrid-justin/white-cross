@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 import _ from 'lodash';
 
@@ -51,7 +51,7 @@ export class StudentService {
       const skip = (page - 1) * limit;
       
       // Build where clause based on filters
-      const whereClause: any = {};
+      const whereClause: Prisma.StudentWhereInput = {};
 
       if (filters.search) {
         whereClause.OR = [

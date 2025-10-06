@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -84,7 +84,7 @@ export class InventoryService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {};
+      const whereClause: Prisma.InventoryItemWhereInput = {};
       
       if (filters.category) {
         whereClause.category = filters.category;
@@ -134,7 +134,7 @@ export class InventoryService {
 
       // Apply low stock filter if needed
       if (filters.lowStock) {
-        items = (items as any[]).filter((item: any) => item.isLowStock);
+        items = items.filter((item) => item.isLowStock);
       }
 
       const total = await prisma.inventoryItem.count({ where: whereClause });

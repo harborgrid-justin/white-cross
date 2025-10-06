@@ -88,7 +88,7 @@ router.post('/', auth, [
       });
     }
 
-    const createdById = (req as any).user.id;
+    const createdById = (req).user.id;
 
     const report = await ComplianceService.createComplianceReport({
       ...req.body,
@@ -373,7 +373,7 @@ router.put('/consent/:signatureId/withdraw', auth, [
       });
     }
 
-    const withdrawnBy = (req as any).user.id;
+    const withdrawnBy = (req).user.id;
 
     const signature = await ComplianceService.withdrawConsent(
       req.params.signatureId,
@@ -503,7 +503,7 @@ router.post('/policies/:policyId/acknowledge', auth, [
       });
     }
 
-    const userId = (req as any).user.id;
+    const userId = (req).user.id;
     const ipAddress = req.ip || req.socket.remoteAddress;
 
     const acknowledgment = await ComplianceService.acknowledgePolicy(
@@ -610,7 +610,7 @@ router.post('/generate', auth, [
       });
     }
 
-    const createdById = (req as any).user.id;
+    const createdById = (req).user.id;
 
     const report = await ComplianceService.generateComplianceReport(
       req.body.reportType,

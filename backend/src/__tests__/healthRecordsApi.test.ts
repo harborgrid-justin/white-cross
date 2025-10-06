@@ -294,7 +294,7 @@ describe('Health Records API - POST /api/health-records', () => {
       })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'studentId'
     )).toBe(true);
   });
@@ -311,7 +311,7 @@ describe('Health Records API - POST /api/health-records', () => {
       })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'type'
     )).toBe(true);
   });
@@ -328,7 +328,7 @@ describe('Health Records API - POST /api/health-records', () => {
       })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'date'
     )).toBe(true);
   });
@@ -344,7 +344,7 @@ describe('Health Records API - POST /api/health-records', () => {
       })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'description'
     )).toBe(true);
   });
@@ -472,7 +472,7 @@ describe('Health Records API - PUT /api/health-records/:id', () => {
       .send({ type: 'INVALID_TYPE' })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'type'
     )).toBe(true);
   });
@@ -484,7 +484,7 @@ describe('Health Records API - PUT /api/health-records/:id', () => {
       .send({ date: 'invalid-date' })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'date'
     )).toBe(true);
   });
@@ -635,9 +635,9 @@ describe('Health Records API - Allergies Endpoints', () => {
       .expect(400);
 
     expect(response.body.errors).toBeDefined();
-    expect(response.body.errors.some((error: any) => error.param === 'studentId')).toBe(true);
-    expect(response.body.errors.some((error: any) => error.param === 'allergen')).toBe(true);
-    expect(response.body.errors.some((error: any) => error.param === 'severity')).toBe(true);
+    expect(response.body.errors.some((error) => error.param === 'studentId')).toBe(true);
+    expect(response.body.errors.some((error) => error.param === 'allergen')).toBe(true);
+    expect(response.body.errors.some((error) => error.param === 'severity')).toBe(true);
   });
 
   test('134. should validate allergy severity levels', async () => {
@@ -651,7 +651,7 @@ describe('Health Records API - Allergies Endpoints', () => {
       })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'severity'
     )).toBe(true);
   });
@@ -805,9 +805,9 @@ describe('Health Records API - Chronic Conditions Endpoints', () => {
       .expect(400);
 
     expect(response.body.errors).toBeDefined();
-    expect(response.body.errors.some((error: any) => error.param === 'studentId')).toBe(true);
-    expect(response.body.errors.some((error: any) => error.param === 'condition')).toBe(true);
-    expect(response.body.errors.some((error: any) => error.param === 'diagnosedDate')).toBe(true);
+    expect(response.body.errors.some((error) => error.param === 'studentId')).toBe(true);
+    expect(response.body.errors.some((error) => error.param === 'condition')).toBe(true);
+    expect(response.body.errors.some((error) => error.param === 'diagnosedDate')).toBe(true);
   });
 
   test('144. should validate diagnosed date format', async () => {
@@ -821,7 +821,7 @@ describe('Health Records API - Chronic Conditions Endpoints', () => {
       })
       .expect(400);
 
-    expect(response.body.errors.some((error: any) => 
+    expect(response.body.errors.some((error) => 
       error.param === 'diagnosedDate'
     )).toBe(true);
   });

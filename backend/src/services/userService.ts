@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { logger } from '../utils/logger';
 
@@ -51,7 +51,7 @@ export class UserService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {};
+      const whereClause: Prisma.UserWhereInput = {};
       
       if (filters.search) {
         whereClause.OR = [
@@ -357,7 +357,7 @@ export class UserService {
         })
       ]);
 
-      const roleStats = byRole.reduce((acc: Record<string, number>, item: any) => {
+      const roleStats = byRole.reduce((acc: Record<string, number>, item) => {
         acc[item.role] = item._count.role;
         return acc;
       }, {} as Record<string, number>);
@@ -458,7 +458,7 @@ export class UserService {
         orderBy: { lastName: 'asc' }
       });
 
-      return nurses.map((nurse: any) => ({
+      return nurses.map((nurse) => ({
         ...nurse,
         currentStudentCount: nurse._count.nurseManagedStudents
       }));
