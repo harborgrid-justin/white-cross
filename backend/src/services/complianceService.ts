@@ -53,7 +53,7 @@ export class ComplianceService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      const where: any = {};
+      const where: Prisma.ComplianceReportWhereInput = {};
 
       if (filters.reportType) {
         where.reportType = filters.reportType;
@@ -156,14 +156,14 @@ export class ComplianceService {
     id: string,
     data: {
       status?: string;
-      findings?: any;
-      recommendations?: any;
+      findings?: Prisma.InputJsonValue;
+      recommendations?: Prisma.InputJsonValue;
       submittedBy?: string;
       reviewedBy?: string;
     }
   ) {
     try {
-      const updateData: any = { ...data };
+      const updateData: Prisma.ComplianceReportUpdateInput = { ...data };
       
       if (data.status === 'COMPLIANT' && !updateData.submittedAt) {
         updateData.submittedAt = new Date();
@@ -239,7 +239,7 @@ export class ComplianceService {
     }
   ) {
     try {
-      const updateData: any = { ...data };
+      const updateData: Prisma.ComplianceChecklistItemUpdateInput = { ...data };
       
       if (data.status === 'COMPLETED' && !updateData.completedAt) {
         updateData.completedAt = new Date();
@@ -263,7 +263,7 @@ export class ComplianceService {
    */
   static async getConsentForms(filters: { isActive?: boolean } = {}) {
     try {
-      const where: any = {};
+      const where: Prisma.ConsentFormWhereInput = {};
       
       if (filters.isActive !== undefined) {
         where.isActive = filters.isActive;
@@ -391,7 +391,7 @@ export class ComplianceService {
    */
   static async getPolicies(filters: { category?: string; status?: string } = {}) {
     try {
-      const where: any = {};
+      const where: Prisma.PolicyDocumentWhereInput = {};
       
       if (filters.category) {
         where.category = filters.category;
@@ -456,7 +456,7 @@ export class ComplianceService {
     }
   ) {
     try {
-      const updateData: any = { ...data };
+      const updateData: Prisma.PolicyDocumentUpdateInput = { ...data };
       
       if (data.status === 'ACTIVE' && !updateData.approvedAt) {
         updateData.approvedAt = new Date();
@@ -501,7 +501,7 @@ export class ComplianceService {
    */
   static async getComplianceStatistics(period?: string) {
     try {
-      const where: any = {};
+      const where: Prisma.ComplianceReportWhereInput = {};
       if (period) {
         where.period = period;
       }
@@ -570,7 +570,7 @@ export class ComplianceService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      const where: any = {};
+      const where: Prisma.ComplianceAuditLogWhereInput = {};
 
       if (filters.userId) {
         where.userId = filters.userId;
@@ -658,7 +658,7 @@ export class ComplianceService {
    * Get default checklist items for report type
    */
   private static getChecklistItemsForReportType(reportType: string) {
-    const items: any = {
+    const items: Record<string, Array<{ requirement: string; description: string; category: string; isRequired?: boolean }>> = {
       HIPAA: [
         {
           requirement: 'Privacy Rule Compliance',
