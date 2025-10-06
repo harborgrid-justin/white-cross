@@ -6,6 +6,7 @@
 import type {
   User,
   Student,
+  Priority,
   AppointmentType,
   AppointmentStatus,
   IncidentType,
