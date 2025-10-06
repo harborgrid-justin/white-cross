@@ -27,7 +27,6 @@ type UpdateUserRequest = any;
 type User = any;
 type Integration = any;
 type IntegrationConfig = any;
-type ConnectionTestResult = any;
 type InventoryItem = any;
 type Vendor = any;
 type PurchaseOrder = any;
@@ -148,7 +147,7 @@ export const administrationApi = {
   deleteSchool: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
 
   // Configuration Management
-  getAllConfigurations: async (category?: string): Promise<ApiResponse<any>> => ({
+  getAllConfigurations: async (): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
       configurations: []
@@ -205,7 +204,7 @@ export const administrationApi = {
   }),
 
   // Audit Logs
-  getAuditLogs: async (page: number = 1, limit: number = 50, filters?: any): Promise<ApiResponse<any>> => ({
+  getAuditLogs: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
       logs: [],
@@ -267,8 +266,8 @@ export const integrationApi = {
       updatedAt: new Date().toISOString()
     }
   }),
-  delete: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
-  testConnection: async (id: string): Promise<ApiResponse<any>> => ({
+  delete: async (): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id: '' } }),
+  testConnection: async (): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
       result: {
@@ -280,7 +279,7 @@ export const integrationApi = {
       }
     }
   }),
-  sync: async (id: string): Promise<ApiResponse<any>> => ({
+  sync: async (): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
       result: {

@@ -1,10 +1,6 @@
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
-import moment from 'moment';
-import debug from 'debug';
-
-const log = debug('whitecross:medications-api');
 
 // Types
 export interface Medication {

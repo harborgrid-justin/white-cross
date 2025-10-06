@@ -2,8 +2,7 @@ import type { IIncidentReportsApi } from '../types'
 import type { 
   IncidentReport, 
   WitnessStatement, 
-  FollowUpAction,
-  PaginatedResponse 
+  FollowUpAction
 } from '../types'
 import { apiInstance } from '../config/apiConfig'
 import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtils'

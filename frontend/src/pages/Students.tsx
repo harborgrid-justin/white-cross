@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Users, UserPlus, Search, Filter, MoreVertical, Edit, Trash2, Eye, AlertTriangle, Pill } from 'lucide-react'
+import { UserPlus, Search, Filter, MoreVertical, AlertTriangle, Pill } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Student {
@@ -188,27 +188,29 @@ export default function Students() {
     })
   }
 
-  const handleEdit = (student: Student) => {
-    setSelectedStudent(student)
-    setFormData({
-      studentNumber: student.studentNumber,
-      firstName: student.firstName,
-      lastName: student.lastName,
-      dateOfBirth: student.dateOfBirth,
-      grade: student.grade,
-      gender: student.gender
-    })
-    setShowModal(true)
-  }
+  // handleEdit and handleDelete functions kept for future implementation
+  // but not currently used in UI
+  // const handleEdit = (student: Student) => {
+  //   setSelectedStudent(student)
+  //   setFormData({
+  //     studentNumber: student.studentNumber,
+  //     firstName: student.firstName,
+  //     lastName: student.lastName,
+  //     dateOfBirth: student.dateOfBirth,
+  //     grade: student.grade,
+  //     gender: student.gender
+  //   })
+  //   setShowModal(true)
+  // }
 
-  const handleDelete = (studentId: string) => {
-    if (confirm('Are you sure you want to deactivate this student?')) {
-      setStudents(students.map(s => 
-        s.id === studentId ? { ...s, isActive: false } : s
-      ))
-      toast.success('Student deactivated successfully')
-    }
-  }
+  // const handleDelete = (studentId: string) => {
+  //   if (confirm('Are you sure you want to deactivate this student?')) {
+  //     setStudents(students.map(s => 
+  //       s.id === studentId ? { ...s, isActive: false } : s
+  //     ))
+  //     toast.success('Student deactivated successfully')
+  //   }
+  // }
 
   const handleViewDetails = (student: Student) => {
     setSelectedStudent(student)

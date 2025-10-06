@@ -1,4 +1,4 @@
-import { AxiosResponse, AxiosError, CancelToken } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import moment from 'moment';
 import debug from 'debug';
 
@@ -324,8 +324,7 @@ export const apiCache = new ApiCache();
 
 // Higher-order function to add caching to API calls
 export const withCache = <T extends any[], R>(
-  fn: (...args: T) => Promise<R>,
-  ttl: number = 5 * 60 * 1000
+  fn: (...args: T) => Promise<R>
 ) => {
   return async (...args: T): Promise<R> => {
     // For now, just call the function without caching

@@ -3,10 +3,7 @@ import {
   Users, 
   Pill, 
   Calendar, 
-  AlertTriangle, 
-  Clock,
-  CheckCircle,
-  AlertCircle
+  AlertTriangle
 } from 'lucide-react'
 
 export default function Dashboard() {

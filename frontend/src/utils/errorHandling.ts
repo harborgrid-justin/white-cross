@@ -5,27 +5,8 @@
 
 import { ApiError, ValidationError } from '../types/common';
 import {
-  ERROR_CODES,
-  ERROR_MESSAGES,
-  USER_MESSAGES,
-  ERROR_TITLES,
-  getErrorMessage,
-  getUserMessage,
-  getErrorSeverity,
-  getErrorCategory,
-  HTTP_STATUS_MAPPING
+  ERROR_CODES
 } from '../constants/errors';
-
-// Use the imported constants in the error handling functions
-const ERROR_TYPE_MESSAGES: Record<string, string> = {
-  [ERROR_CODES.NETWORK_ERROR]: 'Network connection failed',
-  [ERROR_CODES.TIMEOUT_ERROR]: 'Request timed out',
-  [ERROR_CODES.AUTHENTICATION_ERROR]: 'Authentication failed',
-  [ERROR_CODES.AUTHORIZATION_ERROR]: 'Access denied',
-  [ERROR_CODES.VALIDATION_ERROR]: 'Input validation failed',
-  [ERROR_CODES.SERVER_ERROR]: 'Internal server error',
-  [ERROR_CODES.DATA_INTEGRITY_ERROR]: 'Data integrity error occurred',
-};
 
 // Error types for classification
 export type ErrorType =
