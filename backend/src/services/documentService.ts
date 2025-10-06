@@ -336,7 +336,7 @@ export class DocumentService {
   /**
    * Download document (track access)
    */
-  static async downloadDocument(documentId: string, downloadedBy: string, ipAddress?: string) {
+  static async downloadDocument(documentId: string, downloadedBy: string, _ipAddress?: string) {
     try {
       const document = await this.getDocumentById(documentId);
 
@@ -353,7 +353,7 @@ export class DocumentService {
   /**
    * View document (track access)
    */
-  static async viewDocument(documentId: string, viewedBy: string, ipAddress?: string) {
+  static async viewDocument(documentId: string, viewedBy: string, _ipAddress?: string) {
     try {
       const document = await this.getDocumentById(documentId);
 
