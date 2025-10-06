@@ -151,7 +151,7 @@ if (process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET) {
 }
 
 // Serialize user for session
-passport.serializeUser((user: Express.User, done) => {
+passport.serializeUser((user, done) => {
   done(null, (user as { id: string }).id);
 });
 
