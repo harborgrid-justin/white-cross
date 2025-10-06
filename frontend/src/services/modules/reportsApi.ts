@@ -386,39 +386,39 @@ class ReportsApiImpl implements ReportsApi {
   }
 
   // Custom Report Builder
-  async getReportTemplates(category?: string): Promise<{ templates: any[] }> {
+  async getReportTemplates(category?: string): Promise<{ templates: any[] } | undefined> {
     const params = category ? buildUrlParams({ category }) : '';
-    const response = await apiInstance.get<ApiResponse<{ templates: any[] }>>(
+    const response = await apiInstance.get<ApiResponse<{ templates: any[] } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/templates?${params.toString()}`
     );
     return extractApiData(response);
   }
 
-  async generateCustomReport(request: CustomReportRequest): Promise<{ report: ReportData }> {
-    const response = await apiInstance.post<ApiResponse<{ report: ReportData }>>(
+  async generateCustomReport(request: CustomReportRequest): Promise<{ report: ReportData } | undefined> {
+    const response = await apiInstance.post<ApiResponse<{ report: ReportData } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/custom`,
       request
     );
     return extractApiData(response);
   }
 
-  async saveReportTemplate(template: any): Promise<{ template: any }> {
-    const response = await apiInstance.post<ApiResponse<{ template: any }>>(
+  async saveReportTemplate(template: any): Promise<{ template: any } | undefined> {
+    const response = await apiInstance.post<ApiResponse<{ template: any } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/templates`,
       template
     );
     return extractApiData(response);
   }
 
-  async getScheduledReports(): Promise<{ reports: any[] }> {
-    const response = await apiInstance.get<ApiResponse<{ reports: any[] }>>(
+  async getScheduledReports(): Promise<{ reports: any[] } | undefined> {
+    const response = await apiInstance.get<ApiResponse<{ reports: any[] } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/scheduled`
     );
     return extractApiData(response);
   }
 
-  async scheduleReport(request: CustomReportRequest & { schedule: any }): Promise<{ scheduled: any }> {
-    const response = await apiInstance.post<ApiResponse<{ scheduled: any }>>(
+  async scheduleReport(request: CustomReportRequest & { schedule: any }): Promise<{ scheduled: any } | undefined> {
+    const response = await apiInstance.post<ApiResponse<{ scheduled: any } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/schedule`,
       request
     );
@@ -435,41 +435,41 @@ class ReportsApiImpl implements ReportsApi {
     return response.data;
   }
 
-  async shareReport(reportId: string, data: { recipients: string[]; message?: string }): Promise<{ shared: boolean }> {
-    const response = await apiInstance.post<ApiResponse<{ shared: boolean }>>(
+  async shareReport(reportId: string, data: { recipients: string[]; message?: string }): Promise<{ shared: boolean } | undefined> {
+    const response = await apiInstance.post<ApiResponse<{ shared: boolean } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/${reportId}/share`,
       data
     );
     return extractApiData(response);
   }
 
-  async getReportHistory(filters: { userId?: string; reportType?: string } = {}): Promise<{ history: any[] }> {
+  async getReportHistory(filters: { userId?: string; reportType?: string } = {}): Promise<{ history: any[] } | undefined> {
     const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ history: any[] }>>(
+    const response = await apiInstance.get<ApiResponse<{ history: any[] } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/history?${params.toString()}`
     );
     return extractApiData(response);
   }
 
   // Analytics
-  async getUsageAnalytics(filters: DateRangeFilter = {}): Promise<{ analytics: any }> {
+  async getUsageAnalytics(filters: DateRangeFilter = {}): Promise<{ analytics: any } | undefined> {
     const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ analytics: any }>>(
+    const response = await apiInstance.get<ApiResponse<{ analytics: any } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/analytics/usage?${params.toString()}`
     );
     return extractApiData(response);
   }
 
-  async getReportPopularity(): Promise<{ popularity: any[] }> {
-    const response = await apiInstance.get<ApiResponse<{ popularity: any[] }>>(
+  async getReportPopularity(): Promise<{ popularity: any[] } | undefined> {
+    const response = await apiInstance.get<ApiResponse<{ popularity: any[] } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/analytics/popularity`
     );
     return extractApiData(response);
   }
 
-  async getPerformanceInsights(filters: ReportFilters = {}): Promise<{ insights: any[] }> {
+  async getPerformanceInsights(filters: ReportFilters = {}): Promise<{ insights: any[] } | undefined> {
     const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ insights: any[] }>>(
+    const response = await apiInstance.get<ApiResponse<{ insights: any[] } | undefined>>(
       `${API_ENDPOINTS.REPORTS}/analytics/insights?${params.toString()}`
     );
     return extractApiData(response);

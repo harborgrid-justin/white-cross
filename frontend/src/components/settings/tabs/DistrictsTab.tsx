@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {
   Building2,
-  Plus,
-  Edit,
-  Trash2
+  Plus
 } from 'lucide-react'
 import { administrationApi } from '../../../services/api'
 import toast from 'react-hot-toast'

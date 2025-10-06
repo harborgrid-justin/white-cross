@@ -1,10 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { ApiErrorHandler } from '../services/utils/apiUtils';
-import { processError, createErrorNotification, ProcessedError } from '../utils/errorHandling';
-import { ERROR_CODES, getUserMessage, getErrorTitle } from '../constants/errors';
-import debug from 'debug';
-
-const log = debug('whitecross:error-boundary');
+import { ERROR_CODES, getUserMessage } from '../constants/errors';
 
 interface Props {
   children: ReactNode;

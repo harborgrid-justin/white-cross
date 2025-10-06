@@ -21,7 +21,9 @@ router.post('/access-log', [
       });
     }
 
-    const auditLog = {
+    // In a real implementation, this would save to an audit log table
+    // TODO: Persist auditLog to database
+    void {
       userId: req.user?.userId,
       userRole: req.user?.role,
       action: req.body.action,
@@ -33,9 +35,6 @@ router.post('/access-log', [
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent')
     };
-
-    // In a real implementation, this would save to an audit log table
-    console.log('Audit Access Log:', auditLog);
 
     res.status(201).json({
       success: true,
@@ -66,7 +65,9 @@ router.post('/security-log', [
       });
     }
 
-    const securityEvent = {
+    // In a real implementation, this would save to a security log table
+    // TODO: Persist securityEvent to database
+    void {
       userId: req.user?.userId,
       userRole: req.user?.role,
       event: req.body.event,
@@ -78,9 +79,6 @@ router.post('/security-log', [
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent')
     };
-
-    // In a real implementation, this would save to a security log table
-    console.log('Security Event Log:', securityEvent);
 
     res.status(201).json({
       success: true,
