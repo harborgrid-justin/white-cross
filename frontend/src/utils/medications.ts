@@ -1,20 +1,9 @@
 import {
-  STOCK_THRESHOLDS,
-  EXPIRATION_WARNINGS,
-  DATE_FORMATS,
-  SEVERITY_LEVELS,
-  MEDICATION_STATUSES,
-  INVENTORY_STATUSES
+  DATE_FORMATS
 } from '../constants/medications'
 
-// Use the imported constants in utility functions
-const CRITICAL_STOCK_LEVEL = STOCK_THRESHOLDS.critical;
-const LOW_STOCK_LEVEL = STOCK_THRESHOLDS.low;
-const REORDER_STOCK_LEVEL = STOCK_THRESHOLDS.reorder;
 import type {
   Medication,
-  MedicationInventory,
-  AdverseReaction,
   MedicationReminder,
   Priority
 } from '../types/api'
@@ -29,8 +18,6 @@ export const formatDate = (date: string | Date, format: keyof typeof DATE_FORMAT
     if (isNaN(dateObj.getTime())) {
       return 'Invalid Date'
     }
-
-    const options: Intl.DateTimeFormatOptions = {}
     
     switch (format) {
       case 'display':

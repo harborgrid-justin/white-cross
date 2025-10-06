@@ -74,7 +74,7 @@ export default function Inventory() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab])
 
   const filteredItems = inventoryItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

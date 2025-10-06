@@ -1,9 +1,5 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import debug from 'debug';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_CONFIG } from '../../constants/config';
-import { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG, API_CONSTANTS } from '../../constants/api';
-
-const log = debug('whitecross:api-config');
 
 // Create axios instance
 export const apiInstance: AxiosInstance = axios.create({
@@ -68,12 +64,10 @@ apiInstance.interceptors.response.use(
   }
 );
 
-// Session expire handler
-let sessionExpireHandler: (() => void) | null = null;
-
-export const setSessionExpireHandler = (handler: () => void) => {
-  sessionExpireHandler = handler;
-};
+// Session expire handler - available for future use
+// export const setSessionExpireHandler = (handler: () => void) => {
+//   sessionExpireHandler = handler;
+// };
 
 // Utility functions
 export const tokenUtils = {

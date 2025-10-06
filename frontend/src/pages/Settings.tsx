@@ -7,7 +7,6 @@ import {
   School,
   Database,
   Activity,
-  Award,
   FileKey,
   BookOpen,
   FileText,
