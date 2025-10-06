@@ -338,6 +338,60 @@ export interface InventoryTransaction extends BaseEntity {
   performedByUser?: User;
 }
 
+export interface InventoryAlert {
+  id: string;
+  type: 'LOW_STOCK' | 'OUT_OF_STOCK' | 'EXPIRING_SOON' | 'EXPIRED';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  itemId: string;
+  itemName: string;
+  message: string;
+  quantity?: number;
+  reorderLevel?: number;
+  expirationDate?: string;
+  createdAt: string;
+}
+
+export interface Vendor extends BaseEntity {
+  name: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  taxId?: string;
+  paymentTerms?: string;
+  accountNumber?: string;
+  notes?: string;
+  isActive: boolean;
+  rating?: number;
+}
+
+export interface PurchaseOrder extends BaseEntity {
+  orderNumber: string;
+  vendorId: string;
+  vendor?: Vendor;
+  orderDate: string;
+  expectedDeliveryDate?: string;
+  status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'ORDERED' | 'RECEIVED' | 'CANCELLED';
+  totalAmount: number;
+  notes?: string;
+  orderedBy: string;
+  approvedBy?: string;
+  receivedBy?: string;
+  receivedDate?: string;
+  total?: number;
+  items?: unknown[];
+}
+
+export interface BudgetCategory extends BaseEntity {
+  name: string;
+  description?: string;
+  allocatedAmount: number;
+  spentAmount: number;
+  fiscalYear: number;
+  isActive: boolean;
+  utilizationPercentage?: number;
+}
+
 // =====================
 // API REQUEST/RESPONSE TYPES
 // =====================
@@ -386,6 +440,7 @@ export interface HealthRecordFilters extends PaginationParams, DateRangeFilter {
   type?: string;
   provider?: string;
   isPrivate?: boolean;
+  sensitive?: boolean;
 }
 
 // Incident Reports API

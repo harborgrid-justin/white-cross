@@ -36,7 +36,7 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
     try {
       setLoading(true)
       const response = await studentsApi.getAssignedStudents()
-      setStudents(response.students)
+      setStudents(response)
       setError(null)
     } catch (err) {
       setError('Failed to load assigned students')
