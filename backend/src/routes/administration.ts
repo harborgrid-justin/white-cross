@@ -1,15 +1,16 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { AdministrationService } from '../services/administrationService';
-import { auth, AuthRequest } from '../middleware/auth';
+import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 
 // Admin middleware
-const isAdmin = async (req: AuthRequest, res: Response, next: any) => {
+const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   if (!['ADMIN', 'DISTRICT_ADMIN'].includes(req.user?.role || '')) {
-    return res.status(403).json({
+    res.status(403).json({
       success: false,
       error: { message: 'Access denied. Admin privileges required.' }
     });
+    return;
   }
   next();
 };

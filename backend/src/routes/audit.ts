@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { auth, AuthRequest } from '../middleware/auth';
+import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
