@@ -1,35 +1,51 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { 
-  Users, 
-  Pill, 
-  Calendar, 
-  FileText, 
-  AlertTriangle, 
-  Phone, 
-  Package, 
-  BarChart3, 
-  Settings, 
-  Menu, 
+import {
+  Users,
+  Pill,
+  Calendar,
+  FileText,
+  AlertTriangle,
+  Phone,
+  Package,
+  BarChart3,
+  Settings,
+  Menu,
   X,
   LogOut,
   Home,
   MessageSquare
 } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
+import { PROTECTED_ROUTES } from '../constants/routes'
+
+// Icon mapping for navigation items
+const iconMap: Record<string, any> = {
+  Home,
+  Users,
+  Pill,
+  Calendar,
+  FileText,
+  AlertTriangle,
+  Phone,
+  MessageSquare,
+  Package,
+  BarChart3,
+  Settings,
+}
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Students', href: '/students', icon: Users },
-  { name: 'Medications', href: '/medications', icon: Pill },
-  { name: 'Appointments', href: '/appointments', icon: Calendar },
-  { name: 'Health Records', href: '/health-records', icon: FileText },
-  { name: 'Incident Reports', href: '/incident-reports', icon: AlertTriangle },
-  { name: 'Emergency Contacts', href: '/emergency-contacts', icon: Phone },
-  { name: 'Communication', href: '/communication', icon: MessageSquare },
-  { name: 'Inventory', href: '/inventory', icon: Package },
-  { name: 'Reports', href: '/reports', icon: BarChart3 },
-  { name: 'Administration', href: '/admin', icon: Settings },
+  { name: 'Dashboard', href: PROTECTED_ROUTES.DASHBOARD, icon: 'Home' },
+  { name: 'Students', href: PROTECTED_ROUTES.STUDENTS, icon: 'Users' },
+  { name: 'Medications', href: PROTECTED_ROUTES.MEDICATIONS, icon: 'Pill' },
+  { name: 'Appointments', href: PROTECTED_ROUTES.APPOINTMENTS, icon: 'Calendar' },
+  { name: 'Health Records', href: PROTECTED_ROUTES.HEALTH_RECORDS, icon: 'FileText' },
+  { name: 'Incident Reports', href: PROTECTED_ROUTES.INCIDENT_REPORTS, icon: 'AlertTriangle' },
+  { name: 'Emergency Contacts', href: PROTECTED_ROUTES.EMERGENCY_CONTACTS, icon: 'Phone' },
+  { name: 'Communication', href: PROTECTED_ROUTES.COMMUNICATION, icon: 'MessageSquare' },
+  { name: 'Inventory', href: PROTECTED_ROUTES.INVENTORY, icon: 'Package' },
+  { name: 'Reports', href: PROTECTED_ROUTES.REPORTS, icon: 'BarChart3' },
+  { name: 'Administration', href: PROTECTED_ROUTES.ADMIN, icon: 'Settings' },
 ]
 
 interface LayoutProps {
@@ -65,7 +81,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="mt-5 flex-1 h-0 overflow-y-auto">
             <nav className="px-2 space-y-1">
               {navigation.map((item) => {
-                const Icon = item.icon
+                const Icon = iconMap[item.icon]
                 const isActive = location.pathname.startsWith(item.href)
                 return (
                   <Link
@@ -97,7 +113,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="mt-5 flex-grow flex flex-col">
             <nav className="flex-1 px-2 space-y-1">
               {navigation.map((item) => {
-                const Icon = item.icon
+                const Icon = iconMap[item.icon]
                 const isActive = location.pathname.startsWith(item.href)
                 return (
                   <Link

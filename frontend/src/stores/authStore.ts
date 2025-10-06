@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { API_CONFIG } from '../constants/config';
+import { API_ENDPOINTS } from '../constants/api';
 
 export interface User {
   id: string;
@@ -35,8 +37,8 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          // TODO: Replace with actual API call
-          const response = await fetch('/api/auth/login', {
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`;
+          const response = await fetch(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -87,8 +89,8 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          // TODO: Replace with actual API call to verify token
-          const response = await fetch('/api/auth/me', {
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`;
+          const response = await fetch(url, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

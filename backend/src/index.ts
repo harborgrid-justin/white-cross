@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 // Import utilities
 import { logger } from './utils/logger';
+import { ENVIRONMENT, CORS_CONFIG } from './constants';
 
 // Import route handlers (converted for Hapi)
 import { authRoutes } from './routes/auth';
@@ -40,12 +41,12 @@ const prisma = new PrismaClient();
 
 // Create Hapi server instance
 const server = Hapi.server({
-  port: process.env.PORT || 3001,
-  host: process.env.HOST || 'localhost',
+  port: ENVIRONMENT.PORT,
+  host: ENVIRONMENT.HOST,
   routes: {
     cors: {
-      origin: [process.env.FRONTEND_URL || 'http://localhost:5173'],
-      credentials: true
+      origin: CORS_CONFIG.ALLOWED_ORIGINS,
+      credentials: CORS_CONFIG.CREDENTIALS
     }
   }
 });
@@ -68,7 +69,7 @@ const init = async () => {
           status: 'OK',
           timestamp: new Date().toISOString(),
           uptime: process.uptime(),
-          environment: process.env.NODE_ENV || 'development'
+          environment: ENVIRONMENT.NODE_ENV
         });
       },
       options: {
@@ -144,7 +145,7 @@ const init = async () => {
     // Start server
     await server.start();
     logger.info(`White Cross API Server running on ${server.info.uri}`);
-    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Environment: ${ENVIRONMENT.NODE_ENV}`);
 
   } catch (error) {
     logger.error('Error starting server:', error);

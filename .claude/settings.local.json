@@ -41,7 +41,13 @@
       "Bash(tree:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run type-check:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(git remote:*)",
+      "Bash(npx prisma:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
