@@ -1,4 +1,4 @@
-YESimport request from 'supertest';
+import request from 'supertest';
 import { app } from '../../index';
 import { HealthRecordService } from '../../services/healthRecordService';
 import jwt from 'jsonwebtoken';
@@ -112,7 +112,7 @@ describe('Health Records API - GET /api/health-records/student/:studentId', () =
       pagination: { page: 2, limit: 10, total: 15, pages: 2 }
     });
 
-    const response = await request(app)
+    await request(app)
       .get('/api/health-records/student/student-1?page=2&limit=10')
       .set('Authorization', `Bearer ${mockToken}`)
       .expect(200);
