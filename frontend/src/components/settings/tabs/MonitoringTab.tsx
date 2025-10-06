@@ -1,7 +1,4 @@
 import React from 'react'
-import {
-  Activity
-} from 'lucide-react'
 
 export default function MonitoringTab({ health, loading }: { health: any; loading: boolean }) {
   if (loading) {

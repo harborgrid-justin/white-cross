@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Shield
 } from 'lucide-react'
@@ -10,11 +10,7 @@ export default function ConfigurationTab() {
   const [loading, setLoading] = useState(false)
   const [category, setCategory] = useState('all')
 
-  useEffect(() => {
-    loadConfigurations()
-  }, [category])
-
-  const loadConfigurations = async () => {
+  const loadConfigurations = useCallback(async () => {
     try {
       setLoading(true)
       const data = await administrationApi.getAllConfigurations(category !== 'all' ? category : undefined)
@@ -24,7 +20,11 @@ export default function ConfigurationTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [category])
+
+  useEffect(() => {
+    loadConfigurations()
+  }, [loadConfigurations])
 
   const handleUpdate = async (key: string, value: string) => {
     try {

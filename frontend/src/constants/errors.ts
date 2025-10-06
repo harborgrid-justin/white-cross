@@ -3,8 +3,6 @@
  * Provides consistent error handling and user messaging across the application
  */
 
-import type { ErrorType } from '../utils/errorHandling';
-
 // Error Codes
 export const ERROR_CODES = {
   // Network Errors

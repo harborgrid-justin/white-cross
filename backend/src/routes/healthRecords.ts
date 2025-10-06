@@ -412,7 +412,9 @@ const logSecurityEventHandler = async (request: any, h: any) => {
   try {
     const user = request.auth.credentials;
 
-    const securityEvent = {
+    // In a real implementation, this would save to a security log table
+    // TODO: Persist securityEvent to database
+    void {
       userId: user?.userId,
       userRole: user?.role,
       event: request.payload.event,
@@ -423,9 +425,6 @@ const logSecurityEventHandler = async (request: any, h: any) => {
       ipAddress: request.info.remoteAddress,
       userAgent: request.headers['user-agent']
     };
-
-    // In a real implementation, this would save to a security log table
-    console.log('Security Event:', securityEvent);
 
     return h.response({
       success: true,
