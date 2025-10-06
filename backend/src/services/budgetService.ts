@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -34,7 +34,7 @@ export class BudgetService {
     try {
       const currentYear = fiscalYear || new Date().getFullYear();
       
-      const where: any = { fiscalYear: currentYear };
+      const where: Prisma.BudgetCategoryWhereInput = { fiscalYear: currentYear };
       if (activeOnly) {
         where.isActive = true;
       }
@@ -51,7 +51,7 @@ export class BudgetService {
       });
 
       // Calculate remaining and utilization for each category
-      const enrichedCategories = categories.map((category: any) => ({
+      const enrichedCategories = categories.map((category) => ({
         ...category,
         remainingAmount: Number(category.allocatedAmount) - Number(category.spentAmount),
         utilizationPercentage: Number(category.allocatedAmount) > 0 
@@ -240,7 +240,7 @@ export class BudgetService {
     try {
       const skip = (page - 1) * limit;
       
-      const where: any = {};
+      const where: Prisma.BudgetTransactionWhereInput = {};
       
       if (filters.categoryId) {
         where.categoryId = filters.categoryId;

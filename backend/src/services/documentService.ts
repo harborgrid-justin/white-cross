@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ export interface CreateDocumentData {
   studentId?: string;
   tags?: string[];
   isTemplate?: boolean;
-  templateData?: any;
+  templateData?: Prisma.InputJsonValue;
   accessLevel?: string;
 }
 
@@ -46,7 +46,7 @@ export class DocumentService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      const where: any = {};
+      const where: Prisma.DocumentWhereInput = {};
 
       if (filters.category) {
         where.category = filters.category;
@@ -183,7 +183,7 @@ export class DocumentService {
    */
   static async updateDocument(id: string, data: UpdateDocumentData, updatedBy: string) {
     try {
-      const updateData: any = {};
+      const updateData: Prisma.DocumentUpdateInput = {};
       if (data.title) updateData.title = data.title;
       if (data.description) updateData.description = data.description;
       if (data.status) updateData.status = data.status;
@@ -372,7 +372,7 @@ export class DocumentService {
    */
   static async getTemplates(category?: string) {
     try {
-      const where: any = { isTemplate: true };
+      const where: Prisma.DocumentWhereInput = { isTemplate: true };
       
       if (category) {
         where.category = category;
@@ -400,7 +400,7 @@ export class DocumentService {
       title: string;
       uploadedBy: string;
       studentId?: string;
-      templateData?: any;
+      templateData?: Prisma.InputJsonValue;
     }
   ) {
     try {
@@ -471,9 +471,9 @@ export class DocumentService {
   /**
    * Search documents
    */
-  static async searchDocuments(query: string, filters: any = {}) {
+  static async searchDocuments(query: string, filters: Record<string, string> = {}) {
     try {
-      const where: any = {
+      const where: Prisma.DocumentWhereInput = {
         OR: [
           { title: { contains: query, mode: 'insensitive' } },
           { description: { contains: query, mode: 'insensitive' } },
@@ -603,7 +603,7 @@ export class DocumentService {
     documentId: string,
     action: string,
     performedBy: string,
-    changes?: any
+    changes?: Prisma.InputJsonValue
   ) {
     try {
       await prisma.documentAuditTrail.create({

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -113,7 +113,7 @@ export class IncidentReportService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {};
+      const whereClause: Prisma.IncidentReportWhereInput = {};
       
       if (filters.studentId) {
         whereClause.studentId = filters.studentId;
@@ -422,7 +422,7 @@ export class IncidentReportService {
     studentId?: string
   ): Promise<IncidentStatistics> {
     try {
-      const whereClause: any = {};
+      const whereClause: Prisma.IncidentReportWhereInput = {};
       
       if (dateFrom || dateTo) {
         whereClause.occurredAt = {};
@@ -473,7 +473,7 @@ export class IncidentReportService {
       });
 
       const avgResponseTime = reports.length > 0 
-        ? reports.reduce((sum: number, report: any) => {
+        ? reports.reduce((sum: number, report) => {
             const responseTime = report.createdAt.getTime() - report.occurredAt.getTime();
             return sum + (responseTime / (1000 * 60)); // Convert to minutes
           }, 0) / reports.length
@@ -481,15 +481,15 @@ export class IncidentReportService {
 
       return {
         total: totalReports,
-        byType: typeStats.reduce((acc: Record<string, number>, curr: any) => {
+        byType: typeStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.type] = curr._count.type;
           return acc;
         }, {}),
-        bySeverity: severityStats.reduce((acc: Record<string, number>, curr: any) => {
+        bySeverity: severityStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.severity] = curr._count.severity;
           return acc;
         }, {}),
-        byLocation: locationStats.reduce((acc: Record<string, number>, curr: any) => {
+        byLocation: locationStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.location] = curr._count.location;
           return acc;
         }, {}),
@@ -514,7 +514,7 @@ export class IncidentReportService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {
+      const whereClause: Prisma.IncidentReportWhereInput = {
         OR: [
           { description: { contains: query, mode: 'insensitive' } },
           { location: { contains: query, mode: 'insensitive' } },
@@ -855,7 +855,7 @@ export class IncidentReportService {
     notes?: string
   ) {
     try {
-      const updateData: any = { status };
+      const updateData: Prisma.IncidentReportUpdateInput = { status };
       
       if (status === 'COMPLETED') {
         updateData.completedAt = new Date();
@@ -896,7 +896,7 @@ export class IncidentReportService {
         throw new Error('Incident report not found');
       }
 
-      const updateData: any = {};
+      const updateData: Prisma.IncidentReportUpdateInput = {};
       if (evidenceType === 'photo') {
         updateData.evidencePhotos = [...report.evidencePhotos, ...evidenceUrls];
       } else {

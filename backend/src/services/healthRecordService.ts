@@ -8,7 +8,7 @@ export interface CreateHealthRecordData {
   type: 'CHECKUP' | 'VACCINATION' | 'ILLNESS' | 'INJURY' | 'SCREENING' | 'PHYSICAL_EXAM' | 'MENTAL_HEALTH' | 'DENTAL' | 'VISION' | 'HEARING';
   date: Date;
   description: string;
-  vital?: any; // JSON data for vitals
+  vital?: Prisma.InputJsonValue; // JSON data for vitals
   provider?: string;
   notes?: string;
   attachments?: string[];
@@ -72,7 +72,7 @@ export class HealthRecordService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = { studentId };
+      const whereClause: Prisma.HealthRecordWhereInput = { studentId };
       
       if (filters.type) {
         whereClause.type = filters.type;
@@ -289,7 +289,7 @@ export class HealthRecordService {
       }
 
       // Update verification timestamp if being verified
-      const updateData: any = { ...data };
+      const updateData: Prisma.HealthRecordUpdateInput = { ...data };
       if (data.verified && !existingAllergy.verified) {
         updateData.verifiedAt = new Date();
       }
@@ -427,7 +427,7 @@ export class HealthRecordService {
 
       // Extract height and weight data points
       const growthData = records
-        .map((record: any) => {
+        .map((record) => {
           const vital = record.vital as any;
           return {
             date: record.date,
@@ -437,7 +437,7 @@ export class HealthRecordService {
             recordType: record.type
           };
         })
-        .filter((data: any) => data.height || data.weight);
+        .filter((data) => data.height || data.weight);
 
       return growthData;
     } catch (error) {
@@ -469,7 +469,7 @@ export class HealthRecordService {
         take: limit
       });
 
-      return records.map((record: any) => ({
+      return records.map((record) => ({
         ...record,
         vital: record.vital as VitalSigns
       }));
@@ -516,7 +516,7 @@ export class HealthRecordService {
         allergies,
         recentVitals: recentRecords,
         recentVaccinations: vaccinations.slice(0, 5),
-        recordCounts: recordCounts.reduce((acc: Record<string, number>, curr: any) => {
+        recordCounts: recordCounts.reduce((acc: Record<string, number>, curr) => {
           acc[curr.type] = curr._count.type;
           return acc;
         }, {} as Record<string, number>)
@@ -539,7 +539,7 @@ export class HealthRecordService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {
+      const whereClause: Prisma.HealthRecordWhereInput = {
         OR: [
           { description: { contains: query, mode: 'insensitive' } },
           { notes: { contains: query, mode: 'insensitive' } },
@@ -781,7 +781,7 @@ export class HealthRecordService {
   /**
    * Import health records from JSON (basic import functionality)
    */
-  static async importHealthRecords(studentId: string, importData: any) {
+  static async importHealthRecords(studentId: string, importData: Prisma.InputJsonValue) {
     try {
       // Verify student exists
       const student = await prisma.student.findUnique({

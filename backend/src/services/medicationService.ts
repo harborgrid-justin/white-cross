@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -72,7 +72,7 @@ export class MedicationService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {};
+      const whereClause: Prisma.MedicationWhereInput = {};
       if (search) {
         whereClause.OR = [
           { name: { contains: search, mode: 'insensitive' } },
@@ -412,7 +412,7 @@ export class MedicationService {
       thirtyDaysFromNow.setDate(now.getDate() + 30);
 
       // Categorize inventory items
-      const categorizedInventory = inventory.map((item: any) => ({
+      const categorizedInventory = inventory.map((item) => ({
         ...item,
         alerts: {
           lowStock: item.quantity <= item.reorderLevel,
@@ -422,9 +422,9 @@ export class MedicationService {
       }));
 
       const alerts = {
-        lowStock: categorizedInventory.filter((item: any) => item.alerts.lowStock),
-        nearExpiry: categorizedInventory.filter((item: any) => item.alerts.nearExpiry && !item.alerts.expired),
-        expired: categorizedInventory.filter((item: any) => item.alerts.expired)
+        lowStock: categorizedInventory.filter((item) => item.alerts.lowStock),
+        nearExpiry: categorizedInventory.filter((item) => item.alerts.nearExpiry && !item.alerts.expired),
+        expired: categorizedInventory.filter((item) => item.alerts.expired)
       };
 
       return {
@@ -442,7 +442,7 @@ export class MedicationService {
    */
   static async getMedicationSchedule(startDate: Date, endDate: Date, nurseId?: string) {
     try {
-      const whereClause: any = {
+      const whereClause: Prisma.MedicationWhereInput = {
         isActive: true,
         startDate: { lte: endDate },
         OR: [
@@ -604,7 +604,7 @@ export class MedicationService {
           scheduledDateTime.setHours(time.hour, time.minute, 0, 0);
           
           // Check if already administered
-          const wasAdministered = med.logs.some((log: any) => {
+          const wasAdministered = med.logs.some((log) => {
             const logTime = new Date(log.timeGiven);
             const timeDiff = Math.abs(logTime.getTime() - scheduledDateTime.getTime());
             return timeDiff < 3600000; // Within 1 hour
@@ -772,7 +772,7 @@ export class MedicationService {
    */
   static async getAdverseReactions(medicationId?: string, studentId?: string) {
     try {
-      const whereClause: any = {
+      const whereClause: Prisma.MedicationWhereInput = {
         type: 'ALLERGIC_REACTION'
       };
 
@@ -812,7 +812,7 @@ export class MedicationService {
 
       // Filter by medication if specified
       if (medicationId) {
-        return reports.filter((report: any) => 
+        return reports.filter((report) => 
           report.student.medications && 
           report.student.medications.length > 0
         );

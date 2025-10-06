@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
@@ -127,7 +127,7 @@ export class CommunicationService {
     isActive: boolean = true
   ) {
     try {
-      const whereClause: any = { isActive };
+      const whereClause: Prisma.MessageTemplateWhereInput = { isActive };
       
       if (type) {
         whereClause.type = type;
@@ -318,7 +318,7 @@ export class CommunicationService {
 
       // Get students based on criteria
       if (data.audience.grades || data.audience.nurseIds || data.audience.studentIds) {
-        const studentWhereClause: any = { isActive: true };
+        const studentWhereClause: Prisma.StudentWhereInput = { isActive: true };
         
         if (data.audience.grades?.length) {
           studentWhereClause.grade = { in: data.audience.grades };
@@ -387,7 +387,7 @@ export class CommunicationService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: any = {};
+      const whereClause: Prisma.CommunicationLogWhereInput = {};
       
       if (filters.senderId) {
         whereClause.senderId = filters.senderId;
@@ -471,11 +471,11 @@ export class CommunicationService {
 
       const summary = {
         total: deliveries.length,
-        pending: deliveries.filter((d: any) => d.status === 'PENDING').length,
-        sent: deliveries.filter((d: any) => d.status === 'SENT').length,
-        delivered: deliveries.filter((d: any) => d.status === 'DELIVERED').length,
-        failed: deliveries.filter((d: any) => d.status === 'FAILED').length,
-        bounced: deliveries.filter((d: any) => d.status === 'BOUNCED').length
+        pending: deliveries.filter((d) => d.status === 'PENDING').length,
+        sent: deliveries.filter((d) => d.status === 'SENT').length,
+        delivered: deliveries.filter((d) => d.status === 'DELIVERED').length,
+        failed: deliveries.filter((d) => d.status === 'FAILED').length,
+        bounced: deliveries.filter((d) => d.status === 'BOUNCED').length
       };
 
       return {
@@ -562,7 +562,7 @@ export class CommunicationService {
    */
   static async getCommunicationStatistics(dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: any = {};
+      const whereClause: Prisma.CommunicationLogWhereInput = {};
       
       if (dateFrom || dateTo) {
         whereClause.createdAt = {};
@@ -605,19 +605,19 @@ export class CommunicationService {
 
       return {
         totalMessages,
-        byCategory: categoryStats.reduce((acc: Record<string, number>, curr: any) => {
+        byCategory: categoryStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.category] = curr._count.category;
           return acc;
         }, {}),
-        byPriority: priorityStats.reduce((acc: Record<string, number>, curr: any) => {
+        byPriority: priorityStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.priority] = curr._count.priority;
           return acc;
         }, {}),
-        byChannel: channelStats.reduce((acc: Record<string, number>, curr: any) => {
+        byChannel: channelStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.channel] = curr._count.channel;
           return acc;
         }, {}),
-        deliveryStatus: deliveryStats.reduce((acc: Record<string, number>, curr: any) => {
+        deliveryStatus: deliveryStats.reduce((acc: Record<string, number>, curr) => {
           acc[curr.status] = curr._count.status;
           return acc;
         }, {})
@@ -655,7 +655,7 @@ export class CommunicationService {
           where: { isActive: true },
           select: { id: true, email: true }
         });
-        recipients.push(...staff.map((s: any) => ({
+        recipients.push(...staff.map((s) => ({
           type: 'NURSE' as const,
           id: s.id,
           email: s.email
@@ -668,7 +668,7 @@ export class CommunicationService {
           },
           select: { id: true, email: true }
         });
-        recipients.push(...nurses.map((n: any) => ({
+        recipients.push(...nurses.map((n) => ({
           type: 'NURSE' as const,
           id: n.id,
           email: n.email
