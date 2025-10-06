@@ -5,13 +5,14 @@ import { Strategy as GoogleStrategy, Profile as GoogleProfile, VerifyCallback } 
 import { Strategy as MicrosoftStrategy } from 'passport-microsoft';
 import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { ENVIRONMENT, TOKEN_CONFIG, USER_ROLES } from '../constants';
 
 const prisma = new PrismaClient();
 
 // JWT options
 const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET || 'your-secret-key',
+  secretOrKey: ENVIRONMENT.JWT_SECRET || TOKEN_CONFIG.SECRET,
 };
 
 // Local Strategy for email/password authentication
@@ -70,13 +71,13 @@ passport.use(
 );
 
 // Google OAuth Strategy
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (ENVIRONMENT.GOOGLE_CLIENT_ID && ENVIRONMENT.GOOGLE_CLIENT_SECRET) {
   passport.use(
     new GoogleStrategy(
       {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/auth/google/callback`,
+        clientID: ENVIRONMENT.GOOGLE_CLIENT_ID,
+        clientSecret: ENVIRONMENT.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${ENVIRONMENT.BACKEND_URL}/api/auth/google/callback`,
       },
       async (accessToken: string, refreshToken: string, profile: GoogleProfile, done: VerifyCallback) => {
         try {
@@ -110,13 +111,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 // Microsoft OAuth Strategy
-if (process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET) {
+if (ENVIRONMENT.MICROSOFT_CLIENT_ID && ENVIRONMENT.MICROSOFT_CLIENT_SECRET) {
   passport.use(
     new MicrosoftStrategy(
       {
-        clientID: process.env.MICROSOFT_CLIENT_ID,
-        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/auth/microsoft/callback`,
+        clientID: ENVIRONMENT.MICROSOFT_CLIENT_ID,
+        clientSecret: ENVIRONMENT.MICROSOFT_CLIENT_SECRET,
+        callbackURL: `${ENVIRONMENT.BACKEND_URL}/api/auth/microsoft/callback`,
         scope: ['user.read'],
       },
       async (accessToken: string, refreshToken: string, profile: GoogleProfile, done: VerifyCallback) => {

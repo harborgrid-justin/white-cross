@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 
 // Layout components
 import Layout from '../components/Layout';
@@ -68,10 +69,10 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       {/* Public routes */}
       <Route
-        path="/login"
+        path={PUBLIC_ROUTES.LOGIN}
         element={
           isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
+            <Navigate to={PROTECTED_ROUTES.DASHBOARD} replace />
           ) : (
             <Login />
           )
@@ -87,7 +88,7 @@ export const AppRoutes: React.FC = () => {
               <Routes>
                 {/* Dashboard - accessible to all authenticated users */}
                 <Route
-                  path="/dashboard"
+                  path={PROTECTED_ROUTES.DASHBOARD}
                   element={
                     <ProtectedRoute>
                       <Dashboard />
@@ -97,7 +98,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Students - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/students/*"
+                  path={`${PROTECTED_ROUTES.STUDENTS}/*`}
                   element={
                     <ProtectedRoute requiredRole="ADMIN">
                       <Students />
@@ -107,7 +108,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Medications - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/medications/*"
+                  path={`${PROTECTED_ROUTES.MEDICATIONS}/*`}
                   element={
                     <ProtectedRoute
                       requiredRole="NURSE"
@@ -120,7 +121,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Appointments - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/appointments/*"
+                  path={`${PROTECTED_ROUTES.APPOINTMENTS}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <Appointments />
@@ -130,7 +131,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Health Records - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/health-records/*"
+                  path={`${PROTECTED_ROUTES.HEALTH_RECORDS}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <HealthRecords />
@@ -140,7 +141,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Incident Reports - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/incident-reports/*"
+                  path={`${PROTECTED_ROUTES.INCIDENT_REPORTS}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <IncidentReports />
@@ -150,7 +151,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Emergency Contacts - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/emergency-contacts/*"
+                  path={`${PROTECTED_ROUTES.EMERGENCY_CONTACTS}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <EmergencyContacts />
@@ -160,7 +161,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Communication - accessible to all authenticated users */}
                 <Route
-                  path="/communication/*"
+                  path={`${PROTECTED_ROUTES.COMMUNICATION}/*`}
                   element={
                     <ProtectedRoute>
                       <Communication />
@@ -170,7 +171,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Documents - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/documents/*"
+                  path={`${PROTECTED_ROUTES.DOCUMENTS}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <Documents />
@@ -180,7 +181,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Inventory - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/inventory/*"
+                  path={`${PROTECTED_ROUTES.INVENTORY}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <Inventory />
@@ -190,7 +191,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Reports - accessible to NURSE and ADMIN */}
                 <Route
-                  path="/reports/*"
+                  path={`${PROTECTED_ROUTES.REPORTS}/*`}
                   element={
                     <ProtectedRoute requiredRole="NURSE">
                       <Reports />
@@ -200,7 +201,7 @@ export const AppRoutes: React.FC = () => {
 
                 {/* Settings - accessible to ADMIN only */}
                 <Route
-                  path="/settings/*"
+                  path={`${PROTECTED_ROUTES.SETTINGS}/*`}
                   element={
                     <ProtectedRoute requiredRole="ADMIN">
                       <Settings />
@@ -211,13 +212,13 @@ export const AppRoutes: React.FC = () => {
                 {/* Default redirect */}
                 <Route
                   path="/"
-                  element={<Navigate to="/dashboard" replace />}
+                  element={<Navigate to={PROTECTED_ROUTES.DASHBOARD} replace />}
                 />
 
                 {/* Catch all - 404 */}
                 <Route
                   path="*"
-                  element={<Navigate to="/dashboard" replace />}
+                  element={<Navigate to={PROTECTED_ROUTES.DASHBOARD} replace />}
                 />
               </Routes>
             </Layout>

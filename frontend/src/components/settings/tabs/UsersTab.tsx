@@ -5,6 +5,8 @@ import {
   Search
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { API_CONFIG } from '../../../constants/config'
+import { API_ENDPOINTS } from '../../../constants/api'
 
 export default function UsersTab() {
   const [users, setUsers] = useState<any[]>([])
@@ -26,7 +28,7 @@ export default function UsersTab() {
       setLoading(true)
       const filters: any = {}
       if (roleFilter !== 'all') filters.role = roleFilter
-      const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://localhost:3001'}/api/users?page=1&limit=50`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ADMIN.USERS}?page=1&limit=50`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -49,8 +51,8 @@ export default function UsersTab() {
     e.preventDefault()
     try {
       const endpoint = editingUser
-        ? `${(import.meta as any).env.VITE_API_URL || 'http://localhost:3001'}/api/users/${editingUser.id}`
-        : `${(import.meta as any).env.VITE_API_URL || 'http://localhost:3001'}/api/users`
+        ? `${API_CONFIG.BASE_URL}${API_ENDPOINTS.ADMIN.USERS}/${editingUser.id}`
+        : `${API_CONFIG.BASE_URL}${API_ENDPOINTS.ADMIN.USERS}`
 
       const response = await fetch(endpoint, {
         method: editingUser ? 'PUT' : 'POST',

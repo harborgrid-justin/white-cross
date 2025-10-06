@@ -1,4 +1,5 @@
 import { apiInstance, API_ENDPOINTS, tokenUtils } from '../config/apiConfig';
+import { API_CONFIG } from '../../constants/config';
 import { z } from 'zod';
 import { User } from '../types';
 
@@ -176,7 +177,7 @@ export class AuthApi {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiInstance.get('/auth/me');
+      const response = await apiInstance.get(API_ENDPOINTS.AUTH.PROFILE);
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to get current user');
@@ -187,14 +188,16 @@ export class AuthApi {
    * Google OAuth login
    */
   async loginWithGoogle(): Promise<void> {
-    window.location.href = `${API_CONFIG.BASE_URL.replace('/api', '')}/api/auth/google`;
+    const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
+    window.location.href = `${baseUrl}/api/auth/google`;
   }
 
   /**
    * Microsoft OAuth login
    */
   async loginWithMicrosoft(): Promise<void> {
-    window.location.href = `${API_CONFIG.BASE_URL.replace('/api', '')}/api/auth/microsoft`;
+    const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
+    window.location.href = `${baseUrl}/api/auth/microsoft`;
   }
 
   /**

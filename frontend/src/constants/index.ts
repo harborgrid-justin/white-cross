@@ -104,6 +104,27 @@ export {
   API_CONSTANTS
 } from './api';
 
+// Export route constants
+export {
+  PUBLIC_ROUTES,
+  PROTECTED_ROUTES,
+  ROUTE_PERMISSIONS,
+  NAVIGATION_ITEMS,
+  ROUTES,
+  buildRoute,
+  buildStudentRoute,
+  buildStudentEditRoute,
+  buildMedicationRoute,
+  buildMedicationAdministerRoute,
+  buildHealthRecordRoute,
+  buildHealthRecordsStudentRoute,
+  buildAppointmentRoute,
+  buildIncidentReportRoute,
+  buildEmergencyContactsStudentRoute,
+  buildDocumentRoute,
+  buildDocumentsStudentRoute,
+} from './routes';
+
 // Re-export constants from other files for convenience
 export {
   RECORD_TYPES,

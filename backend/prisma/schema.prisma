@@ -26,12 +26,12 @@ model User {
   appointments          Appointment[]
   inventoryTransactions InventoryTransaction[]
 
-  maintenanceLogs      MaintenanceLog[]
-  messageTemplates     MessageTemplate[] @relation("MessageTemplateCreator")
-  messages             Message[] @relation("MessageSender")
-  availability         NurseAvailability[] @relation("NurseAvailability")
-  waitlistEntries      AppointmentWaitlist[] @relation("WaitlistNurse")
-  
+  maintenanceLogs  MaintenanceLog[]
+  messageTemplates MessageTemplate[]     @relation("MessageTemplateCreator")
+  messages         Message[]             @relation("MessageSender")
+  availability     NurseAvailability[]   @relation("NurseAvailability")
+  waitlistEntries  AppointmentWaitlist[] @relation("WaitlistNurse")
+
   @@map("users")
 }
 
@@ -51,16 +51,16 @@ model Student {
   updatedAt        DateTime @updatedAt
 
   // Relations
-  nurse                User?           @relation("NurseStudents", fields: [nurseId], references: [id])
-  nurseId              String?
-  emergencyContacts    EmergencyContact[]
-  medications          StudentMedication[]
-  healthRecords        HealthRecord[]
-  appointments         Appointment[]
-  incidentReports      IncidentReport[]
-  allergies            Allergy[]
-  chronicConditions    ChronicCondition[]
-  waitlistEntries      AppointmentWaitlist[]
+  nurse             User?                 @relation("NurseStudents", fields: [nurseId], references: [id])
+  nurseId           String?
+  emergencyContacts EmergencyContact[]
+  medications       StudentMedication[]
+  healthRecords     HealthRecord[]
+  appointments      Appointment[]
+  incidentReports   IncidentReport[]
+  allergies         Allergy[]
+  chronicConditions ChronicCondition[]
+  waitlistEntries   AppointmentWaitlist[]
 
   @@map("students")
 }
@@ -226,100 +226,100 @@ model MaintenanceLog {
 }
 
 model Vendor {
-  id                String    @id @default(cuid())
-  name              String
-  contactName       String?
-  email             String?
-  phone             String?
-  address           String?
-  website           String?
-  taxId             String?
-  paymentTerms      String?
-  notes             String?
-  isActive          Boolean   @default(true)
-  rating            Int?      // 1-5 rating
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  contactName  String?
+  email        String?
+  phone        String?
+  address      String?
+  website      String?
+  taxId        String?
+  paymentTerms String?
+  notes        String?
+  isActive     Boolean  @default(true)
+  rating       Int? // 1-5 rating
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  purchaseOrders    PurchaseOrder[]
-  
+  purchaseOrders PurchaseOrder[]
+
   @@map("vendors")
 }
 
 model PurchaseOrder {
-  id              String              @id @default(cuid())
-  orderNumber     String              @unique
-  status          PurchaseOrderStatus @default(PENDING)
-  orderDate       DateTime            @default(now())
-  expectedDate    DateTime?
-  receivedDate    DateTime?
-  subtotal        Decimal             @default(0)
-  tax             Decimal             @default(0)
-  shipping        Decimal             @default(0)
-  total           Decimal             @default(0)
-  notes           String?
-  approvedBy      String?
-  approvedAt      DateTime?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id           String              @id @default(cuid())
+  orderNumber  String              @unique
+  status       PurchaseOrderStatus @default(PENDING)
+  orderDate    DateTime            @default(now())
+  expectedDate DateTime?
+  receivedDate DateTime?
+  subtotal     Decimal             @default(0)
+  tax          Decimal             @default(0)
+  shipping     Decimal             @default(0)
+  total        Decimal             @default(0)
+  notes        String?
+  approvedBy   String?
+  approvedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
 
   // Relations
-  vendor          Vendor              @relation(fields: [vendorId], references: [id])
-  vendorId        String
-  items           PurchaseOrderItem[]
-  
+  vendor   Vendor              @relation(fields: [vendorId], references: [id])
+  vendorId String
+  items    PurchaseOrderItem[]
+
   @@map("purchase_orders")
 }
 
 model PurchaseOrderItem {
-  id              String        @id @default(cuid())
-  quantity        Int
-  unitCost        Decimal
-  totalCost       Decimal
-  receivedQty     Int           @default(0)
-  notes           String?
-  createdAt       DateTime      @default(now())
+  id          String   @id @default(cuid())
+  quantity    Int
+  unitCost    Decimal
+  totalCost   Decimal
+  receivedQty Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
 
   // Relations
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   purchaseOrderId String
   inventoryItemId String
-  
+
   @@map("purchase_order_items")
 }
 
 model BudgetCategory {
-  id              String    @id @default(cuid())
+  id              String   @id @default(cuid())
   name            String
   description     String?
   fiscalYear      Int
   allocatedAmount Decimal
-  spentAmount     Decimal   @default(0)
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  spentAmount     Decimal  @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  transactions    BudgetTransaction[]
-  
+  transactions BudgetTransaction[]
+
   @@map("budget_categories")
 }
 
 model BudgetTransaction {
-  id              String    @id @default(cuid())
+  id              String   @id @default(cuid())
   amount          Decimal
   description     String
-  transactionDate DateTime  @default(now())
-  referenceId     String?   // Link to purchase order or other transaction
-  referenceType   String?   // 'PURCHASE_ORDER', 'INVENTORY_TRANSACTION', etc.
+  transactionDate DateTime @default(now())
+  referenceId     String? // Link to purchase order or other transaction
+  referenceType   String? // 'PURCHASE_ORDER', 'INVENTORY_TRANSACTION', etc.
   notes           String?
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime @default(now())
 
   // Relations
-  category        BudgetCategory @relation(fields: [categoryId], references: [id])
-  categoryId      String
-  
+  category   BudgetCategory @relation(fields: [categoryId], references: [id])
+  categoryId String
+
   @@map("budget_transactions")
 }
 
@@ -425,21 +425,21 @@ model Allergy {
 }
 
 model ChronicCondition {
-  id            String   @id @default(cuid())
-  condition     String
-  diagnosedDate DateTime
-  status        String   @default("ACTIVE") // ACTIVE, MANAGED, RESOLVED
-  severity      String? // MILD, MODERATE, SEVERE
-  notes         String?
-  carePlan      String?
-  medications   String[] // Related medications
-  restrictions  String[] // Activity/dietary restrictions
-  triggers      String[] // Known triggers
-  diagnosedBy   String?
+  id             String    @id @default(cuid())
+  condition      String
+  diagnosedDate  DateTime
+  status         String    @default("ACTIVE") // ACTIVE, MANAGED, RESOLVED
+  severity       String? // MILD, MODERATE, SEVERE
+  notes          String?
+  carePlan       String?
+  medications    String[] // Related medications
+  restrictions   String[] // Activity/dietary restrictions
+  triggers       String[] // Known triggers
+  diagnosedBy    String?
   lastReviewDate DateTime?
   nextReviewDate DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   // Relations
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -461,72 +461,72 @@ model Appointment {
 
   // Relations
 
-  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId   String
-  nurse       User              @relation(fields: [nurseId], references: [id])
-  nurseId     String
-  reminders   AppointmentReminder[]
- 
+  student   Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  nurse     User                  @relation(fields: [nurseId], references: [id])
+  nurseId   String
+  reminders AppointmentReminder[]
+
   @@map("appointments")
 }
 
 model NurseAvailability {
-  id          String   @id @default(cuid())
-  dayOfWeek   Int      // 0=Sunday, 1=Monday, etc.
-  startTime   String   // Format: "HH:MM"
-  endTime     String   // Format: "HH:MM"
-  isRecurring Boolean  @default(true)
+  id           String    @id @default(cuid())
+  dayOfWeek    Int // 0=Sunday, 1=Monday, etc.
+  startTime    String // Format: "HH:MM"
+  endTime      String // Format: "HH:MM"
+  isRecurring  Boolean   @default(true)
   specificDate DateTime? // For non-recurring availability
-  isAvailable Boolean  @default(true)
-  reason      String?  // Reason for unavailability
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isAvailable  Boolean   @default(true)
+  reason       String? // Reason for unavailability
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
-  nurse       User     @relation("NurseAvailability", fields: [nurseId], references: [id])
-  nurseId     String
-  
+  nurse   User   @relation("NurseAvailability", fields: [nurseId], references: [id])
+  nurseId String
+
   @@map("nurse_availability")
 }
 
 model AppointmentWaitlist {
-  id          String            @id @default(cuid())
-  type        AppointmentType
+  id            String           @id @default(cuid())
+  type          AppointmentType
   preferredDate DateTime?
-  duration    Int               @default(30)
-  priority    WaitlistPriority  @default(NORMAL)
-  reason      String
-  notes       String?
-  status      WaitlistStatus    @default(WAITING)
-  notifiedAt  DateTime?
-  expiresAt   DateTime?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  duration      Int              @default(30)
+  priority      WaitlistPriority @default(NORMAL)
+  reason        String
+  notes         String?
+  status        WaitlistStatus   @default(WAITING)
+  notifiedAt    DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // Relations
-  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId   String
-  nurse       User?             @relation("WaitlistNurse", fields: [nurseId], references: [id])
-  nurseId     String?
-  
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  nurse     User?   @relation("WaitlistNurse", fields: [nurseId], references: [id])
+  nurseId   String?
+
   @@map("appointment_waitlist")
 }
 
 model AppointmentReminder {
-  id              String         @id @default(cuid())
-  type            MessageType
-  scheduledFor    DateTime
-  status          ReminderStatus @default(SCHEDULED)
-  sentAt          DateTime?
-  failureReason   String?
-  message         String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  type          MessageType
+  scheduledFor  DateTime
+  status        ReminderStatus @default(SCHEDULED)
+  sentAt        DateTime?
+  failureReason String?
+  message       String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   // Relations
-  appointment     Appointment    @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  appointmentId   String
-  
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointmentId String
+
   @@map("appointment_reminders")
 }
 
@@ -775,7 +775,6 @@ enum ActionStatus {
   CANCELLED
 }
 
-
 enum PurchaseOrderStatus {
   PENDING
   APPROVED
@@ -810,60 +809,60 @@ enum ReminderStatus {
 // Administration Panel Models
 
 model District {
-  id          String   @id @default(cuid())
-  name        String
-  code        String   @unique
-  address     String?
-  city        String?
-  state       String?
-  zipCode     String?
-  phone       String?
-  email       String?
-  website     String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  phone     String?
+  email     String?
+  website   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  schools     School[]
-  licenses    License[]
-  
+  schools  School[]
+  licenses License[]
+
   @@map("districts")
 }
 
 model School {
-  id          String   @id @default(cuid())
-  name        String
-  code        String   @unique
-  address     String?
-  city        String?
-  state       String?
-  zipCode     String?
-  phone       String?
-  email       String?
-  principal   String?
+  id           String   @id @default(cuid())
+  name         String
+  code         String   @unique
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  phone        String?
+  email        String?
+  principal    String?
   studentCount Int?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  district    District @relation(fields: [districtId], references: [id])
-  districtId  String
-  
+  district   District @relation(fields: [districtId], references: [id])
+  districtId String
+
   @@map("schools")
 }
 
 model SystemConfiguration {
-  id          String   @id @default(cuid())
-  key         String   @unique
+  id          String         @id @default(cuid())
+  key         String         @unique
   value       String
   category    ConfigCategory
   description String?
-  isPublic    Boolean  @default(false) // Whether non-admin users can view
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  isPublic    Boolean        @default(false) // Whether non-admin users can view
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
   @@map("system_configurations")
 }
 
@@ -872,27 +871,27 @@ model BackupLog {
   type        BackupType
   status      BackupStatus
   fileName    String?
-  fileSize    Int?         // Size in bytes
+  fileSize    Int? // Size in bytes
   location    String?
   startedAt   DateTime
   completedAt DateTime?
   error       String?
-  triggeredBy String?      // User ID who triggered manual backup
+  triggeredBy String? // User ID who triggered manual backup
   createdAt   DateTime     @default(now())
-  
+
   @@map("backup_logs")
 }
 
 model PerformanceMetric {
-  id          String     @id @default(cuid())
-  metricType  MetricType
-  value       Float
-  unit        String?
-  context     Json?      // Additional context data
-  recordedAt  DateTime   @default(now())
-  
-  @@map("performance_metrics")
+  id         String     @id @default(cuid())
+  metricType MetricType
+  value      Float
+  unit       String?
+  context    Json? // Additional context data
+  recordedAt DateTime   @default(now())
+
   @@index([metricType, recordedAt])
+  @@map("performance_metrics")
 }
 
 model License {
@@ -902,7 +901,7 @@ model License {
   status        LicenseStatus @default(ACTIVE)
   maxUsers      Int?
   maxSchools    Int?
-  features      String[]      // Array of enabled features
+  features      String[] // Array of enabled features
   issuedTo      String?
   issuedAt      DateTime      @default(now())
   expiresAt     DateTime?
@@ -913,64 +912,64 @@ model License {
   updatedAt     DateTime      @updatedAt
 
   // Relations
-  district      District? @relation(fields: [districtId], references: [id])
-  districtId    String?
-  
+  district   District? @relation(fields: [districtId], references: [id])
+  districtId String?
+
   @@map("licenses")
 }
 
 model TrainingModule {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
   description String?
-  content     String   // Can store markdown or HTML
-  duration    Int?     // Duration in minutes
+  content     String // Can store markdown or HTML
+  duration    Int? // Duration in minutes
   category    TrainingCategory
-  isRequired  Boolean  @default(false)
-  order       Int      @default(0)
+  isRequired  Boolean          @default(false)
+  order       Int              @default(0)
   attachments String[] // URLs to training materials
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   // Relations
   completions TrainingCompletion[]
-  
+
   @@map("training_modules")
 }
 
 model TrainingCompletion {
-  id          String   @id @default(cuid())
-  userId      String
-  score       Int?     // Score out of 100
-  completedAt DateTime @default(now())
-  expiresAt   DateTime? // For certifications that expire
+  id             String    @id @default(cuid())
+  userId         String
+  score          Int? // Score out of 100
+  completedAt    DateTime  @default(now())
+  expiresAt      DateTime? // For certifications that expire
   certificateUrl String?
-  notes       String?
-  createdAt   DateTime @default(now())
+  notes          String?
+  createdAt      DateTime  @default(now())
 
   // Relations
-  module      TrainingModule @relation(fields: [moduleId], references: [id])
-  moduleId    String
-  
+  module   TrainingModule @relation(fields: [moduleId], references: [id])
+  moduleId String
+
   @@unique([userId, moduleId])
   @@map("training_completions")
 }
 
 model AuditLog {
-  id          String     @id @default(cuid())
-  userId      String?
-  action      AuditAction
-  entityType  String     // e.g., "User", "Student", "Medication"
-  entityId    String?
-  changes     Json?      // Store before/after values
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime   @default(now())
-  
-  @@map("audit_logs")
+  id         String      @id @default(cuid())
+  userId     String?
+  action     AuditAction
+  entityType String // e.g., "User", "Student", "Medication"
+  entityId   String?
+  changes    Json? // Store before/after values
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
   @@index([userId, createdAt])
   @@index([entityType, entityId])
+  @@map("audit_logs")
 }
 
 // Administration Enums
@@ -1046,63 +1045,63 @@ enum AuditAction {
 // Integration Hub Models
 
 model IntegrationConfig {
-  id              String            @id @default(cuid())
-  name            String
-  type            IntegrationType
-  status          IntegrationStatus @default(INACTIVE)
-  endpoint        String?           // API endpoint or connection string
-  apiKey          String?           // Encrypted API key
-  username        String?
-  password        String?           // Encrypted password
-  settings        Json?             // Additional integration-specific settings
-  isActive        Boolean           @default(true)
-  lastSyncAt      DateTime?
-  lastSyncStatus  String?
-  syncFrequency   Int?              // Sync frequency in minutes (null for manual)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id             String            @id @default(cuid())
+  name           String
+  type           IntegrationType
+  status         IntegrationStatus @default(INACTIVE)
+  endpoint       String? // API endpoint or connection string
+  apiKey         String? // Encrypted API key
+  username       String?
+  password       String? // Encrypted password
+  settings       Json? // Additional integration-specific settings
+  isActive       Boolean           @default(true)
+  lastSyncAt     DateTime?
+  lastSyncStatus String?
+  syncFrequency  Int? // Sync frequency in minutes (null for manual)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   // Relations
-  logs            IntegrationLog[]
-  
+  logs IntegrationLog[]
+
   @@map("integration_configs")
 }
 
 model IntegrationLog {
-  id              String   @id @default(cuid())
-  integrationType IntegrationType
-  action          String   // e.g., "sync", "test_connection", "import", "export"
-  status          String   // e.g., "success", "failed", "in_progress"
+  id               String          @id @default(cuid())
+  integrationType  IntegrationType
+  action           String // e.g., "sync", "test_connection", "import", "export"
+  status           String // e.g., "success", "failed", "in_progress"
   recordsProcessed Int?
   recordsSucceeded Int?
   recordsFailed    Int?
-  startedAt       DateTime @default(now())
-  completedAt     DateTime?
-  duration        Int?     // Duration in milliseconds
-  errorMessage    String?
-  details         Json?    // Additional log details
-  createdAt       DateTime @default(now())
+  startedAt        DateTime        @default(now())
+  completedAt      DateTime?
+  duration         Int? // Duration in milliseconds
+  errorMessage     String?
+  details          Json? // Additional log details
+  createdAt        DateTime        @default(now())
 
   // Relations
-  integration     IntegrationConfig? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
-  integrationId   String?
-  
-  @@map("integration_logs")
+  integration   IntegrationConfig? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  integrationId String?
+
   @@index([integrationType, createdAt])
   @@index([integrationId, createdAt])
+  @@map("integration_logs")
 }
 
 // Integration Hub Enums
 
 enum IntegrationType {
-  SIS                    // Student Information System
-  EHR                    // Electronic Health Record
-  PHARMACY               // Pharmacy Management System
-  LABORATORY             // Laboratory Information System
-  INSURANCE              // Insurance Verification System
-  PARENT_PORTAL          // Parent Portal
-  HEALTH_APP             // Third-party Health Application
-  GOVERNMENT_REPORTING   // Government Reporting System
+  SIS // Student Information System
+  EHR // Electronic Health Record
+  PHARMACY // Pharmacy Management System
+  LABORATORY // Laboratory Information System
+  INSURANCE // Insurance Verification System
+  PARENT_PORTAL // Parent Portal
+  HEALTH_APP // Third-party Health Application
+  GOVERNMENT_REPORTING // Government Reporting System
 }
 
 enum IntegrationStatus {
@@ -1116,188 +1115,188 @@ enum IntegrationStatus {
 // Document Management Models
 
 model Document {
-  id              String           @id @default(cuid())
-  title           String
-  description     String?
-  category        DocumentCategory
-  fileType        String           // e.g., "pdf", "docx", "jpg"
-  fileName        String
-  fileSize        Int              // Size in bytes
-  fileUrl         String
-  version         Int              @default(1)
-  status          DocumentStatus   @default(DRAFT)
-  tags            String[]
-  isTemplate      Boolean          @default(false)
-  templateData    Json?            // For document templates
-  parentId        String?          // For version control
-  retentionDate   DateTime?        // When document should be deleted per policy
-  accessLevel     DocumentAccessLevel @default(STAFF_ONLY)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
+  id            String              @id @default(cuid())
+  title         String
+  description   String?
+  category      DocumentCategory
+  fileType      String // e.g., "pdf", "docx", "jpg"
+  fileName      String
+  fileSize      Int // Size in bytes
+  fileUrl       String
+  version       Int                 @default(1)
+  status        DocumentStatus      @default(DRAFT)
+  tags          String[]
+  isTemplate    Boolean             @default(false)
+  templateData  Json? // For document templates
+  parentId      String? // For version control
+  retentionDate DateTime? // When document should be deleted per policy
+  accessLevel   DocumentAccessLevel @default(STAFF_ONLY)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
   // Relations
-  parent          Document?        @relation("DocumentVersions", fields: [parentId], references: [id])
-  versions        Document[]       @relation("DocumentVersions")
-  uploadedBy      String
-  studentId       String?
-  signatures      DocumentSignature[]
-  auditTrail      DocumentAuditTrail[]
-  
-  @@map("documents")
+  parent     Document?            @relation("DocumentVersions", fields: [parentId], references: [id])
+  versions   Document[]           @relation("DocumentVersions")
+  uploadedBy String
+  studentId  String?
+  signatures DocumentSignature[]
+  auditTrail DocumentAuditTrail[]
+
   @@index([category, status])
   @@index([studentId])
   @@index([createdAt])
+  @@map("documents")
 }
 
 model DocumentSignature {
   id            String   @id @default(cuid())
-  signedBy      String   // User ID or name
+  signedBy      String // User ID or name
   signedByRole  String
-  signatureData String?  // Digital signature data
+  signatureData String? // Digital signature data
   signedAt      DateTime @default(now())
   ipAddress     String?
-  
+
   // Relations
-  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  documentId    String
-  
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+
   @@map("document_signatures")
 }
 
 model DocumentAuditTrail {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   action      DocumentAction
-  performedBy String   // User ID
+  performedBy String // User ID
   changes     Json?
   ipAddress   String?
-  createdAt   DateTime @default(now())
-  
+  createdAt   DateTime       @default(now())
+
   // Relations
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  documentId  String
-  
-  @@map("document_audit_trail")
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+
   @@index([documentId, createdAt])
+  @@map("document_audit_trail")
 }
 
 // Compliance & Regulatory Models
 
 model ComplianceReport {
-  id              String            @id @default(cuid())
+  id              String               @id @default(cuid())
   reportType      ComplianceReportType
   title           String
   description     String?
   status          ComplianceStatus
-  period          String            // e.g., "2024-Q1", "2024-01"
-  findings        Json?             // Detailed findings
+  period          String // e.g., "2024-Q1", "2024-01"
+  findings        Json? // Detailed findings
   recommendations Json?
   dueDate         DateTime?
   submittedAt     DateTime?
   submittedBy     String?
   reviewedAt      DateTime?
   reviewedBy      String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
   // Relations
-  createdById     String
-  items           ComplianceChecklistItem[]
-  
-  @@map("compliance_reports")
+  createdById String
+  items       ComplianceChecklistItem[]
+
   @@index([reportType, status])
   @@index([period])
+  @@map("compliance_reports")
 }
 
 model ComplianceChecklistItem {
-  id            String            @id @default(cuid())
-  requirement   String
-  description   String?
-  category      ComplianceCategory
-  status        ChecklistItemStatus @default(PENDING)
-  evidence      String?           // URL or description of evidence
-  notes         String?
-  dueDate       DateTime?
-  completedAt   DateTime?
-  completedBy   String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  
+  id          String              @id @default(cuid())
+  requirement String
+  description String?
+  category    ComplianceCategory
+  status      ChecklistItemStatus @default(PENDING)
+  evidence    String? // URL or description of evidence
+  notes       String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  completedBy String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
   // Relations
-  report        ComplianceReport? @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  reportId      String?
-  
+  report   ComplianceReport? @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId String?
+
   @@map("compliance_checklist_items")
 }
 
 model ConsentForm {
-  id              String        @id @default(cuid())
-  type            ConsentType
-  title           String
-  description     String
-  content         String        // Form content/terms
-  version         String        @default("1.0")
-  isActive        Boolean       @default(true)
-  expiresAt       DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
+  id          String      @id @default(cuid())
+  type        ConsentType
+  title       String
+  description String
+  content     String // Form content/terms
+  version     String      @default("1.0")
+  isActive    Boolean     @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
   // Relations
-  signatures      ConsentSignature[]
-  
+  signatures ConsentSignature[]
+
   @@map("consent_forms")
 }
 
 model ConsentSignature {
-  id              String      @id @default(cuid())
-  studentId       String
-  signedBy        String      // Parent/guardian name
-  relationship    String
-  signatureData   String?     // Digital signature
-  signedAt        DateTime    @default(now())
-  ipAddress       String?
-  withdrawnAt     DateTime?
-  withdrawnBy     String?
-  
+  id            String    @id @default(cuid())
+  studentId     String
+  signedBy      String // Parent/guardian name
+  relationship  String
+  signatureData String? // Digital signature
+  signedAt      DateTime  @default(now())
+  ipAddress     String?
+  withdrawnAt   DateTime?
+  withdrawnBy   String?
+
   // Relations
-  consentForm     ConsentForm @relation(fields: [consentFormId], references: [id])
-  consentFormId   String
-  
-  @@map("consent_signatures")
+  consentForm   ConsentForm @relation(fields: [consentFormId], references: [id])
+  consentFormId String
+
   @@unique([consentFormId, studentId])
+  @@map("consent_signatures")
 }
 
 model PolicyDocument {
-  id              String        @id @default(cuid())
-  title           String
-  category        PolicyCategory
-  content         String
-  version         String        @default("1.0")
-  effectiveDate   DateTime
-  reviewDate      DateTime?
-  status          PolicyStatus  @default(DRAFT)
-  approvedBy      String?
-  approvedAt      DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
+  id            String         @id @default(cuid())
+  title         String
+  category      PolicyCategory
+  content       String
+  version       String         @default("1.0")
+  effectiveDate DateTime
+  reviewDate    DateTime?
+  status        PolicyStatus   @default(DRAFT)
+  approvedBy    String?
+  approvedAt    DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
   // Relations
   acknowledgments PolicyAcknowledgment[]
-  
+
   @@map("policy_documents")
 }
 
 model PolicyAcknowledgment {
-  id              String          @id @default(cuid())
-  userId          String
-  acknowledgedAt  DateTime        @default(now())
-  ipAddress       String?
-  
+  id             String   @id @default(cuid())
+  userId         String
+  acknowledgedAt DateTime @default(now())
+  ipAddress      String?
+
   // Relations
-  policy          PolicyDocument  @relation(fields: [policyId], references: [id])
-  policyId        String
-  
-  @@map("policy_acknowledgments")
+  policy   PolicyDocument @relation(fields: [policyId], references: [id])
+  policyId String
+
   @@unique([policyId, userId])
+  @@map("policy_acknowledgments")
 }
 
 // Access Control & Security Models
@@ -1309,115 +1308,115 @@ model Role {
   isSystem    Boolean  @default(false) // System roles cannot be deleted
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   permissions RolePermission[]
   userRoles   UserRoleAssignment[]
-  
+
   @@map("roles")
 }
 
 model Permission {
   id          String   @id @default(cuid())
-  resource    String   // e.g., "students", "medications", "reports"
-  action      String   // e.g., "read", "create", "update", "delete"
+  resource    String // e.g., "students", "medications", "reports"
+  action      String // e.g., "read", "create", "update", "delete"
   description String?
   createdAt   DateTime @default(now())
-  
+
   // Relations
   rolePermissions RolePermission[]
-  
-  @@map("permissions")
+
   @@unique([resource, action])
+  @@map("permissions")
 }
 
 model RolePermission {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  
+
   // Relations
-  role      Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId    String
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   permissionId String
-  
-  @@map("role_permissions")
+
   @@unique([roleId, permissionId])
+  @@map("role_permissions")
 }
 
 model UserRoleAssignment {
   id        String   @id @default(cuid())
   userId    String
   createdAt DateTime @default(now())
-  
+
   // Relations
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId    String
-  
-  @@map("user_role_assignments")
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId String
+
   @@unique([userId, roleId])
+  @@map("user_role_assignments")
 }
 
 model Session {
-  id          String    @id @default(cuid())
-  userId      String
-  token       String    @unique
-  ipAddress   String?
-  userAgent   String?
-  expiresAt   DateTime
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
   lastActivity DateTime @default(now())
-  createdAt   DateTime  @default(now())
-  
-  @@map("sessions")
+  createdAt    DateTime @default(now())
+
   @@index([userId])
   @@index([expiresAt])
+  @@map("sessions")
 }
 
 model LoginAttempt {
-  id          String    @id @default(cuid())
-  email       String
-  success     Boolean
-  ipAddress   String?
-  userAgent   String?
+  id            String   @id @default(cuid())
+  email         String
+  success       Boolean
+  ipAddress     String?
+  userAgent     String?
   failureReason String?
-  createdAt   DateTime  @default(now())
-  
-  @@map("login_attempts")
+  createdAt     DateTime @default(now())
+
   @@index([email, createdAt])
   @@index([ipAddress, createdAt])
+  @@map("login_attempts")
 }
 
 model SecurityIncident {
-  id          String            @id @default(cuid())
-  type        SecurityIncidentType
-  severity    IncidentSeverity
-  description String
+  id                String                 @id @default(cuid())
+  type              SecurityIncidentType
+  severity          IncidentSeverity
+  description       String
   affectedResources String[]
-  detectedBy  String?           // User ID or system
-  status      SecurityIncidentStatus @default(OPEN)
-  resolvedAt  DateTime?
-  resolvedBy  String?
-  resolution  String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
-  @@map("security_incidents")
+  detectedBy        String? // User ID or system
+  status            SecurityIncidentStatus @default(OPEN)
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  resolution        String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
   @@index([type, status])
   @@index([createdAt])
+  @@map("security_incidents")
 }
 
 model IpRestriction {
-  id          String   @id @default(cuid())
-  ipAddress   String
-  type        IpRestrictionType @default(WHITELIST)
-  reason      String?
-  isActive    Boolean  @default(true)
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("ip_restrictions")
+  id        String            @id @default(cuid())
+  ipAddress String
+  type      IpRestrictionType @default(WHITELIST)
+  reason    String?
+  isActive  Boolean           @default(true)
+  createdBy String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
   @@index([ipAddress])
+  @@map("ip_restrictions")
 }
 
 // Document Management Enums

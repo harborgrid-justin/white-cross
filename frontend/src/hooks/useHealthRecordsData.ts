@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import type { 
-  TabType, 
+import { API_CONFIG } from '@/constants/config'
+import { API_ENDPOINTS } from '@/constants/api'
+import type {
+  TabType,
   HealthRecord,
   Allergy,
   ChronicCondition,
@@ -24,7 +26,8 @@ export const useHealthRecordsData = () => {
     try {
       switch (tab) {
         case 'records': {
-          const response = await fetch(`/api/health-records/${studentId}${searchQuery ? `?search=${searchQuery}` : ''}`)
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.STUDENT(studentId)}${searchQuery ? `?search=${searchQuery}` : ''}`
+          const response = await fetch(url)
           if (response.ok) {
             const data = await response.json()
             setHealthRecords(data.data?.records || [])
@@ -32,7 +35,8 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'allergies': {
-          const allergyResponse = await fetch(`/api/health-records/allergies/${studentId}`)
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.ALLERGIES(studentId)}`
+          const allergyResponse = await fetch(url)
           if (allergyResponse.ok) {
             const allergyData = await allergyResponse.json()
             setAllergies(allergyData.data?.allergies || [])
@@ -40,7 +44,8 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'chronic': {
-          const conditionResponse = await fetch(`/api/health-records/chronic-conditions/${studentId}`)
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.CHRONIC_CONDITIONS(studentId)}`
+          const conditionResponse = await fetch(url)
           if (conditionResponse.ok) {
             const conditionData = await conditionResponse.json()
             setChronicConditions(conditionData.data?.conditions || [])
@@ -48,7 +53,8 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'vaccinations': {
-          const vaccinationResponse = await fetch(`/api/health-records/vaccinations/${studentId}`)
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.VACCINATIONS(studentId)}`
+          const vaccinationResponse = await fetch(url)
           if (vaccinationResponse.ok) {
             const vaccinationData = await vaccinationResponse.json()
             setVaccinations(vaccinationData.data?.vaccinations || [])
@@ -56,7 +62,8 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'growth': {
-          const growthResponse = await fetch(`/api/health-records/growth/${studentId}`)
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.GROWTH_CHART(studentId)}`
+          const growthResponse = await fetch(url)
           if (growthResponse.ok) {
             const growthData = await growthResponse.json()
             setGrowthMeasurements(growthData.data?.measurements || [])
@@ -64,7 +71,8 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'screenings': {
-          const screeningResponse = await fetch(`/api/health-records/vitals/${studentId}`)
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.VITALS(studentId)}`
+          const screeningResponse = await fetch(url)
           if (screeningResponse.ok) {
             const screeningData = await screeningResponse.json()
             setScreenings(screeningData.data?.screenings || [])
@@ -80,7 +88,8 @@ export const useHealthRecordsData = () => {
   }
 
   const createAllergy = async (allergyData: Partial<Allergy>) => {
-    const response = await fetch('/api/health-records/allergies', {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/allergies`
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: '1', ...allergyData })
@@ -92,7 +101,8 @@ export const useHealthRecordsData = () => {
   }
 
   const updateAllergy = async (id: string, allergyData: Partial<Allergy>) => {
-    const response = await fetch(`/api/health-records/allergies/${id}`, {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/allergies/${id}`
+    const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(allergyData)
@@ -104,7 +114,8 @@ export const useHealthRecordsData = () => {
   }
 
   const createCondition = async (conditionData: Partial<ChronicCondition>) => {
-    const response = await fetch('/api/health-records/chronic-conditions', {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/chronic-conditions`
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: '1', ...conditionData })
@@ -116,7 +127,8 @@ export const useHealthRecordsData = () => {
   }
 
   const createVaccination = async (vaccinationData: Partial<Vaccination>) => {
-    const response = await fetch('/api/students/1/vaccinations', {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.BASE}/1/vaccinations`
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(vaccinationData)
@@ -128,7 +140,8 @@ export const useHealthRecordsData = () => {
   }
 
   const updateVaccination = async (id: string, vaccinationData: Partial<Vaccination>) => {
-    const response = await fetch(`/api/students/1/vaccinations/${id}`, {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.BASE}/1/vaccinations/${id}`
+    const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(vaccinationData)
@@ -140,7 +153,8 @@ export const useHealthRecordsData = () => {
   }
 
   const deleteVaccination = async (id: string) => {
-    const response = await fetch(`/api/students/1/vaccinations/${id}`, {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.BASE}/1/vaccinations/${id}`
+    const response = await fetch(url, {
       method: 'DELETE'
     })
     if (response.ok) {
@@ -150,7 +164,8 @@ export const useHealthRecordsData = () => {
   }
 
   const createGrowthMeasurement = async (measurementData: Partial<GrowthMeasurement>) => {
-    const response = await fetch('/api/health-records/growth', {
+    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/growth`
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: '1', ...measurementData })
