@@ -14,8 +14,7 @@ import {
   X,
   LogOut,
   Home,
-  MessageSquare,
-  FolderOpen
+  MessageSquare
 } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 

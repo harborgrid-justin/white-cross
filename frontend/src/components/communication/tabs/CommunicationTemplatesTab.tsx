@@ -1,5 +1,4 @@
 import React from 'react'
-import { Plus } from 'lucide-react'
 
 interface TemplateFormData {
   name: string
