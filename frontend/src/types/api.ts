@@ -6,18 +6,13 @@
 import type {
   User,
   Student,
-  EmergencyContact,
   Priority,
-  Status,
   AppointmentType,
   AppointmentStatus,
   IncidentType,
   AllergySeverity,
   MedicationRoute,
   BaseEntity,
-  BasePersonEntity,
-  ApiResponse,
-  PaginatedResponse,
   PaginationParams,
   DateRangeFilter
 } from './common';

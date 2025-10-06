@@ -8,7 +8,7 @@ export class ReportService {
   
   static async getHealthTrends(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: Prisma.HealthRecordWhereInput = {};
       
       if (startDate || endDate) {
         where.createdAt = {};
@@ -68,7 +68,7 @@ export class ReportService {
   
   static async getMedicationUsageReport(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: Prisma.MedicationLogWhereInput = {};
       
       if (startDate || endDate) {
         where.timeGiven = {};
@@ -152,7 +152,7 @@ export class ReportService {
   
   static async getIncidentStatistics(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: Prisma.IncidentReportWhereInput = {};
       
       if (startDate || endDate) {
         where.occurredAt = {};
@@ -239,12 +239,12 @@ export class ReportService {
   
   static async getAttendanceCorrelation(startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const incidentWhere: Prisma.IncidentReportWhereInput = {};
       
       if (startDate || endDate) {
-        where.occurredAt = {};
-        if (startDate) where.occurredAt.gte = startDate;
-        if (endDate) where.occurredAt.lte = endDate;
+        incidentWhere.occurredAt = {};
+        if (startDate) incidentWhere.occurredAt.gte = startDate;
+        if (endDate) incidentWhere.occurredAt.lte = endDate;
       }
 
       // Get students with health visits
@@ -264,7 +264,7 @@ export class ReportService {
       // Get students with incidents
       const incidentVisits = await prisma.incidentReport.groupBy({
         by: ['studentId'],
-        where,
+        where: incidentWhere,
         _count: { id: true },
         orderBy: { _count: { id: 'desc' } },
         take: 50
@@ -315,10 +315,10 @@ export class ReportService {
   
   static async getPerformanceMetrics(metricType?: string, startDate?: Date, endDate?: Date) {
     try {
-      const where: Prisma.StudentWhereInput = {};
+      const where: Prisma.PerformanceMetricWhereInput = {};
       
       if (metricType) {
-        where.metricType = metricType;
+        where.metricType = metricType as any; // Cast to MetricType enum
       }
       
       if (startDate || endDate) {

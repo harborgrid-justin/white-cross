@@ -181,7 +181,7 @@ export function deepSanitizeObject<T>(
     allowedHtmlTags?: string[]
   } = {}
 ): T {
-  const { sanitizeStrings = true, sanitizeHtml = false, allowedHtmlTags = [] } = options
+  const { sanitizeStrings = true, sanitizeHtml = false } = options
 
   if (obj === null || obj === undefined) return obj
 
