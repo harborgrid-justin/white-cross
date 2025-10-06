@@ -186,9 +186,7 @@ export function deepSanitizeObject<T>(
   if (obj === null || obj === undefined) return obj
 
   if (typeof obj === 'string') {
-    if (sanitizeHtml) {
-      return sanitizeHtml(obj, allowedHtmlTags) as T
-    } else if (sanitizeStrings) {
+    if (sanitizeHtml || sanitizeStrings) {
       return sanitizeText(obj) as T
     }
     return obj
