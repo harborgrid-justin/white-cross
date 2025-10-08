@@ -330,11 +330,20 @@ export const studentRoutes: ServerRoute[] = [
           limit: Joi.number().integer().min(1).max(100).default(10).description('Items per page (max 100)'),
           search: Joi.string().optional().description('Search by name or student number'),
           grade: Joi.string().optional().description('Filter by grade level'),
-          isActive: Joi.boolean().optional().description('Filter by active status'),
+          isActive: Joi.alternatives().try(
+            Joi.boolean(),
+            Joi.string().valid('true', 'false')
+          ).optional().description('Filter by active status'),
           nurseId: Joi.string().optional().description('Filter by assigned nurse ID'),
-          hasAllergies: Joi.boolean().optional().description('Filter students with allergies'),
-          hasMedications: Joi.boolean().optional().description('Filter students with medications')
-        })
+          hasAllergies: Joi.alternatives().try(
+            Joi.boolean(),
+            Joi.string().valid('true', 'false')
+          ).optional().description('Filter students with allergies'),
+          hasMedications: Joi.alternatives().try(
+            Joi.boolean(),
+            Joi.string().valid('true', 'false')
+          ).optional().description('Filter students with medications')
+        }).unknown(true)
       },
       plugins: {
         'hapi-swagger': {

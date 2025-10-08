@@ -174,6 +174,98 @@ const verifyHandler = async (request: any, h: any) => {
   }
 };
 
+// Refresh token endpoint
+const refreshHandler = async (request: any, h: any) => {
+  try {
+    const token = request.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return h.response({
+        success: false,
+        error: { message: 'Access token required' }
+      }).code(401);
+    }
+
+    // Verify the existing token (even if expired, we can still read the payload)
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload & { userId: string };
+    } catch (error: any) {
+      // If token is expired, we can still decode it without verification to get user info
+      if (error.name === 'TokenExpiredError') {
+        decoded = jwt.decode(token) as jwt.JwtPayload & { userId: string };
+      } else {
+        return h.response({
+          success: false,
+          error: { message: 'Invalid token' }
+        }).code(401);
+      }
+    }
+
+    if (!decoded || !decoded.userId) {
+      return h.response({
+        success: false,
+        error: { message: 'Invalid token format' }
+      }).code(401);
+    }
+
+    // Verify user still exists and is active
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true
+      }
+    });
+
+    if (!user || !user.isActive) {
+      return h.response({
+        success: false,
+        error: { message: 'User not found or inactive' }
+      }).code(401);
+    }
+
+    // Generate new JWT token
+    const newToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        aud: 'urn:audience:api',
+        iss: 'urn:issuer:api'
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: '24h'
+      }
+    );
+
+    return h.response({
+      success: true,
+      data: {
+        token: newToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }
+      }
+    });
+
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: 'Internal server error' }
+    }).code(500);
+  }
+};
+
 // Get current user endpoint
 const meHandler = async (request: any, h: any) => {
   const user = request.auth.credentials;
@@ -314,6 +406,45 @@ export const authRoutes: ServerRoute[] = [
             },
             '401': {
               description: 'Invalid, expired, or missing token'
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/auth/refresh',
+    handler: refreshHandler,
+    options: {
+      auth: false, // Disable auth for token refresh
+      tags: ['api', 'Authentication'],
+      description: 'Refresh JWT token',
+      notes: 'Refreshes an existing JWT token (even if expired) and returns a new token with updated expiration. Pass the old token in the Authorization header.',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Token refreshed successfully',
+              schema: Joi.object({
+                success: Joi.boolean().example(true),
+                data: Joi.object({
+                  token: Joi.string().example('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'),
+                  user: Joi.object({
+                    id: Joi.string().example('user-123'),
+                    email: Joi.string().email().example('nurse@school.edu'),
+                    firstName: Joi.string().example('Jane'),
+                    lastName: Joi.string().example('Smith'),
+                    role: Joi.string().example('NURSE')
+                  })
+                })
+              })
+            },
+            '401': {
+              description: 'Invalid token, user not found, or user inactive'
+            },
+            '500': {
+              description: 'Internal server error'
             }
           }
         }

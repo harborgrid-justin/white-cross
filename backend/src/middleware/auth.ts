@@ -21,25 +21,28 @@ export const configureAuth = async (server: Server) => {
   // Register JWT plugin
   await server.register(jwt);
 
-  // Set JWT secret
+  // Set JWT secret - ensure it matches what's used in token generation
+  const jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+  
   server.auth.strategy('jwt', 'jwt', {
-    keys: process.env.JWT_SECRET || 'your-secret-key',
+    keys: jwtSecret,
     verify: {
       aud: 'urn:audience:api',
       iss: 'urn:issuer:api',
       sub: false,
       nbf: true,
       exp: true,
-      maxAgeSec: 14400, // 4 hours
+      maxAgeSec: 86400, // 24 hours to match token generation
       timeSkewSec: 15
     },
     validate: async (artifacts, _request, _h) => {
       try {
         const decoded = artifacts.decoded;
+        const payload = decoded.payload as any;
 
         // Verify user still exists and is active
         const user = await prisma.user.findUnique({
-          where: { id: (decoded as any).userId },
+          where: { id: payload.userId },
           select: { id: true, email: true, role: true, isActive: true }
         });
 
@@ -56,6 +59,7 @@ export const configureAuth = async (server: Server) => {
           }
         };
       } catch (error) {
+        console.error('JWT validation error:', error);
         return { isValid: false };
       }
     }
