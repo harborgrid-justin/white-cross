@@ -12,9 +12,8 @@ export default function AuditLogsTab() {
   const loadLogs = useCallback(async () => {
     try {
       setLoading(true)
-      const filters = actionFilter ? { action: actionFilter } : {}
-      const data = await administrationApi.getAuditLogs(1, 50, filters)
-      setLogs(data.logs || [])
+      const data = await administrationApi.getAuditLogs()
+      setLogs(data.data?.logs || [])
     } catch (error) {
       console.error('Error loading audit logs:', error)
     } finally {

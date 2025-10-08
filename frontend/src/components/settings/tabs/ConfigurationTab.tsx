@@ -13,8 +13,8 @@ export default function ConfigurationTab() {
   const loadConfigurations = useCallback(async () => {
     try {
       setLoading(true)
-      const data = await administrationApi.getAllConfigurations(category !== 'all' ? category : undefined)
-      setConfigurations(data.configurations || [])
+      const data = await administrationApi.getAllConfigurations()
+      setConfigurations(data.data?.configurations || [])
     } catch (error) {
       console.error('Error loading configurations:', error)
     } finally {

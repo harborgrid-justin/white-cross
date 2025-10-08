@@ -1,5 +1,12 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_CONFIG } from '../../constants/config';
+import { 
+  API_ENDPOINTS, 
+  HTTP_STATUS, 
+  CONTENT_TYPES, 
+  REQUEST_CONFIG, 
+  API_CONSTANTS 
+} from '../../constants/api';
 
 // Create axios instance
 export const apiInstance: AxiosInstance = axios.create({

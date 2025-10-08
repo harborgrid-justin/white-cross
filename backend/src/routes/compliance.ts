@@ -88,7 +88,7 @@ router.post('/', auth, [
       });
     }
 
-    const createdById = (req).user.id;
+    const createdById = (req).user?.userId;
 
     const report = await ComplianceService.createComplianceReport({
       ...req.body,
@@ -373,7 +373,11 @@ router.put('/consent/:signatureId/withdraw', auth, [
       });
     }
 
-    const withdrawnBy = (req).user.id;
+    const withdrawnBy = (req).user?.userId;
+
+    if (!withdrawnBy) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     const signature = await ComplianceService.withdrawConsent(
       req.params.signatureId,
@@ -503,8 +507,12 @@ router.post('/policies/:policyId/acknowledge', auth, [
       });
     }
 
-    const userId = (req).user.id;
+    const userId = (req).user?.userId;
     const ipAddress = req.ip || req.socket.remoteAddress;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     const acknowledgment = await ComplianceService.acknowledgePolicy(
       req.params.policyId,
@@ -610,7 +618,11 @@ router.post('/generate', auth, [
       });
     }
 
-    const createdById = (req).user.id;
+    const createdById = (req).user?.userId;
+
+    if (!createdById) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     const report = await ComplianceService.generateComplianceReport(
       req.body.reportType,

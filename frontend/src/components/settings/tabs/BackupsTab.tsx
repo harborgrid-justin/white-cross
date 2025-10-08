@@ -19,8 +19,8 @@ export default function BackupsTab() {
   const loadBackups = async () => {
     try {
       setLoading(true)
-      const data = await administrationApi.getBackupLogs(1, 50)
-      setBackups(data.backups || [])
+      const data = await administrationApi.getBackupLogs()
+      setBackups(data.data?.backups || [])
     } catch (error) {
       console.error('Error loading backups:', error)
     } finally {

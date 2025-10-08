@@ -28,8 +28,8 @@ export default function DistrictsTab() {
   const loadDistricts = async () => {
     try {
       setLoading(true)
-      const data = await administrationApi.getDistricts(1, 50)
-      setDistricts(data.districts || [])
+      const data = await administrationApi.getDistricts()
+      setDistricts(data.data?.districts || [])
     } catch (error) {
       console.error('Error loading districts:', error)
     } finally {

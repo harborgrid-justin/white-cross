@@ -855,13 +855,13 @@ export class IncidentReportService {
     notes?: string
   ) {
     try {
-      const updateData: Prisma.IncidentReportUpdateInput = { status };
-      
+      const updateData: Prisma.FollowUpActionUpdateInput = { status };
+
       if (status === 'COMPLETED') {
         updateData.completedAt = new Date();
-        updateData.completedBy = completedBy;
+        if (completedBy) updateData.completedBy = completedBy;
       }
-      
+
       if (notes) {
         updateData.notes = notes;
       }

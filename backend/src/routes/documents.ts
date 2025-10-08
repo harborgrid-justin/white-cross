@@ -41,7 +41,10 @@ router.get('/', auth, [
 // Get document by ID
 router.get('/:id', auth, async (req: Request, res: Response) => {
   try {
-    const userId = (req).user.id;
+    const userId = (req).user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     const document = await DocumentService.viewDocument(req.params.id, userId);
     res.json({ success: true, data: { document } });
   } catch (error) {
@@ -64,7 +67,7 @@ router.post('/', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const uploadedBy = (req).user.id;
+    const uploadedBy = (req).user?.userId;
     const document = await DocumentService.createDocument({ ...req.body, uploadedBy });
     res.status(201).json({ success: true, data: { document } });
   } catch (error) {
@@ -75,7 +78,10 @@ router.post('/', auth, [
 // Update document
 router.put('/:id', auth, async (req: Request, res: Response) => {
   try {
-    const updatedBy = (req).user.id;
+    const updatedBy = (req).user?.userId;
+    if (!updatedBy) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     const document = await DocumentService.updateDocument(req.params.id, req.body, updatedBy);
     res.json({ success: true, data: { document } });
   } catch (error) {
@@ -86,7 +92,10 @@ router.put('/:id', auth, async (req: Request, res: Response) => {
 // Delete document
 router.delete('/:id', auth, async (req: Request, res: Response) => {
   try {
-    const deletedBy = (req).user.id;
+    const deletedBy = (req).user?.userId;
+    if (!deletedBy) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     await DocumentService.deleteDocument(req.params.id, deletedBy);
     res.json({ success: true, data: { message: 'Document deleted successfully' } });
   } catch (error) {
@@ -108,7 +117,7 @@ router.post('/:parentId/version', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const uploadedBy = (req).user.id;
+    const uploadedBy = (req).user?.userId;
     const document = await DocumentService.createDocumentVersion(req.params.parentId, {
       ...req.body,
       uploadedBy,
@@ -133,9 +142,13 @@ router.post('/:id/sign', auth, [
     const user = (req).user;
     const ipAddress = req.ip || req.socket.remoteAddress;
 
+    if (!user || !user.userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
     const signature = await DocumentService.signDocument({
       documentId: req.params.id,
-      signedBy: user.id,
+      signedBy: user.userId,
       signedByRole: user.role,
       signatureData: req.body.signatureData,
       ipAddress,
@@ -150,7 +163,10 @@ router.post('/:id/sign', auth, [
 // Download document
 router.get('/:id/download', auth, async (req: Request, res: Response) => {
   try {
-    const userId = (req).user.id;
+    const userId = (req).user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     const document = await DocumentService.downloadDocument(req.params.id, userId);
     res.json({ success: true, data: { document } });
   } catch (error) {
@@ -184,7 +200,7 @@ router.post('/templates/:templateId/create', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const uploadedBy = (req).user.id;
+    const uploadedBy = (req).user?.userId;
     const document = await DocumentService.createFromTemplate(req.params.templateId, {
       ...req.body,
       uploadedBy,

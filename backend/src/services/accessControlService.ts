@@ -547,8 +547,11 @@ export class AccessControlService {
     }
   ) {
     try {
-      const updateData: Prisma.SecurityIncidentUpdateInput = { ...data };
-      
+      const updateData: Prisma.SecurityIncidentUpdateInput = {};
+      if (data.status) updateData.status = data.status as any;
+      if (data.resolution) updateData.resolution = data.resolution;
+      if (data.resolvedBy) updateData.resolvedBy = data.resolvedBy;
+
       if (data.status === 'RESOLVED' && !updateData.resolvedAt) {
         updateData.resolvedAt = new Date();
       }

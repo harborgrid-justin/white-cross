@@ -56,8 +56,8 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
   const handleConfirmAccess = async () => {
     try {
       // Make API call to get sensitive record (this will be intercepted by Cypress)
-      await healthRecordsApi.getStudentHealthRecords(studentId!, { sensitive: true })
-      
+      await healthRecordsApi.getStudentHealthRecords(studentId!, {})
+
       setHasConfirmedAccess(true)
       setShowSensitiveWarning(false)
       setLoading(false)

@@ -858,18 +858,18 @@ export class AppointmentService {
    */
   static async getWaitlist(filters?: { nurseId?: string; status?: string; priority?: string }) {
     try {
-      const whereClause: Prisma.WaitlistEntryWhereInput = {};
+      const whereClause: Prisma.AppointmentWaitlistWhereInput = {};
 
       if (filters?.nurseId) {
         whereClause.nurseId = filters.nurseId;
       }
 
       if (filters?.status) {
-        whereClause.status = filters.status;
+        whereClause.status = filters.status as any;
       }
 
       if (filters?.priority) {
-        whereClause.priority = filters.priority;
+        whereClause.priority = filters.priority as any;
       }
 
       const waitlist = await prisma.appointmentWaitlist.findMany({

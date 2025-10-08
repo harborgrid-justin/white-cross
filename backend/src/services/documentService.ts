@@ -49,10 +49,10 @@ export class DocumentService {
       const where: Prisma.DocumentWhereInput = {};
 
       if (filters.category) {
-        where.category = filters.category;
+        where.category = filters.category as any;
       }
       if (filters.status) {
-        where.status = filters.status;
+        where.status = filters.status as any;
       }
       if (filters.studentId) {
         where.studentId = filters.studentId;
@@ -186,10 +186,10 @@ export class DocumentService {
       const updateData: Prisma.DocumentUpdateInput = {};
       if (data.title) updateData.title = data.title;
       if (data.description) updateData.description = data.description;
-      if (data.status) updateData.status = data.status;
+      if (data.status) updateData.status = data.status as any;
       if (data.tags) updateData.tags = data.tags;
       if (data.retentionDate) updateData.retentionDate = data.retentionDate;
-      if (data.accessLevel) updateData.accessLevel = data.accessLevel;
+      if (data.accessLevel) updateData.accessLevel = data.accessLevel as any;
 
       const document = await prisma.document.update({
         where: { id },
@@ -201,7 +201,7 @@ export class DocumentService {
       });
 
       // Create audit trail entry
-      await this.addAuditTrail(id, 'UPDATED', updatedBy, data);
+      await this.addAuditTrail(id, 'UPDATED', updatedBy, data as Prisma.InputJsonValue);
 
       logger.info(`Updated document: ${id}`);
       return document;
@@ -263,7 +263,7 @@ export class DocumentService {
           studentId: parent.studentId,
           tags: data.tags || parent.tags,
           isTemplate: parent.isTemplate,
-          templateData: data.templateData || parent.templateData,
+          templateData: data.templateData || parent.templateData || undefined,
           status: 'DRAFT',
           version: newVersion,
           accessLevel: parent.accessLevel,
@@ -375,7 +375,7 @@ export class DocumentService {
       const where: Prisma.DocumentWhereInput = { isTemplate: true };
       
       if (category) {
-        where.category = category;
+        where.category = category as any;
       }
 
       const templates = await prisma.document.findMany({

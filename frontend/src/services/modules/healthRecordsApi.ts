@@ -105,7 +105,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ records: HealthRecord[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/student/${studentId}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async createHealthRecord(data: Partial<HealthRecord>): Promise<{ record: HealthRecord }> {
@@ -113,7 +113,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       API_ENDPOINTS.HEALTH_RECORDS,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async updateHealthRecord(id: string, data: Partial<HealthRecord>): Promise<{ record: HealthRecord }> {
@@ -121,7 +121,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/${id}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async deleteHealthRecord(id: string): Promise<void> {
@@ -133,7 +133,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ allergies: Allergy[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies/${studentId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async addAllergy(data: Partial<Allergy>): Promise<{ allergy: Allergy }> {
@@ -141,7 +141,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async updateAllergy(id: string, data: Partial<Allergy>): Promise<{ allergy: Allergy }> {
@@ -149,7 +149,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies/${id}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async deleteAllergy(id: string): Promise<void> {
@@ -161,7 +161,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies/${id}/verify`,
       { verifiedBy }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Chronic Conditions
@@ -169,7 +169,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ conditions: ChronicCondition[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/chronic-conditions/${studentId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async addChronicCondition(data: Partial<ChronicCondition>): Promise<{ condition: ChronicCondition }> {
@@ -177,7 +177,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/chronic-conditions`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async updateChronicCondition(id: string, data: Partial<ChronicCondition>): Promise<{ condition: ChronicCondition }> {
@@ -185,7 +185,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/chronic-conditions/${id}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async deleteChronicCondition(id: string): Promise<void> {
@@ -197,7 +197,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ vaccinations: VaccinationRecord[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations/${studentId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async addVaccinationRecord(data: Partial<VaccinationRecord>): Promise<{ vaccination: VaccinationRecord }> {
@@ -205,7 +205,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async updateVaccinationRecord(id: string, data: Partial<VaccinationRecord>): Promise<{ vaccination: VaccinationRecord }> {
@@ -213,7 +213,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations/${id}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Growth Chart
@@ -221,7 +221,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ growthData: GrowthData[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/growth/${studentId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async addGrowthMeasurement(studentId: string, data: Partial<GrowthData>): Promise<{ measurement: GrowthData }> {
@@ -229,7 +229,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/growth/${studentId}`,
       data
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Vitals
@@ -238,7 +238,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ vitals: VitalSigns[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vitals/${studentId}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async recordVitals(studentId: string, vitals: VitalSigns): Promise<{ record: HealthRecord }> {
@@ -246,7 +246,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
       `${API_ENDPOINTS.HEALTH_RECORDS}/vitals/${studentId}`,
       vitals
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Health Summary
@@ -254,7 +254,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<HealthSummary>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/summary/${studentId}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Search and Reporting
@@ -263,7 +263,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ records: HealthRecord[] }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/search?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   async getAllRecords(pagination: PaginationParams = {}, filters: HealthRecordFilters = {}): Promise<{ records: HealthRecord[]; pagination: any }> {
@@ -271,7 +271,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const response = await apiInstance.get<ApiResponse<{ records: HealthRecord[]; pagination: any }>>(
       `${API_ENDPOINTS.HEALTH_RECORDS}?${params.toString()}`
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Import/Export
@@ -296,7 +296,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
         },
       }
     );
-    return extractApiData(response);
+    return extractApiData(response)!;
   }
 
   // Audit and Access Logging

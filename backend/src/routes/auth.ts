@@ -139,7 +139,7 @@ const verifyHandler = async (request: any, h: any) => {
       }).code(401);
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload & { userId: string };
 
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({

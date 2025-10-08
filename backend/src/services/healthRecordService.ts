@@ -142,10 +142,14 @@ export class HealthRecordService {
       }
 
       // Calculate BMI if height and weight are provided in vitals
-      if (data.vital && data.vital.height && data.vital.weight) {
-        const heightInMeters = data.vital.height / 100; // Convert cm to meters
-        const bmi = data.vital.weight / (heightInMeters * heightInMeters);
-        data.vital.bmi = Math.round(bmi * 10) / 10; // Round to 1 decimal place
+      if (data.vital && typeof data.vital === 'object' && data.vital !== null) {
+        const vitals = data.vital as any;
+        if (vitals.height && vitals.weight) {
+          const heightInMeters = vitals.height / 100; // Convert cm to meters
+          const bmi = vitals.weight / (heightInMeters * heightInMeters);
+          vitals.bmi = Math.round(bmi * 10) / 10; // Round to 1 decimal place
+          data.vital = vitals;
+        }
       }
 
       const healthRecord = await prisma.healthRecord.create({
@@ -187,9 +191,12 @@ export class HealthRecordService {
       }
 
       // Recalculate BMI if height or weight is being updated
-      if (data.vital) {
-        const currentVitals = existingRecord.vital as any || {};
-        const updatedVitals = { ...currentVitals, ...data.vital };
+      if (data.vital && typeof data.vital === 'object' && data.vital !== null) {
+        const currentVitals = (existingRecord.vital && typeof existingRecord.vital === 'object' && existingRecord.vital !== null) 
+          ? existingRecord.vital as any 
+          : {};
+        const vitalsUpdate = data.vital as any;
+        const updatedVitals = { ...currentVitals, ...vitalsUpdate };
         
         if (updatedVitals.height && updatedVitals.weight) {
           const heightInMeters = updatedVitals.height / 100;
@@ -289,7 +296,7 @@ export class HealthRecordService {
       }
 
       // Update verification timestamp if being verified
-      const updateData: Prisma.HealthRecordUpdateInput = { ...data };
+      const updateData: Prisma.AllergyUpdateInput = { ...data };
       if (data.verified && !existingAllergy.verified) {
         updateData.verifiedAt = new Date();
       }
@@ -799,23 +806,26 @@ export class HealthRecordService {
       };
 
       // Import health records
-      if (importData.healthRecords && Array.isArray(importData.healthRecords)) {
-        for (const record of importData.healthRecords) {
-          try {
-            await this.createHealthRecord({
-              studentId,
-              type: record.type,
-              date: new Date(record.date),
-              description: record.description,
-              vital: record.vital,
-              provider: record.provider,
-              notes: record.notes,
-              attachments: record.attachments
-            });
-            results.imported++;
-          } catch (error) {
-            results.skipped++;
-            results.errors.push(`Record ${record.description}: ${(error as Error).message}`);
+      if (importData && typeof importData === 'object' && importData !== null) {
+        const data = importData as any;
+        if (data.healthRecords && Array.isArray(data.healthRecords)) {
+          for (const record of data.healthRecords) {
+            try {
+              await this.createHealthRecord({
+                studentId,
+                type: record.type,
+                date: new Date(record.date),
+                description: record.description,
+                vital: record.vital,
+                provider: record.provider,
+                notes: record.notes,
+                attachments: record.attachments
+              });
+              results.imported++;
+            } catch (error) {
+              results.skipped++;
+              results.errors.push(`Record ${record.description}: ${(error as Error).message}`);
+            }
           }
         }
       }

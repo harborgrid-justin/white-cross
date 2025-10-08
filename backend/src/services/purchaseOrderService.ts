@@ -49,9 +49,9 @@ export class PurchaseOrderService {
       const skip = (page - 1) * limit;
       
       const where: Prisma.PurchaseOrderWhereInput = {};
-      
+
       if (filters.status) {
-        where.status = filters.status;
+        where.status = filters.status as any;
       }
       
       if (filters.vendorId) {

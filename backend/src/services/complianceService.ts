@@ -56,10 +56,10 @@ export class ComplianceService {
       const where: Prisma.ComplianceReportWhereInput = {};
 
       if (filters.reportType) {
-        where.reportType = filters.reportType;
+        where.reportType = filters.reportType as any;
       }
       if (filters.status) {
-        where.status = filters.status;
+        where.status = filters.status as any;
       }
       if (filters.period) {
         where.period = filters.period;
@@ -163,8 +163,13 @@ export class ComplianceService {
     }
   ) {
     try {
-      const updateData: Prisma.ComplianceReportUpdateInput = { ...data };
-      
+      const updateData: Prisma.ComplianceReportUpdateInput = {};
+      if (data.status) updateData.status = data.status as any;
+      if (data.findings) updateData.findings = data.findings;
+      if (data.recommendations) updateData.recommendations = data.recommendations;
+      if (data.submittedBy) updateData.submittedBy = data.submittedBy;
+      if (data.reviewedBy) updateData.reviewedBy = data.reviewedBy;
+
       if (data.status === 'COMPLIANT' && !updateData.submittedAt) {
         updateData.submittedAt = new Date();
       }
@@ -239,8 +244,12 @@ export class ComplianceService {
     }
   ) {
     try {
-      const updateData: Prisma.ComplianceChecklistItemUpdateInput = { ...data };
-      
+      const updateData: Prisma.ComplianceChecklistItemUpdateInput = {};
+      if (data.status) updateData.status = data.status as any;
+      if (data.evidence) updateData.evidence = data.evidence;
+      if (data.notes) updateData.notes = data.notes;
+      if (data.completedBy) updateData.completedBy = data.completedBy;
+
       if (data.status === 'COMPLETED' && !updateData.completedAt) {
         updateData.completedAt = new Date();
       }
@@ -394,10 +403,10 @@ export class ComplianceService {
       const where: Prisma.PolicyDocumentWhereInput = {};
       
       if (filters.category) {
-        where.category = filters.category;
+        where.category = filters.category as any;
       }
       if (filters.status) {
-        where.status = filters.status;
+        where.status = filters.status as any;
       }
 
       const policies = await prisma.policyDocument.findMany({
@@ -456,8 +465,11 @@ export class ComplianceService {
     }
   ) {
     try {
-      const updateData: Prisma.PolicyDocumentUpdateInput = { ...data };
-      
+      const updateData: Prisma.PolicyDocumentUpdateInput = {};
+      if (data.status) updateData.status = data.status as any;
+      if (data.approvedBy) updateData.approvedBy = data.approvedBy;
+      if (data.reviewDate) updateData.reviewDate = data.reviewDate;
+
       if (data.status === 'ACTIVE' && !updateData.approvedAt) {
         updateData.approvedAt = new Date();
       }
@@ -570,7 +582,7 @@ export class ComplianceService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      const where: Prisma.ComplianceAuditLogWhereInput = {};
+      const where: Prisma.AuditLogWhereInput = {};
 
       if (filters.userId) {
         where.userId = filters.userId;
@@ -579,7 +591,7 @@ export class ComplianceService {
         where.entityType = filters.entityType;
       }
       if (filters.action) {
-        where.action = filters.action;
+        where.action = filters.action as any;
       }
       if (filters.startDate || filters.endDate) {
         where.createdAt = {};
