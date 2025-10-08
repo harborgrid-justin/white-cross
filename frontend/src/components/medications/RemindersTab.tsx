@@ -1,6 +1,7 @@
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import { LoadingSpinner, EmptyState } from '../shared'
 import { useMedicationsData } from '../../hooks/useMedicationsData'
+import { useReminderManagement } from '../../hooks/useReminderManagement'
 import { formatDate } from '../../utils/medications'
 import type { MedicationReminder } from '../../types/api'
 
@@ -16,15 +17,7 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
   testId
 }) => {
   const { reminders, isLoading: remindersLoading } = useMedicationsData()
-
-  // Mock functions for reminder actions (API endpoints not yet available)
-  const markReminderCompleted = async (reminderId: string) => {
-    console.log('Mock: Marking reminder completed', reminderId)
-  }
-
-  const markReminderMissed = async (reminderId: string) => {
-    console.log('Mock: Marking reminder missed', reminderId)
-  }
+  const { markReminderCompleted, markReminderMissed, isUpdating } = useReminderManagement()
 
   if (remindersLoading) {
     return (
@@ -74,12 +67,22 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
 
   const handleMarkCompleted = async (reminderId: string, event: React.MouseEvent) => {
     event.stopPropagation()
-    await markReminderCompleted(reminderId)
+    try {
+      await markReminderCompleted(reminderId)
+    } catch (error) {
+      // Error is handled by the hook with toast notification
+      console.error('Failed to mark reminder as completed:', error)
+    }
   }
 
   const handleMarkMissed = async (reminderId: string, event: React.MouseEvent) => {
     event.stopPropagation()
-    await markReminderMissed(reminderId)
+    try {
+      await markReminderMissed(reminderId)
+    } catch (error) {
+      // Error is handled by the hook with toast notification
+      console.error('Failed to mark reminder as missed:', error)
+    }
   }
 
   // Group reminders by status
@@ -188,14 +191,16 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
                     <div className="flex space-x-2">
                       <button
                         onClick={(e) => handleMarkCompleted(reminder.id, e)}
-                        className="text-green-600 hover:text-green-800 text-sm font-medium"
+                        disabled={isUpdating}
+                        className="text-green-600 hover:text-green-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         data-testid="mark-completed-btn"
                       >
                         Complete
                       </button>
                       <button
                         onClick={(e) => handleMarkMissed(reminder.id, e)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                        disabled={isUpdating}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         data-testid="mark-missed-btn"
                       >
                         Missed

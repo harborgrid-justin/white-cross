@@ -1,29 +1,116 @@
 {
-  "inhaler": {
-    "name": "Albuterol Inhaler",
-    "dosage": "2 puffs",
-    "frequency": "As needed for asthma symptoms",
-    "studentName": "John Doe",
-    "prescribedBy": "Dr. Smith",
-    "startDate": "2024-01-01",
-    "instructions": "Use during breathing difficulties or before physical activity"
+  "testMedications": {
+    "albuterol": {
+      "name": "Albuterol Inhaler",
+      "genericName": "Albuterol Sulfate",
+      "dosageForm": "Inhaler",
+      "strength": "90 mcg/dose",
+      "manufacturer": "ProAir",
+      "ndc": "12345-678-90",
+      "isControlled": false,
+      "dosage": "2 puffs",
+      "frequency": "As needed for asthma symptoms",
+      "prescribedBy": "Dr. Smith",
+      "startDate": "2024-01-01",
+      "instructions": "Use during breathing difficulties or before physical activity"
+    },
+    "epipen": {
+      "name": "EpiPen",
+      "genericName": "Epinephrine",
+      "dosageForm": "Auto-injector",
+      "strength": "0.3 mg",
+      "manufacturer": "Mylan",
+      "ndc": "23456-789-01",
+      "isControlled": false,
+      "dosage": "0.3mg",
+      "frequency": "Emergency use only",
+      "prescribedBy": "Dr. Williams",
+      "startDate": "2023-08-20",
+      "instructions": "Use immediately in case of severe allergic reaction"
+    },
+    "tylenol": {
+      "name": "Tylenol",
+      "genericName": "Acetaminophen",
+      "dosageForm": "Tablet",
+      "strength": "325 mg",
+      "manufacturer": "Johnson & Johnson",
+      "ndc": "34567-890-12",
+      "isControlled": false,
+      "dosage": "1-2 tablets",
+      "frequency": "Every 4-6 hours as needed",
+      "prescribedBy": "Dr. Davis",
+      "startDate": "2023-10-01",
+      "instructions": "Take with food to prevent stomach upset"
+    },
+    "methylphenidate": {
+      "name": "Methylphenidate",
+      "genericName": "Methylphenidate HCl",
+      "dosageForm": "Tablet",
+      "strength": "10 mg",
+      "manufacturer": "Novartis",
+      "ndc": "56789-012-34",
+      "isControlled": true,
+      "dosage": "10 mg",
+      "frequency": "Once daily in morning",
+      "prescribedBy": "Dr. Peterson",
+      "startDate": "2023-09-01",
+      "instructions": "Take with breakfast. Monitor for side effects."
+    },
+    "insulin": {
+      "name": "Insulin",
+      "genericName": "Insulin Human",
+      "dosageForm": "Injection",
+      "strength": "100 units/mL",
+      "manufacturer": "Novo Nordisk",
+      "ndc": "90123-456-78",
+      "isControlled": false,
+      "dosage": "10 units",
+      "frequency": "Before meals",
+      "prescribedBy": "Dr. Johnson",
+      "startDate": "2023-09-15",
+      "instructions": "Administer 15 minutes before eating"
+    },
+    "adderall": {
+      "name": "Adderall",
+      "genericName": "Amphetamine/Dextroamphetamine",
+      "dosageForm": "Tablet",
+      "strength": "10 mg",
+      "manufacturer": "Teva",
+      "ndc": "67890-123-45",
+      "isControlled": true,
+      "dosage": "10 mg",
+      "frequency": "Once daily in morning",
+      "prescribedBy": "Dr. Thompson",
+      "startDate": "2023-08-15",
+      "instructions": "Take early in morning to avoid sleep issues"
+    }
   },
-  "insulin": {
-    "name": "Insulin Pen",
-    "dosage": "10 units",
-    "frequency": "Before meals",
-    "studentName": "Sarah Smith",
-    "prescribedBy": "Dr. Johnson",
-    "startDate": "2023-09-15",
-    "instructions": "Administer 15 minutes before eating"
+  "studentMedicationAssignments": {
+    "STU00001": ["albuterol", "tylenol"],
+    "STU00002": ["epipen"],
+    "STU00003": ["insulin"],
+    "STU00004": ["methylphenidate"],
+    "STU00005": ["adderall"],
+    "STU00010": ["albuterol", "epipen"],
+    "STU00015": ["tylenol"],
+    "STU00020": ["insulin", "tylenol"]
   },
-  "epipen": {
-    "name": "EpiPen Auto-Injector",
-    "dosage": "0.3mg",
-    "frequency": "Emergency use only",
-    "studentName": "Alex Johnson",
-    "prescribedBy": "Dr. Williams",
-    "startDate": "2023-08-20",
-    "instructions": "Use immediately in case of severe allergic reaction"
-  }
+  "medicationCategories": [
+    "Emergency Medications",
+    "Daily Medications", 
+    "As-Needed Medications",
+    "Controlled Substances"
+  ],
+  "administrationTimes": [
+    "8:00 AM",
+    "12:00 PM", 
+    "3:00 PM",
+    "As Needed"
+  ],
+  "medicationStatuses": [
+    "Active",
+    "Inactive",
+    "Discontinued",
+    "On Hold"
+  ]
 }

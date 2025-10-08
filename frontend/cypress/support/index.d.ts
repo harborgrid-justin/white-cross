@@ -104,18 +104,45 @@ interface AppointmentData {
 
 interface MedicationData {
   name: string
+  genericName?: string
+  dosageForm?: string
+  strength?: string
+  manufacturer?: string
+  ndc?: string
+  isControlled?: boolean
   dosage: string
   frequency: string
-  studentName: string
+  studentName?: string
   prescribedBy?: string
   startDate?: string
   instructions?: string
+}
+
+interface MedicationInventoryData {
+  medicationId: string
+  batchNumber: string
+  expirationDate: string
+  quantity: number
+  reorderLevel: number
+  costPerUnit: number
+  supplier: string
+}
+
+interface MedicationAdministrationData {
+  studentId: string
+  medicationId: string
+  dosage: string
+  administeredBy: string
+  administeredAt: string
+  notes?: string
 }
 
 interface TestUsers {
   nurse: UserData
   admin: UserData
   doctor: UserData
+  readonly?: UserData
+  counselor?: UserData
 }
 
 interface TestStudents {
@@ -127,5 +154,35 @@ interface TestAppointments {
 }
 
 interface TestMedications {
-  [key: string]: MedicationData
+  testMedications: {
+    [key: string]: MedicationData
+  }
+  studentMedicationAssignments: {
+    [studentId: string]: string[]
+  }
+  medicationCategories: string[]
+  administrationTimes: string[]
+  medicationStatuses: string[]
+}
+
+interface SeedDataMedication {
+  name: string
+  genericName: string
+  dosageForm: string
+  strength: string
+  manufacturer: string
+  ndc: string
+  isControlled: boolean
+}
+
+interface SeedDataStudent {
+  studentNumber: string
+  firstName: string
+  lastName: string
+  dateOfBirth: Date
+  grade: string
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY'
+  medicalRecordNum: string
+  nurseId: string
+  enrollmentDate: Date
 }
