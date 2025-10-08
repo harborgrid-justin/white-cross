@@ -49,7 +49,7 @@ export default function Medications() {
 
   const { data: adverseReactionsData, isLoading: adverseReactionsLoading } = useQuery({
     queryKey: ['adverse-reactions'],
-    queryFn: () => medicationsApi.getAdverseReactions(undefined as string | undefined, undefined as string | undefined, undefined as string | undefined),
+    queryFn: () => medicationsApi.getAdverseReactions(''),
     enabled: activeTab === 'adverse-reactions'
   })
 

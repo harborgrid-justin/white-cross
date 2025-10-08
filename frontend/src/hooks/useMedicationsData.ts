@@ -51,7 +51,7 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
 
   const { data: adverseReactionsData, isLoading: adverseReactionsLoading } = useQuery({
     queryKey: ['adverse-reactions'],
-    queryFn: () => medicationsApi.getAdverseReactions(undefined as string | undefined, undefined as string | undefined, undefined as string | undefined)
+    queryFn: () => medicationsApi.getAdverseReactions('')
   })
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -74,7 +74,12 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
   })
 
   const reportAdverseReactionMutation = useMutation({
-    mutationFn: (data: AdverseReactionFormData) => medicationsApi.reportAdverseReaction(data.studentMedicationId || '', data),
+    mutationFn: (data: AdverseReactionFormData) => medicationsApi.reportAdverseReaction(data.studentMedicationId || '', {
+      description: data.reaction,
+      severity: data.severity === 'HIGH' ? 'severe' : data.severity === 'MEDIUM' ? 'moderate' : 'mild',
+      symptoms: [],
+      actionTaken: ''
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adverse-reactions'] })
     }

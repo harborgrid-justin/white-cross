@@ -321,17 +321,35 @@ export const studentRoutes: ServerRoute[] = [
     handler: getStudentsHandler,
     options: {
       auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Get all students with pagination and filters',
+      notes: 'Returns a paginated list of students. Supports filtering by search term, grade, status, assigned nurse, allergies, and medications. **PHI Protected Endpoint**',
       validate: {
         query: Joi.object({
-          page: Joi.number().integer().min(1).default(1),
-          limit: Joi.number().integer().min(1).max(100).default(10),
-          search: Joi.string().optional(),
-          grade: Joi.string().optional(),
-          isActive: Joi.boolean().optional(),
-          nurseId: Joi.string().optional(),
-          hasAllergies: Joi.boolean().optional(),
-          hasMedications: Joi.boolean().optional()
+          page: Joi.number().integer().min(1).default(1).description('Page number'),
+          limit: Joi.number().integer().min(1).max(100).default(10).description('Items per page (max 100)'),
+          search: Joi.string().optional().description('Search by name or student number'),
+          grade: Joi.string().optional().description('Filter by grade level'),
+          isActive: Joi.boolean().optional().description('Filter by active status'),
+          nurseId: Joi.string().optional().description('Filter by assigned nurse ID'),
+          hasAllergies: Joi.boolean().optional().description('Filter students with allergies'),
+          hasMedications: Joi.boolean().optional().description('Filter students with medications')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'List of students retrieved successfully'
+            },
+            '401': {
+              description: 'Authentication required'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
       }
     }
   },
@@ -340,7 +358,30 @@ export const studentRoutes: ServerRoute[] = [
     path: '/api/students/{id}',
     handler: getStudentByIdHandler,
     options: {
-      auth: 'jwt'
+      auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Get student by ID',
+      notes: 'Returns detailed information about a specific student. **PHI Protected Endpoint - Access is audited**',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().required().description('Student ID')
+        })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Student details retrieved successfully'
+            },
+            '404': {
+              description: 'Student not found'
+            },
+            '401': {
+              description: 'Authentication required'
+            }
+          }
+        }
+      }
     }
   },
   {
@@ -349,15 +390,36 @@ export const studentRoutes: ServerRoute[] = [
     handler: createStudentHandler,
     options: {
       auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Create a new student record',
+      notes: 'Creates a new student profile in the system. Requires ADMIN or NURSE role. **PHI Protected Endpoint**',
       validate: {
         payload: Joi.object({
-          studentNumber: Joi.string().trim().required(),
-          firstName: Joi.string().trim().required(),
-          lastName: Joi.string().trim().required(),
-          dateOfBirth: Joi.date().iso().required(),
-          grade: Joi.string().trim().required(),
-          gender: Joi.string().valid('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY').required()
+          studentNumber: Joi.string().trim().required().description('Unique student identification number'),
+          firstName: Joi.string().trim().required().description('Student first name'),
+          lastName: Joi.string().trim().required().description('Student last name'),
+          dateOfBirth: Joi.date().iso().required().description('Date of birth (ISO 8601 format)'),
+          grade: Joi.string().trim().required().description('Grade level (e.g., "K", "1", "2", etc.)'),
+          gender: Joi.string().valid('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY').required().description('Gender identity')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              description: 'Student created successfully'
+            },
+            '409': {
+              description: 'Student with this number already exists'
+            },
+            '400': {
+              description: 'Invalid input data'
+            },
+            '401': {
+              description: 'Authentication required'
+            }
+          }
+        }
       }
     }
   },
@@ -367,16 +429,40 @@ export const studentRoutes: ServerRoute[] = [
     handler: updateStudentHandler,
     options: {
       auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Update student information',
+      notes: 'Updates an existing student record. All fields are optional. **PHI Protected Endpoint - Changes are audited**',
       validate: {
+        params: Joi.object({
+          id: Joi.string().required().description('Student ID')
+        }),
         payload: Joi.object({
-          studentNumber: Joi.string().trim().optional(),
-          firstName: Joi.string().trim().optional(),
-          lastName: Joi.string().trim().optional(),
-          dateOfBirth: Joi.date().iso().optional(),
-          grade: Joi.string().trim().optional(),
-          gender: Joi.string().valid('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY').optional(),
-          isActive: Joi.boolean().optional()
+          studentNumber: Joi.string().trim().optional().description('Unique student identification number'),
+          firstName: Joi.string().trim().optional().description('Student first name'),
+          lastName: Joi.string().trim().optional().description('Student last name'),
+          dateOfBirth: Joi.date().iso().optional().description('Date of birth (ISO 8601 format)'),
+          grade: Joi.string().trim().optional().description('Grade level'),
+          gender: Joi.string().valid('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY').optional().description('Gender identity'),
+          isActive: Joi.boolean().optional().description('Active status')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Student updated successfully'
+            },
+            '404': {
+              description: 'Student not found'
+            },
+            '409': {
+              description: 'Student number already exists'
+            },
+            '400': {
+              description: 'Invalid input data'
+            }
+          }
+        }
       }
     }
   },
@@ -385,7 +471,30 @@ export const studentRoutes: ServerRoute[] = [
     path: '/api/students/{id}',
     handler: deactivateStudentHandler,
     options: {
-      auth: 'jwt'
+      auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Deactivate a student',
+      notes: 'Soft deletes a student by marking them as inactive. Does not permanently delete data. **PHI Protected Endpoint**',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().required().description('Student ID')
+        })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Student deactivated successfully'
+            },
+            '400': {
+              description: 'Failed to deactivate student'
+            },
+            '401': {
+              description: 'Authentication required'
+            }
+          }
+        }
+      }
     }
   },
   {
@@ -394,10 +503,31 @@ export const studentRoutes: ServerRoute[] = [
     handler: transferStudentHandler,
     options: {
       auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Transfer student to another nurse',
+      notes: 'Reassigns a student to a different school nurse. Requires ADMIN or SCHOOL_ADMIN role.',
       validate: {
+        params: Joi.object({
+          id: Joi.string().required().description('Student ID')
+        }),
         payload: Joi.object({
-          nurseId: Joi.string().required()
+          nurseId: Joi.string().required().description('ID of the nurse to transfer to')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Student transferred successfully'
+            },
+            '400': {
+              description: 'Invalid nurse ID or transfer failed'
+            },
+            '401': {
+              description: 'Authentication required'
+            }
+          }
+        }
       }
     }
   },
@@ -406,7 +536,27 @@ export const studentRoutes: ServerRoute[] = [
     path: '/api/students/grade/{grade}',
     handler: getStudentsByGradeHandler,
     options: {
-      auth: 'jwt'
+      auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Get students by grade',
+      notes: 'Returns all students in a specific grade level',
+      validate: {
+        params: Joi.object({
+          grade: Joi.string().required().description('Grade level (e.g., "K", "1", "12")')
+        })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Students retrieved successfully'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
+      }
     }
   },
   {
@@ -414,7 +564,27 @@ export const studentRoutes: ServerRoute[] = [
     path: '/api/students/search/{query}',
     handler: searchStudentsHandler,
     options: {
-      auth: 'jwt'
+      auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Search students',
+      notes: 'Searches students by name or student number',
+      validate: {
+        params: Joi.object({
+          query: Joi.string().required().description('Search query')
+        })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Search completed successfully'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
+      }
     }
   },
   {
@@ -422,7 +592,25 @@ export const studentRoutes: ServerRoute[] = [
     path: '/api/students/assigned',
     handler: getAssignedStudentsHandler,
     options: {
-      auth: 'jwt'
+      auth: 'jwt',
+      tags: ['api', 'Students'],
+      description: 'Get assigned students',
+      notes: 'Returns all students assigned to the currently authenticated nurse',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Assigned students retrieved successfully'
+            },
+            '401': {
+              description: 'Authentication required'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
+      }
     }
   },
   {
@@ -431,10 +619,31 @@ export const studentRoutes: ServerRoute[] = [
     handler: getStudentHealthRecordsHandler,
     options: {
       auth: 'jwt',
+      tags: ['api', 'Students', 'Health Records'],
+      description: 'Get student health records',
+      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns health records for a student. Access to sensitive records requires ADMIN, NURSE, or COUNSELOR role. All access is audited.',
       validate: {
+        params: Joi.object({
+          studentId: Joi.string().required().description('Student ID')
+        }),
         query: Joi.object({
-          sensitive: Joi.boolean().optional()
+          sensitive: Joi.boolean().optional().description('Include sensitive/confidential records')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Health records retrieved successfully'
+            },
+            '403': {
+              description: 'Insufficient permissions for sensitive records'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
       }
     }
   },
@@ -443,7 +652,30 @@ export const studentRoutes: ServerRoute[] = [
     path: '/api/students/{studentId}/mental-health-records',
     handler: getStudentMentalHealthRecordsHandler,
     options: {
-      auth: 'jwt'
+      auth: 'jwt',
+      tags: ['api', 'Students', 'Health Records'],
+      description: 'Get student mental health records',
+      notes: '**HIGHLY CONFIDENTIAL ENDPOINT** - Returns mental health records. Requires ADMIN, COUNSELOR, or MENTAL_HEALTH_SPECIALIST role. Strict access controls and full audit logging.',
+      validate: {
+        params: Joi.object({
+          studentId: Joi.string().required().description('Student ID')
+        })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Mental health records retrieved successfully'
+            },
+            '403': {
+              description: 'Insufficient permissions to access mental health records'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
+      }
     }
   }
 ];

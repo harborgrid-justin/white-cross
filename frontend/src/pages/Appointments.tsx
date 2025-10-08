@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Calendar, Clock, Users, Plus, Download, CheckCircle, XCircle, Filter } from 'lucide-react'
 import { appointmentsApi } from '../services/api'
-import { Appointment } from '../types'
+import { Appointment } from '../types/api'
+import { WaitlistEntry } from '../services/types'
 import toast from 'react-hot-toast'
 
 type ViewMode = 'calendar' | 'list' | 'waitlist' | 'availability'
@@ -9,7 +10,7 @@ type ViewMode = 'calendar' | 'list' | 'waitlist' | 'availability'
 export default function Appointments() {
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [waitlist, setWaitlist] = useState<Appointment[]>([])
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([])
   const [statistics, setStatistics] = useState<{
     total: number
     completionRate: number
@@ -43,8 +44,8 @@ export default function Appointments() {
         appointmentsApi.getStatistics()
       ])
 
-      setAppointments(Array.isArray(appointmentsData.data) ? appointmentsData.data : appointmentsData.data || appointmentsData.appointments || [])
-      setWaitlist(Array.isArray(waitlistData.data) ? waitlistData.data : waitlistData.data || waitlistData.waitlist || [])
+      setAppointments(Array.isArray(appointmentsData.data) ? appointmentsData.data : (appointmentsData as any).appointments || [])
+      setWaitlist(Array.isArray(waitlistData.waitlist) ? waitlistData.waitlist : [])
       setStatistics(stats as any || null)
     } catch (error) {
       console.error('Error loading appointments:', error)

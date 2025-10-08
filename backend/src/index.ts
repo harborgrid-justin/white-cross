@@ -1,6 +1,7 @@
 import Hapi from '@hapi/hapi';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import Joi from 'joi';
 
 // Import utilities
 import { logger } from './utils/logger';
@@ -34,6 +35,7 @@ import { communicationRoutes } from './routes/communication';
 import { configureAuth } from './middleware/auth';
 import { configureSecurity } from './middleware/security';
 import { errorHandler } from './middleware/errorHandler';
+import { swaggerOptions } from './config/swagger';
 
 dotenv.config();
 
@@ -54,6 +56,15 @@ const server = Hapi.server({
 // Register plugins and middleware
 const init = async () => {
   try {
+    // Register Inert and Vision (required for Swagger)
+    await server.register([
+      require('@hapi/inert'),
+      require('@hapi/vision')
+    ]);
+
+    // Register Swagger documentation
+    await server.register(swaggerOptions);
+
     // Register security plugins
     await configureSecurity(server);
 
@@ -73,7 +84,25 @@ const init = async () => {
         });
       },
       options: {
-        auth: false // Disable authentication for health check
+        auth: false, // Disable authentication for health check
+        tags: ['api', 'health'],
+        description: 'Health check endpoint',
+        notes: 'Returns server health status, uptime, and environment information. No authentication required.',
+        plugins: {
+          'hapi-swagger': {
+            responses: {
+              '200': {
+                description: 'Server is healthy',
+                schema: Joi.object({
+                  status: Joi.string().example('OK'),
+                  timestamp: Joi.string().isoDate().example(new Date().toISOString()),
+                  uptime: Joi.number().example(123.45),
+                  environment: Joi.string().example('development')
+                })
+              }
+            }
+          }
+        }
       }
     });
 
@@ -146,6 +175,7 @@ const init = async () => {
     await server.start();
     logger.info(`White Cross API Server running on ${server.info.uri}`);
     logger.info(`Environment: ${ENVIRONMENT.NODE_ENV}`);
+    logger.info(`API Documentation available at ${server.info.uri}/docs`);
 
   } catch (error) {
     logger.error('Error starting server:', error);

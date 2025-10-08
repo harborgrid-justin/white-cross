@@ -198,14 +198,46 @@ export const authRoutes: ServerRoute[] = [
     path: '/api/auth/register',
     handler: registerHandler,
     options: {
+      auth: false,
+      tags: ['api', 'Authentication'],
+      description: 'Register a new user',
+      notes: 'Creates a new user account with the specified role. Password must be at least 8 characters.',
       validate: {
         payload: Joi.object({
-          email: Joi.string().email().required(),
-          password: Joi.string().min(8).required(),
-          firstName: Joi.string().trim().required(),
-          lastName: Joi.string().trim().required(),
-          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').required()
+          email: Joi.string().email().required().description('User email address'),
+          password: Joi.string().min(8).required().description('Password (min 8 characters)'),
+          firstName: Joi.string().trim().required().description('User first name'),
+          lastName: Joi.string().trim().required().description('User last name'),
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').required().description('User role')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              description: 'User successfully created',
+              schema: Joi.object({
+                success: Joi.boolean().example(true),
+                data: Joi.object({
+                  user: Joi.object({
+                    id: Joi.string().example('user-123'),
+                    email: Joi.string().email().example('nurse@school.edu'),
+                    firstName: Joi.string().example('Jane'),
+                    lastName: Joi.string().example('Smith'),
+                    role: Joi.string().example('NURSE'),
+                    createdAt: Joi.string().isoDate()
+                  })
+                })
+              })
+            },
+            '409': {
+              description: 'User already exists'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
       }
     }
   },
@@ -215,11 +247,42 @@ export const authRoutes: ServerRoute[] = [
     handler: loginHandler,
     options: {
       auth: false, // Disable auth for login
+      tags: ['api', 'Authentication'],
+      description: 'User login',
+      notes: 'Authenticates a user and returns a JWT token valid for 24 hours. Use this token in the Authorization header for subsequent requests.',
       validate: {
         payload: Joi.object({
-          email: Joi.string().email().required(),
-          password: Joi.string().required()
+          email: Joi.string().email().required().description('User email address'),
+          password: Joi.string().required().description('User password')
         })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Login successful',
+              schema: Joi.object({
+                success: Joi.boolean().example(true),
+                data: Joi.object({
+                  token: Joi.string().example('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'),
+                  user: Joi.object({
+                    id: Joi.string().example('user-123'),
+                    email: Joi.string().email().example('nurse@school.edu'),
+                    firstName: Joi.string().example('Jane'),
+                    lastName: Joi.string().example('Smith'),
+                    role: Joi.string().example('NURSE')
+                  })
+                })
+              })
+            },
+            '401': {
+              description: 'Invalid credentials or user inactive'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          }
+        }
       }
     }
   },
@@ -228,7 +291,33 @@ export const authRoutes: ServerRoute[] = [
     path: '/api/auth/verify',
     handler: verifyHandler,
     options: {
-      auth: false // Disable auth for token verification
+      auth: false, // Disable auth for token verification
+      tags: ['api', 'Authentication'],
+      description: 'Verify JWT token',
+      notes: 'Validates a JWT token and returns the associated user information. Pass the token in the Authorization header.',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Token is valid',
+              schema: Joi.object({
+                success: Joi.boolean().example(true),
+                data: Joi.object({
+                  id: Joi.string().example('user-123'),
+                  email: Joi.string().email().example('nurse@school.edu'),
+                  firstName: Joi.string().example('Jane'),
+                  lastName: Joi.string().example('Smith'),
+                  role: Joi.string().example('NURSE'),
+                  isActive: Joi.boolean().example(true)
+                })
+              })
+            },
+            '401': {
+              description: 'Invalid, expired, or missing token'
+            }
+          }
+        }
+      }
     }
   },
   {
@@ -236,7 +325,33 @@ export const authRoutes: ServerRoute[] = [
     path: '/api/auth/me',
     handler: meHandler,
     options: {
-      auth: 'jwt' // Require authentication
+      auth: 'jwt', // Require authentication
+      tags: ['api', 'Authentication'],
+      description: 'Get current user',
+      notes: 'Returns the authenticated user\'s profile information. Requires valid JWT token in Authorization header.',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Current user information',
+              schema: Joi.object({
+                success: Joi.boolean().example(true),
+                data: Joi.object({
+                  id: Joi.string().example('user-123'),
+                  email: Joi.string().email().example('nurse@school.edu'),
+                  firstName: Joi.string().example('Jane'),
+                  lastName: Joi.string().example('Smith'),
+                  role: Joi.string().example('NURSE')
+                })
+              })
+            },
+            '401': {
+              description: 'Not authenticated or invalid token'
+            }
+          },
+          security: [{ jwt: [] }]
+        }
+      }
     }
   }
 ];

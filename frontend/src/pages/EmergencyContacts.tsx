@@ -68,7 +68,7 @@ export default function EmergencyContacts() {
   const loadStudents = async () => {
     try {
       const response = await studentsApi.getAll({ page: 1, limit: 100 })
-      const studentsData = Array.isArray(response.data) ? response.data : response.students || []
+      const studentsData = Array.isArray(response.data) ? response.data : []
       setStudents(studentsData)
       if (studentsData && Array.isArray(studentsData) && studentsData.length > 0) {
         setSelectedStudent(studentsData[0].id)
