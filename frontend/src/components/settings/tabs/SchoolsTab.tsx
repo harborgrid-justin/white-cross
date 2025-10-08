@@ -26,8 +26,8 @@ export default function SchoolsTab() {
   const loadSchools = useCallback(async () => {
     try {
       setLoading(true)
-      const data = await administrationApi.getSchools(1, 50)
-      setSchools(data.schools || [])
+      const data = await administrationApi.getSchools()
+      setSchools(data.data?.schools || [])
     } catch (error) {
       console.error('Error loading schools:', error)
     } finally {
@@ -37,10 +37,11 @@ export default function SchoolsTab() {
 
   const loadDistricts = useCallback(async () => {
     try {
-      const data = await administrationApi.getDistricts(1, 100)
-      setDistricts(data.districts || [])
-      if (data.districts && data.districts.length > 0 && !formData.districtId) {
-        setFormData(prev => ({ ...prev, districtId: data.districts[0].id }))
+      const data = await administrationApi.getDistricts()
+      const districts = data.data?.districts || []
+      setDistricts(districts)
+      if (districts.length > 0 && !formData.districtId) {
+        setFormData(prev => ({ ...prev, districtId: districts[0].id }))
       }
     } catch (error) {
       console.error('Error loading districts:', error)

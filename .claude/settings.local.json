@@ -51,7 +51,9 @@
       "Bash(git log:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nCentralize all constants, routes, and API endpoints\n\nComplete centralization of hardcoded values across the entire platform:\n\nBackend changes:\n- Create comprehensive constants file (backend/src/constants/index.ts)\n- Update passport.ts to use ENVIRONMENT and TOKEN_CONFIG\n- Update index.ts to use ENVIRONMENT and CORS_CONFIG\n- Centralize all environment variables and configuration\n\nFrontend changes:\n- Create routes constant file (frontend/src/constants/routes.ts)\n- Update useHealthRecordsData hook with API_CONFIG and API_ENDPOINTS\n- Update authStore with centralized API constants\n- Update authApi OAuth redirects to use API_CONFIG\n- Update Layout and UsersTab components with constants\n- Update routes/index.tsx with centralized route definitions\n\nDocumentation:\n- Add CONSTANTS_CENTRALIZATION.md (comprehensive guide)\n- Add PRISMA_CONVERSION_CONFIRMED.md (database verification)\n\nBenefits:\n- Single source of truth for all constants\n- Full TypeScript type safety with ''as const''\n- Better maintainability and consistency\n- No more hardcoded URLs or environment variables\n- IDE auto-completion support\n\nTotal files updated: 11 (3 backend, 8 frontend)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git commit:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

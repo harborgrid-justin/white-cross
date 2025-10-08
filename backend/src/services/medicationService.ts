@@ -442,7 +442,7 @@ export class MedicationService {
    */
   static async getMedicationSchedule(startDate: Date, endDate: Date, nurseId?: string) {
     try {
-      const whereClause: Prisma.MedicationWhereInput = {
+      const whereClause: Prisma.StudentMedicationWhereInput = {
         isActive: true,
         startDate: { lte: endDate },
         OR: [
@@ -772,7 +772,7 @@ export class MedicationService {
    */
   static async getAdverseReactions(medicationId?: string, studentId?: string) {
     try {
-      const whereClause: Prisma.MedicationWhereInput = {
+      const whereClause: Prisma.IncidentReportWhereInput = {
         type: 'ALLERGIC_REACTION'
       };
 
@@ -813,6 +813,7 @@ export class MedicationService {
       // Filter by medication if specified
       if (medicationId) {
         return reports.filter((report) => 
+          report.student && 
           report.student.medications && 
           report.student.medications.length > 0
         );

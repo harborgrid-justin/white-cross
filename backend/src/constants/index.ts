@@ -478,6 +478,12 @@ export const ENVIRONMENT = {
   IS_PRODUCTION: process.env.NODE_ENV === 'production',
   IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
   IS_TEST: process.env.NODE_ENV === 'test',
+  JWT_SECRET: process.env.JWT_SECRET || 'default-secret-change-in-production',
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
+  MICROSOFT_CLIENT_SECRET: process.env.MICROSOFT_CLIENT_SECRET,
+  BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3001',
 } as const;
 
 // ===== CORS CONFIGURATION =====

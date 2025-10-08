@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import type {
-  MedicationFormData,
-  AdverseReactionFormData
+  MedicationFormData
 } from '../types/api'
 import type {
   FormErrors,
   InventoryFormData,
-  UseFormValidationReturn
+  UseFormValidationReturn,
+  AdverseReactionFormData
 } from '../types/medications'
 
 export const useMedicationFormValidation = (): UseFormValidationReturn => {
@@ -99,7 +99,7 @@ export const useMedicationFormValidation = (): UseFormValidationReturn => {
     if (data.occurredAt) {
       const occurredDate = new Date(data.occurredAt)
       const now = new Date()
-      
+
       if (isNaN(occurredDate.getTime())) {
         newErrors.occurredAt = 'Invalid date format'
       } else if (occurredDate > now) {

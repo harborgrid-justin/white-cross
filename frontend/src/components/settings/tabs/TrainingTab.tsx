@@ -16,7 +16,7 @@ export default function TrainingTab() {
     try {
       setLoading(true)
       const data = await administrationApi.getTrainingModules()
-      setModules(data.modules || [])
+      setModules(data.data?.modules || [])
     } catch (error) {
       console.error('Error loading training modules:', error)
     } finally {

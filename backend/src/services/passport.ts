@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 // JWT options
 const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: ENVIRONMENT.JWT_SECRET || TOKEN_CONFIG.SECRET,
+  secretOrKey: ENVIRONMENT.JWT_SECRET || TOKEN_CONFIG.JWT_SECRET,
 };
 
 // Local Strategy for email/password authentication

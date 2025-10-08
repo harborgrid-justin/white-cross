@@ -134,7 +134,7 @@ export class InventoryService {
 
       // Apply low stock filter if needed
       if (filters.lowStock) {
-        items = items.filter((item) => item.isLowStock);
+        items = (items as any[]).filter((item: any) => item.isLowStock);
       }
 
       const total = await prisma.inventoryItem.count({ where: whereClause });

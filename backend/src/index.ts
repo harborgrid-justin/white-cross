@@ -42,10 +42,10 @@ const prisma = new PrismaClient();
 // Create Hapi server instance
 const server = Hapi.server({
   port: ENVIRONMENT.PORT,
-  host: ENVIRONMENT.HOST,
+  host: process.env.HOST || 'localhost',
   routes: {
     cors: {
-      origin: CORS_CONFIG.ALLOWED_ORIGINS,
+      origin: [CORS_CONFIG.ORIGIN],
       credentials: CORS_CONFIG.CREDENTIALS
     }
   }

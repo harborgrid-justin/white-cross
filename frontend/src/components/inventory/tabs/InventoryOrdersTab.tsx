@@ -36,13 +36,13 @@ export default function InventoryOrdersTab({ orders, getStatusBadgeColor }: Inve
                   {order.orderNumber}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {order.vendor.name}
+                  {order.vendor?.name || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(order.orderDate).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                  ${order.total.toFixed(2)}
+                  ${order.total?.toFixed(2) || '0.00'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(order.status)}`}>
@@ -50,7 +50,7 @@ export default function InventoryOrdersTab({ orders, getStatusBadgeColor }: Inve
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {order.items.length} items
+                  {order.items?.length || 0} items
                 </td>
               </tr>
             ))}

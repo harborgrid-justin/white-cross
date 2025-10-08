@@ -20,8 +20,8 @@ export default function IntegrationsTab() {
   const loadIntegrations = async () => {
     try {
       setLoading(true)
-      const { integrations: data } = await integrationApi.getAll()
-      setIntegrations(data || [])
+      const response = await integrationApi.getAll()
+      setIntegrations(response.data?.integrations || [])
     } catch (error) {
       console.error('Error loading integrations:', error)
     } finally {
@@ -31,8 +31,8 @@ export default function IntegrationsTab() {
 
   const loadStatistics = async () => {
     try {
-      const { statistics: stats } = await integrationApi.getStatistics()
-      setStatistics(stats)
+      const response = await integrationApi.getStatistics()
+      setStatistics(response.data?.statistics || null)
     } catch (error) {
       console.error('Error loading statistics:', error)
     }
@@ -52,7 +52,7 @@ export default function IntegrationsTab() {
     if (!confirm('Are you sure you want to delete this integration?')) return
 
     try {
-      await integrationApi.delete(id)
+      await integrationApi.delete()
       toast.success('Integration deleted successfully')
       loadIntegrations()
       loadStatistics()
@@ -64,11 +64,12 @@ export default function IntegrationsTab() {
   const handleTestConnection = async (id: string) => {
     try {
       setTestingId(id)
-      const { result } = await integrationApi.testConnection(id)
-      if (result.success) {
-        toast.success(result.message)
+      const response = await integrationApi.testConnection()
+      const result = response.data?.result
+      if (result?.success) {
+        toast.success(result.message || 'Connection test successful')
       } else {
-        toast.error(result.message)
+        toast.error(result?.message || 'Connection test failed')
       }
       loadIntegrations()
     } catch (error) {
@@ -81,11 +82,12 @@ export default function IntegrationsTab() {
   const handleSync = async (id: string) => {
     try {
       setSyncingId(id)
-      const { result } = await integrationApi.sync(id)
-      if (result.success) {
-        toast.success(`Synced ${result.recordsSucceeded} of ${result.recordsProcessed} records`)
+      const response = await integrationApi.sync()
+      const result = response.data?.result
+      if (result?.success) {
+        toast.success(`Synced ${result.recordsSucceeded || 0} of ${result.recordsProcessed || 0} records`)
       } else {
-        toast.error(`Sync completed with errors: ${result.recordsFailed} failed`)
+        toast.error(`Sync completed with errors: ${result?.recordsFailed || 0} failed`)
       }
       loadIntegrations()
       loadStatistics()

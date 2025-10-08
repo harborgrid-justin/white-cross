@@ -238,7 +238,11 @@ export class IntegrationService {
 
       // Simulate connection test based on integration type
       // In production, this would make actual API calls
-      const testResult = await this.performConnectionTest(integration);
+      const testResult = await this.performConnectionTest({
+        type: integration.type,
+        endpoint: integration.endpoint || undefined,
+        settings: integration.settings || undefined
+      });
       
       const responseTime = Date.now() - startTime;
 
@@ -289,9 +293,9 @@ export class IntegrationService {
   /**
    * Perform actual connection test based on integration type
    */
-  private static async performConnectionTest(integration: { type: string; settings?: Prisma.JsonValue }): Promise<IntegrationTestResult> {
+  private static async performConnectionTest(integration: { type: string; endpoint?: string; settings?: Prisma.JsonValue }): Promise<IntegrationTestResult> {
     // Mock implementation - in production, this would make real API calls
-    
+
     // Validate required fields
     if (!integration.endpoint && integration.type !== 'GOVERNMENT_REPORTING') {
       return {
@@ -329,7 +333,7 @@ export class IntegrationService {
           success: true,
           message: 'Successfully connected to Pharmacy Management System',
           details: {
-            pharmacyName: integration.settings?.pharmacyName || 'Main Pharmacy',
+            pharmacyName: (integration.settings as any)?.pharmacyName || 'Main Pharmacy',
             activeOrders: 45
           }
         };
@@ -339,7 +343,7 @@ export class IntegrationService {
           success: true,
           message: 'Successfully connected to Laboratory Information System',
           details: {
-            labName: integration.settings?.labName || 'Central Lab',
+            labName: (integration.settings as any)?.labName || 'Central Lab',
             pendingResults: 12
           }
         };
@@ -349,7 +353,7 @@ export class IntegrationService {
           success: true,
           message: 'Successfully connected to Insurance Verification System',
           details: {
-            provider: integration.settings?.provider || 'Insurance Provider',
+            provider: (integration.settings as any)?.provider || 'Insurance Provider',
             apiVersion: '2.0'
           }
         };
@@ -369,7 +373,7 @@ export class IntegrationService {
           success: true,
           message: 'Successfully connected to Health Application API',
           details: {
-            appName: integration.settings?.appName || 'Health App',
+            appName: (integration.settings as any)?.appName || 'Health App',
             apiVersion: '3.0'
           }
         };
@@ -379,7 +383,7 @@ export class IntegrationService {
           success: true,
           message: 'Successfully validated Government Reporting configuration',
           details: {
-            reportingAgency: integration.settings?.agency || 'State Health Department',
+            reportingAgency: (integration.settings as any)?.agency || 'State Health Department',
             requiredReports: ['Immunization', 'Screening', 'Incident']
           }
         };
@@ -559,7 +563,7 @@ export class IntegrationService {
     try {
       const where: Prisma.IntegrationLogWhereInput = {};
       if (integrationId) where.integrationId = integrationId;
-      if (type) where.integrationType = type;
+      if (type) where.integrationType = type as any;
 
       const skip = (page - 1) * limit;
 
@@ -646,14 +650,15 @@ export class IntegrationService {
 
       // Group stats by type
       const statsByType: Record<string, { success: number; failed: number; total: number }> = {};
-      syncStats.forEach(stat => {
+      syncStats.forEach((stat: any) => {
         if (!statsByType[stat.integrationType]) {
           statsByType[stat.integrationType] = {
             success: 0,
-            failed: 0
+            failed: 0,
+            total: 0
           };
         }
-        statsByType[stat.integrationType][stat.status] = stat._count;
+        (statsByType[stat.integrationType] as any)[stat.status] = stat._count;
       });
 
       return {

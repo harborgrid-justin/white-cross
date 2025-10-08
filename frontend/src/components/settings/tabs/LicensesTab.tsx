@@ -15,8 +15,8 @@ export default function LicensesTab() {
   const loadLicenses = async () => {
     try {
       setLoading(true)
-      const data = await administrationApi.getLicenses(1, 50)
-      setLicenses(data.licenses || [])
+      const data = await administrationApi.getLicenses()
+      setLicenses(data.data?.licenses || [])
     } catch (error) {
       console.error('Error loading licenses:', error)
     } finally {

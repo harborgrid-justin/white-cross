@@ -134,7 +134,7 @@ export class CommunicationService {
       }
       
       if (category) {
-        whereClause.category = category;
+        whereClause.category = category as any;
       }
 
       const templates = await prisma.messageTemplate.findMany({
@@ -387,18 +387,18 @@ export class CommunicationService {
     try {
       const skip = (page - 1) * limit;
       
-      const whereClause: Prisma.CommunicationLogWhereInput = {};
-      
+      const whereClause: Prisma.MessageWhereInput = {};
+
       if (filters.senderId) {
         whereClause.senderId = filters.senderId;
       }
-      
+
       if (filters.category) {
-        whereClause.category = filters.category;
+        whereClause.category = filters.category as any;
       }
-      
+
       if (filters.priority) {
-        whereClause.priority = filters.priority;
+        whereClause.priority = filters.priority as any;
       }
       
       if (filters.dateFrom || filters.dateTo) {
@@ -562,8 +562,8 @@ export class CommunicationService {
    */
   static async getCommunicationStatistics(dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: Prisma.CommunicationLogWhereInput = {};
-      
+      const whereClause: Prisma.MessageWhereInput = {};
+
       if (dateFrom || dateTo) {
         whereClause.createdAt = {};
         if (dateFrom) {

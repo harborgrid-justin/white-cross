@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { AccessControlService } from '../services/accessControlService';
-import { auth } from '../middleware/auth';
+import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
 
 const router = Router();
 
@@ -215,7 +215,7 @@ router.post('/security-incidents', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const detectedBy = (req).user.id;
+    const detectedBy = (req).user?.userId;
     const incident = await AccessControlService.createSecurityIncident({
       ...req.body,
       detectedBy,
@@ -256,7 +256,7 @@ router.post('/ip-restrictions', auth, [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const createdBy = (req).user.id;
+    const createdBy = (req).user?.userId;
     const restriction = await AccessControlService.addIpRestriction({
       ...req.body,
       createdBy,
