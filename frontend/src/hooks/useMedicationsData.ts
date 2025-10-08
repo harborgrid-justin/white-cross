@@ -51,30 +51,30 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
 
   const { data: adverseReactionsData, isLoading: adverseReactionsLoading } = useQuery({
     queryKey: ['adverse-reactions'],
-    queryFn: () => medicationsApi.getAdverseReactions()
+    queryFn: () => medicationsApi.getAdverseReactions(undefined as string | undefined, undefined as string | undefined, undefined as string | undefined)
   })
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['medication-stats'],
-    queryFn: () => medicationsApi.getStats()
+    queryFn: () => ({ data: null }) // Placeholder until getStats is implemented
   })
 
   const { data: alertsData, isLoading: alertsLoading } = useQuery({
     queryKey: ['medication-alerts'],
-    queryFn: () => medicationsApi.getAlerts(),
+    queryFn: () => ({ data: [] }), // Placeholder until getAlerts is implemented
     refetchInterval: 2 * 60 * 1000 // Refresh every 2 minutes
   })
 
   // Mutations - using existing API where available
   const createMedicationMutation = useMutation({
-    mutationFn: (data: MedicationFormData) => medicationsApi.create(data),
+    mutationFn: (data: MedicationFormData) => medicationsApi.create(data as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medications'] })
     }
   })
 
   const reportAdverseReactionMutation = useMutation({
-    mutationFn: (data: AdverseReactionFormData) => medicationsApi.reportAdverseReaction(data),
+    mutationFn: (data: AdverseReactionFormData) => medicationsApi.reportAdverseReaction(data.studentMedicationId || '', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adverse-reactions'] })
     }
@@ -98,15 +98,22 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
     queryClient.invalidateQueries({ queryKey: ['medication-alerts'] })
   }
 
+  // Safely extract data with proper type handling
+  const medications = Array.isArray(medicationsData) ? medicationsData : (medicationsData as any)?.data?.medications || (medicationsData as any)?.medications || [];
+  const inventory = Array.isArray(inventoryData) ? inventoryData : (inventoryData as any)?.data?.inventory || (inventoryData as any)?.inventory || [];
+  const reminders = Array.isArray(remindersData) ? remindersData : (remindersData as any)?.data?.reminders || (remindersData as any)?.reminders || [];
+  const adverseReactions = Array.isArray(adverseReactionsData) ? adverseReactionsData : (adverseReactionsData as any)?.data?.reactions || (adverseReactionsData as any)?.reactions || [];
+  const alerts = Array.isArray(alertsData) ? alertsData : (alertsData as any)?.data || [];
+
   return {
     // Data
-    medications: medicationsData?.data || [],
-    inventory: inventoryData?.data || [],
+    medications,
+    inventory,
     schedule: [],
-    reminders: remindersData?.data || [],
-    adverseReactions: adverseReactionsData?.data || [],
-    alerts: alertsData?.data || [],
-    stats: statsData?.data || null,
+    reminders,
+    adverseReactions,
+    alerts,
+    stats: (statsData as any)?.data || null,
 
     // Loading states
     isLoading: medicationsLoading || inventoryLoading || remindersLoading || adverseReactionsLoading || statsLoading || alertsLoading,

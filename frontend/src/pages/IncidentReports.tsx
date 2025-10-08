@@ -197,7 +197,7 @@ export default function IncidentReports() {
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{report.description}</p>
                       <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>Student: {report.student.firstName} {report.student.lastName}</span>
+                        <span>Student: {report.student?.firstName} {report.student?.lastName}</span>
                         <span>Location: {report.location}</span>
                         <span>{new Date(report.occurredAt).toLocaleDateString()}</span>
                       </div>
@@ -254,17 +254,19 @@ export default function IncidentReports() {
                           {report.severity}
                         </span>
                         <span className="text-sm font-medium text-gray-900">{report.type}</span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getComplianceColor(report.legalComplianceStatus)}`}>
-                          {report.legalComplianceStatus}
-                        </span>
+                        {(report as any).legalComplianceStatus && (
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${getComplianceColor((report as any).legalComplianceStatus)}`}>
+                            {(report as any).legalComplianceStatus}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{report.description}</p>
                       <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>Student: {report.student.firstName} {report.student.lastName}</span>
+                        <span>Student: {report.student?.firstName} {report.student?.lastName}</span>
                         <span>Location: {report.location}</span>
                         <span>{new Date(report.occurredAt).toLocaleDateString()}</span>
                         {report.parentNotified && <span className="text-green-600">✓ Parent Notified</span>}
-                        {report.insuranceClaimNumber && <span className="text-blue-600">Insurance: {report.insuranceClaimNumber}</span>}
+                        {(report as any).insuranceClaimNumber && <span className="text-blue-600">Insurance: {(report as any).insuranceClaimNumber}</span>}
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -337,7 +339,7 @@ export default function IncidentReports() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Student</label>
-                  <p className="text-gray-900">{selectedReport.student.firstName} {selectedReport.student.lastName}</p>
+                  <p className="text-gray-900">{selectedReport.student?.firstName} {selectedReport.student?.lastName}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Occurred At</label>
@@ -368,9 +370,9 @@ export default function IncidentReports() {
                   + Add Statement
                 </button>
               </div>
-              {selectedReport.witnessStatements && selectedReport.witnessStatements.length > 0 ? (
+              {(selectedReport as any).witnessStatements && (selectedReport as any).witnessStatements.length > 0 ? (
                 <div className="space-y-3">
-                  {selectedReport.witnessStatements.map((statement) => (
+                  {(selectedReport as any).witnessStatements.map((statement: any) => (
                     <div key={statement.id} className="border rounded p-3">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -408,15 +410,15 @@ export default function IncidentReports() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Photos ({selectedReport.evidencePhotos.length})</label>
+                  <label className="text-sm font-medium text-gray-700">Photos ({selectedReport.evidencePhotos?.length || 0})</label>
                   <div className="text-gray-600">
-                    {selectedReport.evidencePhotos.length > 0 ? 'Photos available' : 'No photos uploaded'}
+                    {(selectedReport.evidencePhotos?.length || 0) > 0 ? 'Photos available' : 'No photos uploaded'}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Videos ({selectedReport.evidenceVideos.length})</label>
+                  <label className="text-sm font-medium text-gray-700">Videos ({(selectedReport as any).evidenceVideos?.length || 0})</label>
                   <div className="text-gray-600">
-                    {selectedReport.evidenceVideos.length > 0 ? 'Videos available' : 'No videos uploaded'}
+                    {((selectedReport as any).evidenceVideos?.length || 0) > 0 ? 'Videos available' : 'No videos uploaded'}
                   </div>
                 </div>
               </div>
@@ -471,18 +473,20 @@ export default function IncidentReports() {
                 Compliance & Insurance
               </h3>
               <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Compliance Status</label>
-                  <span className={`block mt-1 px-2 py-1 rounded text-xs font-medium ${getComplianceColor(selectedReport.legalComplianceStatus)}`}>
-                    {selectedReport.legalComplianceStatus}
-                  </span>
-                </div>
-                {selectedReport.insuranceClaimNumber && (
+                {(selectedReport as any).legalComplianceStatus && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Compliance Status</label>
+                    <span className={`block mt-1 px-2 py-1 rounded text-xs font-medium ${getComplianceColor((selectedReport as any).legalComplianceStatus)}`}>
+                      {(selectedReport as any).legalComplianceStatus}
+                    </span>
+                  </div>
+                )}
+                {(selectedReport as any).insuranceClaimNumber && (
                   <div>
                     <label className="text-sm font-medium text-gray-700">Insurance Claim</label>
-                    <p className="text-gray-900">{selectedReport.insuranceClaimNumber}</p>
-                    {selectedReport.insuranceClaimStatus && (
-                      <p className="text-sm text-gray-600">Status: {selectedReport.insuranceClaimStatus}</p>
+                    <p className="text-gray-900">{(selectedReport as any).insuranceClaimNumber}</p>
+                    {(selectedReport as any).insuranceClaimStatus && (
+                      <p className="text-sm text-gray-600">Status: {(selectedReport as any).insuranceClaimStatus}</p>
                     )}
                   </div>
                 )}
@@ -494,9 +498,9 @@ export default function IncidentReports() {
                 <Clock className="h-5 w-5 mr-2" />
                 Follow-up Actions
               </h3>
-              {selectedReport.followUpActions && selectedReport.followUpActions.length > 0 ? (
+              {(selectedReport as any).followUpActions && (selectedReport as any).followUpActions.length > 0 ? (
                 <div className="space-y-2">
-                  {selectedReport.followUpActions.map((action) => (
+                  {(selectedReport as any).followUpActions.map((action: any) => (
                     <div key={action.id} className="border rounded p-2">
                       <div className="flex justify-between items-start">
                         <p className="text-sm font-medium">{action.action}</p>

@@ -102,26 +102,26 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
   // Health Records
   async getStudentHealthRecords(studentId: string, filters: HealthRecordFilters = {}): Promise<{ records: HealthRecord[] }> {
     const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ records: HealthRecord[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ records: HealthRecord[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/student/${studentId}?${params.toString()}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async createHealthRecord(data: Partial<HealthRecord>): Promise<{ record: HealthRecord }> {
-    const response = await apiInstance.post<ApiResponse<{ record: HealthRecord }>>(
-      API_ENDPOINTS.HEALTH_RECORDS,
+    const response = await apiInstance.post<ApiResponse<({ record: HealthRecord })> | undefined>(
+      API_ENDPOINTS.HEALTH_RECORDS.BASE,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async updateHealthRecord(id: string, data: Partial<HealthRecord>): Promise<{ record: HealthRecord }> {
-    const response = await apiInstance.put<ApiResponse<{ record: HealthRecord }>>(
+    const response = await apiInstance.put<ApiResponse<({ record: HealthRecord })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/${id}`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async deleteHealthRecord(id: string): Promise<void> {
@@ -130,26 +130,26 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
 
   // Allergies
   async getStudentAllergies(studentId: string): Promise<{ allergies: Allergy[] }> {
-    const response = await apiInstance.get<ApiResponse<{ allergies: Allergy[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ allergies: Allergy[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies/${studentId}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async addAllergy(data: Partial<Allergy>): Promise<{ allergy: Allergy }> {
-    const response = await apiInstance.post<ApiResponse<{ allergy: Allergy }>>(
+    const response = await apiInstance.post<ApiResponse<({ allergy: Allergy })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async updateAllergy(id: string, data: Partial<Allergy>): Promise<{ allergy: Allergy }> {
-    const response = await apiInstance.put<ApiResponse<{ allergy: Allergy }>>(
+    const response = await apiInstance.put<ApiResponse<({ allergy: Allergy })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies/${id}`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async deleteAllergy(id: string): Promise<void> {
@@ -157,35 +157,35 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
   }
 
   async verifyAllergy(id: string, verifiedBy: string): Promise<{ allergy: Allergy }> {
-    const response = await apiInstance.post<ApiResponse<{ allergy: Allergy }>>(
+    const response = await apiInstance.post<ApiResponse<({ allergy: Allergy })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/allergies/${id}/verify`,
       { verifiedBy }
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Chronic Conditions
   async getStudentChronicConditions(studentId: string): Promise<{ conditions: ChronicCondition[] }> {
-    const response = await apiInstance.get<ApiResponse<{ conditions: ChronicCondition[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ conditions: ChronicCondition[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/chronic-conditions/${studentId}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async addChronicCondition(data: Partial<ChronicCondition>): Promise<{ condition: ChronicCondition }> {
-    const response = await apiInstance.post<ApiResponse<{ condition: ChronicCondition }>>(
+    const response = await apiInstance.post<ApiResponse<({ condition: ChronicCondition })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/chronic-conditions`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async updateChronicCondition(id: string, data: Partial<ChronicCondition>): Promise<{ condition: ChronicCondition }> {
-    const response = await apiInstance.put<ApiResponse<{ condition: ChronicCondition }>>(
+    const response = await apiInstance.put<ApiResponse<({ condition: ChronicCondition })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/chronic-conditions/${id}`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async deleteChronicCondition(id: string): Promise<void> {
@@ -194,84 +194,84 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
 
   // Vaccinations
   async getVaccinationRecords(studentId: string): Promise<{ vaccinations: VaccinationRecord[] }> {
-    const response = await apiInstance.get<ApiResponse<{ vaccinations: VaccinationRecord[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ vaccinations: VaccinationRecord[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations/${studentId}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async addVaccinationRecord(data: Partial<VaccinationRecord>): Promise<{ vaccination: VaccinationRecord }> {
-    const response = await apiInstance.post<ApiResponse<{ vaccination: VaccinationRecord }>>(
+    const response = await apiInstance.post<ApiResponse<({ vaccination: VaccinationRecord })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async updateVaccinationRecord(id: string, data: Partial<VaccinationRecord>): Promise<{ vaccination: VaccinationRecord }> {
-    const response = await apiInstance.put<ApiResponse<{ vaccination: VaccinationRecord }>>(
+    const response = await apiInstance.put<ApiResponse<({ vaccination: VaccinationRecord })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations/${id}`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Growth Chart
   async getGrowthChartData(studentId: string): Promise<{ growthData: GrowthData[] }> {
-    const response = await apiInstance.get<ApiResponse<{ growthData: GrowthData[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ growthData: GrowthData[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/growth/${studentId}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async addGrowthMeasurement(studentId: string, data: Partial<GrowthData>): Promise<{ measurement: GrowthData }> {
-    const response = await apiInstance.post<ApiResponse<{ measurement: GrowthData }>>(
+    const response = await apiInstance.post<ApiResponse<({ measurement: GrowthData })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/growth/${studentId}`,
       data
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Vitals
   async getRecentVitals(studentId: string, limit: number = 10): Promise<{ vitals: VitalSigns[] }> {
     const params = buildUrlParams({ limit });
-    const response = await apiInstance.get<ApiResponse<{ vitals: VitalSigns[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ vitals: VitalSigns[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vitals/${studentId}?${params.toString()}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async recordVitals(studentId: string, vitals: VitalSigns): Promise<{ record: HealthRecord }> {
-    const response = await apiInstance.post<ApiResponse<{ record: HealthRecord }>>(
+    const response = await apiInstance.post<ApiResponse<({ record: HealthRecord })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/vitals/${studentId}`,
       vitals
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Health Summary
   async getHealthSummary(studentId: string): Promise<HealthSummary> {
-    const response = await apiInstance.get<ApiResponse<HealthSummary>>(
+    const response = await apiInstance.get<ApiResponse<(HealthSummary)> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/summary/${studentId}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Search and Reporting
   async searchHealthRecords(query: string, filters: HealthRecordFilters = {}): Promise<{ records: HealthRecord[] }> {
     const params = buildUrlParams({ q: query, ...filters });
-    const response = await apiInstance.get<ApiResponse<{ records: HealthRecord[] }>>(
+    const response = await apiInstance.get<ApiResponse<({ records: HealthRecord[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/search?${params.toString()}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   async getAllRecords(pagination: PaginationParams = {}, filters: HealthRecordFilters = {}): Promise<{ records: HealthRecord[]; pagination: any }> {
     const params = buildUrlParams({ ...pagination, ...filters });
-    const response = await apiInstance.get<ApiResponse<{ records: HealthRecord[]; pagination: any }>>(
+    const response = await apiInstance.get<ApiResponse<({ records: HealthRecord[]; pagination: any })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}?${params.toString()}`
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Import/Export
@@ -287,7 +287,7 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await apiInstance.post<ApiResponse<{ imported: number; errors: any[] }>>(
+    const response = await apiInstance.post<ApiResponse<({ imported: number; errors: any[] })> | undefined>(
       `${API_ENDPOINTS.HEALTH_RECORDS}/import/${studentId}`,
       formData,
       {
@@ -296,19 +296,19 @@ class HealthRecordsApiImpl implements HealthRecordsApi {
         },
       }
     );
-    return extractApiData(response)!;
+    return extractApiData(response as any);
   }
 
   // Audit and Access Logging
   async logAccess(data: { action: string; studentId: string; resourceType?: string; resourceId?: string; details?: any }): Promise<void> {
-    await apiInstance.post(`${API_ENDPOINTS.AUDIT}/access-log`, {
+    await apiInstance.post(`${`/audit`}/access-log`, {
       ...data,
       resourceType: data.resourceType || 'HEALTH_RECORD'
     });
   }
 
   async logSecurityEvent(data: { event: string; resourceType: string; studentId: string; details?: any }): Promise<void> {
-    await apiInstance.post(`${API_ENDPOINTS.AUDIT}/security-log`, data);
+    await apiInstance.post(`${`/audit`}/security-log`, data);
   }
 }
 

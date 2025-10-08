@@ -259,7 +259,7 @@ export default function Documents() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {documents.map((document) => (
+                {documents.map((document: any) => (
                   <tr key={document.id} className="hover:bg-gray-50" data-testid={`document-${document.id}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input

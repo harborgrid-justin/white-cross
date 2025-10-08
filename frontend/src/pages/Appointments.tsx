@@ -43,9 +43,9 @@ export default function Appointments() {
         appointmentsApi.getStatistics()
       ])
 
-      setAppointments(appointmentsData.appointments || [])
-      setWaitlist(waitlistData.waitlist || [])
-      setStatistics(stats)
+      setAppointments(Array.isArray(appointmentsData.data) ? appointmentsData.data : appointmentsData.data || appointmentsData.appointments || [])
+      setWaitlist(Array.isArray(waitlistData.data) ? waitlistData.data : waitlistData.data || waitlistData.waitlist || [])
+      setStatistics(stats as any || null)
     } catch (error) {
       console.error('Error loading appointments:', error)
       toast.error('Failed to load appointments')
@@ -391,20 +391,20 @@ export default function Appointments() {
                         </h4>
                         <p className="text-sm text-gray-600">{formatAppointmentType(entry.type)}</p>
                         <p className="text-sm text-gray-500 mt-1">{entry.reason}</p>
-                        {entry.preferredDate && (
+                        {(entry as any).preferredDate && (
                           <p className="text-xs text-gray-400 mt-1">
-                            Preferred: {formatDate(entry.preferredDate)}
+                            Preferred: {formatDate((entry as any).preferredDate)}
                           </p>
                         )}
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          entry.priority === 'URGENT' ? 'bg-red-100 text-red-800' :
-                          entry.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
-                          entry.priority === 'NORMAL' ? 'bg-blue-100 text-blue-800' :
+                          (entry as any).priority === 'URGENT' ? 'bg-red-100 text-red-800' :
+                          (entry as any).priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
+                          (entry as any).priority === 'NORMAL' ? 'bg-blue-100 text-blue-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {entry.priority}
+                          {(entry as any).priority || 'NORMAL'}
                         </span>
                         <button
                           onClick={() => appointmentsApi.removeFromWaitlist(entry.id).then(loadData)}

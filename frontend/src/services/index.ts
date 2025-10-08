@@ -1,12 +1,11 @@
 // Main API exports - provides both new modular API and backward compatibility
 
 // Configuration and utilities
-export { 
-  apiInstance, 
-  setSessionExpireHandler, 
+export {
+  apiInstance,
   tokenUtils,
   API_CONFIG,
-  API_ENDPOINTS 
+  API_ENDPOINTS
 } from './config/apiConfig';
 
 export {
