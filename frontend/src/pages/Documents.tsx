@@ -46,12 +46,15 @@ export default function Documents() {
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([])
   const [showUploadModal, setShowUploadModal] = useState(false)
 
-  const { data: documentsData, isLoading, error } = useQuery<DocumentsData>({
+  const { data: documentsData, isLoading, error } = useQuery({
     queryKey: ['documents', searchTerm, categoryFilter],
-    queryFn: () => documentService.getDocuments({ search: searchTerm, category: categoryFilter }),
+    queryFn: async () => {
+      const result = await documentService.getDocuments({ search: searchTerm, category: categoryFilter })
+      return result as DocumentsData
+    },
   })
 
-  const documents = documentsData?.documents || []
+  const documents = (documentsData?.documents || []) as Document[]
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'

@@ -12,12 +12,11 @@ import {
   incidentReportsApi,
   documentsApi,
   reportsApi,
-  setSessionExpireHandler,
   apiInstance
 } from './index.ts';
 
 // Legacy exports for backward compatibility
-export { setSessionExpireHandler, apiInstance };
+export { apiInstance };
 export { authApi };
 export { studentsApi };
 export { healthRecordsApi };
