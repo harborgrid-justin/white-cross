@@ -14,19 +14,10 @@ export const errorHandler = (request: Request, h: ResponseToolkit) => {
   if (Boom.isBoom(response)) {
     const boomError = response as Boom.Boom;
 
-    logger.error({
-      error: {
-        message: boomError.message,
-        stack: boomError.stack,
-        status: boomError.output.statusCode
-      },
-      request: {
-        method: request.method,
-        url: request.url,
-        headers: request.headers,
-        payload: request.payload
-      }
-    });
+    logger.error(
+      `API Error: ${boomError.message} [${boomError.output.statusCode}] ${request.method} ${request.url.pathname}`,
+      boomError
+    );
 
     return h.continue;
   }
@@ -37,19 +28,10 @@ export const errorHandler = (request: Request, h: ResponseToolkit) => {
     const status = error.status || error.statusCode || 500;
     const message = error.message || 'Internal Server Error';
 
-    logger.error({
-      error: {
-        message: error.message,
-        stack: error.stack,
-        status
-      },
-      request: {
-        method: request.method,
-        url: request.url,
-        headers: request.headers,
-        payload: request.payload
-      }
-    });
+    logger.error(
+      `API Error: ${message} [${status}] ${request.method} ${request.url.pathname}`,
+      error
+    );
 
     return h.response({
       success: false,
