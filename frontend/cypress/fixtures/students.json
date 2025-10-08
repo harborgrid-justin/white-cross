@@ -1,39 +1,42 @@
 {
   "testStudent1": {
+    "studentNumber": "STU100",
     "firstName": "John",
     "lastName": "Doe",
-    "email": "john.doe@student.edu",
-    "phone": "555-0123",
     "dateOfBirth": "2010-05-15",
-    "grade": "8th Grade",
+    "grade": "8",
+    "gender": "MALE",
     "emergencyContact": {
-      "name": "Jane Doe",
+      "firstName": "Jane",
+      "lastName": "Doe",
       "phone": "555-0124",
       "relationship": "Mother"
     }
   },
   "testStudent2": {
+    "studentNumber": "STU101",
     "firstName": "Sarah",
     "lastName": "Smith",
-    "email": "sarah.smith@student.edu",
-    "phone": "555-0125",
     "dateOfBirth": "2009-09-22",
-    "grade": "9th Grade",
+    "grade": "9",
+    "gender": "FEMALE",
     "emergencyContact": {
-      "name": "Michael Smith",
+      "firstName": "Michael",
+      "lastName": "Smith",
       "phone": "555-0126",
       "relationship": "Father"
     }
   },
   "testStudent3": {
+    "studentNumber": "STU102",
     "firstName": "Alex",
     "lastName": "Johnson",
-    "email": "alex.johnson@student.edu",
-    "phone": "555-0127",
     "dateOfBirth": "2011-03-08",
-    "grade": "7th Grade",
+    "grade": "7",
+    "gender": "OTHER",
     "emergencyContact": {
-      "name": "Lisa Johnson",
+      "firstName": "Lisa",
+      "lastName": "Johnson",
       "phone": "555-0128",
       "relationship": "Mother"
     }

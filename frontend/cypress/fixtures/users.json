@@ -1,20 +1,26 @@
 {
   "nurse": {
     "email": "nurse@school.edu",
-    "password": "NursePassword123!",
-    "name": "School Nurse",
-    "role": "nurse"
+    "password": "testNursePassword",
+    "name": "Test Nurse",
+    "firstName": "Test",
+    "lastName": "Nurse",
+    "role": "NURSE"
   },
   "admin": {
     "email": "admin@school.edu",
     "password": "AdminPassword123!",
     "name": "System Administrator",
-    "role": "admin"
+    "firstName": "Test",
+    "lastName": "Admin",
+    "role": "ADMIN"
   },
   "doctor": {
     "email": "doctor@school.edu",
     "password": "DoctorPassword123!",
     "name": "Dr. Johnson",
-    "role": "doctor"
+    "firstName": "Test",
+    "lastName": "Johnson",
+    "role": "DOCTOR"
   }
 }
