@@ -1,5 +1,7 @@
-import React from 'react'
-import { Search, Pill } from 'lucide-react'
+import React, { useState } from 'react'
+import { Search, Pill, Filter, Plus, Edit, Trash2, Activity } from 'lucide-react'
+import { useMedicationAdministration } from '../../../hooks/useMedicationAdministration'
+import { useStudents } from '../../../hooks/useStudents'
 
 interface Medication {
   id: string
@@ -33,6 +35,61 @@ export default function MedicationsListTab({
   onMedicationSelect,
   loading
 }: MedicationsListTabProps) {
+  const [showAdministrationModal, setShowAdministrationModal] = useState(false)
+  const [selectedMedicationForAdmin, setSelectedMedicationForAdmin] = useState<Medication | null>(null)
+  const [administrationForm, setAdministrationForm] = useState({
+    studentId: '',
+    dosage: '',
+    notes: '',
+    administrationTime: new Date().toISOString().slice(0, 16)
+  })
+  const [administrationErrors, setAdministrationErrors] = useState<Record<string, string>>({})
+
+  const { administerMedication, isAdministering, validateAdministration } = useMedicationAdministration()
+  const { students, isLoading: studentsLoading } = useStudents({ isActive: true })
+
+  const handleAdministerMedication = (medication: Medication, event: React.MouseEvent) => {
+    event.stopPropagation()
+    setSelectedMedicationForAdmin(medication)
+    setShowAdministrationModal(true)
+  }
+
+  const handleAdministrationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!selectedMedicationForAdmin) return
+
+    const adminData = {
+      studentId: administrationForm.studentId,
+      medicationId: selectedMedicationForAdmin.id,
+      dosage: administrationForm.dosage,
+      administrationTime: administrationForm.administrationTime,
+      notes: administrationForm.notes,
+    }
+
+    const validation = validateAdministration(adminData)
+
+    if (!validation.isValid) {
+      setAdministrationErrors(validation.errors)
+      return
+    }
+
+    try {
+      await administerMedication(adminData)
+
+      setShowAdministrationModal(false)
+      setAdministrationForm({
+        studentId: '',
+        dosage: '',
+        notes: '',
+        administrationTime: new Date().toISOString().slice(0, 16)
+      })
+      setAdministrationErrors({})
+    } catch (error) {
+      // Error is handled by the hook with toast notification
+      console.error('Failed to administer medication:', error)
+    }
+  }
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -84,6 +141,7 @@ export default function MedicationsListTab({
               <th data-testid="stock-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
               <th data-testid="status-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th data-testid="prescriptions-column" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Prescriptions</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -136,12 +194,124 @@ export default function MedicationsListTab({
                   <td data-testid="active-prescriptions" className="px-6 py-4 text-sm text-gray-900">
                     {med._count?.studentMedications || 0}
                   </td>
+                  <td className="px-6 py-4 text-right text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <button
+                        data-testid="administer-button"
+                        onClick={(e) => handleAdministerMedication(med, e)}
+                        className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                        title="Administer Medication"
+                      >
+                        <Activity className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               )
             })}
           </tbody>
         </table>
       </div>
+
+      {/* Administration Modal */}
+      {showAdministrationModal && selectedMedicationForAdmin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div data-testid="administration-modal" className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">
+              Administer {selectedMedicationForAdmin.name}
+            </h3>
+            
+            <form onSubmit={handleAdministrationSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Student *</label>
+                  <select
+                    data-testid="student-select"
+                    value={administrationForm.studentId}
+                    onChange={(e) => setAdministrationForm({ ...administrationForm, studentId: e.target.value })}
+                    disabled={studentsLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                  >
+                    <option value="">
+                      {studentsLoading ? 'Loading students...' : 'Select a student'}
+                    </option>
+                    {students.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.firstName} {student.lastName} ({student.id})
+                      </option>
+                    ))}
+                  </select>
+                  {administrationErrors.student || administrationErrors.studentId ? (
+                    <p data-testid="student-error" className="text-red-600 text-sm mt-1">
+                      {administrationErrors.student || administrationErrors.studentId}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dosage *</label>
+                  <input
+                    data-testid="dosage-input"
+                    type="text"
+                    placeholder="e.g., 1 tablet, 5mg, 2 puffs"
+                    value={administrationForm.dosage}
+                    onChange={(e) => setAdministrationForm({ ...administrationForm, dosage: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {administrationErrors.dosage && (
+                    <p data-testid="dosage-error" className="text-red-600 text-sm mt-1">{administrationErrors.dosage}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Administration Time</label>
+                  <input
+                    data-testid="administration-time"
+                    type="datetime-local"
+                    value={administrationForm.administrationTime}
+                    onChange={(e) => setAdministrationForm({ ...administrationForm, administrationTime: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    data-testid="administration-notes"
+                    placeholder="Any additional notes..."
+                    value={administrationForm.notes}
+                    onChange={(e) => setAdministrationForm({ ...administrationForm, notes: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAdministrationModal(false)
+                    setAdministrationForm({ studentId: '', dosage: '', notes: '', administrationTime: new Date().toISOString().slice(0, 16) })
+                    setAdministrationErrors({})
+                  }}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  data-testid="confirm-administration-button"
+                  disabled={isAdministering}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAdministering ? 'Administering...' : 'Administer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -427,6 +427,53 @@ export class MedicationsApi {
       throw new Error(error.response?.data?.message || 'Failed to deactivate medication');
     }
   }
+
+  /**
+   * Update medication inventory
+   */
+  async updateInventory(inventoryData: {
+    inventoryId: string;
+    quantity: number;
+    batchNumber: string;
+    expirationDate: string;
+    supplier?: string;
+  }): Promise<any> {
+    try {
+      if (!inventoryData.inventoryId) throw new Error('Inventory ID is required');
+
+      const response = await apiInstance.put<ApiResponse<any>>(
+        `${API_ENDPOINTS.MEDICATIONS.INVENTORY}/${inventoryData.inventoryId}`,
+        {
+          quantity: inventoryData.quantity,
+          batchNumber: inventoryData.batchNumber,
+          expirationDate: inventoryData.expirationDate,
+          supplier: inventoryData.supplier,
+        }
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to update inventory');
+    }
+  }
+
+  /**
+   * Update reminder status (mark as completed or missed)
+   */
+  async updateReminderStatus(reminderId: string, status: 'COMPLETED' | 'MISSED'): Promise<any> {
+    try {
+      if (!reminderId) throw new Error('Reminder ID is required');
+
+      const response = await apiInstance.patch<ApiResponse<any>>(
+        `${API_ENDPOINTS.MEDICATIONS.REMINDERS}/${reminderId}`,
+        { status }
+      );
+
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to update reminder status');
+    }
+  }
 }
 
 // Export singleton instance
