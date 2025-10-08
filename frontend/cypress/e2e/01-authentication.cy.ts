@@ -149,8 +149,8 @@ describe('Authentication Flow', () => {
   context('Security and Access Control', () => {
     it('should protect direct access to authenticated routes', () => {
       // Try to access protected routes directly
-      const protectedRoutes = ['/dashboard', '/students', '/appointments', '/medications']
-      
+      const protectedRoutes = ['/dashboard', '/students', '/appointments', '/medications', '/health-records']
+
       protectedRoutes.forEach((route) => {
         cy.visit(route)
         cy.url().should('include', '/login')
@@ -159,18 +159,18 @@ describe('Authentication Flow', () => {
 
     it('should redirect to intended page after login', () => {
       // Try to access protected page
-      cy.visit('/students')
+      cy.visit('/health-records')
       cy.url().should('include', '/login')
       cy.url().should('include', 'redirect=')
-      
+
       // Login
       cy.fixture('users').then((users: TestUsers) => {
         cy.get('[data-cy=email-input]').type(users.nurse.email)
         cy.get('[data-cy=password-input]').type(users.nurse.password)
         cy.get('[data-cy=login-button]').click()
-        
+
         // Should redirect to originally requested page
-        cy.url().should('include', '/students')
+        cy.url().should('include', '/health-records')
       })
     })
   })
