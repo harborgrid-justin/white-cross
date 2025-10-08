@@ -38,6 +38,7 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [showAddModal, setShowAddModal] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true)

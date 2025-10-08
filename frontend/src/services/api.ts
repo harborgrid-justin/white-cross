@@ -12,7 +12,6 @@ import {
   incidentReportsApi,
   documentsApi,
   reportsApi,
-  setSessionExpireHandler,
   apiInstance
 } from './index';
 
@@ -34,7 +33,6 @@ type BudgetSummary = any;
 type UpdateBudgetRequest = any;
 
 // Legacy exports for backward compatibility
-export { setSessionExpireHandler, apiInstance };
 export { authApi };
 export { studentsApi };
 export { healthRecordsApi };

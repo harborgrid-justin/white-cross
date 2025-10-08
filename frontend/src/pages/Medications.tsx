@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Pill, Plus, Package, AlertTriangle } from 'lucide-react'
+import { Pill, Plus, Package, AlertTriangle, Bell } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { medicationsApi } from '../services/api'
 import toast from 'react-hot-toast'
@@ -16,6 +16,7 @@ export default function Medications() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddMedication, setShowAddMedication] = useState(false)
   const [showMedicationDetails, setShowMedicationDetails] = useState(false)
+  const [showAdverseReactionForm, setShowAdverseReactionForm] = useState(false)
   const [selectedMedication, setSelectedMedication] = useState<any>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -29,7 +30,7 @@ export default function Medications() {
 
   const { data: medicationsData, isLoading: medicationsLoading } = useQuery({
     queryKey: ['medications', searchTerm],
-    queryFn: () => medicationsApi.getAll(1, 20, searchTerm),
+    queryFn: () => medicationsApi.getAll({ page: 1, limit: 20, search: searchTerm }),
     enabled: activeTab === 'medications'
   })
 
@@ -48,7 +49,7 @@ export default function Medications() {
 
   const { data: adverseReactionsData, isLoading: adverseReactionsLoading } = useQuery({
     queryKey: ['adverse-reactions'],
-    queryFn: () => medicationsApi.getAdverseReactions(),
+    queryFn: () => medicationsApi.getAdverseReactions(undefined as string | undefined, undefined as string | undefined, undefined as string | undefined),
     enabled: activeTab === 'adverse-reactions'
   })
 

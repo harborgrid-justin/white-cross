@@ -53,7 +53,9 @@
       "Bash(git push:*)",
       "Bash(node:*)",
       "Bash(git commit:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(for file in documentsApi.ts healthRecordsApi.ts reportsApi.ts)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

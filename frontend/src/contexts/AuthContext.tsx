@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { authApi } from '../services/api'
 import { User } from '../types'
-import { authApi, setSessionExpireHandler } from '../services/api'
 import SessionExpiredModal from '../components/SessionExpiredModal'
 import { tokenSecurityManager, legacyTokenUtils, validateTokenFormat, isTokenExpired } from '../utils/tokenSecurity'
 
@@ -59,7 +59,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Set up session expire handler for API interceptor
-    setSessionExpireHandler(expireSession)
   }, [])
 
   useEffect(() => {

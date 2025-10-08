@@ -1,9 +1,12 @@
 import React from 'react'
-import { 
-  Users, 
-  Pill, 
-  Calendar, 
-  AlertTriangle
+import {
+  Users,
+  Pill,
+  Calendar,
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react'
 
 export default function Dashboard() {
