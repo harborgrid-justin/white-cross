@@ -600,10 +600,10 @@ export const appointmentRoutes: ServerRoute[] = [
       auth: 'jwt',
       validate: {
         query: Joi.object({
-          nurseId: Joi.string().optional(),
-          status: Joi.string().optional(),
-          priority: Joi.string().optional()
-        })
+          nurseId: Joi.string().allow('').optional(),
+          status: Joi.string().allow('').optional(),
+          priority: Joi.string().allow('').optional()
+        }).unknown(false)
       }
     }
   },
