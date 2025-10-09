@@ -118,6 +118,19 @@ const HealthRecords: React.FC = () => {
 
   return (
     <div className="space-y-6" data-testid="health-records-page">
+      {/* Screen reader announcements */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {loading ? 'Loading health records...' : 'Health records loaded'}
+      </div>
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className="flex justify-center items-center py-8" data-testid="loading-indicator">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600">Loading health records...</span>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Health Records Management</h1>
@@ -132,8 +145,9 @@ const HealthRecords: React.FC = () => {
                 setEditingRecord(null)
                 setShowHealthRecordModal(true)
               }}
+              aria-label="Create new health record"
             >
-              <FileText className="h-4 w-4 mr-2" />
+              <FileText className="h-4 w-4 mr-2" aria-hidden="true" />
               New Record
             </button>
           )}
@@ -142,6 +156,7 @@ const HealthRecords: React.FC = () => {
               className="btn-secondary flex items-center"
               data-testid="import-button"
               onClick={() => console.log('Import')}
+              aria-label="Import health records"
             >
               Import
             </button>
@@ -150,6 +165,7 @@ const HealthRecords: React.FC = () => {
             className="btn-secondary flex items-center"
             data-testid="export-button"
             onClick={() => console.log('Export')}
+            aria-label="Export health records"
           >
             Export
           </button>
@@ -159,16 +175,18 @@ const HealthRecords: React.FC = () => {
                 className="btn-secondary flex items-center"
                 data-testid="admin-settings-button"
                 onClick={() => console.log('Settings')}
+                aria-label="Admin settings"
               >
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
                 Admin Settings
               </button>
               <button
                 className="btn-secondary flex items-center"
                 data-testid="reports-button"
                 onClick={() => console.log('Reports')}
+                aria-label="View reports"
               >
-                <BarChart3 className="h-4 w-4 mr-2" />
+                <BarChart3 className="h-4 w-4 mr-2" aria-hidden="true" />
                 Reports
               </button>
             </>
@@ -188,31 +206,31 @@ const HealthRecords: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <div className="flex items-center mb-4">
-            <FileText className="h-8 w-8 text-blue-600 mr-3" />
+            <FileText className="h-8 w-8 text-blue-600 mr-3" aria-label="Electronic health records icon" />
             <h3 className="text-lg font-semibold text-gray-900">Electronic Health Records</h3>
           </div>
           <p className="text-gray-600 text-sm">Digital medical examination records and comprehensive health documentation system.</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <div className="flex items-center mb-4">
-            <Shield className="h-8 w-8 text-green-600 mr-3" />
+            <Shield className="h-8 w-8 text-green-600 mr-3" aria-label="Vaccination tracking icon" />
             <h3 className="text-lg font-semibold text-gray-900">Vaccination Tracking</h3>
           </div>
           <p className="text-gray-600 text-sm">Compliance monitoring and vaccination schedule management for all students.</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <div className="flex items-center mb-4">
-            <AlertTriangle className="h-8 w-8 text-red-600 mr-3" />
+            <AlertTriangle className="h-8 w-8 text-red-600 mr-3" aria-label="Allergy management icon" />
             <h3 className="text-lg font-semibold text-gray-900">Allergy Management</h3>
           </div>
           <p className="text-gray-600 text-sm">Comprehensive allergy management system with emergency response protocols.</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <div className="flex items-center mb-4">
-            <Activity className="h-8 w-8 text-orange-600 mr-3" />
+            <Activity className="h-8 w-8 text-orange-600 mr-3" aria-label="Chronic condition monitoring icon" />
             <h3 className="text-lg font-semibold text-gray-900">Chronic Condition Monitoring</h3>
           </div>
           <p className="text-gray-600 text-sm">Care plans and ongoing monitoring for students with chronic health conditions.</p>
@@ -230,11 +248,11 @@ const HealthRecords: React.FC = () => {
       {/* Privacy Notice */}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6" data-testid="privacy-notice">
         <div className="flex items-start space-x-3">
-          <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+          <Shield className="h-5 w-5 text-blue-600 mt-0.5" aria-label="Security icon" />
           <div className="flex-1">
             <h3 className="text-sm font-medium text-blue-900">Protected Health Information</h3>
             <p className="text-sm text-blue-800 mt-1">
-              This system contains protected health information (PHI) subject to HIPAA regulations. 
+              This system contains protected health information (PHI) subject to HIPAA regulations.
               Access is restricted to authorized personnel only. All activities are logged and monitored.
             </p>
             <div className="flex items-center space-x-4 mt-3">
@@ -245,7 +263,7 @@ const HealthRecords: React.FC = () => {
                 Role: {user?.role}
               </span>
               <div className="flex items-center text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded" data-testid="hipaa-compliance-badge">
-                <Shield className="h-3 w-3 mr-1" />
+                <Shield className="h-3 w-3 mr-1" aria-label="HIPAA compliance icon" />
                 HIPAA Compliant
               </div>
             </div>
@@ -280,32 +298,35 @@ const HealthRecords: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button 
+            <button
               className="btn-primary flex items-center justify-center py-3"
               onClick={() => {
                 setEditingRecord(null)
                 setShowHealthRecordModal(true)
               }}
+              aria-label="Add new health record"
             >
-              <FileText className="h-5 w-5 mr-2" />
+              <FileText className="h-5 w-5 mr-2" aria-hidden="true" />
               Add New Record
             </button>
-            <button 
+            <button
               className="btn-secondary flex items-center justify-center py-3"
               onClick={() => {
                 handleTabChange('records')
               }}
+              aria-label="View health records"
             >
-              <FileText className="h-5 w-5 mr-2" />
+              <FileText className="h-5 w-5 mr-2" aria-hidden="true" />
               View Records
             </button>
-            <button 
+            <button
               className="btn-secondary flex items-center justify-center py-3"
               onClick={() => {
                 handleTabChange('vaccinations')
               }}
+              aria-label="View vaccination schedule"
             >
-              <Shield className="h-5 w-5 mr-2" />
+              <Shield className="h-5 w-5 mr-2" aria-hidden="true" />
               Vaccination Schedule
             </button>
           </div>

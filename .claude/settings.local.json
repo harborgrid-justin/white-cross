@@ -63,7 +63,8 @@
       "Bash(fi)",
       "Bash(lsof:*)",
       "Bash(cat:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
