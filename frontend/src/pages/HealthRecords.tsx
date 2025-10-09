@@ -404,6 +404,7 @@ const HealthRecords: React.FC = () => {
               conditions={chronicConditions}
               onAddCondition={() => console.log('Add condition')}
               onViewCarePlan={(condition) => console.log('View care plan:', condition)}
+              user={user}
             />
           )}
           {activeTab === 'vaccinations' && (
@@ -419,18 +420,21 @@ const HealthRecords: React.FC = () => {
               onEditVaccination={(vaccination) => console.log('Edit vaccination:', vaccination)}
               onDeleteVaccination={(vaccination) => console.log('Delete vaccination:', vaccination)}
               onScheduleVaccination={() => console.log('Schedule vaccination')}
+              user={user}
             />
           )}
           {activeTab === 'growth' && (
             <GrowthChartsTab
               measurements={growthMeasurements}
               onAddMeasurement={() => console.log('Add measurement')}
+              user={user}
             />
           )}
           {activeTab === 'screenings' && (
             <ScreeningsTab
               screenings={screenings}
               onRecordScreening={() => console.log('Record screening')}
+              user={user}
             />
           )}
           {activeTab === 'analytics' && user?.role === 'ADMIN' && (

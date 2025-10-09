@@ -3,6 +3,7 @@ import { Plus, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
 import { getVaccinationStatusColor, getPriorityColor, sortVaccinations, filterVaccinations } from '@/utils/healthRecords'
 import type { Vaccination } from '@/types/healthRecords'
+import type { User } from '@/types'
 
 interface VaccinationsTabProps {
   vaccinations: Vaccination[]
@@ -16,6 +17,7 @@ interface VaccinationsTabProps {
   onEditVaccination: (vaccination: Vaccination) => void
   onDeleteVaccination: (vaccination: Vaccination) => void
   onScheduleVaccination: () => void
+  user?: User | null
 }
 
 export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
@@ -29,8 +31,10 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
   onRecordVaccination,
   onEditVaccination,
   onDeleteVaccination,
-  onScheduleVaccination
+  onScheduleVaccination,
+  user
 }) => {
+  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
   const mockVaccinations: Vaccination[] = [
     {
       id: '1',
@@ -81,21 +85,23 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Vaccination Records</h3>
         <div className="flex gap-2">
-          <button 
-            className="btn-primary flex items-center" 
+          <button
+            className="btn-primary flex items-center"
             data-testid="record-vaccination-button"
             onClick={onRecordVaccination}
+            disabled={!canModify}
           >
             <Plus className="h-4 w-4 mr-2" />
             Record Vaccination
           </button>
-          <button 
-            className="btn-primary flex items-center" 
-            data-testid="add-vaccination-btn"
-            onClick={onRecordVaccination}
+          <button
+            className="btn-secondary flex items-center"
+            data-testid="schedule-vaccination-button"
+            onClick={onScheduleVaccination}
+            disabled={!canModify}
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Vaccination
+            <Shield className="h-4 w-4 mr-2" />
+            Schedule
           </button>
         </div>
       </div>
@@ -119,44 +125,49 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
       />
 
       {/* Vaccinations List */}
-      <div className="space-y-3" data-testid="vaccination-list">
+      <div className="space-y-3" data-testid="vaccinations-table">
         {filteredAndSortedVaccinations.map((vax) => (
-          <div key={vax.id} className="border border-gray-200 rounded-lg p-4" data-testid="vaccination-card">
+          <div key={vax.id} className="border border-gray-200 rounded-lg p-4" data-testid="vaccination-row">
             <div className="flex justify-between items-start">
               <div className="flex items-start gap-3">
                 <Shield className={`h-5 w-5 mt-1 ${
                   vax.compliant ? 'text-green-600' : 'text-orange-600'
                 }`} />
                 <div>
-                  <h4 className="font-semibold" data-testid="vaccination-name">{vax.vaccineName}</h4>
+                  <h4 className="font-semibold" data-testid="vaccine-name">{vax.vaccineName}</h4>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-1 rounded ${getVaccinationStatusColor(vax.compliant)}`} data-testid="vaccination-status">
-                      {vax.compliant ? 'Completed' : 'Overdue'}
+                    <span className={`text-xs px-2 py-1 rounded ${getVaccinationStatusColor(vax.compliant)}`} data-testid="compliance-badge">
+                      {vax.compliant ? 'Compliant' : 'Overdue'}
                     </span>
                     {vax.dateAdministered && (
-                      <span className="text-sm text-gray-600" data-testid="vaccination-date">
-                        {vax.dateAdministered}
+                      <span className="text-sm text-gray-600" data-testid="administered-date">
+                        Administered: {vax.dateAdministered}
                       </span>
                     )}
-                    {vax.administeredBy && (
-                      <span className="text-sm text-gray-600" data-testid="vaccination-provider">
-                        by {vax.administeredBy}
+                    {vax.dueDate && !vax.compliant && (
+                      <span className="text-sm text-gray-600" data-testid="due-date">
+                        Due: {vax.dueDate}
+                      </span>
+                    )}
+                    {vax.priority && (
+                      <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(vax.priority)}`} data-testid="priority-badge">
+                        {vax.priority}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button 
+              <div className="flex gap-2" data-testid="vaccination-actions">
+                <button
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  data-testid="edit-vaccination-btn"
+                  data-testid="edit-vaccination"
                   onClick={() => onEditVaccination(vax)}
                 >
                   Edit
                 </button>
-                <button 
+                <button
                   className="text-red-600 hover:text-red-700 text-sm font-medium"
-                  data-testid="delete-vaccination-btn"
+                  data-testid="delete-vaccination"
                   onClick={() => onDeleteVaccination(vax)}
                 >
                   Delete

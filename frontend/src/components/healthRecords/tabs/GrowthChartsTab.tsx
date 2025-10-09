@@ -1,16 +1,20 @@
 import React from 'react'
 import { Plus, TrendingUp } from 'lucide-react'
 import type { GrowthMeasurement } from '@/types/healthRecords'
+import type { User } from '@/types'
 
 interface GrowthChartsTabProps {
   measurements: GrowthMeasurement[]
   onAddMeasurement: () => void
+  user?: User | null
 }
 
 export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
   measurements,
-  onAddMeasurement
+  onAddMeasurement,
+  user
 }) => {
+  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
   const mockMeasurements: GrowthMeasurement[] = [
     { id: '1', date: '2024-09-15', height: '60 in', weight: '95 lbs', bmi: '18.5' },
     { id: '2', date: '2024-06-15', height: '59 in', weight: '92 lbs', bmi: '18.2' },
@@ -21,10 +25,11 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
     <div className="space-y-4" data-testid="growth-charts-content">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Growth Chart Analysis</h3>
-        <button 
-          className="btn-primary flex items-center" 
-          data-testid="add-measurement-btn"
+        <button
+          className="btn-primary flex items-center"
+          data-testid="add-measurement-button"
           onClick={onAddMeasurement}
+          disabled={!canModify}
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Measurement
@@ -34,7 +39,7 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
       {/* Chart Type Selector */}
       <div className="flex gap-4 items-center">
         <label className="text-sm font-medium text-gray-700">Chart Type:</label>
-        <select className="border border-gray-300 rounded-lg px-3 py-2" data-testid="growth-chart-type-selector">
+        <select className="border border-gray-300 rounded-lg px-3 py-2" data-testid="chart-type-selector">
           <option value="Height">Height</option>
           <option value="Weight">Weight</option>
           <option value="BMI">BMI</option>
@@ -67,7 +72,7 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
       </div>
 
       {/* Current Percentiles */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="current-percentiles">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="percentile-info">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="text-lg font-semibold text-blue-700" data-testid="height-percentile">65%</div>
           <div className="text-sm text-blue-600">Height Percentile</div>
@@ -82,11 +87,26 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
         </div>
       </div>
 
+      {/* Growth Velocity */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4" data-testid="growth-velocity">
+        <h4 className="font-semibold mb-2">Growth Velocity</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-sm text-gray-600">Height</div>
+            <div className="text-lg font-semibold">+2.3 in/year</div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600">Weight</div>
+            <div className="text-lg font-semibold">+5.2 lbs/year</div>
+          </div>
+        </div>
+      </div>
+
       {/* Measurement History */}
       <div data-testid="measurement-history">
         <h4 className="font-semibold mb-4">Measurement History</h4>
         <div className="overflow-x-auto">
-          <table className="w-full border border-gray-200 rounded-lg" data-testid="measurement-history-table">
+          <table className="w-full border border-gray-200 rounded-lg" data-testid="measurements-table">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Date</th>
@@ -100,9 +120,9 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
               {mockMeasurements.map((measurement) => (
                 <tr key={measurement.id} className="border-t" data-testid="measurement-row">
                   <td className="px-4 py-2" data-testid="measurement-date">{measurement.date}</td>
-                  <td className="px-4 py-2" data-testid="measurement-height">{measurement.height}</td>
-                  <td className="px-4 py-2" data-testid="measurement-weight">{measurement.weight}</td>
-                  <td className="px-4 py-2" data-testid="measurement-bmi">{measurement.bmi}</td>
+                  <td className="px-4 py-2" data-testid="height-value">{measurement.height}</td>
+                  <td className="px-4 py-2" data-testid="weight-value">{measurement.weight}</td>
+                  <td className="px-4 py-2" data-testid="bmi-value">{measurement.bmi}</td>
                   <td className="px-4 py-2">
                     <div className="flex gap-2">
                       <button className="text-blue-600 hover:text-blue-700 text-sm" data-testid="edit-measurement-btn">
