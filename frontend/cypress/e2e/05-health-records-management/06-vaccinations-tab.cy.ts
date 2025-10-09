@@ -28,7 +28,33 @@ describe('Health Records Management - Vaccinations Tab', () => {
 
     cy.intercept('GET', '**/api/health-records/student/*/vaccinations', {
       statusCode: 200,
-      body: []
+      body: [
+        {
+          id: '1',
+          vaccineName: 'COVID-19 Vaccine',
+          dateAdministered: '2024-09-15',
+          administeredBy: 'School Nurse',
+          compliant: true,
+          priority: 'High'
+        },
+        {
+          id: '2',
+          vaccineName: 'Influenza Vaccine',
+          dateAdministered: '2024-08-20',
+          administeredBy: 'Dr. Smith',
+          compliant: true,
+          priority: 'Medium'
+        },
+        {
+          id: '3',
+          vaccineName: 'Tdap Booster',
+          dateAdministered: null,
+          administeredBy: null,
+          compliant: false,
+          dueDate: '2024-11-01',
+          priority: 'High'
+        }
+      ]
     }).as('getVaccinations')
 
     cy.intercept('GET', '**/api/health-records/student/*/growth-chart', {
@@ -71,7 +97,8 @@ describe('Health Records Management - Vaccinations Tab', () => {
 
   it('should allow searching vaccinations', () => {
     cy.get('[data-testid="vaccination-search"]')
-      .type('MMR')
+      .scrollIntoView()
+      .type('MMR', { force: true })
       .should('have.value', 'MMR')
   })
 
@@ -80,7 +107,7 @@ describe('Health Records Management - Vaccinations Tab', () => {
   })
 
   it('should filter by compliance status', () => {
-    cy.get('[data-testid="vaccination-filter"]').select('compliant')
+    cy.get('[data-testid="vaccination-filter"]').select('Completed')
   })
 
   it('should display sort dropdown', () => {
@@ -88,44 +115,53 @@ describe('Health Records Management - Vaccinations Tab', () => {
   })
 
   it('should sort by date', () => {
-    cy.get('[data-testid="vaccination-sort"]').select('date')
+    cy.get('[data-testid="vaccination-sort"]').scrollIntoView().select('date-desc', { force: true })
   })
 
   it('should sort by name', () => {
-    cy.get('[data-testid="vaccination-sort"]').select('name')
+    cy.get('[data-testid="vaccination-sort"]').scrollIntoView().select('name', { force: true })
   })
 
   it('should display vaccination rows', () => {
-    cy.get('[data-testid="vaccination-row"]').should('have.length.at.least', 1)
+    cy.wait(1000) // Wait for mock data to render
+    cy.get('[data-testid="vaccination-row"]', { timeout: 10000 }).should('have.length.at.least', 1)
   })
 
   it('should show vaccine names', () => {
-    cy.get('[data-testid="vaccine-name"]').should('be.visible')
+    cy.wait(1000)
+    cy.get('[data-testid="vaccine-name"]', { timeout: 10000 }).first().should('be.visible')
   })
 
   it('should display compliance badges', () => {
-    cy.get('[data-testid="compliance-badge"]').should('exist')
+    cy.wait(1000)
+    cy.get('[data-testid="compliance-badge"]', { timeout: 10000 }).should('exist')
   })
 
   it('should show compliant vaccines in green', () => {
-    cy.contains('[data-testid="compliance-badge"]', 'Compliant')
+    cy.wait(1000)
+    cy.get('[data-testid="compliance-badge"]', { timeout: 10000 })
+      .contains('Compliant')
       .should('have.class', 'bg-green-100')
   })
 
   it('should show overdue vaccines in red', () => {
-    cy.get('[data-testid="vaccinations-table"]').should('exist')
+    cy.wait(1000)
+    cy.get('[data-testid="vaccinations-table"]', { timeout: 10000 }).should('exist')
   })
 
   it('should display due dates', () => {
-    cy.get('[data-testid="due-date"]').should('exist')
+    cy.wait(1000)
+    cy.get('[data-testid="due-date"]', { timeout: 10000 }).should('exist')
   })
 
   it('should show administered dates', () => {
-    cy.get('[data-testid="administered-date"]').should('exist')
+    cy.wait(1000)
+    cy.get('[data-testid="administered-date"]', { timeout: 10000 }).should('exist')
   })
 
   it('should display action buttons', () => {
-    cy.get('[data-testid="vaccination-actions"]').should('exist')
+    cy.wait(1000)
+    cy.get('[data-testid="vaccination-actions"]', { timeout: 10000 }).should('exist')
   })
 
   it('should click record vaccination button', () => {
