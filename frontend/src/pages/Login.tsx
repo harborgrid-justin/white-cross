@@ -24,6 +24,11 @@ export default function Login() {
 
   const redirectPath = searchParams.get('redirect')
 
+  // Set page title for accessibility
+  useEffect(() => {
+    document.title = 'Login - White Cross - School Nurse Platform'
+  }, [])
+
   useEffect(() => {
     if (redirectPath === '/health-records') {
       setAuthError('Please log in to access health records')
@@ -77,12 +82,21 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main"
+        data-cy="skip-to-main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50"
+      >
+        Skip to main content
+      </a>
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center mb-6">
             <img
               src="/white-cross-logo.svg"
               alt="White Cross Logo"
+              data-cy="logo"
               className="h-16 w-16"
               onError={(e) => {
                 // Fallback to text if image fails to load
@@ -99,10 +113,10 @@ export default function Login() {
           </p>
         </div>
         
-        <div className="card p-8">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit, onError)} data-cy="login-form">
+        <div className="card p-8" id="main">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit, onError)} data-cy="login-form" role="form">
             {authError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message">
+              <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message" role="alert">
                 <p className="text-sm text-red-600">{authError}</p>
               </div>
             )}
@@ -120,13 +134,15 @@ export default function Login() {
                       message: 'Invalid email format'
                     }
                   })}
+                  id="email"
                   type="email"
                   className="input-field"
                   placeholder="Enter your email"
                   data-cy="email-input"
+                  aria-label="Email address"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  <p className="mt-1 text-sm text-red-600" data-cy="email-error" role="alert">{errors.email.message}</p>
                 )}
               </div>
             </div>
@@ -144,21 +160,24 @@ export default function Login() {
                       message: 'Password must be at least 6 characters'
                     }
                   })}
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   className="input-field pr-10"
                   placeholder="Enter your password"
                   data-cy="password-input"
+                  aria-label="Password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   data-cy="password-toggle"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                  <p className="mt-1 text-sm text-red-600" data-cy="password-error" role="alert">{errors.password.message}</p>
                 )}
               </div>
             </div>
@@ -194,6 +213,7 @@ export default function Login() {
                 disabled={loading}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 data-cy="login-button"
+                aria-busy={loading}
               >
                 {loading ? (
                   <>

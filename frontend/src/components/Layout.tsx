@@ -59,6 +59,13 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50"
+      >
+        Skip to main content
+      </a>
       {/* Mobile menu */}
       <div className={`fixed inset-0 flex z-40 lg:hidden ${sidebarOpen ? '' : 'pointer-events-none'}`}>
         <div className={`fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity ease-linear duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setSidebarOpen(false)} />
@@ -79,7 +86,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           
           <div className="mt-5 flex-1 h-0 overflow-y-auto">
-            <nav className="px-2 space-y-1">
+            <nav className="px-2 space-y-1" role="navigation" aria-label="Main navigation">
               {navigation.map((item) => {
                 const Icon = iconMap[item.icon]
                 const isActive = location.pathname.startsWith(item.href)
@@ -93,6 +100,11 @@ export default function Layout({ children }: LayoutProps) {
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                     onClick={() => setSidebarOpen(false)}
+                    data-cy={
+                      item.name === 'Administration' ? 'admin-panel-link' : 
+                      item.name === 'Students' ? 'students-nav' : 
+                      undefined
+                    }
                   >
                     <Icon className="mr-3 h-5 w-5" />
                     {item.name}
@@ -111,7 +123,7 @@ export default function Layout({ children }: LayoutProps) {
             <h1 className="text-xl font-bold text-primary-600">White Cross</h1>
           </div>
           <div className="mt-5 flex-grow flex flex-col">
-            <nav className="flex-1 px-2 space-y-1">
+            <nav className="flex-1 px-2 space-y-1" role="navigation" aria-label="Main navigation">
               {navigation.map((item) => {
                 const Icon = iconMap[item.icon]
                 const isActive = location.pathname.startsWith(item.href)
@@ -124,7 +136,11 @@ export default function Layout({ children }: LayoutProps) {
                         ? 'bg-primary-100 text-primary-900'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
-                    data-cy={item.name === 'Administration' ? 'admin-panel-link' : undefined}
+                    data-cy={
+                      item.name === 'Administration' ? 'admin-panel-link' : 
+                      item.name === 'Students' ? 'students-nav' : 
+                      undefined
+                    }
                   >
                     <Icon className="mr-3 h-5 w-5" />
                     {item.name}
@@ -139,40 +155,45 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main content */}
       <div className="lg:pl-64 flex flex-col">
         {/* Top navigation */}
-        <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow border-b border-gray-200">
+        <header className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow border-b border-gray-200" role="banner">
           <button
             type="button"
             className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
             onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
           >
             <Menu className="h-6 w-6" />
           </button>
           
           <div className="flex-1 px-4 flex justify-between items-center">
             <div className="flex-1">
-              <h2 className="text-lg font-semibold text-gray-900 capitalize">
+              <h2 
+                className="text-lg font-semibold text-gray-900 capitalize"
+                data-cy="dashboard-title"
+              >
                 {location.pathname.split('/')[1] || 'Dashboard'}
               </h2>
             </div>
             
             <div className="ml-4 flex items-center space-x-4" data-cy="user-menu">
               <div className="text-sm text-gray-700">
-                <span className="font-medium">{user?.firstName} {user?.lastName}</span>
-                <span className="text-gray-500 ml-2">({user?.role})</span>
+                <span className="font-medium" data-cy="user-name">{user?.firstName} {user?.lastName}</span>
+                <span className="text-gray-500 ml-2" data-cy="user-role-badge">({user?.role})</span>
               </div>
               <button
                 onClick={logout}
                 className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 data-cy="logout-button"
+                aria-label="Logout"
               >
                 <LogOut className="h-5 w-5" />
               </button>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Page content */}
-        <main className="flex-1">
+        <main id="main" className="flex-1" role="main">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {children}
