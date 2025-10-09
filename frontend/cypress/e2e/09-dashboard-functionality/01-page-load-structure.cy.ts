@@ -163,7 +163,7 @@ describe('Dashboard - Page Load & Structure', () => {
     it('should show user profile menu in header', () => {
       cy.get('header')
         .within(() => {
-          cy.get('[data-cy=user-menu], button[aria-label*="user" i]')
+          cy.get('[data-cy=user-menu]')
             .should('exist')
         })
     })
@@ -241,7 +241,7 @@ describe('Dashboard - Page Load & Structure', () => {
       cy.reload()
 
       cy.get('body').should('be.visible')
-      cy.get('[data-cy=mobile-menu], button[aria-label*="menu" i]').should('exist')
+      cy.get('[data-cy=mobile-menu], button[aria-label="Open sidebar"]').should('exist')
     })
   })
 

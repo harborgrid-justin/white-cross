@@ -11,10 +11,14 @@ import {
   TrendingUp,
   TrendingDown,
   Bell,
-  Activity
+  Activity,
+  UserPlus,
+  CalendarPlus,
+  FileText
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { API_CONFIG } from '@/constants'
 
 interface DashboardStats {
@@ -74,11 +78,39 @@ interface ChartData {
 
 export default function Dashboard() {
   const [timePeriod, setTimePeriod] = useState<'week' | 'month' | 'year'>('week')
+  const navigate = useNavigate()
 
   // Set document title
   useEffect(() => {
     document.title = 'Dashboard - White Cross - School Nurse Platform'
   }, [])
+
+  // Helper function to format relative time
+  const formatRelativeTime = (timeString: string): string => {
+    const time = new Date(timeString)
+    const now = new Date()
+    const diffMs = now.getTime() - time.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'just now'
+    if (diffMins < 60) return `${diffMins} minutes ago`
+    if (diffHours < 24) return `${diffHours} hours ago`
+    if (diffDays === 1) return 'yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    return time.toLocaleDateString()
+  }
+
+  // Helper function to extract action verb from message
+  const getActionVerb = (message: string): string => {
+    const lowerMessage = message.toLowerCase()
+    if (lowerMessage.includes('added') || lowerMessage.includes('new')) return 'added'
+    if (lowerMessage.includes('updated') || lowerMessage.includes('modified')) return 'updated'
+    if (lowerMessage.includes('deleted') || lowerMessage.includes('removed')) return 'deleted'
+    if (lowerMessage.includes('created')) return 'created'
+    return 'updated'
+  }
 
   // Fetch dashboard statistics
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
@@ -196,11 +228,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-cy="dashboard-container">
+      {/* Page Title for Accessibility */}
+      <h1 className="sr-only">Dashboard</h1>
+
       {/* Welcome Section with Refresh Button */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold mb-2" data-cy="dashboard-title">Good morning! 👋</h1>
+          <h2 className="text-2xl font-bold mb-2" data-cy="dashboard-title">Good morning! 👋</h2>
           <p className="text-primary-100">Here's your school health overview for today</p>
         </div>
         <button
@@ -216,7 +251,7 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-cy="quick-stats">
         {/* Total Students */}
-        <div className="card p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
+        <div className="card p-6 bg-blue-50 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Users className="h-8 w-8 text-primary-600" />
@@ -225,14 +260,14 @@ export default function Dashboard() {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Total Students</dt>
                 <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">{stats.totalStudents.toLocaleString()}</div>
+                  <div className="text-2xl font-semibold text-gray-900">{stats?.totalStudents?.toLocaleString() ?? '0'}</div>
                   <div className={`ml-2 flex items-center text-sm font-semibold trend change ${
-                    stats.studentTrend.changeType === 'positive' ? 'text-green-600' :
-                    stats.studentTrend.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
+                    stats?.studentTrend?.changeType === 'positive' ? 'text-green-600' :
+                    stats?.studentTrend?.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
                   }`}>
-                    {stats.studentTrend.changeType === 'positive' && <TrendingUp className="h-3 w-3 mr-1" />}
-                    {stats.studentTrend.changeType === 'negative' && <TrendingDown className="h-3 w-3 mr-1" />}
-                    {stats.studentTrend.change}
+                    {stats?.studentTrend?.changeType === 'positive' && <TrendingUp className="h-3 w-3 mr-1" />}
+                    {stats?.studentTrend?.changeType === 'negative' && <TrendingDown className="h-3 w-3 mr-1" />}
+                    {stats?.studentTrend?.change ?? '+0%'}
                   </div>
                 </dd>
               </dl>
@@ -241,7 +276,7 @@ export default function Dashboard() {
         </div>
 
         {/* Active Medications */}
-        <div className="card p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
+        <div className="card p-6 bg-green-50 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Pill className="h-8 w-8 text-primary-600" />
@@ -250,14 +285,14 @@ export default function Dashboard() {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Active Medications</dt>
                 <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">{stats.activeMedications}</div>
+                  <div className="text-2xl font-semibold text-gray-900">{stats?.activeMedications ?? 0}</div>
                   <div className={`ml-2 flex items-center text-sm font-semibold trend change ${
-                    stats.medicationTrend.changeType === 'positive' ? 'text-green-600' :
-                    stats.medicationTrend.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
+                    stats?.medicationTrend?.changeType === 'positive' ? 'text-green-600' :
+                    stats?.medicationTrend?.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
                   }`}>
-                    {stats.medicationTrend.changeType === 'positive' && <TrendingUp className="h-3 w-3 mr-1" />}
-                    {stats.medicationTrend.changeType === 'negative' && <TrendingDown className="h-3 w-3 mr-1" />}
-                    {stats.medicationTrend.change}
+                    {stats?.medicationTrend?.changeType === 'positive' && <TrendingUp className="h-3 w-3 mr-1" />}
+                    {stats?.medicationTrend?.changeType === 'negative' && <TrendingDown className="h-3 w-3 mr-1" />}
+                    {stats?.medicationTrend?.change ?? '+0%'}
                   </div>
                 </dd>
               </dl>
@@ -266,7 +301,7 @@ export default function Dashboard() {
         </div>
 
         {/* Today's Appointments */}
-        <div className="card p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
+        <div className="card p-6 bg-yellow-50 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Calendar className="h-8 w-8 text-primary-600" />
@@ -275,14 +310,14 @@ export default function Dashboard() {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Today's Appointments</dt>
                 <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">{stats.todaysAppointments}</div>
+                  <div className="text-2xl font-semibold text-gray-900">{stats?.todaysAppointments ?? 0}</div>
                   <div className={`ml-2 flex items-center text-sm font-semibold trend change ${
-                    stats.appointmentTrend.changeType === 'positive' ? 'text-green-600' :
-                    stats.appointmentTrend.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
+                    stats?.appointmentTrend?.changeType === 'positive' ? 'text-green-600' :
+                    stats?.appointmentTrend?.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
                   }`}>
-                    {stats.appointmentTrend.changeType === 'positive' && <TrendingUp className="h-3 w-3 mr-1" />}
-                    {stats.appointmentTrend.changeType === 'negative' && <TrendingDown className="h-3 w-3 mr-1" />}
-                    {stats.appointmentTrend.change}
+                    {stats?.appointmentTrend?.changeType === 'positive' && <TrendingUp className="h-3 w-3 mr-1" />}
+                    {stats?.appointmentTrend?.changeType === 'negative' && <TrendingDown className="h-3 w-3 mr-1" />}
+                    {stats?.appointmentTrend?.change ?? '+0%'}
                   </div>
                 </dd>
               </dl>
@@ -291,7 +326,7 @@ export default function Dashboard() {
         </div>
 
         {/* Pending Incidents */}
-        <div className="card p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
+        <div className="card p-6 bg-blue-50 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <AlertTriangle className="h-8 w-8 text-primary-600" />
@@ -300,9 +335,9 @@ export default function Dashboard() {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Pending Incidents</dt>
                 <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">{stats.pendingIncidents}</div>
+                  <div className="text-2xl font-semibold text-gray-900">{stats?.pendingIncidents ?? 0}</div>
                   <div className="ml-2 flex items-baseline text-sm font-semibold text-gray-500 trend change">
-                    {stats.pendingIncidents > 0 ? '+' : ''}{stats.pendingIncidents}
+                    {(stats?.pendingIncidents ?? 0) > 0 ? '+' : ''}{stats?.pendingIncidents ?? 0}
                   </div>
                 </dd>
               </dl>
@@ -318,7 +353,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Medications Due Today</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.medicationsDueToday}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.medicationsDueToday ?? 0}</p>
             </div>
             <Pill className="h-10 w-10 text-yellow-600" />
           </div>
@@ -329,7 +364,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Health Alerts</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.healthAlerts}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.healthAlerts ?? 0}</p>
             </div>
             <Bell className="h-10 w-10 text-red-600" />
           </div>
@@ -340,7 +375,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Recent Activity</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.recentActivityCount}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.recentActivityCount ?? 0}</p>
             </div>
             <Activity className="h-10 w-10 text-blue-600" />
           </div>
@@ -459,7 +494,15 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activities */}
         <div className="card p-6" data-cy="recent-activities">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+            <a
+              href="/activities"
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              View All Activities
+            </a>
+          </div>
           {activitiesLoading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
@@ -467,20 +510,36 @@ export default function Dashboard() {
               ))}
             </div>
           ) : recentActivities.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-4 activity-feed overflow-auto max-h-96">
               {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start space-x-3">
+                <div
+                  key={activity.id}
+                  className="flex items-start space-x-3 activity-item p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                  data-testid="activity-item"
+                >
                   <div className={`flex-shrink-0 mt-1 ${getActivityColor(activity.status)}`}>
                     {getActivityIcon(activity.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900">{activity.message}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{getActionVerb(activity.message)}</span> {activity.message}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{formatRelativeTime(activity.time)}</p>
                   </div>
-                  <div className="flex-shrink-0">
-                    {activity.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
-                    {activity.status === 'pending' && <Clock className="h-4 w-4 text-yellow-500" />}
-                    {activity.status === 'warning' && <AlertCircle className="h-4 w-4 text-red-500" />}
+                  <div className="flex flex-col items-end space-y-1">
+                    <div className="flex-shrink-0">
+                      {activity.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
+                      {activity.status === 'pending' && <Clock className="h-4 w-4 text-yellow-500" />}
+                      {activity.status === 'warning' && <AlertCircle className="h-4 w-4 text-red-500" />}
+                    </div>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium badge status ${
+                      activity.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      activity.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      activity.status === 'warning' ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {activity.status}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -523,31 +582,62 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="card p-6">
+      <div className="card p-6" data-cy="quick-actions">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 quick-action">
+          <button
+            onClick={() => navigate('/students')}
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors quick-action-item"
+            aria-label="Add Student"
+            title="Add Student"
+          >
             <div className="text-center">
-              <Users className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+              <UserPlus className="h-6 w-6 text-gray-400 mx-auto mb-2" />
               <span className="text-sm font-medium text-gray-600">Add Student</span>
             </div>
           </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors">
+          <button
+            onClick={() => navigate('/appointments')}
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors quick-action-item"
+            aria-label="Schedule Appointment"
+            title="Schedule Appointment"
+          >
             <div className="text-center">
-              <Calendar className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+              <CalendarPlus className="h-6 w-6 text-gray-400 mx-auto mb-2" />
               <span className="text-sm font-medium text-gray-600">Schedule Appointment</span>
             </div>
           </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors">
+          <button
+            onClick={() => navigate('/medications')}
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors quick-action-item"
+            aria-label="Add Medication"
+            title="Add Medication"
+          >
+            <div className="text-center">
+              <Pill className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+              <span className="text-sm font-medium text-gray-600">Add Medication</span>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/incidents')}
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors quick-action-item"
+            aria-label="Report Incident"
+            title="Report Incident"
+          >
             <div className="text-center">
               <AlertTriangle className="h-6 w-6 text-gray-400 mx-auto mb-2" />
               <span className="text-sm font-medium text-gray-600">Report Incident</span>
             </div>
           </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors">
+          <button
+            onClick={() => navigate('/reports')}
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors quick-action-item"
+            aria-label="View Reports"
+            title="View Reports"
+          >
             <div className="text-center">
-              <Pill className="h-6 w-6 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Log Medication</span>
+              <FileText className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+              <span className="text-sm font-medium text-gray-600">View Reports</span>
             </div>
           </button>
         </div>

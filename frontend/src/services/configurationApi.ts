@@ -111,7 +111,7 @@ export const configurationApi = {
       });
     }
     const queryString = params.toString();
-    const response = await api.get(`/api/configurations${queryString ? `?${queryString}` : ''}`);
+    const response = await api.get(`/configurations${queryString ? `?${queryString}` : ''}`);
     return response.data;
   },
 
@@ -119,7 +119,7 @@ export const configurationApi = {
    * Get public configurations (no auth required)
    */
   getPublic: async () => {
-    const response = await api.get('/api/configurations/public');
+    const response = await api.get('/configurations/public');
     return response.data;
   },
 
@@ -128,7 +128,7 @@ export const configurationApi = {
    */
   getByKey: async (key: string, scopeId?: string) => {
     const params = scopeId ? `?scopeId=${scopeId}` : '';
-    const response = await api.get(`/api/configurations/${key}${params}`);
+    const response = await api.get(`/configurations/${key}${params}`);
     return response.data;
   },
 
@@ -137,7 +137,7 @@ export const configurationApi = {
    */
   getByCategory: async (category: string, scopeId?: string) => {
     const params = scopeId ? `?scopeId=${scopeId}` : '';
-    const response = await api.get(`/api/configurations/category/${category}${params}`);
+    const response = await api.get(`/configurations/category/${category}${params}`);
     return response.data;
   },
 
@@ -145,7 +145,7 @@ export const configurationApi = {
    * Update a configuration value
    */
   update: async (key: string, data: ConfigurationUpdate) => {
-    const response = await api.put(`/api/configurations/${key}`, data);
+    const response = await api.put(`/configurations/${key}`, data);
     return response.data;
   },
 
@@ -153,7 +153,7 @@ export const configurationApi = {
    * Bulk update configurations
    */
   bulkUpdate: async (data: BulkUpdatePayload) => {
-    const response = await api.put('/api/configurations/bulk', data);
+    const response = await api.put('/configurations/bulk', data);
     return response.data;
   },
 
@@ -161,7 +161,7 @@ export const configurationApi = {
    * Create a new configuration
    */
   create: async (data: CreateConfigurationPayload) => {
-    const response = await api.post('/api/configurations', data);
+    const response = await api.post('/configurations', data);
     return response.data;
   },
 
@@ -170,7 +170,7 @@ export const configurationApi = {
    */
   delete: async (key: string, scopeId?: string) => {
     const params = scopeId ? `?scopeId=${scopeId}` : '';
-    const response = await api.delete(`/api/configurations/${key}${params}`);
+    const response = await api.delete(`/configurations/${key}${params}`);
     return response.data;
   },
 
@@ -179,7 +179,7 @@ export const configurationApi = {
    */
   resetToDefault: async (key: string, scopeId?: string) => {
     const params = scopeId ? `?scopeId=${scopeId}` : '';
-    const response = await api.post(`/api/configurations/${key}/reset${params}`);
+    const response = await api.post(`/configurations/${key}/reset${params}`);
     return response.data;
   },
 
@@ -187,7 +187,7 @@ export const configurationApi = {
    * Get configuration change history
    */
   getHistory: async (key: string, limit: number = 50) => {
-    const response = await api.get(`/api/configurations/${key}/history?limit=${limit}`);
+    const response = await api.get(`/configurations/${key}/history?limit=${limit}`);
     return response.data;
   },
 
@@ -195,7 +195,7 @@ export const configurationApi = {
    * Get recent configuration changes
    */
   getRecentChanges: async (limit: number = 100) => {
-    const response = await api.get(`/api/configurations/history/recent?limit=${limit}`);
+    const response = await api.get(`/configurations/history/recent?limit=${limit}`);
     return response.data;
   },
 
@@ -203,7 +203,7 @@ export const configurationApi = {
    * Get configuration changes by user
    */
   getChangesByUser: async (userId: string, limit: number = 50) => {
-    const response = await api.get(`/api/configurations/history/user/${userId}?limit=${limit}`);
+    const response = await api.get(`/configurations/history/user/${userId}?limit=${limit}`);
     return response.data;
   },
 
@@ -215,7 +215,7 @@ export const configurationApi = {
     if (filter?.category) params.append('category', filter.category);
     if (filter?.scope) params.append('scope', filter.scope);
     const queryString = params.toString();
-    const response = await api.get(`/api/configurations/export${queryString ? `?${queryString}` : ''}`, {
+    const response = await api.get(`/configurations/export${queryString ? `?${queryString}` : ''}`, {
       responseType: 'blob'
     });
     return response.data;
@@ -225,7 +225,7 @@ export const configurationApi = {
    * Import configurations from JSON
    */
   import: async (data: ImportConfigurationsPayload) => {
-    const response = await api.post('/api/configurations/import', data);
+    const response = await api.post('/configurations/import', data);
     return response.data;
   }
 };
