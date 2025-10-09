@@ -48,7 +48,7 @@ describe('User Management - Page Load & Structure', () => {
   })
 
   it('should display tab navigation container', () => {
-    cy.get('nav').within(() => {
+    cy.get('nav').first().within(() => {
       cy.get('button').should('have.length.at.least', 5)
     })
   })

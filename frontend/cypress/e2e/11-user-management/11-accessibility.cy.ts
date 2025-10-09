@@ -24,7 +24,7 @@ describe('User Management - Accessibility', () => {
 
   it('should have visible text labels on all buttons', () => {
     cy.get('nav button').each(($btn) => {
-      cy.wrap($btn).should('have.text')
+      cy.wrap($btn).invoke('text').should('not.be.empty')
     })
   })
 

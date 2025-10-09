@@ -82,7 +82,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           
           <div className="flex-shrink-0 flex items-center px-4">
-            <h1 className="text-xl font-bold text-primary-600">White Cross</h1>
+            <div className="text-xl font-bold text-primary-600">White Cross</div>
           </div>
           
           <div className="mt-5 flex-1 h-0 overflow-y-auto">
@@ -120,7 +120,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-grow bg-white pt-5 pb-4 overflow-y-auto border-r border-gray-200">
           <div className="flex items-center flex-shrink-0 px-4">
-            <h1 className="text-xl font-bold text-primary-600">White Cross</h1>
+            <div className="text-xl font-bold text-primary-600">White Cross</div>
           </div>
           <div className="mt-5 flex-grow flex flex-col">
             <nav className="flex-1 px-2 space-y-1" role="navigation" aria-label="Main navigation">
@@ -161,22 +161,23 @@ export default function Layout({ children }: LayoutProps) {
             className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
             onClick={() => setSidebarOpen(true)}
             aria-label="Open sidebar"
+            data-cy="mobile-menu"
           >
             <Menu className="h-6 w-6" />
           </button>
           
           <div className="flex-1 px-4 flex justify-between items-center">
-            <div className="flex-1">
-              <h2 
+            <nav className="flex-1" role="navigation" aria-label="Secondary navigation">
+              <h2
                 className="text-lg font-semibold text-gray-900 capitalize"
                 data-cy="dashboard-title"
               >
                 {location.pathname.split('/')[1] || 'Dashboard'}
               </h2>
-            </div>
-            
+            </nav>
+
             <div className="ml-4 flex items-center space-x-4" data-cy="user-menu">
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-gray-700 user-role">
                 <span className="font-medium" data-cy="user-name">{user?.firstName} {user?.lastName}</span>
                 <span className="text-gray-500 ml-2" data-cy="user-role-badge">({user?.role})</span>
               </div>

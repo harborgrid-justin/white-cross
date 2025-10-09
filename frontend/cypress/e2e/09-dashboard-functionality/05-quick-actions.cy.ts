@@ -69,7 +69,10 @@ describe('Dashboard - Quick Actions', () => {
 
   it('should have accessible button labels', () => {
     cy.get('button').each(($btn) => {
-      cy.wrap($btn).should('have.attr', 'aria-label').or('have.text')
+      // Each button should have either aria-label or text content
+      const hasAriaLabel = $btn.attr('aria-label')
+      const hasText = $btn.text().trim().length > 0
+      expect(hasAriaLabel || hasText).to.be.true
     })
   })
 
