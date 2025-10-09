@@ -248,7 +248,7 @@ export default function Login() {
           </form>
         </div>
 
-        <div className="text-center text-sm text-gray-600">
+        <div className="text-center text-sm text-gray-600" data-cy="hipaa-notice">
           <p>Enterprise healthcare platform for school nurses</p>
           <p className="mt-1">Secure • HIPAA Compliant • Comprehensive</p>
           <p className="mt-2 text-xs text-gray-500">
