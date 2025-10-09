@@ -61,7 +61,9 @@
       "Bash(for dir in \"C:/temp/white-cross/frontend/cypress/e2e\"/*)",
       "Bash(do if [ -d \"$dir\" ])",
       "Bash(fi)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(cat:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

@@ -35,34 +35,9 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
   user
 }) => {
   const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
-  const mockVaccinations: Vaccination[] = [
-    {
-      id: '1',
-      vaccineName: 'COVID-19 Vaccine',
-      dateAdministered: '2024-09-15',
-      administeredBy: 'School Nurse',
-      compliant: true
-    },
-    {
-      id: '2',
-      vaccineName: 'Influenza Vaccine',
-      dateAdministered: '2024-08-20',
-      administeredBy: 'Dr. Smith',
-      compliant: true
-    },
-    {
-      id: '3',
-      vaccineName: 'Tdap Booster',
-      dateAdministered: '',
-      administeredBy: '',
-      compliant: false,
-      dueDate: '2024-11-01'
-    }
-  ]
 
-  const displayVaccinations = vaccinations.length > 0 ? vaccinations : mockVaccinations
   const filteredAndSortedVaccinations = sortVaccinations(
-    filterVaccinations(displayVaccinations, searchQuery, vaccinationFilter),
+    filterVaccinations(vaccinations, searchQuery, vaccinationFilter),
     vaccinationSort
   )
 

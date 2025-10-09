@@ -1,6 +1,6 @@
 {
   "testStudent1": {
-    "studentNumber": "STU100",
+    "studentNumber": "STU999",
     "firstName": "John",
     "lastName": "Doe",
     "dateOfBirth": "2010-05-15",
@@ -14,7 +14,7 @@
     }
   },
   "testStudent2": {
-    "studentNumber": "STU101",
+    "studentNumber": "STU998",
     "firstName": "Sarah",
     "lastName": "Smith",
     "dateOfBirth": "2009-09-22",
@@ -28,7 +28,7 @@
     }
   },
   "testStudent3": {
-    "studentNumber": "STU102",
+    "studentNumber": "STU997",
     "firstName": "Alex",
     "lastName": "Johnson",
     "dateOfBirth": "2011-03-08",

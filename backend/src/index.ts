@@ -22,6 +22,7 @@ import { purchaseOrderRoutes } from './routes/purchaseOrder';
 import { budgetRoutes } from './routes/budget';
 import { communicationRoutes } from './routes/communication';
 import { configurationRoutes } from './routes/configuration';
+import { dashboardRoutes } from './routes/dashboard';
 
 // TODO: Convert remaining routes from Express to Hapi
 // import administrationRoutes from './routes/administration';
@@ -149,7 +150,10 @@ const init = async () => {
       ...budgetRoutes,
 
       // Communication routes
-      ...communicationRoutes
+      ...communicationRoutes,
+
+      // Dashboard routes
+      ...dashboardRoutes
 
       // TODO: Convert remaining routes from Express to Hapi
       // ...administrationRoutes,
