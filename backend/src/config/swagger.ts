@@ -1,6 +1,7 @@
 import { ServerRegisterPluginObject } from '@hapi/hapi';
 import * as HapiSwagger from 'hapi-swagger';
 import * as Pack from '../../package.json';
+import { SWAGGER_CONFIG, ENVIRONMENT } from '../constants';
 
 export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOptions> = {
   plugin: HapiSwagger,
@@ -10,12 +11,12 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
       version: Pack.version,
       description: 'Enterprise-grade healthcare platform API for school nurses to manage student health records, medications, and emergency communications. This API follows HIPAA compliance standards and implements robust security measures.',
       contact: {
-        name: 'White Cross Support',
-        email: 'support@whitecross.health'
+        name: SWAGGER_CONFIG.CONTACT.NAME,
+        email: SWAGGER_CONFIG.CONTACT.EMAIL
       },
       license: {
-        name: 'Proprietary',
-        url: 'https://whitecross.health/license'
+        name: SWAGGER_CONFIG.LICENSE.NAME,
+        url: SWAGGER_CONFIG.LICENSE.URL
       }
     },
     tags: [
@@ -119,28 +120,28 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
     security: [{ jwt: [] }],
     grouping: 'tags',
     sortEndpoints: 'ordered',
-    documentationPath: '/docs',
+    documentationPath: SWAGGER_CONFIG.PATHS.DOCUMENTATION,
     swaggerUI: true,
-    swaggerUIPath: '/swagger/',
-    jsonPath: '/swagger.json',
+    swaggerUIPath: SWAGGER_CONFIG.PATHS.SWAGGER_UI,
+    jsonPath: SWAGGER_CONFIG.PATHS.JSON,
     basePath: '/',
     pathPrefixSize: 2,
     cors: true,
     schemes: ['http', 'https'],
-    host: process.env.SWAGGER_HOST || 'localhost:3001',
+    host: process.env.SWAGGER_HOST || `localhost:${ENVIRONMENT.PORT}`,
     expanded: 'list',
     lang: 'en',
     // Custom branding
     customCss: `
       .swagger-ui .topbar {
-        background-color: #2c5282;
+        background-color: ${SWAGGER_CONFIG.BRANDING.PRIMARY_COLOR};
       }
       .swagger-ui .info .title {
-        color: #2c5282;
+        color: ${SWAGGER_CONFIG.BRANDING.PRIMARY_COLOR};
       }
     `,
-    customSiteTitle: 'White Cross API Documentation',
-    customfavIcon: '/favicon.ico',
+    customSiteTitle: SWAGGER_CONFIG.BRANDING.TITLE,
+    customfavIcon: SWAGGER_CONFIG.BRANDING.FAVICON,
     // Response validation
     responseValidation: true,
     // Enable try-it-out by default
@@ -189,8 +190,8 @@ To obtain a token:
 
 ## Rate Limiting
 API requests are rate-limited to prevent abuse:
-- 100 requests per minute per IP for authenticated users
-- 20 requests per minute per IP for unauthenticated requests
+- ${SWAGGER_CONFIG.RATE_LIMIT_INFO.AUTHENTICATED} requests per minute per IP for authenticated users
+- ${SWAGGER_CONFIG.RATE_LIMIT_INFO.UNAUTHENTICATED} requests per minute per IP for unauthenticated requests
 
 ## Response Format
 All responses follow a standard format:
@@ -220,14 +221,14 @@ List endpoints support pagination via query parameters:
 - \`limit\`: Items per page (default: 10, max: 100)
 
 ## Support
-For API support, contact: support@whitecross.health
+For API support, contact: ${SWAGGER_CONFIG.CONTACT.EMAIL}
   `.trim(),
   contact: {
-    name: 'White Cross Support',
-    email: 'support@whitecross.health'
+    name: SWAGGER_CONFIG.CONTACT.NAME,
+    email: SWAGGER_CONFIG.CONTACT.EMAIL
   },
   license: {
-    name: 'Proprietary',
-    url: 'https://whitecross.health/license'
+    name: SWAGGER_CONFIG.LICENSE.NAME,
+    url: SWAGGER_CONFIG.LICENSE.URL
   }
 };

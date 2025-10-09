@@ -503,6 +503,42 @@ export const LOG_LEVELS = {
   DEBUG: 'debug',
 } as const;
 
+// ===== SWAGGER/API DOCUMENTATION =====
+export const SWAGGER_CONFIG = {
+  CONTACT: {
+    NAME: 'White Cross Support',
+    EMAIL: 'support@whitecross.health',
+  },
+  LICENSE: {
+    NAME: 'Proprietary',
+    URL: 'https://whitecross.health/license',
+  },
+  PATHS: {
+    DOCUMENTATION: '/docs',
+    SWAGGER_UI: '/swagger/',
+    JSON: '/swagger.json',
+  },
+  BRANDING: {
+    TITLE: 'White Cross API Documentation',
+    FAVICON: '/favicon.ico',
+    PRIMARY_COLOR: '#2c5282',
+  },
+  RATE_LIMIT_INFO: {
+    AUTHENTICATED: 100, // requests per minute
+    UNAUTHENTICATED: 20, // requests per minute
+  },
+} as const;
+
+// ===== JWT AUTHENTICATION =====
+export const JWT_CONFIG = {
+  AUDIENCE: 'urn:audience:api',
+  ISSUER: 'urn:issuer:api',
+  MAX_AGE_SEC: 86400, // 24 hours
+  TIME_SKEW_SEC: 15,
+  // Fallback secret (should be set via environment variable in production)
+  DEFAULT_SECRET: 'your-super-secret-jwt-key-change-in-production',
+} as const;
+
 // Export all as a single object for convenience
 export const CONSTANTS = {
   API_ROUTES,
@@ -525,6 +561,8 @@ export const CONSTANTS = {
   ENVIRONMENT,
   CORS_CONFIG,
   LOG_LEVELS,
+  SWAGGER_CONFIG,
+  JWT_CONFIG,
 } as const;
 
 export default CONSTANTS;

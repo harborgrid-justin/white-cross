@@ -21,6 +21,7 @@ import { vendorRoutes } from './routes/vendor';
 import { purchaseOrderRoutes } from './routes/purchaseOrder';
 import { budgetRoutes } from './routes/budget';
 import { communicationRoutes } from './routes/communication';
+import { configurationRoutes } from './routes/configuration';
 
 // TODO: Convert remaining routes from Express to Hapi
 // import administrationRoutes from './routes/administration';
@@ -70,6 +71,9 @@ const init = async () => {
 
     // Register authentication
     await configureAuth(server);
+
+    // Register configuration routes
+    configurationRoutes(server);
 
     // Health check endpoint
     server.route({

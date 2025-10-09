@@ -82,7 +82,7 @@ async function main() {
     },
   });
 
-  const school = await prisma.school.upsert({
+  const centralHigh = await prisma.school.upsert({
     where: { code: 'CENTRAL_HIGH' },
     update: { studentCount: 500, totalEnrollment: 500 },
     create: {
@@ -106,8 +106,108 @@ async function main() {
     },
   });
 
+  const westElementary = await prisma.school.upsert({
+    where: { code: 'WEST_ELEM' },
+    update: {},
+    create: {
+      name: 'West Elementary School',
+      code: 'WEST_ELEM',
+      address: '3500 Westside Boulevard',
+      city: 'Demo City',
+      state: 'CA',
+      zipCode: '90211',
+      phone: '(555) 300-3000',
+      phoneNumber: '(555) 300-3000',
+      email: 'office@westelementary.edu',
+      principal: 'Mrs. Jennifer Martinez',
+      principalName: 'Mrs. Jennifer Martinez',
+      studentCount: 350,
+      totalEnrollment: 350,
+      schoolType: 'Elementary',
+      status: 'Active',
+      isActive: true,
+      districtId: district.id,
+    },
+  });
+
+  const eastMiddle = await prisma.school.upsert({
+    where: { code: 'EAST_MIDDLE' },
+    update: {},
+    create: {
+      name: 'East Middle School',
+      code: 'EAST_MIDDLE',
+      address: '4200 Eastbrook Avenue',
+      city: 'Demo City',
+      state: 'CA',
+      zipCode: '90212',
+      phone: '(555) 400-4000',
+      phoneNumber: '(555) 400-4000',
+      email: 'office@eastmiddle.edu',
+      principal: 'Mr. David Chen',
+      principalName: 'Mr. David Chen',
+      studentCount: 420,
+      totalEnrollment: 420,
+      schoolType: 'Middle',
+      status: 'Active',
+      isActive: true,
+      districtId: district.id,
+    },
+  });
+
+  const northElementary = await prisma.school.upsert({
+    where: { code: 'NORTH_ELEM' },
+    update: {},
+    create: {
+      name: 'North Elementary School',
+      code: 'NORTH_ELEM',
+      address: '5100 Northern Heights Road',
+      city: 'Demo City',
+      state: 'CA',
+      zipCode: '90213',
+      phone: '(555) 500-5000',
+      phoneNumber: '(555) 500-5000',
+      email: 'office@northelementary.edu',
+      principal: 'Dr. Susan Anderson',
+      principalName: 'Dr. Susan Anderson',
+      studentCount: 310,
+      totalEnrollment: 310,
+      schoolType: 'Elementary',
+      status: 'Active',
+      isActive: true,
+      districtId: district.id,
+    },
+  });
+
+  const southHigh = await prisma.school.upsert({
+    where: { code: 'SOUTH_HIGH' },
+    update: {},
+    create: {
+      name: 'South High School',
+      code: 'SOUTH_HIGH',
+      address: '6000 South Campus Way',
+      city: 'Demo City',
+      state: 'CA',
+      zipCode: '90214',
+      phone: '(555) 600-6000',
+      phoneNumber: '(555) 600-6000',
+      email: 'office@southhigh.edu',
+      principal: 'Dr. Robert Williams',
+      principalName: 'Dr. Robert Williams',
+      studentCount: 480,
+      totalEnrollment: 480,
+      schoolType: 'High',
+      status: 'Active',
+      isActive: true,
+      districtId: district.id,
+    },
+  });
+
+  const schools = [centralHigh, westElementary, eastMiddle, northElementary, southHigh];
+
   console.log(`   ✓ Created district: ${district.name}`);
-  console.log(`   ✓ Created school: ${school.name}\n`);
+  console.log(`   ✓ Created ${schools.length} schools:`);
+  schools.forEach(school => console.log(`      - ${school.name} (${school.schoolType})`));
+  console.log();
 
   // ============================================================================
   // SECTION 2: USERS AND ROLES
@@ -158,7 +258,7 @@ async function main() {
       lastName: 'Henderson',
       role: 'SCHOOL_ADMIN',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
@@ -174,7 +274,7 @@ async function main() {
       lastName: 'Johnson',
       role: 'NURSE',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
@@ -189,7 +289,67 @@ async function main() {
       lastName: 'Rodriguez',
       role: 'NURSE',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
+      districtId: district.id,
+    },
+  });
+
+  const nurse3 = await prisma.user.upsert({
+    where: { email: 'nurse@westelementary.edu' },
+    update: {},
+    create: {
+      email: 'nurse@westelementary.edu',
+      password: defaultPassword,
+      firstName: 'Emily',
+      lastName: 'Parker',
+      role: 'NURSE',
+      isActive: true,
+      schoolId: westElementary.id,
+      districtId: district.id,
+    },
+  });
+
+  const nurse4 = await prisma.user.upsert({
+    where: { email: 'nurse@eastmiddle.edu' },
+    update: {},
+    create: {
+      email: 'nurse@eastmiddle.edu',
+      password: defaultPassword,
+      firstName: 'Michael',
+      lastName: 'Brown',
+      role: 'NURSE',
+      isActive: true,
+      schoolId: eastMiddle.id,
+      districtId: district.id,
+    },
+  });
+
+  const nurse5 = await prisma.user.upsert({
+    where: { email: 'nurse@northelementary.edu' },
+    update: {},
+    create: {
+      email: 'nurse@northelementary.edu',
+      password: defaultPassword,
+      firstName: 'Amanda',
+      lastName: 'Taylor',
+      role: 'NURSE',
+      isActive: true,
+      schoolId: northElementary.id,
+      districtId: district.id,
+    },
+  });
+
+  const nurse6 = await prisma.user.upsert({
+    where: { email: 'nurse@southhigh.edu' },
+    update: {},
+    create: {
+      email: 'nurse@southhigh.edu',
+      password: defaultPassword,
+      firstName: 'Christopher',
+      lastName: 'Lee',
+      role: 'NURSE',
+      isActive: true,
+      schoolId: southHigh.id,
       districtId: district.id,
     },
   });
@@ -205,7 +365,22 @@ async function main() {
       lastName: 'Mitchell',
       role: 'COUNSELOR',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
+      districtId: district.id,
+    },
+  });
+
+  const counselor2 = await prisma.user.upsert({
+    where: { email: 'counselor@eastmiddle.edu' },
+    update: {},
+    create: {
+      email: 'counselor@eastmiddle.edu',
+      password: defaultPassword,
+      firstName: 'Rachel',
+      lastName: 'Green',
+      role: 'COUNSELOR',
+      isActive: true,
+      schoolId: eastMiddle.id,
       districtId: district.id,
     },
   });
@@ -221,7 +396,7 @@ async function main() {
       lastName: 'Davis',
       role: 'VIEWER',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
@@ -237,7 +412,7 @@ async function main() {
       lastName: 'Administrator',
       role: 'ADMIN',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
@@ -252,7 +427,7 @@ async function main() {
       lastName: 'Nurse',
       role: 'NURSE',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
@@ -267,7 +442,7 @@ async function main() {
       lastName: 'ReadOnly',
       role: 'VIEWER',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
@@ -282,14 +457,18 @@ async function main() {
       lastName: 'Counselor',
       role: 'COUNSELOR',
       isActive: true,
-      schoolId: school.id,
+      schoolId: centralHigh.id,
       districtId: district.id,
     },
   });
 
-  const nurses = [headNurse, nurse2, testNurse];
+  const nurses = [headNurse, nurse2, nurse3, nurse4, nurse5, nurse6, testNurse];
 
-  console.log(`   ✓ Created ${10} users across all roles\n`);
+  console.log(`   ✓ Created ${17} users across all roles:`);
+  console.log(`      - 4 Admins (Super, District, School, Test)`);
+  console.log(`      - 7 Nurses (across ${schools.length} schools)`);
+  console.log(`      - 3 Counselors (2 production, 1 test)`);
+  console.log(`      - 3 Viewers (1 production, 1 test viewer, 1 test readonly)\n`);
 
   // ============================================================================
   // SECTION 3: PERMISSIONS AND ROLE ASSIGNMENTS
@@ -833,14 +1012,52 @@ async function main() {
   console.log('⚙️  Creating System Configurations...');
 
   const configs = [
-    { key: 'app_name', value: 'White Cross', category: 'GENERAL', description: 'Application name', isPublic: true },
-    { key: 'max_login_attempts', value: '5', category: 'SECURITY', description: 'Maximum login attempts before account lockout', isPublic: false },
-    { key: 'session_timeout', value: '3600', category: 'SECURITY', description: 'Session timeout in seconds', isPublic: false },
-    { key: 'password_expiry_days', value: '90', category: 'SECURITY', description: 'Days before password expires', isPublic: false },
-    { key: 'email_notifications_enabled', value: 'true', category: 'NOTIFICATION', description: 'Enable email notifications', isPublic: false },
-    { key: 'sms_notifications_enabled', value: 'true', category: 'NOTIFICATION', description: 'Enable SMS notifications', isPublic: false },
-    { key: 'backup_frequency_hours', value: '24', category: 'BACKUP', description: 'Backup frequency in hours', isPublic: false },
-    { key: 'max_file_upload_mb', value: '10', category: 'GENERAL', description: 'Maximum file upload size in MB', isPublic: true },
+    // GENERAL
+    { key: 'app_name', value: 'White Cross', valueType: 'STRING', category: 'GENERAL', description: 'Application name displayed in the UI', defaultValue: 'White Cross', isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['branding', 'ui'], sortOrder: 1 },
+    { key: 'app_tagline', value: 'School Nurse Platform', valueType: 'STRING', category: 'GENERAL', description: 'Application tagline or subtitle', defaultValue: 'School Nurse Platform', isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['branding', 'ui'], sortOrder: 2 },
+    { key: 'max_file_upload_mb', value: '10', valueType: 'NUMBER', category: 'FILE_UPLOAD', description: 'Maximum file upload size in MB', defaultValue: '10', minValue: 1, maxValue: 100, isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['file', 'upload'], sortOrder: 10 },
+    { key: 'allowed_file_types', value: 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx', valueType: 'ARRAY', category: 'FILE_UPLOAD', description: 'Comma-separated list of allowed file extensions', defaultValue: 'jpg,jpeg,png,gif,pdf,doc,docx', isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['file', 'upload'], sortOrder: 11 },
+
+    // SECURITY
+    { key: 'max_login_attempts', value: '5', valueType: 'NUMBER', category: 'SECURITY', description: 'Maximum login attempts before account lockout', defaultValue: '5', minValue: 3, maxValue: 10, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['security', 'authentication'], sortOrder: 20 },
+    { key: 'session_timeout_minutes', value: '480', valueType: 'NUMBER', category: 'SESSION', description: 'Session timeout in minutes (8 hours default)', defaultValue: '480', minValue: 30, maxValue: 1440, isPublic: false, isEditable: true, requiresRestart: true, scope: 'SYSTEM', tags: ['security', 'session'], sortOrder: 21 },
+    { key: 'password_expiry_days', value: '90', valueType: 'NUMBER', category: 'SECURITY', description: 'Days before password expires', defaultValue: '90', minValue: 30, maxValue: 365, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['security', 'password'], sortOrder: 22 },
+    { key: 'min_password_length', value: '8', valueType: 'NUMBER', category: 'SECURITY', description: 'Minimum password length', defaultValue: '8', minValue: 6, maxValue: 20, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['security', 'password'], sortOrder: 23 },
+    { key: 'require_password_complexity', value: 'true', valueType: 'BOOLEAN', category: 'SECURITY', description: 'Require uppercase, lowercase, number, and special character', defaultValue: 'true', isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['security', 'password'], sortOrder: 24 },
+
+    // RATE LIMITING
+    { key: 'rate_limit_window_minutes', value: '15', valueType: 'NUMBER', category: 'RATE_LIMITING', description: 'Rate limit time window in minutes', defaultValue: '15', minValue: 1, maxValue: 60, isPublic: false, isEditable: true, requiresRestart: true, scope: 'SYSTEM', tags: ['security', 'rate-limit'], sortOrder: 30 },
+    { key: 'rate_limit_max_requests', value: '100', valueType: 'NUMBER', category: 'RATE_LIMITING', description: 'Maximum requests per time window', defaultValue: '100', minValue: 10, maxValue: 1000, isPublic: false, isEditable: true, requiresRestart: true, scope: 'SYSTEM', tags: ['security', 'rate-limit'], sortOrder: 31 },
+
+    // NOTIFICATIONS
+    { key: 'email_notifications_enabled', value: 'true', valueType: 'BOOLEAN', category: 'NOTIFICATION', subCategory: 'email', description: 'Enable email notifications', defaultValue: 'true', isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['notifications', 'email'], sortOrder: 40 },
+    { key: 'sms_notifications_enabled', value: 'true', valueType: 'BOOLEAN', category: 'NOTIFICATION', subCategory: 'sms', description: 'Enable SMS notifications', defaultValue: 'true', isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['notifications', 'sms'], sortOrder: 41 },
+    { key: 'notification_email_from', value: 'noreply@whitecross.health', valueType: 'EMAIL', category: 'EMAIL', description: 'From email address for notifications', defaultValue: 'noreply@whitecross.health', isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['notifications', 'email'], sortOrder: 42 },
+
+    // HEALTHCARE SPECIFIC
+    { key: 'medication_stock_alert_threshold', value: '20', valueType: 'NUMBER', category: 'MEDICATION', description: 'Low stock alert threshold for medications', defaultValue: '20', minValue: 5, maxValue: 100, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['medication', 'inventory'], sortOrder: 50 },
+    { key: 'medication_critical_stock_threshold', value: '5', valueType: 'NUMBER', category: 'MEDICATION', description: 'Critical stock threshold for medications', defaultValue: '5', minValue: 1, maxValue: 20, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['medication', 'inventory'], sortOrder: 51 },
+    { key: 'medication_expiration_warning_days', value: '30', valueType: 'NUMBER', category: 'MEDICATION', description: 'Days before expiration to show warning', defaultValue: '30', minValue: 7, maxValue: 90, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['medication', 'expiration'], sortOrder: 52 },
+    { key: 'medication_expiration_critical_days', value: '7', valueType: 'NUMBER', category: 'MEDICATION', description: 'Days before expiration to show critical alert', defaultValue: '7', minValue: 1, maxValue: 30, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['medication', 'expiration'], sortOrder: 53 },
+
+    // APPOINTMENTS
+    { key: 'default_appointment_duration_minutes', value: '30', valueType: 'NUMBER', category: 'APPOINTMENTS', description: 'Default appointment duration in minutes', defaultValue: '30', minValue: 15, maxValue: 120, isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['appointments', 'scheduling'], sortOrder: 60 },
+    { key: 'appointment_reminder_hours_before', value: '24', valueType: 'NUMBER', category: 'APPOINTMENTS', description: 'Hours before appointment to send reminder', defaultValue: '24', minValue: 1, maxValue: 168, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['appointments', 'reminders'], sortOrder: 61 },
+    { key: 'allow_appointment_self_scheduling', value: 'false', valueType: 'BOOLEAN', category: 'APPOINTMENTS', description: 'Allow parents to self-schedule appointments', defaultValue: 'false', isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['appointments', 'scheduling'], sortOrder: 62 },
+
+    // UI CONFIGURATION
+    { key: 'default_page_size', value: '10', valueType: 'NUMBER', category: 'UI', description: 'Default number of items per page', defaultValue: '10', validValues: ['5', '10', '25', '50', '100'], isPublic: true, isEditable: true, requiresRestart: false, scope: 'USER', tags: ['ui', 'pagination'], sortOrder: 70 },
+    { key: 'toast_duration_milliseconds', value: '5000', valueType: 'NUMBER', category: 'UI', description: 'Toast notification duration in milliseconds', defaultValue: '5000', minValue: 1000, maxValue: 10000, isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['ui', 'notifications'], sortOrder: 71 },
+    { key: 'theme_primary_color', value: '#3b82f6', valueType: 'COLOR', category: 'UI', description: 'Primary theme color', defaultValue: '#3b82f6', isPublic: true, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['ui', 'theme', 'branding'], sortOrder: 72 },
+
+    // QUERY/PERFORMANCE
+    { key: 'dashboard_refresh_interval_seconds', value: '30', valueType: 'NUMBER', category: 'QUERY', description: 'Dashboard auto-refresh interval in seconds', defaultValue: '30', minValue: 10, maxValue: 300, isPublic: true, isEditable: true, requiresRestart: false, scope: 'USER', tags: ['performance', 'query'], sortOrder: 80 },
+    { key: 'medication_reminder_refresh_interval_seconds', value: '60', valueType: 'NUMBER', category: 'QUERY', description: 'Medication reminders refresh interval in seconds', defaultValue: '60', minValue: 30, maxValue: 300, isPublic: true, isEditable: true, requiresRestart: false, scope: 'USER', tags: ['performance', 'query', 'medication'], sortOrder: 81 },
+    { key: 'api_timeout_milliseconds', value: '30000', valueType: 'NUMBER', category: 'PERFORMANCE', description: 'API request timeout in milliseconds', defaultValue: '30000', minValue: 5000, maxValue: 120000, isPublic: false, isEditable: true, requiresRestart: true, scope: 'SYSTEM', tags: ['performance', 'api'], sortOrder: 82 },
+
+    // BACKUP
+    { key: 'backup_frequency_hours', value: '24', valueType: 'NUMBER', category: 'BACKUP', description: 'Automatic backup frequency in hours', defaultValue: '24', minValue: 1, maxValue: 168, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['backup', 'maintenance'], sortOrder: 90 },
+    { key: 'backup_retention_days', value: '30', valueType: 'NUMBER', category: 'BACKUP', description: 'Number of days to retain backups', defaultValue: '30', minValue: 7, maxValue: 365, isPublic: false, isEditable: true, requiresRestart: false, scope: 'SYSTEM', tags: ['backup', 'retention'], sortOrder: 91 },
   ];
 
   await Promise.all(
@@ -863,14 +1080,17 @@ async function main() {
   console.log('📊 SEEDING SUMMARY');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('\n🏢 ORGANIZATION:');
-  console.log(`   • District: ${district.name}`);
-  console.log(`   • School: ${school.name} (${school.studentCount} students)`);
+  console.log(`   • Districts: 1 (${district.name})`);
+  console.log(`   • Schools: ${schools.length}`);
+  schools.forEach(school => {
+    console.log(`      - ${school.name} (${school.schoolType}, ${school.totalEnrollment} students)`);
+  });
 
-  console.log('\n👥 USERS (10 total):');
+  console.log('\n👥 USERS (17 total):');
   console.log(`   • Admins: 4 (Super Admin, District Admin, School Admin, Test Admin)`);
-  console.log(`   • Nurses: 3 (Head Nurse, Nurse 2, Test Nurse)`);
-  console.log(`   • Counselors: 2 (Counselor, Test Counselor)`);
-  console.log(`   • Viewers: 2 (Viewer, Test ReadOnly)`);
+  console.log(`   • Nurses: 7 (distributed across all ${schools.length} schools)`);
+  console.log(`   • Counselors: 3 (2 production, 1 test)`);
+  console.log(`   • Viewers: 3 (1 production, 1 test viewer, 1 test readonly)`);
 
   console.log('\n👨‍🎓 STUDENTS:');
   console.log(`   • Total: ${students.length} students`);
