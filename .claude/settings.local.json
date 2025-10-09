@@ -57,7 +57,10 @@
       "Bash(for file in documentsApi.ts healthRecordsApi.ts reportsApi.ts)",
       "Bash(done)",
       "Bash(npm install:*)",
-      "Bash(npx cypress run:*)"
+      "Bash(npx cypress run:*)",
+      "Bash(for dir in \"C:/temp/white-cross/frontend/cypress/e2e\"/*)",
+      "Bash(do if [ -d \"$dir\" ])",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

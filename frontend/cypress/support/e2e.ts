@@ -178,10 +178,15 @@ beforeEach(() => {
 
 // Global cleanup after each test
 afterEach(() => {
-  // Clean up any test-specific data
-  cy.window().then((win: any) => {
-    if (win.localStorage && win.localStorage.getItem('test-mode')) {
-      win.localStorage.removeItem('test-mode')
+  // Clean up any test-specific data - wrapped in cy.then to handle potential errors gracefully
+  cy.then(() => {
+    try {
+      const win = Cypress.state('window')
+      if (win && win.localStorage && win.localStorage.getItem('test-mode')) {
+        win.localStorage.removeItem('test-mode')
+      }
+    } catch (e) {
+      // Ignore if window is not available
     }
   })
 })

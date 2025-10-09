@@ -13,7 +13,7 @@ export default defineConfig({
     viewportHeight: 720,
     video: false,
     screenshotOnRunFailure: true,
-    defaultCommandTimeout: 10000,
+    defaultCommandTimeout: 2500,
     requestTimeout: 10000,
     responseTimeout: 10000,
     chromeWebSecurity: false,

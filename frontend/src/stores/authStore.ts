@@ -52,6 +52,11 @@ export const useAuthStore = create<AuthState>()(
 
           const data = await response.json();
 
+          // Store token directly in localStorage for axios interceptor compatibility
+          if (data.token) {
+            localStorage.setItem('auth_token', data.token);
+          }
+
           set({
             user: data.user,
             token: data.token,
@@ -65,6 +70,10 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        // Clear both storage locations
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+
         set({
           user: null,
           token: null,

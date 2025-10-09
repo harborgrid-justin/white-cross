@@ -131,16 +131,26 @@ export default function Medications() {
 
       {/* Medications Tab */}
       {activeTab === 'medications' && (
-        <MedicationsListTab
-          medications={(medicationsData as any)?.data || []}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onMedicationSelect={(medication) => {
-            setSelectedMedication(medication)
-            setShowMedicationDetails(true)
-          }}
-          loading={medicationsLoading}
-        />
+        <>
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              data-testid="filter-button"
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+            >
+              Filter
+            </button>
+          </div>
+          <MedicationsListTab
+            medications={(medicationsData as any)?.data || []}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onMedicationSelect={(medication) => {
+              setSelectedMedication(medication)
+              setShowMedicationDetails(true)
+            }}
+            loading={medicationsLoading}
+          />
+        </>
       )}
 
       {/* Inventory Tab */}
@@ -179,21 +189,25 @@ export default function Medications() {
               if (!formData.name.trim()) errors.name = 'Medication name is required'
               if (!formData.dosageForm.trim()) errors.dosageForm = 'Dosage form is required'
               if (!formData.strength.trim()) errors.strength = 'Strength is required'
-              
+
               if (Object.keys(errors).length > 0) {
                 setFormErrors(errors)
                 return
               }
-              
+
               // API call would go here
               const successToast = document.createElement('div')
               successToast.setAttribute('data-testid', 'success-toast')
-              successToast.textContent = 'Medication added successfully'
-              successToast.style.cssText = 'position:fixed;top:20px;right:20px;background:green;color:white;padding:10px;border-radius:4px;z-index:9999'
+              successToast.textContent = 'Medication created successfully'
+              successToast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10B981;color:white;padding:12px 16px;border-radius:8px;z-index:9999;box-shadow:0 4px 6px rgba(0,0,0,0.1);'
               document.body.appendChild(successToast)
-              setTimeout(() => document.body.removeChild(successToast), 3000)
-              
-              toast.success('Medication added successfully')
+              setTimeout(() => {
+                if (document.body.contains(successToast)) {
+                  document.body.removeChild(successToast)
+                }
+              }, 3000)
+
+              toast.success('Medication created successfully')
               setShowAddMedication(false)
               setFormData({ name: '', genericName: '', dosageForm: '', strength: '', manufacturer: '', isControlled: false })
               setFormErrors({})
@@ -266,6 +280,26 @@ export default function Medications() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">NDC Number</label>
+                  <input
+                    data-testid="ndc-input"
+                    type="text"
+                    placeholder="12345-678-90"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    data-testid="medication-notes"
+                    placeholder="Special handling instructions..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
                 <div className="flex items-center">
                   <input
                     data-testid="controlled-substance-checkbox"
@@ -313,13 +347,14 @@ export default function Medications() {
                 {selectedMedication.name}
               </h3>
               <button
+                data-testid="close-details-button"
                 onClick={() => setShowMedicationDetails(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -328,21 +363,29 @@ export default function Medications() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Generic Name</label>
-                  <p className="text-sm text-gray-900">{selectedMedication.genericName || '-'}</p>
+                  <p data-testid="generic-name-display" className="text-sm text-gray-900">{selectedMedication.genericName || '-'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Dosage Form</label>
-                  <p className="text-sm text-gray-900">{selectedMedication.dosageForm}</p>
+                  <p data-testid="dosage-form-display" className="text-sm text-gray-900">{selectedMedication.dosageForm}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Strength</label>
-                  <p className="text-sm text-gray-900">{selectedMedication.strength}</p>
+                  <p data-testid="strength-display" className="text-sm text-gray-900">{selectedMedication.strength}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">NDC Number</label>
+                  <p data-testid="ndc-display" className="text-sm text-gray-900">{selectedMedication.ndc || '-'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Manufacturer</label>
+                  <p data-testid="manufacturer-display" className="text-sm text-gray-900">{selectedMedication.manufacturer || '-'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    selectedMedication.isControlled 
-                      ? 'bg-red-100 text-red-800' 
+                    selectedMedication.isControlled
+                      ? 'bg-red-100 text-red-800'
                       : 'bg-green-100 text-green-800'
                   }`}>
                     {selectedMedication.isControlled ? 'Controlled' : 'Standard'}

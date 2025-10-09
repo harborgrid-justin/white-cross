@@ -21,7 +21,24 @@ export const apiInstance: AxiosInstance = axios.create({
 // Request interceptor for auth tokens
 apiInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token');
+    // Retrieve token from Zustand persist storage
+    const authStorage = localStorage.getItem('auth-storage');
+    let token = null;
+
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        token = parsed.state?.token;
+      } catch (e) {
+        console.error('Failed to parse auth storage:', e);
+      }
+    }
+
+    // Fallback to direct auth_token for backward compatibility
+    if (!token) {
+      token = localStorage.getItem('auth_token');
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -52,6 +69,20 @@ apiInstance.interceptors.response.use(
           });
 
           const { token } = response.data;
+
+          // Update token in Zustand persist storage
+          const authStorage = localStorage.getItem('auth-storage');
+          if (authStorage) {
+            try {
+              const parsed = JSON.parse(authStorage);
+              parsed.state.token = token;
+              localStorage.setItem('auth-storage', JSON.stringify(parsed));
+            } catch (e) {
+              console.error('Failed to update auth storage:', e);
+            }
+          }
+
+          // Also set direct token for backward compatibility
           localStorage.setItem('auth_token', token);
 
           // Retry original request
@@ -59,9 +90,10 @@ apiInstance.interceptors.response.use(
           return apiInstance(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        // Refresh failed, clear auth and redirect to login
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('auth-storage');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

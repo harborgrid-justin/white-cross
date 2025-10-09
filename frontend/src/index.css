@@ -49,4 +49,25 @@
   .recharts-y-axis {
     @apply text-gray-600;
   }
+
+  /* Toast notification styles for Cypress testing */
+  [class*="success-toast"] {
+    position: relative;
+  }
+
+  [class*="success-toast"]::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
+
+  [class*="error-toast"] {
+    position: relative;
+  }
+
+  [class*="error-toast"]::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
 }
