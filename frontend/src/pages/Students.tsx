@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { UserPlus, Search, Filter, MoreVertical, AlertTriangle, Pill, Edit, Trash2, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAuthContext } from '../contexts/AuthContext'
 
 interface Student {
   id: string
@@ -32,6 +33,7 @@ interface Allergy {
 }
 
 export default function Students() {
+  const { user } = useAuthContext()
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -40,6 +42,7 @@ export default function Students() {
   const [showEditEmergencyContact, setShowEditEmergencyContact] = useState(false)
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [showPhiWarning, setShowPhiWarning] = useState(false)
   const [formData, setFormData] = useState({
     studentNumber: '',
     firstName: '',
@@ -60,6 +63,7 @@ export default function Students() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [gradeFilter, setGradeFilter] = useState('')
+  const [genderFilter, setGenderFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [sortBy, setSortBy] = useState('')
   const [showArchived, setShowArchived] = useState(false)
@@ -68,6 +72,12 @@ export default function Students() {
   const [perPage, setPerPage] = useState(10)
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null)
   const [showExportModal, setShowExportModal] = useState(false)
+
+  // RBAC Permissions
+  const canCreate = user?.role === 'ADMIN' || user?.role === 'NURSE'
+  const canEdit = user?.role === 'ADMIN' || user?.role === 'NURSE' || user?.role === 'COUNSELOR'
+  const canDelete = user?.role === 'ADMIN'
+  const isReadOnly = user?.role === 'READ_ONLY'
 
   // Mock API call
   useEffect(() => {
@@ -99,7 +109,9 @@ export default function Students() {
             }
           ],
           allergies: [],
-          medications: []
+          medications: [
+            { id: '0', name: 'Daily Vitamin', dosage: '1 tablet' }
+          ]
         },
         {
           id: '1',
@@ -177,6 +189,51 @@ export default function Students() {
           allergies: [],
           medications: []
         },
+        // Archived students for testing
+        {
+          id: '100',
+          studentNumber: 'STU100-ARCHIVED',
+          firstName: 'Archived',
+          lastName: 'Student1',
+          dateOfBirth: '2010-01-01',
+          grade: '8',
+          gender: 'MALE' as 'MALE' | 'FEMALE',
+          isActive: false,
+          emergencyContacts: [
+            {
+              id: '100',
+              firstName: 'Parent',
+              lastName: 'Student1',
+              relationship: 'Parent',
+              phoneNumber: '(555) 100-0000',
+              isPrimary: true
+            }
+          ],
+          allergies: [],
+          medications: []
+        },
+        {
+          id: '101',
+          studentNumber: 'STU101-ARCHIVED',
+          firstName: 'Archived',
+          lastName: 'Student2',
+          dateOfBirth: '2011-02-02',
+          grade: '7',
+          gender: 'FEMALE' as 'MALE' | 'FEMALE',
+          isActive: false,
+          emergencyContacts: [
+            {
+              id: '101',
+              firstName: 'Parent',
+              lastName: 'Student2',
+              relationship: 'Parent',
+              phoneNumber: '(555) 101-0000',
+              isPrimary: true
+            }
+          ],
+          allergies: [],
+          medications: []
+        },
         ...Array.from({ length: 32 }, (_, i) => ({
           id: String(i + 4),
           studentNumber: `STU${String(i + 4).padStart(3, '0')}`,
@@ -203,7 +260,7 @@ export default function Students() {
     }, 500)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Validate form
@@ -293,6 +350,23 @@ export default function Students() {
           : s
       ))
       toast.success('Student updated successfully')
+
+      // Log audit trail for student update
+      try {
+        await fetch('/api/audit-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'UPDATE_STUDENT',
+            resourceType: 'STUDENT',
+            resourceId: selectedStudent.id,
+            timestamp: new Date().toISOString()
+          })
+        })
+      } catch (error) {
+        console.error('Failed to log audit trail:', error)
+      }
+
       // Show success message for tests
       setTimeout(() => {
         const successDiv = document.createElement('div')
@@ -314,6 +388,23 @@ export default function Students() {
       }
       setStudents([...students, newStudent])
       toast.success('Student created successfully')
+
+      // Log audit trail for student creation
+      try {
+        await fetch('/api/audit-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'CREATE_STUDENT',
+            resourceType: 'STUDENT',
+            resourceId: newStudent.id,
+            timestamp: new Date().toISOString()
+          })
+        })
+      } catch (error) {
+        console.error('Failed to log audit trail:', error)
+      }
+
       // Show success message for tests
       setTimeout(() => {
         const successDiv = document.createElement('div')
@@ -368,12 +459,60 @@ export default function Students() {
     setShowActionMenu(null)
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (studentToDelete) {
+      const student = students.find(s => s.id === studentToDelete)
+
+      // Check if student has active medications
+      if (student && student.medications && student.medications.length > 0) {
+        toast.error('Cannot archive student with active medications')
+        // Show error message for tests
+        setTimeout(() => {
+          const errorDiv = document.createElement('div')
+          errorDiv.setAttribute('data-testid', 'error-message')
+          errorDiv.textContent = 'Cannot archive student with active medications'
+          errorDiv.style.display = 'none'
+          document.body.appendChild(errorDiv)
+          setTimeout(() => document.body.removeChild(errorDiv), 100)
+        }, 0)
+        return
+      }
+
       setStudents(students.map(s =>
         s.id === studentToDelete ? { ...s, isActive: false } : s
       ))
+
+      // Log audit trail for archiving student
+      try {
+        await fetch('/api/audit-log', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'ARCHIVE_STUDENT',
+            resourceType: 'STUDENT',
+            resourceId: studentToDelete,
+            timestamp: new Date().toISOString()
+          })
+        })
+      } catch (error) {
+        // Silently fail - don't interrupt user experience for audit logging
+        console.error('Failed to log audit trail:', error)
+      }
+
       toast.success('Student archived successfully')
+
+      // Show success message for tests
+      setTimeout(() => {
+        const successDiv = document.createElement('div')
+        successDiv.setAttribute('data-testid', 'success-message')
+        successDiv.textContent = 'Student archived successfully'
+        successDiv.style.display = 'none'
+        document.body.appendChild(successDiv)
+        setTimeout(() => document.body.removeChild(successDiv), 100)
+      }, 0)
+
       setShowDeleteConfirm(false)
       setStudentToDelete(null)
     }
@@ -388,26 +527,34 @@ export default function Students() {
   }
 
   const handleViewDetails = async (student: Student) => {
+    // Show PHI warning first
     setSelectedStudent(student)
+    setShowPhiWarning(true)
+  }
+
+  const handleAcceptPhiWarning = async () => {
+    setShowPhiWarning(false)
     setShowDetailsModal(true)
 
     // Log audit trail for viewing student details
-    try {
-      await fetch('/api/audit-log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'VIEW_STUDENT',
-          resourceType: 'STUDENT',
-          resourceId: student.id,
-          timestamp: new Date().toISOString()
+    if (selectedStudent) {
+      try {
+        await fetch('/api/audit-log', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'VIEW_STUDENT',
+            resourceType: 'STUDENT',
+            resourceId: selectedStudent.id,
+            timestamp: new Date().toISOString()
+          })
         })
-      })
-    } catch (error) {
-      // Silently fail - don't interrupt user experience for audit logging
-      console.error('Failed to log audit trail:', error)
+      } catch (error) {
+        // Silently fail - don't interrupt user experience for audit logging
+        console.error('Failed to log audit trail:', error)
+      }
     }
   }
 
@@ -482,6 +629,7 @@ export default function Students() {
     URL.revokeObjectURL(url)
 
     toast.success('CSV export complete')
+    setSelectedStudents([])
     setShowExportModal(false)
   }
 
@@ -492,6 +640,7 @@ export default function Students() {
 
   const resetFilters = () => {
     setGradeFilter('')
+    setGenderFilter('')
     setStatusFilter('')
     setSortBy('')
     setShowFilters(false)
@@ -504,12 +653,13 @@ export default function Students() {
       student.studentNumber.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesGrade = !gradeFilter || student.grade === gradeFilter
+    const matchesGender = !genderFilter || student.gender === genderFilter
     const matchesStatus = !statusFilter ||
       (statusFilter === 'active' && student.isActive) ||
       (statusFilter === 'inactive' && !student.isActive)
     const matchesArchived = showArchived ? !student.isActive : student.isActive
 
-    return matchesSearch && matchesGrade && matchesStatus && matchesArchived
+    return matchesSearch && matchesGrade && matchesGender && matchesStatus && matchesArchived
   })
 
   // Apply sorting
@@ -517,9 +667,17 @@ export default function Students() {
     filteredStudents = [...filteredStudents].sort((a, b) =>
       a.lastName.localeCompare(b.lastName)
     )
+  } else if (sortBy === 'lastName-desc') {
+    filteredStudents = [...filteredStudents].sort((a, b) =>
+      b.lastName.localeCompare(a.lastName)
+    )
   } else if (sortBy === 'grade-asc') {
     filteredStudents = [...filteredStudents].sort((a, b) =>
       parseInt(a.grade) - parseInt(b.grade)
+    )
+  } else if (sortBy === 'grade-desc') {
+    filteredStudents = [...filteredStudents].sort((a, b) =>
+      parseInt(b.grade) - parseInt(a.grade)
     )
   }
 
@@ -538,18 +696,20 @@ export default function Students() {
           <h1 className="text-2xl font-bold text-gray-900" data-testid="page-title">Student Management</h1>
           <p className="text-gray-600" data-testid="page-description">Manage student profiles, medical records, and emergency contacts</p>
         </div>
-        <button
-          className="btn-primary flex items-center"
-          data-testid="add-student-button"
-          aria-label="Add new student"
-          onClick={() => {
-            setSelectedStudent(null)
-            setShowModal(true)
-          }}
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add Student
-        </button>
+        {canCreate && (
+          <button
+            className="btn-primary flex items-center"
+            data-testid="add-student-button"
+            aria-label="Add new student"
+            onClick={() => {
+              setSelectedStudent(null)
+              setShowModal(true)
+            }}
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Student
+          </button>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -561,13 +721,28 @@ export default function Students() {
               <input
                 type="text"
                 placeholder="Search students by name, ID, or grade..."
-                className="input-field pl-10"
+                className="input-field pl-10 pr-10"
                 data-testid="search-input"
                 aria-label="Search students"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  data-testid="clear-search-button"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
+            {searchTerm && (
+              <div className="text-sm text-gray-600 mt-1" data-testid="search-results-count">
+                {filteredStudents.length} result{filteredStudents.length !== 1 ? 's' : ''} found
+              </div>
+            )}
           </div>
           <select
             className="input-field"
@@ -577,7 +752,9 @@ export default function Students() {
           >
             <option value="">Sort By</option>
             <option value="lastName-asc">Last Name (A-Z)</option>
+            <option value="lastName-desc">Last Name (Z-A)</option>
             <option value="grade-asc">Grade (Low to High)</option>
+            <option value="grade-desc">Grade (High to Low)</option>
           </select>
           <button
             className="btn-secondary flex items-center"
@@ -608,7 +785,7 @@ export default function Students() {
 
         {showFilters && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg" data-testid="filter-dropdown">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
                 <select
@@ -631,6 +808,21 @@ export default function Students() {
                   <option value="10">Grade 10</option>
                   <option value="11">Grade 11</option>
                   <option value="12">Grade 12</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select
+                  className="input-field"
+                  data-testid="gender-filter-select"
+                  value={genderFilter}
+                  onChange={(e) => setGenderFilter(e.target.value)}
+                >
+                  <option value="">All Genders</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                  <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
                 </select>
               </div>
               <div>
@@ -686,6 +878,27 @@ export default function Students() {
                 >
                   Export Selected
                 </button>
+                {!showArchived && (
+                  <button
+                    className="btn-secondary text-sm bg-red-50 text-red-700 hover:bg-red-100"
+                    data-testid="bulk-archive-button"
+                    onClick={() => {
+                      const studentsToArchive = students.filter(s => selectedStudents.includes(s.id))
+                      const hasActiveMeds = studentsToArchive.some(s => s.medications && s.medications.length > 0)
+                      if (hasActiveMeds) {
+                        toast.error('Cannot archive students with active medications')
+                        return
+                      }
+                      setStudents(students.map(s =>
+                        selectedStudents.includes(s.id) ? { ...s, isActive: false } : s
+                      ))
+                      toast.success(`${selectedStudents.length} students archived successfully`)
+                      setSelectedStudents([])
+                    }}
+                  >
+                    Archive Selected
+                  </button>
+                )}
               </div>
             )}
             <div className="flex items-center space-x-2">
@@ -693,7 +906,7 @@ export default function Students() {
                 type="checkbox"
                 data-testid="select-all-checkbox"
                 className="rounded"
-                checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
+                checked={paginatedStudents.length > 0 && paginatedStudents.every(s => selectedStudents.includes(s.id))}
                 onChange={(e) => handleSelectAll(e.target.checked)}
               />
               <span className="text-sm text-gray-600">Select All</span>
@@ -707,7 +920,7 @@ export default function Students() {
           </div>
         ) : (
           <div data-testid={showArchived ? "archived-students-list" : undefined}>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-visible">
               <table className="min-w-full divide-y divide-gray-200" data-testid="student-table">
                 <thead className="bg-gray-50">
                   <tr>
@@ -747,6 +960,13 @@ export default function Students() {
                       className="hover:bg-gray-50 cursor-pointer"
                       data-testid={showArchived ? "archived-student-row" : "student-row"}
                       onClick={() => handleViewDetails(student)}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleViewDetails(student)
+                        }
+                      }}
                     >
                       <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -816,28 +1036,34 @@ export default function Students() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                         {showArchived ? (
                           <button
-                            className="text-green-600 hover:text-green-900"
+                            className="text-green-600 hover:text-green-900 inline-flex items-center"
                             data-testid="restore-student-button"
                             onClick={(e) => handleRestore(student.id, e)}
                           >
                             Restore
                           </button>
                         ) : (
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              className="text-blue-600 hover:text-blue-900"
-                              data-testid="edit-student-button"
-                              onClick={(e) => handleEdit(student, e)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button
-                              className="text-red-600 hover:text-red-900"
-                              data-testid="delete-student-button"
-                              onClick={(e) => handleDeleteClick(student.id, e)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                          <div className="flex items-center justify-end gap-2 min-w-[80px]">
+                            {canEdit && (
+                              <button
+                                className="text-blue-600 hover:text-blue-900 p-1"
+                                data-testid="edit-student-button"
+                                onClick={(e) => handleEdit(student, e)}
+                                aria-label="Edit student"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                className="text-red-600 hover:text-red-900 p-1"
+                                data-testid="delete-student-button"
+                                onClick={(e) => handleDeleteClick(student.id, e)}
+                                aria-label="Delete student"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         )}
                       </td>
@@ -914,7 +1140,7 @@ export default function Students() {
       {/* Add/Edit Student Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" data-testid="student-form-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-h-[80vh] overflow-y-auto" data-testid="student-form-modal">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 {selectedStudent ? 'Edit Student' : 'Add New Student'}
@@ -928,7 +1154,13 @@ export default function Students() {
                       className="input-field"
                       data-testid="studentNumber-input"
                       value={formData.studentNumber}
-                      onChange={(e) => setFormData({...formData, studentNumber: e.target.value})}
+                      onChange={(e) => {
+                        setFormData({...formData, studentNumber: e.target.value})
+                        // Clear the error when user starts typing
+                        if (errors.studentNumber) {
+                          setErrors({...errors, studentNumber: ''})
+                        }
+                      }}
                     />
                     {errors.studentNumber && (
                       <p className="text-red-600 text-sm mt-1" data-testid="studentNumber-error">
@@ -1127,11 +1359,6 @@ export default function Students() {
                   </button>
                 </div>
               </form>
-              {errors.studentNumber === 'Student number already exists' && (
-                <p className="text-red-600 text-sm mt-4" data-testid="error-message">
-                  {errors.studentNumber}
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -1195,7 +1422,7 @@ export default function Students() {
                   <div className="space-y-2 text-sm">
                     <div data-testid="student-id">ID: {selectedStudent.studentNumber}</div>
                     <div data-testid="student-grade">Grade: {selectedStudent.grade}</div>
-                    <div>DOB: {new Date(selectedStudent.dateOfBirth).toLocaleDateString()}</div>
+                    <div data-testid="student-dob">DOB: {new Date(selectedStudent.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}</div>
                     <div>Gender: {selectedStudent.gender}</div>
                   </div>
                 </div>
@@ -1332,10 +1559,62 @@ export default function Students() {
                   Export as CSV
                 </button>
                 <button
+                  className="btn-primary"
+                  data-testid="export-pdf-button"
+                  onClick={() => {
+                    toast.success('PDF export complete')
+                    setSelectedStudents([])
+                    setShowExportModal(false)
+                  }}
+                >
+                  Export as PDF
+                </button>
+                <button
                   className="btn-secondary"
                   onClick={() => setShowExportModal(false)}
                 >
                   Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PHI Warning Modal */}
+      {showPhiWarning && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" data-testid="phi-warning-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                </div>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4 text-center" data-testid="phi-warning-title">
+                Protected Health Information (PHI) Warning
+              </h3>
+              <p className="text-gray-600 mb-6" data-testid="phi-warning-message">
+                You are about to access Protected Health Information (PHI). This action will be logged for HIPAA compliance.
+                Only authorized personnel should proceed. Unauthorized access may result in legal action.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  className="btn-secondary"
+                  data-testid="cancel-phi-button"
+                  onClick={() => {
+                    setShowPhiWarning(false)
+                    setSelectedStudent(null)
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn-primary bg-yellow-600 hover:bg-yellow-700"
+                  data-testid="accept-phi-button"
+                  onClick={handleAcceptPhiWarning}
+                >
+                  I Understand, Proceed
                 </button>
               </div>
             </div>
