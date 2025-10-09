@@ -98,6 +98,14 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
       {
         name: 'Administration',
         description: 'System administration and configuration endpoints'
+      },
+      {
+        name: 'Districts',
+        description: 'School district management endpoints'
+      },
+      {
+        name: 'Schools',
+        description: 'School management and configuration endpoints'
       }
     ],
     securityDefinitions: {
