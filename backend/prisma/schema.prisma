@@ -32,6 +32,12 @@ model User {
   availability     NurseAvailability[]   @relation("NurseAvailability")
   waitlistEntries  AppointmentWaitlist[] @relation("WaitlistNurse")
 
+  // School and District assignments
+  school     School?   @relation("UserSchool", fields: [schoolId], references: [id])
+  schoolId   String?
+  district   District? @relation("UserDistrict", fields: [districtId], references: [id])
+  districtId String?
+
   @@map("users")
 }
 
@@ -809,46 +815,57 @@ enum ReminderStatus {
 // Administration Panel Models
 
 model District {
-  id        String   @id @default(cuid())
-  name      String
-  code      String   @unique
-  address   String?
-  city      String?
-  state     String?
-  zipCode   String?
-  phone     String?
-  email     String?
-  website   String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  code           String   @unique
+  description    String?
+  address        String?
+  city           String?
+  state          String?
+  zipCode        String?
+  phone          String?
+  phoneNumber    String?
+  email          String?
+  website        String?
+  superintendent String?
+  status         String   @default("Active") // Active, Inactive
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
   schools  School[]
   licenses License[]
+  users    User[]    @relation("UserDistrict")
 
   @@map("districts")
 }
 
 model School {
-  id           String   @id @default(cuid())
-  name         String
-  code         String   @unique
-  address      String?
-  city         String?
-  state        String?
-  zipCode      String?
-  phone        String?
-  email        String?
-  principal    String?
-  studentCount Int?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  code            String   @unique
+  address         String?
+  city            String?
+  state           String?
+  zipCode         String?
+  phone           String?
+  phoneNumber     String?
+  email           String?
+  principal       String?
+  principalName   String?
+  studentCount    Int?
+  totalEnrollment Int?
+  schoolType      String?  @default("Elementary") // Elementary, Middle, High, K-12
+  status          String   @default("Active") // Active, Inactive
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   district   District @relation(fields: [districtId], references: [id])
   districtId String
+  users      User[]   @relation("UserSchool")
 
   @@map("schools")
 }

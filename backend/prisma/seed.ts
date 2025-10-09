@@ -67,19 +67,24 @@ async function main() {
     create: {
       name: 'Unified School District',
       code: 'UNIFIED_DISTRICT',
+      description: 'A comprehensive unified school district serving Demo City and surrounding areas',
       address: '1000 Education Boulevard',
       city: 'Demo City',
       state: 'CA',
       zipCode: '90210',
       phone: '(555) 100-1000',
+      phoneNumber: '(555) 100-1000',
       email: 'district@unifiedschools.edu',
       website: 'https://unifiedschools.edu',
+      superintendent: 'Dr. Richard Hamilton',
+      status: 'Active',
+      isActive: true,
     },
   });
 
   const school = await prisma.school.upsert({
     where: { code: 'CENTRAL_HIGH' },
-    update: { studentCount: 500 },
+    update: { studentCount: 500, totalEnrollment: 500 },
     create: {
       name: 'Central High School',
       code: 'CENTRAL_HIGH',
@@ -88,9 +93,15 @@ async function main() {
       state: 'CA',
       zipCode: '90210',
       phone: '(555) 200-2000',
+      phoneNumber: '(555) 200-2000',
       email: 'office@centralhigh.edu',
       principal: 'Dr. Margaret Thompson',
+      principalName: 'Dr. Margaret Thompson',
       studentCount: 500,
+      totalEnrollment: 500,
+      schoolType: 'High',
+      status: 'Active',
+      isActive: true,
       districtId: district.id,
     },
   });
@@ -133,6 +144,7 @@ async function main() {
       lastName: 'Morrison',
       role: 'DISTRICT_ADMIN',
       isActive: true,
+      districtId: district.id,
     },
   });
 
@@ -146,6 +158,8 @@ async function main() {
       lastName: 'Henderson',
       role: 'SCHOOL_ADMIN',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -160,6 +174,8 @@ async function main() {
       lastName: 'Johnson',
       role: 'NURSE',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -173,6 +189,8 @@ async function main() {
       lastName: 'Rodriguez',
       role: 'NURSE',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -187,6 +205,8 @@ async function main() {
       lastName: 'Mitchell',
       role: 'COUNSELOR',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -201,6 +221,8 @@ async function main() {
       lastName: 'Davis',
       role: 'VIEWER',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -215,6 +237,8 @@ async function main() {
       lastName: 'Administrator',
       role: 'ADMIN',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -228,6 +252,8 @@ async function main() {
       lastName: 'Nurse',
       role: 'NURSE',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -241,6 +267,8 @@ async function main() {
       lastName: 'ReadOnly',
       role: 'VIEWER',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
@@ -254,6 +282,8 @@ async function main() {
       lastName: 'Counselor',
       role: 'COUNSELOR',
       isActive: true,
+      schoolId: school.id,
+      districtId: district.id,
     },
   });
 
