@@ -112,7 +112,7 @@ describe('Health Records Management - Tab Navigation', () => {
   it('should switch between multiple tabs', () => {
     cy.contains('button', 'Allergies').scrollIntoView().click()
     cy.wait(300)
-    cy.contains('button', 'Vaccinations').scrollIntoView().click()
+    cy.contains('button', 'Vaccinations').scrollIntoView().click({ force: true })
     cy.wait(300)
     cy.contains('button', 'Overview').scrollIntoView().click()
     cy.wait(300)

@@ -9,10 +9,10 @@ interface StatsCardProps {
   trend?: string
 }
 
-export const StatsCard: React.FC<StatsCardProps> = ({ 
-  title, 
-  value, 
-  icon: Icon, 
+export const StatsCard: React.FC<StatsCardProps> = ({
+  title,
+  value,
+  icon: Icon,
   iconColor = 'text-blue-600',
   testId,
   trend
@@ -27,7 +27,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
             <p className="text-xs text-gray-500 mt-1" data-testid="stat-trend">{trend}</p>
           )}
         </div>
-        {Icon && <Icon className={`h-8 w-8 ${iconColor} ml-4`} />}
+        {Icon && <Icon className={`h-8 w-8 ${iconColor} ml-4`} aria-label={`${title} icon`} />}
       </div>
     </div>
   )
