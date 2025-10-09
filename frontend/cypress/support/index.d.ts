@@ -11,6 +11,14 @@ declare namespace Cypress {
     login(userType: string): Chainable<void>
 
     /**
+     * Custom command to login with custom email and password
+     * @param email - User email address
+     * @param password - User password
+     * @example cy.loginAs('nurse@school.edu', 'testNursePassword')
+     */
+    loginAs(email: string, password: string): Chainable<void>
+
+    /**
      * Custom command to create a new student
      * @param studentData - Student information object
      * @example cy.createStudent(studentData)

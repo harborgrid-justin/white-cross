@@ -15,7 +15,7 @@ Cypress.Commands.add('login', (userType: string) => {
     if (!user) {
       throw new Error(`User type "${userType}" not found in users fixture`)
     }
-    
+
     cy.session([userType], () => {
       cy.visit('/login')
       cy.get('[data-cy=email-input]').type(user.email)
@@ -25,6 +25,22 @@ Cypress.Commands.add('login', (userType: string) => {
     })
     cy.visit('/dashboard')
   })
+})
+
+/**
+ * LoginAs command - Authenticates with custom email and password
+ * @param email - User email address
+ * @param password - User password
+ */
+Cypress.Commands.add('loginAs', (email: string, password: string) => {
+  cy.session([email, password], () => {
+    cy.visit('/login')
+    cy.get('[data-cy=email-input]').type(email)
+    cy.get('[data-cy=password-input]').type(password)
+    cy.get('[data-cy=login-button]').click()
+    cy.url().should('include', '/dashboard')
+  })
+  cy.visit('/dashboard')
 })
 
 /**
