@@ -56,7 +56,8 @@
       "mcp__ide__getDiagnostics",
       "Bash(for file in documentsApi.ts healthRecordsApi.ts reportsApi.ts)",
       "Bash(done)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx cypress run:*)"
     ],
     "deny": [],
     "ask": []

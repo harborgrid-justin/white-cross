@@ -5,7 +5,7 @@ interface AnalyticsTabProps {}
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = () => {
   return (
-    <div className="space-y-6" data-testid="analytics-dashboard">
+    <div className="space-y-6" data-testid="analytics-content">
       <div>
         <h3 className="text-lg font-semibold mb-4">Health Analytics Dashboard</h3>
         <p className="text-gray-600 mb-6">

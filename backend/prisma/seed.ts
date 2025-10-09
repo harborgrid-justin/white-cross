@@ -104,7 +104,7 @@ async function main() {
   console.log('👥 Creating Users and Roles...');
 
   const defaultPassword = await bcrypt.hash('admin123', 10);
-  const testNursePassword = await bcrypt.hash('NursePassword123!', 10);
+  const testNursePassword = await bcrypt.hash('testNursePassword', 10);
   const testAdminPassword = await bcrypt.hash('AdminPassword123!', 10);
   const testReadOnlyPassword = await bcrypt.hash('ReadOnlyPassword123!', 10);
   const testCounselorPassword = await bcrypt.hash('CounselorPassword123!', 10);
@@ -211,8 +211,8 @@ async function main() {
     create: {
       email: 'admin@school.edu',
       password: testAdminPassword,
-      firstName: 'Test',
-      lastName: 'Admin',
+      firstName: 'System',
+      lastName: 'Administrator',
       role: 'ADMIN',
       isActive: true,
     },
@@ -906,7 +906,7 @@ async function main() {
 
   console.log('\n   Test Nurse:');
   console.log('   └─ Email: nurse@school.edu');
-  console.log('   └─ Password: NursePassword123!');
+  console.log('   └─ Password: testNursePassword');
 
   console.log('\n   Test ReadOnly:');
   console.log('   └─ Email: readonly@school.edu');
