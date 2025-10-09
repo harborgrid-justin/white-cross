@@ -8,6 +8,7 @@ import MedicationsListTab from '../components/medications/tabs/MedicationsListTa
 import MedicationsInventoryTab from '../components/medications/tabs/MedicationsInventoryTab'
 import MedicationsRemindersTab from '../components/medications/tabs/MedicationsRemindersTab'
 import MedicationsAdverseReactionsTab from '../components/medications/tabs/MedicationsAdverseReactionsTab'
+import { QUERY_INTERVALS, PAGINATION_CONFIG } from '../constants'
 
 type Tab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions'
 
@@ -44,7 +45,7 @@ export default function Medications() {
     queryKey: ['medication-reminders'],
     queryFn: () => medicationsApi.getReminders(),
     enabled: activeTab === 'reminders',
-    refetchInterval: 60000 // Refresh every minute
+    refetchInterval: QUERY_INTERVALS.REMINDERS
   })
 
   const { data: adverseReactionsData, isLoading: adverseReactionsLoading } = useQuery({

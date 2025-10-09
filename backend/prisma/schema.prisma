@@ -871,16 +871,56 @@ model School {
 }
 
 model SystemConfiguration {
-  id          String         @id @default(cuid())
-  key         String         @unique
-  value       String
-  category    ConfigCategory
-  description String?
-  isPublic    Boolean        @default(false) // Whether non-admin users can view
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id           String         @id @default(cuid())
+  key          String         @unique
+  value        String
+  valueType    ConfigValueType @default(STRING) // Type for validation and parsing
+  category     ConfigCategory
+  subCategory  String?
+  description  String?
+  defaultValue String?
+  validValues  String[] // For enum-like values
+  minValue     Float? // For numeric values
+  maxValue     Float? // For numeric values
+  isPublic     Boolean        @default(false) // Whether non-admin users can view
+  isEditable   Boolean        @default(true) // Whether value can be changed via UI
+  requiresRestart Boolean     @default(false) // Whether changing requires app restart
+  scope        ConfigScope    @default(SYSTEM) // SYSTEM, DISTRICT, SCHOOL
+  scopeId      String? // District or School ID if scope is not SYSTEM
+  tags         String[] // For grouping and filtering
+  sortOrder    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
+  // Relations
+  history ConfigurationHistory[]
+
+  @@index([category, subCategory])
+  @@index([scope, scopeId])
+  @@index([tags])
   @@map("system_configurations")
+}
+
+model ConfigurationHistory {
+  id           String   @id @default(cuid())
+  configKey    String
+  oldValue     String?
+  newValue     String
+  changedBy    String // User ID
+  changedByName String? // User's name for easier reference
+  changeReason String?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  configuration   SystemConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  configurationId String
+
+  @@index([configKey, createdAt])
+  @@index([changedBy, createdAt])
+  @@index([configurationId, createdAt])
+  @@map("configuration_history")
 }
 
 model BackupLog {
@@ -998,6 +1038,38 @@ enum ConfigCategory {
   INTEGRATION
   BACKUP
   PERFORMANCE
+  HEALTHCARE
+  MEDICATION
+  APPOINTMENTS
+  UI
+  QUERY
+  FILE_UPLOAD
+  RATE_LIMITING
+  SESSION
+  EMAIL
+  SMS
+}
+
+enum ConfigValueType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  ARRAY
+  DATE
+  TIME
+  DATETIME
+  EMAIL
+  URL
+  COLOR
+  ENUM
+}
+
+enum ConfigScope {
+  SYSTEM
+  DISTRICT
+  SCHOOL
+  USER
 }
 
 enum BackupType {

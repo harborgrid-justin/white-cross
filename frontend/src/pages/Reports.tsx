@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { 
-  BarChart3, 
-  TrendingUp, 
-  FileText, 
-  Download, 
+import {
+  BarChart3,
+  TrendingUp,
+  FileText,
+  Download,
   Activity,
   Heart,
   AlertTriangle,
@@ -18,13 +18,14 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { reportsApi } from '../services/reportsApi'
 import toast from 'react-hot-toast'
+import { DATE_CALCULATIONS, QUERY_INTERVALS } from '../constants'
 
 type TabType = 'overview' | 'health' | 'medication' | 'incidents' | 'attendance' | 'dashboard' | 'compliance' | 'custom'
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [dateRange, setDateRange] = useState({
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    startDate: new Date(Date.now() - DATE_CALCULATIONS.ONE_MONTH).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   })
   const [showExportModal, setShowExportModal] = useState(false)
@@ -34,7 +35,7 @@ export default function Reports() {
   const { data: dashboardData, refetch: refetchDashboard } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => reportsApi.getDashboard(),
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: QUERY_INTERVALS.DASHBOARD,
     enabled: activeTab === 'dashboard' || activeTab === 'overview'
   })
 

@@ -2,6 +2,7 @@ import { Server, Request as HapiRequest, ResponseToolkit } from '@hapi/hapi';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from '@hapi/jwt';
 import { PrismaClient } from '@prisma/client';
+import { TOKEN_CONFIG, JWT_CONFIG } from '../constants';
 
 const prisma = new PrismaClient();
 
@@ -22,18 +23,18 @@ export const configureAuth = async (server: Server) => {
   await server.register(jwt);
 
   // Set JWT secret - ensure it matches what's used in token generation
-  const jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-  
+  const jwtSecret = TOKEN_CONFIG.JWT_SECRET;
+
   server.auth.strategy('jwt', 'jwt', {
     keys: jwtSecret,
     verify: {
-      aud: 'urn:audience:api',
-      iss: 'urn:issuer:api',
+      aud: JWT_CONFIG.AUDIENCE,
+      iss: JWT_CONFIG.ISSUER,
       sub: false,
       nbf: true,
       exp: true,
-      maxAgeSec: 86400, // 24 hours to match token generation
-      timeSkewSec: 15
+      maxAgeSec: JWT_CONFIG.MAX_AGE_SEC,
+      timeSkewSec: JWT_CONFIG.TIME_SKEW_SEC
     },
     validate: async (artifacts, _request, _h) => {
       try {

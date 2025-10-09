@@ -113,6 +113,49 @@ export const PERFORMANCE_CONFIG = {
   DEBOUNCE_THRESHOLD: 100,
 } as const;
 
+// Query Refetch Intervals (in milliseconds)
+export const QUERY_INTERVALS = {
+  REMINDERS: 60000, // 1 minute - for medication reminders
+  DASHBOARD: 30000, // 30 seconds - for real-time dashboard
+  NONE: false, // Disable auto-refetch
+  SHORT: 30000, // 30 seconds
+  MEDIUM: 60000, // 1 minute
+  LONG: 300000, // 5 minutes
+} as const;
+
+// Date Calculations (in milliseconds)
+export const DATE_CALCULATIONS = {
+  ONE_DAY: 24 * 60 * 60 * 1000,
+  ONE_WEEK: 7 * 24 * 60 * 60 * 1000,
+  ONE_MONTH: 30 * 24 * 60 * 60 * 1000,
+  THREE_MONTHS: 90 * 24 * 60 * 60 * 1000,
+  SIX_MONTHS: 180 * 24 * 60 * 60 * 1000,
+  ONE_YEAR: 365 * 24 * 60 * 60 * 1000,
+} as const;
+
+// Toast/Notification Configuration
+export const TOAST_CONFIG = {
+  DURATION: 5000, // 5 seconds
+  SUCCESS_DURATION: 3000, // 3 seconds
+  ERROR_DURATION: 7000, // 7 seconds
+  WARNING_DURATION: 5000, // 5 seconds
+  INFO_DURATION: 4000, // 4 seconds
+} as const;
+
+// Modal Configuration
+export const MODAL_CONFIG = {
+  Z_INDEX: 50,
+  OVERLAY_OPACITY: 0.5,
+  ANIMATION_DURATION: 200, // ms
+  MAX_WIDTH: {
+    SM: 'max-w-md',
+    MD: 'max-w-lg',
+    LG: 'max-w-2xl',
+    XL: 'max-w-4xl',
+    FULL: 'max-w-full',
+  },
+} as const;
+
 // Export all configurations as a single object for easy importing
 export const APP_CONFIG = {
   API: API_CONFIG,
@@ -125,6 +168,10 @@ export const APP_CONFIG = {
   HEALTHCARE: HEALTHCARE_CONFIG,
   SECURITY: SECURITY_CONFIG,
   PERFORMANCE: PERFORMANCE_CONFIG,
+  QUERY_INTERVALS,
+  DATE_CALCULATIONS,
+  TOAST: TOAST_CONFIG,
+  MODAL: MODAL_CONFIG,
 } as const;
 
 export default APP_CONFIG;
