@@ -170,9 +170,11 @@ export default function MedicationsListTab({
                     </div>
                   </td>
                   <td data-testid="dosage-form" className="px-6 py-4 text-sm text-gray-900">{med.dosageForm}</td>
-                  <td data-testid="strength" className="px-6 py-4 text-sm text-gray-900">{med.strength}</td>
                   <td className="px-6 py-4">
-                    <span data-testid={hasLowStock ? "low-stock-indicator" : "stock-amount"} className={`text-sm ${hasLowStock ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
+                    <span data-testid="medication-strength" className="text-sm text-gray-900">{med.strength}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span data-testid={hasLowStock ? "low-stock-indicator" : "stock-level"} className={`text-sm ${hasLowStock ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                       {totalStock} units
                     </span>
                   </td>
@@ -182,7 +184,7 @@ export default function MedicationsListTab({
                       className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                     >
                       <span
-                        data-testid={med.isControlled ? "controlled-badge" : "standard-badge"}
+                        data-testid={med.isControlled ? "controlled-substance-indicator" : "standard-badge"}
                         className={med.isControlled
                           ? 'bg-red-100 text-red-800'
                           : 'bg-green-100 text-green-800'}

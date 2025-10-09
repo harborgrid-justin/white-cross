@@ -49,6 +49,7 @@ function App() {
                   },
                   success: {
                     duration: 3000,
+                    className: 'success-toast',
                     iconTheme: {
                       primary: '#10B981',
                       secondary: '#fff',
@@ -56,6 +57,7 @@ function App() {
                   },
                   error: {
                     duration: 5000,
+                    className: 'error-toast',
                     iconTheme: {
                       primary: '#EF4444',
                       secondary: '#fff',
