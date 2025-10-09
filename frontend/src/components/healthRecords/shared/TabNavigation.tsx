@@ -14,13 +14,16 @@ interface TabNavigationProps {
   onTabLoad?: (tab: TabType) => void
 }
 
-export const TabNavigation: React.FC<TabNavigationProps> = ({ 
-  tabs, 
-  activeTab, 
+export const TabNavigation: React.FC<TabNavigationProps> = ({
+  tabs,
+  activeTab,
   onTabChange,
-  onTabLoad 
+  onTabLoad
 }) => {
-  const handleTabClick = (tab: TabType) => {
+  const handleTabClick = (tab: TabType, event: React.MouseEvent<HTMLButtonElement>) => {
+    // Scroll tab into view for better UX and Cypress testing
+    event.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+
     onTabChange(tab)
     if (tab !== 'overview' && onTabLoad) {
       onTabLoad(tab)
@@ -29,7 +32,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
 
   return (
     <div className="border-b border-gray-200">
-      <div className="overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="overflow-x-auto overflow-y-visible" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <style>{`.tab-navigation::-webkit-scrollbar { display: none; }`}</style>
         <nav className="flex -mb-px flex-nowrap tab-navigation" style={{ minWidth: 'max-content' }}>
           {tabs.map((tab) => {
@@ -37,7 +40,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             return (
               <button
                 key={tab.id}
-                onClick={() => handleTabClick(tab.id)}
+                onClick={(e) => handleTabClick(tab.id, e)}
                 data-testid={`tab-${tab.id}`}
                 className={`px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap flex items-center gap-2 flex-shrink-0 ${
                   activeTab === tab.id

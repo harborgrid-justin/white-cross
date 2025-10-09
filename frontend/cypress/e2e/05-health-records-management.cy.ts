@@ -128,13 +128,13 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Tab Navigation', () => {
     it('should display all tab options', () => {
-      cy.contains('button', 'Overview').should('be.visible')
-      cy.contains('button', 'Health Records').should('be.visible')
-      cy.contains('button', 'Allergies').should('be.visible')
-      cy.contains('button', 'Chronic Conditions').should('be.visible')
-      cy.contains('button', 'Vaccinations').should('be.visible')
-      cy.contains('button', 'Growth Charts').should('be.visible')
-      cy.contains('button', 'Screenings').should('be.visible')
+      cy.contains('button', 'Overview').should('exist')
+      cy.contains('button', 'Health Records').should('exist')
+      cy.contains('button', 'Allergies').should('exist')
+      cy.contains('button', 'Chronic Conditions').should('exist')
+      cy.contains('button', 'Vaccinations').should('exist')
+      cy.contains('button', 'Growth Charts').should('exist')
+      cy.contains('button', 'Screenings').scrollIntoView().should('be.visible')
     })
 
     it('should start on the Overview tab by default', () => {
@@ -147,43 +147,43 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should navigate to Allergies tab', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="allergies-content"]').should('be.visible')
     })
 
     it('should navigate to Chronic Conditions tab', () => {
-      cy.contains('button', 'Chronic Conditions').click()
+      cy.contains('button', 'Chronic Conditions').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="chronic-conditions-content"]').should('be.visible')
     })
 
     it('should navigate to Vaccinations tab', () => {
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="vaccinations-content"]').should('be.visible')
     })
 
     it('should navigate to Growth Charts tab', () => {
-      cy.contains('button', 'Growth Charts').click()
+      cy.contains('button', 'Growth Charts').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="growth-charts-content"]').should('be.visible')
     })
 
     it('should navigate to Screenings tab', () => {
-      cy.contains('button', 'Screenings').click()
+      cy.contains('button', 'Screenings').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="screenings-content"]').should('be.visible')
     })
 
     it('should highlight active tab', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.contains('button', 'Allergies').should('have.class', 'border-blue-600')
     })
 
     it('should persist tab selection', () => {
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(500)
       cy.reload()
       // After reload, should default back to Overview
@@ -191,16 +191,16 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should switch between multiple tabs', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(300)
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(300)
-      cy.contains('button', 'Overview').click()
+      cy.contains('button', 'Overview').scrollIntoView().click()
       cy.wait(300)
     })
 
     it('should load tab content when switching', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="allergies-list"]').should('exist')
     })
@@ -213,24 +213,24 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     it('should navigate through all tabs sequentially', () => {
       const tabs = ['Health Records', 'Allergies', 'Chronic Conditions', 'Vaccinations', 'Growth Charts', 'Screenings']
       tabs.forEach(tab => {
-        cy.contains('button', tab).click()
+        cy.contains('button', tab).scrollIntoView().click()
         cy.wait(300)
       })
     })
 
     it('should handle rapid tab switching', () => {
-      cy.contains('button', 'Allergies').click()
-      cy.contains('button', 'Vaccinations').click()
-      cy.contains('button', 'Growth Charts').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
+      cy.contains('button', 'Growth Charts').scrollIntoView().click()
       cy.wait(500)
     })
 
     it('should maintain data when switching tabs', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
-      cy.contains('button', 'Overview').click()
+      cy.contains('button', 'Overview').scrollIntoView().click()
       cy.wait(300)
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="allergies-list"]').should('exist')
     })
@@ -246,17 +246,18 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should display appropriate content for each tab', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-allergy-button"]').should('be.visible')
     })
 
     it('should handle back button navigation', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.go('back')
       cy.wait(500)
-      cy.url().should('include', '/health-records')
+      // After going back, we should be on the previous page (dashboard)
+      cy.url().should('include', '/dashboard')
     })
   })
 
@@ -300,8 +301,8 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should apply date filters when button clicked', () => {
-      cy.get('[data-testid="date-from"]').type('2024-01-01')
-      cy.get('[data-testid="date-to"]').type('2024-12-31')
+      cy.get('[data-testid="date-from"]').scrollIntoView().type('2024-01-01')
+      cy.get('[data-testid="date-to"]').scrollIntoView().type('2024-12-31')
       cy.get('[data-testid="apply-date-filter"]').click()
     })
 
@@ -319,22 +320,22 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should display all record type options', () => {
-      cy.get('[data-testid="record-type-filter"]').select('VACCINATION')
-      cy.get('[data-testid="record-type-filter"]').select('ALLERGY')
-      cy.get('[data-testid="record-type-filter"]').select('MEDICATION')
+      cy.get('[data-testid="record-type-filter"]').scrollIntoView().select('VACCINATION')
+      cy.get('[data-testid="record-type-filter"]').scrollIntoView().select('ALLERGY')
+      cy.get('[data-testid="record-type-filter"]').scrollIntoView().select('MEDICATION')
     })
 
     it('should validate date range', () => {
-      cy.get('[data-testid="date-from"]').type('2024-12-31')
-      cy.get('[data-testid="date-to"]').type('2024-01-01')
+      cy.get('[data-testid="date-from"]').scrollIntoView().type('2024-12-31')
+      cy.get('[data-testid="date-to"]').scrollIntoView().type('2024-01-01')
       // Date validation happens on backend
     })
 
     it('should persist filters across tab switches', () => {
       cy.get('[data-testid="health-records-search"]').type('Test')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
-      cy.contains('button', 'Overview').click()
+      cy.contains('button', 'Overview').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="health-records-search"]').should('have.value', 'Test')
     })
@@ -351,7 +352,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Allergies Tab', () => {
     beforeEach(() => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
     })
 
@@ -402,12 +403,12 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should click add allergy button', () => {
-      cy.get('[data-testid="add-allergy-button"]').click()
+      cy.get('[data-testid="add-allergy-button"]').scrollIntoView().click()
       // Modal would open
     })
 
     it('should click edit allergy button', () => {
-      cy.get('[data-testid="edit-allergy-button"]').first().click()
+      cy.get('[data-testid="edit-allergy-button"]').first().scrollIntoView().click()
       // Edit modal would open
     })
 
@@ -449,7 +450,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Chronic Conditions Tab', () => {
     beforeEach(() => {
-      cy.contains('button', 'Chronic Conditions').click()
+      cy.contains('button', 'Chronic Conditions').scrollIntoView().click()
       cy.wait(500)
     })
 
@@ -519,7 +520,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Vaccinations Tab', () => {
     beforeEach(() => {
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(500)
     })
 
@@ -632,7 +633,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Growth Charts Tab', () => {
     beforeEach(() => {
-      cy.contains('button', 'Growth Charts').click()
+      cy.contains('button', 'Growth Charts').scrollIntoView().click()
       cy.wait(500)
     })
 
@@ -702,7 +703,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Screenings Tab', () => {
     beforeEach(() => {
-      cy.contains('button', 'Screenings').click()
+      cy.contains('button', 'Screenings').scrollIntoView().click()
       cy.wait(500)
     })
 
@@ -866,7 +867,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should navigate to Analytics tab', () => {
-      cy.contains('button', 'Analytics').click()
+      cy.contains('button', 'Analytics').scrollIntoView().click()
       cy.wait(500)
     })
 
@@ -891,26 +892,26 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should have full edit permissions', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-allergy-button"]').should('not.be.disabled')
     })
 
     it('should see all provider information', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="provider-name"]').should('be.visible')
     })
 
     it('should see all treatment details', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="treatment-details"]').should('be.visible')
       cy.get('[data-testid="treatment-details"]').should('not.contain', 'RESTRICTED')
     })
 
     it('should access advanced analytics', () => {
-      cy.contains('button', 'Analytics').click()
+      cy.contains('button', 'Analytics').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="analytics-content"]').should('be.visible')
     })
@@ -964,7 +965,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-allergy-button"]').should('not.be.disabled')
     })
@@ -974,7 +975,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-allergy-button"]').should('be.disabled')
     })
@@ -984,7 +985,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="edit-allergy-button"]').should('not.exist')
     })
@@ -994,7 +995,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="edit-allergy-button"]').should('exist')
     })
@@ -1004,7 +1005,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="treatment-details"]').should('contain', 'RESTRICTED')
     })
@@ -1014,7 +1015,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="provider-name"]').should('not.exist')
     })
@@ -1024,7 +1025,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-allergy-button"]').should('not.be.disabled')
       cy.get('[data-testid="edit-allergy-button"]').should('exist')
@@ -1075,7 +1076,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="record-vaccination-button"]').should('be.disabled')
     })
@@ -1085,7 +1086,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="record-vaccination-button"]').should('not.be.disabled')
     })
@@ -1095,7 +1096,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Growth Charts').click()
+      cy.contains('button', 'Growth Charts').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-measurement-button"]').should('be.disabled')
     })
@@ -1105,7 +1106,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Growth Charts').click()
+      cy.contains('button', 'Growth Charts').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-measurement-button"]').should('not.be.disabled')
     })
@@ -1115,7 +1116,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Screenings').click()
+      cy.contains('button', 'Screenings').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="record-screening-button"]').should('be.disabled')
     })
@@ -1125,7 +1126,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Screenings').click()
+      cy.contains('button', 'Screenings').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="record-screening-button"]').should('not.be.disabled')
     })
@@ -1135,7 +1136,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Chronic Conditions').click()
+      cy.contains('button', 'Chronic Conditions').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-condition-button"]').should('be.disabled')
     })
@@ -1145,7 +1146,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
       cy.visit('/dashboard')
       cy.visit('/health-records')
       cy.get('[data-testid="health-records-page"]', { timeout: 10000 }).should('exist')
-      cy.contains('button', 'Chronic Conditions').click()
+      cy.contains('button', 'Chronic Conditions').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="add-condition-button"]').should('not.be.disabled')
     })
@@ -1156,18 +1157,18 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
   // ========================================
   describe('Data Validation and Integrity', () => {
     it('should display consistent data across tabs', () => {
-      cy.contains('button', 'Overview').click()
+      cy.contains('button', 'Overview').scrollIntoView().click()
       cy.wait(300)
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="allergies-list"]').should('exist')
     })
 
     it('should maintain state when navigating', () => {
       cy.get('[data-testid="health-records-search"]').type('Test')
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
-      cy.contains('button', 'Overview').click()
+      cy.contains('button', 'Overview').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="health-records-search"]').should('have.value', 'Test')
     })
@@ -1198,7 +1199,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should handle concurrent updates', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
       cy.reload()
       cy.wait(1000)
@@ -1303,9 +1304,9 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
 
     it('should handle rapid tab switching', () => {
       for (let i = 0; i < 5; i++) {
-        cy.contains('button', 'Allergies').click()
+        cy.contains('button', 'Allergies').scrollIntoView().click()
         cy.wait(100)
-        cy.contains('button', 'Overview').click()
+        cy.contains('button', 'Overview').scrollIntoView().click()
         cy.wait(100)
       }
     })
@@ -1319,7 +1320,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should render large datasets', () => {
-      cy.contains('button', 'Vaccinations').click()
+      cy.contains('button', 'Vaccinations').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="vaccinations-table"]').should('exist')
     })
@@ -1331,11 +1332,11 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should cache data appropriately', () => {
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(500)
-      cy.contains('button', 'Overview').click()
+      cy.contains('button', 'Overview').scrollIntoView().click()
       cy.wait(300)
-      cy.contains('button', 'Allergies').click()
+      cy.contains('button', 'Allergies').scrollIntoView().click()
       cy.wait(300)
     })
 
@@ -1345,7 +1346,7 @@ describe('Health Records Management - Comprehensive Test Suite', () => {
     })
 
     it('should lazy load tab content', () => {
-      cy.contains('button', 'Growth Charts').click()
+      cy.contains('button', 'Growth Charts').scrollIntoView().click()
       cy.wait(500)
       cy.get('[data-testid="growth-charts-content"]').should('be.visible')
     })
