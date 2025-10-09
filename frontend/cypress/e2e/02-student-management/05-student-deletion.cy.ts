@@ -33,7 +33,8 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
   })
 
   it('should successfully archive student when confirmed', () => {
-    cy.get('[data-testid=student-row]').first().within(() => {
+    // Use student without medications (fourth student, Sophia Miller)
+    cy.get('[data-testid=student-row]').eq(3).within(() => {
       cy.get('[data-testid=student-name]').invoke('text').as('studentName')
       cy.get('[data-testid=delete-student-button]').click()
     })
@@ -47,14 +48,15 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
   })
 
   it('should cancel deletion when cancel button is clicked', () => {
-    const initialRowCount = Cypress.$('[data-testid=student-row]').length
+    // Get initial row count properly using Cypress commands
+    cy.get('[data-testid=student-row]').its('length').then((initialRowCount) => {
+      cy.get('[data-testid=student-row]').first().within(() => {
+        cy.get('[data-testid=delete-student-button]').click()
+      })
 
-    cy.get('[data-testid=student-row]').first().within(() => {
-      cy.get('[data-testid=delete-student-button]').click()
+      cy.get('[data-testid=cancel-delete-button]').click()
+      cy.get('[data-testid=student-row]').should('have.length', initialRowCount)
     })
-
-    cy.get('[data-testid=cancel-delete-button]').click()
-    cy.get('[data-testid=student-row]').should('have.length', initialRowCount)
   })
 
   it('should close confirmation modal when cancel is clicked', () => {
@@ -67,7 +69,8 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
   })
 
   it('should display success message after archiving student', () => {
-    cy.get('[data-testid=student-row]').first().within(() => {
+    // Use student without medications (fourth student, Sophia Miller)
+    cy.get('[data-testid=student-row]').eq(3).within(() => {
       cy.get('[data-testid=delete-student-button]').click()
     })
     cy.get('[data-testid=confirm-delete-button]').click()
@@ -120,7 +123,8 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
   it('should create audit log when student is archived', () => {
     cy.intercept('POST', '/api/audit-log').as('auditLog')
 
-    cy.get('[data-testid=student-row]').first().within(() => {
+    // Use student without medications (fourth student, Sophia Miller)
+    cy.get('[data-testid=student-row]').eq(3).within(() => {
       cy.get('[data-testid=delete-student-button]').click()
     })
     cy.get('[data-testid=confirm-delete-button]').click()

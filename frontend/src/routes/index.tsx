@@ -26,13 +26,15 @@ import AccessDenied from '../pages/AccessDenied';
 // Route guard component
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'ADMIN' | 'NURSE' | 'STAFF';
+  requiredRole?: 'ADMIN' | 'NURSE' | 'STAFF' | 'COUNSELOR' | 'READ_ONLY';
+  allowedRoles?: Array<'ADMIN' | 'NURSE' | 'STAFF' | 'COUNSELOR' | 'READ_ONLY' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN'>;
   requiredPermission?: string;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
+  allowedRoles,
   requiredPermission,
 }) => {
   const { user, loading } = useAuthContext();
@@ -47,7 +49,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
+  // Check if user role matches requiredRole or is in allowedRoles
   if (requiredRole && user?.role !== requiredRole) {
+    return <AccessDenied />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user?.role as any)) {
     return <AccessDenied />;
   }
 
@@ -96,11 +103,11 @@ export const AppRoutes: React.FC = () => {
                   }
                 />
 
-                {/* Students - accessible to NURSE and ADMIN */}
+                {/* Students - accessible to ADMIN, NURSE, COUNSELOR, and READ_ONLY */}
                 <Route
                   path={`${PROTECTED_ROUTES.STUDENTS}/*`}
                   element={
-                    <ProtectedRoute requiredRole="ADMIN">
+                    <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY']}>
                       <Students />
                     </ProtectedRoute>
                   }

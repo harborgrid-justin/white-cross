@@ -60,7 +60,8 @@
       "Bash(npx cypress run:*)",
       "Bash(for dir in \"C:/temp/white-cross/frontend/cypress/e2e\"/*)",
       "Bash(do if [ -d \"$dir\" ])",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []

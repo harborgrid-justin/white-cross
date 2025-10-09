@@ -22,5 +22,21 @@
     "firstName": "Test",
     "lastName": "Johnson",
     "role": "DOCTOR"
+  },
+  "counselor": {
+    "email": "counselor@school.edu",
+    "password": "CounselorPassword123!",
+    "name": "School Counselor",
+    "firstName": "Test",
+    "lastName": "Counselor",
+    "role": "COUNSELOR"
+  },
+  "viewer": {
+    "email": "readonly@school.edu",
+    "password": "ReadOnlyPassword123!",
+    "name": "Read Only User",
+    "firstName": "Test",
+    "lastName": "Viewer",
+    "role": "READ_ONLY"
   }
 }
