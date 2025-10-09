@@ -3,26 +3,69 @@
 /**
  * Appointment Scheduling: Appointment Creation (15 tests)
  *
- * Tests appointment creation functionality
+ * Tests appointment creation functionality including:
+ * - Modal interactions and form validation
+ * - Required field validation
+ * - Date/time validation and past date prevention
+ * - Audit logging for HIPAA compliance
+ * - Calendar integration
  */
 
 describe('Appointment Scheduling - Appointment Creation', () => {
   beforeEach(() => {
+    // Setup API intercepts for controlled testing
+    cy.intercept('GET', '/api/appointments*').as('getAppointments')
+    cy.intercept('POST', '/api/appointments').as('createAppointment')
+    cy.intercept('GET', '/api/students*').as('getStudents')
+    cy.intercept('POST', '/api/audit-log').as('auditLog')
+
     cy.login('nurse')
     cy.visit('/appointments')
+
+    // Ensure page is loaded
+    cy.wait('@getAppointments')
   })
 
   it('should open appointment creation modal when add button is clicked', () => {
-    cy.get('[data-testid=add-appointment-button]').click()
-    cy.get('[data-testid=appointment-modal]').should('be.visible')
+    cy.get('[data-cy=add-appointment-button], [data-testid=add-appointment-button]')
+      .should('be.visible')
+      .and('be.enabled')
+      .click()
+
+    // Verify modal opens with proper attributes
+    cy.get('[data-cy=appointment-modal], [data-testid=appointment-modal]')
+      .should('be.visible')
+      .and('have.attr', 'role', 'dialog')
+
+    // Verify modal title
+    cy.get('[data-cy=appointment-modal], [data-testid=appointment-modal]')
+      .should('contain', 'New Appointment')
+      .or('contain', 'Create Appointment')
   })
 
   it('should display all required fields in creation form', () => {
-    cy.get('[data-testid=add-appointment-button]').click()
-    cy.get('[data-testid=appointment-student-select]').should('be.visible')
-    cy.get('[data-testid=appointment-date]').should('be.visible')
-    cy.get('[data-testid=appointment-time]').should('be.visible')
-    cy.get('[data-testid=appointment-type]').should('be.visible')
+    cy.get('[data-cy=add-appointment-button], [data-testid=add-appointment-button]').click()
+
+    // Wait for modal to fully render
+    cy.get('[data-cy=appointment-modal], [data-testid=appointment-modal]')
+      .should('be.visible')
+
+    // Verify all required fields are present and accessible
+    cy.get('[data-cy=appointment-student-select], [data-testid=appointment-student-select]')
+      .should('be.visible')
+      .and('be.enabled')
+
+    cy.get('[data-cy=appointment-date], [data-testid=appointment-date]')
+      .should('be.visible')
+      .and('be.enabled')
+
+    cy.get('[data-cy=appointment-time], [data-testid=appointment-time]')
+      .should('be.visible')
+      .and('be.enabled')
+
+    cy.get('[data-cy=appointment-type], [data-testid=appointment-type]')
+      .should('be.visible')
+      .and('be.enabled')
   })
 
   it('should successfully create a new appointment', () => {

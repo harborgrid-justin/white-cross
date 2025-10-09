@@ -3,14 +3,42 @@
 /**
  * Medication Management: Adverse Reactions Tracking (10 tests)
  *
- * Tests adverse reaction reporting and tracking
+ * CRITICAL PATIENT SAFETY TESTS - Tests adverse reaction reporting and tracking
+ *
+ * Safety Features:
+ * - Immediate adverse reaction reporting
+ * - Severity classification (Mild, Moderate, Severe, Life-threatening)
+ * - Automatic student allergy profile updates
+ * - Emergency alert generation for severe reactions
+ * - Medication contraindication flagging
+ * - Healthcare provider notification workflow
+ * - FDA MedWatch integration (future)
+ * - Complete audit trail for medical-legal compliance
  */
 
 describe('Medication Management - Adverse Reactions Tracking', () => {
   beforeEach(() => {
+    // Setup API intercepts for safety-critical adverse reaction workflow
+    cy.intercept('GET', '/api/adverse-reactions*').as('getAdverseReactions')
+    cy.intercept('POST', '/api/adverse-reactions').as('createAdverseReaction')
+    cy.intercept('GET', '/api/medications*').as('getMedications')
+    cy.intercept('GET', '/api/students*').as('getStudents')
+    cy.intercept('POST', '/api/notifications/emergency').as('sendEmergencyNotification')
+    cy.intercept('POST', '/api/students/*/allergies').as('updateAllergies')
+    cy.intercept('POST', '/api/audit-log').as('auditLog')
+
     cy.login('nurse')
     cy.visit('/medications')
-    cy.get('[data-testid=adverse-reactions-tab]').click()
+
+    // Wait for page to load
+    cy.wait('@getMedications')
+
+    cy.get('[data-cy=adverse-reactions-tab], [data-testid=adverse-reactions-tab]')
+      .should('be.visible')
+      .click()
+
+    // Wait for adverse reactions data to load
+    cy.wait('@getAdverseReactions')
   })
 
   it('should display adverse reactions list', () => {
