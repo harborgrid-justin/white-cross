@@ -3,14 +3,36 @@
 /**
  * Medication Management: Medication Administration (15 tests)
  *
- * Tests medication administration and logging functionality
+ * CRITICAL SAFETY TESTS - Tests medication administration and logging functionality
+ *
+ * Safety Validations:
+ * - Five Rights of Medication Administration (Right Patient, Drug, Dose, Route, Time)
+ * - Double-check verification workflows
+ * - Administration time validation (no future times)
+ * - Dosage format and range validation
+ * - Complete audit trail for HIPAA compliance
+ * - Adverse reaction checking before administration
  */
 
 describe('Medication Management - Medication Administration', () => {
   beforeEach(() => {
+    // Setup comprehensive API intercepts for safety-critical operations
+    cy.intercept('GET', '/api/medications*').as('getMedications')
+    cy.intercept('POST', '/api/medications/administer').as('administerMedication')
+    cy.intercept('GET', '/api/medications/*/administration-log*').as('getAdministrationLog')
+    cy.intercept('GET', '/api/students/*/allergies').as('getStudentAllergies')
+    cy.intercept('GET', '/api/students/*/interactions').as('checkInteractions')
+    cy.intercept('POST', '/api/audit-log').as('auditLog')
+
     cy.login('nurse')
     cy.visit('/medications')
-    cy.get('[data-testid=medications-tab]').click()
+
+    // Wait for medications to load
+    cy.wait('@getMedications')
+
+    cy.get('[data-cy=medications-tab], [data-testid=medications-tab]')
+      .should('be.visible')
+      .click()
   })
 
   it('should display administer button', () => {
