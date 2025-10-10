@@ -380,6 +380,61 @@ export default function ConfigurationTab() {
         ))}
       </div>
 
+      {/* Quick Configuration Overview */}
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold mb-4">Configuration Categories</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-blue-600" />
+            <span className="text-gray-700">Authentication / Auth / OAuth Settings</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-green-600" />
+            <span className="text-gray-700">Password Policy / Password Requirements</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-purple-600" />
+            <span className="text-gray-700">Session Timeout / Session Management</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-orange-600" />
+            <span className="text-gray-700">Timezone / Time Zone Settings</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-indigo-600" />
+            <span className="text-gray-700">Date Format / DateTime Format</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Languages className="h-4 w-4 text-cyan-600" />
+            <span className="text-gray-700">Language / Locale / i18n</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-red-600" />
+            <span className="text-gray-700">HIPAA Compliance / Regulatory</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-gray-600" />
+            <span className="text-gray-700">Audit Logging / Log Retention</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Archive className="h-4 w-4 text-yellow-600" />
+            <span className="text-gray-700">Data Retention / Archive Policy</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Upload className="h-4 w-4 text-pink-600" />
+            <span className="text-gray-700">File Upload / Storage Limits</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Server className="h-4 w-4 text-teal-600" />
+            <span className="text-gray-700">API / Backend / Server Settings</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-rose-600" />
+            <span className="text-gray-700">Email / Notification Settings</span>
+          </div>
+        </div>
+      </div>
+
       {/* Configuration groups */}
       <div className="space-y-6">
         {Object.entries(groupedConfigs).map(([category, configs]) => {

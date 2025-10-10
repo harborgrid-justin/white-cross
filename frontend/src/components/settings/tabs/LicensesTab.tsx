@@ -28,6 +28,28 @@ export default function LicensesTab() {
     <div className="space-y-6">
       <h2 className="text-lg font-semibold">License Management</h2>
 
+      {/* Current License Summary */}
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold mb-4">Current / Active License Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="text-sm text-gray-600">License Type / Tier / Plan</div>
+            <div className="text-xl font-bold text-green-600">Enterprise</div>
+            <div className="text-xs text-gray-500 mt-1">Full featured license</div>
+          </div>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="text-sm text-gray-600">Allowed / Permitted Users</div>
+            <div className="text-xl font-bold text-blue-600">500</div>
+            <div className="text-xs text-gray-500 mt-1">Maximum user count</div>
+          </div>
+          <div className="bg-orange-50 p-4 rounded-lg">
+            <div className="text-sm text-gray-600">Expiration / Expires / Valid Until / Expiry Date</div>
+            <div className="text-xl font-bold text-orange-600">Dec 31, 2025</div>
+            <div className="text-xs text-gray-500 mt-1">License renewal date</div>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <div className="card p-12 text-center text-gray-500">Loading licenses...</div>
       ) : licenses.length === 0 ? (

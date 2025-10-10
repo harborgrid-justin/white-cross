@@ -113,44 +113,41 @@ export const AppRoutes: React.FC = () => {
                   }
                 />
 
-                {/* Medications - accessible to NURSE and ADMIN */}
+                {/* Medications - accessible to NURSE, ADMIN, and READ_ONLY (view only) */}
                 <Route
                   path={`${PROTECTED_ROUTES.MEDICATIONS}/*`}
                   element={
-                    <ProtectedRoute
-                      requiredRole="NURSE"
-                      requiredPermission="medications:read"
-                    >
+                    <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}>
                       <Medications />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Appointments - accessible to NURSE and ADMIN */}
+                {/* Appointments - accessible to NURSE, ADMIN, and READ_ONLY */}
                 <Route
                   path={`${PROTECTED_ROUTES.APPOINTMENTS}/*`}
                   element={
-                    <ProtectedRoute requiredRole="NURSE">
+                    <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}>
                       <Appointments />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Health Records - accessible to NURSE and ADMIN */}
+                {/* Health Records - accessible to NURSE, ADMIN, COUNSELOR, and READ_ONLY */}
                 <Route
                   path={`${PROTECTED_ROUTES.HEALTH_RECORDS}/*`}
                   element={
-                    <ProtectedRoute requiredRole="NURSE">
+                    <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}>
                       <HealthRecords />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Incident Reports - accessible to NURSE and ADMIN */}
+                {/* Incident Reports - accessible to NURSE, ADMIN, COUNSELOR, and READ_ONLY */}
                 <Route
                   path={`${PROTECTED_ROUTES.INCIDENT_REPORTS}/*`}
                   element={
-                    <ProtectedRoute requiredRole="NURSE">
+                    <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}>
                       <IncidentReports />
                     </ProtectedRoute>
                   }
@@ -196,11 +193,11 @@ export const AppRoutes: React.FC = () => {
                   }
                 />
 
-                {/* Reports - accessible to NURSE and ADMIN */}
+                {/* Reports - accessible to all authenticated users */}
                 <Route
                   path={`${PROTECTED_ROUTES.REPORTS}/*`}
                   element={
-                    <ProtectedRoute requiredRole="NURSE">
+                    <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}>
                       <Reports />
                     </ProtectedRoute>
                   }

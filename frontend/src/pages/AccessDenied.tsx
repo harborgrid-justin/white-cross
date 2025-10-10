@@ -11,7 +11,7 @@ const AccessDenied: React.FC = () => {
   const reason = searchParams.get('reason') || 'insufficient permissions'
 
   const handleGoBack = () => {
-    navigate('/health-records')
+    navigate('/dashboard')
   }
 
   return (
@@ -61,7 +61,7 @@ const AccessDenied: React.FC = () => {
             data-testid="back-button"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Health Records
+            Back to Dashboard
           </button>
           
           <div className="text-center">
