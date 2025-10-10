@@ -249,6 +249,131 @@ const translateMessageHandler = async (request: any, h: any) => {
   }
 };
 
+// Get communication options (channels, notification types, priority levels, etc.)
+const getCommunicationOptionsHandler = async (request: any, h: any) => {
+  try {
+    const options = {
+      channels: [
+        {
+          id: 'sms',
+          label: 'SMS',
+          value: 'sms',
+          description: 'Send text message notifications',
+          enabled: true,
+          icon: 'message-circle'
+        },
+        {
+          id: 'email',
+          label: 'Email',
+          value: 'email',
+          description: 'Send email notifications',
+          enabled: true,
+          icon: 'mail'
+        },
+        {
+          id: 'voice',
+          label: 'Voice Call',
+          value: 'voice',
+          description: 'Automated voice call',
+          enabled: true,
+          icon: 'phone'
+        }
+      ],
+      notificationTypes: [
+        {
+          id: 'emergency',
+          label: 'Emergency',
+          value: 'emergency',
+          description: 'Critical emergency notifications',
+          defaultPriority: 'critical',
+          requiresApproval: false
+        },
+        {
+          id: 'health',
+          label: 'Health Update',
+          value: 'health',
+          description: 'General health updates and alerts',
+          defaultPriority: 'high',
+          requiresApproval: false
+        },
+        {
+          id: 'medication',
+          label: 'Medication',
+          value: 'medication',
+          description: 'Medication-related notifications',
+          defaultPriority: 'medium',
+          requiresApproval: false
+        },
+        {
+          id: 'general',
+          label: 'General',
+          value: 'general',
+          description: 'General information and updates',
+          defaultPriority: 'low',
+          requiresApproval: false
+        }
+      ],
+      priorityLevels: [
+        {
+          id: 'low',
+          label: 'Low',
+          value: 'low',
+          description: 'Non-urgent information',
+          color: 'gray'
+        },
+        {
+          id: 'medium',
+          label: 'Medium',
+          value: 'medium',
+          description: 'Standard priority',
+          color: 'blue'
+        },
+        {
+          id: 'high',
+          label: 'High',
+          value: 'high',
+          description: 'Important, requires attention',
+          color: 'orange'
+        },
+        {
+          id: 'critical',
+          label: 'Critical',
+          value: 'critical',
+          description: 'Urgent, immediate action required',
+          color: 'red'
+        }
+      ],
+      verificationMethods: [
+        {
+          id: 'sms',
+          label: 'SMS',
+          value: 'sms'
+        },
+        {
+          id: 'email',
+          label: 'Email',
+          value: 'email'
+        },
+        {
+          id: 'voice',
+          label: 'Voice Call',
+          value: 'voice'
+        }
+      ]
+    };
+
+    return h.response({
+      success: true,
+      data: options
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
 // Define communication routes for Hapi
 export const communicationRoutes: ServerRoute[] = [
   {
@@ -426,6 +551,15 @@ export const communicationRoutes: ServerRoute[] = [
           targetLanguage: Joi.string().trim().required()
         })
       }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/communication/options',
+    handler: getCommunicationOptionsHandler,
+    options: {
+      auth: 'jwt',
+      description: 'Get communication options including channels, notification types, and priority levels'
     }
   }
 ];

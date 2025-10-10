@@ -6,18 +6,23 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
     return <div className="card p-6">Loading system health...</div>
   }
 
-  // Mock system metrics if not available from health data
-  const mockMetrics = {
-    cpu: 45.2,
-    memory: 62.8,
-    disk: 38.5,
-    database: 'Online',
-    apiResponseTime: 125,
-    uptime: '15 days 7 hours',
-    connections: 42
+  if (!health || !health.metrics) {
+    return (
+      <div className="card p-6">
+        <div className="text-center">
+          <p className="text-gray-600">Unable to load system health metrics</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
-  const metrics = health?.metrics || mockMetrics
+  const metrics = health.metrics
 
   return (
     <div className="space-y-6">
@@ -42,11 +47,11 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">CPU Usage</span>
             <Cpu className="h-4 w-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-bold text-blue-600">{metrics.cpu || 45}%</div>
+          <div className="text-2xl font-bold text-blue-600">{metrics.cpu?.toFixed(1) || 0}%</div>
           <div className="mt-2 bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all"
-              style={{ width: `${metrics.cpu || 45}%` }}
+              style={{ width: `${metrics.cpu || 0}%` }}
             />
           </div>
         </div>
@@ -56,11 +61,11 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">Memory / RAM</span>
             <Activity className="h-4 w-4 text-purple-600" />
           </div>
-          <div className="text-2xl font-bold text-purple-600">{metrics.memory || 62}%</div>
+          <div className="text-2xl font-bold text-purple-600">{metrics.memory?.toFixed(1) || 0}%</div>
           <div className="mt-2 bg-gray-200 rounded-full h-2">
             <div
               className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${metrics.memory || 62}%` }}
+              style={{ width: `${metrics.memory || 0}%` }}
             />
           </div>
         </div>
@@ -70,11 +75,11 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">Disk / Storage</span>
             <HardDrive className="h-4 w-4 text-green-600" />
           </div>
-          <div className="text-2xl font-bold text-green-600">{metrics.disk || 38}%</div>
+          <div className="text-2xl font-bold text-green-600">{metrics.disk?.toFixed(1) || 0}%</div>
           <div className="mt-2 bg-gray-200 rounded-full h-2">
             <div
               className="bg-green-600 h-2 rounded-full transition-all"
-              style={{ width: `${metrics.disk || 38}%` }}
+              style={{ width: `${metrics.disk || 0}%` }}
             />
           </div>
         </div>
@@ -93,7 +98,7 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">Response Time / Latency</span>
             <Zap className="h-4 w-4 text-yellow-600" />
           </div>
-          <div className="text-2xl font-bold text-yellow-600">{metrics.apiResponseTime || 125}ms</div>
+          <div className="text-2xl font-bold text-yellow-600">{metrics.apiResponseTime?.toFixed(0) || 0}ms</div>
           <div className="text-xs text-gray-500 mt-1">Average API response</div>
         </div>
 
@@ -102,7 +107,7 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">Uptime</span>
             <Clock className="h-4 w-4 text-blue-600" />
           </div>
-          <div className="text-lg font-bold text-blue-600">{metrics.uptime || '15d 7h'}</div>
+          <div className="text-lg font-bold text-blue-600">{metrics.uptime || 'N/A'}</div>
           <div className="text-xs text-gray-500 mt-1">System availability</div>
         </div>
 
@@ -111,7 +116,7 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">Active Connections / Users</span>
             <Server className="h-4 w-4 text-indigo-600" />
           </div>
-          <div className="text-2xl font-bold text-indigo-600">{metrics.connections || 42}</div>
+          <div className="text-2xl font-bold text-indigo-600">{metrics.connections || 0}</div>
           <div className="text-xs text-gray-500 mt-1">Current active sessions</div>
         </div>
 
@@ -120,7 +125,7 @@ export default function MonitoringTab({ health, loading }: { health: any; loadin
             <span className="text-sm text-gray-600">Error Rate</span>
             <Activity className="h-4 w-4 text-red-600" />
           </div>
-          <div className="text-2xl font-bold text-red-600">{metrics.errorRate || '0.02'}%</div>
+          <div className="text-2xl font-bold text-red-600">{typeof metrics.errorRate === 'number' ? metrics.errorRate.toFixed(2) : '0.00'}%</div>
           <div className="text-xs text-gray-500 mt-1">Request error rate</div>
         </div>
       </div>

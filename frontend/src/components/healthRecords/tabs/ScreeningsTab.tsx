@@ -15,11 +15,13 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
   user
 }) => {
   const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
-  const mockScreenings = [
-    { id: '1', type: 'Vision' as const, date: '2024-09-01', result: 'Pass' as const, icon: Eye, provider: 'School Nurse' },
-    { id: '2', type: 'Hearing' as const, date: '2024-09-05', result: 'Pass' as const, icon: Ear, provider: 'School Nurse' },
-    { id: '3', type: 'Vision' as const, date: '2023-09-15', result: 'Refer' as const, icon: Eye, provider: 'School Nurse' },
-  ]
+
+  // Use the screenings prop passed from parent component (real API data)
+  // No mock data - this is CRITICAL for HIPAA compliance
+  const displayScreenings = (screenings || []).map(screening => ({
+    ...screening,
+    icon: screening.type === 'Vision' ? Eye : Ear
+  }))
 
   return (
     <div className="space-y-4" data-testid="screenings-content">
@@ -37,7 +39,13 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
       </div>
 
       <div className="space-y-3" data-testid="screenings-table">
-        {mockScreenings.map((screening) => {
+        {displayScreenings.length === 0 ? (
+          <div className="text-center py-8 text-gray-600" data-testid="no-screenings-message">
+            <Eye className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p>No screening records found for this student.</p>
+          </div>
+        ) : (
+          displayScreenings.map((screening) => {
           const Icon = screening.icon
           return (
             <div key={screening.id} className="border border-gray-200 rounded-lg p-4" data-testid="screening-row">
@@ -66,7 +74,8 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
               </div>
             </div>
           )
-        })}
+          })
+        )}
       </div>
     </div>
   )

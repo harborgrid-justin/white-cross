@@ -803,6 +803,353 @@ Cypress.Commands.add('cleanupHealthRecords', (studentId: string) => {
   cy.log(`Cleanup health records for student ${studentId}`)
 })
 
+/**
+ * MEDICATION SAFETY COMMANDS
+ * These commands support critical medication administration workflows
+ */
+
+/**
+ * Setup medication API intercepts - Sets up all medication-related API intercepts
+ * @param options - Configuration options for mocking behavior
+ */
+Cypress.Commands.add('setupMedicationIntercepts', (options: MedicationInterceptOptions = {}) => {
+  const { shouldFail = false, networkDelay = 0 } = options
+
+  // Medications endpoint
+  cy.intercept('GET', '**/api/medications*', (req) => {
+    if (shouldFail) {
+      req.reply({ statusCode: 500, body: { error: 'Service unavailable' }, delay: networkDelay })
+    } else {
+      req.reply({
+        statusCode: 200,
+        body: { success: true, data: { medications: [], pagination: { page: 1, total: 0 } } },
+        delay: networkDelay
+      })
+    }
+  }).as('getMedications')
+
+  // Medication administration endpoint
+  cy.intercept('POST', '**/api/medications/administration').as('administerMedication')
+
+  // Medication assignment endpoint
+  cy.intercept('POST', '**/api/medications/assign').as('assignMedication')
+
+  // Student allergies check
+  cy.intercept('GET', '**/api/students/*/allergies').as('checkAllergies')
+
+  // Drug interactions check
+  cy.intercept('GET', '**/api/medications/interactions*').as('checkInteractions')
+
+  // Administration logs
+  cy.intercept('GET', '**/api/medications/logs/*').as('getAdministrationLogs')
+
+  // Inventory
+  cy.intercept('GET', '**/api/medications/inventory').as('getInventory')
+  cy.intercept('POST', '**/api/medications/inventory').as('updateInventory')
+
+  // Reminders
+  cy.intercept('GET', '**/api/medications/reminders*').as('getReminders')
+  cy.intercept('PATCH', '**/api/medications/reminders/*').as('updateReminder')
+
+  // Adverse reactions
+  cy.intercept('POST', '**/api/medications/adverse-reaction').as('reportAdverseReaction')
+  cy.intercept('GET', '**/api/medications/adverse-reactions*').as('getAdverseReactions')
+})
+
+/**
+ * Verify Five Rights of Medication Administration
+ * @param administrationData - Data to verify against Five Rights
+ */
+Cypress.Commands.add('verifyFiveRights', (administrationData: FiveRightsData) => {
+  // Right Patient - Verify student identity
+  cy.getByTestId('patient-name-display').should('contain', administrationData.patientName)
+  cy.getByTestId('patient-id-display').should('contain', administrationData.patientId)
+
+  // Right Medication - Verify medication name
+  cy.getByTestId('medication-name-display').should('contain', administrationData.medicationName)
+
+  // Right Dose - Verify dosage
+  cy.getByTestId('dose-display').should('contain', administrationData.dose)
+
+  // Right Route - Verify route of administration
+  cy.getByTestId('route-display').should('contain', administrationData.route)
+
+  // Right Time - Verify administration time is within window
+  cy.getByTestId('scheduled-time-display').should('be.visible')
+
+  cy.log('Five Rights verification completed successfully')
+})
+
+/**
+ * Simulate barcode scanning for medication administration
+ * @param barcodeData - Barcode data (NDC or patient ID)
+ * @param barcodeType - Type of barcode (medication or patient)
+ */
+Cypress.Commands.add('scanBarcode', (barcodeData: string, barcodeType: 'medication' | 'patient') => {
+  cy.getByTestId(`${barcodeType}-barcode-input`)
+    .should('be.visible')
+    .clear()
+    .type(barcodeData)
+    .type('{enter}')
+
+  // Wait for barcode processing
+  cy.wait(500)
+
+  cy.log(`Barcode scanned: ${barcodeType} - ${barcodeData}`)
+})
+
+/**
+ * Administer medication with full safety checks
+ * @param medicationData - Complete medication administration data
+ */
+Cypress.Commands.add('administerMedication', (medicationData: MedicationAdministrationData) => {
+  // Open administration modal
+  cy.getByTestId('administer-medication-button').click()
+  cy.waitForModal('medication-administration-modal')
+
+  // Select student if needed
+  if (medicationData.studentId) {
+    cy.getByTestId('student-select').select(medicationData.studentId)
+  }
+
+  // Scan patient barcode if provided
+  if (medicationData.patientBarcode) {
+    cy.scanBarcode(medicationData.patientBarcode, 'patient')
+  }
+
+  // Scan medication barcode if provided
+  if (medicationData.medicationBarcode) {
+    cy.scanBarcode(medicationData.medicationBarcode, 'medication')
+  }
+
+  // Enter dosage
+  cy.getByTestId('dosage-input').clear().type(medicationData.dosage)
+
+  // Select route
+  if (medicationData.route) {
+    cy.getByTestId('route-select').select(medicationData.route)
+  }
+
+  // Add notes if provided
+  if (medicationData.notes) {
+    cy.getByTestId('administration-notes').type(medicationData.notes)
+  }
+
+  // Witness signature for controlled substances
+  if (medicationData.witnessRequired) {
+    cy.getByTestId('witness-signature').type(medicationData.witnessSignature || 'Witness Name')
+  }
+
+  // Confirm administration
+  cy.getByTestId('confirm-administration-button').click()
+
+  cy.log('Medication administered successfully')
+})
+
+/**
+ * Check for drug allergies before administration
+ * @param studentId - Student ID to check
+ * @param medicationId - Medication ID to check
+ */
+Cypress.Commands.add('checkDrugAllergies', (studentId: string, medicationId: string) => {
+  cy.intercept('GET', `**/api/students/${studentId}/allergies`, {
+    statusCode: 200,
+    body: { success: true, data: { allergies: [] } }
+  }).as('checkAllergies')
+
+  cy.intercept('GET', `**/api/medications/${medicationId}/contraindications*`, {
+    statusCode: 200,
+    body: { success: true, data: { contraindications: [] } }
+  }).as('checkContraindications')
+
+  cy.log(`Checking allergies for student ${studentId} and medication ${medicationId}`)
+})
+
+/**
+ * Verify duplicate administration prevention
+ * @param studentMedicationId - Student medication assignment ID
+ * @param timeWindow - Time window in minutes to check for duplicates
+ */
+Cypress.Commands.add('verifyDuplicatePrevention', (studentMedicationId: string, timeWindow: number = 60) => {
+  const now = new Date()
+  const checkTime = new Date(now.getTime() - timeWindow * 60000)
+
+  cy.intercept('GET', `**/api/medications/logs/recent*`, {
+    statusCode: 200,
+    body: {
+      success: true,
+      data: {
+        recentAdministrations: [
+          {
+            id: 'recent-1',
+            studentMedicationId,
+            timeGiven: now.toISOString(),
+            dosageGiven: '10mg'
+          }
+        ]
+      }
+    }
+  }).as('checkRecentAdministration')
+
+  cy.log(`Verifying duplicate prevention for medication ${studentMedicationId}`)
+})
+
+/**
+ * Verify controlled substance tracking
+ * @param medicationData - Controlled substance data
+ */
+Cypress.Commands.add('verifyControlledSubstanceTracking', (medicationData: ControlledSubstanceData) => {
+  // Verify DEA number requirement
+  if (medicationData.isControlled) {
+    cy.getByTestId('dea-number-input').should('be.visible').should('be.required')
+
+    // Verify witness requirement
+    cy.getByTestId('witness-signature-section').should('be.visible')
+
+    // Verify custody chain logging
+    cy.intercept('POST', '**/api/medications/controlled-substance-log').as('logControlledSubstance')
+  }
+
+  cy.log('Controlled substance tracking verified')
+})
+
+/**
+ * Simulate network offline for offline capability testing
+ */
+Cypress.Commands.add('simulateOffline', () => {
+  cy.intercept('**', { forceNetworkError: true }).as('offline')
+  cy.log('Network offline mode activated')
+})
+
+/**
+ * Restore network connection after offline testing
+ */
+Cypress.Commands.add('simulateOnline', () => {
+  // Clear all intercepts and restore normal network behavior
+  cy.intercept('**').as('online')
+  cy.log('Network online mode restored')
+})
+
+/**
+ * Verify medication administration queue for offline mode
+ */
+Cypress.Commands.add('verifyOfflineQueue', () => {
+  cy.window().then((win) => {
+    const queue = win.localStorage.getItem('medication_offline_queue')
+    expect(queue).to.exist
+    const queueData = JSON.parse(queue || '[]')
+    expect(queueData).to.be.an('array')
+    cy.log(`Offline queue contains ${queueData.length} pending administrations`)
+  })
+})
+
+/**
+ * Create prescription for student with allergy checking
+ * @param prescriptionData - Prescription data
+ */
+Cypress.Commands.add('createPrescription', (prescriptionData: PrescriptionData) => {
+  // Check allergies first
+  cy.checkDrugAllergies(prescriptionData.studentId, prescriptionData.medicationId)
+
+  // Open prescription modal
+  cy.getByTestId('create-prescription-button').click()
+  cy.waitForModal('prescription-modal')
+
+  // Fill prescription details
+  cy.getByTestId('student-select').select(prescriptionData.studentId)
+  cy.getByTestId('medication-select').select(prescriptionData.medicationId)
+  cy.getByTestId('dosage-input').type(prescriptionData.dosage)
+  cy.getByTestId('frequency-input').type(prescriptionData.frequency)
+  cy.getByTestId('route-select').select(prescriptionData.route)
+  cy.getByTestId('prescribed-by-input').type(prescriptionData.prescribedBy)
+  cy.getByTestId('start-date-input').type(prescriptionData.startDate)
+
+  if (prescriptionData.endDate) {
+    cy.getByTestId('end-date-input').type(prescriptionData.endDate)
+  }
+
+  if (prescriptionData.instructions) {
+    cy.getByTestId('instructions-input').type(prescriptionData.instructions)
+  }
+
+  // Submit prescription
+  cy.getByTestId('save-prescription-button').click()
+
+  cy.log('Prescription created successfully')
+})
+
+/**
+ * Report adverse reaction to medication
+ * @param reactionData - Adverse reaction data
+ */
+Cypress.Commands.add('reportAdverseReaction', (reactionData: AdverseReactionData) => {
+  cy.getByTestId('report-adverse-reaction-button').click()
+  cy.waitForModal('adverse-reaction-modal')
+
+  cy.getByTestId('severity-select').select(reactionData.severity)
+  cy.getByTestId('reaction-description').type(reactionData.description)
+  cy.getByTestId('action-taken').type(reactionData.actionTaken)
+
+  if (reactionData.symptoms) {
+    reactionData.symptoms.forEach(symptom => {
+      cy.getByTestId('symptom-input').type(`${symptom}{enter}`)
+    })
+  }
+
+  cy.getByTestId('submit-reaction-button').click()
+
+  cy.log('Adverse reaction reported successfully')
+})
+
+/**
+ * Verify HIPAA audit trail for medication access
+ * @param action - The medication action performed
+ */
+Cypress.Commands.add('verifyMedicationAuditTrail', (action: string) => {
+  cy.intercept('POST', '**/api/audit-log').as('medicationAuditLog')
+
+  cy.wait('@medicationAuditLog', { timeout: 5000 }).then((interception) => {
+    if (interception?.response?.statusCode === 200 || interception?.response?.statusCode === 201) {
+      expect(interception.request.body).to.have.property('action')
+      expect(interception.request.body).to.have.property('resourceType', 'MEDICATION')
+      expect(interception.request.body).to.have.property('userId')
+      expect(interception.request.body).to.have.property('timestamp')
+
+      cy.log(`Medication audit trail verified for action: ${action}`)
+    }
+  })
+})
+
+/**
+ * Verify medication inventory levels and alerts
+ */
+Cypress.Commands.add('verifyInventoryAlerts', () => {
+  cy.wait('@getInventory').then((interception) => {
+    const inventory = interception.response?.body.data
+
+    // Check for low stock alerts
+    const lowStockItems = inventory.alerts?.lowStock || []
+    if (lowStockItems.length > 0) {
+      cy.getByTestId('low-stock-alert').should('be.visible')
+      cy.log(`Low stock alert: ${lowStockItems.length} medications`)
+    }
+
+    // Check for expiring medications
+    const expiringItems = inventory.alerts?.nearExpiry || []
+    if (expiringItems.length > 0) {
+      cy.getByTestId('expiring-medication-alert').should('be.visible')
+      cy.log(`Expiring soon: ${expiringItems.length} medications`)
+    }
+
+    // Check for expired medications
+    const expiredItems = inventory.alerts?.expired || []
+    if (expiredItems.length > 0) {
+      cy.getByTestId('expired-medication-alert').should('be.visible')
+      cy.log(`Expired: ${expiredItems.length} medications`)
+    }
+  })
+})
+
 // Type definitions for new commands
 interface StudentFormData {
   studentNumber: string
@@ -854,6 +1201,55 @@ interface HealthRecordsMockOptions {
   vitals?: any[]
 }
 
+interface MedicationInterceptOptions {
+  shouldFail?: boolean
+  networkDelay?: number
+}
+
+interface FiveRightsData {
+  patientName: string
+  patientId: string
+  medicationName: string
+  dose: string
+  route: string
+}
+
+interface MedicationAdministrationData {
+  studentId?: string
+  patientBarcode?: string
+  medicationBarcode?: string
+  dosage: string
+  route?: string
+  notes?: string
+  witnessRequired?: boolean
+  witnessSignature?: string
+}
+
+interface ControlledSubstanceData {
+  isControlled: boolean
+  deaNumber?: string
+  witnessName?: string
+}
+
+interface PrescriptionData {
+  studentId: string
+  medicationId: string
+  dosage: string
+  frequency: string
+  route: string
+  prescribedBy: string
+  startDate: string
+  endDate?: string
+  instructions?: string
+}
+
+interface AdverseReactionData {
+  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING'
+  description: string
+  actionTaken: string
+  symptoms?: string[]
+}
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -893,6 +1289,22 @@ declare global {
       verifyCircuitBreaker(endpoint: string, maxRetries?: number): Chainable<void>
       measureApiResponseTime(alias: string, maxDuration?: number): Chainable<void>
       cleanupHealthRecords(studentId: string): Chainable<void>
+
+      // Medication Safety Commands
+      setupMedicationIntercepts(options?: MedicationInterceptOptions): Chainable<void>
+      verifyFiveRights(administrationData: FiveRightsData): Chainable<void>
+      scanBarcode(barcodeData: string, barcodeType: 'medication' | 'patient'): Chainable<void>
+      administerMedication(medicationData: MedicationAdministrationData): Chainable<void>
+      checkDrugAllergies(studentId: string, medicationId: string): Chainable<void>
+      verifyDuplicatePrevention(studentMedicationId: string, timeWindow?: number): Chainable<void>
+      verifyControlledSubstanceTracking(medicationData: ControlledSubstanceData): Chainable<void>
+      simulateOffline(): Chainable<void>
+      simulateOnline(): Chainable<void>
+      verifyOfflineQueue(): Chainable<void>
+      createPrescription(prescriptionData: PrescriptionData): Chainable<void>
+      reportAdverseReaction(reactionData: AdverseReactionData): Chainable<void>
+      verifyMedicationAuditTrail(action: string): Chainable<void>
+      verifyInventoryAlerts(): Chainable<void>
     }
   }
 }

@@ -18,22 +18,10 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
   user
 }) => {
   const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
-  const mockConditions: ChronicCondition[] = [
-    { 
-      id: '1', 
-      condition: 'Asthma', 
-      status: 'ACTIVE', 
-      severity: 'MODERATE',
-      nextReview: 'Nov 15, 2024'
-    },
-    { 
-      id: '2', 
-      condition: 'Type 1 Diabetes', 
-      status: 'ACTIVE', 
-      severity: 'SEVERE',
-      nextReview: 'Dec 1, 2024'
-    },
-  ]
+
+  // Use the conditions prop passed from parent component (real API data)
+  // No mock data - this is CRITICAL for HIPAA compliance
+  const displayConditions = conditions || []
 
   return (
     <div className="space-y-4" data-testid="chronic-conditions-content">
@@ -51,7 +39,13 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
       </div>
 
       <div className="space-y-3" data-testid="conditions-list">
-        {mockConditions.map((condition) => (
+        {displayConditions.length === 0 ? (
+          <div className="text-center py-8 text-gray-600" data-testid="no-conditions-message">
+            <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p>No chronic conditions recorded for this student.</p>
+          </div>
+        ) : (
+          displayConditions.map((condition) => (
           <div key={condition.id} className="border border-gray-200 rounded-lg p-4" data-testid="condition-item">
             <div className="flex justify-between items-start">
               <div className="flex items-start gap-3">
@@ -87,7 +81,8 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
               </button>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )

@@ -93,15 +93,18 @@ export class DashboardService {
         }),
         prisma.incidentReport.count({
           where: {
-            followUpRequired: true,
-            followUpCompletedAt: null
+            followUpRequired: true
           }
         }),
         prisma.studentMedication.count({
           where: {
             isActive: true,
-            // Include medications that should be administered today
-            scheduleType: 'DAILY'
+            // Count active medications
+            startDate: { lte: today },
+            OR: [
+              { endDate: null },
+              { endDate: { gte: today } }
+            ]
           }
         }),
         prisma.allergy.count({

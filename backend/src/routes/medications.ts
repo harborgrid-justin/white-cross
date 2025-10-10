@@ -266,6 +266,57 @@ const getAdverseReactionsHandler = async (request: any, h: any) => {
   }
 };
 
+// Get medication statistics
+const getMedicationStatsHandler = async (request: any, h: any) => {
+  try {
+    const statistics = await MedicationService.getMedicationStats();
+
+    return h.response({
+      success: true,
+      data: statistics
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
+// Get medication alerts
+const getMedicationAlertsHandler = async (request: any, h: any) => {
+  try {
+    const alerts = await MedicationService.getMedicationAlerts();
+
+    return h.response({
+      success: true,
+      data: alerts
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
+// Get medication form options
+const getMedicationFormOptionsHandler = async (request: any, h: any) => {
+  try {
+    const formOptions = await MedicationService.getMedicationFormOptions();
+
+    return h.response({
+      success: true,
+      data: formOptions
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
 // Define medication routes for Hapi
 export const medicationRoutes: ServerRoute[] = [
   {
@@ -703,6 +754,87 @@ export const medicationRoutes: ServerRoute[] = [
           responses: {
             '200': {
               description: 'Adverse reactions retrieved successfully'
+            },
+            '401': {
+              description: 'Authentication required'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          },
+          security: [{ jwt: [] }]
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/stats',
+    handler: getMedicationStatsHandler,
+    options: {
+      auth: 'jwt',
+      tags: ['api', 'Medications'],
+      description: 'Get medication statistics',
+      notes: 'Returns medication statistics including total medications, active prescriptions, administered today, and adverse reactions. **PHI Protected Endpoint**',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Statistics retrieved successfully'
+            },
+            '401': {
+              description: 'Authentication required'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          },
+          security: [{ jwt: [] }]
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/alerts',
+    handler: getMedicationAlertsHandler,
+    options: {
+      auth: 'jwt',
+      tags: ['api', 'Medications'],
+      description: 'Get medication alerts',
+      notes: 'Returns alerts for low stock, expiring medications, and missed doses. **PHI Protected Endpoint**',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Alerts retrieved successfully'
+            },
+            '401': {
+              description: 'Authentication required'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          },
+          security: [{ jwt: [] }]
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/medications/form-options',
+    handler: getMedicationFormOptionsHandler,
+    options: {
+      auth: 'jwt',
+      tags: ['api', 'Medications'],
+      description: 'Get medication form options',
+      notes: 'Returns available dosage forms, categories, strength units, routes, and frequencies for medication management.',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Form options retrieved successfully'
             },
             '401': {
               description: 'Authentication required'

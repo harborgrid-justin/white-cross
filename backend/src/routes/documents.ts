@@ -258,4 +258,14 @@ router.get('/statistics/overview', auth, async (req: Request, res: Response) => 
   }
 });
 
+// Get document categories
+router.get('/categories', auth, async (req: Request, res: Response) => {
+  try {
+    const categories = await DocumentService.getDocumentCategories();
+    res.json({ success: true, data: { categories } });
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: (error as Error).message } });
+  }
+});
+
 export default router;

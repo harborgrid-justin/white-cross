@@ -82,6 +82,20 @@ export type { IEmergencyContactsApi } from './modules/emergencyContactsApi';
 export { incidentReportsApi } from './modules/incidentReportsApi';
 export type { IIncidentReportsApi } from './modules/incidentReportsApi';
 
+export { integrationApi } from './modules/integrationApi';
+export type {
+  IntegrationApi,
+  Integration,
+  IntegrationType,
+  IntegrationStatus,
+  IntegrationLog,
+  CreateIntegrationRequest,
+  UpdateIntegrationRequest,
+  ConnectionTestResult,
+  SyncResult,
+  IntegrationStatistics
+} from './modules/integrationApi';
+
 // Backward compatibility - re-export the old api instance and legacy APIs
 import { apiInstance } from './config/apiConfig';
 import { authApi } from './modules/authApi';

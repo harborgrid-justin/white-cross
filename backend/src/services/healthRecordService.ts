@@ -891,4 +891,60 @@ export class HealthRecordService {
       throw error;
     }
   }
+
+  /**
+   * Get health records statistics
+   */
+  static async getHealthRecordStatistics() {
+    try {
+      const [
+        totalRecords,
+        activeAllergies,
+        chronicConditions,
+        vaccinationsDue,
+        recentRecords
+      ] = await Promise.all([
+        prisma.healthRecord.count(),
+        prisma.allergy.count({
+          where: {
+            verified: true
+          }
+        }),
+        prisma.chronicCondition.count({
+          where: {
+            status: 'ACTIVE'
+          }
+        }),
+        prisma.healthRecord.count({
+          where: {
+            type: 'VACCINATION',
+            createdAt: {
+              gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days
+            }
+          }
+        }),
+        prisma.healthRecord.count({
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+            }
+          }
+        })
+      ]);
+
+      const statistics = {
+        totalRecords,
+        activeAllergies,
+        chronicConditions,
+        vaccinationsDue,
+        recentRecords
+      };
+
+      logger.info('Retrieved health record statistics');
+      return statistics;
+    } catch (error) {
+      logger.error('Error getting health record statistics:', error);
+      throw error;
+    }
+  }
 }

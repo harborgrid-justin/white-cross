@@ -169,11 +169,16 @@ export const API_ENDPOINTS = {
   },
   INTEGRATIONS: {
     BASE: '/integrations',
+    BY_ID: (id: string) => `/integrations/${id}`,
+    TEST: (id: string) => `/integrations/${id}/test`,
+    SYNC: (id: string) => `/integrations/${id}/sync`,
+    LOGS: (id: string) => `/integrations/${id}/logs`,
+    ALL_LOGS: '/integrations/logs/all',
+    STATISTICS: '/integrations/statistics/overview',
     SIS: '/integrations/sis',
     EHR: '/integrations/ehr',
     PHARMACY: '/integrations/pharmacy',
     STATUS: '/integrations/status',
-    SYNC: '/integrations/sync',
   },
   INVENTORY: {
     BASE: '/inventory',

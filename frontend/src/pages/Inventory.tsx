@@ -47,10 +47,10 @@ export default function Inventory() {
         case 'items': {
           const [itemsData, alertsData] = await Promise.all([
             inventoryApi.getAll(),
-            inventoryApi.getAll() // Using getAll for alerts as well since getAlerts doesn't exist
+            inventoryApi.getAlerts()
           ])
-          setInventoryItems(itemsData.data || [])
-          setAlerts([]) // Placeholder for alerts
+          setInventoryItems(itemsData.data?.items || [])
+          setAlerts(alertsData.data?.alerts || [])
           break
         }
         case 'vendors': {
@@ -76,6 +76,10 @@ export default function Inventory() {
       setLoading(false)
     }
   }, [activeTab])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const filteredItems = inventoryItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
