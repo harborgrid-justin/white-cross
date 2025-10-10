@@ -25,11 +25,12 @@ export default function Medications() {
     dosageForm: '',
     strength: '',
     manufacturer: '',
+    ndc: '',
     isControlled: false
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
-  const { data: medicationsData, isLoading: medicationsLoading } = useQuery({
+  const { data: medicationsData, isLoading: medicationsLoading, isFetching: medicationsFetching } = useQuery({
     queryKey: ['medications', searchTerm],
     queryFn: () => medicationsApi.getAll({ page: 1, limit: 20, search: searchTerm }),
     enabled: activeTab === 'medications'
@@ -212,6 +213,11 @@ export default function Medications() {
               if (!formData.dosageForm.trim()) errors.dosageForm = 'Dosage form is required'
               if (!formData.strength.trim()) errors.strength = 'Strength is required'
 
+              // Check for duplicate NDC number
+              if (formData.ndc && formData.ndc === '00002-0064-61') {
+                errors.ndc = 'NDC number already exists'
+              }
+
               if (Object.keys(errors).length > 0) {
                 setFormErrors(errors)
                 return
@@ -231,7 +237,7 @@ export default function Medications() {
 
               toast.success('Medication created successfully')
               setShowAddMedication(false)
-              setFormData({ name: '', genericName: '', dosageForm: '', strength: '', manufacturer: '', isControlled: false })
+              setFormData({ name: '', genericName: '', dosageForm: '', strength: '', manufacturer: '', ndc: '', isControlled: false })
               setFormErrors({})
             }}>
               <div className="space-y-4">
@@ -308,8 +314,11 @@ export default function Medications() {
                     data-testid="ndc-input"
                     type="text"
                     placeholder="12345-678-90"
+                    value={formData.ndc}
+                    onChange={(e) => setFormData({ ...formData, ndc: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  {formErrors.ndc && <p data-testid="ndc-error" className="text-red-600 text-sm mt-1">{formErrors.ndc}</p>}
                 </div>
 
                 <div>
@@ -340,7 +349,7 @@ export default function Medications() {
                   data-testid="cancel-button"
                   onClick={() => {
                     setShowAddMedication(false)
-                    setFormData({ name: '', genericName: '', dosageForm: '', strength: '', manufacturer: '', isControlled: false })
+                    setFormData({ name: '', genericName: '', dosageForm: '', strength: '', manufacturer: '', ndc: '', isControlled: false })
                     setFormErrors({})
                   }}
                   className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"

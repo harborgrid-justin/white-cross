@@ -88,7 +88,6 @@ describe('Medication Management - Medication Creation (CRUD - Create)', () => {
 
   it('should display dosage form options', () => {
     cy.get('[data-testid=add-medication-button]').click()
-    cy.get('[data-testid=dosage-form-select]').click()
     cy.get('[data-testid=dosage-form-select] option').should('contain', 'Tablet')
     cy.get('[data-testid=dosage-form-select] option').should('contain', 'Capsule')
     cy.get('[data-testid=dosage-form-select] option').should('contain', 'Liquid')
@@ -150,7 +149,7 @@ describe('Medication Management - Medication Creation (CRUD - Create)', () => {
       cy.get('[data-testid=strength-input]').type(newMedication.strength)
       cy.get('[data-testid=save-medication-button]').click()
 
-      cy.wait('@auditLog').its('request.body').should('deep.include', {
+      cy.wait('@auditLog', { timeout: 1500 }).its('request.body').should('deep.include', {
         action: 'CREATE_MEDICATION',
         resourceType: 'MEDICATION'
       })

@@ -28,7 +28,7 @@ describe('Medication Management - Medication Administration', () => {
     cy.visit('/medications')
 
     // Wait for medications to load
-    cy.wait('@getMedications')
+    cy.wait('@getMedications', { timeout: 1500 })
 
     cy.get('[data-cy=medications-tab], [data-testid=medications-tab]')
       .should('be.visible')
@@ -149,7 +149,7 @@ describe('Medication Management - Medication Administration', () => {
     cy.get('[data-testid=dosage-input]').type('1 tablet')
     cy.get('[data-testid=confirm-administration-button]').click()
 
-    cy.wait('@auditLog').its('request.body').should('deep.include', {
+    cy.wait('@auditLog', { timeout: 1500 }).its('request.body').should('deep.include', {
       action: 'ADMINISTER_MEDICATION',
       resourceType: 'MEDICATION'
     })

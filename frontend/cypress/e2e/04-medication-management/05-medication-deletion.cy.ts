@@ -91,7 +91,7 @@ describe('Medication Management - Medication Deletion (CRUD - Delete)', () => {
     cy.get('[data-testid=delete-medication-button]').click()
     cy.get('[data-testid=confirm-delete-button]').click()
 
-    cy.wait('@auditLog').its('request.body').should('deep.include', {
+    cy.wait('@auditLog', { timeout: 1500 }).its('request.body').should('deep.include', {
       action: 'DELETE_MEDICATION',
       resourceType: 'MEDICATION'
     })

@@ -132,7 +132,7 @@ describe('Medication Management - Prescription Management', () => {
     cy.get('[data-testid=prescribe-button]').click()
     cy.get('[data-testid=student-select]').select(1)
 
-    cy.wait('@checkInteractions')
+    cy.wait('@checkInteractions', { timeout: 1500 })
     cy.get('[data-testid=interaction-warning]').should('exist')
   })
 })
