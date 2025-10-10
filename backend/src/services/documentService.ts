@@ -619,4 +619,127 @@ export class DocumentService {
       // Don't throw error - audit trail failures shouldn't stop operations
     }
   }
+
+  /**
+   * Get document categories
+   */
+  static async getDocumentCategories() {
+    try {
+      // Get categories with document counts
+      const categoryCounts = await prisma.document.groupBy({
+        by: ['category'],
+        _count: { id: true },
+      });
+
+      // Standard document categories for healthcare
+      const standardCategories = [
+        {
+          value: 'MEDICAL_RECORD',
+          label: 'Medical Record',
+          description: 'Patient medical records and health history',
+          requiresSignature: true,
+          retentionYears: 7
+        },
+        {
+          value: 'CONSENT_FORM',
+          label: 'Consent Form',
+          description: 'Parental consent and authorization forms',
+          requiresSignature: true,
+          retentionYears: 7
+        },
+        {
+          value: 'IMMUNIZATION_RECORD',
+          label: 'Immunization Record',
+          description: 'Vaccination and immunization records',
+          requiresSignature: false,
+          retentionYears: 10
+        },
+        {
+          value: 'MEDICATION_AUTHORIZATION',
+          label: 'Medication Authorization',
+          description: 'Medication administration authorization forms',
+          requiresSignature: true,
+          retentionYears: 7
+        },
+        {
+          value: 'EMERGENCY_CONTACT',
+          label: 'Emergency Contact',
+          description: 'Emergency contact information forms',
+          requiresSignature: true,
+          retentionYears: 3
+        },
+        {
+          value: 'HEALTH_PLAN',
+          label: 'Health Plan',
+          description: 'Individualized health plans and care plans',
+          requiresSignature: true,
+          retentionYears: 7
+        },
+        {
+          value: 'INCIDENT_REPORT',
+          label: 'Incident Report',
+          description: 'Incident and accident reports',
+          requiresSignature: true,
+          retentionYears: 7
+        },
+        {
+          value: 'PHYSICIAN_ORDER',
+          label: 'Physician Order',
+          description: 'Healthcare provider orders and prescriptions',
+          requiresSignature: true,
+          retentionYears: 7
+        },
+        {
+          value: 'LAB_RESULT',
+          label: 'Lab Result',
+          description: 'Laboratory and diagnostic test results',
+          requiresSignature: false,
+          retentionYears: 7
+        },
+        {
+          value: 'POLICY_DOCUMENT',
+          label: 'Policy Document',
+          description: 'Health office policies and procedures',
+          requiresSignature: false,
+          retentionYears: 5
+        },
+        {
+          value: 'COMMUNICATION',
+          label: 'Communication',
+          description: 'Parent and staff communications',
+          requiresSignature: false,
+          retentionYears: 3
+        },
+        {
+          value: 'ADMINISTRATIVE',
+          label: 'Administrative',
+          description: 'Administrative and operational documents',
+          requiresSignature: false,
+          retentionYears: 3
+        },
+        {
+          value: 'OTHER',
+          label: 'Other',
+          description: 'Other documents not fitting standard categories',
+          requiresSignature: false,
+          retentionYears: 3
+        }
+      ];
+
+      // Add document counts to standard categories
+      const categoriesWithCounts = standardCategories.map(category => {
+        const count = categoryCounts.find(c => c.category === category.value)?._count.id || 0;
+        return {
+          ...category,
+          documentCount: count
+        };
+      });
+
+      logger.info('Retrieved document categories');
+      return categoriesWithCounts;
+    } catch (error) {
+      logger.error('Error getting document categories:', error);
+      throw error;
+    }
+  }
 }

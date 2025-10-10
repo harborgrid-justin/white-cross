@@ -23,10 +23,10 @@ import { budgetRoutes } from './routes/budget';
 import { communicationRoutes } from './routes/communication';
 import { configurationRoutes } from './routes/configuration';
 import { dashboardRoutes } from './routes/dashboard';
+import { integrationRoutes } from './routes/integrations';
 
 // TODO: Convert remaining routes from Express to Hapi
 // import administrationRoutes from './routes/administration';
-// import integrationRoutes from './routes/integration';
 // import reportRoutes from './routes/reports';
 // import complianceRoutes from './routes/compliance';
 // import documentRoutes from './routes/documents';
@@ -153,11 +153,13 @@ const init = async () => {
       ...communicationRoutes,
 
       // Dashboard routes
-      ...dashboardRoutes
+      ...dashboardRoutes,
+
+      // Integration Hub routes
+      ...integrationRoutes
 
       // TODO: Convert remaining routes from Express to Hapi
       // ...administrationRoutes,
-      // ...integrationRoutes,
       // ...reportRoutes,
       // ...complianceRoutes,
       // ...documentRoutes,

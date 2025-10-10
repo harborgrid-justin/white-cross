@@ -825,4 +825,299 @@ export class MedicationService {
       throw error;
     }
   }
+
+  /**
+   * Get medication statistics
+   */
+  static async getMedicationStats() {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(today);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const [
+        totalMedications,
+        activePrescriptions,
+        administeredToday,
+        adverseReactions,
+        lowStockCount,
+        expiringCount
+      ] = await Promise.all([
+        prisma.medication.count(),
+        prisma.studentMedication.count({
+          where: { isActive: true }
+        }),
+        prisma.medicationLog.count({
+          where: {
+            timeGiven: {
+              gte: today,
+              lte: endOfDay
+            }
+          }
+        }),
+        prisma.incidentReport.count({
+          where: {
+            type: 'ALLERGIC_REACTION',
+            occurredAt: {
+              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+            }
+          }
+        }),
+        prisma.medicationInventory.count({
+          where: {
+            quantity: {
+              lte: prisma.medicationInventory.fields.reorderLevel
+            }
+          }
+        }),
+        prisma.medicationInventory.count({
+          where: {
+            expirationDate: {
+              lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Next 30 days
+              gte: new Date()
+            }
+          }
+        })
+      ]);
+
+      const statistics = {
+        totalMedications,
+        activePrescriptions,
+        administeredToday,
+        adverseReactions,
+        lowStockCount,
+        expiringCount
+      };
+
+      logger.info('Retrieved medication statistics');
+      return statistics;
+    } catch (error) {
+      logger.error('Error getting medication statistics:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get medication alerts
+   */
+  static async getMedicationAlerts() {
+    try {
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const [lowStockItems, expiringItems, missedDoses] = await Promise.all([
+        prisma.medicationInventory.findMany({
+          where: {
+            OR: [
+              {
+                quantity: {
+                  lte: prisma.medicationInventory.fields.reorderLevel
+                }
+              },
+              {
+                quantity: 0
+              }
+            ]
+          },
+          include: {
+            medication: {
+              select: {
+                id: true,
+                name: true,
+                dosageForm: true,
+                strength: true
+              }
+            }
+          },
+          orderBy: [
+            { quantity: 'asc' },
+            { medication: { name: 'asc' } }
+          ]
+        }),
+        prisma.medicationInventory.findMany({
+          where: {
+            expirationDate: {
+              lte: thirtyDaysFromNow,
+              gte: now
+            }
+          },
+          include: {
+            medication: {
+              select: {
+                id: true,
+                name: true,
+                dosageForm: true,
+                strength: true
+              }
+            }
+          },
+          orderBy: { expirationDate: 'asc' }
+        }),
+        // Get missed doses from today
+        this.getMedicationReminders(now).then(reminders =>
+          reminders.filter(r => r.status === 'MISSED')
+        )
+      ]);
+
+      const alerts = {
+        lowStock: lowStockItems.map(item => ({
+          id: item.id,
+          type: 'LOW_STOCK',
+          severity: item.quantity === 0 ? 'CRITICAL' : 'HIGH',
+          message: item.quantity === 0
+            ? `${item.medication.name} is out of stock`
+            : `${item.medication.name} is low in stock (${item.quantity} remaining, reorder at ${item.reorderLevel})`,
+          medicationId: item.medicationId,
+          medicationName: `${item.medication.name} ${item.medication.strength}`,
+          currentQuantity: item.quantity,
+          reorderLevel: item.reorderLevel
+        })),
+        expiring: expiringItems.map(item => {
+          const daysUntilExpiry = Math.ceil((item.expirationDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+          return {
+            id: item.id,
+            type: 'EXPIRING',
+            severity: daysUntilExpiry <= 7 ? 'HIGH' : 'MEDIUM',
+            message: `${item.medication.name} expires in ${daysUntilExpiry} days`,
+            medicationId: item.medicationId,
+            medicationName: `${item.medication.name} ${item.medication.strength}`,
+            expirationDate: item.expirationDate,
+            daysUntilExpiry
+          };
+        }),
+        missedDoses: missedDoses.map(dose => ({
+          id: dose.id,
+          type: 'MISSED_DOSE',
+          severity: 'MEDIUM',
+          message: `Missed dose for ${dose.studentName}: ${dose.medicationName} ${dose.dosage}`,
+          studentName: dose.studentName,
+          medicationName: dose.medicationName,
+          dosage: dose.dosage,
+          scheduledTime: dose.scheduledTime
+        }))
+      };
+
+      logger.info(`Retrieved medication alerts: ${lowStockItems.length} low stock, ${expiringItems.length} expiring, ${missedDoses.length} missed doses`);
+      return alerts;
+    } catch (error) {
+      logger.error('Error getting medication alerts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get medication form options
+   */
+  static async getMedicationFormOptions() {
+    try {
+      // Get unique dosage forms from existing medications
+      const existingForms = await prisma.medication.findMany({
+        select: {
+          dosageForm: true
+        },
+        distinct: ['dosageForm']
+      });
+
+      // Standard medication forms
+      const standardForms = [
+        'Tablet',
+        'Capsule',
+        'Liquid',
+        'Injection',
+        'Topical',
+        'Inhaler',
+        'Drops',
+        'Patch',
+        'Suppository',
+        'Powder',
+        'Cream',
+        'Ointment',
+        'Gel',
+        'Spray',
+        'Lozenge'
+      ];
+
+      // Combine and deduplicate
+      const allForms = [...new Set([
+        ...standardForms,
+        ...existingForms.map(f => f.dosageForm)
+      ])].sort();
+
+      // Standard medication categories
+      const categories = [
+        'Analgesic',
+        'Antibiotic',
+        'Antihistamine',
+        'Anti-inflammatory',
+        'Asthma Medication',
+        'Diabetic Medication',
+        'Cardiovascular',
+        'Gastrointestinal',
+        'Neurological',
+        'Dermatological',
+        'Ophthalmic',
+        'Otic',
+        'Emergency Medication',
+        'Vitamin/Supplement',
+        'Other'
+      ];
+
+      // Common strength units
+      const strengthUnits = [
+        'mg',
+        'g',
+        'mcg',
+        'ml',
+        'units',
+        'mEq',
+        '%'
+      ];
+
+      // Administration routes
+      const routes = [
+        'Oral',
+        'Sublingual',
+        'Topical',
+        'Intravenous',
+        'Intramuscular',
+        'Subcutaneous',
+        'Inhalation',
+        'Ophthalmic',
+        'Otic',
+        'Nasal',
+        'Rectal',
+        'Transdermal'
+      ];
+
+      const formOptions = {
+        dosageForms: allForms,
+        categories,
+        strengthUnits,
+        routes,
+        frequencies: [
+          'Once daily',
+          'Twice daily',
+          'Three times daily',
+          'Four times daily',
+          'Every 4 hours',
+          'Every 6 hours',
+          'Every 8 hours',
+          'Every 12 hours',
+          'As needed',
+          'Before meals',
+          'After meals',
+          'At bedtime',
+          'Weekly',
+          'Monthly'
+        ]
+      };
+
+      logger.info('Retrieved medication form options');
+      return formOptions;
+    } catch (error) {
+      logger.error('Error getting medication form options:', error);
+      throw error;
+    }
+  }
 }

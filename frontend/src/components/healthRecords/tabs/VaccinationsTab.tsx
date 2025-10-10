@@ -41,6 +41,20 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
     vaccinationSort
   )
 
+  // Derive upcoming vaccinations from the vaccinations list
+  // These are vaccinations that are overdue or scheduled for the future
+  const upcomingVaccinations = React.useMemo(() => {
+    return vaccinations
+      .filter(vax => !vax.compliant && vax.dueDate) // Not compliant and has a due date
+      .sort((a, b) => {
+        // Sort by due date (earliest first)
+        const dateA = new Date(a.dueDate || '').getTime()
+        const dateB = new Date(b.dueDate || '').getTime()
+        return dateA - dateB
+      })
+      .slice(0, 5) // Show only the top 5 upcoming
+  }, [vaccinations])
+
   const filterOptions = [
     { value: '', label: 'All Status' },
     { value: 'Completed', label: 'Completed' },
@@ -157,29 +171,35 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
       <div className="mt-8" data-testid="upcoming-vaccinations">
         <h4 className="text-lg font-semibold mb-4">Upcoming Vaccinations</h4>
         <div className="space-y-3">
-          {[
-            { id: 'up1', name: 'Annual Flu Shot', dueDate: '2024-11-01', priority: 'High' as const },
-            { id: 'up2', name: 'COVID-19 Booster', dueDate: '2024-12-15', priority: 'Medium' as const },
-          ].map((upcoming) => (
-            <div key={upcoming.id} className="border border-gray-200 rounded-lg p-4" data-testid="upcoming-vaccination-card">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h5 className="font-semibold" data-testid="vaccination-name">{upcoming.name}</h5>
-                  <p className="text-sm text-gray-600" data-testid="due-date">Due: {upcoming.dueDate}</p>
-                  <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(upcoming.priority)}`} data-testid="vaccination-priority">
-                    {upcoming.priority} Priority
-                  </span>
-                </div>
-                <button 
-                  className="btn-primary" 
-                  data-testid="schedule-vaccination-btn"
-                  onClick={onScheduleVaccination}
-                >
-                  Schedule
-                </button>
-              </div>
+          {upcomingVaccinations.length === 0 ? (
+            <div className="text-center py-8 text-gray-600">
+              <Shield className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p>No upcoming vaccinations at this time.</p>
             </div>
-          ))}
+          ) : (
+            upcomingVaccinations.map((upcoming) => (
+              <div key={upcoming.id} className="border border-gray-200 rounded-lg p-4" data-testid="upcoming-vaccination-card">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-semibold" data-testid="vaccination-name">{upcoming.vaccineName}</h5>
+                    <p className="text-sm text-gray-600" data-testid="due-date">Due: {upcoming.dueDate}</p>
+                    {upcoming.priority && (
+                      <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(upcoming.priority)}`} data-testid="vaccination-priority">
+                        {upcoming.priority} Priority
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="btn-primary"
+                    data-testid="schedule-vaccination-btn"
+                    onClick={onScheduleVaccination}
+                  >
+                    Schedule
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

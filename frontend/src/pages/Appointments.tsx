@@ -5,10 +5,19 @@ import { Appointment } from '../types/api'
 import { WaitlistEntry } from '../services/types'
 import toast from 'react-hot-toast'
 import AppointmentFormModal from '../components/appointments/AppointmentFormModal'
+import { useAuthContext } from '../contexts/AuthContext'
+import {
+  APPOINTMENT_TYPE_OPTIONS,
+  APPOINTMENT_STATUS_OPTIONS,
+  getAppointmentTypeLabel,
+  getStatusBadgeClass,
+  getPriorityBadgeClass
+} from '../constants/appointmentOptions'
 
 type ViewMode = 'calendar' | 'list' | 'waitlist' | 'availability'
 
 export default function Appointments() {
+  const { user } = useAuthContext()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([])
@@ -23,14 +32,6 @@ export default function Appointments() {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterType, setFilterType] = useState<string>('all')
-
-  // Mock current user - in real app, get from auth context
-  const currentUser = {
-    id: '1',
-    firstName: 'Jane',
-    lastName: 'Doe',
-    role: 'NURSE'
-  }
 
   const loadData = useCallback(async () => {
     try {
@@ -106,8 +107,13 @@ export default function Appointments() {
   }
 
   const handleExportCalendar = async () => {
+    if (!user) {
+      toast.error('User not authenticated')
+      return
+    }
+
     try {
-      const blob = await appointmentsApi.exportCalendar(currentUser.id)
+      const blob = await appointmentsApi.exportCalendar(user.id)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -119,22 +125,8 @@ export default function Appointments() {
       toast.success('Calendar exported successfully')
     } catch (error) {
       console.error('Error exporting calendar:', error)
+      toast.error('Failed to export calendar')
     }
-  }
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'SCHEDULED': return 'bg-blue-100 text-blue-800'
-      case 'IN_PROGRESS': return 'bg-yellow-100 text-yellow-800'
-      case 'COMPLETED': return 'bg-green-100 text-green-800'
-      case 'CANCELLED': return 'bg-red-100 text-red-800'
-      case 'NO_SHOW': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const formatAppointmentType = (type: string) => {
-    return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
   }
 
   const formatDate = (dateString: string) => {
@@ -274,32 +266,28 @@ export default function Appointments() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="all">All Statuses</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="no_show">No Show</option>
+              {APPOINTMENT_STATUS_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="all">All Types</option>
-              <option value="routine_checkup">Routine Checkup</option>
-              <option value="medication_administration">Medication</option>
-              <option value="injury_assessment">Injury</option>
-              <option value="illness_evaluation">Illness</option>
-              <option value="follow_up">Follow Up</option>
-              <option value="screening">Screening</option>
-              <option value="emergency">Emergency</option>
+              {APPOINTMENT_TYPE_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
             <button
               onClick={loadData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Apply Filters
             </button>
@@ -352,7 +340,7 @@ export default function Appointments() {
                         <div className="text-sm text-gray-500">{appointment.reason}</div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        {formatAppointmentType(appointment.type)}
+                        {getAppointmentTypeLabel(appointment.type)}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {formatDate(appointment.scheduledAt)}
@@ -361,7 +349,7 @@ export default function Appointments() {
                         {appointment.duration} min
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(appointment.status)}`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(appointment.status)}`}>
                           {appointment.status.replace('_', ' ')}
                         </span>
                       </td>
@@ -412,7 +400,7 @@ export default function Appointments() {
                         <h4 className="font-medium text-gray-900">
                           {entry.student?.firstName} {entry.student?.lastName}
                         </h4>
-                        <p className="text-sm text-gray-600">{formatAppointmentType(entry.type)}</p>
+                        <p className="text-sm text-gray-600">{getAppointmentTypeLabel(entry.type)}</p>
                         <p className="text-sm text-gray-500 mt-1">{entry.reason}</p>
                         {(entry as any).preferredDate && (
                           <p className="text-xs text-gray-400 mt-1">
@@ -422,10 +410,7 @@ export default function Appointments() {
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          (entry as any).priority === 'URGENT' ? 'bg-red-100 text-red-800' :
-                          (entry as any).priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
-                          (entry as any).priority === 'NORMAL' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
+                          getPriorityBadgeClass((entry as any).priority || 'NORMAL')
                         }`}>
                           {(entry as any).priority || 'NORMAL'}
                         </span>

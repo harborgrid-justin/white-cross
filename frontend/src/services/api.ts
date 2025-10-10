@@ -15,6 +15,9 @@ import {
   apiInstance
 } from './index';
 
+import { integrationApi as realIntegrationApi } from './modules/integrationApi';
+import { administrationApi as realAdministrationApi } from './modules/administrationApi';
+
 import type {
   ApiResponse
 } from '../types';
@@ -44,107 +47,79 @@ export { incidentReportsApi };
 export { documentsApi };
 export { reportsApi };
 
-// Create additional API objects for modules that expect specific structures
+// Real Administration API - uses actual backend implementation
 export const administrationApi = {
-  getSettings: async (): Promise<ApiResponse<AdminSettings[]>> => ({ success: true, data: [] }),
-  updateSettings: async (settings: AdminSettings): Promise<ApiResponse<AdminSettings>> => ({ success: true, data: settings }),
-  getUsers: async (): Promise<ApiResponse<User[]>> => ({ success: true, data: [] }),
-  createUser: async (user: CreateUserRequest): Promise<ApiResponse<User>> => ({
-    success: true,
-    data: {
-      id: crypto.randomUUID(),
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role
-    }
-  }),
-  updateUser: async (id: string, user: UpdateUserRequest): Promise<ApiResponse<User>> => ({
-    success: true,
-    data: {
-      id,
-      email: user.email || '',
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      role: user.role || 'NURSE'
-    }
-  }),
-  deleteUser: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+  // System Settings
+  getSettings: async (): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getSettings();
+    return { success: true, data: result };
+  },
+  updateSettings: async (settings: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.updateSettings(settings);
+    return { success: true, data: result };
+  },
+
+  // User Management
+  getUsers: async (filters?: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getUsers(filters);
+    return { success: true, data: result };
+  },
+  createUser: async (user: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.createUser(user);
+    return { success: true, data: result };
+  },
+  updateUser: async (id: string, user: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.updateUser(id, user);
+    return { success: true, data: result };
+  },
+  deleteUser: async (id: string): Promise<ApiResponse<{ id: string }>> => {
+    await realAdministrationApi.deleteUser(id);
+    return { success: true, data: { id } };
+  },
 
   // System Health
-  getSystemHealth: async (): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      statistics: {
-        totalUsers: 0,
-        activeUsers: 0,
-        totalDistricts: 0,
-        totalSchools: 0
-      }
-    }
-  }),
+  getSystemHealth: async (): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getSystemHealth();
+    return { success: true, data: result };
+  },
 
   // District Management
-  getDistricts: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      districts: [],
-      total: 0,
-      page,
-      limit
-    }
-  }),
-  createDistrict: async (district: any): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id: crypto.randomUUID(),
-      ...district,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  updateDistrict: async (id: string, district: any): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id,
-      ...district,
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  deleteDistrict: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+  getDistricts: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getDistricts(page, limit);
+    return { success: true, data: result };
+  },
+  createDistrict: async (district: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.createDistrict(district);
+    return { success: true, data: result };
+  },
+  updateDistrict: async (id: string, district: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.updateDistrict(id, district);
+    return { success: true, data: result };
+  },
+  deleteDistrict: async (id: string): Promise<ApiResponse<{ id: string }>> => {
+    await realAdministrationApi.deleteDistrict(id);
+    return { success: true, data: { id } };
+  },
 
   // School Management
-  getSchools: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      schools: [],
-      total: 0,
-      page,
-      limit
-    }
-  }),
-  createSchool: async (school: any): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id: crypto.randomUUID(),
-      ...school,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  updateSchool: async (id: string, school: any): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id,
-      ...school,
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  deleteSchool: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } }),
+  getSchools: async (page: number = 1, limit: number = 50, districtId?: string): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getSchools(page, limit, districtId);
+    return { success: true, data: result };
+  },
+  createSchool: async (school: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.createSchool(school);
+    return { success: true, data: result };
+  },
+  updateSchool: async (id: string, school: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.updateSchool(id, school);
+    return { success: true, data: result };
+  },
+  deleteSchool: async (id: string): Promise<ApiResponse<{ id: string }>> => {
+    await realAdministrationApi.deleteSchool(id);
+    return { success: true, data: { id } };
+  },
 
-  // Configuration Management
+  // Configuration Management (placeholder - not yet implemented in administrationApi)
   getAllConfigurations: async (): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
@@ -162,38 +137,22 @@ export const administrationApi = {
   }),
 
   // Backup Management
-  getBackupLogs: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      backups: [],
-      total: 0,
-      page,
-      limit
-    }
-  }),
-  createBackup: async (): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id: crypto.randomUUID(),
-      type: 'FULL',
-      status: 'COMPLETED',
-      createdAt: new Date().toISOString(),
-      completedAt: new Date().toISOString()
-    }
-  }),
+  getBackupLogs: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getBackupLogs(page, limit);
+    return { success: true, data: result };
+  },
+  createBackup: async (): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.createBackup();
+    return { success: true, data: result };
+  },
 
   // License Management
-  getLicenses: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      licenses: [],
-      total: 0,
-      page,
-      limit
-    }
-  }),
+  getLicenses: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getLicenses(page, limit);
+    return { success: true, data: result };
+  },
 
-  // Training Management
+  // Training Management (placeholder - not yet implemented in administrationApi)
   getTrainingModules: async (): Promise<ApiResponse<any>> => ({
     success: true,
     data: {
@@ -202,121 +161,179 @@ export const administrationApi = {
   }),
 
   // Audit Logs
-  getAuditLogs: async (page: number = 1, limit: number = 50): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      logs: [],
-      total: 0,
-      page,
-      limit
-    }
-  })
+  getAuditLogs: async (page: number = 1, limit: number = 50, filters?: any): Promise<ApiResponse<any>> => {
+    const result = await realAdministrationApi.getAuditLogs({ page, limit, ...filters });
+    return { success: true, data: result };
+  }
 };
 
+// Real Integration API - uses actual backend implementation
 export const integrationApi = {
-  getIntegrations: async (): Promise<ApiResponse<Integration[]>> => ({ success: true, data: [] }),
-  getAll: async (): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      integrations: []
-    }
-  }),
-  getStatistics: async (): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      statistics: {
-        totalIntegrations: 0,
-        activeIntegrations: 0,
-        syncStatistics: {
-          totalSyncs: 0,
-          successRate: 0
-        }
-      }
-    }
-  }),
-  updateIntegration: async (id: string, config: IntegrationConfig): Promise<ApiResponse<Integration>> => ({
-    success: true,
-    data: {
-      id,
-      name: 'Integration',
-      type: 'OTHER',
-      status: 'ACTIVE',
-      config,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  create: async (integration: any): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id: crypto.randomUUID(),
-      ...integration,
-      status: 'ACTIVE',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  update: async (id: string, integration: any): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      id,
-      ...integration,
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  delete: async (): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id: '' } }),
-  testConnection: async (): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      result: {
-        success: true,
-        message: 'Connection successful',
-        status: 'connected',
-        latency: 150,
-        timestamp: new Date().toISOString()
-      }
-    }
-  }),
-  sync: async (): Promise<ApiResponse<any>> => ({
-    success: true,
-    data: {
-      result: {
-        success: true,
-        message: 'Sync completed successfully',
-        recordsProcessed: 0,
-        recordsSucceeded: 0,
-        recordsFailed: 0
-      }
-    }
-  })
+  getIntegrations: async (): Promise<ApiResponse<Integration[]>> => {
+    const result = await realIntegrationApi.getAll();
+    return { success: true, data: result.integrations };
+  },
+  getAll: async (): Promise<ApiResponse<any>> => {
+    const result = await realIntegrationApi.getAll();
+    return { success: true, data: result };
+  },
+  getStatistics: async (): Promise<ApiResponse<any>> => {
+    const result = await realIntegrationApi.getStatistics();
+    return { success: true, data: result };
+  },
+  updateIntegration: async (id: string, config: any): Promise<ApiResponse<Integration>> => {
+    const result = await realIntegrationApi.update(id, config);
+    return { success: true, data: result.integration };
+  },
+  create: async (integration: any): Promise<ApiResponse<any>> => {
+    const result = await realIntegrationApi.create(integration);
+    return { success: true, data: result.integration };
+  },
+  update: async (id: string, integration: any): Promise<ApiResponse<any>> => {
+    const result = await realIntegrationApi.update(id, integration);
+    return { success: true, data: result.integration };
+  },
+  delete: async (id: string): Promise<ApiResponse<{ id: string }>> => {
+    await realIntegrationApi.delete(id);
+    return { success: true, data: { id } };
+  },
+  testConnection: async (id: string): Promise<ApiResponse<any>> => {
+    const result = await realIntegrationApi.testConnection(id);
+    return { success: true, data: result };
+  },
+  sync: async (id: string): Promise<ApiResponse<any>> => {
+    const result = await realIntegrationApi.sync(id);
+    return { success: true, data: result };
+  }
 };
 
 export const inventoryApi = {
-  getAll: async (): Promise<ApiResponse<InventoryItem[]>> => ({ success: true, data: [] }),
-  create: async (item: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<InventoryItem>> => ({
-    success: true,
-    data: {
-      ...item,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }),
-  update: async (id: string, item: Partial<InventoryItem>): Promise<ApiResponse<InventoryItem>> => ({
-    success: true,
-    data: {
-      id,
-      name: item.name || '',
-      category: item.category || '',
-      reorderLevel: item.reorderLevel || 0,
-      reorderQuantity: item.reorderQuantity || 0,
-      isActive: item.isActive ?? true,
-      createdAt: item.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      ...item
-    }
-  }),
-  delete: async (id: string): Promise<ApiResponse<{ id: string }>> => ({ success: true, data: { id } })
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    supplier?: string;
+    location?: string;
+    lowStock?: boolean;
+    needsMaintenance?: boolean;
+    isActive?: boolean;
+  }): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory', { params });
+    return response.data;
+  },
+
+  getById: async (id: string): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get(`/api/inventory/${id}`);
+    return response.data;
+  },
+
+  create: async (item: any): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.post('/api/inventory', item);
+    return response.data;
+  },
+
+  update: async (id: string, item: any): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.put(`/api/inventory/${id}`, item);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<ApiResponse<{ id: string }>> => {
+    const response = await apiInstance.delete(`/api/inventory/${id}`);
+    return response.data;
+  },
+
+  getAlerts: async (): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory/alerts');
+    return response.data;
+  },
+
+  getStats: async (): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory/stats');
+    return response.data;
+  },
+
+  getCurrentStock: async (id: string): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get(`/api/inventory/${id}/stock`);
+    return response.data;
+  },
+
+  adjustStock: async (id: string, quantity: number, reason: string): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.post(`/api/inventory/${id}/adjust`, {
+      quantity,
+      reason
+    });
+    return response.data;
+  },
+
+  getStockHistory: async (id: string, page?: number, limit?: number): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get(`/api/inventory/${id}/history`, {
+      params: { page, limit }
+    });
+    return response.data;
+  },
+
+  createTransaction: async (transaction: {
+    inventoryItemId: string;
+    type: 'PURCHASE' | 'USAGE' | 'ADJUSTMENT' | 'TRANSFER' | 'DISPOSAL';
+    quantity: number;
+    unitCost?: number;
+    reason?: string;
+    batchNumber?: string;
+    expirationDate?: string;
+    notes?: string;
+  }): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.post('/api/inventory/transactions', transaction);
+    return response.data;
+  },
+
+  createMaintenanceLog: async (maintenance: {
+    inventoryItemId: string;
+    type: 'ROUTINE' | 'REPAIR' | 'CALIBRATION' | 'INSPECTION' | 'CLEANING';
+    description: string;
+    cost?: number;
+    nextMaintenanceDate?: string;
+    vendor?: string;
+    notes?: string;
+  }): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.post('/api/inventory/maintenance', maintenance);
+    return response.data;
+  },
+
+  getMaintenanceSchedule: async (startDate?: string, endDate?: string): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory/maintenance/schedule', {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  },
+
+  generatePurchaseOrder: async (items: Array<{ inventoryItemId: string; quantity: number }>): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.post('/api/inventory/purchase-order', { items });
+    return response.data;
+  },
+
+  getValuation: async (): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory/valuation');
+    return response.data;
+  },
+
+  getUsageAnalytics: async (startDate?: string, endDate?: string): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory/analytics/usage', {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  },
+
+  getSupplierPerformance: async (): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get('/api/inventory/analytics/suppliers');
+    return response.data;
+  },
+
+  search: async (query: string, limit?: number): Promise<ApiResponse<any>> => {
+    const response = await apiInstance.get(`/api/inventory/search/${query}`, {
+      params: { limit }
+    });
+    return response.data;
+  }
 };
 
 export const vendorApi = {

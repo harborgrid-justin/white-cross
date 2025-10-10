@@ -15,11 +15,10 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
   user
 }) => {
   const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
-  const mockMeasurements: GrowthMeasurement[] = [
-    { id: '1', date: '2024-09-15', height: '60 in', weight: '95 lbs', bmi: '18.5' },
-    { id: '2', date: '2024-06-15', height: '59 in', weight: '92 lbs', bmi: '18.2' },
-    { id: '3', date: '2024-03-15', height: '58 in', weight: '89 lbs', bmi: '18.0' },
-  ]
+
+  // Use the measurements prop passed from parent component (real API data)
+  // No mock data - this is CRITICAL for HIPAA compliance
+  const displayMeasurements = measurements || []
 
   return (
     <div className="space-y-4" data-testid="growth-charts-content">
@@ -117,7 +116,15 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
               </tr>
             </thead>
             <tbody>
-              {mockMeasurements.map((measurement) => (
+              {displayMeasurements.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-gray-600">
+                    <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <p>No growth measurements recorded for this student.</p>
+                  </td>
+                </tr>
+              ) : (
+                displayMeasurements.map((measurement) => (
                 <tr key={measurement.id} className="border-t" data-testid="measurement-row">
                   <td className="px-4 py-2" data-testid="measurement-date">{measurement.date}</td>
                   <td className="px-4 py-2" data-testid="height-value">{measurement.height}</td>
@@ -134,7 +141,8 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>

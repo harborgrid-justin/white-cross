@@ -217,6 +217,23 @@ const getHealthSummaryHandler = async (request: any, h: any) => {
   }
 };
 
+// Get health records statistics
+const getHealthRecordStatisticsHandler = async (request: any, h: any) => {
+  try {
+    const statistics = await HealthRecordService.getHealthRecordStatistics();
+
+    return h.response({
+      success: true,
+      data: statistics
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
 // Search health records
 const searchHealthRecordsHandler = async (request: any, h: any) => {
   try {
@@ -726,6 +743,33 @@ export const healthRecordRoutes: ServerRoute[] = [
     handler: getAdminSettingsHandler2,
     options: {
       auth: 'jwt'
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/health-records/statistics',
+    handler: getHealthRecordStatisticsHandler,
+    options: {
+      auth: 'jwt',
+      tags: ['api', 'Health Records'],
+      description: 'Get health records statistics',
+      notes: 'Returns overall statistics including total records, active allergies, chronic conditions, and vaccinations due. **PHI Protected Endpoint**',
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Statistics retrieved successfully'
+            },
+            '401': {
+              description: 'Authentication required'
+            },
+            '500': {
+              description: 'Internal server error'
+            }
+          },
+          security: [{ jwt: [] }]
+        }
+      }
     }
   }
 ];

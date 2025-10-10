@@ -17,11 +17,9 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
   onEditAllergy,
   user
 }) => {
-  const mockAllergies: Allergy[] = [
-    { id: '1', allergen: 'Peanuts', severity: 'LIFE_THREATENING', verified: true, treatment: 'EpiPen Auto-Injector', providerName: 'Dr. Smith' },
-    { id: '2', allergen: 'Penicillin', severity: 'SEVERE', verified: true, treatment: 'Alternative antibiotics only', providerName: 'Dr. Johnson' },
-    { id: '3', allergen: 'Bee Stings', severity: 'MODERATE', verified: false, treatment: 'Antihistamines', providerName: 'Dr. Williams' },
-  ]
+  // Use the allergies prop passed from parent component (real API data)
+  // No mock data - this is CRITICAL for HIPAA compliance
+  const displayAllergies = allergies || []
 
   // Check if user has write permissions (not readonly)
   const canModify = user?.role !== 'READ_ONLY'
@@ -54,7 +52,13 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
       </div>
 
       <div className="space-y-3" data-testid="allergies-list">
-        {mockAllergies.map((allergy) => (
+        {displayAllergies.length === 0 ? (
+          <div className="text-center py-8 text-gray-600" data-testid="no-allergies-message">
+            <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p>No allergies recorded for this student.</p>
+          </div>
+        ) : (
+          displayAllergies.map((allergy) => (
           <div key={allergy.id} className="border border-gray-200 rounded-lg p-4" data-testid="allergy-item">
             <div className="flex justify-between items-start">
               <div className="flex items-start gap-3">
@@ -104,7 +108,8 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
               )}
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )

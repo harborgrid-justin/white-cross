@@ -258,6 +258,101 @@ const searchInventoryItemsHandler = async (request: any, h: any) => {
   }
 };
 
+// Get single inventory item
+const getInventoryItemHandler = async (request: any, h: any) => {
+  try {
+    const { id } = request.params;
+    const item = await InventoryService.getInventoryItem(id);
+
+    return h.response({
+      success: true,
+      data: { item }
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(error.message === 'Inventory item not found' ? 404 : 500);
+  }
+};
+
+// Delete inventory item
+const deleteInventoryItemHandler = async (request: any, h: any) => {
+  try {
+    const { id } = request.params;
+    const item = await InventoryService.deleteInventoryItem(id);
+
+    return h.response({
+      success: true,
+      data: { item }
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(error.message === 'Inventory item not found' ? 404 : 500);
+  }
+};
+
+// Adjust stock
+const adjustStockHandler = async (request: any, h: any) => {
+  try {
+    const { id } = request.params;
+    const { quantity, reason } = request.payload;
+    const performedBy = request.auth.credentials?.userId;
+
+    const result = await InventoryService.adjustStock(id, quantity, reason, performedBy);
+
+    return h.response({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(error.message === 'Inventory item not found' ? 404 : 400);
+  }
+};
+
+// Get stock history
+const getStockHistoryHandler = async (request: any, h: any) => {
+  try {
+    const { id } = request.params;
+    const page = parseInt(request.query.page) || 1;
+    const limit = parseInt(request.query.limit) || 50;
+
+    const result = await InventoryService.getStockHistory(id, page, limit);
+
+    return h.response({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
+// Get inventory statistics
+const getInventoryStatsHandler = async (request: any, h: any) => {
+  try {
+    const stats = await InventoryService.getInventoryStats();
+
+    return h.response({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    return h.response({
+      success: false,
+      error: { message: (error as Error).message }
+    }).code(500);
+  }
+};
+
 // Define inventory routes for Hapi
 export const inventoryRoutes: ServerRoute[] = [
   {
@@ -436,6 +531,74 @@ export const inventoryRoutes: ServerRoute[] = [
           limit: Joi.number().integer().min(1).max(100).default(20)
         })
       }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/{id}',
+    handler: getInventoryItemHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/inventory/{id}',
+    handler: deleteInventoryItemHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/inventory/{id}/adjust',
+    handler: adjustStockHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().required()
+        }),
+        payload: Joi.object({
+          quantity: Joi.number().integer().required(),
+          reason: Joi.string().trim().required()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/{id}/history',
+    handler: getStockHistoryHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().required()
+        }),
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(50)
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/inventory/stats',
+    handler: getInventoryStatsHandler,
+    options: {
+      auth: 'jwt'
     }
   }
 ];

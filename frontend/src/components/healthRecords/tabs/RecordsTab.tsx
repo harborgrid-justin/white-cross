@@ -31,53 +31,18 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
     return data
   }
 
-  const mockRecords = [
-    {
-      id: '1',
-      title: 'Annual Physical Examination',
-      provider: 'Dr. Sarah Johnson',
-      date: 'October 15, 2024',
-      description: 'Complete physical exam with vitals and health assessment',
-      type: 'Medical',
-      content: 'Complete physical examination with normal findings',
-      patientInfo: {
-        ssn: '123-45-6789',
-        insuranceId: 'INS123456789',
-        diagnosis: 'Routine physical examination'
-      }
-    },
-    {
-      id: '2',
-      title: 'Follow-up Visit',
-      provider: 'Dr. Sarah Johnson',
-      date: 'September 20, 2024',
-      description: 'Follow-up for previous concerns',
-      type: 'Medical',
-      content: 'Follow-up visit for previous health concerns',
-      patientInfo: {
-        ssn: '123-45-6789',
-        insuranceId: 'INS123456789',
-        diagnosis: 'Follow-up care'
-      }
-    },
-    {
-      id: '3',
-      title: 'Mental Health Assessment',
-      provider: 'Dr. Thompson, Licensed Psychologist',
-      date: 'August 15, 2024',
-      description: '[MENTAL HEALTH - RESTRICTED ACCESS]',
-      type: 'Mental Health',
-      content: '[MENTAL HEALTH - RESTRICTED ACCESS]',
-      patientInfo: {
-        ssn: '***-**-****',
-        insuranceId: '****',
-        diagnosis: '[RESTRICTED]'
-      },
-      isRestricted: true
-    }
-  ]
+  // Filter records based on search query
+  const displayRecords = React.useMemo(() => {
+    if (!searchQuery) return healthRecords
 
-  const displayRecords = searchQuery && searchQuery.includes('nonexistent') ? [] : mockRecords
+    const lowerQuery = searchQuery.toLowerCase()
+    return healthRecords.filter(record =>
+      record.title?.toLowerCase().includes(lowerQuery) ||
+      record.type?.toLowerCase().includes(lowerQuery) ||
+      record.provider?.toLowerCase().includes(lowerQuery) ||
+      record.description?.toLowerCase().includes(lowerQuery)
+    )
+  }, [healthRecords, searchQuery])
 
   return (
     <div className="space-y-4" data-testid="records-content">
@@ -115,31 +80,37 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
                         {record.type}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600" data-testid="record-provider">{record.provider}</p>
-                    <p className="text-sm text-gray-600" data-testid="record-date">{record.date}</p>
-                    <p className="text-sm text-gray-500 mt-1" data-testid="record-content">{record.content}</p>
-                    
-                    {/* Sensitive Data Fields */}
-                    <div className="mt-2 space-y-1 text-xs text-gray-600">
-                      <div>
-                        <span className="font-medium">SSN: </span>
-                        <span data-testid="ssn-field">
-                          {maskSensitiveData(record.patientInfo.ssn, user?.role || 'VIEWER', 'ssn')}
-                        </span>
+                    <p className="text-sm text-gray-600" data-testid="record-provider">
+                      {record.provider || 'Provider not specified'}
+                    </p>
+                    <p className="text-sm text-gray-600" data-testid="record-date">
+                      {record.date || 'Date not specified'}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1" data-testid="record-content">
+                      {record.description}
+                    </p>
+
+                    {/* Diagnosis and Notes - Protected Health Information */}
+                    {(record.diagnosis || record.notes) && (
+                      <div className="mt-2 space-y-1 text-xs text-gray-600">
+                        {record.diagnosis && (
+                          <div>
+                            <span className="font-medium">Diagnosis: </span>
+                            <span data-testid="diagnosis-details">
+                              {maskSensitiveData(record.diagnosis, user?.role || 'VIEWER', 'diagnosis')}
+                            </span>
+                          </div>
+                        )}
+                        {record.notes && user?.role !== 'READ_ONLY' && (
+                          <div>
+                            <span className="font-medium">Notes: </span>
+                            <span data-testid="record-notes">
+                              {record.notes}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <span className="font-medium">Insurance: </span>
-                        <span data-testid="insurance-id">
-                          {maskSensitiveData(record.patientInfo.insuranceId, user?.role || 'VIEWER', 'insurance')}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium">Diagnosis: </span>
-                        <span data-testid="diagnosis-details">
-                          {maskSensitiveData(record.patientInfo.diagnosis, user?.role || 'VIEWER', 'diagnosis')}
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex space-x-2">

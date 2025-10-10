@@ -630,4 +630,390 @@ export class InventoryService {
       throw error;
     }
   }
+
+  /**
+   * Get single inventory item by ID
+   */
+  static async getInventoryItem(id: string) {
+    try {
+      const item = await prisma.inventoryItem.findUnique({
+        where: { id },
+        include: {
+          transactions: {
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+            include: {
+              performedBy: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  email: true
+                }
+              }
+            }
+          },
+          maintenanceLogs: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            include: {
+              performedBy: {
+                select: {
+                  firstName: true,
+                  lastName: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!item) {
+        throw new Error('Inventory item not found');
+      }
+
+      // Calculate current stock
+      const currentStock = await this.getCurrentStock(id);
+
+      return {
+        ...item,
+        currentStock
+      };
+    } catch (error) {
+      logger.error('Error getting inventory item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete inventory item (soft delete)
+   */
+  static async deleteInventoryItem(id: string) {
+    try {
+      const item = await prisma.inventoryItem.findUnique({
+        where: { id }
+      });
+
+      if (!item) {
+        throw new Error('Inventory item not found');
+      }
+
+      // Soft delete by setting isActive to false
+      const deletedItem = await prisma.inventoryItem.update({
+        where: { id },
+        data: { isActive: false }
+      });
+
+      logger.info(`Inventory item deleted: ${deletedItem.name}`);
+      return deletedItem;
+    } catch (error) {
+      logger.error('Error deleting inventory item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Adjust stock with audit trail
+   */
+  static async adjustStock(
+    id: string,
+    quantity: number,
+    reason: string,
+    performedBy: string
+  ) {
+    try {
+      const item = await prisma.inventoryItem.findUnique({
+        where: { id }
+      });
+
+      if (!item) {
+        throw new Error('Inventory item not found');
+      }
+
+      // Get current stock before adjustment
+      const currentStock = await this.getCurrentStock(id);
+
+      // Create adjustment transaction
+      const transaction = await prisma.inventoryTransaction.create({
+        data: {
+          inventoryItemId: id,
+          type: 'ADJUSTMENT',
+          quantity,
+          reason,
+          notes: `Stock adjusted from ${currentStock} to ${currentStock + quantity}. Reason: ${reason}`,
+          performedById: performedBy
+        },
+        include: {
+          inventoryItem: true,
+          performedBy: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
+        }
+      });
+
+      const newStock = currentStock + quantity;
+
+      logger.info(
+        `Stock adjusted for ${item.name}: ${currentStock} -> ${newStock} (${quantity > 0 ? '+' : ''}${quantity}) by ${performedBy}`
+      );
+
+      return {
+        transaction,
+        previousStock: currentStock,
+        newStock,
+        adjustment: quantity
+      };
+    } catch (error) {
+      logger.error('Error adjusting stock:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get stock history for an item
+   */
+  static async getStockHistory(
+    inventoryItemId: string,
+    page: number = 1,
+    limit: number = 50
+  ) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [transactions, total] = await Promise.all([
+        prisma.inventoryTransaction.findMany({
+          where: { inventoryItemId },
+          include: {
+            performedBy: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit
+        }),
+        prisma.inventoryTransaction.count({
+          where: { inventoryItemId }
+        })
+      ]);
+
+      // Calculate running stock totals
+      const history = [];
+      let runningTotal = 0;
+
+      // Get all transactions in chronological order to calculate running totals
+      const allTransactions = await prisma.inventoryTransaction.findMany({
+        where: { inventoryItemId },
+        orderBy: { createdAt: 'asc' }
+      });
+
+      // Build running total map
+      const runningTotals = new Map<string, number>();
+      for (const txn of allTransactions) {
+        runningTotal += txn.quantity;
+        runningTotals.set(txn.id, runningTotal);
+      }
+
+      // Add running totals to paginated results
+      for (const txn of transactions) {
+        history.push({
+          ...txn,
+          stockAfterTransaction: runningTotals.get(txn.id) || 0
+        });
+      }
+
+      return {
+        history,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting stock history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get inventory statistics
+   */
+  static async getInventoryStats() {
+    try {
+      const [
+        totalItems,
+        activeItems,
+        totalValue,
+        lowStockItems,
+        outOfStockItems,
+        categoryStats
+      ] = await Promise.all([
+        // Total items count
+        prisma.inventoryItem.count(),
+
+        // Active items count
+        prisma.inventoryItem.count({
+          where: { isActive: true }
+        }),
+
+        // Total inventory value
+        prisma.$queryRaw<Array<{ totalvalue: number }>>`
+          SELECT
+            COALESCE(SUM(stock.totalQuantity * i."unitCost"), 0) as totalValue
+          FROM "inventory_items" i
+          LEFT JOIN (
+            SELECT
+              "inventoryItemId",
+              SUM("quantity") as totalQuantity
+            FROM "inventory_transactions"
+            GROUP BY "inventoryItemId"
+          ) stock ON i.id = stock."inventoryItemId"
+          WHERE i."isActive" = true
+        `,
+
+        // Low stock items
+        prisma.$queryRaw<Array<{ count: number }>>`
+          SELECT COUNT(*) as count
+          FROM "inventory_items" i
+          LEFT JOIN (
+            SELECT
+              "inventoryItemId",
+              SUM("quantity") as totalQuantity
+            FROM "inventory_transactions"
+            GROUP BY "inventoryItemId"
+          ) stock ON i.id = stock."inventoryItemId"
+          WHERE i."isActive" = true
+          AND COALESCE(stock.totalQuantity, 0) <= i."reorderLevel"
+          AND COALESCE(stock.totalQuantity, 0) > 0
+        `,
+
+        // Out of stock items
+        prisma.$queryRaw<Array<{ count: number }>>`
+          SELECT COUNT(*) as count
+          FROM "inventory_items" i
+          LEFT JOIN (
+            SELECT
+              "inventoryItemId",
+              SUM("quantity") as totalQuantity
+            FROM "inventory_transactions"
+            GROUP BY "inventoryItemId"
+          ) stock ON i.id = stock."inventoryItemId"
+          WHERE i."isActive" = true
+          AND COALESCE(stock.totalQuantity, 0) = 0
+        `,
+
+        // Category statistics
+        prisma.$queryRaw`
+          SELECT
+            i.category,
+            COUNT(i.id) as itemCount,
+            COALESCE(SUM(stock.totalQuantity), 0) as totalQuantity,
+            COALESCE(SUM(stock.totalQuantity * i."unitCost"), 0) as totalValue
+          FROM "inventory_items" i
+          LEFT JOIN (
+            SELECT
+              "inventoryItemId",
+              SUM("quantity") as totalQuantity
+            FROM "inventory_transactions"
+            GROUP BY "inventoryItemId"
+          ) stock ON i.id = stock."inventoryItemId"
+          WHERE i."isActive" = true
+          GROUP BY i.category
+          ORDER BY totalValue DESC
+        `
+      ]);
+
+      const alerts = await this.getInventoryAlerts();
+
+      return {
+        overview: {
+          totalItems,
+          activeItems,
+          inactiveItems: totalItems - activeItems,
+          totalValue: Number(totalValue[0]?.totalvalue || 0),
+          lowStockItems: Number(lowStockItems[0]?.count || 0),
+          outOfStockItems: Number(outOfStockItems[0]?.count || 0),
+          criticalAlerts: alerts.filter(a => a.severity === 'CRITICAL').length,
+          highAlerts: alerts.filter(a => a.severity === 'HIGH').length,
+          mediumAlerts: alerts.filter(a => a.severity === 'MEDIUM').length
+        },
+        categoryBreakdown: categoryStats,
+        recentActivity: await this.getRecentActivity(),
+        topUsedItems: await this.getTopUsedItems()
+      };
+    } catch (error) {
+      logger.error('Error getting inventory stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get recent activity (last 10 transactions)
+   */
+  private static async getRecentActivity() {
+    try {
+      const recentTransactions = await prisma.inventoryTransaction.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          inventoryItem: {
+            select: {
+              id: true,
+              name: true,
+              category: true
+            }
+          },
+          performedBy: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      });
+
+      return recentTransactions;
+    } catch (error) {
+      logger.error('Error getting recent activity:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get top 10 most used items (by usage count)
+   */
+  private static async getTopUsedItems() {
+    try {
+      const topItems = await prisma.$queryRaw`
+        SELECT
+          i.id,
+          i.name,
+          i.category,
+          COUNT(t.id) as usageCount,
+          SUM(CASE WHEN t.type = 'USAGE' THEN ABS(t.quantity) ELSE 0 END) as totalUsed
+        FROM "inventory_items" i
+        INNER JOIN "inventory_transactions" t ON i.id = t."inventoryItemId"
+        WHERE i."isActive" = true
+        AND t.type = 'USAGE'
+        AND t."createdAt" >= NOW() - INTERVAL '30 days'
+        GROUP BY i.id, i.name, i.category
+        ORDER BY totalUsed DESC
+        LIMIT 10
+      `;
+
+      return topItems;
+    } catch (error) {
+      logger.error('Error getting top used items:', error);
+      return [];
+    }
+  }
 }

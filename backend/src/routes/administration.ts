@@ -1,5 +1,5 @@
 import { Router, Response, NextFunction } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, query, validationResult } from 'express-validator';
 import { AdministrationService } from '../services/administrationService';
 import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 
@@ -17,706 +17,772 @@ const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction): Pro
 
 const router = Router();
 
-// ==================== UNUSED HAPI HANDLERS ====================
-// The following handlers are Hapi-style but this file uses Express router
-// They are kept for reference but should be converted or removed
-// Disabling linting for this entire section as these are not currently used
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-// ==================== District Routes ====================
+// ==================== System Settings Routes ====================
 
-// Get all districts
-const getDistrictsHandler = async (request: any, h: any) => {
+// Get system settings
+router.get('/settings', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    const settings = await AdministrationService.getSystemSettings();
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    res.json({
+      success: true,
+      data: settings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
+
+// Update system settings
+router.put('/settings', [
+  auth,
+  isAdmin,
+  body('settings').isArray().notEmpty()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
         success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
+        errors: errors.array()
+      });
     }
 
-    const page = parseInt(request.query.page) || 1;
-    const limit = parseInt(request.query.limit) || 20;
+    const settings = await AdministrationService.updateSystemSettings(req.body.settings);
 
-    const result = await AdministrationService.getDistricts(page, limit);
+    res.json({
+      success: true,
+      data: settings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
 
-    return h.response({
+// ==================== User Management Routes ====================
+
+// Get all users
+router.get('/users', [
+  auth,
+  isAdmin,
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+  query('search').optional().isString(),
+  query('role').optional().isString(),
+  query('isActive').optional().isBoolean()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const filters = {
+      page: parseInt(req.query.page as string) || 1,
+      limit: parseInt(req.query.limit as string) || 20,
+      search: req.query.search as string,
+      role: req.query.role as string,
+      isActive: req.query.isActive ? req.query.isActive === 'true' : undefined
+    };
+
+    const result = await AdministrationService.getUsers(filters);
+
+    res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
+
+// Create user
+router.post('/users', [
+  auth,
+  isAdmin,
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8 }),
+  body('firstName').notEmpty().trim(),
+  body('lastName').notEmpty().trim(),
+  body('role').isIn(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER'])
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const user = await AdministrationService.createUser(req.body);
+
+    // Don't send password in response
+    const { password, ...userWithoutPassword } = user as any;
+
+    res.status(201).json({
+      success: true,
+      data: { user: userWithoutPassword }
+    });
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    if (errorMessage.includes('already exists')) {
+      return res.status(409).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    res.status(400).json({
+      success: false,
+      error: { message: errorMessage }
+    });
+  }
+});
+
+// Update user
+router.put('/users/:id', [
+  auth,
+  isAdmin,
+  body('email').optional().isEmail().normalizeEmail(),
+  body('firstName').optional().trim(),
+  body('lastName').optional().trim(),
+  body('role').optional().isIn(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER']),
+  body('isActive').optional().isBoolean()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const user = await AdministrationService.updateUser(req.params.id, req.body);
+
+    // Don't send password in response
+    const { password, ...userWithoutPassword } = user as any;
+
+    res.json({
+      success: true,
+      data: { user: userWithoutPassword }
+    });
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    if (errorMessage === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    if (errorMessage.includes('already in use')) {
+      return res.status(409).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    res.status(400).json({
+      success: false,
+      error: { message: errorMessage }
+    });
+  }
+});
+
+// Delete user (deactivate)
+router.delete('/users/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    await AdministrationService.deleteUser(req.params.id);
+
+    res.json({
+      success: true,
+      data: { message: 'User deactivated successfully' }
+    });
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    if (errorMessage === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        error: { message: errorMessage }
+      });
+    }
+    res.status(400).json({
+      success: false,
+      error: { message: errorMessage }
+    });
+  }
+});
+
+// ==================== District Routes ====================
+
+// Get all districts
+router.get('/districts', [
+  auth,
+  isAdmin,
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    const result = await AdministrationService.getDistricts(page, limit);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
 
 // Get district by ID
-const getDistrictByIdHandler = async (request: any, h: any) => {
+router.get('/districts/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    const district = await AdministrationService.getDistrictById(req.params.id);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const district = await AdministrationService.getDistrictById(request.params.id);
-
-    return h.response({
+    res.json({
       success: true,
       data: { district }
     });
   } catch (error) {
-    return h.response({
+    const errorMessage = (error as Error).message;
+    res.status(errorMessage === 'District not found' ? 404 : 500).json({
       success: false,
-      error: { message: (error as Error).message }
-    }).code(error instanceof Error && error.message === 'District not found' ? 404 : 500);
+      error: { message: errorMessage }
+    });
   }
-};
+});
 
 // Create district
-const createDistrictHandler = async (request: any, h: any) => {
+router.post('/districts', [
+  auth,
+  isAdmin,
+  body('name').notEmpty().trim(),
+  body('code').notEmpty().trim()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
         success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
+        errors: errors.array()
+      });
     }
 
-    const district = await AdministrationService.createDistrict(request.payload);
+    const district = await AdministrationService.createDistrict(req.body);
 
-    return h.response({
-      success: true,
-      data: { district }
-    }).code(201);
-  } catch (error) {
-    return h.response({
-      success: false,
-      error: { message: (error as Error).message }
-    }).code(500);
-  }
-};
-
-// Update district
-const updateDistrictHandler = async (request: any, h: any) => {
-  try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const district = await AdministrationService.updateDistrict(request.params.id, request.payload);
-
-    return h.response({
+    res.status(201).json({
       success: true,
       data: { district }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
+
+// Update district
+router.put('/districts/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const district = await AdministrationService.updateDistrict(req.params.id, req.body);
+
+    res.json({
+      success: true,
+      data: { district }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
 
 // Delete district
-const deleteDistrictHandler = async (request: any, h: any) => {
+router.delete('/districts/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    await AdministrationService.deleteDistrict(req.params.id);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    await AdministrationService.deleteDistrict(request.params.id);
-
-    return h.response({
+    res.json({
       success: true,
       data: { message: 'District deleted successfully' }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // ==================== School Routes ====================
 
 // Get all schools
-const getSchoolsHandler = async (request: any, h: any) => {
+router.get('/schools', [
+  auth,
+  isAdmin,
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+  query('districtId').optional().isString()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const page = parseInt(request.query.page) || 1;
-    const limit = parseInt(request.query.limit) || 20;
-    const districtId = request.query.districtId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const districtId = req.query.districtId as string;
 
     const result = await AdministrationService.getSchools(page, limit, districtId);
 
-    return h.response({
+    res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Get school by ID
-const getSchoolByIdHandler = async (request: any, h: any) => {
+router.get('/schools/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    const school = await AdministrationService.getSchoolById(req.params.id);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const school = await AdministrationService.getSchoolById(request.params.id);
-
-    return h.response({
+    res.json({
       success: true,
       data: { school }
     });
   } catch (error) {
-    return h.response({
+    const errorMessage = (error as Error).message;
+    res.status(errorMessage === 'School not found' ? 404 : 500).json({
       success: false,
-      error: { message: (error as Error).message }
-    }).code(error instanceof Error && error.message === 'School not found' ? 404 : 500);
+      error: { message: errorMessage }
+    });
   }
-};
+});
 
 // Create school
-const createSchoolHandler = async (request: any, h: any) => {
+router.post('/schools', [
+  auth,
+  isAdmin,
+  body('name').notEmpty().trim(),
+  body('code').notEmpty().trim(),
+  body('districtId').notEmpty()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
         success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
+        errors: errors.array()
+      });
     }
 
-    const school = await AdministrationService.createSchool(request.payload);
+    const school = await AdministrationService.createSchool(req.body);
 
-    return h.response({
-      success: true,
-      data: { school }
-    }).code(201);
-  } catch (error) {
-    return h.response({
-      success: false,
-      error: { message: (error as Error).message }
-    }).code(500);
-  }
-};
-
-// Update school
-const updateSchoolHandler = async (request: any, h: any) => {
-  try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const school = await AdministrationService.updateSchool(request.params.id, request.payload);
-
-    return h.response({
+    res.status(201).json({
       success: true,
       data: { school }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
+
+// Update school
+router.put('/schools/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const school = await AdministrationService.updateSchool(req.params.id, req.body);
+
+    res.json({
+      success: true,
+      data: { school }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: (error as Error).message }
+    });
+  }
+});
 
 // Delete school
-const deleteSchoolHandler = async (request: any, h: any) => {
+router.delete('/schools/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    await AdministrationService.deleteSchool(req.params.id);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    await AdministrationService.deleteSchool(request.params.id);
-
-    return h.response({
+    res.json({
       success: true,
       data: { message: 'School deleted successfully' }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // ==================== System Configuration Routes ====================
 
 // Get all configurations
-const getAllConfigurationsHandler = async (request: any, h: any) => {
+router.get('/configurations', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const category = request.query.category;
+    const category = req.query.category as string;
     const configs = await AdministrationService.getAllConfigurations(category);
 
-    return h.response({
+    res.json({
       success: true,
-      data: { configs }
+      data: { configurations: configs }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Get configuration by key
-const getConfigurationHandler = async (request: any, h: any) => {
+router.get('/configurations/:key', auth, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-    const config = await AdministrationService.getConfiguration(request.params.key);
+    const config = await AdministrationService.getConfiguration(req.params.key);
 
     if (!config) {
-      return h.response({
+      return res.status(404).json({
         success: false,
         error: { message: 'Configuration not found' }
-      }).code(404);
+      });
     }
 
     // Check if user can view this config
-    if (!config.isPublic && !['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    if (!config.isPublic && !['ADMIN', 'DISTRICT_ADMIN'].includes(req.user?.role || '')) {
+      return res.status(403).json({
         success: false,
         error: { message: 'Access denied' }
-      }).code(403);
+      });
     }
 
-    return h.response({
+    res.json({
       success: true,
       data: { config }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Set configuration
-const setConfigurationHandler = async (request: any, h: any) => {
+router.post('/configurations', [
+  auth,
+  isAdmin,
+  body('key').notEmpty(),
+  body('value').notEmpty(),
+  body('category').isIn(['GENERAL', 'SECURITY', 'NOTIFICATION', 'INTEGRATION', 'BACKUP', 'PERFORMANCE'])
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
         success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
+        errors: errors.array()
+      });
     }
 
-    const config = await AdministrationService.setConfiguration(request.payload);
+    const config = await AdministrationService.setConfiguration(req.body);
 
-    return h.response({
+    res.json({
       success: true,
       data: { config }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Delete configuration
-const deleteConfigurationHandler = async (request: any, h: any) => {
+router.delete('/configurations/:key', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    await AdministrationService.deleteConfiguration(req.params.key);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    await AdministrationService.deleteConfiguration(request.params.key);
-
-    return h.response({
+    res.json({
       success: true,
       data: { message: 'Configuration deleted successfully' }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // ==================== Backup Routes ====================
 
 // Create backup
-const createBackupHandler = async (request: any, h: any) => {
+router.post('/backups', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
     const backup = await AdministrationService.createBackup({
       type: 'MANUAL',
-      triggeredBy: user.userId
+      triggeredBy: req.user!.userId
     });
 
-    return h.response({
+    res.status(201).json({
       success: true,
       data: { backup }
-    }).code(201);
+    });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Get backup logs
-const getBackupLogsHandler = async (request: any, h: any) => {
+router.get('/backups', [
+  auth,
+  isAdmin,
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const page = parseInt(request.query.page) || 1;
-    const limit = parseInt(request.query.limit) || 20;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
 
     const result = await AdministrationService.getBackupLogs(page, limit);
 
-    return h.response({
+    res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // ==================== Performance Monitoring Routes ====================
 
 // Get system health
-const getSystemHealthHandler = async (request: any, h: any) => {
+router.get('/system-health', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
     const health = await AdministrationService.getSystemHealth();
 
-    return h.response({
+    res.json({
       success: true,
       data: health
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Get metrics
-const getMetricsHandler = async (request: any, h: any) => {
+router.get('/metrics', [
+  auth,
+  isAdmin,
+  query('metricType').optional().isString(),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const metricType = request.query.metricType;
-    const startDate = request.query.startDate ? new Date(request.query.startDate) : undefined;
-    const endDate = request.query.endDate ? new Date(request.query.endDate) : undefined;
+    const metricType = req.query.metricType as string;
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
     const metrics = await AdministrationService.getMetrics(metricType, startDate, endDate);
 
-    return h.response({
+    res.json({
       success: true,
       data: { metrics }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Record metric (internal use)
-const recordMetricHandler = async (request: any, h: any) => {
+router.post('/metrics', [
+  auth,
+  isAdmin,
+  body('metricType').notEmpty(),
+  body('value').isFloat(),
+  body('unit').optional().isString()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
         success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
+        errors: errors.array()
+      });
     }
 
     const metric = await AdministrationService.recordMetric(
-      request.payload.metricType,
-      parseFloat(request.payload.value),
-      request.payload.unit,
-      request.payload.context
+      req.body.metricType,
+      parseFloat(req.body.value),
+      req.body.unit,
+      req.body.context
     );
 
-    return h.response({
+    res.status(201).json({
       success: true,
       data: { metric }
-    }).code(201);
+    });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // ==================== License Routes ====================
 
 // Get all licenses
-const getLicensesHandler = async (request: any, h: any) => {
+router.get('/licenses', [
+  auth,
+  isAdmin,
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const page = parseInt(request.query.page) || 1;
-    const limit = parseInt(request.query.limit) || 20;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
 
     const result = await AdministrationService.getLicenses(page, limit);
 
-    return h.response({
+    res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Get license by ID
-const getLicenseByIdHandler = async (request: any, h: any) => {
+router.get('/licenses/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    const license = await AdministrationService.getLicenseById(req.params.id);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const license = await AdministrationService.getLicenseById(request.params.id);
-
-    return h.response({
+    res.json({
       success: true,
       data: { license }
     });
   } catch (error) {
-    return h.response({
+    const errorMessage = (error as Error).message;
+    res.status(errorMessage === 'License not found' ? 404 : 500).json({
       success: false,
-      error: { message: (error as Error).message }
-    }).code(error instanceof Error && error.message === 'License not found' ? 404 : 500);
+      error: { message: errorMessage }
+    });
   }
-};
+});
 
 // Create license
-const createLicenseHandler = async (request: any, h: any) => {
+router.post('/licenses', [
+  auth,
+  isAdmin,
+  body('licenseKey').notEmpty(),
+  body('type').isIn(['TRIAL', 'BASIC', 'PROFESSIONAL', 'ENTERPRISE']),
+  body('features').isArray()
+], async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
-
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
         success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
+        errors: errors.array()
+      });
     }
 
-    const license = await AdministrationService.createLicense(request.payload);
+    const license = await AdministrationService.createLicense(req.body);
 
-    return h.response({
+    res.status(201).json({
       success: true,
       data: { license }
-    }).code(201);
+    });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Update license
-const updateLicenseHandler = async (request: any, h: any) => {
+router.put('/licenses/:id', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    const license = await AdministrationService.updateLicense(req.params.id, req.body);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const license = await AdministrationService.updateLicense(request.params.id, request.payload);
-
-    return h.response({
+    res.json({
       success: true,
       data: { license }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
+});
 
 // Deactivate license
-const deactivateLicenseHandler = async (request: any, h: any) => {
+router.post('/licenses/:id/deactivate', auth, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = request.auth.credentials;
+    const license = await AdministrationService.deactivateLicense(req.params.id);
 
-    // Check admin permissions
-    if (!['ADMIN', 'DISTRICT_ADMIN'].includes(user.role)) {
-      return h.response({
-        success: false,
-        error: 'Access denied. Admin privileges required.'
-      }).code(403);
-    }
-
-    const license = await AdministrationService.deactivateLicense(request.params.id);
-
-    return h.response({
+    res.json({
       success: true,
       data: { license }
     });
   } catch (error) {
-    return h.response({
+    res.status(500).json({
       success: false,
       error: { message: (error as Error).message }
-    }).code(500);
+    });
   }
-};
-/* eslint-enable @typescript-eslint/no-unused-vars */
-/* eslint-enable no-unused-vars */
-// ==================== END UNUSED HAPI HANDLERS ====================
+});
 
 // ==================== Training Module Routes ====================
 
@@ -856,8 +922,8 @@ router.post('/training/:id/complete', [
 router.get('/training-progress/:userId', auth, async (req: AuthRequest, res: Response) => {
   try {
     // Users can only view their own progress unless they're admin
-    if (req.params.userId !== req.user!.userId && 
-        req.user?.role !== 'ADMIN' && 
+    if (req.params.userId !== req.user!.userId &&
+        req.user?.role !== 'ADMIN' &&
         req.user?.role !== 'DISTRICT_ADMIN') {
       return res.status(403).json({
         success: false,
@@ -882,11 +948,22 @@ router.get('/training-progress/:userId', auth, async (req: AuthRequest, res: Res
 // ==================== Audit Log Routes ====================
 
 // Get audit logs
-router.get('/audit-logs', auth, isAdmin, async (req: AuthRequest, res: Response) => {
+router.get('/audit-logs', [
+  auth,
+  isAdmin,
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+  query('userId').optional().isString(),
+  query('entityType').optional().isString(),
+  query('entityId').optional().isString(),
+  query('action').optional().isString(),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], async (req: AuthRequest, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
-    
+
     const filters = {
       userId: req.query.userId as string,
       entityType: req.query.entityType as string,

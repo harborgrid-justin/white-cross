@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Phone, MessageCircle, Mail, Users, Plus, Search, Edit, Trash2, Send, CheckCircle, X } from 'lucide-react'
-import { emergencyContactsApi } from '../services/emergencyContactsApi'
-import { studentsApi } from '../services/api'
 import toast from 'react-hot-toast'
+import { useStudents } from '../hooks/useStudents'
+import {
+  useEmergencyContacts,
+  useEmergencyContactStatistics,
+  useCreateEmergencyContact,
+  useUpdateEmergencyContact,
+  useDeleteEmergencyContact,
+  useNotifyStudentContacts,
+  useVerifyContact,
+} from '../hooks/useEmergencyContacts'
+import {
+  useCommunicationChannels,
+  useNotificationTypes,
+  usePriorityLevels,
+} from '../hooks/useCommunicationOptions'
 
 interface Contact {
   id: string
@@ -26,13 +39,8 @@ interface Contact {
 
 export default function EmergencyContacts() {
   const [activeTab, setActiveTab] = useState<'overview' | 'contacts' | 'notify'>('overview')
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [students, setStudents] = useState<any[]>([])
-  const [statistics, setStatistics] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
-  const [showNotifyModal, setShowNotifyModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<string>('')
   const [editingContact, setEditingContact] = useState<Contact | null>(null)
 
@@ -54,102 +62,90 @@ export default function EmergencyContacts() {
     channels: [] as string[],
   })
 
-  useEffect(() => {
-    loadStatistics()
-    loadStudents()
-  }, [])
+  // Fetch students
+  const { students } = useStudents({ page: 1, limit: 100 })
 
-  useEffect(() => {
-    if (selectedStudent) {
-      loadContacts(selectedStudent)
+  // Set initial selected student when students load
+  React.useEffect(() => {
+    if (students.length > 0 && !selectedStudent) {
+      setSelectedStudent(students[0].id)
     }
-  }, [selectedStudent])
+  }, [students, selectedStudent])
 
-  const loadStudents = async () => {
-    try {
-      const response = await studentsApi.getAll({ page: 1, limit: 100 })
-      const studentsData = Array.isArray(response.data) ? response.data : []
-      setStudents(studentsData)
-      if (studentsData && Array.isArray(studentsData) && studentsData.length > 0) {
-        setSelectedStudent(studentsData[0].id)
-      }
-    } catch (error) {
-      console.error('Error loading students:', error)
-    }
-  }
+  // Fetch emergency contacts for selected student
+  const { data: contactsData, isLoading: contactsLoading } = useEmergencyContacts(selectedStudent, {
+    enabled: !!selectedStudent,
+  })
+  const contacts = contactsData?.contacts || []
 
-  const loadContacts = async (studentId: string) => {
-    try {
-      setLoading(true)
-      const data = await emergencyContactsApi.getByStudent(studentId)
-      setContacts(data.contacts || [])
-    } catch (error) {
-      console.error('Error loading contacts:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch statistics
+  const { data: statistics } = useEmergencyContactStatistics()
 
-  const loadStatistics = async () => {
-    try {
-      const stats = await emergencyContactsApi.getStatistics()
-      setStatistics(stats)
-    } catch (error) {
-      console.error('Error loading statistics:', error)
-    }
-  }
+  // Fetch communication options
+  const { data: channels = [] } = useCommunicationChannels()
+  const { data: notificationTypes = [] } = useNotificationTypes()
+  const { data: priorityLevels = [] } = usePriorityLevels()
+
+  // Mutations
+  const createContact = useCreateEmergencyContact()
+  const updateContact = useUpdateEmergencyContact()
+  const deleteContact = useDeleteEmergencyContact()
+  const notifyContacts = useNotifyStudentContacts()
+  const verifyContact = useVerifyContact()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       if (editingContact) {
-        await emergencyContactsApi.update(editingContact.id, formData)
-        toast.success('Contact updated successfully')
+        await updateContact.mutateAsync({
+          id: editingContact.id,
+          data: formData,
+        })
       } else {
-        await emergencyContactsApi.create({ ...formData, studentId: selectedStudent })
-        toast.success('Contact added successfully')
+        await createContact.mutateAsync({
+          ...formData,
+          studentId: selectedStudent,
+        })
       }
       setShowAddModal(false)
       resetForm()
-      loadContacts(selectedStudent)
-      loadStatistics()
     } catch (error) {
-      toast.error('Failed to save contact')
+      // Error is handled by the hook
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this contact?')) return
-    
+
     try {
-      await emergencyContactsApi.delete(id)
-      toast.success('Contact deleted successfully')
-      loadContacts(selectedStudent)
-      loadStatistics()
+      await deleteContact.mutateAsync({ id, studentId: selectedStudent })
     } catch (error) {
-      toast.error('Failed to delete contact')
+      // Error is handled by the hook
     }
   }
 
   const handleNotify = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await emergencyContactsApi.notifyStudent(selectedStudent, notificationData)
-      toast.success('Notification sent successfully')
-      setShowNotifyModal(false)
+      await notifyContacts.mutateAsync({
+        studentId: selectedStudent,
+        notification: notificationData,
+      })
       resetNotificationData()
     } catch (error) {
-      toast.error('Failed to send notification')
+      // Error is handled by the hook
     }
   }
 
   const handleVerify = async (contactId: string, method: 'sms' | 'email' | 'voice') => {
     try {
-      await emergencyContactsApi.verify(contactId, method)
-      toast.success(`Verification sent via ${method}`)
-      loadContacts(selectedStudent)
+      await verifyContact.mutateAsync({
+        contactId,
+        studentId: selectedStudent,
+        method,
+      })
     } catch (error) {
-      toast.error('Failed to send verification')
+      // Error is handled by the hook
     }
   }
 
@@ -379,7 +375,7 @@ export default function EmergencyContacts() {
           </div>
 
           {/* Contacts List */}
-          {loading ? (
+          {contactsLoading ? (
             <div className="card p-12 text-center text-gray-500">Loading contacts...</div>
           ) : filteredContacts.length === 0 ? (
             <div className="card p-12 text-center text-gray-500">
@@ -494,10 +490,11 @@ export default function EmergencyContacts() {
                 onChange={(e) => setNotificationData({ ...notificationData, type: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="general">General</option>
-                <option value="emergency">Emergency</option>
-                <option value="health">Health</option>
-                <option value="medication">Medication</option>
+                {notificationTypes.map(type => (
+                  <option key={type.id} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -510,10 +507,11 @@ export default function EmergencyContacts() {
                 onChange={(e) => setNotificationData({ ...notificationData, priority: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                {priorityLevels.map(priority => (
+                  <option key={priority.id} value={priority.value}>
+                    {priority.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -536,27 +534,32 @@ export default function EmergencyContacts() {
                 Communication Channels
               </label>
               <div className="space-y-2">
-                {['sms', 'email', 'voice'].map(channel => (
-                  <label key={channel} className="flex items-center">
+                {channels.map(channel => (
+                  <label key={channel.id} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={notificationData.channels.includes(channel)}
+                      checked={notificationData.channels.includes(channel.value)}
                       onChange={(e) => {
                         if (e.target.checked) {
                           setNotificationData({
                             ...notificationData,
-                            channels: [...notificationData.channels, channel]
+                            channels: [...notificationData.channels, channel.value]
                           })
                         } else {
                           setNotificationData({
                             ...notificationData,
-                            channels: notificationData.channels.filter(c => c !== channel)
+                            channels: notificationData.channels.filter(c => c !== channel.value)
                           })
                         }
                       }}
                       className="mr-2"
                     />
-                    <span className="text-sm text-gray-700 capitalize">{channel}</span>
+                    <span className="text-sm text-gray-700">{channel.label}</span>
+                    {channel.description && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        - {channel.description}
+                      </span>
+                    )}
                   </label>
                 ))}
               </div>
