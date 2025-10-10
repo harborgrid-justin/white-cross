@@ -42,7 +42,7 @@ export default function UsersTab() {
       if (roleFilter !== 'all') filters.role = roleFilter
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ADMIN.USERS}?page=1&limit=50`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
         }
       })
@@ -69,7 +69,7 @@ export default function UsersTab() {
       const response = await fetch(endpoint, {
         method: editingUser ? 'PUT' : 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
@@ -110,7 +110,7 @@ export default function UsersTab() {
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ADMIN.USERS}/${deletingUserId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
         }
       })
@@ -139,7 +139,7 @@ export default function UsersTab() {
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ADMIN.USERS}/${resetPasswordUserId}/reset-password`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
         }
       })
