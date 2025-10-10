@@ -75,7 +75,7 @@ export default function Medications() {
         </div>
         <div className="flex gap-2">
           {activeTab === 'medications' && (
-            <button 
+            <button
               data-testid="add-medication-button"
               onClick={() => setShowAddMedication(true)}
               className="btn-primary flex items-center"
@@ -84,14 +84,36 @@ export default function Medications() {
               Add Medication
             </button>
           )}
+          {activeTab === 'inventory' && (
+            <button
+              data-testid="inventory-button"
+              className="btn-primary flex items-center"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Inventory
+            </button>
+          )}
           {activeTab === 'adverse-reactions' && (
-            <button 
+            <button
               data-testid="report-reaction-button"
               onClick={() => setShowAdverseReactionForm(true)}
               className="btn-primary flex items-center"
             >
               <Plus className="h-4 w-4 mr-2" />
               Report Reaction
+            </button>
+          )}
+          {activeTab === 'overview' && (
+            <button
+              data-testid="add-medication-button"
+              onClick={() => {
+                setActiveTab('medications')
+                setShowAddMedication(true)
+              }}
+              className="btn-primary flex items-center"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add
             </button>
           )}
         </div>

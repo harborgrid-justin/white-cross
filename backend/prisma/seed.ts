@@ -404,7 +404,10 @@ async function main() {
   // Create Test Users (for Cypress)
   const testAdmin = await prisma.user.upsert({
     where: { email: 'admin@school.edu' },
-    update: {},
+    update: {
+      password: testAdminPassword,
+      isActive: true,
+    },
     create: {
       email: 'admin@school.edu',
       password: testAdminPassword,
@@ -419,7 +422,10 @@ async function main() {
 
   const testNurse = await prisma.user.upsert({
     where: { email: 'nurse@school.edu' },
-    update: {},
+    update: {
+      password: testNursePassword,
+      isActive: true,
+    },
     create: {
       email: 'nurse@school.edu',
       password: testNursePassword,
@@ -434,7 +440,10 @@ async function main() {
 
   const testReadOnly = await prisma.user.upsert({
     where: { email: 'readonly@school.edu' },
-    update: {},
+    update: {
+      password: testReadOnlyPassword,
+      isActive: true,
+    },
     create: {
       email: 'readonly@school.edu',
       password: testReadOnlyPassword,
@@ -449,7 +458,10 @@ async function main() {
 
   const testCounselor = await prisma.user.upsert({
     where: { email: 'counselor@school.edu' },
-    update: {},
+    update: {
+      password: testCounselorPassword,
+      isActive: true,
+    },
     create: {
       email: 'counselor@school.edu',
       password: testCounselorPassword,

@@ -4,6 +4,7 @@ import { appointmentsApi } from '../services/api'
 import { Appointment } from '../types/api'
 import { WaitlistEntry } from '../services/types'
 import toast from 'react-hot-toast'
+import AppointmentFormModal from '../components/appointments/AppointmentFormModal'
 
 type ViewMode = 'calendar' | 'list' | 'waitlist' | 'availability'
 
@@ -80,6 +81,27 @@ export default function Appointments() {
       loadData()
     } catch (error) {
       console.error('Error marking no-show:', error)
+    }
+  }
+
+  const handleCreateAppointment = async (data: any) => {
+    try {
+      await appointmentsApi.create({
+        studentId: data.studentId,
+        scheduledAt: new Date(`${data.appointmentDate}T${data.appointmentTime}`).toISOString(),
+        duration: data.duration,
+        type: data.type,
+        reason: data.reason,
+        notes: data.notes,
+        location: data.location || undefined,
+        status: 'SCHEDULED'
+      })
+      toast.success('Appointment scheduled successfully')
+      setShowCreateModal(false)
+      loadData()
+    } catch (error) {
+      console.error('Error creating appointment:', error)
+      toast.error('Failed to schedule appointment')
     }
   }
 
@@ -443,25 +465,12 @@ export default function Appointments() {
         </div>
       )}
 
-      {/* Modals would go here - simplified for now */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">Schedule Appointment</h3>
-            <p className="text-gray-600 mb-4">
-              Full appointment scheduling form will be implemented here.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Appointment Form Modal */}
+      <AppointmentFormModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateAppointment}
+      />
 
       {showWaitlistModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

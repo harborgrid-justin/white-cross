@@ -64,7 +64,8 @@
       "Bash(lsof:*)",
       "Bash(cat:*)",
       "Bash(curl:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": [],
     "ask": []

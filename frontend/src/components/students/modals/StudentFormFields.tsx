@@ -23,6 +23,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Student Number</label>
         <input
           type="text"
+          name="studentNumber"
           className="input-field"
           data-testid="studentNumber-input"
           value={formData.studentNumber}
@@ -39,6 +40,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">First Name</label>
         <input
           type="text"
+          name="firstName"
           className="input-field"
           data-testid="firstName-input"
           value={formData.firstName}
@@ -55,6 +57,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Last Name</label>
         <input
           type="text"
+          name="lastName"
           className="input-field"
           data-testid="lastName-input"
           value={formData.lastName}
@@ -71,6 +74,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
         <input
           type="date"
+          name="dateOfBirth"
           className="input-field"
           data-testid="dateOfBirth-input"
           value={formData.dateOfBirth}
@@ -86,6 +90,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
       <div>
         <label className="block text-sm font-medium text-gray-700">Grade</label>
         <select
+          name="grade"
           className="input-field"
           data-testid="grade-select"
           value={formData.grade}
@@ -107,6 +112,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
       <div>
         <label className="block text-sm font-medium text-gray-700">Gender</label>
         <select
+          name="gender"
           className="input-field"
           data-testid="gender-select"
           value={formData.gender}
@@ -123,6 +129,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Emergency Contact Phone</label>
         <input
           type="text"
+          name="emergencyPhone"
           className="input-field"
           data-testid="emergency-contact-phone"
           value={formData.emergencyContactPhone}
@@ -140,6 +147,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Medical Record Number (Optional)</label>
         <input
           type="text"
+          name="medicalRecordNum"
           className="input-field"
           data-testid="medicalRecordNum-input"
           value={formData.medicalRecordNum}
@@ -152,6 +160,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Enrollment Date (Optional)</label>
         <input
           type="date"
+          name="enrollmentDate"
           className="input-field"
           data-testid="enrollmentDate-input"
           value={formData.enrollmentDate}
@@ -168,6 +177,7 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
         <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
         <input
           type="email"
+          name="email"
           className="input-field"
           data-testid="student-email"
           value={formData.email}

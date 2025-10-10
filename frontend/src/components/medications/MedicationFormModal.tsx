@@ -90,6 +90,7 @@ export default function MedicationFormModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Medication Name *</label>
               <input
+                name="medicationName"
                 data-testid="medication-name-input"
                 type="text"
                 value={formData.name}
@@ -102,6 +103,7 @@ export default function MedicationFormModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Generic Name</label>
               <input
+                name="genericName"
                 data-testid="generic-name-input"
                 type="text"
                 value={formData.genericName}
@@ -113,6 +115,7 @@ export default function MedicationFormModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Dosage Form *</label>
               <select
+                name="dosageForm"
                 data-testid="dosage-form-select"
                 value={formData.dosageForm}
                 onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
@@ -133,6 +136,7 @@ export default function MedicationFormModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Strength *</label>
               <input
+                name="strength"
                 data-testid="strength-input"
                 type="text"
                 placeholder="e.g., 500mg, 10ml"
@@ -146,6 +150,7 @@ export default function MedicationFormModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label>
               <input
+                name="manufacturer"
                 data-testid="manufacturer-input"
                 type="text"
                 value={formData.manufacturer}
@@ -156,6 +161,7 @@ export default function MedicationFormModal({
 
             <div className="flex items-center">
               <input
+                name="isControlled"
                 data-testid="controlled-substance-checkbox"
                 type="checkbox"
                 checked={formData.isControlled}

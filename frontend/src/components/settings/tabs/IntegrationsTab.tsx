@@ -125,32 +125,89 @@ export default function IntegrationsTab() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold mb-2">Integrations</h2>
+        <p className="text-sm text-gray-600">Configure external system integrations including SIS, EHR, API keys, and webhooks</p>
+      </div>
+
       {/* Statistics */}
       {statistics && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="card">
+          <div className="card p-4">
             <div className="text-sm text-gray-600">Total Integrations</div>
             <div className="text-2xl font-bold text-gray-900">{statistics.totalIntegrations}</div>
           </div>
-          <div className="card">
-            <div className="text-sm text-gray-600">Active</div>
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Active / Connected</span>
+            </div>
             <div className="text-2xl font-bold text-green-600">{statistics.activeIntegrations}</div>
           </div>
-          <div className="card">
-            <div className="text-sm text-gray-600">Total Syncs</div>
+          <div className="card p-4">
+            <div className="text-sm text-gray-600">Total Syncs / Synchronize</div>
             <div className="text-2xl font-bold text-blue-600">{statistics.syncStatistics.totalSyncs}</div>
+            <div className="text-xs text-gray-500 mt-1">Last sync / updated: {statistics.lastSyncTime || 'N/A'}</div>
           </div>
-          <div className="card">
+          <div className="card p-4">
             <div className="text-sm text-gray-600">Success Rate</div>
             <div className="text-2xl font-bold text-gray-900">{statistics.syncStatistics.successRate}%</div>
           </div>
         </div>
       )}
 
+      {/* Available Integrations / Integration Types */}
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold mb-4">Available Integrations</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900">SIS / Student Information System</h4>
+            <p className="text-sm text-gray-600 mt-1">Connect to your school's student information system for automated data sync</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Status: Inactive</span>
+            </div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900">EHR / Electronic Health Record</h4>
+            <p className="text-sm text-gray-600 mt-1">Integrate with EHR systems for comprehensive health data management</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Status: Inactive</span>
+            </div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900">API Key Management</h4>
+            <p className="text-sm text-gray-600 mt-1">Manage API keys for third-party service integrations</p>
+            <div className="mt-3">
+              <a href="/docs" className="text-sm text-blue-600 hover:underline">View documentation</a>
+            </div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900">Webhook Configuration</h4>
+            <p className="text-sm text-gray-600 mt-1">Set up webhooks for real-time event notifications</p>
+            <div className="mt-3">
+              <a href="/docs/webhooks" className="text-sm text-blue-600 hover:underline">View documentation</a>
+            </div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900">OAuth / SSO Configuration</h4>
+            <p className="text-sm text-gray-600 mt-1">Configure OAuth and single sign-on authentication</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Status: Not Configured</span>
+            </div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900">Integration Logs</h4>
+            <p className="text-sm text-gray-600 mt-1">View integration activity logs and audit trail</p>
+            <div className="mt-3">
+              <button className="text-sm text-blue-600 hover:underline">View Logs</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Integrations List */}
-      <div className="card">
+      <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Integration Hub</h2>
+          <h3 className="text-lg font-semibold text-gray-900">Configured Integrations</h3>
           <button
             onClick={handleCreate}
             className="btn-primary"
@@ -193,7 +250,7 @@ export default function IntegrationsTab() {
                       disabled={testingId === integration.id}
                       className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                     >
-                      {testingId === integration.id ? 'Testing...' : 'Test'}
+                      {testingId === integration.id ? 'Testing...' : 'Test / Verify'}
                     </button>
                     <button
                       onClick={() => handleSync(integration.id)}
@@ -206,7 +263,7 @@ export default function IntegrationsTab() {
                       onClick={() => handleEdit(integration)}
                       className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                     >
-                      Edit
+                      {integration.isActive ? 'Disconnect' : 'Connect'}
                     </button>
                     <button
                       onClick={() => handleDelete(integration.id)}
