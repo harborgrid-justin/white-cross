@@ -150,9 +150,11 @@ export class MedicationsApi {
       if (filters.isActive !== undefined) queryString.append('isActive', String(filters.isActive));
       if (filters.controlledSubstance !== undefined) queryString.append('controlledSubstance', String(filters.controlledSubstance));
 
+      // Remove leading '?' from params since we're adding it below
+      const cleanParams = params.startsWith('?') ? params.substring(1) : params;
       const finalParams = queryString.toString()
-        ? `${params}&${queryString.toString()}`
-        : params;
+        ? `${cleanParams}&${queryString.toString()}`
+        : cleanParams;
 
       const response = await apiInstance.get<ApiResponse<PaginatedResponse<Medication>>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}?${finalParams}`

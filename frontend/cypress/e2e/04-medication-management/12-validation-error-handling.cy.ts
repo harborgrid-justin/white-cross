@@ -51,7 +51,7 @@ describe('Medication Management - Data Validation & Error Handling', () => {
       cy.get('[data-testid=strength-input]').type(newMedication.strength)
       cy.get('[data-testid=save-medication-button]').click()
 
-      cy.wait('@createMedication')
+      cy.wait('@createMedication', { timeout: 1500 })
       cy.get('[data-testid=error-message]').should('contain', 'Failed to create medication')
     })
   })

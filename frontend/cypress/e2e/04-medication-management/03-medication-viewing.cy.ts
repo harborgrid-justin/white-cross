@@ -81,7 +81,7 @@ describe('Medication Management - Medication Viewing & Details (CRUD - Read)', (
 
     cy.get('[data-testid=medication-row]').first().click()
 
-    cy.wait('@auditLog').its('request.body').should('deep.include', {
+    cy.wait('@auditLog', { timeout: 1500 }).its('request.body').should('deep.include', {
       action: 'VIEW_MEDICATION',
       resourceType: 'MEDICATION'
     })

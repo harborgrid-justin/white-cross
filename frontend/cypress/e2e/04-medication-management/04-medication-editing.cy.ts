@@ -111,7 +111,7 @@ describe('Medication Management - Medication Editing (CRUD - Update)', () => {
     cy.get('[data-testid=medication-name-input]').clear().type('Updated')
     cy.get('[data-testid=save-medication-button]').click()
 
-    cy.wait('@auditLog').its('request.body').should('deep.include', {
+    cy.wait('@auditLog', { timeout: 1500 }).its('request.body').should('deep.include', {
       action: 'UPDATE_MEDICATION',
       resourceType: 'MEDICATION'
     })

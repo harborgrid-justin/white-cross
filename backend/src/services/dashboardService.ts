@@ -87,7 +87,7 @@ export class DashboardService {
               lt: tomorrow
             },
             status: {
-              in: ['SCHEDULED', 'CONFIRMED']
+              in: ['SCHEDULED', 'IN_PROGRESS']
             }
           }
         }),
@@ -314,7 +314,7 @@ export class DashboardService {
         where: {
           scheduledAt: { gte: now },
           status: {
-            in: ['SCHEDULED', 'CONFIRMED']
+            in: ['SCHEDULED', 'IN_PROGRESS']
           }
         },
         orderBy: { scheduledAt: 'asc' },

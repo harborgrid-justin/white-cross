@@ -31,14 +31,14 @@ describe('Medication Management - Adverse Reactions Tracking', () => {
     cy.visit('/medications')
 
     // Wait for page to load
-    cy.wait('@getMedications')
+    cy.wait('@getMedications', { timeout: 1500 })
 
     cy.get('[data-cy=adverse-reactions-tab], [data-testid=adverse-reactions-tab]')
       .should('be.visible')
       .click()
 
     // Wait for adverse reactions data to load
-    cy.wait('@getAdverseReactions')
+    cy.wait('@getAdverseReactions', { timeout: 1500 })
   })
 
   it('should display adverse reactions list', () => {

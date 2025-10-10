@@ -23,7 +23,7 @@ describe('Medication Management - HIPAA Compliance & Security', () => {
 
     cy.visit('/medications')
 
-    cy.wait('@auditLog').its('request.body').should('deep.include', {
+    cy.wait('@auditLog', { timeout: 1500 }).its('request.body').should('deep.include', {
       action: 'VIEW_MEDICATIONS',
       resourceType: 'MEDICATION'
     })
@@ -39,7 +39,7 @@ describe('Medication Management - HIPAA Compliance & Security', () => {
 
     cy.get('[data-testid=medications-tab]').click()
 
-    cy.wait('@getMedications').its('request.url').should('include', 'https')
+    cy.wait('@getMedications', { timeout: 1500 }).its('request.url').should('include', 'https')
   })
 
   it('should include authentication token in requests', () => {
@@ -47,7 +47,7 @@ describe('Medication Management - HIPAA Compliance & Security', () => {
 
     cy.get('[data-testid=medications-tab]').click()
 
-    cy.wait('@getMedications').its('request.headers').should('have.property', 'authorization')
+    cy.wait('@getMedications', { timeout: 1500 }).its('request.headers').should('have.property', 'authorization')
   })
 
   it('should restrict controlled substance access', () => {
@@ -60,7 +60,7 @@ describe('Medication Management - HIPAA Compliance & Security', () => {
   })
 
   it('should enforce session timeout', () => {
-    cy.wait(30000)
+    cy.wait(1500)
     cy.get('[data-testid=add-medication-button]').click()
     cy.url().should('include', '/login')
   })
@@ -80,7 +80,7 @@ describe('Medication Management - HIPAA Compliance & Security', () => {
     cy.get('[data-testid=medication-row]').first().click()
     cy.get('[data-testid=delete-medication-button]').click()
 
-    cy.wait('@auditLog')
+    cy.wait('@auditLog', { timeout: 1500 })
   })
 
   it('should display PHI warning when accessing medication details', () => {

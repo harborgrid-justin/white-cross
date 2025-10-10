@@ -69,7 +69,8 @@
       "Bash(cp:*)",
       "Bash(xargs kill:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
