@@ -60,7 +60,7 @@ describe('Student Management - Student Editing (CRUD - Update)', () => {
     })
     cy.get('[data-testid=firstName-input]', { timeout: 2500 }).clear().type('Updated')
     cy.get('[data-testid=save-student-button]', { timeout: 2500 }).click()
-    cy.contains(/success|updated/i, { timeout: 2500 }).should('be.visible')
+    cy.verifySuccess()
   })
 
   it('should validate student number uniqueness when editing', () => {
@@ -101,7 +101,7 @@ describe('Student Management - Student Editing (CRUD - Update)', () => {
       }
     })
     cy.get('[data-testid=save-student-button]', { timeout: 2500 }).click()
-    cy.contains(/success|updated/i, { timeout: 2500 }).should('be.visible')
+    cy.verifySuccess()
   })
 
   it('should allow updating enrollment date', () => {
@@ -115,7 +115,7 @@ describe('Student Management - Student Editing (CRUD - Update)', () => {
       }
     })
     cy.get('[data-testid=save-student-button]', { timeout: 2500 }).click()
-    cy.contains(/success|updated/i, { timeout: 2500 }).should('be.visible')
+    cy.verifySuccess()
   })
 
   it('should validate required fields when updating', () => {
@@ -142,7 +142,7 @@ describe('Student Management - Student Editing (CRUD - Update)', () => {
     })
     cy.get('[data-testid=gender-select]', { timeout: 2500 }).select('OTHER')
     cy.get('[data-testid=save-student-button]', { timeout: 2500 }).click()
-    cy.contains(/success|updated/i, { timeout: 2500 }).should('be.visible')
+    cy.verifySuccess()
   })
 
   it('should create audit log when student is updated', () => {
