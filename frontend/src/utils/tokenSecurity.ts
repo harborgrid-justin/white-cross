@@ -154,6 +154,7 @@ class TokenSecurityManager {
    */
   clearToken(): void {
     localStorage.removeItem(this.STORAGE_KEY)
+    localStorage.removeItem('auth_token') // Primary token storage
     localStorage.removeItem('token') // Legacy token storage
     localStorage.removeItem('authToken') // Legacy auth token
     localStorage.removeItem('user') // Legacy user storage
@@ -234,14 +235,15 @@ export const tokenSecurityManager = new TokenSecurityManager()
  */
 export const legacyTokenUtils = {
   getToken(): string | null {
-    return localStorage.getItem('token') || localStorage.getItem('authToken')
+    return localStorage.getItem('auth_token') || localStorage.getItem('token') || localStorage.getItem('authToken')
   },
 
   setToken(token: string): void {
-    localStorage.setItem('token', token)
+    localStorage.setItem('auth_token', token)
   },
 
   removeToken(): void {
+    localStorage.removeItem('auth_token')
     localStorage.removeItem('token')
     localStorage.removeItem('authToken')
   },

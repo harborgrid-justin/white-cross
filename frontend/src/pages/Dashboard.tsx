@@ -120,7 +120,7 @@ export default function Dashboard() {
         `${API_CONFIG.BASE_URL}/dashboard/stats`,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
         }
       )
@@ -137,7 +137,7 @@ export default function Dashboard() {
         `${API_CONFIG.BASE_URL}/dashboard/recent-activities?limit=5`,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
         }
       )
@@ -154,7 +154,7 @@ export default function Dashboard() {
         `${API_CONFIG.BASE_URL}/dashboard/upcoming-appointments?limit=3`,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
         }
       )
@@ -171,7 +171,7 @@ export default function Dashboard() {
         `${API_CONFIG.BASE_URL}/dashboard/chart-data?period=${timePeriod}`,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
         }
       )

@@ -8,7 +8,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'NURSE' | 'STAFF';
+  role: 'ADMIN' | 'NURSE' | 'STAFF' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'COUNSELOR' | 'VIEWER';
   permissions: string[];
   schoolId?: string;
 }
@@ -50,16 +50,24 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('Login failed');
           }
 
-          const data = await response.json();
+          const responseData = await response.json();
+
+          // Backend returns { success: true, data: { user, token } }
+          const { user, token } = responseData.data || responseData;
 
           // Store token directly in localStorage for axios interceptor compatibility
-          if (data.token) {
-            localStorage.setItem('auth_token', data.token);
+          if (token) {
+            localStorage.setItem('auth_token', token);
+          }
+
+          // Store user object separately for Cypress tests that check localStorage.user.role
+          if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
           }
 
           set({
-            user: data.user,
-            token: data.token,
+            user: user,
+            token: token,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -70,9 +78,10 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        // Clear both storage locations
+        // Clear all storage locations
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
 
         set({
           user: null,

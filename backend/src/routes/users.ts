@@ -325,7 +325,7 @@ const getUsersByRoleHandler = async (request: any, h: any) => {
   try {
     const { role } = request.params;
 
-    if (!['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'].includes(role)) {
+    if (!['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER'].includes(role)) {
       return h.response({
         success: false,
         error: { message: 'Invalid role specified' }
@@ -384,6 +384,23 @@ export const userRoutes: ServerRoute[] = [
   },
   {
     method: 'GET',
+    path: '/api/admin/users',
+    handler: getUsersHandler,
+    options: {
+      auth: 'jwt',
+      validate: {
+        query: Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(20),
+          search: Joi.string().optional(),
+          role: Joi.string().optional(),
+          isActive: Joi.boolean().optional()
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
     path: '/api/users/{id}',
     handler: getUserByIdHandler,
     options: {
@@ -402,7 +419,7 @@ export const userRoutes: ServerRoute[] = [
           password: Joi.string().min(8).required(),
           firstName: Joi.string().trim().required(),
           lastName: Joi.string().trim().required(),
-          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').required()
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER').required()
         })
       }
     }
@@ -418,7 +435,7 @@ export const userRoutes: ServerRoute[] = [
           email: Joi.string().email().optional(),
           firstName: Joi.string().trim().optional(),
           lastName: Joi.string().trim().optional(),
-          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').optional(),
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER').optional(),
           isActive: Joi.boolean().optional()
         })
       }

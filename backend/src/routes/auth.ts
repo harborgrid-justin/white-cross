@@ -300,7 +300,7 @@ export const authRoutes: ServerRoute[] = [
           password: Joi.string().min(8).required().description('Password (min 8 characters)'),
           firstName: Joi.string().trim().required().description('User first name'),
           lastName: Joi.string().trim().required().description('User last name'),
-          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN').required().description('User role')
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER').required().description('User role')
         })
       },
       plugins: {

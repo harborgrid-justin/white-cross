@@ -54,113 +54,19 @@ Cypress.Commands.add('preserveSession', () => {
   })
 })
 
-// Healthcare-specific test utilities
+// Healthcare-specific test utilities - removed mocking to allow real API calls
 Cypress.Commands.add('waitForHealthcareData', () => {
-  // Set up intercepts for common healthcare data endpoints
+  // Set up intercepts for monitoring (not mocking) common healthcare data endpoints
   cy.intercept('GET', '**/api/students*').as('loadStudents')
   cy.intercept('GET', '**/api/appointments*').as('loadAppointments')
   cy.intercept('GET', '**/api/medications*').as('loadMedications')
   cy.intercept('GET', '**/api/users*').as('loadUsers')
-  
-  // Mock login API for test users
-  cy.intercept('POST', '**/api/auth/login', (req) => {
-    const { email, password } = req.body
-    
-    // Define mock users
-    const mockUsers: Record<string, any> = {
-      'nurse@school.edu': {
-        email: 'nurse@school.edu',
-        password: 'testNursePassword',
-        user: {
-          id: 'mock-nurse-id',
-          email: 'nurse@school.edu',
-          firstName: 'Test',
-          lastName: 'Nurse',
-          role: 'NURSE',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        token: 'mock-nurse-token-' + Date.now()
-      },
-      'admin@school.edu': {
-        email: 'admin@school.edu',
-        password: 'AdminPassword123!',
-        user: {
-          id: 'mock-admin-id',
-          email: 'admin@school.edu',
-          firstName: 'Test',
-          lastName: 'Admin',
-          role: 'ADMIN',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        token: 'mock-admin-token-' + Date.now()
-      }
-    }
-    
-    const mockUser = mockUsers[email]
-    
-    if (mockUser && mockUser.password === password) {
-      req.reply({
-        statusCode: 200,
-        body: {
-          success: true,
-          data: {
-            user: mockUser.user,
-            token: mockUser.token
-          }
-        }
-      })
-    } else {
-      req.reply({
-        statusCode: 401,
-        body: {
-          success: false,
-          error: { message: 'Invalid credentials' }
-        }
-      })
-    }
-  }).as('login')
-  
-  // Mock token verification
-  cy.intercept('GET', '**/api/auth/verify', (req) => {
-    const authHeader = req.headers['authorization']
-    
-    if (authHeader && authHeader.toString().startsWith('Bearer mock-')) {
-      const role = authHeader.includes('nurse') ? 'NURSE' : 'ADMIN'
-      const id = authHeader.includes('nurse') ? 'mock-nurse-id' : 'mock-admin-id'
-      const email = authHeader.includes('nurse') ? 'nurse@school.edu' : 'admin@school.edu'
-      const firstName = authHeader.includes('nurse') ? 'Test' : 'Test'
-      const lastName = authHeader.includes('nurse') ? 'Nurse' : 'Admin'
-      
-      req.reply({
-        statusCode: 200,
-        body: {
-          success: true,
-          data: {
-            id,
-            email,
-            firstName,
-            lastName,
-            role,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        }
-      })
-    } else {
-      req.reply({
-        statusCode: 401,
-        body: {
-          success: false,
-          error: { message: 'Invalid token' }
-        }
-      })
-    }
-  }).as('verifyToken')
+
+  // Allow real API calls for authentication to test against actual backend
+  cy.intercept('POST', '**/api/auth/login').as('login')
+  cy.intercept('GET', '**/api/auth/verify').as('verifyToken')
+  cy.intercept('GET', '**/api/auth/me').as('getMe')
+  cy.intercept('POST', '**/api/auth/refresh').as('refreshToken')
 })
 
 // Global test configuration
