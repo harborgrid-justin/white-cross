@@ -41,36 +41,40 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-h-[80vh] overflow-y-auto" data-testid="student-form-modal">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {selectedStudent ? 'Edit Student' : 'Add New Student'}
-          </h3>
-          <form onSubmit={onSubmit} data-testid="student-form">
-            <StudentFormFields
-              formData={formData}
-              errors={errors}
-              onInputChange={handleInputChange}
-            />
+      <div className="relative top-20 mx-auto border w-96 shadow-lg rounded-md bg-white max-h-[80vh] flex flex-col" data-testid="student-form-modal">
+        <div className="p-5 flex-1 overflow-y-auto pb-32">
+          <div className="mt-3">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              {selectedStudent ? 'Edit Student' : 'Add New Student'}
+            </h3>
+            <form onSubmit={onSubmit} data-testid="student-form" id="student-form">
+              <StudentFormFields
+                formData={formData}
+                errors={errors}
+                onInputChange={handleInputChange}
+              />
+            </form>
+          </div>
+        </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                className="btn-secondary"
-                data-testid="cancel-button"
-                onClick={onClose}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-primary"
-                data-testid="save-student-button"
-              >
-                {selectedStudent ? 'Update Student' : 'Save Student'}
-              </button>
-            </div>
-          </form>
+        {/* Sticky footer with action buttons */}
+        <div className="border-t border-gray-200 bg-gray-50 px-5 py-4 flex justify-end space-x-3 sticky bottom-0 z-10">
+          <button
+            type="button"
+            className="btn-secondary"
+            data-testid="cancel-button"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="student-form"
+            className="btn-primary"
+            data-testid="save-student-button"
+          >
+            {selectedStudent ? 'Update Student' : 'Save Student'}
+          </button>
         </div>
       </div>
     </div>

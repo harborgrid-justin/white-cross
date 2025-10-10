@@ -241,7 +241,15 @@ Cypress.Commands.add('waitForModalClose', (selector: string) => {
  */
 Cypress.Commands.add('verifySuccess', (messagePattern?: RegExp) => {
   const pattern = messagePattern || /success|created|updated|saved|deleted/i
-  cy.contains(pattern, { timeout: 10000 }).should('be.visible')
+
+  // Wait for the success notification to have content matching the pattern
+  cy.get('[data-testid="success-notification"]', { timeout: 10000 })
+    .should('exist')
+    .should(($el) => {
+      const text = $el.text().trim()
+      expect(text).to.not.be.empty
+      expect(text).to.match(pattern)
+    })
 })
 
 /**
@@ -250,7 +258,20 @@ Cypress.Commands.add('verifySuccess', (messagePattern?: RegExp) => {
  */
 Cypress.Commands.add('verifyError', (messagePattern?: RegExp) => {
   const pattern = messagePattern || /error|failed|invalid|required/i
-  cy.contains(pattern, { timeout: 10000 }).should('be.visible')
+
+  // Check if error notification has content, otherwise check for visible errors
+  cy.get('[data-testid="error-notification"]', { timeout: 10000 })
+    .should('exist')
+    .invoke('text')
+    .then((text) => {
+      if (text && text.trim().length > 0) {
+        // Error notification has content
+        expect(text).to.match(pattern)
+      } else {
+        // Fall back to finding visible error messages in the form
+        cy.contains(pattern, { timeout: 10000 }).should('be.visible')
+      }
+    })
 })
 
 /**

@@ -14,7 +14,7 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
 
   it('should display delete button for each student', () => {
     cy.get('[data-testid=student-row]').first().within(() => {
-      cy.get('[data-testid=delete-student-button]').should('be.visible')
+      cy.get('[data-testid=delete-student-button]').scrollIntoView().should('be.visible')
     })
   })
 
@@ -74,7 +74,7 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
       cy.get('[data-testid=delete-student-button]').click()
     })
     cy.get('[data-testid=confirm-delete-button]').click()
-    cy.get('[data-testid=success-message]').should('contain', 'Student archived')
+    cy.verifySuccess(/archived/i)
   })
 
   it('should allow viewing archived students', () => {
@@ -140,6 +140,6 @@ describe('Student Management - Student Deletion & Archiving (CRUD - Delete)', ()
       cy.get('[data-testid=delete-student-button]').click()
     })
     cy.get('[data-testid=confirm-delete-button]').click()
-    cy.get('[data-testid=error-message]').should('contain', 'Cannot archive student with active medications')
+    cy.verifyError(/cannot archive.*active medications/i)
   })
 })

@@ -65,7 +65,11 @@
       "Bash(cat:*)",
       "Bash(curl:*)",
       "Bash(mkdir:*)",
-      "Bash(npx ts-node:*)"
+      "Bash(npx ts-node:*)",
+      "Bash(cp:*)",
+      "Bash(xargs kill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

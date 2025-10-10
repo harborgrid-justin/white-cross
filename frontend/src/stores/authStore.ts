@@ -107,7 +107,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`;
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.VERIFY}`;
           const response = await fetch(url, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -115,12 +115,25 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (response.ok) {
-            const user = await response.json();
+            const responseData = await response.json();
+            const user = responseData.data || responseData;
             set({ user, isAuthenticated: true });
           } else {
+            // Token is invalid (could be due to signature mismatch), clear it
+            console.warn('Token validation failed, clearing authentication');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth-storage');
             set({ user: null, isAuthenticated: false, token: null });
           }
         } catch (error) {
+          console.error('Auth check failed:', error);
+          // Clear invalid token
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('auth-storage');
           set({ user: null, isAuthenticated: false, token: null });
         }
       },

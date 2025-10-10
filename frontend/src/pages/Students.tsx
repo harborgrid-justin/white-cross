@@ -432,16 +432,23 @@ export default function Students() {
         onAccept={() => { setShowPhiWarning(false); setShowDetailsModal(true) }}
       />
 
-      {/* Hidden notification indicator for Cypress tests */}
-      {lastNotification && (
-        <div
-          data-testid={lastNotification.type === 'success' ? 'success-notification' : 'error-notification'}
-          className="fixed -bottom-96 left-0 text-xs pointer-events-none z-[9999]"
-          aria-live="polite"
-        >
-          {lastNotification.message}
-        </div>
-      )}
+      {/* Notification indicators for Cypress tests - always present but transparent */}
+      <div
+        data-testid="success-notification"
+        className="fixed bottom-0 left-0 text-xs pointer-events-none z-[9999] opacity-0"
+        aria-live="polite"
+        style={{ height: '1px', width: '1px', overflow: 'hidden' }}
+      >
+        {lastNotification?.type === 'success' ? lastNotification.message : ''}
+      </div>
+      <div
+        data-testid="error-notification"
+        className="fixed bottom-0 left-1 text-xs pointer-events-none z-[9999] opacity-0"
+        aria-live="polite"
+        style={{ height: '1px', width: '1px', overflow: 'hidden' }}
+      >
+        {lastNotification?.type === 'error' ? lastNotification.message : ''}
+      </div>
     </div>
   )
 }

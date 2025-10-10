@@ -23,7 +23,8 @@ export const configureAuth = async (server: Server) => {
   await server.register(jwt);
 
   // Set JWT secret - ensure it matches what's used in token generation
-  const jwtSecret = TOKEN_CONFIG.JWT_SECRET;
+  // IMPORTANT: Must match the secret used in auth.ts for token signing
+  const jwtSecret = process.env.JWT_SECRET || TOKEN_CONFIG.JWT_SECRET;
 
   server.auth.strategy('jwt', 'jwt', {
     keys: jwtSecret,
