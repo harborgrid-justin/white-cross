@@ -343,40 +343,90 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main content */}
       <div className="lg:pl-64 flex flex-col">
         {/* Top navigation */}
-        <header className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow border-b border-gray-200" role="banner">
-          <button
-            type="button"
-            className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
-            data-cy="mobile-menu"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          
-          <div className="flex-1 px-4 flex justify-between items-center">
-            <nav className="flex-1" role="navigation" aria-label="Secondary navigation">
-              <h2
-                className="text-lg font-semibold text-gray-900 capitalize"
-                data-cy="dashboard-title"
-              >
-                {location.pathname.split('/')[1] || 'Dashboard'}
-              </h2>
-            </nav>
+        <header className="sticky top-0 z-10 flex-shrink-0 bg-white shadow border-b border-gray-200" role="banner">
+          <div className="flex h-16">
+            <button
+              type="button"
+              className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+              data-cy="mobile-menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
 
-            <div className="ml-4 flex items-center space-x-4" data-cy="user-menu">
-              <div className="text-sm text-gray-700 user-role">
-                <span className="font-medium" data-cy="user-name">{user?.firstName} {user?.lastName}</span>
-                <span className="text-gray-500 ml-2" data-cy="user-role-badge">({user?.role})</span>
+            <div className="flex-1 px-4 flex justify-between items-center">
+              <div className="flex-1 min-w-0">
+                <Breadcrumbs className="mb-1" />
+                <h1
+                  className="text-lg font-semibold text-gray-900 truncate"
+                  data-cy="dashboard-title"
+                >
+                  {location.pathname.split('/')[1]?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Dashboard'}
+                </h1>
               </div>
-              <button
-                onClick={logout}
-                className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                data-cy="logout-button"
-                aria-label="Logout"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
+
+              <div className="ml-4 flex items-center space-x-4" data-cy="user-menu">
+                {/* User Info */}
+                <div className="hidden sm:flex items-center space-x-3">
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900" data-cy="user-name">
+                      {user?.firstName} {user?.lastName}
+                    </div>
+                    <div className="flex items-center justify-end gap-1">
+                      <span
+                        className={`
+                          inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                          ${user?.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
+                            user?.role === 'NURSE' ? 'bg-blue-100 text-blue-800' :
+                            user?.role === 'SCHOOL_ADMIN' ? 'bg-green-100 text-green-800' :
+                            user?.role === 'DISTRICT_ADMIN' ? 'bg-indigo-100 text-indigo-800' :
+                            user?.role === 'COUNSELOR' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'}
+                        `}
+                        data-cy="user-role-badge"
+                        aria-label={`User role: ${user?.role}`}
+                      >
+                        {user?.role?.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* User Avatar or Initials */}
+                  <div
+                    className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium text-sm"
+                    aria-label={`${user?.firstName} ${user?.lastName} profile`}
+                  >
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </div>
+                </div>
+
+                {/* Mobile User Info */}
+                <div className="sm:hidden">
+                  <div
+                    className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium text-xs"
+                    aria-label={`${user?.firstName} ${user?.lastName} profile`}
+                  >
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </div>
+                </div>
+
+                {/* Logout Button */}
+                <button
+                  onClick={logout}
+                  className="
+                    text-gray-400 hover:text-gray-600
+                    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                    rounded p-1
+                    transition-colors duration-150
+                  "
+                  data-cy="logout-button"
+                  aria-label="Logout"
+                  title="Logout"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
         </header>

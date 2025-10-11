@@ -14,6 +14,7 @@ import type {
 // Import custom hooks
 import { useHealthRecordsData } from '../hooks/useHealthRecordsData'
 import { useHealthSummary, useExportHealthHistory } from '../hooks/useHealthRecords'
+import { usePersistedFilters } from '@/hooks/useRouteState'
 
 // Import constants
 import { HEALTH_TABS } from '../constants/healthRecords'
@@ -41,9 +42,18 @@ import { SessionExpiredModal } from '../components/modals/SessionExpiredModal'
 import { SensitiveRecordWarning } from '../components/modals/SensitiveRecordWarning'
 import { HealthRecordModal } from '../components/modals/HealthRecordModal'
 
+interface HealthRecordFilters {
+  searchQuery: string
+  recordType: string
+  dateFrom: string
+  dateTo: string
+  vaccinationFilter: string
+  vaccinationSort: string
+}
+
 const HealthRecords: React.FC = () => {
   const { user, expireSession } = useAuthContext()
-  
+
   // Custom hooks
   const {
     healthRecords,
@@ -56,11 +66,23 @@ const HealthRecords: React.FC = () => {
     loadTabData
   } = useHealthRecordsData()
 
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<HealthRecordFilters>({
+    storageKey: 'health-records-filters',
+    defaultFilters: {
+      searchQuery: '',
+      recordType: '',
+      dateFrom: '',
+      dateTo: '',
+      vaccinationFilter: 'all',
+      vaccinationSort: 'date',
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
+
   // State management
   const [activeTab, setActiveTab] = useState<TabType>('overview')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [vaccinationFilter, setVaccinationFilter] = useState('all')
-  const [vaccinationSort, setVaccinationSort] = useState('date')
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
 
   // API hooks for statistics
@@ -105,7 +127,7 @@ const HealthRecords: React.FC = () => {
     setActiveTab(tabId)
     if (tabId !== 'overview') {
       try {
-        await loadTabData(tabId, '1', searchQuery)
+        await loadTabData(tabId, '1', filters.searchQuery)
       } catch (error: any) {
         if (error?.response?.status === 401 || !localStorage.getItem('authToken')) {
           setShowSessionExpiredModal(true)
@@ -113,6 +135,8 @@ const HealthRecords: React.FC = () => {
       }
     }
   }
+
+  const isLoadingState = loading || !isRestored
 
   // Check for session expiration on component mount
   useEffect(() => {
@@ -147,11 +171,11 @@ const HealthRecords: React.FC = () => {
     <div className="space-y-6" data-testid="health-records-page">
       {/* Screen reader announcements */}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {loading ? 'Loading health records...' : 'Health records loaded'}
+        {isLoadingState ? 'Loading health records...' : 'Health records loaded'}
       </div>
 
       {/* Loading indicator */}
-      {loading && (
+      {isLoadingState && (
         <div className="flex justify-center items-center py-8" data-testid="loading-indicator">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-600">Loading health records...</span>
@@ -448,14 +472,16 @@ const HealthRecords: React.FC = () => {
                     placeholder="Search health records by student name..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     data-testid="health-records-search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={filters.searchQuery}
+                    onChange={(e) => updateFilter('searchQuery', e.target.value)}
                   />
                 </div>
                 <div className="flex gap-2">
-                  <select 
+                  <select
                     className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     data-testid="record-type-filter"
+                    value={filters.recordType}
+                    onChange={(e) => updateFilter('recordType', e.target.value)}
                   >
                     <option value="">All Record Types</option>
                     <option value="EXAMINATION">EXAMINATION</option>
@@ -498,8 +524,8 @@ const HealthRecords: React.FC = () => {
           )}
           {activeTab === 'records' && (
             <RecordsTab
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
+              searchQuery={filters.searchQuery}
+              onSearchChange={(value) => updateFilter('searchQuery', value)}
               healthRecords={healthRecords}
               onViewDetails={() => console.log('View details')}
             />
@@ -523,12 +549,12 @@ const HealthRecords: React.FC = () => {
           {activeTab === 'vaccinations' && (
             <VaccinationsTab
               vaccinations={vaccinations}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              vaccinationFilter={vaccinationFilter}
-              onFilterChange={setVaccinationFilter}
-              vaccinationSort={vaccinationSort}
-              onSortChange={setVaccinationSort}
+              searchQuery={filters.searchQuery}
+              onSearchChange={(value) => updateFilter('searchQuery', value)}
+              vaccinationFilter={filters.vaccinationFilter}
+              onFilterChange={(value) => updateFilter('vaccinationFilter', value)}
+              vaccinationSort={filters.vaccinationSort}
+              onSortChange={(value) => updateFilter('vaccinationSort', value)}
               onRecordVaccination={() => console.log('Record vaccination')}
               onEditVaccination={(vaccination) => console.log('Edit vaccination:', vaccination)}
               onDeleteVaccination={(vaccination) => console.log('Delete vaccination:', vaccination)}

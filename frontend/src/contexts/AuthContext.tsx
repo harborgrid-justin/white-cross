@@ -145,7 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     initializeAuth()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   const login = async (email: string, password: string) => {

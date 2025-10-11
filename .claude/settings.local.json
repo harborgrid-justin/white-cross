@@ -83,7 +83,8 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"1\" npx prisma migrate reset:*)",
       "Bash(awk:*)",
       "Bash(xargs:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

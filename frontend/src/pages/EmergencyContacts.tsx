@@ -206,10 +206,15 @@ export default function EmergencyContacts() {
     })
   }
 
-  const filteredContacts = contacts.filter(contact =>
-    `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.relationship.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredContacts = contacts.filter(contact => {
+    const matchesSearch = `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+      contact.relationship.toLowerCase().includes(filters.searchQuery.toLowerCase())
+    const matchesPriority = filters.priority === 'all' || contact.priority === filters.priority
+    const matchesVerified = filters.verified === 'all' ||
+      (filters.verified === 'verified' && contact.verified) ||
+      (filters.verified === 'unverified' && !contact.verified)
+    return matchesSearch && matchesPriority && matchesVerified
+  })
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
@@ -364,8 +369,8 @@ export default function EmergencyContacts() {
                   Select Student
                 </label>
                 <select
-                  value={selectedStudent}
-                  onChange={(e) => setSelectedStudent(e.target.value)}
+                  value={filters.selectedStudent}
+                  onChange={(e) => updateFilter('selectedStudent', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   {students.map(student => (
@@ -383,8 +388,8 @@ export default function EmergencyContacts() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={filters.searchQuery}
+                    onChange={(e) => updateFilter('searchQuery', e.target.value)}
                     placeholder="Search by name or relationship..."
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -394,8 +399,11 @@ export default function EmergencyContacts() {
           </div>
 
           {/* Contacts List */}
-          {contactsLoading ? (
-            <div className="card p-12 text-center text-gray-500">Loading contacts...</div>
+          {(contactsLoading || !isRestored) ? (
+            <div className="card p-12 text-center text-gray-500">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              Loading contacts...
+            </div>
           ) : filteredContacts.length === 0 ? (
             <div className="card p-12 text-center text-gray-500">
               <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -487,8 +495,8 @@ export default function EmergencyContacts() {
                 Select Student
               </label>
               <select
-                value={selectedStudent}
-                onChange={(e) => setSelectedStudent(e.target.value)}
+                value={filters.selectedStudent}
+                onChange={(e) => updateFilter('selectedStudent', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 required
               >

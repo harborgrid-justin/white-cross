@@ -257,7 +257,7 @@ describe('Health Records SOA - Service Resilience', () => {
     })
 
     it('should implement jitter in retry delays to prevent thundering herd', () => {
-      let attemptTimes: number[] = []
+      const attemptTimes: number[] = []
 
       cy.intercept('GET', '**/api/health-records/student/1**', (req) => {
         attemptTimes.push(Date.now())
@@ -515,7 +515,7 @@ describe('Health Records SOA - Service Resilience', () => {
     })
 
     it('should allow manual retry after failure', () => {
-      let attemptCount = 0
+      const attemptCount = 0
 
       cy.setupHealthRecordsMocks({
         shouldFail: true

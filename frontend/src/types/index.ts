@@ -49,6 +49,9 @@ export * from './budget'
 // Re-export state management types
 export * from './state'
 
+// Re-export navigation types
+export * from './navigation'
+
 // Legacy ApiResponse interface for backward compatibility
 export interface ApiResponse<T> {
   success: boolean

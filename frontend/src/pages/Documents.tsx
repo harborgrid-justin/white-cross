@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  FileText, 
-  Upload, 
-  Download, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  Filter, 
+import {
+  FileText,
+  Upload,
+  Download,
+  Eye,
+  Edit,
+  Trash2,
+  Filter,
   Search,
   Plus,
   Calendar,
@@ -22,6 +22,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { documentService } from '../services/documentService'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { usePersistedFilters, usePageState, useSortState } from '@/hooks/useRouteState'
 
 interface Document {
   id: string
@@ -40,21 +41,62 @@ interface DocumentsData {
   total: number
 }
 
+interface DocumentFilters {
+  searchTerm: string
+  categoryFilter: string
+  dateFrom: string
+  dateTo: string
+}
+
+type DocumentSortColumn = 'name' | 'uploadedAt' | 'size' | 'category'
+
 export default function Documents() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('')
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([])
   const [showUploadModal, setShowUploadModal] = useState(false)
 
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<DocumentFilters>({
+    storageKey: 'document-filters',
+    defaultFilters: {
+      searchTerm: '',
+      categoryFilter: '',
+      dateFrom: '',
+      dateTo: '',
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
+
+  const { page, pageSize, setPage, setPageSize } = usePageState({
+    defaultPage: 1,
+    defaultPageSize: 20,
+    pageSizeOptions: [10, 20, 50, 100],
+    resetOnFilterChange: true,
+  })
+
+  const { column, direction, toggleSort } = useSortState<DocumentSortColumn>({
+    validColumns: ['name', 'uploadedAt', 'size', 'category'],
+    defaultColumn: 'uploadedAt',
+    defaultDirection: 'desc',
+    persistPreference: true,
+    storageKey: 'document-sort-preference',
+  })
+
   const { data: documentsData, isLoading, error } = useQuery({
-    queryKey: ['documents', searchTerm, categoryFilter],
+    queryKey: ['documents', filters.searchTerm, filters.categoryFilter, page, pageSize],
     queryFn: async () => {
-      const result = await documentService.getDocuments({ search: searchTerm, category: categoryFilter })
+      const result = await documentService.getDocuments({
+        search: filters.searchTerm,
+        category: filters.categoryFilter,
+        page,
+        limit: pageSize
+      })
       return result as DocumentsData
     },
   })
 
   const documents = (documentsData?.documents || []) as Document[]
+  const isLoadingState = isLoading || !isRestored
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -88,7 +130,12 @@ export default function Documents() {
     }
   }
 
-  if (isLoading) return <LoadingSpinner />
+  if (isLoadingState) return (
+    <div className="flex items-center justify-center h-64">
+      <LoadingSpinner />
+      <span className="ml-3 text-gray-600">Loading documents...</span>
+    </div>
+  )
 
   if (error) {
     return (
@@ -140,17 +187,17 @@ export default function Documents() {
               type="text"
               placeholder="Search documents..."
               className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={filters.searchTerm}
+              onChange={(e) => updateFilter('searchTerm', e.target.value)}
               data-testid="document-search"
             />
           </div>
-          
+
           <div>
             <select
               className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              value={filters.categoryFilter}
+              onChange={(e) => updateFilter('categoryFilter', e.target.value)}
               data-testid="category-filter"
             >
               <option value="">All Categories</option>

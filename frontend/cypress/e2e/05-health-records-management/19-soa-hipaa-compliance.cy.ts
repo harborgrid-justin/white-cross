@@ -134,7 +134,7 @@ describe('Health Records SOA - HIPAA Compliance & Audit Logging', () => {
 
     it('should log CREATE, UPDATE, DELETE operations', () => {
       const operations = ['CREATE', 'UPDATE', 'DELETE']
-      let loggedOperations: string[] = []
+      const loggedOperations: string[] = []
 
       cy.intercept('POST', '**/api/audit/**', (req) => {
         loggedOperations.push(req.body.action)
