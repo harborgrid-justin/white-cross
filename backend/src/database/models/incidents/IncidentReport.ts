@@ -1,6 +1,6 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
-import { IncidentType, IncidentSeverity } from '../../types/enums';
+import { IncidentType, IncidentSeverity, InsuranceClaimStatus, ComplianceStatus } from '../../types/enums';
 import { AuditableModel } from '../base/AuditableModel';
 
 interface IncidentReportAttributes {
@@ -23,8 +23,8 @@ interface IncidentReportAttributes {
   evidencePhotos: string[];
   evidenceVideos: string[];
   insuranceClaimNumber?: string;
-  insuranceClaimStatus?: string;
-  legalComplianceStatus: string;
+  insuranceClaimStatus?: InsuranceClaimStatus;
+  legalComplianceStatus: ComplianceStatus;
   occurredAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -71,8 +71,8 @@ export class IncidentReport
   public evidencePhotos!: string[];
   public evidenceVideos!: string[];
   public insuranceClaimNumber?: string;
-  public insuranceClaimStatus?: string;
-  public legalComplianceStatus!: string;
+  public insuranceClaimStatus?: InsuranceClaimStatus;
+  public legalComplianceStatus!: ComplianceStatus;
   public occurredAt!: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -168,13 +168,13 @@ IncidentReport.init(
       allowNull: true,
     },
     insuranceClaimStatus: {
-      type: DataTypes.ENUM('NOT_FILED', 'FILED', 'PENDING', 'APPROVED', 'DENIED', 'CLOSED'),
+      type: DataTypes.ENUM(...Object.values(InsuranceClaimStatus)),
       allowNull: true,
     },
     legalComplianceStatus: {
-      type: DataTypes.ENUM('PENDING', 'COMPLIANT', 'NON_COMPLIANT', 'UNDER_REVIEW'),
+      type: DataTypes.ENUM(...Object.values(ComplianceStatus)),
       allowNull: false,
-      defaultValue: 'PENDING',
+      defaultValue: ComplianceStatus.PENDING,
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,

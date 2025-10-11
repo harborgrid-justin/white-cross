@@ -13,7 +13,7 @@ import { Request as HapiRequest, ResponseToolkit, Server } from '@hapi/hapi';
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 import { getCacheStats } from '../config/redis';
-import { getPoolStats } from '../config/database';
+import { getPoolStats } from '../database/config/sequelize';
 
 interface PerformanceMetrics {
   requestId: string;

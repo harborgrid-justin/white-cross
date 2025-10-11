@@ -19,7 +19,10 @@
     "setup": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "start": "npm run start:backend",
     "start:backend": "cd backend && npm start",
-    "seed": "cd backend && npx prisma db seed"
+    "seed": "cd backend && npm run seed",
+    "db:migrate": "cd backend && npx sequelize-cli db:migrate",
+    "db:migrate:undo": "cd backend && npx sequelize-cli db:migrate:undo",
+    "db:seed:all": "cd backend && npx sequelize-cli db:seed:all"
   },
   "keywords": [
     "healthcare",

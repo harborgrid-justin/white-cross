@@ -558,3 +558,12 @@ export enum ActionStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
+
+export enum InsuranceClaimStatus {
+  NOT_FILED = 'NOT_FILED',
+  FILED = 'FILED',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+  CLOSED = 'CLOSED',
+}
