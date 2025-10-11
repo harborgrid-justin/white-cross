@@ -19,7 +19,7 @@ import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOpti
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import {
-  healthRecordsApiService,
+  healthRecordsApi as healthRecordsApiService,
   HealthRecord,
   Allergy,
   ChronicCondition,
@@ -2042,3 +2042,25 @@ export function usePaginatedHealthRecords(
     ...options,
   });
 }
+
+// ============================================================================
+// Export Aliases for Backward Compatibility
+// ============================================================================
+
+/**
+ * Alias for useVitalSigns - fetches recent vitals for a student
+ * @deprecated Use useVitalSigns instead
+ */
+export const useRecentVitals = useVitalSigns;
+
+/**
+ * Alias for useCreateVitalSigns - records new vital signs
+ * @deprecated Use useCreateVitalSigns instead
+ */
+export const useRecordVitals = useCreateVitalSigns;
+
+/**
+ * Alias for useExportHealthRecords - exports health history
+ * @deprecated Use useExportHealthRecords instead
+ */
+export const useExportHealthHistory = useExportHealthRecords;
