@@ -74,7 +74,8 @@
       "Bash(powershell:*)",
       "Bash(tee:*)",
       "Bash(del verify-migration.js)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

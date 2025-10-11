@@ -1,0 +1,201 @@
+import { ServerRoute } from '@hapi/hapi';
+import { User } from '../database/models/core/User';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import Joi from 'joi';
+import { ENVIRONMENT, JWT_CONFIG } from '../constants';
+
+const registerHandler = async (request: any, h: any) => {
+  try {
+    const { email, password, firstName, lastName, role } = request.payload;
+
+    const existingUser = await User.findOne({ where: { email } });
+
+    if (existingUser) {
+      return h
+        .response({
+          success: false,
+          error: { message: 'User already exists with this email' },
+        })
+        .code(409);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      role,
+    });
+
+    const safeUser = user.toSafeObject();
+
+    return h
+      .response({
+        success: true,
+        data: { user: safeUser },
+      })
+      .code(201);
+  } catch (error) {
+    return h
+      .response({
+        success: false,
+        error: { message: 'Internal server error' },
+      })
+      .code(500);
+  }
+};
+
+const loginHandler = async (request: any, h: any) => {
+  try {
+    const { email, password } = request.payload;
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user || !user.isActive) {
+      return h
+        .response({
+          success: false,
+          error: { message: 'Invalid credentials' },
+        })
+        .code(401);
+    }
+
+    const isValidPassword = await user.comparePassword(password);
+    if (!isValidPassword) {
+      return h
+        .response({
+          success: false,
+          error: { message: 'Invalid credentials' },
+        })
+        .code(401);
+    }
+
+    await user.update({ lastLogin: new Date() });
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        aud: JWT_CONFIG.AUDIENCE,
+        iss: JWT_CONFIG.ISSUER,
+      },
+      (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string,
+      {
+        expiresIn: '24h',
+      }
+    );
+
+    const safeUser = user.toSafeObject();
+
+    return h.response({
+      success: true,
+      data: {
+        token,
+        user: safeUser,
+      },
+    });
+  } catch (error) {
+    return h
+      .response({
+        success: false,
+        error: { message: 'Internal server error' },
+      })
+      .code(500);
+  }
+};
+
+const verifyHandler = async (request: any, h: any) => {
+  try {
+    const token = request.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return h
+        .response({
+          success: false,
+          error: { message: 'Access token required' },
+        })
+        .code(401);
+    }
+
+    const decoded = jwt.verify(token, (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string) as jwt.JwtPayload & {
+      userId: string;
+    };
+
+    const user = await User.findByPk(decoded.userId, {
+      attributes: ['id', 'email', 'firstName', 'lastName', 'role', 'isActive'],
+    });
+
+    if (!user || !user.isActive) {
+      return h
+        .response({
+          success: false,
+          error: { message: 'User not found or inactive' },
+        })
+        .code(401);
+    }
+
+    return h.response({
+      success: true,
+      data: user.toSafeObject(),
+    });
+  } catch (error) {
+    return h
+      .response({
+        success: false,
+        error: { message: 'Invalid or expired token' },
+      })
+      .code(401);
+  }
+};
+
+export const authRoutes: ServerRoute[] = [
+  {
+    method: 'POST',
+    path: '/api/auth/register',
+    handler: registerHandler,
+    options: {
+      auth: false,
+      tags: ['api', 'Authentication'],
+      description: 'Register a new user',
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email().required(),
+          password: Joi.string().min(8).required(),
+          firstName: Joi.string().trim().required(),
+          lastName: Joi.string().trim().required(),
+          role: Joi.string().valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR', 'VIEWER').required(),
+        }),
+      },
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/auth/login',
+    handler: loginHandler,
+    options: {
+      auth: false,
+      tags: ['api', 'Authentication'],
+      description: 'User login',
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email().required(),
+          password: Joi.string().required(),
+        }),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/verify',
+    handler: verifyHandler,
+    options: {
+      auth: false,
+      tags: ['api', 'Authentication'],
+      description: 'Verify JWT token',
+    },
+  },
+];
