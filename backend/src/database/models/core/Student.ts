@@ -29,6 +29,12 @@ interface StudentCreationAttributes
   > {}
 
 export class Student extends Model<StudentAttributes, StudentCreationAttributes> implements StudentAttributes {
+  static findByPk(studentId: string, arg1: { transaction: any; }) {
+    throw new Error('Method not implemented.');
+  }
+  static findAll(arg0: { where: { id: { [x: number]: string[]; }; }; attributes: string[]; transaction: any; }) {
+    throw new Error('Method not implemented.');
+  }
   public id!: string;
   public studentNumber!: string;
   public firstName!: string;

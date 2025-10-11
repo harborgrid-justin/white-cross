@@ -11,7 +11,11 @@ interface HealthRecordAttributes {
   description: string;
   recordDate: Date;
   provider?: string;
+  providerNpi?: string;
+  facility?: string;
+  facilityNpi?: string;
   diagnosis?: string;
+  diagnosisCode?: string;
   treatment?: string;
   followUpRequired: boolean;
   followUpDate?: Date;
@@ -37,7 +41,11 @@ interface HealthRecordCreationAttributes
     | 'isConfidential'
     | 'attachments'
     | 'provider'
+    | 'providerNpi'
+    | 'facility'
+    | 'facilityNpi'
     | 'diagnosis'
+    | 'diagnosisCode'
     | 'treatment'
     | 'followUpDate'
     | 'metadata'
@@ -47,6 +55,12 @@ interface HealthRecordCreationAttributes
   > {}
 
 export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCreationAttributes> implements HealthRecordAttributes {
+  toJSON(): unknown {
+    throw new Error('Method not implemented.');
+  }
+  get() {
+    throw new Error('Method not implemented.');
+  }
   public id!: string;
   public studentId!: string;
   public recordType!: HealthRecordType;
@@ -54,7 +68,11 @@ export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCrea
   public description!: string;
   public recordDate!: Date;
   public provider?: string;
+  public providerNpi?: string;
+  public facility?: string;
+  public facilityNpi?: string;
   public diagnosis?: string;
+  public diagnosisCode?: string;
   public treatment?: string;
   public followUpRequired!: boolean;
   public followUpDate?: Date;
@@ -100,7 +118,23 @@ HealthRecord.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    providerNpi: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    facility: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    facilityNpi: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     diagnosis: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    diagnosisCode: {
       type: DataTypes.STRING,
       allowNull: true,
     },

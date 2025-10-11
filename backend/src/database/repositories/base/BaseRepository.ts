@@ -1,14 +1,41 @@
 /**
- * Base Repository Implementation
- * Provides common functionality for all repositories
+ * Base Repository Implementation for Sequelize
+ * Provides enterprise-grade data access abstraction
+ *
+ * Features:
+ * - Transaction support
+ * - Audit logging for HIPAA compliance
+ * - Cache management with Redis
+ * - Query optimization
+ * - Soft delete support
+ * - Error handling with custom errors
+ * - Type-safe operations
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import {
+  Model,
+  ModelStatic,
+  Transaction,
+  FindOptions,
+  CreateOptions,
+  UpdateOptions,
+  DestroyOptions,
+  WhereOptions,
+  Attributes,
+  CreationAttributes,
+  Op
+} from 'sequelize';
 import { IRepository } from '../interfaces/IRepository';
 import { ExecutionContext } from '../../types/ExecutionContext';
-import { QueryOptions, QueryCriteria, PaginatedResult, createPaginationMetadata } from '../../types/QueryTypes';
+import {
+  QueryOptions,
+  QueryCriteria,
+  PaginatedResult,
+  createPaginationMetadata,
+  calculateSkip
+} from '../../types/QueryTypes';
 import { IAuditLogger } from '../../audit/IAuditLogger';
-import { ICacheManager } from '../../cache/ICacheManager';
+import { ICacheManager, CacheKeyBuilder, getCacheTTL } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
 /**
@@ -18,84 +45,67 @@ export class RepositoryError extends Error {
   constructor(
     message: string,
     public code: string,
-    public statusCode: number = 400
+    public statusCode: number = 400,
+    public details?: any
   ) {
     super(message);
     this.name = 'RepositoryError';
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
 /**
- * Abstract base repository implementation
+ * Abstract base repository for Sequelize models
+ * Implements common CRUD operations with enterprise patterns
  */
-export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
-  implements IRepository<T, CreateDTO, UpdateDTO>
-{
-  protected prisma: Prisma.TransactionClient | PrismaClient;
-  protected auditLogger: IAuditLogger;
-  protected cacheManager: ICacheManager;
-  protected entityName: string;
+export abstract class BaseRepository<
+  TModel extends Model,
+  TAttributes = Attributes<TModel>,
+  TCreationAttributes = CreationAttributes<TModel>
+> implements IRepository<TAttributes, TCreationAttributes, Partial<TAttributes>> {
+
+  protected readonly model: ModelStatic<TModel>;
+  protected readonly auditLogger: IAuditLogger;
+  protected readonly cacheManager: ICacheManager;
+  protected readonly entityName: string;
+  protected readonly cacheKeyBuilder: CacheKeyBuilder;
 
   constructor(
-    prisma: Prisma.TransactionClient | PrismaClient,
+    model: ModelStatic<TModel>,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager,
     entityName: string
   ) {
-    this.prisma = prisma;
+    this.model = model;
     this.auditLogger = auditLogger;
     this.cacheManager = cacheManager;
     this.entityName = entityName;
-  }
-
-  /**
-   * Get Prisma delegate for this entity
-   * Must be implemented by concrete repositories
-   */
-  protected abstract getDelegate(): any;
-
-  /**
-   * Map database result to entity
-   * Can be overridden for custom mapping logic
-   */
-  protected mapToEntity(data: any): T {
-    return data as T;
-  }
-
-  /**
-   * Build include clause for relations
-   * Can be overridden for custom includes
-   */
-  protected buildInclude(options?: QueryOptions): any {
-    return options?.include || undefined;
-  }
-
-  /**
-   * Build select clause for field selection
-   */
-  protected buildSelect(options?: QueryOptions): any {
-    return options?.select || undefined;
+    this.cacheKeyBuilder = new CacheKeyBuilder();
   }
 
   /**
    * Find entity by ID
+   * @param id Entity identifier
+   * @param options Query options (include relations, caching)
+   * @returns Entity or null if not found
    */
-  async findById(id: string, options?: QueryOptions): Promise<T | null> {
+  async findById(
+    id: string,
+    options?: QueryOptions
+  ): Promise<TAttributes | null> {
     try {
-      // Check cache first
-      if (options?.cacheKey) {
-        const cached = await this.cacheManager.get<T>(options.cacheKey);
+      // Check cache first if enabled
+      const cacheKey = this.cacheKeyBuilder.entity(this.entityName, id);
+      if (options?.cacheKey || this.shouldCache()) {
+        const cached = await this.cacheManager.get<TAttributes>(cacheKey);
         if (cached) {
           logger.debug(`Cache hit for ${this.entityName}:${id}`);
           return cached;
         }
       }
 
-      const result = await this.getDelegate().findUnique({
-        where: { id },
-        include: this.buildInclude(options),
-        select: this.buildSelect(options)
-      });
+      const findOptions = this.buildFindOptions(options);
+      const result = await this.model.findByPk(id, findOptions);
 
       if (!result) {
         return null;
@@ -103,9 +113,10 @@ export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
 
       const entity = this.mapToEntity(result);
 
-      // Cache result
-      if (options?.cacheKey && entity) {
-        await this.cacheManager.set(options.cacheKey, entity, options.cacheTTL || 300);
+      // Cache result if enabled
+      if (this.shouldCache()) {
+        const ttl = options?.cacheTTL || getCacheTTL(this.entityName);
+        await this.cacheManager.set(cacheKey, entity, ttl);
       }
 
       return entity;
@@ -114,195 +125,314 @@ export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
       throw new RepositoryError(
         `Failed to find ${this.entityName}`,
         'FIND_ERROR',
-        500
+        500,
+        { id, error: (error as Error).message }
       );
     }
   }
 
   /**
-   * Find multiple entities
+   * Find multiple entities matching criteria
+   * @param criteria Query criteria with filters and pagination
+   * @param options Query options
+   * @returns Paginated result set
    */
   async findMany(
-    criteria: QueryCriteria<T>,
+    criteria: QueryCriteria<TAttributes>,
     options?: QueryOptions
-  ): Promise<PaginatedResult<T>> {
+  ): Promise<PaginatedResult<TAttributes>> {
     try {
-      const skip = criteria.pagination?.skip || 0;
-      const take = criteria.pagination?.limit || 20;
+      const page = criteria.pagination?.page || 1;
+      const limit = criteria.pagination?.limit || 20;
+      const offset = calculateSkip(page, limit);
 
-      const [data, total] = await Promise.all([
-        this.getDelegate().findMany({
-          where: criteria.where,
-          orderBy: criteria.orderBy || options?.orderBy,
-          skip,
-          take,
-          include: this.buildInclude(options),
-          select: this.buildSelect(options)
-        }),
-        this.getDelegate().count({
-          where: criteria.where
-        })
-      ]);
+      const whereClause = this.buildWhereClause(criteria.where);
+      const orderClause = this.buildOrderClause(criteria.orderBy || options?.orderBy);
 
-      const entities = data.map((item: any) => this.mapToEntity(item));
-      const page = criteria.pagination?.page || Math.floor(skip / take) + 1;
+      const findOptions: FindOptions = {
+        where: whereClause,
+        order: orderClause,
+        limit,
+        offset,
+        ...this.buildFindOptions(options)
+      };
+
+      const { rows, count } = await this.model.findAndCountAll(findOptions);
+
+      const entities = rows.map((row) => this.mapToEntity(row));
 
       return {
         data: entities,
-        pagination: createPaginationMetadata(page, take, total)
+        pagination: createPaginationMetadata(page, limit, count)
       };
     } catch (error) {
       logger.error(`Error finding ${this.entityName} records:`, error);
       throw new RepositoryError(
         `Failed to find ${this.entityName} records`,
         'FIND_MANY_ERROR',
-        500
+        500,
+        { error: (error as Error).message }
       );
     }
   }
 
   /**
    * Create new entity
+   * @param data Entity data
+   * @param context Execution context for audit logging
+   * @returns Created entity
    */
-  async create(data: CreateDTO, context: ExecutionContext): Promise<T> {
+  async create(
+    data: TCreationAttributes,
+    context: ExecutionContext
+  ): Promise<TAttributes> {
+    let transaction: Transaction | undefined;
+
     try {
       // Validate before creation
       await this.validateCreate(data);
 
-      const result = await this.getDelegate().create({
-        data,
-        include: this.buildInclude()
-      });
+      // Start transaction if not provided
+      transaction = await this.model.sequelize!.transaction();
 
-      const entity = this.mapToEntity(result);
+      const createOptions: CreateOptions = {
+        transaction
+      };
+
+      const result = await this.model.create(data as any, createOptions);
 
       // Audit log
       await this.auditLogger.logCreate(
         this.entityName,
-        result.id,
+        result.id as string,
         context,
-        this.sanitizeForAudit(data)
+        this.sanitizeForAudit(result.get())
       );
 
       // Invalidate related caches
       await this.invalidateCaches(result);
 
+      await transaction.commit();
+
       logger.info(`Created ${this.entityName}:${result.id} by user ${context.userId}`);
 
-      return entity;
+      return this.mapToEntity(result);
     } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+
       logger.error(`Error creating ${this.entityName}:`, error);
+
       if (error instanceof RepositoryError) {
         throw error;
       }
+
       throw new RepositoryError(
         `Failed to create ${this.entityName}`,
         'CREATE_ERROR',
-        500
+        500,
+        { error: (error as Error).message }
       );
     }
   }
 
   /**
    * Update existing entity
+   * @param id Entity identifier
+   * @param data Partial entity data to update
+   * @param context Execution context for audit logging
+   * @returns Updated entity
    */
-  async update(id: string, data: UpdateDTO, context: ExecutionContext): Promise<T> {
+  async update(
+    id: string,
+    data: Partial<TAttributes>,
+    context: ExecutionContext
+  ): Promise<TAttributes> {
+    let transaction: Transaction | undefined;
+
     try {
       // Get existing record for audit trail
-      const existing = await this.getDelegate().findUnique({
-        where: { id }
-      });
+      const existing = await this.model.findByPk(id);
 
       if (!existing) {
-        throw new RepositoryError(`${this.entityName} not found`, 'NOT_FOUND', 404);
+        throw new RepositoryError(
+          `${this.entityName} not found`,
+          'NOT_FOUND',
+          404,
+          { id }
+        );
       }
 
       // Validate before update
       await this.validateUpdate(id, data);
 
-      const result = await this.getDelegate().update({
-        where: { id },
-        data,
-        include: this.buildInclude()
-      });
+      // Start transaction
+      transaction = await this.model.sequelize!.transaction();
 
-      const entity = this.mapToEntity(result);
+      const updateOptions: UpdateOptions = {
+        where: { id } as any,
+        transaction,
+        returning: true
+      };
+
+      await this.model.update(data as any, updateOptions);
+
+      // Fetch updated record
+      const updated = await this.model.findByPk(id, { transaction });
+
+      if (!updated) {
+        throw new RepositoryError(
+          `${this.entityName} not found after update`,
+          'UPDATE_ERROR',
+          500,
+          { id }
+        );
+      }
+
+      // Calculate changes for audit
+      const changes = this.calculateChanges(
+        existing.get(),
+        updated.get()
+      );
 
       // Audit log with changes
-      const changes = this.calculateChanges(existing, result);
       if (Object.keys(changes).length > 0) {
-        await this.auditLogger.logUpdate(this.entityName, id, context, changes);
+        await this.auditLogger.logUpdate(
+          this.entityName,
+          id,
+          context,
+          changes
+        );
       }
 
       // Invalidate related caches
-      await this.invalidateCaches(result);
+      await this.invalidateCaches(updated);
+
+      await transaction.commit();
 
       logger.info(`Updated ${this.entityName}:${id} by user ${context.userId}`);
 
-      return entity;
+      return this.mapToEntity(updated);
     } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+
       logger.error(`Error updating ${this.entityName}:`, error);
+
       if (error instanceof RepositoryError) {
         throw error;
       }
+
       throw new RepositoryError(
         `Failed to update ${this.entityName}`,
         'UPDATE_ERROR',
-        500
+        500,
+        { id, error: (error as Error).message }
       );
     }
   }
 
   /**
-   * Delete entity
+   * Delete entity (hard delete)
+   * @param id Entity identifier
+   * @param context Execution context for audit logging
    */
   async delete(id: string, context: ExecutionContext): Promise<void> {
+    let transaction: Transaction | undefined;
+
     try {
-      const existing = await this.getDelegate().findUnique({
-        where: { id }
-      });
+      const existing = await this.model.findByPk(id);
 
       if (!existing) {
-        throw new RepositoryError(`${this.entityName} not found`, 'NOT_FOUND', 404);
+        throw new RepositoryError(
+          `${this.entityName} not found`,
+          'NOT_FOUND',
+          404,
+          { id }
+        );
       }
 
-      await this.getDelegate().delete({
-        where: { id }
-      });
+      transaction = await this.model.sequelize!.transaction();
+
+      const destroyOptions: DestroyOptions = {
+        where: { id } as any,
+        transaction
+      };
+
+      await this.model.destroy(destroyOptions);
 
       // Audit log
       await this.auditLogger.logDelete(
         this.entityName,
         id,
         context,
-        this.sanitizeForAudit(existing)
+        this.sanitizeForAudit(existing.get())
       );
 
       // Invalidate related caches
       await this.invalidateCaches(existing);
 
+      await transaction.commit();
+
       logger.info(`Deleted ${this.entityName}:${id} by user ${context.userId}`);
     } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+
       logger.error(`Error deleting ${this.entityName}:`, error);
+
       if (error instanceof RepositoryError) {
         throw error;
       }
+
       throw new RepositoryError(
         `Failed to delete ${this.entityName}`,
         'DELETE_ERROR',
-        500
+        500,
+        { id, error: (error as Error).message }
       );
     }
   }
 
   /**
-   * Check if entity exists
+   * Soft delete entity (set isActive or deletedAt)
+   * @param id Entity identifier
+   * @param context Execution context
    */
-  async exists(criteria: Partial<T>): Promise<boolean> {
+  async softDelete(id: string, context: ExecutionContext): Promise<TAttributes> {
     try {
-      const count = await this.getDelegate().count({
-        where: criteria,
-        take: 1
+      // Check if model supports soft delete
+      const softDeleteField = this.getSoftDeleteField();
+
+      if (!softDeleteField) {
+        throw new RepositoryError(
+          `${this.entityName} does not support soft delete`,
+          'SOFT_DELETE_NOT_SUPPORTED',
+          400
+        );
+      }
+
+      const updateData = { [softDeleteField]: this.getSoftDeleteValue() } as Partial<TAttributes>;
+      return await this.update(id, updateData, context);
+    } catch (error) {
+      logger.error(`Error soft deleting ${this.entityName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if entity exists matching criteria
+   * @param criteria Partial entity data
+   * @returns True if entity exists
+   */
+  async exists(criteria: Partial<TAttributes>): Promise<boolean> {
+    try {
+      const count = await this.model.count({
+        where: criteria as WhereOptions,
+        limit: 1
       });
       return count > 0;
     } catch (error) {
@@ -312,19 +442,218 @@ export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
   }
 
   /**
-   * Validate data before creation
-   * Can be overridden for custom validation
+   * Bulk create entities
+   * @param data Array of entity data
+   * @param context Execution context
+   * @returns Created entities
    */
-  protected async validateCreate(data: CreateDTO): Promise<void> {
+  async bulkCreate(
+    data: TCreationAttributes[],
+    context: ExecutionContext
+  ): Promise<TAttributes[]> {
+    let transaction: Transaction | undefined;
+
+    try {
+      transaction = await this.model.sequelize!.transaction();
+
+      const results = await this.model.bulkCreate(data as any[], {
+        transaction,
+        validate: true,
+        returning: true
+      });
+
+      // Audit log bulk operation
+      await this.auditLogger.logBulkOperation(
+        'BULK_CREATE',
+        this.entityName,
+        context,
+        { count: results.length }
+      );
+
+      await transaction.commit();
+
+      logger.info(`Bulk created ${results.length} ${this.entityName} records`);
+
+      return results.map((r) => this.mapToEntity(r));
+    } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+
+      logger.error(`Error bulk creating ${this.entityName}:`, error);
+      throw new RepositoryError(
+        `Failed to bulk create ${this.entityName}`,
+        'BULK_CREATE_ERROR',
+        500,
+        { error: (error as Error).message }
+      );
+    }
+  }
+
+  /**
+   * Count entities matching criteria
+   * @param criteria Query criteria
+   * @returns Count of matching entities
+   */
+  async count(criteria?: Partial<TAttributes>): Promise<number> {
+    try {
+      return await this.model.count({
+        where: criteria as WhereOptions
+      });
+    } catch (error) {
+      logger.error(`Error counting ${this.entityName}:`, error);
+      throw new RepositoryError(
+        `Failed to count ${this.entityName}`,
+        'COUNT_ERROR',
+        500,
+        { error: (error as Error).message }
+      );
+    }
+  }
+
+  // ============ Protected Helper Methods ============
+
+  /**
+   * Map database model to entity
+   * Override for custom mapping logic
+   */
+  protected mapToEntity(model: TModel): TAttributes {
+    return model.get({ plain: true }) as TAttributes;
+  }
+
+  /**
+   * Build Sequelize find options from query options
+   */
+  protected buildFindOptions(options?: QueryOptions): FindOptions {
+    const findOptions: FindOptions = {};
+
+    if (options?.include) {
+      findOptions.include = this.buildIncludeClause(options.include);
+    }
+
+    if (options?.select) {
+      findOptions.attributes = this.buildAttributesClause(options.select);
+    }
+
+    return findOptions;
+  }
+
+  /**
+   * Build include clause for relations
+   */
+  protected buildIncludeClause(include: QueryOptions['include']): any[] {
+    if (!include) return [];
+
+    // Override in concrete repositories for complex includes
+    return Object.keys(include).filter((key) => include[key]);
+  }
+
+  /**
+   * Build attributes clause for field selection
+   */
+  protected buildAttributesClause(select: QueryOptions['select']): string[] {
+    if (!select) return [];
+
+    return Object.keys(select).filter((key) => select[key]);
+  }
+
+  /**
+   * Build where clause from criteria
+   */
+  protected buildWhereClause(where: any): WhereOptions {
+    if (!where) return {};
+
+    // Handle complex where clauses (AND, OR, NOT)
+    if (where.AND || where.OR || where.NOT) {
+      const clause: any = {};
+
+      if (where.AND) {
+        clause[Op.and] = where.AND;
+      }
+
+      if (where.OR) {
+        clause[Op.or] = where.OR;
+      }
+
+      if (where.NOT) {
+        clause[Op.not] = where.NOT;
+      }
+
+      return clause;
+    }
+
+    return where as WhereOptions;
+  }
+
+  /**
+   * Build order clause from criteria
+   */
+  protected buildOrderClause(orderBy: any): any {
+    if (!orderBy) return [];
+
+    if (Array.isArray(orderBy)) {
+      return orderBy.map((order) => {
+        const key = Object.keys(order)[0];
+        return [key, order[key].toUpperCase()];
+      });
+    }
+
+    return Object.entries(orderBy).map(([key, direction]) => [
+      key,
+      (direction as string).toUpperCase()
+    ]);
+  }
+
+  /**
+   * Get soft delete field name
+   * Override in repositories that support soft delete
+   */
+  protected getSoftDeleteField(): string | null {
+    // Check if model has isActive or deletedAt field
+    const attributes = this.model.getAttributes();
+
+    if ('isActive' in attributes) {
+      return 'isActive';
+    }
+
+    if ('deletedAt' in attributes) {
+      return 'deletedAt';
+    }
+
+    return null;
+  }
+
+  /**
+   * Get soft delete value
+   */
+  protected getSoftDeleteValue(): any {
+    const field = this.getSoftDeleteField();
+
+    if (field === 'isActive') {
+      return false;
+    }
+
+    if (field === 'deletedAt') {
+      return new Date();
+    }
+
+    return null;
+  }
+
+  /**
+   * Validate data before creation
+   * Override for custom validation
+   */
+  protected async validateCreate(data: TCreationAttributes): Promise<void> {
     // Default: no validation
     // Override in concrete repositories for specific validation
   }
 
   /**
    * Validate data before update
-   * Can be overridden for custom validation
+   * Override for custom validation
    */
-  protected async validateUpdate(id: string, data: UpdateDTO): Promise<void> {
+  protected async validateUpdate(id: string, data: Partial<TAttributes>): Promise<void> {
     // Default: no validation
     // Override in concrete repositories for specific validation
   }
@@ -333,7 +662,7 @@ export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
    * Invalidate related caches
    * Must be implemented by concrete repositories
    */
-  protected abstract invalidateCaches(entity: any): Promise<void>;
+  protected abstract invalidateCaches(entity: TModel): Promise<void>;
 
   /**
    * Sanitize data for audit logging
@@ -367,17 +696,50 @@ export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
   }
 
   /**
+   * Determine if caching should be enabled for this entity
+   */
+  protected shouldCache(): boolean {
+    // Override in concrete repositories for entity-specific logic
+    return true;
+  }
+
+  /**
    * Execute operation with error handling
    */
   protected async executeWithErrorHandling<R>(
     operation: () => Promise<R>,
-    errorMessage: string
+    errorMessage: string,
+    errorCode: string = 'OPERATION_ERROR'
   ): Promise<R> {
     try {
       return await operation();
     } catch (error) {
       logger.error(errorMessage, error);
-      throw new RepositoryError(errorMessage, 'OPERATION_ERROR', 500);
+      throw new RepositoryError(
+        errorMessage,
+        errorCode,
+        500,
+        { error: (error as Error).message }
+      );
+    }
+  }
+
+  /**
+   * Execute operation within transaction
+   */
+  protected async executeInTransaction<R>(
+    operation: (transaction: Transaction) => Promise<R>,
+    context?: ExecutionContext
+  ): Promise<R> {
+    const transaction = await this.model.sequelize!.transaction();
+
+    try {
+      const result = await operation(transaction);
+      await transaction.commit();
+      return result;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
   }
 }
