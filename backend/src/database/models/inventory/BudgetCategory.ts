@@ -45,23 +45,79 @@ BudgetCategory.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Budget category name cannot be empty'
+        },
+        len: {
+          args: [1, 255],
+          msg: 'Budget category name must be between 1 and 255 characters'
+        }
+      }
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 5000],
+          msg: 'Description cannot exceed 5000 characters'
+        }
+      }
     },
     fiscalYear: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        isInt: {
+          msg: 'Fiscal year must be an integer'
+        },
+        min: {
+          args: [2000],
+          msg: 'Fiscal year must be 2000 or later'
+        },
+        max: {
+          args: [2100],
+          msg: 'Fiscal year cannot exceed 2100'
+        }
+      }
     },
     allocatedAmount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Allocated amount must be non-negative'
+        },
+        isDecimal: {
+          msg: 'Allocated amount must be a valid decimal number'
+        },
+        maxValue(value: number) {
+          if (value > 99999999.99) {
+            throw new Error('Allocated amount cannot exceed $99,999,999.99');
+          }
+        }
+      }
     },
     spentAmount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Spent amount must be non-negative'
+        },
+        isDecimal: {
+          msg: 'Spent amount must be a valid decimal number'
+        },
+        maxValue(value: number) {
+          if (value > 99999999.99) {
+            throw new Error('Spent amount cannot exceed $99,999,999.99');
+          }
+        }
+      }
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -79,6 +135,20 @@ BudgetCategory.init(
       { fields: ['fiscalYear'] },
       { fields: ['isActive'] },
       { fields: ['name'] },
+      { fields: ['fiscalYear', 'name'] },
     ],
+    validate: {
+      spentNotExceedAllocated() {
+        const spent = Number(this.spentAmount);
+        const allocated = Number(this.allocatedAmount);
+        // Allow a small buffer for rounding (0.5%)
+        const buffer = allocated * 0.005;
+        if (spent > allocated + buffer) {
+          throw new Error(
+            `Spent amount ($${spent.toFixed(2)}) cannot exceed allocated amount ($${allocated.toFixed(2)})`
+          );
+        }
+      }
+    }
   }
 );

@@ -55,38 +55,101 @@ Vendor.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Vendor name cannot be empty'
+        },
+        len: {
+          args: [1, 255],
+          msg: 'Vendor name must be between 1 and 255 characters'
+        }
+      }
     },
     contactName: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 255],
+          msg: 'Contact name cannot exceed 255 characters'
+        }
+      }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        isEmail: {
+          msg: 'Must be a valid email address'
+        },
+        len: {
+          args: [0, 255],
+          msg: 'Email cannot exceed 255 characters'
+        }
+      }
     },
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 50],
+          msg: 'Phone number cannot exceed 50 characters'
+        }
+      }
     },
     address: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 1000],
+          msg: 'Address cannot exceed 1000 characters'
+        }
+      }
     },
     website: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        isUrl: {
+          msg: 'Must be a valid URL'
+        },
+        len: {
+          args: [0, 255],
+          msg: 'Website URL cannot exceed 255 characters'
+        }
+      }
     },
     taxId: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 50],
+          msg: 'Tax ID cannot exceed 50 characters'
+        }
+      }
     },
     paymentTerms: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 255],
+          msg: 'Payment terms cannot exceed 255 characters'
+        }
+      }
     },
     notes: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 10000],
+          msg: 'Notes cannot exceed 10,000 characters'
+        }
+      }
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -97,8 +160,17 @@ Vendor.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-        min: 1,
-        max: 5,
+        isInt: {
+          msg: 'Rating must be an integer'
+        },
+        min: {
+          args: [1],
+          msg: 'Rating must be at least 1'
+        },
+        max: {
+          args: [5],
+          msg: 'Rating cannot exceed 5'
+        }
       },
     },
     createdAt: DataTypes.DATE,
@@ -112,6 +184,7 @@ Vendor.init(
       { fields: ['name'] },
       { fields: ['isActive'] },
       { fields: ['rating'] },
+      { fields: ['email'] },
     ],
   }
 );

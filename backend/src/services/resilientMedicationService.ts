@@ -12,12 +12,22 @@
  * @see MEDICATION_RESILIENCE_ARCHITECTURE.md
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
 import { CircuitBreakerFactory, CircuitBreakerOpenError, TimeoutError } from '../utils/resilience/CircuitBreaker';
-import crypto from 'crypto';
-
-const prisma = new PrismaClient();
+import * as crypto from 'crypto';
+import {
+  StudentMedication,
+  MedicationLog,
+  MedicationInventory,
+  Medication,
+  Student,
+  User,
+  IncidentReport,
+  Allergy,
+  sequelize
+} from '../database/models';
+import { IncidentType, IncidentSeverity, ComplianceStatus } from '../database/types/enums';
 
 // Circuit breakers for different operation levels
 const adminCircuitBreaker = CircuitBreakerFactory.createLevel1('medication_administration');
@@ -64,6 +74,44 @@ export class MedicationError extends Error {
     super(message);
     this.name = 'MedicationError';
   }
+}
+
+/**
+ * Idempotency Key Generator
+ */
+/**
+ * TypeScript interfaces for medication operations
+ */
+export interface MedicationAdministrationData {
+  studentMedicationId: string;
+  nurseId: string;
+  dosageGiven: string;
+  timeGiven: Date;
+  notes?: string;
+  sideEffects?: string;
+  deviceId?: string;
+}
+
+export interface AdverseReactionData {
+  studentMedicationId: string;
+  reportedBy: string;
+  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
+  reaction: string;
+  actionTaken: string;
+  notes?: string;
+  reportedAt: Date;
+}
+
+export interface PrescriptionData {
+  studentId: string;
+  medicationId: string;
+  dosage: string;
+  frequency: string;
+  route: string;
+  instructions?: string;
+  startDate: Date;
+  endDate?: Date;
+  prescribedBy: string;
 }
 
 /**
@@ -121,16 +169,10 @@ export class IdempotencyKeyGenerator {
 export class ResilientMedicationService {
   /**
    * Log medication administration with full resilience
+   * @param data - Medication administration data
+   * @returns The created medication log with associations
    */
-  static async logMedicationAdministration(data: {
-    studentMedicationId: string;
-    nurseId: string;
-    dosageGiven: string;
-    timeGiven: Date;
-    notes?: string;
-    sideEffects?: string;
-    deviceId?: string;
-  }): Promise<any> {
+  static async logMedicationAdministration(data: MedicationAdministrationData): Promise<MedicationLog> {
     // Generate idempotency key
     const idempotencyKey = IdempotencyKeyGenerator.generateAdministrationKey({
       studentMedicationId: data.studentMedicationId,
@@ -148,7 +190,7 @@ export class ResilientMedicationService {
     try {
       // Check idempotency first
       const existing = await this.checkIdempotency(idempotencyKey);
-      if (existing) {
+      if (existing && existing instanceof MedicationLog) {
         logger.info('Idempotent request - returning existing record', { idempotencyKey });
         return existing;
       }
@@ -184,13 +226,14 @@ export class ResilientMedicationService {
             });
 
             // Queue for offline sync (implementation would connect to MedicationQueue)
+            // Return a minimal MedicationLog object for queuing
             return {
               id: idempotencyKey,
               status: 'PENDING_SYNC',
               ...data,
               idempotencyKey,
               queued: true,
-            };
+            } as any as MedicationLog;
           },
         }
       );
@@ -237,51 +280,66 @@ export class ResilientMedicationService {
 
   /**
    * Execute administration with timeout protection
+   * @param data - Medication administration data
+   * @param idempotencyKey - Unique idempotency key for this operation
+   * @returns The created medication log
    */
   private static async executeAdministrationWithTimeout(
-    data: any,
+    data: MedicationAdministrationData,
     idempotencyKey: string
-  ): Promise<any> {
+  ): Promise<MedicationLog> {
     const TIMEOUT = 5000; // 5 seconds
 
-    const operation = prisma.medicationLog.create({
-      data: {
-        ...data,
-        administeredBy: await this.getNurseName(data.nurseId),
+    const operation = async (): Promise<MedicationLog> => {
+      // Get nurse name for administeredBy field
+      const nurseName = await this.getNurseName(data.nurseId);
+
+      // Create medication log using Sequelize
+      const medicationLog = await MedicationLog.create({
         studentMedicationId: data.studentMedicationId,
         nurseId: data.nurseId,
         dosageGiven: data.dosageGiven,
         timeGiven: data.timeGiven,
+        administeredBy: nurseName,
         notes: data.notes,
         sideEffects: data.sideEffects,
         // Store idempotency key (requires schema update)
         // idempotencyKey,
-      },
-      include: {
-        nurse: {
-          select: {
-            firstName: true,
-            lastName: true,
+      });
+
+      // Reload with associations
+      await medicationLog.reload({
+        include: [
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
           },
-        },
-        studentMedication: {
-          include: {
-            medication: true,
-            student: {
-              select: {
-                firstName: true,
-                lastName: true,
-                studentNumber: true,
+          {
+            model: StudentMedication,
+            as: 'studentMedication',
+            include: [
+              {
+                model: Medication,
+                as: 'medication',
+                attributes: ['id', 'name', 'genericName', 'dosageForm', 'strength']
               },
-            },
-          },
-        },
-      },
-    });
+              {
+                model: Student,
+                as: 'student',
+                attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+              }
+            ]
+          }
+        ]
+      });
+
+      return medicationLog;
+    };
 
     return Promise.race([
-      operation,
-      new Promise((_, reject) =>
+      operation(),
+      new Promise<MedicationLog>((_, reject) =>
         setTimeout(() => reject(new TimeoutError('Administration logging timed out')), TIMEOUT)
       ),
     ]);
@@ -289,18 +347,28 @@ export class ResilientMedicationService {
 
   /**
    * Validate Five Rights of medication administration
+   * @param data - Validation data containing prescription and dosage information
+   * @throws MedicationError if any of the Five Rights checks fail
    */
   private static async validateFiveRights(data: {
     studentMedicationId: string;
     dosage: string;
     scheduledTime: Date;
   }): Promise<void> {
-    const prescription = await prisma.studentMedication.findUnique({
-      where: { id: data.studentMedicationId },
-      include: {
-        medication: true,
-        student: true,
-      },
+    // Fetch prescription with associations using Sequelize
+    const prescription = await StudentMedication.findByPk(data.studentMedicationId, {
+      include: [
+        {
+          model: Medication,
+          as: 'medication',
+          attributes: ['id', 'name', 'genericName', 'dosageForm', 'strength']
+        },
+        {
+          model: Student,
+          as: 'student',
+          attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+        }
+      ]
     });
 
     if (!prescription) {
@@ -315,7 +383,8 @@ export class ResilientMedicationService {
     }
 
     // Right Patient (verified by prescription association)
-    if (!prescription.student) {
+    const student = prescription.get('student') as Student | undefined;
+    if (!student) {
       throw new MedicationError(
         MedicationErrorType.WRONG_PATIENT,
         1,
@@ -393,7 +462,11 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Check for duplicate administration
+   * Check for duplicate administration within time window
+   * @param studentMedicationId - The student medication prescription ID
+   * @param timeGiven - The time of administration to check
+   * @param idempotencyKey - Idempotency key for this operation
+   * @throws MedicationError if duplicate administration is detected
    */
   private static async checkDuplicateAdministration(
     studentMedicationId: string,
@@ -404,22 +477,24 @@ export class ResilientMedicationService {
     const windowStart = new Date(timeGiven.getTime() - 3600000);
     const windowEnd = new Date(timeGiven.getTime() + 3600000);
 
-    const duplicate = await prisma.medicationLog.findFirst({
+    const duplicate = await MedicationLog.findOne({
       where: {
         studentMedicationId,
         timeGiven: {
-          gte: windowStart,
-          lte: windowEnd,
-        },
+          [Op.between]: [windowStart, windowEnd]
+        }
       },
-      include: {
-        nurse: {
-          select: { firstName: true, lastName: true },
-        },
-      },
+      include: [
+        {
+          model: User,
+          as: 'nurse',
+          attributes: ['firstName', 'lastName']
+        }
+      ]
     });
 
     if (duplicate) {
+      const nurse = duplicate.get('nurse') as User | undefined;
       throw new MedicationError(
         MedicationErrorType.DUPLICATE_ADMINISTRATION,
         1,
@@ -429,6 +504,7 @@ export class ResilientMedicationService {
             id: duplicate.id,
             timeGiven: duplicate.timeGiven,
             administeredBy: duplicate.administeredBy,
+            nurse: nurse ? `${nurse.firstName} ${nurse.lastName}` : 'Unknown'
           },
         },
         false,
@@ -438,32 +514,51 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Check for allergy conflicts
+   * Check for allergy conflicts with prescribed medication
+   * @param studentMedicationId - The student medication prescription ID
+   * @throws MedicationError if severe allergy conflict is detected
    */
   private static async checkAllergies(studentMedicationId: string): Promise<void> {
-    const prescription = await prisma.studentMedication.findUnique({
-      where: { id: studentMedicationId },
-      include: {
-        medication: true,
-        student: {
-          include: {
-            allergies: {
-              where: {
-                severity: { in: ['SEVERE', 'LIFE_THREATENING'] },
-              },
-            },
-          },
+    const prescription = await StudentMedication.findByPk(studentMedicationId, {
+      include: [
+        {
+          model: Medication,
+          as: 'medication',
+          attributes: ['id', 'name', 'genericName']
         },
-      },
+        {
+          model: Student,
+          as: 'student',
+          include: [
+            {
+              model: Allergy,
+              as: 'allergies',
+              where: {
+                severity: { [Op.in]: ['SEVERE', 'LIFE_THREATENING'] }
+              },
+              required: false
+            }
+          ]
+        }
+      ]
     });
 
     if (!prescription) return;
 
+    const student = prescription.get('student') as Student | undefined;
+    const medication = prescription.get('medication') as Medication | undefined;
+
+    if (!student || !medication) return;
+
+    const allergies = (student as any).allergies as Allergy[];
+
+    if (!allergies || allergies.length === 0) return;
+
     // Check for known allergies
-    const allergyConflict = prescription.student.allergies.find(allergy => {
+    const allergyConflict = allergies.find(allergy => {
       const allergenLower = allergy.allergen.toLowerCase();
-      const medicationLower = prescription.medication.name.toLowerCase();
-      const genericLower = prescription.medication.genericName?.toLowerCase() || '';
+      const medicationLower = medication.name.toLowerCase();
+      const genericLower = medication.genericName?.toLowerCase() || '';
 
       return (
         medicationLower.includes(allergenLower) ||
@@ -478,10 +573,11 @@ export class ResilientMedicationService {
         1,
         `Patient has ${allergyConflict.severity} allergy to ${allergyConflict.allergen}`,
         {
-          medication: prescription.medication.name,
+          medication: medication.name,
           allergen: allergyConflict.allergen,
           severity: allergyConflict.severity,
-          reaction: allergyConflict.reaction,
+          reactions: allergyConflict.reactions,
+          symptoms: allergyConflict.symptoms
         },
         false,
         true
@@ -490,21 +586,27 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Check idempotency
+   * Check idempotency for duplicate operations
+   * @param idempotencyKey - The idempotency key to check
+   * @returns Existing record if found, null otherwise
+   * @todo Implement Redis cache or database storage for idempotency keys
    */
-  private static async checkIdempotency(idempotencyKey: string): Promise<any | null> {
+  private static async checkIdempotency(idempotencyKey: string): Promise<MedicationLog | IncidentReport | null> {
     // In production, check Redis or database for idempotency key
     // For now, return null (not implemented in current schema)
+    // This would typically store and retrieve from Redis with TTL
     return null;
   }
 
   /**
-   * Get nurse name
+   * Get nurse full name by ID
+   * @param nurseId - The user ID of the nurse
+   * @returns Full name of the nurse
+   * @throws Error if nurse not found
    */
   private static async getNurseName(nurseId: string): Promise<string> {
-    const nurse = await prisma.user.findUnique({
-      where: { id: nurseId },
-      select: { firstName: true, lastName: true },
+    const nurse = await User.findByPk(nurseId, {
+      attributes: ['firstName', 'lastName']
     });
 
     if (!nurse) {
@@ -515,7 +617,9 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Log safety event
+   * Log safety event and create incident report
+   * @param error - The medication error that occurred
+   * @param context - Additional context about the operation
    */
   private static async logSafetyEvent(error: MedicationError, context: any): Promise<void> {
     logger.error('MEDICATION SAFETY EVENT', {
@@ -529,20 +633,32 @@ export class ResilientMedicationService {
 
     // In production, this would create an incident report
     try {
-      await prisma.incidentReport.create({
-        data: {
-          type: 'MEDICATION_ERROR',
-          severity: error.level === 1 ? 'CRITICAL' : error.level === 2 ? 'HIGH' : 'MEDIUM',
-          description: `${error.type}: ${error.message}`,
-          location: 'Medication Administration',
-          witnesses: [],
-          actionsTaken: 'System prevented medication error',
-          parentNotified: error.level === 1,
-          followUpRequired: true,
-          occurredAt: new Date(),
-          studentId: context.studentId || 'UNKNOWN',
-          reportedById: context.nurseId || 'SYSTEM',
-        },
+      // Determine severity based on error level
+      let severity: IncidentSeverity;
+      if (error.level === 1) {
+        severity = IncidentSeverity.CRITICAL;
+      } else if (error.level === 2) {
+        severity = IncidentSeverity.HIGH;
+      } else {
+        severity = IncidentSeverity.MEDIUM;
+      }
+
+      await IncidentReport.create({
+        type: IncidentType.MEDICATION_ERROR,
+        severity,
+        description: `${error.type}: ${error.message}`,
+        location: 'Medication Administration',
+        witnesses: [],
+        actionsTaken: 'System prevented medication error',
+        parentNotified: error.level === 1,
+        followUpRequired: true,
+        occurredAt: new Date(),
+        studentId: context.studentId || context.studentMedicationId || 'UNKNOWN',
+        reportedById: context.nurseId || 'SYSTEM',
+        legalComplianceStatus: ComplianceStatus.PENDING,
+        attachments: [],
+        evidencePhotos: [],
+        evidenceVideos: []
       });
     } catch (logError) {
       logger.error('Failed to create incident report for safety event', logError);
@@ -565,16 +681,10 @@ export class ResilientMedicationService {
 
   /**
    * Report adverse reaction with resilience
+   * @param data - Adverse reaction data
+   * @returns The created incident report
    */
-  static async reportAdverseReaction(data: {
-    studentMedicationId: string;
-    reportedBy: string;
-    severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
-    reaction: string;
-    actionTaken: string;
-    notes?: string;
-    reportedAt: Date;
-  }): Promise<any> {
+  static async reportAdverseReaction(data: AdverseReactionData): Promise<IncidentReport> {
     const idempotencyKey = IdempotencyKeyGenerator.generateAdverseReactionKey({
       studentMedicationId: data.studentMedicationId,
       reportedBy: data.reportedBy,
@@ -590,51 +700,91 @@ export class ResilientMedicationService {
     try {
       // Check idempotency
       const existing = await this.checkIdempotency(idempotencyKey);
-      if (existing) {
+      if (existing && existing instanceof IncidentReport) {
         return existing;
       }
 
       // Execute with circuit breaker
       const result = await adminCircuitBreaker.execute(
         async () => {
-          const prescription = await prisma.studentMedication.findUnique({
-            where: { id: data.studentMedicationId },
-            include: {
-              medication: true,
-              student: true,
-            },
+          const prescription = await StudentMedication.findByPk(data.studentMedicationId, {
+            include: [
+              {
+                model: Medication,
+                as: 'medication',
+                attributes: ['id', 'name', 'genericName']
+              },
+              {
+                model: Student,
+                as: 'student',
+                attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+              }
+            ]
           });
 
           if (!prescription) {
             throw new Error('Student medication not found');
           }
 
+          const medication = prescription.get('medication') as Medication;
+          const student = prescription.get('student') as Student;
+
+          // Map severity to IncidentSeverity enum
+          let incidentSeverity: IncidentSeverity;
+          switch (data.severity) {
+            case 'LIFE_THREATENING':
+              incidentSeverity = IncidentSeverity.CRITICAL;
+              break;
+            case 'SEVERE':
+              incidentSeverity = IncidentSeverity.HIGH;
+              break;
+            case 'MODERATE':
+              incidentSeverity = IncidentSeverity.MEDIUM;
+              break;
+            case 'MILD':
+              incidentSeverity = IncidentSeverity.LOW;
+              break;
+            default:
+              incidentSeverity = IncidentSeverity.MEDIUM;
+          }
+
           // Create incident report
-          return await prisma.incidentReport.create({
-            data: {
-              type: 'ALLERGIC_REACTION',
-              severity: data.severity as any,
-              description: `Adverse reaction to ${prescription.medication.name}: ${data.reaction}`,
-              location: 'School Nurse Office',
-              witnesses: [],
-              actionsTaken: data.actionTaken,
-              parentNotified: data.severity === 'SEVERE' || data.severity === 'LIFE_THREATENING',
-              followUpRequired: data.severity !== 'MILD',
-              followUpNotes: data.notes || undefined,
-              attachments: [],
-              occurredAt: data.reportedAt,
-              studentId: prescription.studentId,
-              reportedById: data.reportedBy,
-            },
-            include: {
-              student: {
-                select: { firstName: true, lastName: true },
-              },
-              reportedBy: {
-                select: { firstName: true, lastName: true },
-              },
-            },
+          const incidentReport = await IncidentReport.create({
+            type: IncidentType.ALLERGIC_REACTION,
+            severity: incidentSeverity,
+            description: `Adverse reaction to ${medication.name}: ${data.reaction}`,
+            location: 'School Nurse Office',
+            witnesses: [],
+            actionsTaken: data.actionTaken,
+            parentNotified: data.severity === 'SEVERE' || data.severity === 'LIFE_THREATENING',
+            followUpRequired: data.severity !== 'MILD',
+            followUpNotes: data.notes,
+            attachments: [],
+            evidencePhotos: [],
+            evidenceVideos: [],
+            occurredAt: data.reportedAt,
+            studentId: student.id,
+            reportedById: data.reportedBy,
+            legalComplianceStatus: ComplianceStatus.PENDING
           });
+
+          // Reload with associations
+          await incidentReport.reload({
+            include: [
+              {
+                model: Student,
+                as: 'student',
+                attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+              },
+              {
+                model: User,
+                as: 'reportedBy',
+                attributes: ['id', 'firstName', 'lastName', 'email']
+              }
+            ]
+          });
+
+          return incidentReport;
         },
         {
           fallback: async () => {
@@ -644,12 +794,13 @@ export class ResilientMedicationService {
               idempotencyKey,
             });
 
+            // Create a minimal incident report for queuing
             return {
               id: idempotencyKey,
               status: 'PENDING_SYNC',
               ...data,
               queued: true,
-            };
+            } as any;
           },
         }
       );
@@ -678,25 +829,15 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Manage prescription with resilience
+   * Create prescription with resilience and validation
+   * @param data - Prescription data
+   * @returns The created student medication prescription
    */
-  static async createPrescription(data: {
-    studentId: string;
-    medicationId: string;
-    dosage: string;
-    frequency: string;
-    route: string;
-    instructions?: string;
-    startDate: Date;
-    endDate?: Date;
-    prescribedBy: string;
-  }): Promise<any> {
+  static async createPrescription(data: PrescriptionData): Promise<StudentMedication> {
     return prescriptionCircuitBreaker.execute(
       async () => {
         // Verify student exists
-        const student = await prisma.student.findUnique({
-          where: { id: data.studentId },
-        });
+        const student = await Student.findByPk(data.studentId);
 
         if (!student) {
           throw new MedicationError(
@@ -710,9 +851,7 @@ export class ResilientMedicationService {
         }
 
         // Verify medication exists
-        const medication = await prisma.medication.findUnique({
-          where: { id: data.medicationId },
-        });
+        const medication = await Medication.findByPk(data.medicationId);
 
         if (!medication) {
           throw new MedicationError(
@@ -726,36 +865,52 @@ export class ResilientMedicationService {
         }
 
         // Check for active duplicate prescription
-        const existingPrescription = await prisma.studentMedication.findFirst({
+        const existingPrescription = await StudentMedication.findOne({
           where: {
             studentId: data.studentId,
             medicationId: data.medicationId,
-            isActive: true,
-          },
+            isActive: true
+          }
         });
 
         if (existingPrescription) {
           throw new Error('Student already has an active prescription for this medication');
         }
 
-        // Check allergies
+        // Check allergies before creating prescription
         await this.checkPrescriptionAllergies(data.studentId, data.medicationId);
 
         // Create prescription
-        return await prisma.studentMedication.create({
-          data,
-          include: {
-            medication: true,
-            student: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                studentNumber: true,
-              },
-            },
-          },
+        const prescription = await StudentMedication.create({
+          studentId: data.studentId,
+          medicationId: data.medicationId,
+          dosage: data.dosage,
+          frequency: data.frequency,
+          route: data.route,
+          instructions: data.instructions,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          prescribedBy: data.prescribedBy,
+          isActive: true
         });
+
+        // Reload with associations
+        await prescription.reload({
+          include: [
+            {
+              model: Medication,
+              as: 'medication',
+              attributes: ['id', 'name', 'genericName', 'dosageForm', 'strength']
+            },
+            {
+              model: Student,
+              as: 'student',
+              attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+            }
+          ]
+        });
+
+        return prescription;
       },
       {
         fallback: async () => {
@@ -766,28 +921,37 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Check allergies before prescription
+   * Check allergies before creating prescription
+   * @param studentId - The student ID to check
+   * @param medicationId - The medication ID to check against allergies
+   * @throws MedicationError if severe allergy conflict is detected
    */
   private static async checkPrescriptionAllergies(
     studentId: string,
     medicationId: string
   ): Promise<void> {
-    const student = await prisma.student.findUnique({
-      where: { id: studentId },
-      include: {
-        allergies: {
-          where: { severity: { in: ['SEVERE', 'LIFE_THREATENING'] } },
-        },
-      },
+    const student = await Student.findByPk(studentId, {
+      include: [
+        {
+          model: Allergy,
+          as: 'allergies',
+          where: {
+            severity: { [Op.in]: ['SEVERE', 'LIFE_THREATENING'] }
+          },
+          required: false
+        }
+      ]
     });
 
-    const medication = await prisma.medication.findUnique({
-      where: { id: medicationId },
-    });
+    const medication = await Medication.findByPk(medicationId);
 
     if (!student || !medication) return;
 
-    const allergyConflict = student.allergies.find(allergy => {
+    const allergies = (student as any).allergies as Allergy[];
+
+    if (!allergies || allergies.length === 0) return;
+
+    const allergyConflict = allergies.find(allergy => {
       const allergenLower = allergy.allergen.toLowerCase();
       const medicationLower = medication.name.toLowerCase();
       const genericLower = medication.genericName?.toLowerCase() || '';
@@ -815,17 +979,24 @@ export class ResilientMedicationService {
   }
 
   /**
-   * Get inventory with resilience (Level 3)
+   * Get medication inventory with resilience (Level 3)
+   * @returns Array of medication inventory items with medication details
    */
-  static async getInventory(): Promise<any> {
+  static async getInventory(): Promise<MedicationInventory[]> {
     return inventoryCircuitBreaker.execute(
       async () => {
-        return await prisma.medicationInventory.findMany({
-          include: { medication: true },
-          orderBy: [
-            { medication: { name: 'asc' } },
-            { expirationDate: 'asc' },
+        return await MedicationInventory.findAll({
+          include: [
+            {
+              model: Medication,
+              as: 'medication',
+              attributes: ['id', 'name', 'genericName', 'dosageForm', 'strength']
+            }
           ],
+          order: [
+            [{ model: Medication, as: 'medication' }, 'name', 'ASC'],
+            ['expirationDate', 'ASC']
+          ]
         });
       },
       {

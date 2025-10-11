@@ -268,4 +268,100 @@ router.get('/categories', auth, async (req: Request, res: Response) => {
   }
 });
 
+// Bulk delete documents
+router.post('/bulk-delete', auth, [
+  body('documentIds').isArray({ min: 1 }),
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const deletedBy = (req).user?.userId;
+    if (!deletedBy) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const result = await DocumentService.bulkDeleteDocuments(req.body.documentIds, deletedBy);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: (error as Error).message } });
+  }
+});
+
+// Share document
+router.post('/:id/share', auth, [
+  param('id').isString(),
+  body('sharedWith').isArray({ min: 1 }),
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const sharedBy = (req).user?.userId;
+    if (!sharedBy) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const result = await DocumentService.shareDocument(
+      req.params.id,
+      sharedBy,
+      req.body.sharedWith
+    );
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: (error as Error).message } });
+  }
+});
+
+// Archive expired documents
+router.post('/archive-expired', auth, async (req: Request, res: Response) => {
+  try {
+    const result = await DocumentService.archiveExpiredDocuments();
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: (error as Error).message } });
+  }
+});
+
+// Get document audit trail
+router.get('/:id/audit-trail', auth, [
+  param('id').isString(),
+  query('limit').optional().isInt({ min: 1, max: 500 }).toInt(),
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const limit = parseInt(req.query.limit as string) || 100;
+    const auditTrail = await DocumentService.getDocumentAuditTrail(req.params.id, limit);
+    res.json({ success: true, data: { auditTrail } });
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: (error as Error).message } });
+  }
+});
+
+// Get document signatures
+router.get('/:id/signatures', auth, [
+  param('id').isString(),
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const signatures = await DocumentService.getDocumentSignatures(req.params.id);
+    res.json({ success: true, data: { signatures } });
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: (error as Error).message } });
+  }
+});
+
 export default router;

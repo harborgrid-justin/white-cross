@@ -1,23 +1,58 @@
 import type { IComplianceApi } from '../types'
-import type { 
-  ComplianceReport, 
-  ChecklistItem, 
-  ConsentForm, 
-  PolicyDocument 
+import type {
+  ComplianceReport,
+  ChecklistItem,
+  ConsentForm,
+  PolicyDocument
 } from '../types'
+import type {
+  ComplianceChecklistItem,
+  ConsentSignature,
+  PolicyAcknowledgment,
+  AuditLog,
+  ComplianceStatistics,
+  ComplianceReportFilters,
+  ConsentFormFilters,
+  PolicyDocumentFilters,
+  AuditLogFilters,
+  CreateComplianceReportData,
+  UpdateComplianceReportData,
+  CreateChecklistItemData,
+  UpdateChecklistItemData,
+  CreateConsentFormData,
+  SignConsentFormData,
+  CreatePolicyData,
+  UpdatePolicyData,
+  ComplianceReportsResponse,
+  ComplianceReportResponse,
+  ConsentFormsResponse,
+  ConsentSignatureResponse,
+  StudentConsentsResponse,
+  PolicyDocumentsResponse,
+  PolicyDocumentResponse,
+  PolicyAcknowledgmentResponse,
+  AuditLogsResponse,
+  ChecklistItemResponse,
+  ConsentFormResponse,
+  SuccessResponse,
+} from '../../types/compliance'
 import { apiInstance } from '../config/apiConfig'
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
  * Compliance API implementation
  * Handles compliance reports, checklists, consent forms, and policies
+ * Supports HIPAA/FERPA compliance tracking with comprehensive audit logging
  */
 class ComplianceApiImpl implements IComplianceApi {
+  // ============================================================================
   // Compliance Reports
+  // ============================================================================
+
   /**
-   * Get compliance reports
+   * Get compliance reports with pagination and filters
    */
-  async getReports(params?: any): Promise<{ reports: ComplianceReport[] }> {
+  async getReports(params?: ComplianceReportFilters): Promise<ComplianceReportsResponse> {
     try {
       const response = await apiInstance.get('/compliance', { params })
       return extractApiData(response)
@@ -27,9 +62,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Get compliance report by ID
+   * Get compliance report by ID with checklist items
    */
-  async getReportById(id: string): Promise<{ report: ComplianceReport }> {
+  async getReportById(id: string): Promise<ComplianceReportResponse> {
     try {
       const response = await apiInstance.get(`/compliance/${id}`)
       return extractApiData(response)
@@ -41,13 +76,7 @@ class ComplianceApiImpl implements IComplianceApi {
   /**
    * Create a new compliance report
    */
-  async createReport(data: {
-    reportType: string;
-    title: string;
-    description?: string;
-    period: string;
-    dueDate?: string;
-  }): Promise<{ report: ComplianceReport }> {
+  async createReport(data: CreateComplianceReportData): Promise<ComplianceReportResponse> {
     try {
       const response = await apiInstance.post('/compliance', data)
       return extractApiData(response)
@@ -57,9 +86,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Update a compliance report
+   * Update a compliance report (status, findings, recommendations)
    */
-  async updateReport(id: string, data: Partial<ComplianceReport>): Promise<{ report: ComplianceReport }> {
+  async updateReport(id: string, data: UpdateComplianceReportData): Promise<ComplianceReportResponse> {
     try {
       const response = await apiInstance.put(`/compliance/${id}`, data)
       return extractApiData(response)
@@ -71,7 +100,7 @@ class ComplianceApiImpl implements IComplianceApi {
   /**
    * Delete a compliance report
    */
-  async deleteReport(id: string): Promise<{ success: boolean }> {
+  async deleteReport(id: string): Promise<SuccessResponse> {
     try {
       const response = await apiInstance.delete(`/compliance/${id}`)
       return extractApiData(response)
@@ -81,9 +110,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Generate a compliance report
+   * Generate a compliance report with automatic checklist items
    */
-  async generateReport(reportType: string, period: string): Promise<{ report: ComplianceReport }> {
+  async generateReport(reportType: string, period: string): Promise<ComplianceReportResponse> {
     try {
       const response = await apiInstance.post('/compliance/generate', { reportType, period })
       return extractApiData(response)
@@ -92,16 +121,14 @@ class ComplianceApiImpl implements IComplianceApi {
     }
   }
 
+  // ============================================================================
   // Checklist Items
+  // ============================================================================
+
   /**
-   * Add a checklist item
+   * Add a checklist item to a report
    */
-  async addChecklistItem(data: {
-    requirement: string;
-    description?: string;
-    category: string;
-    dueDate?: string;
-  }): Promise<{ item: ChecklistItem }> {
+  async addChecklistItem(data: CreateChecklistItemData): Promise<ChecklistItemResponse> {
     try {
       const response = await apiInstance.post('/compliance/checklist-items', data)
       return extractApiData(response)
@@ -111,9 +138,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Update a checklist item
+   * Update a checklist item (status, evidence, notes)
    */
-  async updateChecklistItem(id: string, data: Partial<ChecklistItem>): Promise<{ item: ChecklistItem }> {
+  async updateChecklistItem(id: string, data: UpdateChecklistItemData): Promise<ChecklistItemResponse> {
     try {
       const response = await apiInstance.put(`/compliance/checklist-items/${id}`, data)
       return extractApiData(response)
@@ -122,14 +149,17 @@ class ComplianceApiImpl implements IComplianceApi {
     }
   }
 
+  // ============================================================================
   // Consent Forms
+  // ============================================================================
+
   /**
-   * Get consent forms
+   * Get consent forms with optional active status filter
    */
-  async getConsentForms(isActive?: boolean): Promise<{ forms: ConsentForm[] }> {
+  async getConsentForms(filters?: ConsentFormFilters): Promise<ConsentFormsResponse> {
     try {
       const response = await apiInstance.get('/compliance/consent/forms', {
-        params: { isActive }
+        params: filters
       })
       return extractApiData(response)
     } catch (error) {
@@ -138,16 +168,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Create a consent form
+   * Create a consent form template
    */
-  async createConsentForm(data: {
-    type: string;
-    title: string;
-    description: string;
-    content: string;
-    version: string;
-    expiresAt?: string;
-  }): Promise<{ form: ConsentForm }> {
+  async createConsentForm(data: CreateConsentFormData): Promise<ConsentFormResponse> {
     try {
       const response = await apiInstance.post('/compliance/consent/forms', data)
       return extractApiData(response)
@@ -157,17 +180,20 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Sign a consent form
+   * Sign a consent form for a student
+   * Maps frontend field names to backend expected names
    */
-  async signConsentForm(data: {
-    formId: string;
-    studentId: string;
-    signatureData: string;
-    signedBy: string;
-    signedByRole: string;
-  }): Promise<{ signature: any }> {
+  async signConsentForm(data: SignConsentFormData): Promise<ConsentSignatureResponse> {
     try {
-      const response = await apiInstance.post('/compliance/consent/sign', data)
+      // Map frontend field names to backend expected names
+      const requestData = {
+        consentFormId: data.consentFormId,
+        studentId: data.studentId,
+        signedBy: data.signedBy,
+        relationship: data.relationship,
+        signatureData: data.signatureData,
+      }
+      const response = await apiInstance.post('/compliance/consent/sign', requestData)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -175,9 +201,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Get student consents
+   * Get all consent signatures for a student
    */
-  async getStudentConsents(studentId: string): Promise<{ consents: any[] }> {
+  async getStudentConsents(studentId: string): Promise<StudentConsentsResponse> {
     try {
       const response = await apiInstance.get(`/compliance/consent/student/${studentId}`)
       return extractApiData(response)
@@ -187,9 +213,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Withdraw consent
+   * Withdraw a consent signature
    */
-  async withdrawConsent(signatureId: string): Promise<{ success: boolean }> {
+  async withdrawConsent(signatureId: string): Promise<ConsentSignatureResponse> {
     try {
       const response = await apiInstance.put(`/compliance/consent/${signatureId}/withdraw`)
       return extractApiData(response)
@@ -198,13 +224,16 @@ class ComplianceApiImpl implements IComplianceApi {
     }
   }
 
-  // Policies
+  // ============================================================================
+  // Policy Documents
+  // ============================================================================
+
   /**
-   * Get policies
+   * Get policy documents with filters
    */
-  async getPolicies(params?: any): Promise<{ policies: PolicyDocument[] }> {
+  async getPolicies(filters?: PolicyDocumentFilters): Promise<PolicyDocumentsResponse> {
     try {
-      const response = await apiInstance.get('/compliance/policies', { params })
+      const response = await apiInstance.get('/compliance/policies', { params: filters })
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -212,16 +241,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Create a policy
+   * Create a new policy document
    */
-  async createPolicy(data: {
-    title: string;
-    category: string;
-    content: string;
-    version: string;
-    effectiveDate: string;
-    reviewDate?: string;
-  }): Promise<{ policy: PolicyDocument }> {
+  async createPolicy(data: CreatePolicyData): Promise<PolicyDocumentResponse> {
     try {
       const response = await apiInstance.post('/compliance/policies', data)
       return extractApiData(response)
@@ -231,9 +253,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Update a policy
+   * Update a policy document (status, approval, review date)
    */
-  async updatePolicy(id: string, data: Partial<PolicyDocument>): Promise<{ policy: PolicyDocument }> {
+  async updatePolicy(id: string, data: UpdatePolicyData): Promise<PolicyDocumentResponse> {
     try {
       const response = await apiInstance.put(`/compliance/policies/${id}`, data)
       return extractApiData(response)
@@ -243,9 +265,9 @@ class ComplianceApiImpl implements IComplianceApi {
   }
 
   /**
-   * Acknowledge a policy
+   * Acknowledge a policy document (tracks user acceptance)
    */
-  async acknowledgePolicy(policyId: string): Promise<{ acknowledgment: any }> {
+  async acknowledgePolicy(policyId: string): Promise<PolicyAcknowledgmentResponse> {
     try {
       const response = await apiInstance.post(`/compliance/policies/${policyId}/acknowledge`)
       return extractApiData(response)
@@ -254,27 +276,30 @@ class ComplianceApiImpl implements IComplianceApi {
     }
   }
 
-  // Statistics and Audit
+  // ============================================================================
+  // Statistics and Audit Logs
+  // ============================================================================
+
   /**
-   * Get compliance statistics
+   * Get compliance statistics overview
    */
-  async getStatistics(period?: string): Promise<any> {
+  async getStatistics(period?: string): Promise<ComplianceStatistics> {
     try {
       const response = await apiInstance.get('/compliance/statistics/overview', {
         params: { period }
       })
-      return response.data
+      return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
     }
   }
 
   /**
-   * Get audit logs
+   * Get audit logs with pagination and filters for HIPAA compliance
    */
-  async getAuditLogs(params?: any): Promise<{ logs: any[] }> {
+  async getAuditLogs(filters?: AuditLogFilters): Promise<AuditLogsResponse> {
     try {
-      const response = await apiInstance.get('/compliance/audit-logs', { params })
+      const response = await apiInstance.get('/compliance/audit-logs', { params: filters })
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)

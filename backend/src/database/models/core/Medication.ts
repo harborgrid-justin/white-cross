@@ -10,12 +10,14 @@ interface MedicationAttributes {
   manufacturer?: string;
   ndc?: string;
   isControlled: boolean;
+  deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V';
+  requiresWitness: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 interface MedicationCreationAttributes
-  extends Optional<MedicationAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isControlled' | 'genericName' | 'manufacturer' | 'ndc'> {}
+  extends Optional<MedicationAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isControlled' | 'genericName' | 'manufacturer' | 'ndc' | 'deaSchedule' | 'requiresWitness'> {}
 
 export class Medication extends Model<MedicationAttributes, MedicationCreationAttributes> implements MedicationAttributes {
   public id!: string;
@@ -26,6 +28,8 @@ export class Medication extends Model<MedicationAttributes, MedicationCreationAt
   public manufacturer?: string;
   public ndc?: string;
   public isControlled!: boolean;
+  public deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V';
+  public requiresWitness!: boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -67,6 +71,20 @@ Medication.init(
       allowNull: false,
       defaultValue: false,
     },
+    deaSchedule: {
+      type: DataTypes.STRING(3),
+      allowNull: true,
+      validate: {
+        isIn: [['I', 'II', 'III', 'IV', 'V']]
+      },
+      comment: 'DEA Schedule classification for controlled substances (I-V)',
+    },
+    requiresWitness: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Whether medication administration requires a witness (typically Schedule I-II)',
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   },
@@ -74,6 +92,11 @@ Medication.init(
     sequelize,
     tableName: 'medications',
     timestamps: true,
-    indexes: [{ fields: ['name'] }, { fields: ['ndc'] }, { fields: ['isControlled'] }],
+    indexes: [
+      { fields: ['name'] },
+      { fields: ['ndc'] },
+      { fields: ['isControlled'] },
+      { fields: ['deaSchedule'] }
+    ],
   }
 );

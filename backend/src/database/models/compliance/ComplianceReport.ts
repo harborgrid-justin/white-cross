@@ -82,26 +82,72 @@ ComplianceReport.init(
       type: DataTypes.ENUM(...Object.values(ComplianceReportType)),
       allowNull: false,
       comment: 'Type of compliance report',
+      validate: {
+        notNull: {
+          msg: 'Report type is required for compliance tracking'
+        },
+        notEmpty: {
+          msg: 'Report type cannot be empty'
+        }
+      }
     },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'Report title',
+      validate: {
+        notNull: {
+          msg: 'Report title is required'
+        },
+        notEmpty: {
+          msg: 'Report title cannot be empty'
+        },
+        len: {
+          args: [5, 200],
+          msg: 'Report title must be between 5 and 200 characters'
+        }
+      }
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Detailed report description',
+      validate: {
+        len: {
+          args: [0, 5000],
+          msg: 'Report description cannot exceed 5000 characters'
+        }
+      }
     },
     status: {
       type: DataTypes.ENUM(...Object.values(ComplianceStatus)),
       allowNull: false,
       comment: 'Current status of the report',
+      validate: {
+        notNull: {
+          msg: 'Report status is required'
+        },
+        notEmpty: {
+          msg: 'Report status cannot be empty'
+        }
+      }
     },
     period: {
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'Reporting period (e.g., 2024-Q1, 2024-01)',
+      validate: {
+        notNull: {
+          msg: 'Reporting period is required'
+        },
+        notEmpty: {
+          msg: 'Reporting period cannot be empty'
+        },
+        is: {
+          args: /^[0-9]{4}-(Q[1-4]|[0-9]{2}|[A-Za-z]+)$/,
+          msg: 'Period must be in format: YYYY-QN (e.g., 2024-Q1) or YYYY-MM (e.g., 2024-01) or YYYY-Month (e.g., 2024-January)'
+        }
+      }
     },
     findings: {
       type: DataTypes.JSONB,

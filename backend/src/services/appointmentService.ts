@@ -1,12 +1,28 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  Appointment,
+  AppointmentReminder,
+  AppointmentWaitlist,
+  NurseAvailability,
+  Student,
+  User,
+  EmergencyContact,
+  sequelize
+} from '../database/models';
+import {
+  AppointmentType,
+  AppointmentStatus,
+  MessageType,
+  ReminderStatus,
+  WaitlistPriority,
+  WaitlistStatus
+} from '../database/types/enums';
 
 export interface CreateAppointmentData {
   studentId: string;
   nurseId: string;
-  type: 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
+  type: AppointmentType;
   scheduledAt: Date;
   duration?: number; // minutes, defaults to 30
   reason: string;
@@ -14,19 +30,19 @@ export interface CreateAppointmentData {
 }
 
 export interface UpdateAppointmentData {
-  type?: 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
+  type?: AppointmentType;
   scheduledAt?: Date;
   duration?: number;
   reason?: string;
   notes?: string;
-  status?: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+  status?: AppointmentStatus;
 }
 
 export interface AppointmentFilters {
   nurseId?: string;
   studentId?: string;
-  status?: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
-  type?: 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
+  status?: AppointmentStatus;
+  type?: AppointmentType;
   dateFrom?: Date;
   dateTo?: Date;
 }
@@ -44,7 +60,7 @@ export interface AvailabilitySlot {
 
 export interface ReminderData {
   appointmentId: string;
-  type: 'sms' | 'email' | 'voice';
+  type: MessageType;
   scheduleTime: Date; // When to send the reminder
   message?: string;
 }
@@ -63,15 +79,276 @@ export interface NurseAvailabilityData {
 export interface WaitlistEntry {
   studentId: string;
   nurseId?: string;
-  type: 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
+  type: AppointmentType;
   preferredDate?: Date;
   duration?: number;
-  priority?: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  priority?: WaitlistPriority;
   reason: string;
   notes?: string;
 }
 
 export class AppointmentService {
+  // =====================
+  // CONFIGURATION CONSTANTS
+  // =====================
+  private static readonly MIN_DURATION_MINUTES = 15;
+  private static readonly MAX_DURATION_MINUTES = 120;
+  private static readonly DEFAULT_DURATION_MINUTES = 30;
+  private static readonly BUFFER_TIME_MINUTES = 15;
+  private static readonly MIN_CANCELLATION_HOURS = 2;
+  private static readonly MAX_APPOINTMENTS_PER_DAY = 16;
+  private static readonly BUSINESS_HOURS_START = 8; // 8 AM
+  private static readonly BUSINESS_HOURS_END = 17; // 5 PM
+  private static readonly WEEKEND_DAYS = [0, 6]; // Sunday and Saturday
+  private static readonly MIN_REMINDER_HOURS_BEFORE = 0.5; // 30 minutes minimum
+  private static readonly MAX_REMINDER_HOURS_BEFORE = 168; // 7 days maximum
+
+  // =====================
+  // VALIDATION METHODS
+  // =====================
+
+  /**
+   * Validate appointment date/time is in the future
+   */
+  private static validateFutureDateTime(scheduledAt: Date): void {
+    const now = new Date();
+    if (scheduledAt <= now) {
+      throw new Error('Appointment must be scheduled for a future date and time');
+    }
+  }
+
+  /**
+   * Validate appointment duration
+   */
+  private static validateDuration(duration: number): void {
+    if (duration < this.MIN_DURATION_MINUTES) {
+      throw new Error(`Appointment duration must be at least ${this.MIN_DURATION_MINUTES} minutes`);
+    }
+    if (duration > this.MAX_DURATION_MINUTES) {
+      throw new Error(`Appointment duration cannot exceed ${this.MAX_DURATION_MINUTES} minutes`);
+    }
+    if (duration % 15 !== 0) {
+      throw new Error('Appointment duration must be in 15-minute increments');
+    }
+  }
+
+  /**
+   * Validate appointment is within business hours
+   */
+  private static validateBusinessHours(scheduledAt: Date, duration: number): void {
+    const hour = scheduledAt.getHours();
+    const minutes = scheduledAt.getMinutes();
+    const totalMinutes = hour * 60 + minutes;
+
+    const startMinutes = this.BUSINESS_HOURS_START * 60;
+    const endMinutes = this.BUSINESS_HOURS_END * 60;
+
+    if (totalMinutes < startMinutes) {
+      throw new Error(`Appointments must be scheduled after ${this.BUSINESS_HOURS_START}:00 AM`);
+    }
+
+    const appointmentEndMinutes = totalMinutes + duration;
+    if (appointmentEndMinutes > endMinutes) {
+      throw new Error(`Appointments must end by ${this.BUSINESS_HOURS_END}:00 PM`);
+    }
+  }
+
+  /**
+   * Validate appointment is not on weekend
+   */
+  private static validateNotWeekend(scheduledAt: Date): void {
+    const dayOfWeek = scheduledAt.getDay();
+    if (this.WEEKEND_DAYS.includes(dayOfWeek)) {
+      throw new Error('Appointments cannot be scheduled on weekends');
+    }
+  }
+
+  /**
+   * Validate appointment type enum
+   */
+  private static validateAppointmentType(type: AppointmentType): void {
+    const validTypes = Object.values(AppointmentType);
+    if (!validTypes.includes(type)) {
+      throw new Error(`Invalid appointment type. Must be one of: ${validTypes.join(', ')}`);
+    }
+  }
+
+  /**
+   * Validate status transition is allowed
+   */
+  private static validateStatusTransition(
+    currentStatus: AppointmentStatus,
+    newStatus: AppointmentStatus
+  ): void {
+    const allowedTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
+      [AppointmentStatus.SCHEDULED]: [
+        AppointmentStatus.IN_PROGRESS,
+        AppointmentStatus.CANCELLED,
+        AppointmentStatus.NO_SHOW
+      ],
+      [AppointmentStatus.IN_PROGRESS]: [
+        AppointmentStatus.COMPLETED,
+        AppointmentStatus.CANCELLED
+      ],
+      [AppointmentStatus.COMPLETED]: [], // Cannot transition from completed
+      [AppointmentStatus.CANCELLED]: [], // Cannot transition from cancelled
+      [AppointmentStatus.NO_SHOW]: []   // Cannot transition from no-show
+    };
+
+    const allowed = allowedTransitions[currentStatus] || [];
+    if (!allowed.includes(newStatus)) {
+      throw new Error(
+        `Invalid status transition from ${currentStatus} to ${newStatus}. ` +
+        `Allowed transitions: ${allowed.join(', ') || 'none'}`
+      );
+    }
+  }
+
+  /**
+   * Validate cancellation notice period
+   */
+  private static validateCancellationNotice(scheduledAt: Date): void {
+    const now = new Date();
+    const hoursUntilAppointment = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    if (hoursUntilAppointment < this.MIN_CANCELLATION_HOURS) {
+      throw new Error(
+        `Appointments must be cancelled at least ${this.MIN_CANCELLATION_HOURS} hours in advance`
+      );
+    }
+  }
+
+  /**
+   * Validate waitlist priority
+   */
+  private static validateWaitlistPriority(priority: WaitlistPriority): void {
+    const validPriorities = Object.values(WaitlistPriority);
+    if (!validPriorities.includes(priority)) {
+      throw new Error(`Invalid waitlist priority. Must be one of: ${validPriorities.join(', ')}`);
+    }
+  }
+
+  /**
+   * Validate reminder timing
+   */
+  private static validateReminderTiming(appointmentTime: Date, reminderTime: Date): void {
+    if (reminderTime >= appointmentTime) {
+      throw new Error('Reminder must be scheduled before the appointment time');
+    }
+
+    const hoursBeforeAppointment = (appointmentTime.getTime() - reminderTime.getTime()) / (1000 * 60 * 60);
+
+    if (hoursBeforeAppointment < this.MIN_REMINDER_HOURS_BEFORE) {
+      throw new Error(`Reminder must be at least ${this.MIN_REMINDER_HOURS_BEFORE} hours before appointment`);
+    }
+
+    if (hoursBeforeAppointment > this.MAX_REMINDER_HOURS_BEFORE) {
+      throw new Error(`Reminder cannot be more than ${this.MAX_REMINDER_HOURS_BEFORE} hours before appointment`);
+    }
+
+    const now = new Date();
+    if (reminderTime <= now) {
+      throw new Error('Reminder time must be in the future');
+    }
+  }
+
+  /**
+   * Validate nurse hasn't exceeded max appointments per day
+   */
+  private static async validateMaxAppointmentsPerDay(
+    nurseId: string,
+    scheduledAt: Date,
+    excludeAppointmentId?: string
+  ): Promise<void> {
+    const startOfDay = new Date(scheduledAt);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(scheduledAt);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const whereClause: any = {
+      nurseId,
+      scheduledAt: {
+        [Op.gte]: startOfDay,
+        [Op.lte]: endOfDay
+      },
+      status: {
+        [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS]
+      }
+    };
+
+    if (excludeAppointmentId) {
+      whereClause.id = { [Op.ne]: excludeAppointmentId };
+    }
+
+    const count = await Appointment.count({ where: whereClause });
+
+    if (count >= this.MAX_APPOINTMENTS_PER_DAY) {
+      throw new Error(
+        `Nurse has reached the maximum of ${this.MAX_APPOINTMENTS_PER_DAY} appointments per day`
+      );
+    }
+  }
+
+  /**
+   * Comprehensive validation for appointment creation/update
+   */
+  private static async validateAppointmentData(
+    data: CreateAppointmentData | UpdateAppointmentData,
+    isUpdate: boolean = false,
+    existingAppointment?: Appointment
+  ): Promise<void> {
+    // Validate appointment type
+    if (data.type) {
+      this.validateAppointmentType(data.type);
+    }
+
+    // Validate scheduled time
+    if (data.scheduledAt) {
+      this.validateFutureDateTime(data.scheduledAt);
+      this.validateNotWeekend(data.scheduledAt);
+
+      const duration = data.duration ||
+        (existingAppointment?.duration) ||
+        this.DEFAULT_DURATION_MINUTES;
+
+      this.validateBusinessHours(data.scheduledAt, duration);
+
+      if ('nurseId' in data) {
+        await this.validateMaxAppointmentsPerDay(
+          data.nurseId,
+          data.scheduledAt,
+          existingAppointment?.id
+        );
+      } else if (existingAppointment) {
+        await this.validateMaxAppointmentsPerDay(
+          existingAppointment.nurseId,
+          data.scheduledAt,
+          existingAppointment.id
+        );
+      }
+    }
+
+    // Validate duration
+    if (data.duration !== undefined) {
+      this.validateDuration(data.duration);
+    }
+
+    // Validate status transition if updating status
+    if (isUpdate && 'status' in data && data.status && existingAppointment) {
+      this.validateStatusTransition(existingAppointment.status, data.status);
+    }
+
+    // Validate reason is provided
+    if ('reason' in data && (!data.reason || data.reason.trim().length === 0)) {
+      throw new Error('Appointment reason is required');
+    }
+  }
+
+  // =====================
+  // CRUD OPERATIONS
+  // =====================
+
   /**
    * Get appointments with pagination and filters
    */
@@ -81,64 +358,55 @@ export class AppointmentService {
     filters: AppointmentFilters = {}
   ) {
     try {
-      const skip = (page - 1) * limit;
-      
-      const whereClause: Prisma.AppointmentWhereInput = {};
-      
+      const offset = (page - 1) * limit;
+
+      const whereClause: any = {};
+
       if (filters.nurseId) {
         whereClause.nurseId = filters.nurseId;
       }
-      
+
       if (filters.studentId) {
         whereClause.studentId = filters.studentId;
       }
-      
+
       if (filters.status) {
         whereClause.status = filters.status;
       }
-      
+
       if (filters.type) {
         whereClause.type = filters.type;
       }
-      
+
       if (filters.dateFrom || filters.dateTo) {
         whereClause.scheduledAt = {};
         if (filters.dateFrom) {
-          whereClause.scheduledAt.gte = filters.dateFrom;
+          whereClause.scheduledAt[Op.gte] = filters.dateFrom;
         }
         if (filters.dateTo) {
-          whereClause.scheduledAt.lte = filters.dateTo;
+          whereClause.scheduledAt[Op.lte] = filters.dateTo;
         }
       }
 
-      const [appointments, total] = await Promise.all([
-        prisma.appointment.findMany({
-          where: whereClause,
-          skip,
-          take: limit,
-          include: {
-            student: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                studentNumber: true,
-                grade: true
-              }
-            },
-            nurse: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true
-              }
-            }
+      const { rows: appointments, count: total } = await Appointment.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           },
-          orderBy: { scheduledAt: 'asc' }
-        }),
-        prisma.appointment.count({ where: whereClause })
-      ]);
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ],
+        order: [['scheduledAt', 'ASC']],
+        distinct: true
+      });
 
       return {
         appointments,
@@ -160,66 +428,67 @@ export class AppointmentService {
    */
   static async createAppointment(data: CreateAppointmentData) {
     try {
-      // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: data.studentId }
-      });
+      // Set default duration
+      const duration = data.duration || this.DEFAULT_DURATION_MINUTES;
 
+      // Comprehensive validation
+      await this.validateAppointmentData({ ...data, duration }, false);
+
+      // Verify student exists
+      const student = await Student.findByPk(data.studentId);
       if (!student) {
         throw new Error('Student not found');
       }
 
       // Verify nurse exists
-      const nurse = await prisma.user.findUnique({
-        where: { id: data.nurseId }
-      });
-
+      const nurse = await User.findByPk(data.nurseId);
       if (!nurse) {
         throw new Error('Nurse not found');
       }
 
-      // Check for scheduling conflicts
+      // Check for scheduling conflicts with buffer time
       const conflicts = await this.checkAvailability(
         data.nurseId,
         data.scheduledAt,
-        data.duration || 30
+        duration
       );
 
       if (conflicts.length > 0) {
-        throw new Error('Nurse is not available at the requested time');
+        const conflictDetails = conflicts.map(c =>
+          `${c.student!.firstName} ${c.student!.lastName} at ${c.scheduledAt.toLocaleTimeString()}`
+        ).join(', ');
+        throw new Error(
+          `Nurse is not available at the requested time. Conflicts with: ${conflictDetails}`
+        );
       }
 
-      const appointment = await prisma.appointment.create({
-        data: {
-          ...data,
-          duration: data.duration || 30
-        },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true,
-              grade: true
-            }
+      const appointment = await Appointment.create({
+        ...data,
+        duration,
+        status: AppointmentStatus.SCHEDULED
+      });
+
+      // Reload with associations
+      await appointment.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           },
-          nurse: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true
-            }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
           }
-        }
+        ]
       });
 
       logger.info(`Appointment created: ${appointment.type} for ${student.firstName} ${student.lastName} with ${nurse.firstName} ${nurse.lastName} at ${appointment.scheduledAt}`);
-      
+
       // Schedule automatic reminders
       await this.scheduleReminders(appointment.id);
-      
+
       return appointment;
     } catch (error) {
       logger.error('Error creating appointment:', error);
@@ -232,58 +501,66 @@ export class AppointmentService {
    */
   static async updateAppointment(id: string, data: UpdateAppointmentData) {
     try {
-      const existingAppointment = await prisma.appointment.findUnique({
-        where: { id },
-        include: {
-          student: true,
-          nurse: true
-        }
+      const existingAppointment = await Appointment.findByPk(id, {
+        include: [
+          { model: Student, as: 'student' },
+          { model: User, as: 'nurse' }
+        ]
       });
 
       if (!existingAppointment) {
         throw new Error('Appointment not found');
       }
 
+      // Validate that completed/cancelled/no-show appointments cannot be modified
+      if ([AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW]
+        .includes(existingAppointment.status)) {
+        throw new Error(`Cannot update appointment with status ${existingAppointment.status}`);
+      }
+
+      // Comprehensive validation
+      await this.validateAppointmentData(data, true, existingAppointment);
+
       // If rescheduling, check for conflicts
       if (data.scheduledAt && data.scheduledAt.getTime() !== existingAppointment.scheduledAt.getTime()) {
+        const duration = data.duration || existingAppointment.duration;
         const conflicts = await this.checkAvailability(
           existingAppointment.nurseId,
           data.scheduledAt,
-          data.duration || existingAppointment.duration,
+          duration,
           id // Exclude current appointment from conflict check
         );
 
         if (conflicts.length > 0) {
-          throw new Error('Nurse is not available at the requested time');
+          const conflictDetails = conflicts.map(c =>
+            `${c.student!.firstName} ${c.student!.lastName} at ${c.scheduledAt.toLocaleTimeString()}`
+          ).join(', ');
+          throw new Error(
+            `Nurse is not available at the requested time. Conflicts with: ${conflictDetails}`
+          );
         }
       }
 
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true,
-              grade: true
-            }
+      await existingAppointment.update(data);
+
+      // Reload with associations
+      await existingAppointment.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           },
-          nurse: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true
-            }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
           }
-        }
+        ]
       });
 
-      logger.info(`Appointment updated: ${appointment.id} - ${appointment.type} for ${existingAppointment.student.firstName} ${existingAppointment.student.lastName}`);
-      return appointment;
+      logger.info(`Appointment updated: ${existingAppointment.id} - ${existingAppointment.type} for ${existingAppointment.student!.firstName} ${existingAppointment.student!.lastName}`);
+      return existingAppointment;
     } catch (error) {
       logger.error('Error updating appointment:', error);
       throw error;
@@ -295,30 +572,44 @@ export class AppointmentService {
    */
   static async cancelAppointment(id: string, reason?: string) {
     try {
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data: { 
-          status: 'CANCELLED',
-          notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
-        },
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+      const appointment = await Appointment.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
           },
-          nurse: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['firstName', 'lastName']
           }
-        }
+        ]
       });
 
-      logger.info(`Appointment cancelled: ${appointment.type} for ${appointment.student.firstName} ${appointment.student.lastName}`);
-      
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Validate appointment can be cancelled
+      if (appointment.status !== AppointmentStatus.SCHEDULED &&
+          appointment.status !== AppointmentStatus.IN_PROGRESS) {
+        throw new Error(`Cannot cancel appointment with status ${appointment.status}`);
+      }
+
+      // Validate cancellation notice period
+      this.validateCancellationNotice(appointment.scheduledAt);
+
+      // Validate status transition
+      this.validateStatusTransition(appointment.status, AppointmentStatus.CANCELLED);
+
+      await appointment.update({
+        status: AppointmentStatus.CANCELLED,
+        notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
+      });
+
+      logger.info(`Appointment cancelled: ${appointment.type} for ${appointment.student!.firstName} ${appointment.student!.lastName}`);
+
       // Try to fill the slot from waitlist
       try {
         await this.fillSlotFromWaitlist({
@@ -330,7 +621,7 @@ export class AppointmentService {
       } catch (waitlistError) {
         logger.warn('Could not fill slot from waitlist:', waitlistError);
       }
-      
+
       return appointment;
     } catch (error) {
       logger.error('Error cancelling appointment:', error);
@@ -343,23 +634,161 @@ export class AppointmentService {
    */
   static async markNoShow(id: string) {
     try {
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data: { status: 'NO_SHOW' },
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+      const appointment = await Appointment.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
           }
-        }
+        ]
       });
 
-      logger.info(`Appointment marked as no-show: ${appointment.type} for ${appointment.student.firstName} ${appointment.student.lastName}`);
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Can only mark scheduled appointments as no-show
+      if (appointment.status !== AppointmentStatus.SCHEDULED) {
+        throw new Error(`Cannot mark appointment with status ${appointment.status} as no-show`);
+      }
+
+      // Validate appointment time has passed
+      const now = new Date();
+      if (appointment.scheduledAt > now) {
+        throw new Error('Cannot mark future appointment as no-show');
+      }
+
+      // Validate status transition
+      this.validateStatusTransition(appointment.status, AppointmentStatus.NO_SHOW);
+
+      await appointment.update({ status: AppointmentStatus.NO_SHOW });
+
+      logger.info(`Appointment marked as no-show: ${appointment.type} for ${appointment.student!.firstName} ${appointment.student!.lastName}`);
       return appointment;
     } catch (error) {
       logger.error('Error marking appointment as no-show:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start appointment (transition to IN_PROGRESS status)
+   */
+  static async startAppointment(id: string) {
+    try {
+      const appointment = await Appointment.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ]
+      });
+
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Validate current status
+      if (appointment.status !== AppointmentStatus.SCHEDULED) {
+        throw new Error(`Cannot start appointment with status ${appointment.status}`);
+      }
+
+      // Validate status transition
+      this.validateStatusTransition(appointment.status, AppointmentStatus.IN_PROGRESS);
+
+      // Optionally validate that appointment time is within reasonable range (e.g., not more than 1 hour early)
+      const now = new Date();
+      const oneHourEarly = new Date(appointment.scheduledAt.getTime() - 60 * 60 * 1000);
+      if (now < oneHourEarly) {
+        throw new Error('Cannot start appointment more than 1 hour before scheduled time');
+      }
+
+      await appointment.update({ status: AppointmentStatus.IN_PROGRESS });
+
+      logger.info(`Appointment started: ${appointment.type} for ${appointment.student!.firstName} ${appointment.student!.lastName}`);
+      return appointment;
+    } catch (error) {
+      logger.error('Error starting appointment:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Complete appointment (transition to COMPLETED status)
+   */
+  static async completeAppointment(id: string, completionData?: {
+    notes?: string;
+    outcomes?: string;
+    followUpRequired?: boolean;
+    followUpDate?: Date;
+  }) {
+    try {
+      const appointment = await Appointment.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ]
+      });
+
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Validate current status
+      if (appointment.status !== AppointmentStatus.IN_PROGRESS) {
+        throw new Error(`Cannot complete appointment with status ${appointment.status}. Appointment must be IN_PROGRESS`);
+      }
+
+      // Validate status transition
+      this.validateStatusTransition(appointment.status, AppointmentStatus.COMPLETED);
+
+      // Prepare update data
+      const updateData: any = {
+        status: AppointmentStatus.COMPLETED
+      };
+
+      if (completionData?.notes) {
+        updateData.notes = completionData.notes;
+      }
+
+      await appointment.update(updateData);
+
+      // Reload with associations
+      await appointment.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ]
+      });
+
+      logger.info(`Appointment completed: ${appointment.type} for ${appointment.student!.firstName} ${appointment.student!.lastName}`);
+      return appointment;
+    } catch (error) {
+      logger.error('Error completing appointment:', error);
       throw error;
     }
   }
@@ -372,44 +801,37 @@ export class AppointmentService {
     startTime: Date,
     duration: number,
     excludeAppointmentId?: string
-  ) {
+  ): Promise<Appointment[]> {
     try {
       const endTime = new Date(startTime.getTime() + duration * 60000);
-      
-      const whereClause: Prisma.AppointmentWhereInput = {
+      const bufferStartTime = new Date(startTime.getTime() - 30 * 60000); // 30 min buffer
+
+      const whereClause: any = {
         nurseId,
         status: {
-          in: ['SCHEDULED', 'IN_PROGRESS']
+          [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS]
         },
-        OR: [
-          {
-            scheduledAt: {
-              lt: endTime
-            },
-            // Check if existing appointment ends after new start time
-            AND: {
-              scheduledAt: {
-                gte: new Date(startTime.getTime() - 30 * 60000) // 30 min buffer
-              }
-            }
-          }
-        ]
+        scheduledAt: {
+          [Op.and]: [
+            { [Op.lt]: endTime },
+            { [Op.gte]: bufferStartTime }
+          ]
+        }
       };
 
       if (excludeAppointmentId) {
-        whereClause.id = { not: excludeAppointmentId };
+        whereClause.id = { [Op.ne]: excludeAppointmentId };
       }
 
-      const conflicts = await prisma.appointment.findMany({
+      const conflicts = await Appointment.findAll({
         where: whereClause,
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
           }
-        }
+        ]
       });
 
       return conflicts;
@@ -431,34 +853,33 @@ export class AppointmentService {
       // Define working hours (8 AM to 5 PM)
       const startHour = 8;
       const endHour = 17;
-      
+
       const startDate = new Date(date);
       startDate.setHours(startHour, 0, 0, 0);
-      
+
       const endDate = new Date(date);
       endDate.setHours(endHour, 0, 0, 0);
 
       // Get all appointments for the day
-      const appointments = await prisma.appointment.findMany({
+      const appointments = await Appointment.findAll({
         where: {
           nurseId,
           scheduledAt: {
-            gte: startDate,
-            lt: endDate
+            [Op.gte]: startDate,
+            [Op.lt]: endDate
           },
           status: {
-            in: ['SCHEDULED', 'IN_PROGRESS']
+            [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS]
           }
         },
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
           }
-        },
-        orderBy: { scheduledAt: 'asc' }
+        ],
+        order: [['scheduledAt', 'ASC']]
       });
 
       const slots: AvailabilitySlot[] = [];
@@ -466,7 +887,7 @@ export class AppointmentService {
 
       while (currentTime < endDate) {
         const slotEnd = new Date(currentTime.getTime() + slotDuration * 60000);
-        
+
         // Check if this slot conflicts with any appointment
         const conflict = appointments.find((appointment) => {
           const appointmentEnd = new Date(appointment.scheduledAt.getTime() + appointment.duration * 60000);
@@ -482,7 +903,7 @@ export class AppointmentService {
           available: !conflict,
           conflictingAppointment: conflict ? {
             id: conflict.id,
-            student: `${conflict.student.firstName} ${conflict.student.lastName}`,
+            student: `${conflict.student!.firstName} ${conflict.student!.lastName}`,
             reason: conflict.reason
           } : undefined
         });
@@ -502,29 +923,25 @@ export class AppointmentService {
    */
   static async getUpcomingAppointments(nurseId: string, limit: number = 10) {
     try {
-      const appointments = await prisma.appointment.findMany({
+      const appointments = await Appointment.findAll({
         where: {
           nurseId,
           scheduledAt: {
-            gte: new Date()
+            [Op.gte]: new Date()
           },
           status: {
-            in: ['SCHEDULED', 'IN_PROGRESS']
+            [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS]
           }
         },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true,
-              grade: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           }
-        },
-        orderBy: { scheduledAt: 'asc' },
-        take: limit
+        ],
+        order: [['scheduledAt', 'ASC']],
+        limit
       });
 
       return appointments;
@@ -539,49 +956,61 @@ export class AppointmentService {
    */
   static async getAppointmentStatistics(nurseId?: string, dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: Prisma.AppointmentWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (nurseId) {
         whereClause.nurseId = nurseId;
       }
-      
+
       if (dateFrom || dateTo) {
         whereClause.scheduledAt = {};
         if (dateFrom) {
-          whereClause.scheduledAt.gte = dateFrom;
+          whereClause.scheduledAt[Op.gte] = dateFrom;
         }
         if (dateTo) {
-          whereClause.scheduledAt.lte = dateTo;
+          whereClause.scheduledAt[Op.lte] = dateTo;
         }
       }
 
       const [statusStats, typeStats, totalAppointments] = await Promise.all([
-        prisma.appointment.groupBy({
-          by: ['status'],
+        Appointment.findAll({
           where: whereClause,
-          _count: { status: true }
+          attributes: [
+            'status',
+            [sequelize.fn('COUNT', sequelize.col('status')), 'count']
+          ],
+          group: ['status'],
+          raw: true
         }),
-        prisma.appointment.groupBy({
-          by: ['type'],
+        Appointment.findAll({
           where: whereClause,
-          _count: { type: true }
+          attributes: [
+            'type',
+            [sequelize.fn('COUNT', sequelize.col('type')), 'count']
+          ],
+          group: ['type'],
+          raw: true
         }),
-        prisma.appointment.count({ where: whereClause })
+        Appointment.count({ where: whereClause })
       ]);
 
-      const noShowRate = statusStats.find((s) => s.status === 'NO_SHOW')?._count.status || 0;
-      const completedCount = statusStats.find((s) => s.status === 'COMPLETED')?._count.status || 0;
+      const statusMap = (statusStats as any[]).reduce((acc: Record<string, number>, curr: any) => {
+        acc[curr.status] = parseInt(curr.count, 10);
+        return acc;
+      }, {});
+
+      const typeMap = (typeStats as any[]).reduce((acc: Record<string, number>, curr: any) => {
+        acc[curr.type] = parseInt(curr.count, 10);
+        return acc;
+      }, {});
+
+      const noShowRate = statusMap[AppointmentStatus.NO_SHOW] || 0;
+      const completedCount = statusMap[AppointmentStatus.COMPLETED] || 0;
 
       return {
         total: totalAppointments,
-        byStatus: statusStats.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.status] = curr._count.status;
-          return acc;
-        }, {}),
-        byType: typeStats.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.type] = curr._count.type;
-          return acc;
-        }, {}),
+        byStatus: statusMap,
+        byType: typeMap,
         noShowRate: totalAppointments > 0 ? (noShowRate / totalAppointments) * 100 : 0,
         completionRate: totalAppointments > 0 ? (completedCount / totalAppointments) * 100 : 0
       };
@@ -596,56 +1025,56 @@ export class AppointmentService {
    */
   static async scheduleReminders(appointmentId: string) {
     try {
-      const appointment = await prisma.appointment.findUnique({
-        where: { id: appointmentId },
-        include: {
-          student: {
-            include: {
-              emergencyContacts: {
+      const appointment = await Appointment.findByPk(appointmentId, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            include: [
+              {
+                model: EmergencyContact,
+                as: 'emergencyContacts',
                 where: { isActive: true },
-                orderBy: { priority: 'asc' }
+                required: false
               }
-            }
+            ]
           },
-          nurse: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['firstName', 'lastName']
           }
-        }
+        ]
       });
 
-      if (!appointment || !appointment.student.emergencyContacts.length) {
+      if (!appointment || !(appointment.student as any).emergencyContacts || (appointment.student as any).emergencyContacts.length === 0) {
         return [];
       }
 
       // Schedule reminders at different intervals with multiple channels
       const reminderIntervals = [
-        { hours: 24, type: 'EMAIL' as const, label: '24-hour' },
-        { hours: 2, type: 'SMS' as const, label: '2-hour' },
-        { hours: 0.5, type: 'SMS' as const, label: '30-minute' }
+        { hours: 24, type: MessageType.EMAIL, label: '24-hour' },
+        { hours: 2, type: MessageType.SMS, label: '2-hour' },
+        { hours: 0.5, type: MessageType.SMS, label: '30-minute' }
       ];
 
       const reminders = [];
-      
+
       for (const interval of reminderIntervals) {
         const reminderTime = new Date(appointment.scheduledAt.getTime() - interval.hours * 60 * 60 * 1000);
-        
+
         // Only schedule if reminder time is in the future
         if (reminderTime > new Date()) {
-          const message = `Appointment reminder: ${appointment.student.firstName} ${appointment.student.lastName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse.firstName} ${appointment.nurse.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
-          
-          const reminder = await prisma.appointmentReminder.create({
-            data: {
-              appointmentId,
-              type: interval.type,
-              scheduledFor: reminderTime,
-              message,
-              status: 'SCHEDULED'
-            }
+          const message = `Appointment reminder: ${appointment.student!.firstName} ${appointment.student!.lastName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse!.firstName} ${appointment.nurse!.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
+
+          const reminder = await AppointmentReminder.create({
+            appointmentId,
+            type: interval.type,
+            scheduledFor: reminderTime,
+            message,
+            status: ReminderStatus.SCHEDULED
           });
-          
+
           reminders.push(reminder);
         }
       }
@@ -671,17 +1100,17 @@ export class AppointmentService {
     }
   ) {
     try {
-      const appointments = [];
+      const appointments: Appointment[] = [];
       const currentDate = new Date(baseData.scheduledAt);
-      
+
       while (currentDate <= recurrencePattern.endDate) {
         // Check if we should create appointment on this date
         let shouldCreate = true;
-        
+
         if (recurrencePattern.frequency === 'weekly' && recurrencePattern.daysOfWeek) {
           shouldCreate = recurrencePattern.daysOfWeek.includes(currentDate.getDay());
         }
-        
+
         if (shouldCreate) {
           try {
             const appointment = await this.createAppointment({
@@ -693,7 +1122,7 @@ export class AppointmentService {
             logger.warn(`Failed to create recurring appointment for ${currentDate}: ${(error as Error).message}`);
           }
         }
-        
+
         // Calculate next date
         switch (recurrencePattern.frequency) {
           case 'daily':
@@ -721,17 +1150,15 @@ export class AppointmentService {
    */
   static async setNurseAvailability(data: NurseAvailabilityData) {
     try {
-      const availability = await prisma.nurseAvailability.create({
-        data: {
-          nurseId: data.nurseId,
-          dayOfWeek: data.dayOfWeek ?? 0,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          isRecurring: data.isRecurring ?? true,
-          specificDate: data.specificDate,
-          isAvailable: data.isAvailable ?? true,
-          reason: data.reason
-        }
+      const availability = await NurseAvailability.create({
+        nurseId: data.nurseId,
+        dayOfWeek: data.dayOfWeek ?? 0,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        isRecurring: data.isRecurring ?? true,
+        specificDate: data.specificDate,
+        isAvailable: data.isAvailable ?? true,
+        reason: data.reason
       });
 
       logger.info(`Availability set for nurse ${data.nurseId}`);
@@ -747,21 +1174,21 @@ export class AppointmentService {
    */
   static async getNurseAvailability(nurseId: string, date?: Date) {
     try {
-      const whereClause: Prisma.NurseAvailabilityWhereInput = { nurseId };
+      const whereClause: any = { nurseId };
 
       if (date) {
         const dayOfWeek = date.getDay();
-        whereClause.OR = [
+        whereClause[Op.or] = [
           { isRecurring: true, dayOfWeek },
           { isRecurring: false, specificDate: date }
         ];
       }
 
-      const availability = await prisma.nurseAvailability.findMany({
+      const availability = await NurseAvailability.findAll({
         where: whereClause,
-        orderBy: [
-          { dayOfWeek: 'asc' },
-          { startTime: 'asc' }
+        order: [
+          ['dayOfWeek', 'ASC'],
+          ['startTime', 'ASC']
         ]
       });
 
@@ -777,10 +1204,13 @@ export class AppointmentService {
    */
   static async updateNurseAvailability(id: string, data: Partial<NurseAvailabilityData>) {
     try {
-      const availability = await prisma.nurseAvailability.update({
-        where: { id },
-        data
-      });
+      const availability = await NurseAvailability.findByPk(id);
+
+      if (!availability) {
+        throw new Error('Nurse availability schedule not found');
+      }
+
+      await availability.update(data);
 
       logger.info(`Availability updated for schedule ${id}`);
       return availability;
@@ -795,9 +1225,13 @@ export class AppointmentService {
    */
   static async deleteNurseAvailability(id: string) {
     try {
-      await prisma.nurseAvailability.delete({
-        where: { id }
-      });
+      const availability = await NurseAvailability.findByPk(id);
+
+      if (!availability) {
+        throw new Error('Nurse availability schedule not found');
+      }
+
+      await availability.destroy();
 
       logger.info(`Availability schedule ${id} deleted`);
     } catch (error) {
@@ -811,38 +1245,59 @@ export class AppointmentService {
    */
   static async addToWaitlist(data: WaitlistEntry) {
     try {
-      const student = await prisma.student.findUnique({
-        where: { id: data.studentId }
-      });
-
+      const student = await Student.findByPk(data.studentId);
       if (!student) {
         throw new Error('Student not found');
+      }
+
+      // Validate appointment type
+      this.validateAppointmentType(data.type);
+
+      // Validate duration if provided
+      const duration = data.duration || this.DEFAULT_DURATION_MINUTES;
+      this.validateDuration(duration);
+
+      // Validate priority if provided
+      const priority = data.priority || WaitlistPriority.NORMAL;
+      this.validateWaitlistPriority(priority);
+
+      // Validate preferred date if provided (must be future)
+      if (data.preferredDate) {
+        this.validateFutureDateTime(data.preferredDate);
+        this.validateNotWeekend(data.preferredDate);
+      }
+
+      // Validate reason is provided
+      if (!data.reason || data.reason.trim().length === 0) {
+        throw new Error('Waitlist reason is required');
       }
 
       // Set expiration to 30 days from now
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30);
 
-      const waitlistEntry = await prisma.appointmentWaitlist.create({
-        data: {
-          studentId: data.studentId,
-          nurseId: data.nurseId,
-          type: data.type,
-          preferredDate: data.preferredDate,
-          duration: data.duration || 30,
-          priority: data.priority || 'NORMAL',
-          reason: data.reason,
-          notes: data.notes,
-          expiresAt
-        },
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true
-            }
+      const waitlistEntry = await AppointmentWaitlist.create({
+        studentId: data.studentId,
+        nurseId: data.nurseId,
+        type: data.type,
+        preferredDate: data.preferredDate,
+        duration,
+        priority,
+        reason: data.reason,
+        notes: data.notes,
+        status: WaitlistStatus.WAITING,
+        expiresAt
+      });
+
+      // Reload with associations
+      await waitlistEntry.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
           }
-        }
+        ]
       });
 
       logger.info(`Added ${student.firstName} ${student.lastName} to waitlist for ${data.type}`);
@@ -858,43 +1313,38 @@ export class AppointmentService {
    */
   static async getWaitlist(filters?: { nurseId?: string; status?: string; priority?: string }) {
     try {
-      const whereClause: Prisma.AppointmentWaitlistWhereInput = {};
+      const whereClause: any = {};
 
       if (filters?.nurseId) {
         whereClause.nurseId = filters.nurseId;
       }
 
       if (filters?.status) {
-        whereClause.status = filters.status as any;
+        whereClause.status = filters.status;
       }
 
       if (filters?.priority) {
-        whereClause.priority = filters.priority as any;
+        whereClause.priority = filters.priority;
       }
 
-      const waitlist = await prisma.appointmentWaitlist.findMany({
+      const waitlist = await AppointmentWaitlist.findAll({
         where: whereClause,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true,
-              grade: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           },
-          nurse: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true
-            }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName'],
+            required: false
           }
-        },
-        orderBy: [
-          { priority: 'desc' },
-          { createdAt: 'asc' }
+        ],
+        order: [
+          ['priority', 'DESC'],
+          ['createdAt', 'ASC']
         ]
       });
 
@@ -910,12 +1360,15 @@ export class AppointmentService {
    */
   static async removeFromWaitlist(id: string, reason?: string) {
     try {
-      const entry = await prisma.appointmentWaitlist.update({
-        where: { id },
-        data: {
-          status: 'CANCELLED',
-          notes: reason ? `Cancelled: ${reason}` : undefined
-        }
+      const entry = await AppointmentWaitlist.findByPk(id);
+
+      if (!entry) {
+        throw new Error('Waitlist entry not found');
+      }
+
+      await entry.update({
+        status: WaitlistStatus.CANCELLED,
+        notes: reason ? `Cancelled: ${reason}` : entry.notes
       });
 
       logger.info(`Removed entry ${id} from waitlist`);
@@ -929,34 +1382,38 @@ export class AppointmentService {
   /**
    * Automatically fill slots from waitlist when appointment is cancelled
    */
-  static async fillSlotFromWaitlist(cancelledAppointment: { scheduledAt: Date; duration: number; nurseId: string; type: string }) {
+  static async fillSlotFromWaitlist(cancelledAppointment: { scheduledAt: Date; duration: number; nurseId: string; type: AppointmentType }) {
     try {
       // Find matching waitlist entries
-      const waitlistEntries = await prisma.appointmentWaitlist.findMany({
+      const waitlistEntries = await AppointmentWaitlist.findAll({
         where: {
-          status: 'WAITING',
-          type: cancelledAppointment.type as any,
-          OR: [
+          status: WaitlistStatus.WAITING,
+          type: cancelledAppointment.type,
+          [Op.or]: [
             { nurseId: cancelledAppointment.nurseId },
             { nurseId: null }
           ]
         },
-        include: {
-          student: {
-            include: {
-              emergencyContacts: {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            include: [
+              {
+                model: EmergencyContact,
+                as: 'emergencyContacts',
                 where: { isActive: true },
-                orderBy: { priority: 'asc' },
-                take: 1
+                required: false,
+                limit: 1
               }
-            }
+            ]
           }
-        },
-        orderBy: [
-          { priority: 'desc' },
-          { createdAt: 'asc' }
         ],
-        take: 5
+        order: [
+          ['priority', 'DESC'],
+          ['createdAt', 'ASC']
+        ],
+        limit: 5
       });
 
       for (const entry of waitlistEntries) {
@@ -973,19 +1430,17 @@ export class AppointmentService {
           });
 
           // Update waitlist status
-          await prisma.appointmentWaitlist.update({
-            where: { id: entry.id },
-            data: {
-              status: 'SCHEDULED',
-              notifiedAt: new Date()
-            }
+          await entry.update({
+            status: WaitlistStatus.SCHEDULED,
+            notifiedAt: new Date()
           });
 
-          logger.info(`Auto-filled slot for ${entry.student.firstName} ${entry.student.lastName} from waitlist`);
-          
+          logger.info(`Auto-filled slot for ${entry.student!.firstName} ${entry.student!.lastName} from waitlist`);
+
           // Notify the contact
-          if (entry.student.emergencyContacts.length > 0) {
-            const contact = entry.student.emergencyContacts[0];
+          const contacts = (entry.student as any).emergencyContacts;
+          if (contacts && contacts.length > 0) {
+            const contact = contacts[0];
             logger.info(`Would notify ${contact.firstName} ${contact.lastName} at ${contact.phoneNumber} about scheduled appointment`);
           }
 
@@ -1009,28 +1464,32 @@ export class AppointmentService {
    */
   static async sendReminder(reminderId: string) {
     try {
-      const reminder = await prisma.appointmentReminder.findUnique({
-        where: { id: reminderId },
-        include: {
-          appointment: {
-            include: {
-              student: {
-                include: {
-                  emergencyContacts: {
+      const reminder = await AppointmentReminder.findByPk(reminderId, {
+        include: [
+          {
+            model: Appointment,
+            as: 'appointment',
+            include: [
+              {
+                model: Student,
+                as: 'student',
+                include: [
+                  {
+                    model: EmergencyContact,
+                    as: 'emergencyContacts',
                     where: { isActive: true },
-                    orderBy: { priority: 'asc' }
+                    required: false
                   }
-                }
+                ]
               },
-              nurse: {
-                select: {
-                  firstName: true,
-                  lastName: true
-                }
+              {
+                model: User,
+                as: 'nurse',
+                attributes: ['firstName', 'lastName']
               }
-            }
+            ]
           }
-        }
+        ]
       });
 
       if (!reminder || !reminder.appointment) {
@@ -1038,64 +1497,59 @@ export class AppointmentService {
       }
 
       const { appointment } = reminder;
-      const contact = appointment.student.emergencyContacts[0];
+      const contacts = (appointment.student as any).emergencyContacts;
+      const contact = contacts && contacts.length > 0 ? contacts[0] : null;
 
       if (!contact) {
-        logger.warn(`No emergency contact found for student ${appointment.student.firstName} ${appointment.student.lastName}`);
-        await prisma.appointmentReminder.update({
-          where: { id: reminderId },
-          data: {
-            status: 'FAILED',
-            failureReason: 'No emergency contact available'
-          }
+        logger.warn(`No emergency contact found for student ${appointment.student!.firstName} ${appointment.student!.lastName}`);
+        await reminder.update({
+          status: ReminderStatus.FAILED,
+          failureReason: 'No emergency contact available'
         });
         return;
       }
 
       // In a real implementation, integrate with SMS/Email/Voice services
-      const reminderMessage = reminder.message || 
-        `Reminder: ${appointment.student.firstName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse.firstName} ${appointment.nurse.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
+      const reminderMessage = reminder.message ||
+        `Reminder: ${appointment.student!.firstName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse!.firstName} ${appointment.nurse!.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
 
       logger.info(`Sending ${reminder.type} reminder to ${contact.firstName} ${contact.lastName}`);
-      
+
       // Simulate sending through different channels
       switch (reminder.type) {
-        case 'SMS':
+        case MessageType.SMS:
           logger.info(`SMS to ${contact.phoneNumber}: ${reminderMessage}`);
           break;
-        case 'EMAIL':
+        case MessageType.EMAIL:
           logger.info(`Email to ${contact.email}: ${reminderMessage}`);
           break;
-        case 'VOICE':
+        case MessageType.VOICE:
           logger.info(`Voice call to ${contact.phoneNumber}: ${reminderMessage}`);
           break;
       }
 
-      await prisma.appointmentReminder.update({
-        where: { id: reminderId },
-        data: {
-          status: 'SENT',
-          sentAt: new Date()
-        }
+      await reminder.update({
+        status: ReminderStatus.SENT,
+        sentAt: new Date()
       });
 
       logger.info(`Reminder ${reminderId} sent successfully`);
     } catch (error) {
       logger.error('Error sending reminder:', error);
-      
+
       // Update reminder status to failed
       try {
-        await prisma.appointmentReminder.update({
-          where: { id: reminderId },
-          data: {
-            status: 'FAILED',
+        const reminder = await AppointmentReminder.findByPk(reminderId);
+        if (reminder) {
+          await reminder.update({
+            status: ReminderStatus.FAILED,
             failureReason: (error as Error).message
-          }
-        });
+          });
+        }
       } catch (updateError) {
         logger.error('Error updating reminder status:', updateError);
       }
-      
+
       throw error;
     }
   }
@@ -1106,14 +1560,14 @@ export class AppointmentService {
   static async processPendingReminders() {
     try {
       const now = new Date();
-      const pendingReminders = await prisma.appointmentReminder.findMany({
+      const pendingReminders = await AppointmentReminder.findAll({
         where: {
-          status: 'SCHEDULED',
+          status: ReminderStatus.SCHEDULED,
           scheduledFor: {
-            lte: now
+            [Op.lte]: now
           }
         },
-        take: 50 // Process in batches
+        limit: 50 // Process in batches
       });
 
       let successCount = 0;
@@ -1130,7 +1584,7 @@ export class AppointmentService {
       }
 
       logger.info(`Processed ${pendingReminders.length} reminders: ${successCount} sent, ${failureCount} failed`);
-      
+
       return {
         total: pendingReminders.length,
         sent: successCount,
@@ -1145,28 +1599,26 @@ export class AppointmentService {
   /**
    * Generate calendar export (iCal format) for appointments
    */
-  static async generateCalendarExport(nurseId: string, dateFrom?: Date, dateTo?: Date) {
+  static async generateCalendarExport(nurseId: string, dateFrom?: Date, dateTo?: Date): Promise<string> {
     try {
-      const whereClause: Prisma.AppointmentWhereInput = { nurseId };
+      const whereClause: any = { nurseId };
 
       if (dateFrom || dateTo) {
         whereClause.scheduledAt = {};
-        if (dateFrom) whereClause.scheduledAt.gte = dateFrom;
-        if (dateTo) whereClause.scheduledAt.lte = dateTo;
+        if (dateFrom) whereClause.scheduledAt[Op.gte] = dateFrom;
+        if (dateTo) whereClause.scheduledAt[Op.lte] = dateTo;
       }
 
-      const appointments = await prisma.appointment.findMany({
+      const appointments = await Appointment.findAll({
         where: whereClause,
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName', 'studentNumber']
           }
-        },
-        orderBy: { scheduledAt: 'asc' }
+        ],
+        order: [['scheduledAt', 'ASC']]
       });
 
       // Generate iCal format
@@ -1185,9 +1637,9 @@ export class AppointmentService {
         ical += `DTSTAMP:${this.formatICalDate(new Date())}\r\n`;
         ical += `DTSTART:${this.formatICalDate(startDate)}\r\n`;
         ical += `DTEND:${this.formatICalDate(endDate)}\r\n`;
-        ical += `SUMMARY:${appointment.type.replace(/_/g, ' ')} - ${appointment.student.firstName} ${appointment.student.lastName}\r\n`;
-        ical += `DESCRIPTION:${appointment.reason}\\n\\nStudent: ${appointment.student.firstName} ${appointment.student.lastName} (${appointment.student.studentNumber})\\nStatus: ${appointment.status}\r\n`;
-        ical += `STATUS:${appointment.status === 'COMPLETED' ? 'CONFIRMED' : appointment.status === 'CANCELLED' ? 'CANCELLED' : 'TENTATIVE'}\r\n`;
+        ical += `SUMMARY:${appointment.type.replace(/_/g, ' ')} - ${appointment.student!.firstName} ${appointment.student!.lastName}\r\n`;
+        ical += `DESCRIPTION:${appointment.reason}\\n\\nStudent: ${appointment.student!.firstName} ${appointment.student!.lastName} (${appointment.student!.studentNumber})\\nStatus: ${appointment.status}\r\n`;
+        ical += `STATUS:${appointment.status === AppointmentStatus.COMPLETED ? 'CONFIRMED' : appointment.status === AppointmentStatus.CANCELLED ? 'CANCELLED' : 'TENTATIVE'}\r\n`;
         ical += 'END:VEVENT\r\n';
       }
 

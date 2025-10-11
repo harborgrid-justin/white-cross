@@ -45,11 +45,38 @@ Role.init(
       allowNull: false,
       unique: true,
       comment: 'Unique role name',
+      validate: {
+        notEmpty: {
+          msg: 'Role name cannot be empty'
+        },
+        len: {
+          args: [2, 100],
+          msg: 'Role name must be between 2 and 100 characters'
+        },
+        isValidRoleName(value: string) {
+          // Only allow alphanumeric, spaces, hyphens, and underscores
+          const roleNameRegex = /^[a-zA-Z0-9\s\-_]+$/;
+          if (!roleNameRegex.test(value)) {
+            throw new Error('Role name can only contain letters, numbers, spaces, hyphens, and underscores');
+          }
+          // Reserved system role names
+          const reservedNames = ['SYSTEM', 'ROOT', 'SUPERADMIN', 'SUPERUSER'];
+          if (reservedNames.includes(value.toUpperCase())) {
+            throw new Error(`Role name '${value}' is reserved and cannot be used`);
+          }
+        },
+      },
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Role description',
+      validate: {
+        len: {
+          args: [0, 1000],
+          msg: 'Role description must not exceed 1000 characters'
+        },
+      },
     },
     isSystem: {
       type: DataTypes.BOOLEAN,
@@ -68,5 +95,10 @@ Role.init(
       { fields: ['name'], unique: true },
       { fields: ['isSystem'] },
     ],
+    validate: {
+      systemRoleProtection() {
+        // Additional model-level validation can be added here if needed
+      },
+    },
   }
 );

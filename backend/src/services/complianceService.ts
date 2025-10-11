@@ -1,10 +1,30 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  AuditLog,
+  ComplianceReport,
+  ComplianceChecklistItem,
+  ConsentForm,
+  ConsentSignature,
+  PolicyDocument,
+  PolicyAcknowledgment,
+  Student,
+  User,
+  sequelize
+} from '../database/models';
+import {
+  ComplianceReportType,
+  ComplianceStatus,
+  ComplianceCategory,
+  ChecklistItemStatus,
+  ConsentType,
+  PolicyCategory,
+  PolicyStatus,
+  AuditAction
+} from '../database/types/enums';
 
 export interface CreateComplianceReportData {
-  reportType: string;
+  reportType: ComplianceReportType;
   title: string;
   description?: string;
   period: string;
@@ -15,13 +35,13 @@ export interface CreateComplianceReportData {
 export interface CreateChecklistItemData {
   requirement: string;
   description?: string;
-  category: string;
+  category: ComplianceCategory;
   dueDate?: Date;
   reportId?: string;
 }
 
 export interface CreateConsentFormData {
-  type: string;
+  type: ConsentType;
   title: string;
   description: string;
   content: string;
@@ -31,11 +51,47 @@ export interface CreateConsentFormData {
 
 export interface CreatePolicyData {
   title: string;
-  category: string;
+  category: PolicyCategory;
   content: string;
   version?: string;
   effectiveDate: Date;
   reviewDate?: Date;
+}
+
+export interface ComplianceReportFilters {
+  reportType?: ComplianceReportType;
+  status?: ComplianceStatus;
+  period?: string;
+}
+
+export interface AuditLogFilters {
+  userId?: string;
+  entityType?: string;
+  action?: AuditAction;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ComplianceStatistics {
+  reports: {
+    total: number;
+    compliant: number;
+    pending: number;
+    nonCompliant: number;
+  };
+  checklistItems: {
+    total: number;
+    completed: number;
+    overdue: number;
+    completionRate: number;
+  };
+}
+
+export interface PaginationResult {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
 }
 
 export class ComplianceService {
@@ -45,38 +101,39 @@ export class ComplianceService {
   static async getComplianceReports(
     page: number = 1,
     limit: number = 20,
-    filters: {
-      reportType?: string;
-      status?: string;
-      period?: string;
-    } = {}
-  ) {
+    filters: ComplianceReportFilters = {}
+  ): Promise<{
+    reports: ComplianceReport[];
+    pagination: PaginationResult;
+  }> {
     try {
-      const skip = (page - 1) * limit;
-      const where: Prisma.ComplianceReportWhereInput = {};
+      const offset = (page - 1) * limit;
+      const whereClause: any = {};
 
       if (filters.reportType) {
-        where.reportType = filters.reportType as any;
+        whereClause.reportType = filters.reportType;
       }
       if (filters.status) {
-        where.status = filters.status as any;
+        whereClause.status = filters.status;
       }
       if (filters.period) {
-        where.period = filters.period;
+        whereClause.period = filters.period;
       }
 
-      const [reports, total] = await Promise.all([
-        prisma.complianceReport.findMany({
-          where,
-          skip,
-          take: limit,
-          include: {
-            items: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-        prisma.complianceReport.count({ where }),
-      ]);
+      const { rows: reports, count: total } = await ComplianceReport.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        include: [
+          {
+            model: ComplianceChecklistItem,
+            as: 'items',
+            required: false
+          }
+        ],
+        order: [['createdAt', 'DESC']],
+        distinct: true
+      });
 
       logger.info(`Retrieved ${reports.length} compliance reports`);
 
@@ -86,27 +143,29 @@ export class ComplianceService {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit),
-        },
+          pages: Math.ceil(total / limit)
+        }
       };
     } catch (error) {
       logger.error('Error getting compliance reports:', error);
-      throw error;
+      throw new Error('Failed to fetch compliance reports');
     }
   }
 
   /**
    * Get compliance report by ID
    */
-  static async getComplianceReportById(id: string) {
+  static async getComplianceReportById(id: string): Promise<ComplianceReport> {
     try {
-      const report = await prisma.complianceReport.findUnique({
-        where: { id },
-        include: {
-          items: {
-            orderBy: { createdAt: 'asc' },
-          },
-        },
+      const report = await ComplianceReport.findByPk(id, {
+        include: [
+          {
+            model: ComplianceChecklistItem,
+            as: 'items',
+            required: false
+          }
+        ],
+        order: [[{ model: ComplianceChecklistItem, as: 'items' }, 'createdAt', 'ASC']]
       });
 
       if (!report) {
@@ -124,24 +183,36 @@ export class ComplianceService {
   /**
    * Create a new compliance report
    */
-  static async createComplianceReport(data: CreateComplianceReportData) {
+  static async createComplianceReport(data: CreateComplianceReportData): Promise<ComplianceReport> {
     try {
-      const report = await prisma.complianceReport.create({
-        data: {
-          reportType: data.reportType as any,
-          title: data.title,
-          description: data.description,
-          status: 'PENDING',
-          period: data.period,
-          dueDate: data.dueDate,
-          createdById: data.createdById,
-        },
-        include: {
-          items: true,
-        },
+      // Verify user exists
+      const user = await User.findByPk(data.createdById);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const report = await ComplianceReport.create({
+        reportType: data.reportType,
+        title: data.title,
+        description: data.description,
+        status: ComplianceStatus.PENDING,
+        period: data.period,
+        dueDate: data.dueDate,
+        createdById: data.createdById
       });
 
-      logger.info(`Created compliance report: ${report.id}`);
+      // Reload with associations
+      await report.reload({
+        include: [
+          {
+            model: ComplianceChecklistItem,
+            as: 'items',
+            required: false
+          }
+        ]
+      });
+
+      logger.info(`Created compliance report: ${report.id} - ${report.title}`);
       return report;
     } catch (error) {
       logger.error('Error creating compliance report:', error);
@@ -155,35 +226,52 @@ export class ComplianceService {
   static async updateComplianceReport(
     id: string,
     data: {
-      status?: string;
-      findings?: Prisma.InputJsonValue;
-      recommendations?: Prisma.InputJsonValue;
+      status?: ComplianceStatus;
+      findings?: any;
+      recommendations?: any;
       submittedBy?: string;
       reviewedBy?: string;
     }
-  ) {
+  ): Promise<ComplianceReport> {
     try {
-      const updateData: Prisma.ComplianceReportUpdateInput = {};
-      if (data.status) updateData.status = data.status as any;
-      if (data.findings) updateData.findings = data.findings;
-      if (data.recommendations) updateData.recommendations = data.recommendations;
+      const existingReport = await ComplianceReport.findByPk(id);
+
+      if (!existingReport) {
+        throw new Error('Compliance report not found');
+      }
+
+      const updateData: any = {};
+      if (data.status) updateData.status = data.status;
+      if (data.findings !== undefined) updateData.findings = data.findings;
+      if (data.recommendations !== undefined) updateData.recommendations = data.recommendations;
       if (data.submittedBy) updateData.submittedBy = data.submittedBy;
       if (data.reviewedBy) updateData.reviewedBy = data.reviewedBy;
 
-      if (data.status === 'COMPLIANT' && !updateData.submittedAt) {
+      // Automatically set submission timestamp when status changes to COMPLIANT
+      if (data.status === ComplianceStatus.COMPLIANT && !existingReport.submittedAt) {
         updateData.submittedAt = new Date();
       }
 
-      const report = await prisma.complianceReport.update({
-        where: { id },
-        data: updateData,
-        include: {
-          items: true,
-        },
+      // Set reviewed timestamp when reviewer is set
+      if (data.reviewedBy && !existingReport.reviewedAt) {
+        updateData.reviewedAt = new Date();
+      }
+
+      await existingReport.update(updateData);
+
+      // Reload with associations
+      await existingReport.reload({
+        include: [
+          {
+            model: ComplianceChecklistItem,
+            as: 'items',
+            required: false
+          }
+        ]
       });
 
       logger.info(`Updated compliance report: ${id}`);
-      return report;
+      return existingReport;
     } catch (error) {
       logger.error(`Error updating compliance report ${id}:`, error);
       throw error;
@@ -193,11 +281,15 @@ export class ComplianceService {
   /**
    * Delete compliance report
    */
-  static async deleteComplianceReport(id: string) {
+  static async deleteComplianceReport(id: string): Promise<{ success: boolean }> {
     try {
-      await prisma.complianceReport.delete({
-        where: { id },
-      });
+      const report = await ComplianceReport.findByPk(id);
+
+      if (!report) {
+        throw new Error('Compliance report not found');
+      }
+
+      await report.destroy();
 
       logger.info(`Deleted compliance report: ${id}`);
       return { success: true };
@@ -210,20 +302,26 @@ export class ComplianceService {
   /**
    * Add checklist item to report
    */
-  static async addChecklistItem(data: CreateChecklistItemData) {
+  static async addChecklistItem(data: CreateChecklistItemData): Promise<ComplianceChecklistItem> {
     try {
-      const item = await prisma.complianceChecklistItem.create({
-        data: {
-          requirement: data.requirement,
-          description: data.description,
-          category: data.category as any,
-          status: 'PENDING',
-          dueDate: data.dueDate,
-          reportId: data.reportId,
-        },
+      // Verify report exists if reportId is provided
+      if (data.reportId) {
+        const report = await ComplianceReport.findByPk(data.reportId);
+        if (!report) {
+          throw new Error('Compliance report not found');
+        }
+      }
+
+      const item = await ComplianceChecklistItem.create({
+        requirement: data.requirement,
+        description: data.description,
+        category: data.category,
+        status: ChecklistItemStatus.PENDING,
+        dueDate: data.dueDate,
+        reportId: data.reportId
       });
 
-      logger.info(`Created checklist item: ${item.id}`);
+      logger.info(`Created checklist item: ${item.id} - ${item.requirement}`);
       return item;
     } catch (error) {
       logger.error('Error creating checklist item:', error);
@@ -237,30 +335,34 @@ export class ComplianceService {
   static async updateChecklistItem(
     id: string,
     data: {
-      status?: string;
+      status?: ChecklistItemStatus;
       evidence?: string;
       notes?: string;
       completedBy?: string;
     }
-  ) {
+  ): Promise<ComplianceChecklistItem> {
     try {
-      const updateData: Prisma.ComplianceChecklistItemUpdateInput = {};
-      if (data.status) updateData.status = data.status as any;
-      if (data.evidence) updateData.evidence = data.evidence;
-      if (data.notes) updateData.notes = data.notes;
+      const existingItem = await ComplianceChecklistItem.findByPk(id);
+
+      if (!existingItem) {
+        throw new Error('Checklist item not found');
+      }
+
+      const updateData: any = {};
+      if (data.status) updateData.status = data.status;
+      if (data.evidence !== undefined) updateData.evidence = data.evidence;
+      if (data.notes !== undefined) updateData.notes = data.notes;
       if (data.completedBy) updateData.completedBy = data.completedBy;
 
-      if (data.status === 'COMPLETED' && !updateData.completedAt) {
+      // Automatically set completion timestamp when status changes to COMPLETED
+      if (data.status === ChecklistItemStatus.COMPLETED && !existingItem.completedAt) {
         updateData.completedAt = new Date();
       }
 
-      const item = await prisma.complianceChecklistItem.update({
-        where: { id },
-        data: updateData,
-      });
+      await existingItem.update(updateData);
 
       logger.info(`Updated checklist item: ${id}`);
-      return item;
+      return existingItem;
     } catch (error) {
       logger.error(`Error updating checklist item ${id}:`, error);
       throw error;
@@ -270,51 +372,70 @@ export class ComplianceService {
   /**
    * Get all consent forms
    */
-  static async getConsentForms(filters: { isActive?: boolean } = {}) {
+  static async getConsentForms(filters: { isActive?: boolean } = {}): Promise<ConsentForm[]> {
     try {
-      const where: Prisma.ConsentFormWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (filters.isActive !== undefined) {
-        where.isActive = filters.isActive;
+        whereClause.isActive = filters.isActive;
       }
 
-      const forms = await prisma.consentForm.findMany({
-        where,
-        include: {
-          signatures: {
-            orderBy: { signedAt: 'desc' },
-            take: 5,
-          },
-        },
-        orderBy: { createdAt: 'desc' },
+      const forms = await ConsentForm.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: ConsentSignature,
+            as: 'signatures',
+            limit: 5,
+            separate: true,
+            order: [['signedAt', 'DESC']]
+          }
+        ],
+        order: [['createdAt', 'DESC']]
       });
 
       logger.info(`Retrieved ${forms.length} consent forms`);
       return forms;
     } catch (error) {
       logger.error('Error getting consent forms:', error);
-      throw error;
+      throw new Error('Failed to fetch consent forms');
     }
   }
 
   /**
    * Create consent form
    */
-  static async createConsentForm(data: CreateConsentFormData) {
+  static async createConsentForm(data: CreateConsentFormData): Promise<ConsentForm> {
     try {
-      const form = await prisma.consentForm.create({
-        data: {
-          type: data.type as any,
-          title: data.title,
-          description: data.description,
-          content: data.content,
-          version: data.version || '1.0',
-          isActive: true,
-          expiresAt: data.expiresAt,
-        },
+      // Validate expiration date if provided
+      if (data.expiresAt) {
+        const expirationDate = new Date(data.expiresAt);
+        if (expirationDate <= new Date()) {
+          throw new Error('Consent form expiration date must be in the future');
+        }
+      }
+
+      // Validate version format
+      if (data.version && !/^[0-9]+\.[0-9]+(\.[0-9]+)?$/.test(data.version)) {
+        throw new Error('Version must be in format: X.Y or X.Y.Z (e.g., 1.0, 2.1.3)');
+      }
+
+      // Validate content length for legal validity
+      if (data.content.trim().length < 50) {
+        throw new Error('Consent form content must be at least 50 characters for legal validity');
+      }
+
+      const form = await ConsentForm.create({
+        type: data.type,
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        version: data.version || '1.0',
+        isActive: true,
+        expiresAt: data.expiresAt
       });
 
-      logger.info(`Created consent form: ${form.id}`);
+      logger.info(`Created consent form: ${form.id} - ${form.title} (${form.type})`);
       return form;
     } catch (error) {
       logger.error('Error creating consent form:', error);
@@ -324,6 +445,8 @@ export class ComplianceService {
 
   /**
    * Sign consent form
+   * Uses transaction to ensure atomicity and proper audit logging
+   * HIPAA COMPLIANCE: Records digital signature with full audit trail
    */
   static async signConsentForm(data: {
     consentFormId: string;
@@ -332,22 +455,94 @@ export class ComplianceService {
     relationship: string;
     signatureData?: string;
     ipAddress?: string;
-  }) {
+  }): Promise<ConsentSignature> {
+    const transaction = await sequelize.transaction();
+
     try {
-      const signature = await prisma.consentSignature.create({
-        data: {
+      // Validate relationship
+      const validRelationships = [
+        'Mother', 'Father', 'Parent', 'Legal Guardian',
+        'Foster Parent', 'Grandparent', 'Stepparent', 'Other Authorized Adult'
+      ];
+      if (!validRelationships.includes(data.relationship)) {
+        throw new Error('Relationship must be a valid authorized relationship type');
+      }
+
+      // Validate signatory name
+      if (!data.signedBy || data.signedBy.trim().length < 2) {
+        throw new Error('Signatory name is required for legal validity');
+      }
+
+      // Verify consent form exists and is active
+      const consentForm = await ConsentForm.findByPk(data.consentFormId, { transaction });
+      if (!consentForm) {
+        throw new Error('Consent form not found');
+      }
+      if (!consentForm.isActive) {
+        throw new Error('Consent form is not active and cannot be signed');
+      }
+
+      // Check if consent form has expired
+      if (consentForm.expiresAt && new Date(consentForm.expiresAt) < new Date()) {
+        throw new Error('Consent form has expired and cannot be signed');
+      }
+
+      // Verify student exists
+      const student = await Student.findByPk(data.studentId, { transaction });
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      // Check if signature already exists (unique constraint)
+      const existingSignature = await ConsentSignature.findOne({
+        where: {
           consentFormId: data.consentFormId,
-          studentId: data.studentId,
-          signedBy: data.signedBy,
-          relationship: data.relationship,
-          signatureData: data.signatureData,
-          ipAddress: data.ipAddress,
+          studentId: data.studentId
         },
+        transaction
       });
 
-      logger.info(`Consent form signed: ${data.consentFormId} for student ${data.studentId}`);
+      if (existingSignature) {
+        if (existingSignature.withdrawnAt) {
+          throw new Error('Consent form was previously signed and withdrawn. A new consent form version may be required.');
+        }
+        throw new Error('Consent form already signed for this student');
+      }
+
+      // Validate digital signature data if provided
+      if (data.signatureData) {
+        if (data.signatureData.length < 10) {
+          throw new Error('Digital signature data appears incomplete');
+        }
+        if (data.signatureData.length > 100000) {
+          throw new Error('Digital signature data is too large (max 100KB)');
+        }
+      }
+
+      // Create signature
+      const signature = await ConsentSignature.create(
+        {
+          consentFormId: data.consentFormId,
+          studentId: data.studentId,
+          signedBy: data.signedBy.trim(),
+          relationship: data.relationship,
+          signatureData: data.signatureData,
+          ipAddress: data.ipAddress
+        },
+        { transaction }
+      );
+
+      await transaction.commit();
+
+      logger.info(
+        `CONSENT SIGNED: Form ${data.consentFormId} for student ${student.firstName} ${student.lastName} ` +
+        `(${data.studentId}) by ${data.signedBy} (${data.relationship})` +
+        `${data.ipAddress ? ` from IP ${data.ipAddress}` : ''}`
+      );
+
       return signature;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error signing consent form:', error);
       throw error;
     }
@@ -356,14 +551,24 @@ export class ComplianceService {
   /**
    * Get student consent signatures
    */
-  static async getStudentConsents(studentId: string) {
+  static async getStudentConsents(studentId: string): Promise<ConsentSignature[]> {
     try {
-      const consents = await prisma.consentSignature.findMany({
+      // Verify student exists
+      const student = await Student.findByPk(studentId);
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      const consents = await ConsentSignature.findAll({
         where: { studentId },
-        include: {
-          consentForm: true,
-        },
-        orderBy: { signedAt: 'desc' },
+        include: [
+          {
+            model: ConsentForm,
+            as: 'consentForm',
+            required: true
+          }
+        ],
+        order: [['signedAt', 'DESC']]
       });
 
       logger.info(`Retrieved ${consents.length} consents for student ${studentId}`);
@@ -376,18 +581,51 @@ export class ComplianceService {
 
   /**
    * Withdraw consent
+   * HIPAA COMPLIANCE: Maintains complete audit trail of consent withdrawal
    */
-  static async withdrawConsent(signatureId: string, withdrawnBy: string) {
+  static async withdrawConsent(signatureId: string, withdrawnBy: string): Promise<ConsentSignature> {
     try {
-      const signature = await prisma.consentSignature.update({
-        where: { id: signatureId },
-        data: {
-          withdrawnAt: new Date(),
-          withdrawnBy,
-        },
+      // Validate withdrawn by name
+      if (!withdrawnBy || withdrawnBy.trim().length < 2) {
+        throw new Error('Withdrawn by name is required for audit trail');
+      }
+
+      const signature = await ConsentSignature.findByPk(signatureId, {
+        include: [
+          {
+            model: ConsentForm,
+            as: 'consentForm'
+          },
+          {
+            model: Student,
+            as: 'student'
+          }
+        ]
       });
 
-      logger.info(`Consent withdrawn: ${signatureId}`);
+      if (!signature) {
+        throw new Error('Consent signature not found');
+      }
+
+      if (signature.withdrawnAt) {
+        throw new Error(
+          `Consent was already withdrawn on ${signature.withdrawnAt.toISOString().split('T')[0]} ` +
+          `by ${signature.withdrawnBy}`
+        );
+      }
+
+      await signature.update({
+        withdrawnAt: new Date(),
+        withdrawnBy: withdrawnBy.trim()
+      });
+
+      const student = signature.student as any;
+      logger.warn(
+        `CONSENT WITHDRAWN: Signature ${signatureId} for student ` +
+        `${student ? `${student.firstName} ${student.lastName}` : signature.studentId} ` +
+        `withdrawn by ${withdrawnBy}. Consent is no longer valid.`
+      );
+
       return signature;
     } catch (error) {
       logger.error(`Error withdrawing consent ${signatureId}:`, error);
@@ -398,54 +636,75 @@ export class ComplianceService {
   /**
    * Get all policy documents
    */
-  static async getPolicies(filters: { category?: string; status?: string } = {}) {
+  static async getPolicies(filters: { category?: PolicyCategory; status?: PolicyStatus } = {}): Promise<PolicyDocument[]> {
     try {
-      const where: Prisma.PolicyDocumentWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (filters.category) {
-        where.category = filters.category as any;
+        whereClause.category = filters.category;
       }
       if (filters.status) {
-        where.status = filters.status as any;
+        whereClause.status = filters.status;
       }
 
-      const policies = await prisma.policyDocument.findMany({
-        where,
-        include: {
-          acknowledgments: {
-            take: 5,
-            orderBy: { acknowledgedAt: 'desc' },
-          },
-        },
-        orderBy: { effectiveDate: 'desc' },
+      const policies = await PolicyDocument.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: PolicyAcknowledgment,
+            as: 'acknowledgments',
+            limit: 5,
+            separate: true,
+            order: [['acknowledgedAt', 'DESC']]
+          }
+        ],
+        order: [['effectiveDate', 'DESC']]
       });
 
       logger.info(`Retrieved ${policies.length} policies`);
       return policies;
     } catch (error) {
       logger.error('Error getting policies:', error);
-      throw error;
+      throw new Error('Failed to fetch policies');
     }
   }
 
   /**
    * Create policy document
+   * COMPLIANCE: Version-controlled policy management for HIPAA/FERPA
    */
-  static async createPolicy(data: CreatePolicyData) {
+  static async createPolicy(data: CreatePolicyData): Promise<PolicyDocument> {
     try {
-      const policy = await prisma.policyDocument.create({
-        data: {
-          title: data.title,
-          category: data.category as any,
-          content: data.content,
-          version: data.version || '1.0',
-          effectiveDate: data.effectiveDate,
-          reviewDate: data.reviewDate,
-          status: 'DRAFT',
-        },
+      // Validate version format
+      if (data.version && !/^[0-9]+\.[0-9]+(\.[0-9]+)?$/.test(data.version)) {
+        throw new Error('Version must be in format: X.Y or X.Y.Z (e.g., 1.0, 2.1.3)');
+      }
+
+      // Validate content length
+      if (data.content.trim().length < 100) {
+        throw new Error('Policy content must be at least 100 characters');
+      }
+
+      // Validate review date if provided
+      if (data.reviewDate) {
+        const reviewDate = new Date(data.reviewDate);
+        const effectiveDate = new Date(data.effectiveDate);
+        if (reviewDate < effectiveDate) {
+          throw new Error('Review date cannot be before effective date');
+        }
+      }
+
+      const policy = await PolicyDocument.create({
+        title: data.title.trim(),
+        category: data.category,
+        content: data.content.trim(),
+        version: data.version || '1.0',
+        effectiveDate: data.effectiveDate,
+        reviewDate: data.reviewDate,
+        status: PolicyStatus.DRAFT
       });
 
-      logger.info(`Created policy: ${policy.id}`);
+      logger.info(`Created policy: ${policy.id} - ${policy.title} (${policy.category}) v${policy.version}`);
       return policy;
     } catch (error) {
       logger.error('Error creating policy:', error);
@@ -455,32 +714,67 @@ export class ComplianceService {
 
   /**
    * Update policy
+   * COMPLIANCE: Enforces policy lifecycle and approval workflow
    */
   static async updatePolicy(
     id: string,
     data: {
-      status?: string;
+      status?: PolicyStatus;
       approvedBy?: string;
       reviewDate?: Date;
     }
-  ) {
+  ): Promise<PolicyDocument> {
     try {
-      const updateData: Prisma.PolicyDocumentUpdateInput = {};
-      if (data.status) updateData.status = data.status as any;
-      if (data.approvedBy) updateData.approvedBy = data.approvedBy;
-      if (data.reviewDate) updateData.reviewDate = data.reviewDate;
+      const existingPolicy = await PolicyDocument.findByPk(id);
 
-      if (data.status === 'ACTIVE' && !updateData.approvedAt) {
+      if (!existingPolicy) {
+        throw new Error('Policy document not found');
+      }
+
+      const updateData: any = {};
+
+      // Validate status transitions
+      if (data.status) {
+        if (data.status === PolicyStatus.ACTIVE) {
+          // Activating a policy requires approval
+          if (!data.approvedBy && !existingPolicy.approvedBy) {
+            throw new Error('Approver is required to activate a policy');
+          }
+          if (existingPolicy.status === PolicyStatus.ARCHIVED) {
+            throw new Error('Cannot reactivate an archived policy. Create a new version instead.');
+          }
+          if (existingPolicy.status === PolicyStatus.SUPERSEDED) {
+            throw new Error('Cannot reactivate a superseded policy. Create a new version instead.');
+          }
+        }
+        updateData.status = data.status;
+      }
+
+      if (data.approvedBy) {
+        updateData.approvedBy = data.approvedBy;
+      }
+
+      if (data.reviewDate) {
+        const reviewDate = new Date(data.reviewDate);
+        if (reviewDate < existingPolicy.effectiveDate) {
+          throw new Error('Review date cannot be before effective date');
+        }
+        updateData.reviewDate = data.reviewDate;
+      }
+
+      // Automatically set approval timestamp when status changes to ACTIVE
+      if (data.status === PolicyStatus.ACTIVE && !existingPolicy.approvedAt) {
         updateData.approvedAt = new Date();
       }
 
-      const policy = await prisma.policyDocument.update({
-        where: { id },
-        data: updateData,
-      });
+      await existingPolicy.update(updateData);
 
-      logger.info(`Updated policy: ${id}`);
-      return policy;
+      logger.info(
+        `Updated policy: ${id} - ${existingPolicy.title} ` +
+        `${data.status ? `(status: ${existingPolicy.status} -> ${data.status})` : ''}`
+      );
+
+      return existingPolicy;
     } catch (error) {
       logger.error(`Error updating policy ${id}:`, error);
       throw error;
@@ -489,20 +783,79 @@ export class ComplianceService {
 
   /**
    * Acknowledge policy
+   * Uses transaction to ensure atomicity
+   * COMPLIANCE: Required for staff training and policy compliance tracking
    */
-  static async acknowledgePolicy(policyId: string, userId: string, ipAddress?: string) {
+  static async acknowledgePolicy(
+    policyId: string,
+    userId: string,
+    ipAddress?: string
+  ): Promise<PolicyAcknowledgment> {
+    const transaction = await sequelize.transaction();
+
     try {
-      const acknowledgment = await prisma.policyAcknowledgment.create({
-        data: {
+      // Verify policy exists and is active
+      const policy = await PolicyDocument.findByPk(policyId, { transaction });
+      if (!policy) {
+        throw new Error('Policy document not found');
+      }
+      if (policy.status !== PolicyStatus.ACTIVE) {
+        throw new Error(
+          `Policy is ${policy.status} and cannot be acknowledged. Only ACTIVE policies can be acknowledged.`
+        );
+      }
+
+      // Verify policy is not past its review date
+      if (policy.reviewDate && new Date(policy.reviewDate) < new Date()) {
+        logger.warn(
+          `Policy ${policyId} is past its review date (${policy.reviewDate}). ` +
+          `Consider updating or creating a new version.`
+        );
+      }
+
+      // Verify user exists
+      const user = await User.findByPk(userId, { transaction });
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Check if already acknowledged (unique constraint)
+      const existingAcknowledgment = await PolicyAcknowledgment.findOne({
+        where: {
           policyId,
-          userId,
-          ipAddress,
+          userId
         },
+        transaction
       });
 
-      logger.info(`Policy acknowledged: ${policyId} by user ${userId}`);
+      if (existingAcknowledgment) {
+        throw new Error(
+          `Policy already acknowledged by this user on ` +
+          `${existingAcknowledgment.acknowledgedAt.toISOString().split('T')[0]}`
+        );
+      }
+
+      // Create acknowledgment
+      const acknowledgment = await PolicyAcknowledgment.create(
+        {
+          policyId,
+          userId,
+          ipAddress
+        },
+        { transaction }
+      );
+
+      await transaction.commit();
+
+      logger.info(
+        `POLICY ACKNOWLEDGED: ${policy.title} (${policy.category}) v${policy.version} ` +
+        `by ${user.firstName} ${user.lastName} (${userId})` +
+        `${ipAddress ? ` from IP ${ipAddress}` : ''}`
+      );
+
       return acknowledgment;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error acknowledging policy:', error);
       throw error;
     }
@@ -511,11 +864,11 @@ export class ComplianceService {
   /**
    * Get compliance statistics
    */
-  static async getComplianceStatistics(period?: string) {
+  static async getComplianceStatistics(period?: string): Promise<ComplianceStatistics> {
     try {
-      const where: Prisma.ComplianceReportWhereInput = {};
+      const whereClause: any = {};
       if (period) {
-        where.period = period;
+        whereClause.period = period;
       }
 
       const [
@@ -525,93 +878,101 @@ export class ComplianceService {
         nonCompliantReports,
         totalChecklistItems,
         completedItems,
-        overdueItems,
+        overdueItems
       ] = await Promise.all([
-        prisma.complianceReport.count({ where }),
-        prisma.complianceReport.count({ where: { ...where, status: 'COMPLIANT' } }),
-        prisma.complianceReport.count({ where: { ...where, status: 'PENDING' } }),
-        prisma.complianceReport.count({ where: { ...where, status: 'NON_COMPLIANT' } }),
-        prisma.complianceChecklistItem.count(),
-        prisma.complianceChecklistItem.count({ where: { status: 'COMPLETED' } }),
-        prisma.complianceChecklistItem.count({
-          where: {
-            status: { not: 'COMPLETED' },
-            dueDate: { lt: new Date() },
-          },
+        ComplianceReport.count({ where: whereClause }),
+        ComplianceReport.count({
+          where: { ...whereClause, status: ComplianceStatus.COMPLIANT }
         }),
+        ComplianceReport.count({
+          where: { ...whereClause, status: ComplianceStatus.PENDING }
+        }),
+        ComplianceReport.count({
+          where: { ...whereClause, status: ComplianceStatus.NON_COMPLIANT }
+        }),
+        ComplianceChecklistItem.count(),
+        ComplianceChecklistItem.count({
+          where: { status: ChecklistItemStatus.COMPLETED }
+        }),
+        ComplianceChecklistItem.count({
+          where: {
+            status: {
+              [Op.ne]: ChecklistItemStatus.COMPLETED
+            },
+            dueDate: {
+              [Op.lt]: new Date()
+            }
+          }
+        })
       ]);
 
-      const statistics = {
+      const statistics: ComplianceStatistics = {
         reports: {
           total: totalReports,
           compliant: compliantReports,
           pending: pendingReports,
-          nonCompliant: nonCompliantReports,
+          nonCompliant: nonCompliantReports
         },
         checklistItems: {
           total: totalChecklistItems,
           completed: completedItems,
           overdue: overdueItems,
-          completionRate: totalChecklistItems > 0 
-            ? Math.round((completedItems / totalChecklistItems) * 100) 
-            : 0,
-        },
+          completionRate:
+            totalChecklistItems > 0
+              ? Math.round((completedItems / totalChecklistItems) * 100)
+              : 0
+        }
       };
 
       logger.info('Retrieved compliance statistics');
       return statistics;
     } catch (error) {
       logger.error('Error getting compliance statistics:', error);
-      throw error;
+      throw new Error('Failed to fetch compliance statistics');
     }
   }
 
   /**
-   * Get audit logs for compliance
+   * Get audit logs for compliance with HIPAA tracking
    */
   static async getAuditLogs(
     page: number = 1,
     limit: number = 50,
-    filters: {
-      userId?: string;
-      entityType?: string;
-      action?: string;
-      startDate?: Date;
-      endDate?: Date;
-    } = {}
-  ) {
+    filters: AuditLogFilters = {}
+  ): Promise<{
+    logs: AuditLog[];
+    pagination: PaginationResult;
+  }> {
     try {
-      const skip = (page - 1) * limit;
-      const where: Prisma.AuditLogWhereInput = {};
+      const offset = (page - 1) * limit;
+      const whereClause: any = {};
 
       if (filters.userId) {
-        where.userId = filters.userId;
+        whereClause.userId = filters.userId;
       }
       if (filters.entityType) {
-        where.entityType = filters.entityType;
+        whereClause.entityType = filters.entityType;
       }
       if (filters.action) {
-        where.action = filters.action as any;
+        whereClause.action = filters.action;
       }
       if (filters.startDate || filters.endDate) {
-        where.createdAt = {};
+        whereClause.createdAt = {};
         if (filters.startDate) {
-          where.createdAt.gte = filters.startDate;
+          whereClause.createdAt[Op.gte] = filters.startDate;
         }
         if (filters.endDate) {
-          where.createdAt.lte = filters.endDate;
+          whereClause.createdAt[Op.lte] = filters.endDate;
         }
       }
 
-      const [logs, total] = await Promise.all([
-        prisma.auditLog.findMany({
-          where,
-          skip,
-          take: limit,
-          orderBy: { createdAt: 'desc' },
-        }),
-        prisma.auditLog.count({ where }),
-      ]);
+      const { rows: logs, count: total } = await AuditLog.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
+        distinct: true
+      });
 
       logger.info(`Retrieved ${logs.length} audit logs`);
 
@@ -621,46 +982,112 @@ export class ComplianceService {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit),
-        },
+          pages: Math.ceil(total / limit)
+        }
       };
     } catch (error) {
       logger.error('Error getting audit logs:', error);
+      throw new Error('Failed to fetch audit logs');
+    }
+  }
+
+  /**
+   * Create audit log entry for HIPAA compliance
+   * This is a critical function for maintaining HIPAA compliance audit trails
+   */
+  static async createAuditLog(data: {
+    userId?: string;
+    action: AuditAction;
+    entityType: string;
+    entityId?: string;
+    changes?: any;
+    ipAddress?: string;
+    userAgent?: string;
+  }): Promise<AuditLog> {
+    try {
+      const auditLog = await AuditLog.create({
+        userId: data.userId,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        changes: data.changes,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent
+      });
+
+      logger.info(
+        `Audit log created: ${data.action} on ${data.entityType}${data.entityId ? ` (${data.entityId})` : ''} by user ${data.userId || 'system'}`
+      );
+
+      return auditLog;
+    } catch (error) {
+      logger.error('Error creating audit log:', error);
       throw error;
     }
   }
 
   /**
-   * Generate compliance report for period
+   * Generate compliance report for period with automatic checklist items
    */
   static async generateComplianceReport(
-    reportType: string,
+    reportType: ComplianceReportType,
     period: string,
     createdById: string
-  ) {
+  ): Promise<ComplianceReport> {
+    const transaction = await sequelize.transaction();
+
     try {
-      // Automatically analyze and create report
-      const report = await this.createComplianceReport({
-        reportType,
-        title: `${reportType} Compliance Report - ${period}`,
-        description: `Automated compliance report for ${period}`,
-        period,
-        createdById,
-      });
+      // Verify user exists
+      const user = await User.findByPk(createdById, { transaction });
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Create report
+      const report = await ComplianceReport.create(
+        {
+          reportType,
+          title: `${reportType} Compliance Report - ${period}`,
+          description: `Automated compliance report for ${period}`,
+          status: ComplianceStatus.PENDING,
+          period,
+          createdById
+        },
+        { transaction }
+      );
 
       // Add relevant checklist items based on report type
       const checklistItems = this.getChecklistItemsForReportType(reportType);
-      
+
       for (const item of checklistItems) {
-        await this.addChecklistItem({
-          ...item,
-          reportId: report.id,
-        });
+        await ComplianceChecklistItem.create(
+          {
+            requirement: item.requirement,
+            description: item.description,
+            category: item.category,
+            status: ChecklistItemStatus.PENDING,
+            reportId: report.id
+          },
+          { transaction }
+        );
       }
 
-      logger.info(`Generated compliance report: ${report.id}`);
+      await transaction.commit();
+
+      // Reload with associations
+      await report.reload({
+        include: [
+          {
+            model: ComplianceChecklistItem,
+            as: 'items'
+          }
+        ]
+      });
+
+      logger.info(`Generated compliance report: ${report.id} with ${checklistItems.length} checklist items`);
       return report;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error generating compliance report:', error);
       throw error;
     }
@@ -668,50 +1095,163 @@ export class ComplianceService {
 
   /**
    * Get default checklist items for report type
+   * Returns predefined compliance requirements based on the regulatory framework
    */
-  private static getChecklistItemsForReportType(reportType: string) {
-    const items: Record<string, Array<{ requirement: string; description: string; category: string; isRequired?: boolean }>> = {
-      HIPAA: [
+  private static getChecklistItemsForReportType(
+    reportType: ComplianceReportType
+  ): Array<{
+    requirement: string;
+    description: string;
+    category: ComplianceCategory;
+  }> {
+    const items: Record<
+      ComplianceReportType,
+      Array<{
+        requirement: string;
+        description: string;
+        category: ComplianceCategory;
+      }>
+    > = {
+      [ComplianceReportType.HIPAA]: [
         {
           requirement: 'Privacy Rule Compliance',
-          description: 'Verify HIPAA Privacy Rule compliance',
-          category: 'PRIVACY',
+          description: 'Verify HIPAA Privacy Rule compliance for PHI handling',
+          category: ComplianceCategory.PRIVACY
         },
         {
           requirement: 'Security Rule Compliance',
-          description: 'Verify HIPAA Security Rule compliance',
-          category: 'SECURITY',
+          description: 'Verify HIPAA Security Rule compliance for technical safeguards',
+          category: ComplianceCategory.SECURITY
         },
         {
           requirement: 'Breach Notification',
-          description: 'Verify breach notification procedures',
-          category: 'SECURITY',
+          description: 'Verify breach notification procedures are in place',
+          category: ComplianceCategory.SECURITY
         },
+        {
+          requirement: 'Access Controls',
+          description: 'Verify access controls and user authentication mechanisms',
+          category: ComplianceCategory.SECURITY
+        },
+        {
+          requirement: 'Audit Logs Review',
+          description: 'Review audit logs for unauthorized PHI access',
+          category: ComplianceCategory.SECURITY
+        }
       ],
-      FERPA: [
+      [ComplianceReportType.FERPA]: [
         {
           requirement: 'Education Records Protection',
-          description: 'Verify student education records protection',
-          category: 'PRIVACY',
+          description: 'Verify student education records protection and access controls',
+          category: ComplianceCategory.PRIVACY
         },
         {
           requirement: 'Parent Access Rights',
-          description: 'Verify parent access rights procedures',
-          category: 'DOCUMENTATION',
+          description: 'Verify parent/guardian access rights procedures',
+          category: ComplianceCategory.DOCUMENTATION
         },
+        {
+          requirement: 'Directory Information',
+          description: 'Verify directory information disclosure procedures',
+          category: ComplianceCategory.PRIVACY
+        },
+        {
+          requirement: 'Records Release Authorization',
+          description: 'Verify consent procedures for records release',
+          category: ComplianceCategory.CONSENT
+        }
       ],
-      MEDICATION_AUDIT: [
+      [ComplianceReportType.MEDICATION_AUDIT]: [
         {
           requirement: 'Medication Administration Records',
-          description: 'Verify medication administration documentation',
-          category: 'MEDICATION',
+          description: 'Verify medication administration documentation completeness',
+          category: ComplianceCategory.MEDICATION
         },
         {
           requirement: 'Controlled Substance Tracking',
-          description: 'Verify controlled substance tracking',
-          category: 'MEDICATION',
+          description: 'Verify controlled substance tracking and reconciliation',
+          category: ComplianceCategory.MEDICATION
         },
+        {
+          requirement: 'Medication Storage',
+          description: 'Verify proper medication storage and temperature logs',
+          category: ComplianceCategory.SAFETY
+        },
+        {
+          requirement: 'Expiration Date Monitoring',
+          description: 'Verify expired medication identification and disposal',
+          category: ComplianceCategory.MEDICATION
+        }
       ],
+      [ComplianceReportType.STATE_HEALTH]: [
+        {
+          requirement: 'Vaccination Records',
+          description: 'Verify vaccination record completeness',
+          category: ComplianceCategory.HEALTH_RECORDS
+        },
+        {
+          requirement: 'Health Screenings',
+          description: 'Verify required health screenings completion',
+          category: ComplianceCategory.HEALTH_RECORDS
+        },
+        {
+          requirement: 'Emergency Plans',
+          description: 'Verify emergency response plans are current',
+          category: ComplianceCategory.SAFETY
+        }
+      ],
+      [ComplianceReportType.SAFETY_INSPECTION]: [
+        {
+          requirement: 'Equipment Inspection',
+          description: 'Verify medical equipment inspection and maintenance',
+          category: ComplianceCategory.SAFETY
+        },
+        {
+          requirement: 'First Aid Supplies',
+          description: 'Verify first aid supplies inventory and expiration',
+          category: ComplianceCategory.SAFETY
+        },
+        {
+          requirement: 'Emergency Equipment',
+          description: 'Verify emergency equipment functionality',
+          category: ComplianceCategory.SAFETY
+        }
+      ],
+      [ComplianceReportType.TRAINING_COMPLIANCE]: [
+        {
+          requirement: 'HIPAA Training',
+          description: 'Verify staff HIPAA training completion',
+          category: ComplianceCategory.TRAINING
+        },
+        {
+          requirement: 'Medication Training',
+          description: 'Verify medication administration training',
+          category: ComplianceCategory.TRAINING
+        },
+        {
+          requirement: 'Emergency Procedures Training',
+          description: 'Verify emergency procedures training',
+          category: ComplianceCategory.TRAINING
+        }
+      ],
+      [ComplianceReportType.DATA_PRIVACY]: [
+        {
+          requirement: 'Data Encryption',
+          description: 'Verify data encryption at rest and in transit',
+          category: ComplianceCategory.SECURITY
+        },
+        {
+          requirement: 'Access Logs',
+          description: 'Review access logs for anomalies',
+          category: ComplianceCategory.SECURITY
+        },
+        {
+          requirement: 'Data Retention',
+          description: 'Verify data retention policy compliance',
+          category: ComplianceCategory.PRIVACY
+        }
+      ],
+      [ComplianceReportType.CUSTOM]: []
     };
 
     return items[reportType] || [];

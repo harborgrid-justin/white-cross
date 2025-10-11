@@ -1,6 +1,15 @@
 import { ServerRoute } from '@hapi/hapi';
 import { MedicationService } from '../services/medicationService';
 import Joi from 'joi';
+import {
+  createMedicationSchema,
+  assignMedicationToStudentSchema,
+  logMedicationAdministrationSchema,
+  addToInventorySchema,
+  updateInventoryQuantitySchema,
+  reportAdverseReactionSchema,
+  deactivateStudentMedicationSchema,
+} from '../validators/medicationValidators';
 
 // Get all medications
 const getMedicationsHandler = async (request: any, h: any) => {
@@ -361,14 +370,9 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Create a new medication',
-      notes: 'Adds a new medication to the system formulary. Requires NURSE or ADMIN role. **PHI Protected Endpoint**',
+      notes: 'Adds a new medication to the system formulary. Requires NURSE or ADMIN role. **PHI Protected Endpoint**. Includes NDC validation, DEA schedule for controlled substances, and witness requirements.',
       validate: {
-        payload: Joi.object({
-          name: Joi.string().trim().required().description('Medication name'),
-          dosageForm: Joi.string().trim().required().description('Dosage form (e.g., tablet, liquid, injection)'),
-          strength: Joi.string().trim().required().description('Medication strength (e.g., "500mg", "10ml")'),
-          isControlled: Joi.boolean().optional().description('Whether this is a controlled substance requiring special handling')
-        })
+        payload: createMedicationSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -396,18 +400,9 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Assign medication to a student',
-      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Assigns a prescribed medication to a student. Requires valid prescription. All assignments are audited.',
+      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Assigns a prescribed medication to a student. Implements Five Rights validation. Includes dosage format validation, frequency validation, and prescription number tracking. All assignments are audited.',
       validate: {
-        payload: Joi.object({
-          studentId: Joi.string().required().description('Student ID'),
-          medicationId: Joi.string().required().description('Medication ID from formulary'),
-          dosage: Joi.string().trim().required().description('Dosage to be administered (e.g., "500mg")'),
-          frequency: Joi.string().trim().required().description('Administration frequency (e.g., "twice daily", "as needed")'),
-          route: Joi.string().trim().required().description('Route of administration (e.g., "oral", "topical", "inhaled")'),
-          startDate: Joi.date().iso().required().description('Date to begin medication (ISO 8601 format)'),
-          endDate: Joi.date().iso().optional().description('Date to end medication (ISO 8601 format)'),
-          prescribedBy: Joi.string().trim().required().description('Prescribing physician name')
-        })
+        payload: assignMedicationToStudentSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -435,13 +430,9 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Log medication administration',
-      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Records that a medication was administered to a student. Creates permanent audit trail. Requires NURSE role.',
+      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Records that a medication was administered to a student. Implements Five Rights validation including patient verification and allergy checking. Supports witness requirement for controlled substances. Creates permanent audit trail. Requires NURSE role.',
       validate: {
-        payload: Joi.object({
-          studentMedicationId: Joi.string().required().description('Student medication assignment ID'),
-          dosageGiven: Joi.string().trim().required().description('Actual dosage administered'),
-          timeGiven: Joi.date().iso().required().description('Timestamp when medication was administered (ISO 8601 format)')
-        })
+        payload: logMedicationAdministrationSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -532,16 +523,9 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Add medication to inventory',
-      notes: 'Adds new medication stock to inventory. Tracks batch number, expiration date, and cost. Requires NURSE or ADMIN role.',
+      notes: 'Adds new medication stock to inventory. Validates batch number format and prevents addition of expired medications. Tracks batch number, expiration date, and cost. Requires NURSE or ADMIN role.',
       validate: {
-        payload: Joi.object({
-          medicationId: Joi.string().required().description('Medication ID'),
-          batchNumber: Joi.string().trim().required().description('Batch/lot number from manufacturer'),
-          expirationDate: Joi.date().iso().required().description('Expiration date (ISO 8601 format)'),
-          quantity: Joi.number().integer().min(1).required().description('Quantity to add to inventory'),
-          reorderLevel: Joi.number().integer().min(0).optional().description('Minimum quantity threshold for reorder alerts'),
-          costPerUnit: Joi.number().optional().description('Cost per unit for budget tracking')
-        })
+        payload: addToInventorySchema
       },
       plugins: {
         'hapi-swagger': {
@@ -603,15 +587,12 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Update medication inventory quantity',
-      notes: 'Adjusts inventory quantity for corrections, transfers, or disposal. Creates audit trail for all changes.',
+      notes: 'Adjusts inventory quantity for corrections, transfers, or disposal. Requires reason and adjustment type for complete audit trail.',
       validate: {
         params: Joi.object({
           id: Joi.string().required().description('Inventory item ID')
         }),
-        payload: Joi.object({
-          quantity: Joi.number().integer().min(0).required().description('New quantity'),
-          reason: Joi.string().trim().optional().description('Reason for quantity adjustment')
-        })
+        payload: updateInventoryQuantitySchema
       },
       plugins: {
         'hapi-swagger': {
@@ -639,14 +620,12 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Deactivate student medication assignment',
-      notes: '**PHI Protected Endpoint** - Discontinues a medication for a student. Does not delete historical records.',
+      notes: '**PHI Protected Endpoint** - Discontinues a medication for a student. Requires detailed reason and deactivation type for audit trail. Does not delete historical records.',
       validate: {
         params: Joi.object({
           id: Joi.string().required().description('Student medication ID')
         }),
-        payload: Joi.object({
-          reason: Joi.string().trim().optional().description('Reason for discontinuation')
-        })
+        payload: deactivateStudentMedicationSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -706,15 +685,9 @@ export const medicationRoutes: ServerRoute[] = [
       auth: 'jwt',
       tags: ['api', 'Medications'],
       description: 'Report an adverse medication reaction',
-      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Documents adverse reactions to medications. Critical for student safety. All reports are reviewed by medical staff.',
+      notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Documents adverse reactions to medications. Requires parent notification flag for moderate or higher severity. Critical for student safety. All reports are reviewed by medical staff.',
       validate: {
-        payload: Joi.object({
-          studentMedicationId: Joi.string().required().description('Student medication ID'),
-          severity: Joi.string().valid('MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING').required().description('Severity level of the reaction'),
-          reaction: Joi.string().trim().required().description('Description of the adverse reaction'),
-          actionTaken: Joi.string().trim().required().description('Actions taken in response to the reaction'),
-          reportedAt: Joi.date().iso().required().description('Timestamp of the reaction (ISO 8601 format)')
-        })
+        payload: reportAdverseReactionSchema
       },
       plugins: {
         'hapi-swagger': {

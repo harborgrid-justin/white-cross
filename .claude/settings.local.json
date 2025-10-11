@@ -80,7 +80,9 @@
       "Bash(DATABASE_URL='postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require' npx sequelize-cli db:migrate:*)",
       "Bash(DATABASE_URL='postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require' npx sequelize-cli db:migrate:status:*)",
       "Bash(DATABASE_URL='postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require' npx sequelize-cli db:migrate:undo:*)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"1\" npx prisma migrate reset:*)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"1\" npx prisma migrate reset:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

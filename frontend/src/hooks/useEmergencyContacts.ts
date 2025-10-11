@@ -48,7 +48,7 @@ export interface CreateEmergencyContactRequest {
   phoneNumber: string;
   email?: string;
   address?: string;
-  priority: 'PRIMARY' | 'SECONDARY' | 'EMERGENCY_ONLY';
+  priority: string;
 }
 
 export interface UpdateEmergencyContactRequest {
@@ -58,7 +58,7 @@ export interface UpdateEmergencyContactRequest {
   phoneNumber?: string;
   email?: string;
   address?: string;
-  priority?: 'PRIMARY' | 'SECONDARY' | 'EMERGENCY_ONLY';
+  priority?: string;
   isActive?: boolean;
 }
 
@@ -71,9 +71,8 @@ export interface NotificationRequest {
 
 export interface EmergencyContactStatistics {
   totalContacts: number;
-  verifiedContacts: number;
-  primaryContacts: number;
-  notificationsSent: number;
+  studentsWithoutContacts: number;
+  byPriority: Record<string, number>;
 }
 
 export interface VerificationMethod {
@@ -252,7 +251,8 @@ export function useUpdateEmergencyContact(
   options?: UseMutationOptions<
     { contact: EmergencyContact },
     Error,
-    { id: string; data: UpdateEmergencyContactRequest }
+    { id: string; data: UpdateEmergencyContactRequest },
+    { previousContact?: { contact: EmergencyContact } | undefined }
   >
 ) {
   const queryClient = useQueryClient();
@@ -260,7 +260,8 @@ export function useUpdateEmergencyContact(
   return useMutation<
     { contact: EmergencyContact },
     Error,
-    { id: string; data: UpdateEmergencyContactRequest }
+    { id: string; data: UpdateEmergencyContactRequest },
+    { previousContact?: { contact: EmergencyContact } | undefined }
   >({
     mutationFn: ({ id, data }) => emergencyContactsApi.update(id, data),
     onMutate: async ({ id }) => {
@@ -371,22 +372,22 @@ export function useDeleteEmergencyContact(
  */
 export function useNotifyStudentContacts(
   options?: UseMutationOptions<
-    { notifications: any[] },
+    { results: any[] },
     Error,
     { studentId: string; notification: NotificationRequest }
   >
 ) {
   return useMutation<
-    { notifications: any[] },
+    { results: any[] },
     Error,
     { studentId: string; notification: NotificationRequest }
   >({
     mutationFn: ({ studentId, notification }) =>
       emergencyContactsApi.notifyStudent(studentId, {
-        title: `${notification.type.charAt(0).toUpperCase() + notification.type.slice(1)} Notification`,
         message: notification.message,
+        type: notification.type,
         priority: notification.priority,
-        channels: notification.channels,
+        channels: notification.channels as ('sms' | 'email' | 'voice')[],
       }),
     onSuccess: () => {
       toast.success('Notifications sent successfully to all emergency contacts');
@@ -421,22 +422,22 @@ export function useNotifyStudentContacts(
  */
 export function useNotifyContact(
   options?: UseMutationOptions<
-    { notification: any },
+    { result: any },
     Error,
     { contactId: string; notification: NotificationRequest }
   >
 ) {
   return useMutation<
-    { notification: any },
+    { result: any },
     Error,
     { contactId: string; notification: NotificationRequest }
   >({
     mutationFn: ({ contactId, notification }) =>
       emergencyContactsApi.notifyContact(contactId, {
-        title: `${notification.type.charAt(0).toUpperCase() + notification.type.slice(1)} Notification`,
         message: notification.message,
+        type: notification.type,
         priority: notification.priority,
-        channels: notification.channels,
+        channels: notification.channels as ('sms' | 'email' | 'voice')[],
       }),
     onSuccess: () => {
       toast.success('Notification sent successfully');
@@ -471,7 +472,7 @@ export function useNotifyContact(
  */
 export function useVerifyContact(
   options?: UseMutationOptions<
-    { verification: any },
+    any,
     Error,
     { contactId: string; studentId: string; method: 'sms' | 'email' | 'voice' }
   >
@@ -479,7 +480,7 @@ export function useVerifyContact(
   const queryClient = useQueryClient();
 
   return useMutation<
-    { verification: any },
+    any,
     Error,
     { contactId: string; studentId: string; method: 'sms' | 'email' | 'voice' }
   >({

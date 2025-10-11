@@ -96,6 +96,9 @@ export type {
   IntegrationStatistics
 } from './modules/integrationApi';
 
+export { dashboardApi } from './modules/dashboardApi';
+export type { DashboardApi } from './modules/dashboardApi';
+
 // Backward compatibility - re-export the old api instance and legacy APIs
 import { apiInstance } from './config/apiConfig';
 import { authApi } from './modules/authApi';

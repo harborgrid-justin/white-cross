@@ -50,27 +50,97 @@ BudgetTransaction.init(
     amount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
+      validate: {
+        isDecimal: {
+          msg: 'Amount must be a valid decimal number'
+        },
+        notZero(value: number) {
+          if (value === 0) {
+            throw new Error('Transaction amount cannot be zero');
+          }
+        },
+        validRange(value: number) {
+          if (Math.abs(value) > 99999999.99) {
+            throw new Error('Transaction amount cannot exceed $99,999,999.99 in absolute value');
+          }
+        }
+      }
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Description cannot be empty'
+        },
+        len: {
+          args: [1, 5000],
+          msg: 'Description must be between 1 and 5000 characters'
+        }
+      }
     },
     transactionDate: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: {
+          msg: 'Transaction date must be a valid date'
+        },
+        notTooOld(value: Date) {
+          if (value < new Date('2000-01-01')) {
+            throw new Error('Transaction date cannot be before year 2000');
+          }
+        },
+        notInFuture(value: Date) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(0, 0, 0, 0);
+          if (value >= tomorrow) {
+            throw new Error('Transaction date cannot be in the future');
+          }
+        }
+      }
     },
     referenceId: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 255],
+          msg: 'Reference ID cannot exceed 255 characters'
+        }
+      }
     },
     referenceType: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 100],
+          msg: 'Reference type cannot exceed 100 characters'
+        },
+        isValidType(value: string | null) {
+          if (value) {
+            const validTypes = ['PURCHASE_ORDER', 'INVOICE', 'MANUAL', 'ADJUSTMENT', 'OTHER'];
+            if (!validTypes.includes(value)) {
+              throw new Error(
+                `Reference type must be one of: ${validTypes.join(', ')}`
+              );
+            }
+          }
+        }
+      }
     },
     notes: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 10000],
+          msg: 'Notes cannot exceed 10,000 characters'
+        }
+      }
     },
     categoryId: {
       type: DataTypes.STRING,
@@ -79,6 +149,11 @@ BudgetTransaction.init(
         model: 'budget_categories',
         key: 'id',
       },
+      validate: {
+        notEmpty: {
+          msg: 'Category ID cannot be empty'
+        }
+      }
     },
     createdAt: DataTypes.DATE,
   },
@@ -92,5 +167,12 @@ BudgetTransaction.init(
       { fields: ['referenceId', 'referenceType'] },
       { fields: ['createdAt'] },
     ],
+    validate: {
+      referenceConsistency() {
+        if ((this.referenceId && !this.referenceType) || (!this.referenceId && this.referenceType)) {
+          throw new Error('Both reference ID and reference type must be provided together, or both omitted');
+        }
+      }
+    }
   }
 );

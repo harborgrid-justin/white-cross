@@ -9,12 +9,21 @@ import {
   EmergencyContact,
   sequelize
 } from '../database/models';
+import { 
+  IncidentType, 
+  IncidentSeverity, 
+  WitnessType, 
+  ActionPriority, 
+  ActionStatus, 
+  InsuranceClaimStatus, 
+  ComplianceStatus 
+} from '../database/types/enums';
 
 export interface CreateIncidentReportData {
   studentId: string;
   reportedById: string;
-  type: 'INJURY' | 'ILLNESS' | 'BEHAVIORAL' | 'MEDICATION_ERROR' | 'ALLERGIC_REACTION' | 'EMERGENCY' | 'OTHER';
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  type: IncidentType;
+  severity: IncidentSeverity;
   description: string;
   location: string;
   witnesses: string[];
@@ -30,8 +39,8 @@ export interface CreateIncidentReportData {
 }
 
 export interface UpdateIncidentReportData {
-  type?: 'INJURY' | 'ILLNESS' | 'BEHAVIORAL' | 'MEDICATION_ERROR' | 'ALLERGIC_REACTION' | 'EMERGENCY' | 'OTHER';
-  severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  type?: IncidentType;
+  severity?: IncidentSeverity;
   description?: string;
   location?: string;
   witnesses?: string[];
@@ -44,15 +53,15 @@ export interface UpdateIncidentReportData {
   evidencePhotos?: string[];
   evidenceVideos?: string[];
   insuranceClaimNumber?: string;
-  insuranceClaimStatus?: 'NOT_FILED' | 'FILED' | 'PENDING' | 'APPROVED' | 'DENIED' | 'CLOSED';
-  legalComplianceStatus?: 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW';
+  insuranceClaimStatus?: InsuranceClaimStatus;
+  legalComplianceStatus?: ComplianceStatus;
 }
 
 export interface IncidentFilters {
   studentId?: string;
   reportedById?: string;
-  type?: 'INJURY' | 'ILLNESS' | 'BEHAVIORAL' | 'MEDICATION_ERROR' | 'ALLERGIC_REACTION' | 'EMERGENCY' | 'OTHER';
-  severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  type?: IncidentType;
+  severity?: IncidentSeverity;
   dateFrom?: Date;
   dateTo?: Date;
   parentNotified?: boolean;
@@ -74,8 +83,8 @@ export interface FollowUpActionData {
   incidentId: string;
   action: string;
   dueDate: Date;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  priority: ActionPriority;
+  status: ActionStatus;
   assignedTo?: string;
   completedAt?: Date;
   completedBy?: string;
@@ -86,7 +95,7 @@ export interface WitnessStatementData {
   id: string;
   incidentReportId: string;
   witnessName: string;
-  witnessType: 'STUDENT' | 'STAFF' | 'PARENT' | 'OTHER';
+  witnessType: WitnessType;
   witnessContact?: string;
   statement: string;
   verified: boolean;
@@ -96,7 +105,7 @@ export interface WitnessStatementData {
 
 export interface CreateWitnessStatementData {
   witnessName: string;
-  witnessType: 'STUDENT' | 'STAFF' | 'PARENT' | 'OTHER';
+  witnessType: WitnessType;
   witnessContact?: string;
   statement: string;
 }
@@ -104,7 +113,7 @@ export interface CreateWitnessStatementData {
 export interface CreateFollowUpActionData {
   action: string;
   dueDate: Date;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  priority: ActionPriority;
   assignedTo?: string;
 }
 
@@ -232,7 +241,7 @@ export class IncidentReportService {
   }
 
   /**
-   * Create new incident report
+   * Create new incident report with comprehensive validation
    */
   static async createIncidentReport(data: CreateIncidentReportData) {
     try {
@@ -258,6 +267,46 @@ export class IncidentReportService {
 
       if (!reporter) {
         throw new Error('Reporter not found');
+      }
+
+      // Business Logic Validations
+
+      // 1. Validate incident time is not in the future
+      if (new Date(data.occurredAt) > new Date()) {
+        throw new Error('Incident time cannot be in the future');
+      }
+
+      // 2. Validate description minimum length
+      if (data.description.length < 20) {
+        throw new Error('Description must be at least 20 characters for proper documentation');
+      }
+
+      // 3. Validate location is provided for safety incidents
+      if (!data.location || data.location.trim().length < 3) {
+        throw new Error('Location is required for safety documentation (minimum 3 characters)');
+      }
+
+      // 4. Validate actions taken is documented
+      if (!data.actionsTaken || data.actionsTaken.trim().length < 10) {
+        throw new Error('Actions taken must be documented for all incidents (minimum 10 characters)');
+      }
+
+      // 5. Auto-set follow-up required for INJURY type
+      if (data.type === 'INJURY' && !data.followUpRequired) {
+        data.followUpRequired = true;
+        logger.info('Auto-setting followUpRequired=true for INJURY incident');
+      }
+
+      // 6. Validate medication errors have detailed description
+      if (data.type === 'MEDICATION_ERROR' && data.description.length < 50) {
+        throw new Error('Medication error incidents require detailed description (minimum 50 characters)');
+      }
+
+      // 7. High/Critical severity requires parent notification acknowledgment
+      if (['HIGH', 'CRITICAL'].includes(data.severity)) {
+        if (!student.emergencyContacts || student.emergencyContacts.length === 0) {
+          logger.warn(`High/Critical incident created for student ${student.id} with no emergency contacts`);
+        }
       }
 
       const report = await IncidentReport.create(data);
@@ -748,7 +797,7 @@ export class IncidentReportService {
   }
 
   /**
-   * Add witness statement to incident report
+   * Add witness statement to incident report with validation
    */
   static async addWitnessStatement(incidentReportId: string, data: CreateWitnessStatementData) {
     try {
@@ -756,6 +805,16 @@ export class IncidentReportService {
 
       if (!report) {
         throw new Error('Incident report not found');
+      }
+
+      // Validate witness statement minimum length
+      if (!data.statement || data.statement.trim().length < 20) {
+        throw new Error('Witness statement must be at least 20 characters for proper documentation');
+      }
+
+      // Validate witness name minimum length
+      if (!data.witnessName || data.witnessName.trim().length < 2) {
+        throw new Error('Witness name must be at least 2 characters');
       }
 
       const witnessStatement = await WitnessStatement.create({
@@ -797,7 +856,7 @@ export class IncidentReportService {
   }
 
   /**
-   * Add follow-up action to incident report
+   * Add follow-up action to incident report with validation
    */
   static async addFollowUpAction(incidentReportId: string, data: CreateFollowUpActionData) {
     try {
@@ -807,10 +866,36 @@ export class IncidentReportService {
         throw new Error('Incident report not found');
       }
 
+      // Validate action description minimum length
+      if (!data.action || data.action.trim().length < 5) {
+        throw new Error('Follow-up action must be at least 5 characters');
+      }
+
+      // Validate due date is in the future
+      if (new Date(data.dueDate) <= new Date()) {
+        throw new Error('Due date must be in the future');
+      }
+
+      // Validate priority is set
+      if (!data.priority) {
+        throw new Error('Priority is required for follow-up actions');
+      }
+
+      // Warn if URGENT priority but due date is more than 24 hours away
+      if (data.priority === 'URGENT') {
+        const dueDate = new Date(data.dueDate);
+        const now = new Date();
+        const hoursDiff = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        if (hoursDiff > 24) {
+          logger.warn(`URGENT priority action with due date more than 24 hours away: ${incidentReportId}`);
+        }
+      }
+
       const followUpAction = await FollowUpAction.create({
         incidentReportId,
         ...data,
-        status: 'PENDING'
+        status: ActionStatus.PENDING
       });
 
       logger.info(`Follow-up action added to incident ${incidentReportId}`);
@@ -822,11 +907,11 @@ export class IncidentReportService {
   }
 
   /**
-   * Update follow-up action status
+   * Update follow-up action status with validation
    */
   static async updateFollowUpAction(
     actionId: string,
-    status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
+    status: ActionStatus,
     completedBy?: string,
     notes?: string
   ) {
@@ -835,6 +920,16 @@ export class IncidentReportService {
 
       if (!action) {
         throw new Error('Follow-up action not found');
+      }
+
+      // Validate COMPLETED status requires completedBy
+      if (status === 'COMPLETED') {
+        if (!completedBy) {
+          throw new Error('Completed actions must have a completedBy user');
+        }
+        if (!notes || notes.trim().length === 0) {
+          logger.warn(`Follow-up action ${actionId} completed without notes`);
+        }
       }
 
       const updateData: any = { status };

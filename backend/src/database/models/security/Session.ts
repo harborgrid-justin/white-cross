@@ -50,33 +50,91 @@ Session.init(
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'User ID for this session',
+      validate: {
+        notEmpty: {
+          msg: 'User ID cannot be empty'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'User ID must be a valid UUID'
+        },
+      },
     },
     token: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       comment: 'Unique session token',
+      validate: {
+        notEmpty: {
+          msg: 'Session token cannot be empty'
+        },
+        len: {
+          args: [32, 512],
+          msg: 'Session token must be between 32 and 512 characters'
+        },
+      },
     },
     ipAddress: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'IP address of the session',
+      validate: {
+        isValidIp(value: string | undefined) {
+          if (!value) return;
+          // IPv4 or IPv6 validation
+          const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+          const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+          if (!ipv4Regex.test(value) && !ipv6Regex.test(value)) {
+            throw new Error('Invalid IP address format');
+          }
+        },
+      },
     },
     userAgent: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'User agent string',
+      validate: {
+        len: {
+          args: [0, 500],
+          msg: 'User agent string must not exceed 500 characters'
+        },
+      },
     },
     expiresAt: {
       type: DataTypes.DATE,
       allowNull: false,
       comment: 'When the session expires',
+      validate: {
+        isDate: {
+          msg: 'Expiration date must be a valid date'
+        },
+        isFutureDate(value: Date) {
+          if (new Date(value) <= new Date()) {
+            throw new Error('Session expiration must be in the future');
+          }
+        },
+        isReasonableExpiration(value: Date) {
+          const maxExpirationDays = 30;
+          const maxDate = new Date();
+          maxDate.setDate(maxDate.getDate() + maxExpirationDays);
+          if (new Date(value) > maxDate) {
+            throw new Error(`Session expiration cannot be more than ${maxExpirationDays} days in the future`);
+          }
+        },
+      },
     },
     lastActivity: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
       comment: 'Last activity timestamp for idle timeout',
+      validate: {
+        isDate: {
+          msg: 'Last activity must be a valid date'
+        },
+      },
     },
     createdAt: {
       type: DataTypes.DATE,

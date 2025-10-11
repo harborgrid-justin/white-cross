@@ -4,13 +4,28 @@ import {
   HealthRecord,
   Allergy,
   ChronicCondition,
+  Vaccination,
   Student,
   sequelize
 } from '../database/models';
+import { HealthRecordType, AllergySeverity, ConditionStatus, ConditionSeverity } from '../database/types/enums';
+import {
+  validateHealthRecordData,
+  validateVitalSigns,
+  calculateBMI,
+  validateICD10Code,
+  validateCVXCode,
+  validateNPI,
+  validateDiagnosisDate,
+  validateVaccinationDates,
+  validateAllergyReactions,
+  ValidationResult,
+  AgeCategory
+} from '../utils/healthRecordValidators';
 
 export interface CreateHealthRecordData {
   studentId: string;
-  type: 'CHECKUP' | 'VACCINATION' | 'ILLNESS' | 'INJURY' | 'SCREENING' | 'PHYSICAL_EXAM' | 'MENTAL_HEALTH' | 'DENTAL' | 'VISION' | 'HEARING';
+  type: HealthRecordType;
   date: Date;
   description: string;
   vital?: any; // JSON data for vitals
@@ -22,7 +37,7 @@ export interface CreateHealthRecordData {
 export interface CreateAllergyData {
   studentId: string;
   allergen: string;
-  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
+  severity: AllergySeverity;
   reaction?: string;
   treatment?: string;
   verified?: boolean;
@@ -32,9 +47,9 @@ export interface CreateAllergyData {
 export interface CreateChronicConditionData {
   studentId: string;
   condition: string;
-  diagnosedDate: Date;
-  status?: string;
-  severity?: string;
+  diagnosisDate: Date;
+  status?: ConditionStatus;
+  severity?: ConditionSeverity;
   notes?: string;
   carePlan?: string;
   medications?: string[];
@@ -43,6 +58,27 @@ export interface CreateChronicConditionData {
   diagnosedBy?: string;
   lastReviewDate?: Date;
   nextReviewDate?: Date;
+  icdCode?: string;
+}
+
+export interface CreateVaccinationData {
+  studentId: string;
+  vaccineName: string;
+  administrationDate: Date;
+  administeredBy: string;
+  cvxCode?: string;
+  ndcCode?: string;
+  lotNumber?: string;
+  manufacturer?: string;
+  doseNumber?: number;
+  totalDoses?: number;
+  expirationDate?: Date;
+  nextDueDate?: Date;
+  site?: string;
+  route?: string;
+  dosageAmount?: string;
+  reactions?: string;
+  notes?: string;
 }
 
 export interface VitalSigns {
@@ -128,25 +164,52 @@ export class HealthRecordService {
   }
 
   /**
-   * Create new health record
+   * Create new health record with comprehensive validation
    */
   static async createHealthRecord(data: CreateHealthRecordData) {
     try {
-      // Verify student exists
-      const student = await Student.findByPk(data.studentId);
+      // Verify student exists and get date of birth for age-based validation
+      const student = await Student.findByPk(data.studentId, {
+        attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'dateOfBirth']
+      });
 
       if (!student) {
         throw new Error('Student not found');
+      }
+
+      // Validate health record data
+      const validationResult = validateHealthRecordData(
+        {
+          vital: data.vital,
+          date: data.date,
+          diagnosisCode: (data as any).diagnosisCode,
+          providerNpi: (data as any).providerNpi
+        },
+        student.dateOfBirth ? new Date(student.dateOfBirth) : undefined
+      );
+
+      // Log warnings but don't block creation
+      if (validationResult.warnings.length > 0) {
+        logger.warn(`Health record validation warnings for student ${student.id}:`, validationResult.warnings);
+      }
+
+      // Block creation if there are critical errors
+      if (!validationResult.isValid) {
+        const errorMessage = `Health record validation failed: ${validationResult.errors.join(', ')}`;
+        logger.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       // Calculate BMI if height and weight are provided in vitals
       if (data.vital && typeof data.vital === 'object' && data.vital !== null) {
         const vitals = data.vital as any;
         if (vitals.height && vitals.weight) {
-          const heightInMeters = vitals.height / 100; // Convert cm to meters
-          const bmi = vitals.weight / (heightInMeters * heightInMeters);
-          vitals.bmi = Math.round(bmi * 10) / 10; // Round to 1 decimal place
-          data.vital = vitals;
+          const calculatedBMI = calculateBMI(vitals.height, vitals.weight);
+          if (calculatedBMI !== null) {
+            vitals.bmi = calculatedBMI;
+            data.vital = vitals;
+            logger.info(`Auto-calculated BMI: ${calculatedBMI} for student ${student.id}`);
+          }
         }
       }
 
@@ -172,7 +235,7 @@ export class HealthRecordService {
   }
 
   /**
-   * Update health record
+   * Update health record with validation
    */
   static async updateHealthRecord(id: string, data: Partial<CreateHealthRecordData>) {
     try {
@@ -180,7 +243,8 @@ export class HealthRecordService {
         include: [
           {
             model: Student,
-            as: 'student'
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'dateOfBirth']
           }
         ]
       });
@@ -189,21 +253,48 @@ export class HealthRecordService {
         throw new Error('Health record not found');
       }
 
-      // Recalculate BMI if height or weight is being updated
+      // Merge vitals for validation
+      let mergedVitals = null;
       if (data.vital && typeof data.vital === 'object' && data.vital !== null) {
         const currentVitals = (existingRecord.vital && typeof existingRecord.vital === 'object' && existingRecord.vital !== null)
           ? existingRecord.vital as any
           : {};
         const vitalsUpdate = data.vital as any;
-        const updatedVitals = { ...currentVitals, ...vitalsUpdate };
+        mergedVitals = { ...currentVitals, ...vitalsUpdate };
 
-        if (updatedVitals.height && updatedVitals.weight) {
-          const heightInMeters = updatedVitals.height / 100;
-          const bmi = updatedVitals.weight / (heightInMeters * heightInMeters);
-          updatedVitals.bmi = Math.round(bmi * 10) / 10;
+        // Recalculate BMI if height or weight is being updated
+        if (mergedVitals.height && mergedVitals.weight) {
+          const calculatedBMI = calculateBMI(mergedVitals.height, mergedVitals.weight);
+          if (calculatedBMI !== null) {
+            mergedVitals.bmi = calculatedBMI;
+            logger.info(`Auto-recalculated BMI: ${calculatedBMI} for health record ${id}`);
+          }
         }
 
-        data.vital = updatedVitals;
+        data.vital = mergedVitals;
+      }
+
+      // Validate updated data
+      const validationResult = validateHealthRecordData(
+        {
+          vital: mergedVitals,
+          date: data.date,
+          diagnosisCode: (data as any).diagnosisCode,
+          providerNpi: (data as any).providerNpi
+        },
+        existingRecord.student?.dateOfBirth ? new Date(existingRecord.student.dateOfBirth) : undefined
+      );
+
+      // Log warnings
+      if (validationResult.warnings.length > 0) {
+        logger.warn(`Health record update validation warnings for record ${id}:`, validationResult.warnings);
+      }
+
+      // Block update if there are critical errors
+      if (!validationResult.isValid) {
+        const errorMessage = `Health record update validation failed: ${validationResult.errors.join(', ')}`;
+        logger.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       await existingRecord.update(data);
@@ -228,7 +319,7 @@ export class HealthRecordService {
   }
 
   /**
-   * Add allergy to student
+   * Add allergy to student with validation
    */
   static async addAllergy(data: CreateAllergyData) {
     try {
@@ -237,6 +328,24 @@ export class HealthRecordService {
 
       if (!student) {
         throw new Error('Student not found');
+      }
+
+      // Validate allergen is not empty
+      if (!data.allergen || data.allergen.trim().length === 0) {
+        throw new Error('Allergen name is required');
+      }
+
+      // Validate severity is provided
+      if (!data.severity) {
+        throw new Error('Allergy severity is required');
+      }
+
+      // Validate reaction format if provided
+      if (data.reaction) {
+        const reactionValidation = validateAllergyReactions(data.reaction);
+        if (reactionValidation.warnings.length > 0) {
+          logger.warn(`Allergy reaction validation warnings:`, reactionValidation.warnings);
+        }
       }
 
       // Check if allergy already exists for this student
@@ -248,7 +357,12 @@ export class HealthRecordService {
       });
 
       if (existingAllergy) {
-        throw new Error('Allergy already exists for this student');
+        throw new Error(`Allergy to ${data.allergen} already exists for this student`);
+      }
+
+      // Log critical severity allergies
+      if (data.severity === AllergySeverity.LIFE_THREATENING || data.severity === AllergySeverity.SEVERE) {
+        logger.warn(`CRITICAL ALLERGY ADDED: ${data.allergen} (${data.severity}) for student ${student.id} - ${student.firstName} ${student.lastName}`);
       }
 
       const allergy = await Allergy.create({
@@ -559,7 +673,7 @@ export class HealthRecordService {
   }
 
   /**
-   * Add chronic condition to student
+   * Add chronic condition to student with validation
    */
   static async addChronicCondition(data: CreateChronicConditionData) {
     try {
@@ -570,9 +684,46 @@ export class HealthRecordService {
         throw new Error('Student not found');
       }
 
+      // Validate condition name
+      if (!data.condition || data.condition.trim().length === 0) {
+        throw new Error('Condition name is required');
+      }
+
+      // Validate ICD-10 code if provided
+      if (data.icdCode) {
+        const icdValidation = validateICD10Code(data.icdCode);
+        if (!icdValidation.isValid) {
+          throw new Error(`Invalid ICD-10 code: ${icdValidation.errors.join(', ')}`);
+        }
+        if (icdValidation.warnings.length > 0) {
+          logger.warn(`ICD-10 code validation warnings for ${data.condition}:`, icdValidation.warnings);
+        }
+      }
+
+      // Validate diagnosis date
+      if (data.diagnosisDate) {
+        const dateValidation = validateDiagnosisDate(new Date(data.diagnosisDate));
+        if (!dateValidation.isValid) {
+          throw new Error(`Invalid diagnosis date: ${dateValidation.errors.join(', ')}`);
+        }
+        if (dateValidation.warnings.length > 0) {
+          logger.warn(`Diagnosis date validation warnings:`, dateValidation.warnings);
+        }
+      }
+
+      // Validate severity is provided
+      if (!data.severity) {
+        logger.warn(`No severity specified for chronic condition ${data.condition}, defaulting to MODERATE`);
+      }
+
+      // Log critical conditions
+      if (data.severity === ConditionSeverity.CRITICAL || data.severity === ConditionSeverity.SEVERE) {
+        logger.warn(`CRITICAL/SEVERE CONDITION ADDED: ${data.condition} (${data.severity}) for student ${student.id} - ${student.firstName} ${student.lastName}`);
+      }
+
       const chronicCondition = await ChronicCondition.create({
         ...data,
-        status: data.status || 'ACTIVE',
+        status: data.status || ConditionStatus.ACTIVE,
         medications: data.medications || [],
         restrictions: data.restrictions || [],
         triggers: data.triggers || []
@@ -589,7 +740,7 @@ export class HealthRecordService {
         ]
       });
 
-      logger.info(`Chronic condition added: ${data.condition} for ${student.firstName} ${student.lastName}`);
+      logger.info(`Chronic condition added: ${data.condition} (ICD: ${data.icdCode || 'N/A'}) for ${student.firstName} ${student.lastName}`);
       return chronicCondition;
     } catch (error) {
       logger.error('Error adding chronic condition:', error);
@@ -817,6 +968,204 @@ export class HealthRecordService {
       };
     } catch (error) {
       logger.error('Error in bulk delete operation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add vaccination record with comprehensive validation
+   */
+  static async addVaccination(data: CreateVaccinationData) {
+    try {
+      // Verify student exists
+      const student = await Student.findByPk(data.studentId);
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      // Validate vaccine name
+      if (!data.vaccineName || data.vaccineName.trim().length === 0) {
+        throw new Error('Vaccine name is required');
+      }
+
+      // Validate CVX code if provided
+      if (data.cvxCode) {
+        const cvxValidation = validateCVXCode(data.cvxCode);
+        if (!cvxValidation.isValid) {
+          throw new Error(`Invalid CVX code: ${cvxValidation.errors.join(', ')}`);
+        }
+        if (cvxValidation.warnings.length > 0) {
+          logger.warn(`CVX code validation warnings for ${data.vaccineName}:`, cvxValidation.warnings);
+        }
+      }
+
+      // Validate vaccination dates
+      const dateValidation = validateVaccinationDates(
+        new Date(data.administrationDate),
+        data.expirationDate ? new Date(data.expirationDate) : undefined
+      );
+
+      if (!dateValidation.isValid) {
+        throw new Error(`Invalid vaccination dates: ${dateValidation.errors.join(', ')}`);
+      }
+
+      if (dateValidation.warnings.length > 0) {
+        logger.warn(`Vaccination date warnings for ${data.vaccineName}:`, dateValidation.warnings);
+      }
+
+      // Validate dose numbers if provided
+      if (data.doseNumber && data.totalDoses) {
+        if (data.doseNumber > data.totalDoses) {
+          throw new Error(`Dose number (${data.doseNumber}) cannot exceed total doses (${data.totalDoses})`);
+        }
+        if (data.doseNumber < 1) {
+          throw new Error('Dose number must be at least 1');
+        }
+      }
+
+      // Check if expiration date has passed
+      if (data.expirationDate && new Date(data.expirationDate) < new Date()) {
+        logger.warn(`WARNING: Expired vaccine administered - ${data.vaccineName} (CVX: ${data.cvxCode || 'N/A'}) for student ${student.id}`);
+      }
+
+      const vaccination = await Vaccination.create({
+        ...data,
+        seriesComplete: data.doseNumber === data.totalDoses,
+        exemptionStatus: false,
+        vfcEligibility: false,
+        visProvided: false,
+        consentObtained: false
+      });
+
+      // Reload with associations
+      await vaccination.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+          }
+        ]
+      });
+
+      logger.info(`Vaccination added: ${data.vaccineName} (CVX: ${data.cvxCode || 'N/A'}) for ${student.firstName} ${student.lastName}`);
+      return vaccination;
+    } catch (error) {
+      logger.error('Error adding vaccination:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get student vaccinations
+   */
+  static async getStudentVaccinations(studentId: string) {
+    try {
+      const vaccinations = await Vaccination.findAll({
+        where: { studentId },
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+          }
+        ],
+        order: [
+          ['administrationDate', 'DESC'],
+          ['vaccineName', 'ASC']
+        ]
+      });
+
+      return vaccinations;
+    } catch (error) {
+      logger.error('Error fetching student vaccinations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update vaccination record
+   */
+  static async updateVaccination(id: string, data: Partial<CreateVaccinationData>) {
+    try {
+      const existingVaccination = await Vaccination.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
+      });
+
+      if (!existingVaccination) {
+        throw new Error('Vaccination not found');
+      }
+
+      // Validate CVX code if being updated
+      if (data.cvxCode) {
+        const cvxValidation = validateCVXCode(data.cvxCode);
+        if (!cvxValidation.isValid) {
+          throw new Error(`Invalid CVX code: ${cvxValidation.errors.join(', ')}`);
+        }
+      }
+
+      // Validate dates if being updated
+      const adminDate = data.administrationDate ? new Date(data.administrationDate) : new Date(existingVaccination.administrationDate);
+      const expDate = data.expirationDate ? new Date(data.expirationDate) : (existingVaccination.expirationDate ? new Date(existingVaccination.expirationDate) : undefined);
+
+      if (data.administrationDate || data.expirationDate) {
+        const dateValidation = validateVaccinationDates(adminDate, expDate);
+        if (!dateValidation.isValid) {
+          throw new Error(`Invalid vaccination dates: ${dateValidation.errors.join(', ')}`);
+        }
+      }
+
+      // Update series complete status if dose numbers change
+      const updateData: any = { ...data };
+      if (data.doseNumber && data.totalDoses) {
+        updateData.seriesComplete = data.doseNumber === data.totalDoses;
+      } else if (data.doseNumber && existingVaccination.totalDoses) {
+        updateData.seriesComplete = data.doseNumber === existingVaccination.totalDoses;
+      } else if (data.totalDoses && existingVaccination.doseNumber) {
+        updateData.seriesComplete = existingVaccination.doseNumber === data.totalDoses;
+      }
+
+      await existingVaccination.update(updateData);
+
+      // Reload with associations
+      await existingVaccination.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+          }
+        ]
+      });
+
+      logger.info(`Vaccination updated: ${existingVaccination.vaccineName} for ${existingVaccination.student!.firstName} ${existingVaccination.student!.lastName}`);
+      return existingVaccination;
+    } catch (error) {
+      logger.error('Error updating vaccination:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete vaccination record
+   */
+  static async deleteVaccination(id: string) {
+    try {
+      const vaccination = await Vaccination.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
+      });
+
+      if (!vaccination) {
+        throw new Error('Vaccination not found');
+      }
+
+      await vaccination.destroy();
+
+      logger.info(`Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student!.firstName} ${vaccination.student!.lastName}`);
+      return { success: true };
+    } catch (error) {
+      logger.error('Error deleting vaccination:', error);
       throw error;
     }
   }

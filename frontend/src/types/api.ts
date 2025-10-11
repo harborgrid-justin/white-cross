@@ -250,45 +250,15 @@ export interface Vaccination extends BaseEntity {
 // =====================
 // INCIDENT REPORTS MODULE
 // =====================
+// NOTE: Comprehensive incident types are now defined in incidents.ts
+// The types below are kept for backward compatibility only
+// New code should import from '../types/incidents' instead
 
-export interface IncidentReport extends BaseEntity {
-  studentId: string;
-  type: IncidentType;
-  severity: Priority;
-  title: string;
-  description: string;
-  location: string;
-  occurredAt: string;
-  discoveredAt?: string;
-  reportedAt: string;
-  reportedBy: string;
-  witnesses?: string[];
-  actionsTaken: string;
-  followUpRequired: boolean;
-  followUpActions?: FollowUpAction[];
-  parentNotified: boolean;
-  parentNotificationMethod?: string;
-  parentNotifiedAt?: string;
-  parentNotifiedBy?: string;
-  attachments?: string[];
-  evidencePhotos?: string[];
-  status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED' | 'CLOSED';
-  student?: Student;
-  reportedByUser?: User;
-}
-
-export interface FollowUpAction extends BaseEntity {
-  incidentReportId: string;
-  action: string;
-  assignedTo?: string;
-  dueDate: string;
-  priority: Priority;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  completedAt?: string;
-  completedBy?: string;
-  notes?: string;
-  assignedToUser?: User;
-}
+export type {
+  IncidentReport,
+  WitnessStatement,
+  FollowUpAction
+} from './incidents';
 
 // =====================
 // INVENTORY MODULE
@@ -438,14 +408,8 @@ export interface HealthRecordFilters extends PaginationParams, DateRangeFilter {
   sensitive?: boolean;
 }
 
-// Incident Reports API
-export interface IncidentReportFilters extends PaginationParams, DateRangeFilter {
-  type?: IncidentType;
-  severity?: Priority;
-  status?: string;
-  studentId?: string;
-  location?: string;
-}
+// Incident Reports API - re-exported from incidents.ts
+export type { IncidentReportFilters } from './incidents';
 
 // Form Data Types
 export interface MedicationFormData {

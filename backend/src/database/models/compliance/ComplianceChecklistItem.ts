@@ -76,22 +76,56 @@ ComplianceChecklistItem.init(
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'Compliance requirement description',
+      validate: {
+        notNull: {
+          msg: 'Requirement description is required'
+        },
+        notEmpty: {
+          msg: 'Requirement description cannot be empty'
+        },
+        len: {
+          args: [5, 500],
+          msg: 'Requirement description must be between 5 and 500 characters'
+        }
+      }
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Detailed requirement description',
+      validate: {
+        len: {
+          args: [0, 5000],
+          msg: 'Detailed description cannot exceed 5000 characters'
+        }
+      }
     },
     category: {
       type: DataTypes.ENUM(...Object.values(ComplianceCategory)),
       allowNull: false,
       comment: 'Compliance category',
+      validate: {
+        notNull: {
+          msg: 'Compliance category is required'
+        },
+        notEmpty: {
+          msg: 'Compliance category cannot be empty'
+        }
+      }
     },
     status: {
       type: DataTypes.ENUM(...Object.values(ChecklistItemStatus)),
       allowNull: false,
       defaultValue: ChecklistItemStatus.PENDING,
       comment: 'Current status of the checklist item',
+      validate: {
+        notNull: {
+          msg: 'Checklist item status is required'
+        },
+        notEmpty: {
+          msg: 'Checklist item status cannot be empty'
+        }
+      }
     },
     evidence: {
       type: DataTypes.TEXT,
