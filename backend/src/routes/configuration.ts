@@ -1,6 +1,6 @@
 import { Server } from '@hapi/hapi';
 import Joi from 'joi';
-import { ConfigCategory, ConfigValueType, ConfigScope } from '@prisma/client';
+import { ConfigCategory, ConfigValueType, ConfigScope } from '../types';
 import configurationService from '../services/configurationService';
 import { AuthRequest } from '../middleware/auth';
 

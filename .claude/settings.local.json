@@ -84,7 +84,11 @@
       "Bash(awk:*)",
       "Bash(xargs:*)",
       "Bash(npm test:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(psql:*)",
+      "Bash(for file in middleware/auditLogging.ts utils/healthRecords/businessLogic.ts jobs/*.ts services/appointment/*.ts)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(head:*)"
     ],
     "deny": [],
     "ask": []

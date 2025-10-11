@@ -1,6 +1,9 @@
+// Load environment variables FIRST before any other imports
+import dotenv from 'dotenv';
+dotenv.config();
+
 import Hapi from '@hapi/hapi';
 import sequelize from './database/models';
-import dotenv from 'dotenv';
 import Joi from 'joi';
 
 // Import utilities

@@ -6,7 +6,6 @@
  * Use Case: For complex queries that can't use ORM parameterization
  */
 
-import { Prisma } from '@prisma/client';
 import { logger } from '../logger';
 
 /**
@@ -221,51 +220,46 @@ export function validateEnumInput<T extends string>(
 }
 
 /**
- * Safe SQL identifier builder using Prisma.sql
+ * Safe SQL identifier builder for Sequelize
  * Use for dynamic table/column names in ORDER BY, GROUP BY
  *
  * @param field - Validated field name
  * @param order - Validated sort order
- * @returns Prisma SQL fragment
+ * @returns SQL fragment string
  */
-export function buildSafeOrderBy(field: string, order: 'ASC' | 'DESC'): Prisma.Sql {
-  // Even though validated, use Prisma.raw for additional safety
-  return Prisma.sql`${Prisma.raw(field)} ${Prisma.raw(order)}`;
+export function buildSafeOrderBy(field: string, order: 'ASC' | 'DESC'): string {
+  // field and order are already validated, safe to concatenate
+  return `${field} ${order}`;
 }
 
 /**
  * Safe date range builder for WHERE clauses
  * Prevents injection in date comparisons
  *
- * @param columnName - Column name to filter
+ * @param columnName - Column name to filter (must be validated)
  * @param startDate - Start date (optional)
  * @param endDate - End date (optional)
- * @returns Prisma SQL fragment
+ * @returns Object with conditions for Sequelize where clause
  */
 export function buildSafeDateRange(
   columnName: string,
   startDate?: Date,
   endDate?: Date
-): Prisma.Sql {
-  const conditions: Prisma.Sql[] = [];
+): { [key: string]: any } {
+  const conditions: any = {};
 
-  if (startDate) {
-    conditions.push(Prisma.sql`${Prisma.raw(columnName)} >= ${startDate}`);
+  if (startDate && endDate) {
+    conditions[columnName] = {
+      $gte: startDate,
+      $lte: endDate
+    };
+  } else if (startDate) {
+    conditions[columnName] = { $gte: startDate };
+  } else if (endDate) {
+    conditions[columnName] = { $lte: endDate };
   }
 
-  if (endDate) {
-    conditions.push(Prisma.sql`${Prisma.raw(columnName)} <= ${endDate}`);
-  }
-
-  if (conditions.length === 0) {
-    return Prisma.sql`1=1`; // Always true
-  }
-
-  if (conditions.length === 1) {
-    return conditions[0];
-  }
-
-  return Prisma.sql`${conditions[0]} AND ${conditions[1]}`;
+  return conditions;
 }
 
 /**
@@ -344,18 +338,18 @@ export function buildSafeLikePattern(
 
 /**
  * Safe array value builder for IN clauses
- * Validates array inputs and builds parameterized query
+ * Validates array inputs for Sequelize queries
  *
  * @param values - Array of values
  * @param validator - Optional validator function for each value
- * @returns Prisma SQL fragment with parameterized values
+ * @returns Validated array of values
  */
 export function buildSafeInClause<T>(
   values: T[],
   validator?: (value: T) => boolean
-): Prisma.Sql {
+): T[] {
   if (!Array.isArray(values) || values.length === 0) {
-    return Prisma.sql`1=0`; // Always false for empty array
+    throw new SqlInjectionError('Empty array not allowed for IN clause', '[]');
   }
 
   // Validate each value if validator provided
@@ -370,8 +364,8 @@ export function buildSafeInClause<T>(
     }
   }
 
-  // Build parameterized IN clause
-  return Prisma.sql`(${Prisma.join(values)})`;
+  // Return validated array for use with Sequelize Op.in
+  return values;
 }
 
 /**

@@ -6,10 +6,9 @@
  * ACID Compliance: Guarantees data consistency across multi-step operations
  */
 
-import { PrismaClient } from '@prisma/client';
+import { Transaction } from 'sequelize';
+import { sequelize } from '../../database/config/sequelize';
 import { logger } from '../logger';
-
-const prisma = new PrismaClient();
 
 /**
  * Transaction options for configuring isolation level and timeout
@@ -39,8 +38,8 @@ export interface TransactionResult<T> {
  *
  * @example
  * const result = await withTransaction(async (tx) => {
- *   const student = await tx.student.create({ data: studentData });
- *   await tx.healthRecord.create({ data: { studentId: student.id, ...recordData } });
+ *   const student = await Student.create({ ...studentData }, { transaction: tx });
+ *   await HealthRecord.create({ studentId: student.id, ...recordData }, { transaction: tx });
  *   return student;
  * });
  *
@@ -49,7 +48,7 @@ export interface TransactionResult<T> {
  * }
  */
 export async function withTransaction<T>(
-  fn: (tx: PrismaClient) => Promise<T>,
+  fn: (tx: Transaction) => Promise<T>,
   options: TransactionOptions = {}
 ): Promise<TransactionResult<T>> {
   const startTime = Date.now();
@@ -58,14 +57,33 @@ export async function withTransaction<T>(
   try {
     logger.debug(`[${transactionId}] Starting transaction`, { options });
 
-    const result = await prisma.$transaction(
+    // Map isolation level
+    let isolationLevel: Transaction.ISOLATION_LEVELS;
+    switch (options.isolationLevel) {
+      case 'ReadUncommitted':
+        isolationLevel = Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED;
+        break;
+      case 'RepeatableRead':
+        isolationLevel = Transaction.ISOLATION_LEVELS.REPEATABLE_READ;
+        break;
+      case 'Serializable':
+        isolationLevel = Transaction.ISOLATION_LEVELS.SERIALIZABLE;
+        break;
+      case 'ReadCommitted':
+      default:
+        isolationLevel = Transaction.ISOLATION_LEVELS.READ_COMMITTED;
+    }
+
+    const result = await sequelize.transaction(
+      { isolationLevel },
       async (tx) => {
-        return await fn(tx as PrismaClient);
-      },
-      {
-        maxWait: options.maxWait || 5000, // 5 seconds default
-        timeout: options.timeout || 30000, // 30 seconds default
-        isolationLevel: options.isolationLevel || 'ReadCommitted'
+        // Set statement timeout if specified
+        if (options.timeout) {
+          await sequelize.query(`SET statement_timeout = ${options.timeout}`, {
+            transaction: tx,
+          });
+        }
+        return await fn(tx);
       }
     );
 
@@ -100,7 +118,7 @@ export async function withTransaction<T>(
  * @returns TransactionResult with array of results
  */
 export async function withTransactionBatch<T>(
-  operations: Array<(tx: PrismaClient) => Promise<T>>,
+  operations: Array<(tx: Transaction) => Promise<T>>,
   options: TransactionOptions = {}
 ): Promise<TransactionResult<T[]>> {
   return withTransaction(async (tx) => {
@@ -118,7 +136,7 @@ export async function withTransactionBatch<T>(
  * @returns TransactionResult with final attempt result
  */
 export async function withTransactionRetry<T>(
-  fn: (tx: PrismaClient) => Promise<T>,
+  fn: (tx: Transaction) => Promise<T>,
   maxRetries: number = 3,
   options: TransactionOptions = {}
 ): Promise<TransactionResult<T>> {
@@ -169,7 +187,7 @@ export async function withTransactionRetry<T>(
 export async function withValidatedTransaction<TInput, TOutput>(
   input: TInput,
   validationFn: (data: TInput) => Promise<void> | void,
-  transactionFn: (tx: PrismaClient, data: TInput) => Promise<TOutput>,
+  transactionFn: (tx: Transaction, data: TInput) => Promise<TOutput>,
   options: TransactionOptions = {}
 ): Promise<TransactionResult<TOutput>> {
   try {
@@ -199,9 +217,9 @@ export class SavepointManager {
   /**
    * Create a savepoint within current transaction
    */
-  async createSavepoint(tx: PrismaClient, name?: string): Promise<string> {
+  async createSavepoint(tx: Transaction, name?: string): Promise<string> {
     const savepointName = name || `sp_${Date.now()}_${this.savepoints.length}`;
-    await tx.$executeRaw`SAVEPOINT ${savepointName}`;
+    await sequelize.query(`SAVEPOINT ${savepointName}`, { transaction: tx });
     this.savepoints.push(savepointName);
     logger.debug(`Savepoint created: ${savepointName}`);
     return savepointName;
@@ -210,8 +228,8 @@ export class SavepointManager {
   /**
    * Rollback to a specific savepoint
    */
-  async rollbackToSavepoint(tx: PrismaClient, name: string): Promise<void> {
-    await tx.$executeRaw`ROLLBACK TO SAVEPOINT ${name}`;
+  async rollbackToSavepoint(tx: Transaction, name: string): Promise<void> {
+    await sequelize.query(`ROLLBACK TO SAVEPOINT ${name}`, { transaction: tx });
     // Remove this savepoint and all subsequent ones
     const index = this.savepoints.indexOf(name);
     if (index !== -1) {
@@ -223,8 +241,8 @@ export class SavepointManager {
   /**
    * Release a savepoint (commit partial work)
    */
-  async releaseSavepoint(tx: PrismaClient, name: string): Promise<void> {
-    await tx.$executeRaw`RELEASE SAVEPOINT ${name}`;
+  async releaseSavepoint(tx: Transaction, name: string): Promise<void> {
+    await sequelize.query(`RELEASE SAVEPOINT ${name}`, { transaction: tx });
     const index = this.savepoints.indexOf(name);
     if (index !== -1) {
       this.savepoints.splice(index, 1);
@@ -255,7 +273,7 @@ export interface TransactionContext {
  */
 export async function withAuditedTransaction<T>(
   context: TransactionContext,
-  fn: (tx: PrismaClient, ctx: TransactionContext) => Promise<T>,
+  fn: (tx: Transaction, ctx: TransactionContext) => Promise<T>,
   options: TransactionOptions = {}
 ): Promise<TransactionResult<T>> {
   const transactionId = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -287,5 +305,5 @@ export async function withAuditedTransaction<T>(
   return result;
 }
 
-// Export prisma instance for direct usage if needed
-export { prisma };
+// Export sequelize instance for direct usage if needed
+export { sequelize };
