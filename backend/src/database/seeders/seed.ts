@@ -18,7 +18,7 @@
  */
 
 import sequelize from '../services/sequelize.service';
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -170,7 +170,7 @@ async function runAllSeeders(): Promise<void> {
     try {
       const result = await sequelize.query(
         `SELECT COUNT(*) as count FROM "${table}"`,
-        { type: sequelize.QueryTypes.SELECT }
+        { type: QueryTypes.SELECT }
       );
       const count = (result[0] as any).count;
       console.log(`  ${table.padEnd(30)} ${count} records`);

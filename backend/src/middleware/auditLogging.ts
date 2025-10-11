@@ -7,10 +7,14 @@
  */
 
 import { Request, ResponseToolkit } from '@hapi/hapi';
-import { PrismaClient, AuditAction, EntityType } from '@prisma/client';
+import { AuditLog, User } from '../database/models';
 import { logger } from '../utils/logger';
+import { Op } from 'sequelize';
 
-const prisma = new PrismaClient();
+// Define audit action and entity type enums
+export type AuditAction = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'EXPORT';
+export type EntityType = 'Student' | 'HealthRecord' | 'Medication' | 'Appointment' |
+  'IncidentReport' | 'Document' | 'User' | 'EmergencyContact' | 'Other';
 
 /**
  * PHI-sensitive routes that require audit logging
@@ -133,23 +137,20 @@ export const auditLoggingMiddleware = {
         const duration = Date.now() - ((request as any).auditStartTime || Date.now());
 
         // Create audit log entry
-        await prisma.auditLog.create({
-          data: {
-            action,
-            entityType,
-            entityId,
-            userId,
-            ipAddress: request.info.remoteAddress,
-            userAgent: request.headers['user-agent'] || 'Unknown',
-            changes: JSON.stringify({
-              method: request.method,
-              path: request.path,
-              query: request.query,
-              duration
-            }),
-            reason: (request.headers['x-audit-reason'] as string) || undefined,
-            createdAt: new Date()
-          }
+        await AuditLog.create({
+          action,
+          entityType,
+          entityId,
+          userId,
+          ipAddress: request.info.remoteAddress,
+          userAgent: request.headers['user-agent'] || 'Unknown',
+          changes: JSON.stringify({
+            method: request.method,
+            path: request.path,
+            query: request.query,
+            duration
+          }),
+          reason: (request.headers['x-audit-reason'] as string) || undefined
         });
 
         logger.debug('PHI access logged', {
@@ -189,18 +190,15 @@ export async function createAuditLog(params: {
   reason?: string;
 }): Promise<void> {
   try {
-    await prisma.auditLog.create({
-      data: {
-        action: params.action,
-        entityType: params.entityType,
-        entityId: params.entityId,
-        userId: params.userId,
-        ipAddress: params.ipAddress || 'System',
-        userAgent: params.userAgent || 'System',
-        changes: params.changes ? JSON.stringify(params.changes) : undefined,
-        reason: params.reason,
-        createdAt: new Date()
-      }
+    await AuditLog.create({
+      action: params.action,
+      entityType: params.entityType,
+      entityId: params.entityId,
+      userId: params.userId,
+      ipAddress: params.ipAddress || 'System',
+      userAgent: params.userAgent || 'System',
+      changes: params.changes ? JSON.stringify(params.changes) : undefined,
+      reason: params.reason
     });
 
     logger.info('Manual audit log created', {
@@ -232,22 +230,19 @@ export async function auditPHIExport(params: {
   userAgent: string;
 }): Promise<string> {
   try {
-    const auditLog = await prisma.auditLog.create({
-      data: {
-        action: 'EXPORT',
-        entityType: params.entityType,
-        entityId: params.entityIds.join(','), // Store multiple IDs
-        userId: params.userId,
-        ipAddress: params.ipAddress,
-        userAgent: params.userAgent,
-        changes: JSON.stringify({
-          exportFormat: params.exportFormat,
-          recordCount: params.entityIds.length,
-          timestamp: new Date().toISOString()
-        }),
-        reason: params.reason,
-        createdAt: new Date()
-      }
+    const auditLog = await AuditLog.create({
+      action: 'EXPORT',
+      entityType: params.entityType,
+      entityId: params.entityIds.join(','), // Store multiple IDs
+      userId: params.userId,
+      ipAddress: params.ipAddress,
+      userAgent: params.userAgent,
+      changes: JSON.stringify({
+        exportFormat: params.exportFormat,
+        recordCount: params.entityIds.length,
+        timestamp: new Date().toISOString()
+      }),
+      reason: params.reason
     });
 
     logger.warn('PHI EXPORT performed', {
@@ -294,29 +289,23 @@ export async function getAuditLogs(filters: {
 
   if (filters.startDate || filters.endDate) {
     where.createdAt = {};
-    if (filters.startDate) where.createdAt.gte = filters.startDate;
-    if (filters.endDate) where.createdAt.lte = filters.endDate;
+    if (filters.startDate) where.createdAt[Op.gte] = filters.startDate;
+    if (filters.endDate) where.createdAt[Op.lte] = filters.endDate;
   }
 
   const [logs, total] = await Promise.all([
-    prisma.auditLog.findMany({
+    AuditLog.findAll({
       where,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true
-          }
-        }
-      }
+      order: [['createdAt', 'DESC']],
+      offset: skip,
+      limit,
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'firstName', 'lastName', 'email', 'role']
+      }]
     }),
-    prisma.auditLog.count({ where })
+    AuditLog.count({ where })
   ]);
 
   return {
@@ -343,20 +332,20 @@ export async function enforceAuditRetention(): Promise<{ deleted: number }> {
   });
 
   try {
-    const result = await prisma.auditLog.deleteMany({
+    const deletedCount = await AuditLog.destroy({
       where: {
         createdAt: {
-          lt: sixYearsAgo
+          [Op.lt]: sixYearsAgo
         }
       }
     });
 
     logger.info('Audit logs purged per retention policy', {
-      deletedCount: result.count,
+      deletedCount,
       cutoffDate: sixYearsAgo.toISOString()
     });
 
-    return { deleted: result.count };
+    return { deleted: deletedCount };
   } catch (error) {
     logger.error('Failed to enforce audit retention policy', {
       error: error instanceof Error ? error.message : 'Unknown error'
