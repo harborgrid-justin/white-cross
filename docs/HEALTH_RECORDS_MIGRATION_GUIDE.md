@@ -1,713 +1,589 @@
+# Health Records Frontend Migration Guide
+
+## Overview
+This guide helps developers migrate from the old health records implementation to the new comprehensive API-integrated version.
+
 ---
-title: Health Records Migration Guide
-description: Step-by-step guide for migrating to the new SOA architecture
-date: 2025-10-10
-version: 1.0.0
----
 
-# Health Records Migration Guide
+## Breaking Changes
 
-## Quick Start
+### 1. Removed Mock Data
 
-### Prerequisites
-
-- Node.js >= 18
-- npm >= 9
-- TypeScript >= 5
-- React >= 18
-
-### Installation
-
-```bash
-# Install new dependencies
-npm install @tanstack/react-query@latest react-hot-toast@latest zod@latest
-
-# Install dev dependencies for testing
-npm install -D @testing-library/react-hooks @tanstack/react-query-devtools
+**Before:**
+```tsx
+const mockAllergies = [
+  { id: '1', allergen: 'Peanuts', severity: 'SEVERE' },
+  // ... more mock data
+]
 ```
 
-### Configuration
+**After:**
+```tsx
+// Data comes from API hooks
+const { data: allergies } = useAllergies(studentId)
+```
 
-1. **Update tsconfig.json** (if needed)
+### 2. Component Props Changes
 
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+#### AllergiesTab
+
+**Before:**
+```tsx
+<AllergiesTab
+  allergies={mockAllergies}
+  onAddAllergy={() => {}}
+  onEditAllergy={() => {}}
+/>
+```
+
+**After:**
+```tsx
+<AllergiesTab
+  allergies={allergiesData || []}  // Must handle undefined
+  onAddAllergy={handleAddAllergy}
+  onEditAllergy={handleEditAllergy}
+  user={currentUser}  // NEW: Required for permissions
+/>
+```
+
+#### VaccinationsTab
+
+**Before:**
+```tsx
+<VaccinationsTab vaccinations={mockData} />
+```
+
+**After:**
+```tsx
+<VaccinationsTab
+  vaccinations={vaccinationsData || []}
+  searchQuery={searchQuery}
+  onSearchChange={setSearchQuery}
+  vaccinationFilter={filter}
+  onFilterChange={setFilter}
+  vaccinationSort={sort}
+  onSortChange={setSort}
+  onRecordVaccination={handleRecord}
+  onEditVaccination={handleEdit}
+  onDeleteVaccination={handleDelete}
+  onScheduleVaccination={handleSchedule}
+  user={currentUser}
+/>
+```
+
+### 3. Statistics Display
+
+**Before:**
+```tsx
+<StatsCard title="Total Records" value="247" trend="+12 this month" />
+```
+
+**After:**
+```tsx
+const { data: healthSummary, isLoading } = useHealthSummary(studentId)
+
+<StatsCard
+  title="Total Records"
+  value={healthSummary?.totalRecords || 0}
+  trend={`${healthSummary?.recentRecordsCount || 0} this month`}
+/>
+```
+
+---
+
+## Migration Steps
+
+### Step 1: Update Imports
+
+**Add new imports:**
+```tsx
+// API hooks
+import {
+  useHealthSummary,
+  useAllergies,
+  useVaccinations,
+  useRecentVitals,
+  useVerifyAllergy,
+  useDeleteAllergy,
+  useExportHealthHistory
+} from '../hooks/useHealthRecords'
+
+// Toast notifications
+import toast from 'react-hot-toast'
+
+// New components
+import { VitalsTab } from '../components/healthRecords/tabs/VitalsTab'
+```
+
+### Step 2: Replace Mock Data with API Hooks
+
+**Before:**
+```tsx
+const [allergies, setAllergies] = useState(mockAllergies)
+```
+
+**After:**
+```tsx
+const { data: allergies, isLoading: allergiesLoading } = useAllergies(studentId)
+```
+
+### Step 3: Add Loading States
+
+**Pattern:**
+```tsx
+{isLoading ? (
+  <div className="flex justify-center py-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+) : data ? (
+  <ComponentWithData data={data} />
+) : (
+  <EmptyState />
+)}
+```
+
+### Step 4: Implement Error Handling
+
+**Add error boundaries:**
+```tsx
+const { data, error, isLoading } = useHealthRecords(studentId)
+
+if (error) {
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <p className="text-red-800">Failed to load health records</p>
+      <button onClick={() => refetch()} className="btn-secondary mt-2">
+        Retry
+      </button>
+    </div>
+  )
+}
+```
+
+### Step 5: Update Mutation Handlers
+
+**Before:**
+```tsx
+const handleDelete = (id: string) => {
+  setAllergies(allergies.filter(a => a.id !== id))
+  alert('Deleted')
+}
+```
+
+**After:**
+```tsx
+const deleteMutation = useDeleteAllergy()
+
+const handleDelete = async (allergy: Allergy) => {
+  try {
+    await deleteMutation.mutateAsync({
+      id: allergy.id,
+      studentId: allergy.studentId
+    })
+    // Success toast handled by hook
+  } catch (error) {
+    // Error toast handled by hook
   }
 }
 ```
 
-2. **Setup React Query Provider** (if not already done)
+### Step 6: Add Permission Checks
 
-```typescript
-// src/main.tsx or src/App.tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+**Pattern:**
+```tsx
+const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 3,
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <YourApp />
-      {import.meta.env.DEV && <ReactQueryDevtools />}
-    </QueryClientProvider>
-  );
-}
+<button
+  onClick={handleAdd}
+  disabled={!canModify}
+  className="btn-primary"
+>
+  Add Record
+</button>
 ```
 
 ---
 
-## Migration Checklist
-
-### Phase 1: Service Layer (Week 1)
-
-#### ☐ 1.1 Create Enhanced API Service
-
-```bash
-# Copy the enhanced service
-cp frontend/src/services/modules/healthRecordsApi.enhanced.ts frontend/src/services/modules/healthRecordsApi.ts
-
-# Or create new file and migrate gradually
-```
-
-**Files to create:**
-- ✅ `frontend/src/services/modules/healthRecordsApi.enhanced.ts`
-
-**Tasks:**
-- [ ] Review existing API endpoints
-- [ ] Map old endpoints to new service methods
-- [ ] Update API_ENDPOINTS configuration if needed
-- [ ] Test all service methods
-
-#### ☐ 1.2 Update Type Definitions
-
-**Review and update:**
-- [ ] `frontend/src/types/healthRecords.ts` - Ensure types match new service
-- [ ] Add missing types from enhanced service
-- [ ] Remove deprecated types
-
-#### ☐ 1.3 Configure Validation Schemas
-
-**Already included in enhanced service, verify:**
-- [ ] Zod schemas for all request types
-- [ ] Error handling for validation failures
-- [ ] Type inference from schemas
-
----
-
-### Phase 2: React Query Hooks (Week 2)
-
-#### ☐ 2.1 Create Custom Hooks
-
-```bash
-# Copy the hooks file
-cp frontend/src/hooks/useHealthRecords.ts frontend/src/hooks/useHealthRecordsNew.ts
-```
-
-**Files to create:**
-- ✅ `frontend/src/hooks/useHealthRecords.ts`
-
-**Tasks:**
-- [ ] Review existing data fetching patterns
-- [ ] Create hooks for all health records operations
-- [ ] Configure caching strategies
-- [ ] Test all hooks in isolation
-
-#### ☐ 2.2 Setup Query Keys
-
-**Verify query keys structure:**
-```typescript
-export const healthRecordsKeys = {
-  all: ['healthRecords'],
-  records: (studentId?: string, filters?: HealthRecordFilters) => [...],
-  allergies: (studentId: string) => [...],
-  // etc.
-}
-```
-
-**Tasks:**
-- [ ] Define all query keys
-- [ ] Document query key patterns
-- [ ] Test cache invalidation
-
-#### ☐ 2.3 Configure Retry and Error Handling
-
-**Review:**
-- [ ] Retry configuration (attempts, delays)
-- [ ] Error handling strategy
-- [ ] Toast notifications
-- [ ] Circuit breaker awareness
-
----
-
-### Phase 3: Error Handling (Week 3)
-
-#### ☐ 3.1 Create Error Boundary
-
-```bash
-# Copy error boundary
-mkdir -p frontend/src/components/healthRecords
-cp frontend/src/components/healthRecords/HealthRecordsErrorBoundary.tsx frontend/src/components/healthRecords/
-```
-
-**Files to create:**
-- ✅ `frontend/src/components/healthRecords/HealthRecordsErrorBoundary.tsx`
-
-**Tasks:**
-- [ ] Review error types
-- [ ] Customize error messages
-- [ ] Test error scenarios (401, 403, 500, 503)
-- [ ] Verify PHI cleanup on errors
-
-#### ☐ 3.2 Implement Custom Error Classes
-
-**Verify error classes:**
-- [ ] `ValidationError` (400)
-- [ ] `UnauthorizedError` (401)
-- [ ] `ForbiddenError` (403)
-- [ ] `NotFoundError` (404)
-- [ ] `CircuitBreakerError` (503)
-
-**Tasks:**
-- [ ] Test each error type
-- [ ] Verify error messages
-- [ ] Check error boundary handling
-
----
-
-### Phase 4: HIPAA Compliance (Week 4)
-
-#### ☐ 4.1 Implement Cleanup Utilities
-
-```bash
-# Copy cleanup utilities
-cp frontend/src/utils/healthRecordsCleanup.ts frontend/src/utils/
-```
-
-**Files to create:**
-- ✅ `frontend/src/utils/healthRecordsCleanup.ts`
-
-**Tasks:**
-- [ ] Configure session timeout (15 minutes)
-- [ ] Setup inactivity warning (13 minutes)
-- [ ] Implement automatic cleanup
-- [ ] Test page visibility monitoring
-- [ ] Test beforeunload cleanup
-
-#### ☐ 4.2 Setup Audit Logging
-
-**Verify audit logging:**
-- [ ] All PHI access logged
-- [ ] User ID captured
-- [ ] Student ID captured
-- [ ] Action/event captured
-- [ ] Timestamp included
-- [ ] Details object for context
-
-**Tasks:**
-- [ ] Test audit log creation
-- [ ] Verify backend integration
-- [ ] Review audit log retention
-- [ ] Test audit log retrieval
-
-#### ☐ 4.3 Configure Session Monitoring
-
-**Setup SessionMonitor:**
-```typescript
-const sessionMonitor = new SessionMonitor({
-  timeoutMs: 15 * 60 * 1000,
-  warningMs: 13 * 60 * 1000,
-  onWarning: (remainingTime) => {
-    // Show warning
-  },
-  onTimeout: () => {
-    // Cleanup and logout
-  },
-});
-```
-
-**Tasks:**
-- [ ] Start session monitor
-- [ ] Test timeout behavior
-- [ ] Test warning behavior
-- [ ] Test activity detection
-- [ ] Verify cleanup on timeout
-
----
-
-### Phase 5: Component Migration (Week 5)
-
-#### ☐ 5.1 Refactor HealthRecords Page
-
-```bash
-# Create refactored version first
-cp frontend/src/pages/HealthRecords.refactored.tsx frontend/src/pages/HealthRecordsNew.tsx
-
-# Test thoroughly, then replace
-mv frontend/src/pages/HealthRecords.tsx frontend/src/pages/HealthRecords.old.tsx
-mv frontend/src/pages/HealthRecordsNew.tsx frontend/src/pages/HealthRecords.tsx
-```
-
-**Files to update:**
-- ✅ `frontend/src/pages/HealthRecords.tsx`
-
-**Migration steps:**
-1. [ ] Replace `useHealthRecordsData` with React Query hooks
-2. [ ] Add `HealthRecordsErrorBoundaryWrapper`
-3. [ ] Add session monitoring
-4. [ ] Add automatic cleanup
-5. [ ] Replace mutations with React Query mutations
-6. [ ] Test all user flows
-
-#### ☐ 5.2 Update Child Components
-
-**For each tab component:**
-- [ ] Update props to use new data types
-- [ ] Replace local state with server state
-- [ ] Use mutations for data changes
-- [ ] Test loading states
-- [ ] Test error states
-
-**Components to update:**
-- [ ] `OverviewTab.tsx`
-- [ ] `RecordsTab.tsx`
-- [ ] `AllergiesTab.tsx`
-- [ ] `ChronicConditionsTab.tsx`
-- [ ] `VaccinationsTab.tsx`
-- [ ] `GrowthChartsTab.tsx`
-- [ ] `ScreeningsTab.tsx`
-- [ ] `AnalyticsTab.tsx`
-
-#### ☐ 5.3 Update Modals
-
-**For each modal:**
-- [ ] Use mutations instead of callbacks
-- [ ] Handle loading states
-- [ ] Handle error states
-- [ ] Show success messages
-
-**Modals to update:**
-- [ ] `HealthRecordModal.tsx`
-- [ ] `AllergyModal.tsx` (if exists)
-- [ ] `ChronicConditionModal.tsx` (if exists)
-- [ ] `VaccinationModal.tsx` (if exists)
-
----
-
-### Phase 6: Testing (Week 6)
-
-#### ☐ 6.1 Unit Tests
-
-**Service Layer:**
-```bash
-# Create test files
-touch frontend/src/services/modules/healthRecordsApi.enhanced.test.ts
-touch frontend/src/hooks/useHealthRecords.test.ts
-```
-
-**Test coverage:**
-- [ ] All service methods
-- [ ] All custom hooks
-- [ ] Error handling
-- [ ] Validation schemas
-- [ ] Audit logging
-
-#### ☐ 6.2 Integration Tests
-
-**Test scenarios:**
-- [ ] Full CRUD operations
-- [ ] Error boundary behavior
-- [ ] Session timeout
-- [ ] Cache invalidation
-- [ ] Optimistic updates
-
-#### ☐ 6.3 E2E Tests (Cypress)
-
-**Test flows:**
-- [ ] View health records
-- [ ] Create health record
-- [ ] Update health record
-- [ ] Delete health record
-- [ ] Session timeout
-- [ ] Error scenarios
-- [ ] Circuit breaker handling
+## Component-Specific Migrations
+
+### AllergiesTab Migration
+
+**Steps:**
+1. Remove mock allergy data
+2. Add `useAllergies()` hook
+3. Add `useVerifyAllergy()` hook
+4. Add `useDeleteAllergy()` hook
+5. Add verification modal state
+6. Add delete confirmation modal state
+7. Separate life-threatening allergies
+8. Add summary statistics
 
 **Example:**
-```typescript
-describe('Health Records E2E', () => {
-  it('should handle full CRUD lifecycle', () => {
-    cy.login();
-    cy.visit('/health-records');
+```tsx
+// OLD
+const AllergiesTab = ({ allergies, onAdd, onEdit }) => {
+  return (
+    <div>
+      {allergies.map(allergy => (
+        <div key={allergy.id}>{allergy.allergen}</div>
+      ))}
+    </div>
+  )
+}
 
-    // Create
-    cy.get('[data-testid="new-record-button"]').click();
-    cy.get('[data-testid="health-record-modal"]').should('be.visible');
-    // Fill form...
-    cy.get('[data-testid="save-button"]').click();
-    cy.contains('Health record created successfully').should('be.visible');
+// NEW
+const AllergiesTab = ({ allergies, onAdd, onEdit, user }) => {
+  const verifyMutation = useVerifyAllergy()
+  const deleteMutation = useDeleteAllergy()
+  const [verifying, setVerifying] = useState(null)
 
-    // Update
-    // Delete
-  });
-});
+  const lifeThreatening = allergies.filter(a => a.severity === 'LIFE_THREATENING')
+  const others = allergies.filter(a => a.severity !== 'LIFE_THREATENING')
+
+  return (
+    <div className="space-y-6">
+      {/* Life-threatening section */}
+      {lifeThreatening.length > 0 && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+          <h4 className="text-lg font-bold text-red-900">LIFE-THREATENING ALLERGIES</h4>
+          {/* ... */}
+        </div>
+      )}
+
+      {/* Others section */}
+      {/* ... */}
+    </div>
+  )
+}
 ```
 
-#### ☐ 6.4 Performance Tests
+### VaccinationsTab Migration
 
-**Measure:**
-- [ ] Initial load time
-- [ ] Cache hit rate
-- [ ] Network requests (should be minimized)
-- [ ] Memory usage
-- [ ] Cleanup effectiveness
+**Steps:**
+1. Remove hardcoded statistics
+2. Calculate from actual data
+3. Derive upcoming from main list
+4. Add filter/sort props
+5. Use proper hooks
 
----
+**Example:**
+```tsx
+// OLD - Hardcoded
+<div className="text-2xl font-bold text-green-700">85%</div>
 
-### Phase 7: Documentation & Training (Week 7)
+// NEW - Calculated
+<div className="text-2xl font-bold text-green-700">
+  {vaccinations.length > 0
+    ? Math.round((vaccinations.filter(v => v.compliant).length / vaccinations.length) * 100)
+    : 0}%
+</div>
+```
 
-#### ☐ 7.1 Update Documentation
+### VitalsTab Migration (New Component)
 
-**Documentation to create/update:**
-- [x] Architecture documentation
-- [x] Migration guide
-- [ ] API documentation
-- [ ] Component documentation
-- [ ] Testing guide
+**Implementation:**
+```tsx
+import { VitalsTab } from '../components/healthRecords/tabs/VitalsTab'
 
-#### ☐ 7.2 Create Examples
-
-**Example files to create:**
-- [ ] `examples/basic-usage.tsx`
-- [ ] `examples/with-optimistic-updates.tsx`
-- [ ] `examples/with-error-handling.tsx`
-- [ ] `examples/with-session-monitoring.tsx`
-
-#### ☐ 7.3 Team Training
-
-**Training topics:**
-- [ ] New architecture overview
-- [ ] React Query basics
-- [ ] HIPAA compliance features
-- [ ] Error handling patterns
-- [ ] Testing strategies
-- [ ] Common pitfalls
+// In HealthRecords page
+{activeTab === 'vitals' && (
+  <VitalsTab
+    studentId={selectedStudent?.id || '1'}
+    user={user}
+  />
+)}
+```
 
 ---
 
-### Phase 8: Deployment (Week 8)
+## Data Flow Changes
 
-#### ☐ 8.1 Pre-Deployment
+### Before (Mock Data)
+```
+Component → useState(mockData) → Display
+```
 
-**Checks:**
-- [ ] All tests passing
-- [ ] Code review completed
-- [ ] Documentation complete
-- [ ] Performance benchmarks met
-- [ ] Security audit passed
-- [ ] HIPAA compliance verified
-
-#### ☐ 8.2 Deployment Strategy
-
-**Recommended approach:**
-1. [ ] Deploy to staging environment
-2. [ ] Run full test suite
-3. [ ] Perform manual QA
-4. [ ] Monitor error logs
-5. [ ] Check audit logs
-6. [ ] Verify session timeout
-7. [ ] Test circuit breaker
-8. [ ] Deploy to production (off-peak hours)
-
-#### ☐ 8.3 Post-Deployment
-
-**Monitoring:**
-- [ ] Check error rates
-- [ ] Monitor API response times
-- [ ] Review audit logs
-- [ ] Check user feedback
-- [ ] Monitor memory usage
-- [ ] Track cache performance
-
-#### ☐ 8.4 Rollback Plan
-
-**If issues occur:**
-1. [ ] Identify issue
-2. [ ] Check if critical
-3. [ ] If critical, rollback to previous version
-4. [ ] Document issue
-5. [ ] Fix in development
-6. [ ] Redeploy when fixed
+### After (API Integration)
+```
+Component → useQuery(API) → React Query Cache → Display
+                ↓
+          Automatic refetch on mutations
+```
 
 ---
 
 ## Common Migration Patterns
 
-### Pattern 1: Replace useEffect with React Query
+### Pattern 1: Replace useState with useQuery
 
 **Before:**
-```typescript
-const [data, setData] = useState([]);
-const [loading, setLoading] = useState(false);
+```tsx
+const [data, setData] = useState([])
 
 useEffect(() => {
-  const fetchData = async () => {
-    setLoading(true);
-    const response = await fetch('/api/health-records');
-    const json = await response.json();
-    setData(json.data);
-    setLoading(false);
-  };
-
-  fetchData();
-}, []);
+  fetchData().then(setData)
+}, [])
 ```
 
 **After:**
-```typescript
-const { data = [], isLoading } = useHealthRecords(studentId);
+```tsx
+const { data } = useQuery({
+  queryKey: ['data', id],
+  queryFn: () => fetchData(id)
+})
 ```
 
-### Pattern 2: Replace Manual Mutations with React Query
+### Pattern 2: Replace Manual Updates with Mutations
 
 **Before:**
-```typescript
-const handleCreate = async (formData) => {
-  try {
-    setLoading(true);
-    const response = await fetch('/api/health-records', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-    });
-
-    if (!response.ok) throw new Error('Failed');
-
-    // Manually refetch
-    await fetchData();
-
-    toast.success('Created successfully');
-  } catch (error) {
-    toast.error(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+```tsx
+const handleUpdate = (id, newData) => {
+  setData(data.map(item =>
+    item.id === id ? { ...item, ...newData } : item
+  ))
+}
 ```
 
 **After:**
-```typescript
-const createMutation = useCreateHealthRecord();
+```tsx
+const updateMutation = useUpdateMutation()
 
-const handleCreate = async (formData) => {
-  await createMutation.mutateAsync(formData);
-  // Automatic: cache invalidation, success toast, error handling
-};
+const handleUpdate = async (id, newData) => {
+  await updateMutation.mutateAsync({ id, data: newData })
+  // Cache automatically updated
+}
 ```
 
-### Pattern 3: Add Error Boundary
+### Pattern 3: Replace Alerts with Toasts
 
 **Before:**
-```typescript
-function HealthRecords() {
-  return <HealthRecordsContent />;
-}
+```tsx
+alert('Success!')
 ```
 
 **After:**
-```typescript
-function HealthRecords() {
-  return (
-    <HealthRecordsErrorBoundaryWrapper studentId={studentId}>
-      <HealthRecordsContent />
-    </HealthRecordsErrorBoundaryWrapper>
-  );
-}
+```tsx
+toast.success('Operation successful')
 ```
 
-### Pattern 4: Add Session Monitoring
+---
+
+## Testing Updates
+
+### Update Unit Tests
 
 **Before:**
-```typescript
-function HealthRecords() {
-  return <HealthRecordsContent />;
-}
+```tsx
+it('displays allergies', () => {
+  const allergies = [mockAllergy1, mockAllergy2]
+  render(<AllergiesTab allergies={allergies} />)
+  expect(screen.getByText('Peanuts')).toBeInTheDocument()
+})
 ```
 
 **After:**
-```typescript
-function HealthRecords() {
-  const [sessionMonitor] = useState(() => new SessionMonitor({
-    onTimeout: () => handleLogout(),
-  }));
+```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-  useEffect(() => {
-    sessionMonitor.start();
-    return () => sessionMonitor.stop();
-  }, []);
+it('displays allergies', async () => {
+  const queryClient = new QueryClient()
 
-  return <HealthRecordsContent />;
+  render(
+    <QueryClientProvider client={queryClient}>
+      <AllergiesTab
+        allergies={mockAllergies}
+        onAddAllergy={jest.fn()}
+        onEditAllergy={jest.fn()}
+        user={mockUser}
+      />
+    </QueryClientProvider>
+  )
+
+  expect(screen.getByText('Peanuts')).toBeInTheDocument()
+})
+```
+
+### Update E2E Tests
+
+**Add data-testid attributes:**
+```tsx
+<button data-testid="verify-allergy-button">Verify</button>
+<div data-testid="life-threatening-section">...</div>
+<table data-testid="vitals-table">...</table>
+```
+
+**Update Cypress tests:**
+```tsx
+cy.get('[data-testid="verify-allergy-button"]').click()
+cy.contains('Allergy verified successfully').should('be.visible')
+```
+
+---
+
+## Performance Considerations
+
+### 1. Optimize Re-renders
+
+**Use memo for expensive operations:**
+```tsx
+const sortedData = useMemo(() => {
+  return data.sort((a, b) => a.date.localeCompare(b.date))
+}, [data])
+```
+
+### 2. Implement Query Caching
+
+**React Query handles this automatically:**
+```tsx
+// Data cached for 5 minutes by default
+const { data } = useHealthRecords(studentId)
+
+// Manual cache configuration
+const { data } = useHealthRecords(studentId, {
+  staleTime: 10 * 60 * 1000, // 10 minutes
+  cacheTime: 30 * 60 * 1000  // 30 minutes
+})
+```
+
+### 3. Lazy Load Heavy Components
+
+```tsx
+const GrowthChartsTab = lazy(() =>
+  import('../components/healthRecords/tabs/GrowthChartsTab')
+)
+
+<Suspense fallback={<LoadingSpinner />}>
+  <GrowthChartsTab />
+</Suspense>
+```
+
+---
+
+## Rollback Plan
+
+If issues arise during migration:
+
+### Phase 1: Immediate Rollback
+```bash
+git revert <commit-hash>
+git push
+```
+
+### Phase 2: Feature Flag
+```tsx
+const USE_NEW_HEALTH_RECORDS = process.env.REACT_APP_NEW_HEALTH_RECORDS === 'true'
+
+{USE_NEW_HEALTH_RECORDS ? (
+  <NewHealthRecordsComponent />
+) : (
+  <OldHealthRecordsComponent />
+)}
+```
+
+### Phase 3: Gradual Migration
+```tsx
+// Migrate one tab at a time
+const MIGRATED_TABS = ['vitals', 'allergies']
+
+{MIGRATED_TABS.includes(activeTab) ? (
+  <NewTabComponent />
+) : (
+  <OldTabComponent />
+)}
+```
+
+---
+
+## Checklist
+
+### Pre-Migration
+- [ ] Backup current codebase
+- [ ] Review API documentation
+- [ ] Test API endpoints
+- [ ] Update environment variables
+- [ ] Install new dependencies
+- [ ] Update TypeScript types
+
+### During Migration
+- [ ] Update imports
+- [ ] Replace mock data with hooks
+- [ ] Add loading states
+- [ ] Add error handling
+- [ ] Implement permission checks
+- [ ] Add confirmation modals
+- [ ] Update tests
+
+### Post-Migration
+- [ ] Run all unit tests
+- [ ] Run all E2E tests
+- [ ] Test in staging environment
+- [ ] Performance testing
+- [ ] Accessibility audit
+- [ ] User acceptance testing
+- [ ] Update documentation
+- [ ] Deploy to production
+
+---
+
+## Troubleshooting
+
+### Issue: "Cannot read property of undefined"
+**Cause:** Data not loaded yet
+**Solution:** Add optional chaining and null checks
+```tsx
+const value = data?.field || defaultValue
+```
+
+### Issue: "Query not refetching after mutation"
+**Cause:** Cache not invalidated
+**Solution:** Check mutation's `onSuccess` invalidates queries
+```tsx
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['allergies'] })
 }
 ```
 
----
+### Issue: "Infinite loading spinner"
+**Cause:** Query never resolves
+**Solution:** Check network tab and add error handling
+```tsx
+const { data, error, isLoading } = useQuery(...)
 
-## Troubleshooting Migration Issues
-
-### Issue 1: Type Errors
-
-**Problem:** TypeScript errors after migration
-
-**Solution:**
-```typescript
-// Ensure types are imported
-import type { HealthRecord, CreateHealthRecordRequest } from '@/services/modules/healthRecordsApi.enhanced';
-
-// Use proper type assertions
-const record = data as HealthRecord;
-
-// Or use type guards
-function isHealthRecord(data: unknown): data is HealthRecord {
-  return typeof data === 'object' && data !== null && 'id' in data;
-}
+if (error) return <ErrorComponent />
+if (isLoading) return <LoadingSpinner />
+return <DataDisplay data={data} />
 ```
 
-### Issue 2: Query Not Refetching
-
-**Problem:** Data not updating after mutation
-
-**Solution:**
-```typescript
-// Ensure proper cache invalidation
-const createMutation = useCreateHealthRecord({
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: healthRecordsKeys.all });
-  },
-});
-
-// Or use manual refetch
-const { refetch } = useHealthRecords(studentId);
-await refetch();
-```
-
-### Issue 3: Session Not Timing Out
-
-**Problem:** Session monitor not working
-
-**Solution:**
-```typescript
-// Ensure monitor is properly initialized
-const [sessionMonitor] = useState(() => new SessionMonitor({
-  timeoutMs: 15 * 60 * 1000,
-  onTimeout: () => {
-    console.log('Session timeout');
-    // Handle timeout
-  },
-}));
-
-// Ensure it's started
-useEffect(() => {
-  sessionMonitor.start();
-  console.log('Session monitor started');
-
-  return () => {
-    sessionMonitor.stop();
-    console.log('Session monitor stopped');
-  };
-}, [sessionMonitor]);
-```
-
-### Issue 4: Old API Still Being Called
-
-**Problem:** Requests going to old endpoints
-
-**Solution:**
-```typescript
-// Check API_ENDPOINTS configuration
-console.log(API_ENDPOINTS.HEALTH_RECORDS);
-
-// Ensure new service is being used
-import { healthRecordsApiService } from '@/services/modules/healthRecordsApi.enhanced';
-
-// Not the old service
-// import { healthRecordsApi } from '@/services/modules/healthRecordsApi';
+### Issue: "Permission errors"
+**Cause:** User role not passed to component
+**Solution:** Ensure user prop is passed
+```tsx
+<Component user={currentUser} />
 ```
 
 ---
 
-## Validation Checklist
+## Support Resources
 
-### Before Go-Live
+- **API Documentation:** `/docs/api/health-records-api.md`
+- **Hook Documentation:** `/frontend/src/hooks/useHealthRecords.ts`
+- **Component Examples:** `/frontend/src/components/healthRecords/tabs/`
+- **Test Examples:** `/frontend/src/components/healthRecords/__tests__/`
+- **Cypress Tests:** `/frontend/cypress/e2e/04-medication-management/`
 
-**Functionality:**
-- [ ] All CRUD operations work
-- [ ] Search and filtering work
-- [ ] Pagination works
-- [ ] Sorting works
-- [ ] Export/Import work
-
-**Performance:**
-- [ ] Initial load < 2 seconds
-- [ ] Mutations < 1 second
-- [ ] Cache hit rate > 80%
-- [ ] Memory usage stable
-- [ ] No memory leaks
-
-**Security:**
-- [ ] Session timeout works
-- [ ] PHI cleanup works
-- [ ] Audit logging works
-- [ ] Error messages don't expose PHI
-- [ ] HTTPS enforced
-
-**User Experience:**
-- [ ] Loading states shown
-- [ ] Error states handled
-- [ ] Success feedback given
-- [ ] Optimistic updates work
-- [ ] No UI flickering
-
-**Code Quality:**
-- [ ] TypeScript strict mode
-- [ ] No console.errors in production
-- [ ] No TODOs in code
-- [ ] All tests passing
-- [ ] Code coverage > 80%
+For additional support, contact the development team or open an issue in the project repository.
 
 ---
 
-## Support & Resources
+## Timeline
 
-### Documentation
-- [Main Documentation](./HEALTH_RECORDS_SOA_REFACTORING.md)
-- [API Reference](./API_REFERENCE.md)
-- [Testing Guide](./TESTING_GUIDE.md)
+**Recommended Migration Schedule:**
 
-### Tools
-- [React Query DevTools](https://tanstack.com/query/latest/docs/react/devtools)
-- [Zod Documentation](https://zod.dev)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- **Week 1:** Update types and hooks
+- **Week 2:** Migrate AllergiesTab and VaccinationsTab
+- **Week 3:** Migrate VitalsTab (new) and RecordsTab
+- **Week 4:** Testing and bug fixes
+- **Week 5:** Staging deployment and UAT
+- **Week 6:** Production deployment
 
-### Getting Help
-- Review documentation first
-- Check troubleshooting section
-- Review common patterns
-- Consult with team lead
-- Open GitHub issue (for bugs)
-
----
-
-**Last Updated:** 2025-10-10
-**Version:** 1.0.0
-**Status:** Complete
+**Total Estimated Time:** 6 weeks for full migration and testing
