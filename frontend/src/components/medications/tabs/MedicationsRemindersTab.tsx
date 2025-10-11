@@ -23,8 +23,8 @@ export default function MedicationsRemindersTab({ data, loading }: MedicationsRe
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading reminders...</p>
+        <div data-testid="loading-spinner" className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p data-testid="loading-text" className="mt-4 text-gray-600">Loading reminders...</p>
       </div>
     )
   }
@@ -43,15 +43,16 @@ export default function MedicationsRemindersTab({ data, loading }: MedicationsRe
         </div>
 
         {!data?.reminders || data.reminders.length === 0 ? (
-          <div className="card p-12 text-center">
+          <div data-testid="no-reminders-message" className="card p-12 text-center">
             <Bell className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No medication reminders for today</p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div data-testid="reminders-list" className="grid gap-4">
             {data.reminders.map((reminder) => (
               <div
                 key={reminder.id}
+                data-testid="reminder-card"
                 className={`card p-4 border-l-4 ${
                   reminder.status === 'COMPLETED' ? 'border-green-500 bg-green-50' :
                   reminder.status === 'MISSED' ? 'border-red-500 bg-red-50' :
@@ -72,15 +73,15 @@ export default function MedicationsRemindersTab({ data, loading }: MedicationsRe
                       }`} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">{reminder.studentName}</h4>
-                      <p className="text-sm text-gray-600">{reminder.medicationName} - {reminder.dosage}</p>
+                      <h4 data-testid="student-name" className="font-semibold text-gray-900">{reminder.studentName}</h4>
+                      <p data-testid="medication-info" className="text-sm text-gray-600">{reminder.medicationName} - {reminder.dosage}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div data-testid="scheduled-time" className="text-sm font-medium text-gray-900">
                       {new Date(reminder.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </div>
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    <span data-testid="reminder-status" className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       reminder.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
                       reminder.status === 'MISSED' ? 'bg-red-100 text-red-800' :
                       'bg-blue-100 text-blue-800'
