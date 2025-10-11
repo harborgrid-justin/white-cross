@@ -1,0 +1,4 @@
+-- CreateTable
+-- This migration.sql file was created as a baseline migration
+-- The database schema was already synchronized using prisma db push
+-- No additional SQL commands are needed as the database is already in sync

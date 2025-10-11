@@ -161,7 +161,7 @@ An enterprise-grade platform designed specifically for school nurses to manage s
 ### Backend
 - **Runtime**: Node.js 18+
 - **Framework**: Express.js with TypeScript
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: PostgreSQL with Sequelize ORM
 - **Authentication**: JWT with bcryptjs
 - **Caching**: Redis
 - **Real-time**: Socket.io
@@ -215,8 +215,7 @@ An enterprise-grade platform designed specifically for school nurses to manage s
 4. **Database Setup**
    ```bash
    cd backend
-   npx prisma migrate dev
-   npx prisma generate
+   npx sequelize-cli db:migrate
    npm run seed
    ```
 
@@ -232,7 +231,7 @@ An enterprise-grade platform designed specifically for school nurses to manage s
 ### Access the Application
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3001
-- **Database Admin**: http://localhost:5555 (Prisma Studio)
+- **API Documentation**: http://localhost:3001/api-docs (Swagger UI)
 
 ## 📋 Development Commands
 
@@ -259,9 +258,10 @@ npm run lint:backend   # Lint backend only
 
 # Database
 cd backend
-npx prisma studio      # Open database admin
-npx prisma migrate dev # Run database migrations
-npx prisma generate    # Generate Prisma client
+npx sequelize-cli db:migrate         # Run database migrations
+npx sequelize-cli db:migrate:undo    # Undo last migration
+npx sequelize-cli db:seed:all        # Run seeders
+npm run seed                         # Run custom seed script
 ```
 
 ## 🏗 Project Structure
@@ -274,9 +274,11 @@ white-cross/
 │   │   ├── middleware/      # Express middleware
 │   │   ├── routes/          # API routes
 │   │   ├── services/        # Business logic
+│   │   ├── models/          # Sequelize models
 │   │   ├── types/           # TypeScript types
 │   │   └── utils/           # Utility functions
-│   ├── prisma/              # Database schema and migrations
+│   ├── migrations/          # Database migrations
+│   ├── seeders/             # Database seeders
 │   └── package.json
 ├── frontend/                # React application
 │   ├── src/

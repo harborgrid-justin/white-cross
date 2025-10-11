@@ -13,16 +13,14 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "migrate": "prisma migrate dev",
-    "generate": "prisma generate",
-    "studio": "prisma studio",
-    "seed": "ts-node prisma/seed.ts",
-    "seed:enhanced": "ts-node prisma/seed.enhanced.ts",
-    "db:reset": "ts-node prisma/reset-database.ts",
-    "db:seed-all": "npm run seed && npm run seed:enhanced"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
+    "db:seed": "sequelize-cli db:seed:all",
+    "db:seed:undo": "sequelize-cli db:seed:undo",
+    "seed": "ts-node src/database/seeders/seed.ts",
+    "migration:generate": "sequelize-cli migration:generate --name",
+    "model:generate": "sequelize-cli model:generate --name"
   },
   "dependencies": {
     "@hapi/bell": "^13.1.0",
@@ -33,7 +31,6 @@
     "@hapi/jwt": "^3.2.1",
     "@hapi/vision": "^7.0.3",
     "@hapi/yar": "^11.0.3",
-    "@prisma/client": "^6.17.0",
     "@types/express-session": "^1.18.2",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
@@ -94,7 +91,6 @@
     "eslint": "^9.37.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
-    "prisma": "^6.17.0",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

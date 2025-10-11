@@ -169,6 +169,100 @@ export async function initializeDatabase(): Promise<void> {
 }
 
 /**
+ * Get database connection pool statistics
+ */
+export async function getPoolStats(): Promise<
+  Array<{
+    state: string;
+    count: number;
+  }>
+> {
+  try {
+    const [results] = await sequelize.query<{ state: string; count: number }>(
+      `
+      SELECT
+        state,
+        COUNT(*) as count
+      FROM pg_stat_activity
+      WHERE datname = current_database()
+      GROUP BY state
+    `,
+      { raw: true }
+    );
+
+    return results;
+  } catch (error) {
+    logger.error('Failed to get pool stats', error);
+    return [];
+  }
+}
+
+/**
+ * Execute operation with retry logic for transient failures
+ */
+export async function executeWithRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  delayMs = 1000
+): Promise<T> {
+  let lastError: Error;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+
+      // Check if error is retryable (connection/timeout errors)
+      const errorMessage = (error as Error).message || '';
+      const isRetryable =
+        errorMessage.includes('connection') ||
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('ECONNREFUSED') ||
+        errorMessage.includes('ETIMEDOUT');
+
+      if (!isRetryable || attempt === maxRetries) {
+        throw error;
+      }
+
+      logger.warn(`Database operation failed, retrying (${attempt}/${maxRetries})`, {
+        error: errorMessage,
+      });
+
+      // Exponential backoff
+      await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
+    }
+  }
+
+  throw lastError!;
+}
+
+/**
+ * Transaction wrapper with timeout
+ */
+export async function executeTransaction<T>(
+  fn: (transaction: any) => Promise<T>,
+  options: {
+    timeout?: number;
+  } = {}
+): Promise<T> {
+  const { timeout = 60000 } = options;
+
+  return await sequelize.transaction(
+    {
+      isolationLevel: 'READ COMMITTED',
+      // @ts-ignore - Sequelize typing issue
+      lock: undefined,
+    },
+    async (transaction) => {
+      // Set statement timeout for this transaction
+      await sequelize.query(`SET statement_timeout = ${timeout}`, { transaction });
+      return await fn(transaction);
+    }
+  );
+}
+
+/**
  * Graceful shutdown
  */
 export async function disconnectDatabase(): Promise<void> {

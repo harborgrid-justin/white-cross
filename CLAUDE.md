@@ -10,14 +10,14 @@ White Cross is an enterprise-grade healthcare platform designed specifically for
 
 ### Monorepo Structure
 - **Root**: Orchestration scripts via npm workspaces
-- **Backend**: Node.js/Express API server with TypeScript and Prisma ORM
+- **Backend**: Node.js/Express API server with TypeScript and Sequelize ORM
 - **Frontend**: React 18 application with TypeScript, Vite, and Tailwind CSS
 
 ### Technology Stack
 
 **Backend:**
 - Express.js with TypeScript
-- PostgreSQL 15 with Prisma ORM
+- PostgreSQL 15 with Sequelize ORM
 - JWT authentication with bcryptjs
 - Redis for caching
 - Socket.io for real-time features
@@ -45,10 +45,12 @@ npm run dev:backend        # Backend only (http://localhost:3001)
 
 ### Database (from backend directory)
 ```bash
-npx prisma migrate dev     # Run migrations
-npx prisma generate        # Generate Prisma client
-npx prisma studio          # Database admin UI (http://localhost:5555)
-npm run seed               # Seed development data
+npx sequelize-cli db:migrate         # Run migrations
+npx sequelize-cli db:migrate:undo    # Undo last migration
+npx sequelize-cli db:seed:all        # Run all seeders
+npm run seed                         # Run custom seed script
+npx sequelize-cli model:generate     # Generate new model
+npx sequelize-cli migration:generate # Generate new migration
 ```
 
 ### Testing
@@ -71,9 +73,11 @@ npm run lint:fix           # Auto-fix linting issues
 ### Backend Structure
 - **Controllers**: Handle HTTP requests/responses only
 - **Services**: Business logic and data operations
+- **Models**: Sequelize ORM models defining database schema
 - **Middleware**: Authentication, validation, error handling
 - **Routes**: Express route definitions
-- **Prisma**: All database operations through ORM
+- **Migrations**: Version-controlled database schema changes
+- **Seeders**: Initial and test data population
 
 ### Frontend Structure
 - **Pages**: Route-level components in `src/pages/`
@@ -106,10 +110,12 @@ npm run lint:fix           # Auto-fix linting issues
 ## Development Workflow
 
 ### Adding Database Changes
-1. Update schema in `backend/prisma/schema.prisma`
-2. Run `npx prisma migrate dev --name descriptive-name`
-3. Run `npx prisma generate` to update client
-4. Update TypeScript types if needed
+1. Generate a new migration: `npx sequelize-cli migration:generate --name descriptive-name`
+2. Edit the migration file in `backend/migrations/` with up/down methods
+3. Define model in `backend/src/models/` or update existing model
+4. Run migration: `npx sequelize-cli db:migrate`
+5. Update TypeScript types if needed
+6. Test migration rollback: `npx sequelize-cli db:migrate:undo`
 
 ### Adding API Endpoints
 1. Create route in `backend/src/routes/`
