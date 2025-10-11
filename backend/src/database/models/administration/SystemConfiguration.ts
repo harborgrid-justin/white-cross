@@ -90,10 +90,28 @@ SystemConfiguration.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+      validate: {
+        notEmpty: {
+          msg: 'Configuration key cannot be empty'
+        },
+        len: {
+          args: [2, 255],
+          msg: 'Configuration key must be between 2 and 255 characters'
+        },
+        is: {
+          args: /^[a-zA-Z][a-zA-Z0-9._-]*$/,
+          msg: 'Configuration key must start with a letter and contain only letters, numbers, dots, hyphens, and underscores'
+        }
+      }
     },
     value: {
       type: DataTypes.TEXT,
       allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Configuration value is required'
+        }
+      }
     },
     valueType: {
       type: DataTypes.ENUM(...Object.values(ConfigValueType)),
@@ -103,14 +121,31 @@ SystemConfiguration.init(
     category: {
       type: DataTypes.ENUM(...Object.values(ConfigCategory)),
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Configuration category is required'
+        }
+      }
     },
     subCategory: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 100],
+          msg: 'Sub-category cannot exceed 100 characters'
+        }
+      }
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 1000],
+          msg: 'Description cannot exceed 1000 characters'
+        }
+      }
     },
     defaultValue: {
       type: DataTypes.TEXT,
@@ -124,10 +159,20 @@ SystemConfiguration.init(
     minValue: {
       type: DataTypes.FLOAT,
       allowNull: true,
+      validate: {
+        isFloat: {
+          msg: 'Min value must be a number'
+        }
+      }
     },
     maxValue: {
       type: DataTypes.FLOAT,
       allowNull: true,
+      validate: {
+        isFloat: {
+          msg: 'Max value must be a number'
+        }
+      }
     },
     isPublic: {
       type: DataTypes.BOOLEAN,
@@ -152,6 +197,14 @@ SystemConfiguration.init(
     scopeId: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        // Validate scopeId format if provided
+        isValidUUID(value: string | null) {
+          if (value && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+            throw new Error('Scope ID must be a valid UUID');
+          }
+        }
+      }
     },
     tags: {
       type: DataTypes.ARRAY(DataTypes.STRING),
@@ -162,6 +215,12 @@ SystemConfiguration.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Sort order cannot be negative'
+        }
+      }
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
@@ -176,5 +235,101 @@ SystemConfiguration.init(
       { fields: ['scope', 'scopeId'] },
       { fields: ['tags'] },
     ],
+    validate: {
+      // Validate min/max value consistency
+      minMaxConsistency() {
+        if (this.minValue !== null && this.maxValue !== null && this.minValue > this.maxValue) {
+          throw new Error('Minimum value cannot be greater than maximum value');
+        }
+      },
+      // Validate value against valueType
+      valueTypeConsistency() {
+        const value = this.value;
+        const valueType = this.valueType;
+
+        switch (valueType) {
+          case ConfigValueType.NUMBER:
+            if (isNaN(Number(value))) {
+              throw new Error('Value must be a valid number for NUMBER type');
+            }
+            const numValue = Number(value);
+            if (this.minValue !== null && numValue < this.minValue) {
+              throw new Error(`Value ${numValue} is below minimum allowed value ${this.minValue}`);
+            }
+            if (this.maxValue !== null && numValue > this.maxValue) {
+              throw new Error(`Value ${numValue} exceeds maximum allowed value ${this.maxValue}`);
+            }
+            break;
+
+          case ConfigValueType.BOOLEAN:
+            if (value !== 'true' && value !== 'false') {
+              throw new Error('Value must be "true" or "false" for BOOLEAN type');
+            }
+            break;
+
+          case ConfigValueType.EMAIL:
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+              throw new Error('Value must be a valid email address for EMAIL type');
+            }
+            break;
+
+          case ConfigValueType.URL:
+            try {
+              new URL(value);
+            } catch {
+              throw new Error('Value must be a valid URL for URL type');
+            }
+            break;
+
+          case ConfigValueType.JSON:
+            try {
+              JSON.parse(value);
+            } catch {
+              throw new Error('Value must be valid JSON for JSON type');
+            }
+            break;
+
+          case ConfigValueType.ARRAY:
+            try {
+              const parsed = JSON.parse(value);
+              if (!Array.isArray(parsed)) {
+                throw new Error('Value must be a JSON array for ARRAY type');
+              }
+            } catch {
+              throw new Error('Value must be a valid JSON array for ARRAY type');
+            }
+            break;
+
+          case ConfigValueType.COLOR:
+            const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+            if (!colorRegex.test(value)) {
+              throw new Error('Value must be a valid hex color code (e.g., #FF0000) for COLOR type');
+            }
+            break;
+
+          case ConfigValueType.ENUM:
+            if (this.validValues.length > 0 && !this.validValues.includes(value)) {
+              throw new Error(`Value must be one of: ${this.validValues.join(', ')}`);
+            }
+            break;
+        }
+      },
+      // Validate scope and scopeId consistency
+      scopeConsistency() {
+        if (this.scope !== ConfigScope.SYSTEM && !this.scopeId) {
+          throw new Error(`Scope ID is required when scope is ${this.scope}`);
+        }
+        if (this.scope === ConfigScope.SYSTEM && this.scopeId) {
+          throw new Error('Scope ID should not be set when scope is SYSTEM');
+        }
+      },
+      // Validate validValues for ENUM type
+      enumValidValues() {
+        if (this.valueType === ConfigValueType.ENUM && this.validValues.length === 0) {
+          throw new Error('Valid values must be provided for ENUM type');
+        }
+      }
+    }
   }
 );

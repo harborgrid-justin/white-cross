@@ -64,24 +64,74 @@ FollowUpAction.init(
     incidentReportId: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident report ID is required'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'Incident report ID must be a valid UUID'
+        }
+      }
     },
     action: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Follow-up action description is required'
+        },
+        len: {
+          args: [5, 500],
+          msg: 'Action must be between 5 and 500 characters'
+        }
+      }
     },
     dueDate: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Due date is required for follow-up actions'
+        },
+        isDate: {
+          msg: 'Invalid due date'
+        },
+        isNotPast(value: Date) {
+          // Only validate for new records (not updates of completed items)
+          if (this.isNewRecord && new Date(value) < new Date()) {
+            throw new Error('Due date must be in the future');
+          }
+        }
+      }
     },
     priority: {
       type: DataTypes.ENUM(...Object.values(ActionPriority)),
       allowNull: false,
       defaultValue: ActionPriority.MEDIUM,
+      validate: {
+        notEmpty: {
+          msg: 'Priority is required'
+        },
+        isIn: {
+          args: [Object.values(ActionPriority)],
+          msg: `Priority must be one of: ${Object.values(ActionPriority).join(', ')}`
+        }
+      }
     },
     status: {
       type: DataTypes.ENUM(...Object.values(ActionStatus)),
       allowNull: false,
       defaultValue: ActionStatus.PENDING,
+      validate: {
+        notEmpty: {
+          msg: 'Status is required'
+        },
+        isIn: {
+          args: [Object.values(ActionStatus)],
+          msg: `Status must be one of: ${Object.values(ActionStatus).join(', ')}`
+        }
+      }
     },
     assignedTo: {
       type: DataTypes.STRING,
@@ -100,6 +150,12 @@ FollowUpAction.init(
     notes: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 2000],
+          msg: 'Notes cannot exceed 2000 characters'
+        }
+      }
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
@@ -114,5 +170,34 @@ FollowUpAction.init(
       { fields: ['assignedTo', 'status'] },
       { fields: ['priority', 'status'] },
     ],
+    validate: {
+      // Model-level validation: Completed actions must have completion tracking
+      completedMustHaveCompletedBy() {
+        if (this.status === ActionStatus.COMPLETED && !this.completedBy) {
+          throw new Error('Completed actions must have a completedBy user');
+        }
+      },
+      // Model-level validation: Completed actions should have notes
+      completedShouldHaveNotes() {
+        if (this.status === ActionStatus.COMPLETED && (!this.notes || this.notes.trim().length === 0)) {
+          // This is a soft warning - we'll allow it but log it
+          console.warn(`Follow-up action ${this.id} completed without notes`);
+        }
+      }
+    }
   }
 );
+
+// Add hooks for completion tracking
+FollowUpAction.beforeUpdate((instance) => {
+  // Auto-set completion timestamp when status changes to COMPLETED
+  if (instance.status === ActionStatus.COMPLETED && !instance.completedAt) {
+    instance.completedAt = new Date();
+  }
+
+  // Clear completion data if status changes away from COMPLETED
+  if (instance.status !== ActionStatus.COMPLETED && instance.changed('status')) {
+    instance.completedAt = null;
+    instance.completedBy = null;
+  }
+});

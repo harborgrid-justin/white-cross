@@ -1,56 +1,200 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op, fn, col, literal, QueryTypes } from 'sequelize';
 import { logger } from '../utils/logger';
+import {
+  sequelize,
+  HealthRecord,
+  Allergy,
+  ChronicCondition,
+  Student,
+  MedicationLog,
+  StudentMedication,
+  Medication,
+  User,
+  IncidentReport,
+  Appointment,
+  InventoryItem,
+  AuditLog,
+  PerformanceMetric
+} from '../database/models';
+import {
+  HealthRecordType,
+  AllergySeverity,
+  IncidentType,
+  IncidentSeverity,
+  ComplianceStatus,
+  AppointmentStatus,
+  MetricType,
+  AuditAction
+} from '../database/types/enums';
 
-const prisma = new PrismaClient();
+/**
+ * Report Data Transfer Objects (DTOs)
+ */
+
+export interface DateRangeFilter {
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface HealthTrendsReport {
+  healthRecords: Array<{ type: HealthRecordType; count: number }>;
+  chronicConditions: Array<{ condition: string; count: number }>;
+  allergies: Array<{ allergen: string; severity: AllergySeverity; count: number }>;
+  monthlyTrends: Array<{ month: Date; type: HealthRecordType; count: number }>;
+}
+
+export interface MedicationUsageReport {
+  administrationLogs: MedicationLog[];
+  totalScheduled: number;
+  totalLogs: number;
+  topMedications: Array<{ medicationName: string; count: number }>;
+  adverseReactions: MedicationLog[];
+}
+
+export interface IncidentStatisticsReport {
+  incidents: IncidentReport[];
+  incidentsByType: Array<{ type: IncidentType; count: number }>;
+  incidentsBySeverity: Array<{ severity: IncidentSeverity; count: number }>;
+  incidentsByMonth: Array<{ month: Date; type: IncidentType; count: number }>;
+  injuryStats: Array<{ type: IncidentType; severity: IncidentSeverity; count: number }>;
+  notificationStats: Array<{ parentNotified: boolean; count: number }>;
+  complianceStats: Array<{ legalComplianceStatus: ComplianceStatus; count: number }>;
+  totalIncidents: number;
+}
+
+export interface AttendanceCorrelationReport {
+  healthVisits: Array<{ studentId: string; count: number; student: Student }>;
+  incidentVisits: Array<{ studentId: string; count: number; student: Student }>;
+  chronicStudents: ChronicCondition[];
+  appointmentFrequency: Array<{ studentId: string; count: number; student: Student }>;
+}
+
+export interface DashboardMetrics {
+  activeStudents: number;
+  todaysAppointments: number;
+  pendingMedications: number;
+  recentIncidents: number;
+  lowStockItems: number;
+  activeAllergies: number;
+  chronicConditions: number;
+  timestamp: Date;
+}
+
+export interface ComplianceReport {
+  hipaaLogs: AuditLog[];
+  medicationCompliance: Array<{ isActive: boolean; count: number }>;
+  incidentCompliance: Array<{ legalComplianceStatus: ComplianceStatus; count: number }>;
+  vaccinationRecords: number;
+}
+
+export interface ReportFilters extends Record<string, unknown> {
+  startDate?: Date | string;
+  endDate?: Date | string;
+}
 
 export class ReportService {
   // ==================== Health Trend Analysis ====================
-  
-  static async getHealthTrends(startDate?: Date, endDate?: Date) {
+
+  /**
+   * Get comprehensive health trends with grouping and monthly analysis
+   * @param startDate - Optional start date for filtering
+   * @param endDate - Optional end date for filtering
+   * @returns Aggregated health trend data
+   */
+  static async getHealthTrends(startDate?: Date, endDate?: Date): Promise<HealthTrendsReport> {
     try {
-      const where: Prisma.HealthRecordWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (startDate || endDate) {
-        where.createdAt = {};
-        if (startDate) where.createdAt.gte = startDate;
-        if (endDate) where.createdAt.lte = endDate;
+        whereClause.createdAt = {};
+        if (startDate) whereClause.createdAt[Op.gte] = startDate;
+        if (endDate) whereClause.createdAt[Op.lte] = endDate;
       }
 
-      // Get health records summary
-      const healthRecords = await prisma.healthRecord.groupBy({
-        by: ['type'],
-        where,
-        _count: { id: true }
+      // Get health records summary grouped by type
+      const healthRecordsRaw = await HealthRecord.findAll({
+        where: whereClause,
+        attributes: [
+          'type',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['type'],
+        raw: true
       });
 
-      // Get chronic conditions trends
-      const chronicConditions = await prisma.chronicCondition.groupBy({
-        by: ['condition'],
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 10
+      const healthRecords = healthRecordsRaw.map((record: any) => ({
+        type: record.type as HealthRecordType,
+        count: parseInt(record.count, 10)
+      }));
+
+      // Get chronic conditions trends (top 10)
+      const chronicConditionsRaw = await ChronicCondition.findAll({
+        attributes: [
+          'condition',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['condition'],
+        order: [[literal('count'), 'DESC']],
+        limit: 10,
+        raw: true
       });
 
-      // Get allergies summary
-      const allergies = await prisma.allergy.groupBy({
-        by: ['allergen', 'severity'],
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 10
+      const chronicConditions = chronicConditionsRaw.map((record: any) => ({
+        condition: record.condition,
+        count: parseInt(record.count, 10)
+      }));
+
+      // Get allergies summary (top 10)
+      const allergiesRaw = await Allergy.findAll({
+        attributes: [
+          'allergen',
+          'severity',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['allergen', 'severity'],
+        order: [[literal('count'), 'DESC']],
+        limit: 10,
+        raw: true
       });
 
-      // Get monthly health record trends
-      const monthlyTrends = await prisma.$queryRaw`
-        SELECT 
+      const allergies = allergiesRaw.map((record: any) => ({
+        allergen: record.allergen,
+        severity: record.severity as AllergySeverity,
+        count: parseInt(record.count, 10)
+      }));
+
+      // Get monthly health record trends using raw SQL for date truncation
+      const defaultStartDate = startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 12 months ago
+      const defaultEndDate = endDate || new Date();
+
+      const monthlyTrendsRaw = await sequelize.query<{
+        month: Date;
+        type: HealthRecordType;
+        count: number;
+      }>(
+        `SELECT
           DATE_TRUNC('month', "createdAt") as month,
           type,
-          COUNT(*) as count
+          COUNT(*)::integer as count
         FROM health_records
-        WHERE "createdAt" >= COALESCE(${startDate}, NOW() - INTERVAL '12 months')
-          AND "createdAt" <= COALESCE(${endDate}, NOW())
+        WHERE "createdAt" >= :startDate
+          AND "createdAt" <= :endDate
         GROUP BY month, type
-        ORDER BY month DESC
-      `;
+        ORDER BY month DESC`,
+        {
+          replacements: {
+            startDate: defaultStartDate,
+            endDate: defaultEndDate
+          },
+          type: QueryTypes.SELECT
+        }
+      );
+
+      const monthlyTrends = monthlyTrendsRaw.map(record => ({
+        month: new Date(record.month),
+        type: record.type,
+        count: parseInt(String(record.count), 10)
+      }));
 
       return {
         healthRecords,
@@ -65,74 +209,126 @@ export class ReportService {
   }
 
   // ==================== Medication Usage & Compliance ====================
-  
-  static async getMedicationUsageReport(startDate?: Date, endDate?: Date) {
+
+  /**
+   * Generate comprehensive medication usage and compliance report
+   * @param startDate - Optional start date for filtering
+   * @param endDate - Optional end date for filtering
+   * @returns Medication usage statistics and compliance data
+   */
+  static async getMedicationUsageReport(startDate?: Date, endDate?: Date): Promise<MedicationUsageReport> {
     try {
-      const where: Prisma.MedicationLogWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (startDate || endDate) {
-        where.timeGiven = {};
-        if (startDate) where.timeGiven.gte = startDate;
-        if (endDate) where.timeGiven.lte = endDate;
+        whereClause.timeGiven = {};
+        if (startDate) whereClause.timeGiven[Op.gte] = startDate;
+        if (endDate) whereClause.timeGiven[Op.lte] = endDate;
       }
 
-      // Get medication administration logs
-      const administrationLogs = await prisma.medicationLog.findMany({
-        where,
-        include: {
-          studentMedication: {
-            include: {
-              medication: true,
-              student: {
-                select: { firstName: true, lastName: true, studentNumber: true }
+      // Get medication administration logs with full details
+      const administrationLogs = await MedicationLog.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: StudentMedication,
+            as: 'studentMedication',
+            include: [
+              {
+                model: Medication,
+                as: 'medication',
+                attributes: ['id', 'name', 'genericName', 'category']
+              },
+              {
+                model: Student,
+                as: 'student',
+                attributes: ['id', 'firstName', 'lastName', 'studentNumber']
               }
-            }
+            ]
           },
-          nurse: {
-            select: { firstName: true, lastName: true }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName']
           }
-        },
-        orderBy: { timeGiven: 'desc' },
-        take: 100
+        ],
+        order: [['timeGiven', 'DESC']],
+        limit: 100
       });
 
       // Get compliance statistics
-      const totalScheduled = await prisma.studentMedication.count({
+      const totalScheduled = await StudentMedication.count({
         where: { isActive: true }
       });
 
-      const totalLogs = await prisma.medicationLog.count({ where });
+      const totalLogs = await MedicationLog.count({ where: whereClause });
 
-      // Get most administered medications (via studentMedication)
-      const topMedications = await prisma.medicationLog.groupBy({
-        by: ['studentMedicationId'],
-        where,
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 10
-      });
+      // Get most administered medications with medication names
+      const topMedicationsRaw = await sequelize.query<{
+        medicationId: string;
+        medicationName: string;
+        count: number;
+      }>(
+        `SELECT
+          m.id as "medicationId",
+          m.name as "medicationName",
+          COUNT(ml.id)::integer as count
+        FROM medication_logs ml
+        INNER JOIN student_medications sm ON ml."studentMedicationId" = sm.id
+        INNER JOIN medications m ON sm."medicationId" = m.id
+        ${startDate || endDate ? 'WHERE' : ''}
+        ${startDate ? `ml."timeGiven" >= :startDate` : ''}
+        ${startDate && endDate ? 'AND' : ''}
+        ${endDate ? `ml."timeGiven" <= :endDate` : ''}
+        GROUP BY m.id, m.name
+        ORDER BY count DESC
+        LIMIT 10`,
+        {
+          replacements: {
+            startDate: startDate || null,
+            endDate: endDate || null
+          },
+          type: QueryTypes.SELECT
+        }
+      );
+
+      const topMedications = topMedicationsRaw.map(record => ({
+        medicationName: record.medicationName,
+        count: parseInt(String(record.count), 10)
+      }));
 
       // Get medication logs with side effects (adverse reactions)
-      const adverseReactions = await prisma.medicationLog.findMany({
-        where: {
-          sideEffects: { not: null },
-          ...(startDate || endDate ? {
-            timeGiven: {
-              ...(startDate ? { gte: startDate } : {}),
-              ...(endDate ? { lte: endDate } : {})
-            }
-          } : {})
-        },
-        include: {
-          studentMedication: {
-            include: {
-              medication: true,
-              student: {
-                select: { firstName: true, lastName: true, studentNumber: true }
+      const adverseReactionsWhere: any = {
+        sideEffects: { [Op.ne]: null },
+        ...whereClause
+      };
+
+      const adverseReactions = await MedicationLog.findAll({
+        where: adverseReactionsWhere,
+        include: [
+          {
+            model: StudentMedication,
+            as: 'studentMedication',
+            include: [
+              {
+                model: Medication,
+                as: 'medication',
+                attributes: ['id', 'name', 'genericName']
+              },
+              {
+                model: Student,
+                as: 'student',
+                attributes: ['id', 'firstName', 'lastName', 'studentNumber']
               }
-            }
+            ]
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName']
           }
-        }
+        ],
+        order: [['timeGiven', 'DESC']]
       });
 
       return {
@@ -149,75 +345,155 @@ export class ReportService {
   }
 
   // ==================== Incident Statistics & Safety Analytics ====================
-  
-  static async getIncidentStatistics(startDate?: Date, endDate?: Date) {
+
+  /**
+   * Generate comprehensive incident statistics and safety analytics
+   * @param startDate - Optional start date for filtering
+   * @param endDate - Optional end date for filtering
+   * @returns Detailed incident statistics and safety metrics
+   */
+  static async getIncidentStatistics(startDate?: Date, endDate?: Date): Promise<IncidentStatisticsReport> {
     try {
-      const where: Prisma.IncidentReportWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (startDate || endDate) {
-        where.occurredAt = {};
-        if (startDate) where.occurredAt.gte = startDate;
-        if (endDate) where.occurredAt.lte = endDate;
+        whereClause.occurredAt = {};
+        if (startDate) whereClause.occurredAt[Op.gte] = startDate;
+        if (endDate) whereClause.occurredAt[Op.lte] = endDate;
       }
 
-      // Get incident reports
-      const incidents = await prisma.incidentReport.findMany({
-        where,
-        include: {
-          student: {
-            select: { firstName: true, lastName: true, studentNumber: true, grade: true }
+      // Get incident reports with student details
+      const incidents = await IncidentReport.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'reportedBy',
+            attributes: ['id', 'firstName', 'lastName']
           }
-        },
-        orderBy: { occurredAt: 'desc' }
+        ],
+        order: [['occurredAt', 'DESC']]
       });
 
       // Group by type
-      const incidentsByType = await prisma.incidentReport.groupBy({
-        by: ['type'],
-        where,
-        _count: { id: true }
+      const incidentsByTypeRaw = await IncidentReport.findAll({
+        where: whereClause,
+        attributes: [
+          'type',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['type'],
+        raw: true
       });
+
+      const incidentsByType = incidentsByTypeRaw.map((record: any) => ({
+        type: record.type as IncidentType,
+        count: parseInt(record.count, 10)
+      }));
 
       // Group by severity
-      const incidentsBySeverity = await prisma.incidentReport.groupBy({
-        by: ['severity'],
-        where,
-        _count: { id: true }
+      const incidentsBySeverityRaw = await IncidentReport.findAll({
+        where: whereClause,
+        attributes: [
+          'severity',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['severity'],
+        raw: true
       });
 
-      // Get incidents by location (from description/notes)
-      const incidentsByMonth = await prisma.$queryRaw`
-        SELECT 
+      const incidentsBySeverity = incidentsBySeverityRaw.map((record: any) => ({
+        severity: record.severity as IncidentSeverity,
+        count: parseInt(record.count, 10)
+      }));
+
+      // Get incidents by month
+      const defaultStartDate = startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+      const defaultEndDate = endDate || new Date();
+
+      const incidentsByMonthRaw = await sequelize.query<{
+        month: Date;
+        type: IncidentType;
+        count: number;
+      }>(
+        `SELECT
           DATE_TRUNC('month', "occurredAt") as month,
           type,
-          COUNT(*) as count
+          COUNT(*)::integer as count
         FROM incident_reports
-        WHERE "occurredAt" >= COALESCE(${startDate}, NOW() - INTERVAL '12 months')
-          AND "occurredAt" <= COALESCE(${endDate}, NOW())
+        WHERE "occurredAt" >= :startDate
+          AND "occurredAt" <= :endDate
         GROUP BY month, type
-        ORDER BY month DESC
-      `;
+        ORDER BY month DESC`,
+        {
+          replacements: {
+            startDate: defaultStartDate,
+            endDate: defaultEndDate
+          },
+          type: QueryTypes.SELECT
+        }
+      );
 
-      // Get injury types distribution
-      const injuryStats = await prisma.incidentReport.groupBy({
-        by: ['type', 'severity'],
-        where,
-        _count: { id: true }
+      const incidentsByMonth = incidentsByMonthRaw.map(record => ({
+        month: new Date(record.month),
+        type: record.type,
+        count: parseInt(String(record.count), 10)
+      }));
+
+      // Get injury types distribution (type + severity)
+      const injuryStatsRaw = await IncidentReport.findAll({
+        where: whereClause,
+        attributes: [
+          'type',
+          'severity',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['type', 'severity'],
+        raw: true
       });
+
+      const injuryStats = injuryStatsRaw.map((record: any) => ({
+        type: record.type as IncidentType,
+        severity: record.severity as IncidentSeverity,
+        count: parseInt(record.count, 10)
+      }));
 
       // Get parent notification rate
-      const notificationStats = await prisma.incidentReport.groupBy({
-        by: ['parentNotified'],
-        where,
-        _count: { id: true }
+      const notificationStatsRaw = await IncidentReport.findAll({
+        where: whereClause,
+        attributes: [
+          'parentNotified',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['parentNotified'],
+        raw: true
       });
 
+      const notificationStats = notificationStatsRaw.map((record: any) => ({
+        parentNotified: record.parentNotified as boolean,
+        count: parseInt(record.count, 10)
+      }));
+
       // Safety compliance metrics
-      const complianceStats = await prisma.incidentReport.groupBy({
-        by: ['legalComplianceStatus'],
-        where,
-        _count: { id: true }
+      const complianceStatsRaw = await IncidentReport.findAll({
+        where: whereClause,
+        attributes: [
+          'legalComplianceStatus',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['legalComplianceStatus'],
+        raw: true
       });
+
+      const complianceStats = complianceStatsRaw.map((record: any) => ({
+        legalComplianceStatus: record.legalComplianceStatus as ComplianceStatus,
+        count: parseInt(record.count, 10)
+      }));
 
       return {
         incidents,
@@ -236,74 +512,172 @@ export class ReportService {
   }
 
   // ==================== Attendance Correlation Analysis ====================
-  
-  static async getAttendanceCorrelation(startDate?: Date, endDate?: Date) {
+
+  /**
+   * Analyze correlation between health visits, incidents, and attendance patterns
+   * @param startDate - Optional start date for filtering
+   * @param endDate - Optional end date for filtering
+   * @returns Student health visit patterns and correlations
+   */
+  static async getAttendanceCorrelation(startDate?: Date, endDate?: Date): Promise<AttendanceCorrelationReport> {
     try {
-      const incidentWhere: Prisma.IncidentReportWhereInput = {};
-      
+      const healthRecordWhere: any = {};
+      const incidentWhere: any = {};
+      const appointmentWhere: any = {};
+
       if (startDate || endDate) {
-        incidentWhere.occurredAt = {};
-        if (startDate) incidentWhere.occurredAt.gte = startDate;
-        if (endDate) incidentWhere.occurredAt.lte = endDate;
+        if (startDate || endDate) {
+          healthRecordWhere.createdAt = {};
+          if (startDate) healthRecordWhere.createdAt[Op.gte] = startDate;
+          if (endDate) healthRecordWhere.createdAt[Op.lte] = endDate;
+        }
+
+        if (startDate || endDate) {
+          incidentWhere.occurredAt = {};
+          if (startDate) incidentWhere.occurredAt[Op.gte] = startDate;
+          if (endDate) incidentWhere.occurredAt[Op.lte] = endDate;
+        }
+
+        if (startDate || endDate) {
+          appointmentWhere.scheduledAt = {};
+          if (startDate) appointmentWhere.scheduledAt[Op.gte] = startDate;
+          if (endDate) appointmentWhere.scheduledAt[Op.lte] = endDate;
+        }
       }
 
-      // Get students with health visits
-      const healthVisits = await prisma.healthRecord.groupBy({
-        by: ['studentId'],
-        where: startDate || endDate ? {
-          createdAt: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {})
-          }
-        } : {},
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 50
-      });
+      // Get students with most health visits
+      const healthVisitsRaw = await sequelize.query<{
+        studentId: string;
+        count: number;
+      }>(
+        `SELECT
+          "studentId",
+          COUNT(*)::integer as count
+        FROM health_records
+        ${startDate || endDate ? 'WHERE' : ''}
+        ${startDate ? `"createdAt" >= :startDate` : ''}
+        ${startDate && endDate ? 'AND' : ''}
+        ${endDate ? `"createdAt" <= :endDate` : ''}
+        GROUP BY "studentId"
+        ORDER BY count DESC
+        LIMIT 50`,
+        {
+          replacements: {
+            startDate: startDate || null,
+            endDate: endDate || null
+          },
+          type: QueryTypes.SELECT
+        }
+      );
 
-      // Get students with incidents
-      const incidentVisits = await prisma.incidentReport.groupBy({
-        by: ['studentId'],
-        where: incidentWhere,
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 50
-      });
+      // Fetch student details for health visits
+      const healthVisitsWithStudents = await Promise.all(
+        healthVisitsRaw.map(async (record) => {
+          const student = await Student.findByPk(record.studentId, {
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          });
+          return {
+            studentId: record.studentId,
+            count: parseInt(String(record.count), 10),
+            student: student!
+          };
+        })
+      );
+
+      // Get students with most incidents
+      const incidentVisitsRaw = await sequelize.query<{
+        studentId: string;
+        count: number;
+      }>(
+        `SELECT
+          "studentId",
+          COUNT(*)::integer as count
+        FROM incident_reports
+        ${startDate || endDate ? 'WHERE' : ''}
+        ${startDate ? `"occurredAt" >= :startDate` : ''}
+        ${startDate && endDate ? 'AND' : ''}
+        ${endDate ? `"occurredAt" <= :endDate` : ''}
+        GROUP BY "studentId"
+        ORDER BY count DESC
+        LIMIT 50`,
+        {
+          replacements: {
+            startDate: startDate || null,
+            endDate: endDate || null
+          },
+          type: QueryTypes.SELECT
+        }
+      );
+
+      // Fetch student details for incident visits
+      const incidentVisitsWithStudents = await Promise.all(
+        incidentVisitsRaw.map(async (record) => {
+          const student = await Student.findByPk(record.studentId, {
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          });
+          return {
+            studentId: record.studentId,
+            count: parseInt(String(record.count), 10),
+            student: student!
+          };
+        })
+      );
 
       // Get students with chronic conditions
-      const chronicStudents = await prisma.chronicCondition.findMany({
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true,
-              grade: true
-            }
+      const chronicStudents = await ChronicCondition.findAll({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           }
-        }
+        ]
       });
 
-      // Get appointment frequency
-      const appointmentFrequency = await prisma.appointment.groupBy({
-        by: ['studentId'],
-        where: startDate || endDate ? {
-          scheduledAt: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {})
-          }
-        } : {},
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 50
-      });
+      // Get appointment frequency by student
+      const appointmentFrequencyRaw = await sequelize.query<{
+        studentId: string;
+        count: number;
+      }>(
+        `SELECT
+          "studentId",
+          COUNT(*)::integer as count
+        FROM appointments
+        ${startDate || endDate ? 'WHERE' : ''}
+        ${startDate ? `"scheduledAt" >= :startDate` : ''}
+        ${startDate && endDate ? 'AND' : ''}
+        ${endDate ? `"scheduledAt" <= :endDate` : ''}
+        GROUP BY "studentId"
+        ORDER BY count DESC
+        LIMIT 50`,
+        {
+          replacements: {
+            startDate: startDate || null,
+            endDate: endDate || null
+          },
+          type: QueryTypes.SELECT
+        }
+      );
+
+      // Fetch student details for appointment frequency
+      const appointmentFrequencyWithStudents = await Promise.all(
+        appointmentFrequencyRaw.map(async (record) => {
+          const student = await Student.findByPk(record.studentId, {
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          });
+          return {
+            studentId: record.studentId,
+            count: parseInt(String(record.count), 10),
+            student: student!
+          };
+        })
+      );
 
       return {
-        healthVisits,
-        incidentVisits,
+        healthVisits: healthVisitsWithStudents,
+        incidentVisits: incidentVisitsWithStudents,
         chronicStudents,
-        appointmentFrequency
+        appointmentFrequency: appointmentFrequencyWithStudents
       };
     } catch (error) {
       logger.error('Error getting attendance correlation:', error);
@@ -312,25 +686,32 @@ export class ReportService {
   }
 
   // ==================== Performance Dashboards ====================
-  
-  static async getPerformanceMetrics(metricType?: string, startDate?: Date, endDate?: Date) {
+
+  /**
+   * Get performance metrics with optional filtering
+   * @param metricType - Optional metric type filter
+   * @param startDate - Optional start date for filtering
+   * @param endDate - Optional end date for filtering
+   * @returns Performance metrics data
+   */
+  static async getPerformanceMetrics(metricType?: MetricType, startDate?: Date, endDate?: Date): Promise<PerformanceMetric[]> {
     try {
-      const where: Prisma.PerformanceMetricWhereInput = {};
-      
+      const whereClause: any = {};
+
       if (metricType) {
-        where.metricType = metricType as any; // Cast to MetricType enum
-      }
-      
-      if (startDate || endDate) {
-        where.recordedAt = {};
-        if (startDate) where.recordedAt.gte = startDate;
-        if (endDate) where.recordedAt.lte = endDate;
+        whereClause.metricType = metricType;
       }
 
-      const metrics = await prisma.performanceMetric.findMany({
-        where,
-        orderBy: { recordedAt: 'desc' },
-        take: 1000
+      if (startDate || endDate) {
+        whereClause.recordedAt = {};
+        if (startDate) whereClause.recordedAt[Op.gte] = startDate;
+        if (endDate) whereClause.recordedAt[Op.lte] = endDate;
+      }
+
+      const metrics = await PerformanceMetric.findAll({
+        where: whereClause,
+        order: [['recordedAt', 'DESC']],
+        limit: 1000
       });
 
       return metrics;
@@ -340,10 +721,14 @@ export class ReportService {
     }
   }
 
-  static async getRealTimeDashboard() {
+  /**
+   * Get real-time dashboard metrics for the current day
+   * @returns Current dashboard statistics
+   */
+  static async getRealTimeDashboard(): Promise<DashboardMetrics> {
     try {
       // Get current active students
-      const activeStudents = await prisma.student.count({
+      const activeStudents = await Student.count({
         where: { isActive: true }
       });
 
@@ -353,40 +738,40 @@ export class ReportService {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const todaysAppointments = await prisma.appointment.count({
+      const todaysAppointments = await Appointment.count({
         where: {
           scheduledAt: {
-            gte: today,
-            lt: tomorrow
+            [Op.gte]: today,
+            [Op.lt]: tomorrow
           }
         }
       });
 
-      // Get pending medications
-      const pendingMedications = await prisma.studentMedication.count({
+      // Get pending medications (active prescriptions)
+      const pendingMedications = await StudentMedication.count({
         where: { isActive: true }
       });
 
       // Get recent incidents (last 24 hours)
       const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const recentIncidents = await prisma.incidentReport.count({
+      const recentIncidents = await IncidentReport.count({
         where: {
-          occurredAt: { gte: last24Hours }
+          occurredAt: { [Op.gte]: last24Hours }
         }
       });
 
-      // Get inventory alerts (estimate based on reorder level)
-      const lowStockItems = await prisma.inventoryItem.count({
+      // Get low stock inventory items
+      const lowStockItems = await InventoryItem.count({
         where: {
           isActive: true
         }
       });
 
       // Get active allergies
-      const activeAllergies = await prisma.allergy.count();
+      const activeAllergies = await Allergy.count();
 
       // Get chronic conditions
-      const chronicConditions = await prisma.chronicCondition.count();
+      const chronicConditions = await ChronicCondition.count();
 
       return {
         activeStudents,
@@ -405,54 +790,84 @@ export class ReportService {
   }
 
   // ==================== Compliance Reporting ====================
-  
-  static async getComplianceReport(startDate?: Date, endDate?: Date) {
+
+  /**
+   * Generate HIPAA compliance and regulatory report
+   * @param startDate - Optional start date for filtering
+   * @param endDate - Optional end date for filtering
+   * @returns Compliance audit data and statistics
+   */
+  static async getComplianceReport(startDate?: Date, endDate?: Date): Promise<ComplianceReport> {
     try {
+      const whereClause: any = {
+        action: { [Op.in]: [AuditAction.READ, AuditAction.UPDATE, AuditAction.DELETE, AuditAction.EXPORT] },
+        entityType: { [Op.in]: ['Student', 'HealthRecord', 'Medication'] }
+      };
+
+      if (startDate || endDate) {
+        whereClause.createdAt = {};
+        if (startDate) whereClause.createdAt[Op.gte] = startDate;
+        if (endDate) whereClause.createdAt[Op.lte] = endDate;
+      }
+
       // Get HIPAA compliance logs
-      const hipaaLogs = await prisma.auditLog.findMany({
-        where: {
-          action: { in: ['READ', 'UPDATE', 'DELETE', 'EXPORT'] },
-          entityType: { in: ['Student', 'HealthRecord', 'Medication'] },
-          ...(startDate || endDate ? {
-            createdAt: {
-              ...(startDate ? { gte: startDate } : {}),
-              ...(endDate ? { lte: endDate } : {})
-            }
-          } : {})
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100
+      const hipaaLogs = await AuditLog.findAll({
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+        limit: 100
       });
 
       // Get medication compliance grouped by active status
-      const medicationCompliance = await prisma.studentMedication.groupBy({
-        by: ['isActive'],
-        _count: { id: true }
+      const medicationComplianceRaw = await StudentMedication.findAll({
+        attributes: [
+          'isActive',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['isActive'],
+        raw: true
       });
+
+      const medicationCompliance = medicationComplianceRaw.map((record: any) => ({
+        isActive: record.isActive as boolean,
+        count: parseInt(record.count, 10)
+      }));
 
       // Get incident compliance status
-      const incidentCompliance = await prisma.incidentReport.groupBy({
-        by: ['legalComplianceStatus'],
-        where: startDate || endDate ? {
-          occurredAt: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {})
-          }
-        } : {},
-        _count: { id: true }
+      const incidentWhereClause: any = {};
+      if (startDate || endDate) {
+        incidentWhereClause.occurredAt = {};
+        if (startDate) incidentWhereClause.occurredAt[Op.gte] = startDate;
+        if (endDate) incidentWhereClause.occurredAt[Op.lte] = endDate;
+      }
+
+      const incidentComplianceRaw = await IncidentReport.findAll({
+        where: incidentWhereClause,
+        attributes: [
+          'legalComplianceStatus',
+          [fn('COUNT', col('id')), 'count']
+        ],
+        group: ['legalComplianceStatus'],
+        raw: true
       });
 
-      // Get vaccination compliance
-      const vaccinationRecords = await prisma.healthRecord.count({
-        where: {
-          type: 'VACCINATION',
-          ...(startDate || endDate ? {
-            createdAt: {
-              ...(startDate ? { gte: startDate } : {}),
-              ...(endDate ? { lte: endDate } : {})
-            }
-          } : {})
-        }
+      const incidentCompliance = incidentComplianceRaw.map((record: any) => ({
+        legalComplianceStatus: record.legalComplianceStatus as ComplianceStatus,
+        count: parseInt(record.count, 10)
+      }));
+
+      // Get vaccination compliance count
+      const vaccinationWhereClause: any = {
+        type: HealthRecordType.VACCINATION
+      };
+
+      if (startDate || endDate) {
+        vaccinationWhereClause.createdAt = {};
+        if (startDate) vaccinationWhereClause.createdAt[Op.gte] = startDate;
+        if (endDate) vaccinationWhereClause.createdAt[Op.lte] = endDate;
+      }
+
+      const vaccinationRecords = await HealthRecord.count({
+        where: vaccinationWhereClause
       });
 
       return {
@@ -468,86 +883,126 @@ export class ReportService {
   }
 
   // ==================== Custom Report Data ====================
-  
-  static async getCustomReportData(reportType: string, filters: Record<string, unknown> = {}) {
+
+  /**
+   * Generate custom report data based on report type with flexible filtering
+   * @param reportType - Type of report (students, medications, incidents, appointments, inventory)
+   * @param filters - Dynamic filters including date range and custom criteria
+   * @returns Report-specific data with associations
+   */
+  static async getCustomReportData(reportType: string, filters: ReportFilters = {}): Promise<any> {
     try {
       const { startDate, endDate, ...otherFilters } = filters;
 
       switch (reportType) {
         case 'students':
-          return await prisma.student.findMany({
+          return await Student.findAll({
             where: otherFilters,
-            include: {
-              healthRecords: true,
-              medications: true,
-              allergies: true,
-              chronicConditions: true
-            }
-          });
-
-        case 'medications':
-          return await prisma.medicationLog.findMany({
-            where: {
-              ...otherFilters,
-              ...(startDate || endDate ? {
-                timeGiven: {
-                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
-                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
-                }
-              } : {})
-            },
-            include: {
-              studentMedication: {
-                include: {
-                  medication: true,
-                  student: true
-                }
+            include: [
+              {
+                model: HealthRecord,
+                as: 'healthRecords'
               },
-              nurse: true
-            }
+              {
+                model: StudentMedication,
+                as: 'medications'
+              },
+              {
+                model: Allergy,
+                as: 'allergies'
+              },
+              {
+                model: ChronicCondition,
+                as: 'chronicConditions'
+              }
+            ]
           });
 
-        case 'incidents':
-          return await prisma.incidentReport.findMany({
-            where: {
-              ...otherFilters,
-              ...(startDate || endDate ? {
-                occurredAt: {
-                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
-                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
-                }
-              } : {})
-            },
-            include: {
-              student: true,
-              reportedBy: true,
-              witnessStatements: true
-            }
-          });
+        case 'medications': {
+          const medicationWhere: any = { ...otherFilters };
 
-        case 'appointments':
-          return await prisma.appointment.findMany({
-            where: {
-              ...otherFilters,
-              ...(startDate || endDate ? {
-                scheduledAt: {
-                  ...(startDate ? { gte: new Date(startDate as string | number | Date) } : {}),
-                  ...(endDate ? { lte: new Date(endDate as string | number | Date) } : {})
-                }
-              } : {})
-            },
-            include: {
-              student: true,
-              nurse: true
-            }
+          if (startDate || endDate) {
+            medicationWhere.timeGiven = {};
+            if (startDate) medicationWhere.timeGiven[Op.gte] = new Date(startDate);
+            if (endDate) medicationWhere.timeGiven[Op.lte] = new Date(endDate);
+          }
+
+          return await MedicationLog.findAll({
+            where: medicationWhere,
+            include: [
+              {
+                model: StudentMedication,
+                as: 'studentMedication',
+                include: [
+                  {
+                    model: Medication,
+                    as: 'medication'
+                  },
+                  {
+                    model: Student,
+                    as: 'student'
+                  }
+                ]
+              },
+              {
+                model: User,
+                as: 'nurse'
+              }
+            ]
           });
+        }
+
+        case 'incidents': {
+          const incidentWhere: any = { ...otherFilters };
+
+          if (startDate || endDate) {
+            incidentWhere.occurredAt = {};
+            if (startDate) incidentWhere.occurredAt[Op.gte] = new Date(startDate);
+            if (endDate) incidentWhere.occurredAt[Op.lte] = new Date(endDate);
+          }
+
+          return await IncidentReport.findAll({
+            where: incidentWhere,
+            include: [
+              {
+                model: Student,
+                as: 'student'
+              },
+              {
+                model: User,
+                as: 'reportedBy'
+              }
+            ]
+          });
+        }
+
+        case 'appointments': {
+          const appointmentWhere: any = { ...otherFilters };
+
+          if (startDate || endDate) {
+            appointmentWhere.scheduledAt = {};
+            if (startDate) appointmentWhere.scheduledAt[Op.gte] = new Date(startDate);
+            if (endDate) appointmentWhere.scheduledAt[Op.lte] = new Date(endDate);
+          }
+
+          return await Appointment.findAll({
+            where: appointmentWhere,
+            include: [
+              {
+                model: Student,
+                as: 'student'
+              },
+              {
+                model: User,
+                as: 'nurse'
+              }
+            ]
+          });
+        }
 
         case 'inventory':
-          return await prisma.inventoryItem.findMany({
-            where: otherFilters,
-            include: {
-              transactions: true
-            }
+          return await InventoryItem.findAll({
+            where: otherFilters
           });
 
         default:
@@ -555,6 +1010,61 @@ export class ReportService {
       }
     } catch (error) {
       logger.error('Error getting custom report data:', error);
+      throw error;
+    }
+  }
+
+  // ==================== Export Functionality ====================
+
+  /**
+   * Export report data to JSON format
+   * @param reportType - Type of report to export
+   * @param data - Report data to export
+   * @returns Formatted export data with metadata
+   */
+  static async exportReportToJSON(reportType: string, data: any): Promise<any> {
+    try {
+      const exportData = {
+        reportType,
+        exportDate: new Date().toISOString(),
+        generatedBy: 'White Cross Healthcare Platform',
+        recordCount: Array.isArray(data) ? data.length : 1,
+        data
+      };
+
+      logger.info(`Report exported to JSON: ${reportType} with ${exportData.recordCount} records`);
+      return exportData;
+    } catch (error) {
+      logger.error('Error exporting report to JSON:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate summary statistics for a report dataset
+   * @param data - Array of report data
+   * @returns Summary statistics including counts and aggregations
+   */
+  static generateReportSummary(data: any[]): any {
+    try {
+      if (!Array.isArray(data) || data.length === 0) {
+        return {
+          totalRecords: 0,
+          summary: 'No data available'
+        };
+      }
+
+      const summary = {
+        totalRecords: data.length,
+        timestamp: new Date(),
+        dataTypes: Object.keys(data[0] || {}),
+        recordSample: data.slice(0, 3) // First 3 records as sample
+      };
+
+      logger.info(`Report summary generated for ${data.length} records`);
+      return summary;
+    } catch (error) {
+      logger.error('Error generating report summary:', error);
       throw error;
     }
   }

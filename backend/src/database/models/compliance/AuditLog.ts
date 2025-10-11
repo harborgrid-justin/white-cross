@@ -53,36 +53,92 @@ AuditLog.init(
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'User who performed the action',
+      validate: {
+        isUUID: {
+          args: 4,
+          msg: 'User ID must be a valid UUID when provided'
+        }
+      }
     },
     action: {
       type: DataTypes.ENUM(...Object.values(AuditAction)),
       allowNull: false,
       comment: 'Type of action performed',
+      validate: {
+        notNull: {
+          msg: 'Action is required for audit trail'
+        },
+        notEmpty: {
+          msg: 'Action cannot be empty'
+        }
+      }
     },
     entityType: {
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'Type of entity (e.g., User, Student, Medication)',
+      validate: {
+        notNull: {
+          msg: 'Entity type is required for audit trail'
+        },
+        notEmpty: {
+          msg: 'Entity type cannot be empty'
+        },
+        len: {
+          args: [2, 100],
+          msg: 'Entity type must be between 2 and 100 characters'
+        }
+      }
     },
     entityId: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'ID of the affected entity',
+      validate: {
+        len: {
+          args: [0, 100],
+          msg: 'Entity ID cannot exceed 100 characters'
+        }
+      }
     },
     changes: {
       type: DataTypes.JSONB,
       allowNull: true,
       comment: 'Before/after values for modifications',
+      validate: {
+        isValidJSON(value: any) {
+          if (value && typeof value !== 'object') {
+            throw new Error('Changes must be a valid JSON object');
+          }
+        }
+      }
     },
     ipAddress: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'IP address of the request',
+      validate: {
+        isValidIP(value: string | null) {
+          if (value) {
+            const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+            const ipv6Pattern = /^([\da-fA-F]{1,4}:){7}[\da-fA-F]{1,4}$/;
+            if (!ipv4Pattern.test(value) && !ipv6Pattern.test(value)) {
+              throw new Error('IP address must be in valid IPv4 or IPv6 format');
+            }
+          }
+        }
+      }
     },
     userAgent: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'User agent string from the request',
+      validate: {
+        len: {
+          args: [0, 500],
+          msg: 'User agent cannot exceed 500 characters'
+        }
+      }
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -100,5 +156,27 @@ AuditLog.init(
       { fields: ['action'] },
       { fields: ['createdAt'] },
     ],
+    hooks: {
+      /**
+       * HIPAA COMPLIANCE: Prevent modification of audit logs
+       * Audit logs must be immutable to maintain compliance
+       */
+      beforeUpdate: () => {
+        throw new Error('HIPAA VIOLATION: Audit logs are immutable and cannot be modified');
+      },
+      /**
+       * HIPAA COMPLIANCE: Prevent deletion of audit logs
+       * Audit logs must be retained for compliance
+       */
+      beforeDestroy: () => {
+        throw new Error('HIPAA VIOLATION: Audit logs are immutable and cannot be deleted');
+      },
+      beforeBulkUpdate: () => {
+        throw new Error('HIPAA VIOLATION: Audit logs are immutable and cannot be modified');
+      },
+      beforeBulkDestroy: () => {
+        throw new Error('HIPAA VIOLATION: Audit logs are immutable and cannot be deleted');
+      }
+    }
   }
 );

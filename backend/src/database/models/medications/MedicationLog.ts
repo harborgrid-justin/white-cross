@@ -17,6 +17,11 @@ interface MedicationLogAttributes {
   administeredBy: string;
   notes?: string;
   sideEffects?: string;
+  deviceId?: string;
+  witnessId?: string;
+  witnessName?: string;
+  patientVerified: boolean;
+  allergyChecked: boolean;
   createdAt: Date;
 
   // Foreign Keys
@@ -29,7 +34,7 @@ interface MedicationLogAttributes {
 }
 
 interface MedicationLogCreationAttributes
-  extends Optional<MedicationLogAttributes, 'id' | 'createdAt' | 'notes' | 'sideEffects' | 'createdBy' | 'updatedBy'> {}
+  extends Optional<MedicationLogAttributes, 'id' | 'createdAt' | 'notes' | 'sideEffects' | 'deviceId' | 'witnessId' | 'witnessName' | 'patientVerified' | 'allergyChecked' | 'createdBy' | 'updatedBy'> {}
 
 export class MedicationLog extends Model<MedicationLogAttributes, MedicationLogCreationAttributes> implements MedicationLogAttributes {
   public id!: string;
@@ -38,6 +43,11 @@ export class MedicationLog extends Model<MedicationLogAttributes, MedicationLogC
   public administeredBy!: string;
   public notes?: string;
   public sideEffects?: string;
+  public deviceId?: string;
+  public witnessId?: string;
+  public witnessName?: string;
+  public patientVerified!: boolean;
+  public allergyChecked!: boolean;
   public readonly createdAt!: Date;
 
   // Foreign Keys
@@ -104,6 +114,37 @@ MedicationLog.init(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Any observed side effects or adverse reactions',
+    },
+    deviceId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Device ID used for administration (for idempotency)',
+    },
+    witnessId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+      comment: 'User ID of witness (required for controlled substances Schedule I-II)',
+    },
+    witnessName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Name of witness who verified administration',
+    },
+    patientVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      comment: 'Whether patient identity was verified (Right Patient)',
+    },
+    allergyChecked: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      comment: 'Whether allergies were checked before administration',
     },
     studentMedicationId: {
       type: DataTypes.STRING,

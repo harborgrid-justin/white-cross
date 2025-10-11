@@ -64,49 +64,158 @@ PurchaseOrder.init(
     orderNumber: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: {
+        name: 'unique_order_number',
+        msg: 'Order number must be unique'
+      },
+      validate: {
+        notEmpty: {
+          msg: 'Order number cannot be empty'
+        },
+        len: {
+          args: [1, 50],
+          msg: 'Order number must be between 1 and 50 characters'
+        }
+      }
     },
     status: {
       type: DataTypes.ENUM(...Object.values(PurchaseOrderStatus)),
       allowNull: false,
       defaultValue: PurchaseOrderStatus.PENDING,
+      validate: {
+        notEmpty: {
+          msg: 'Status cannot be empty'
+        }
+      }
     },
     orderDate: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: {
+          msg: 'Order date must be a valid date'
+        },
+        notTooOld(value: Date) {
+          if (value < new Date('2000-01-01')) {
+            throw new Error('Order date cannot be before year 2000');
+          }
+        }
+      }
     },
     expectedDate: {
       type: DataTypes.DATE,
       allowNull: true,
+      validate: {
+        isDate: {
+          msg: 'Expected date must be a valid date'
+        },
+        isAfterOrderDate(value: Date | null) {
+          if (value && this.orderDate && value < this.orderDate) {
+            throw new Error('Expected date must be on or after the order date');
+          }
+        }
+      }
     },
     receivedDate: {
       type: DataTypes.DATE,
       allowNull: true,
+      validate: {
+        isDate: {
+          msg: 'Received date must be a valid date'
+        },
+        isAfterOrderDate(value: Date | null) {
+          if (value && this.orderDate && value < this.orderDate) {
+            throw new Error('Received date must be on or after the order date');
+          }
+        }
+      }
     },
     subtotal: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Subtotal must be non-negative'
+        },
+        isDecimal: {
+          msg: 'Subtotal must be a valid decimal number'
+        },
+        maxValue(value: number) {
+          if (value > 99999999.99) {
+            throw new Error('Subtotal cannot exceed $99,999,999.99');
+          }
+        }
+      }
     },
     tax: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Tax must be non-negative'
+        },
+        isDecimal: {
+          msg: 'Tax must be a valid decimal number'
+        },
+        maxValue(value: number) {
+          if (value > 99999999.99) {
+            throw new Error('Tax cannot exceed $99,999,999.99');
+          }
+        }
+      }
     },
     shipping: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Shipping must be non-negative'
+        },
+        isDecimal: {
+          msg: 'Shipping must be a valid decimal number'
+        },
+        maxValue(value: number) {
+          if (value > 9999999.99) {
+            throw new Error('Shipping cannot exceed $9,999,999.99');
+          }
+        }
+      }
     },
     total: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: {
+          args: [0],
+          msg: 'Total must be non-negative'
+        },
+        isDecimal: {
+          msg: 'Total must be a valid decimal number'
+        },
+        maxValue(value: number) {
+          if (value > 99999999.99) {
+            throw new Error('Total cannot exceed $99,999,999.99');
+          }
+        }
+      }
     },
     notes: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 10000],
+          msg: 'Notes cannot exceed 10,000 characters'
+        }
+      }
     },
     approvedBy: {
       type: DataTypes.STRING,
@@ -115,6 +224,11 @@ PurchaseOrder.init(
     approvedAt: {
       type: DataTypes.DATE,
       allowNull: true,
+      validate: {
+        isDate: {
+          msg: 'Approved date must be a valid date'
+        }
+      }
     },
     vendorId: {
       type: DataTypes.STRING,
@@ -123,6 +237,11 @@ PurchaseOrder.init(
         model: 'vendors',
         key: 'id',
       },
+      validate: {
+        notEmpty: {
+          msg: 'Vendor ID cannot be empty'
+        }
+      }
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
@@ -138,5 +257,29 @@ PurchaseOrder.init(
       { fields: ['orderDate'] },
       { fields: ['expectedDate'] },
     ],
+    validate: {
+      totalMatchesComponents() {
+        const calculatedTotal = Number(this.subtotal) + Number(this.tax) + Number(this.shipping);
+        const total = Number(this.total);
+        if (Math.abs(calculatedTotal - total) > 0.01) {
+          throw new Error('Total must equal subtotal + tax + shipping');
+        }
+      },
+      approvalConsistency() {
+        if (this.approvedBy && !this.approvedAt) {
+          throw new Error('Approval date required when approver is set');
+        }
+        if (!this.approvedBy && this.approvedAt) {
+          throw new Error('Approver required when approval date is set');
+        }
+      },
+      receivedDateRequiresStatus() {
+        if (this.receivedDate &&
+            this.status !== PurchaseOrderStatus.RECEIVED &&
+            this.status !== PurchaseOrderStatus.PARTIALLY_RECEIVED) {
+          throw new Error('Received date can only be set when status is RECEIVED or PARTIALLY_RECEIVED');
+        }
+      }
+    }
   }
 );

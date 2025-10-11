@@ -1,8 +1,24 @@
 import type { ICommunicationApi } from '../types'
-import type { 
-  CommunicationTemplate, 
-  CommunicationMessage
-} from '../types'
+import type {
+  MessageTemplate,
+  Message,
+  CreateMessageTemplateData,
+  UpdateMessageTemplateData,
+  MessageTemplateFilters,
+  CreateMessageData,
+  MessageFilters,
+  BroadcastMessageData,
+  EmergencyAlertData,
+  SendMessageResponse,
+  GetMessagesResponse,
+  MessageDeliveryStatusResponse,
+  CommunicationStatistics,
+  CommunicationStatisticsFilters,
+  TranslationRequest,
+  TranslationResponse,
+  ProcessScheduledMessagesResponse,
+  CommunicationOptions
+} from '../../types/communication'
 import { apiInstance } from '../config/apiConfig'
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 
@@ -11,17 +27,34 @@ import { extractApiData, handleApiError } from '../utils/apiUtils'
  * Handles templates, messaging, broadcasts, and emergency alerts
  */
 class CommunicationApiImpl implements ICommunicationApi {
-  // Templates
+  // =====================
+  // TEMPLATE OPERATIONS
+  // =====================
+
   /**
-   * Get communication templates
+   * Get communication templates with optional filters
    */
-  async getTemplates(type?: string, category?: string, isActive = true): Promise<{ templates: CommunicationTemplate[] }> {
+  async getTemplates(filters?: MessageTemplateFilters): Promise<{ templates: MessageTemplate[] }> {
     try {
-      const params = new URLSearchParams({ isActive: String(isActive) })
-      if (type) params.append('type', type)
-      if (category) params.append('category', category)
-      
+      const params = new URLSearchParams()
+
+      if (filters?.type) params.append('type', filters.type)
+      if (filters?.category) params.append('category', filters.category)
+      if (filters?.isActive !== undefined) params.append('isActive', String(filters.isActive))
+
       const response = await apiInstance.get(`/communication/templates?${params.toString()}`)
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  /**
+   * Get a single template by ID
+   */
+  async getTemplateById(id: string): Promise<{ template: MessageTemplate }> {
+    try {
+      const response = await apiInstance.get(`/communication/templates/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -31,15 +64,7 @@ class CommunicationApiImpl implements ICommunicationApi {
   /**
    * Create a new communication template
    */
-  async createTemplate(data: {
-    name: string
-    subject?: string
-    content: string
-    type: string
-    category: string
-    variables?: string[]
-    isActive?: boolean
-  }): Promise<{ template: CommunicationTemplate }> {
+  async createTemplate(data: CreateMessageTemplateData): Promise<{ template: MessageTemplate }> {
     try {
       const response = await apiInstance.post('/communication/templates', data)
       return extractApiData(response)
@@ -51,7 +76,7 @@ class CommunicationApiImpl implements ICommunicationApi {
   /**
    * Update a communication template
    */
-  async updateTemplate(id: string, data: Partial<CommunicationTemplate>): Promise<{ template: CommunicationTemplate }> {
+  async updateTemplate(id: string, data: UpdateMessageTemplateData): Promise<{ template: MessageTemplate }> {
     try {
       const response = await apiInstance.put(`/communication/templates/${id}`, data)
       return extractApiData(response)
@@ -63,29 +88,23 @@ class CommunicationApiImpl implements ICommunicationApi {
   /**
    * Delete a communication template
    */
-  async deleteTemplate(id: string): Promise<void> {
+  async deleteTemplate(id: string): Promise<{ success: boolean }> {
     try {
-      await apiInstance.delete(`/communication/templates/${id}`)
+      const response = await apiInstance.delete(`/communication/templates/${id}`)
+      return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
     }
   }
 
-  // Messages
+  // =====================
+  // MESSAGE OPERATIONS
+  // =====================
+
   /**
-   * Send a targeted message
+   * Send a targeted message to specific recipients
    */
-  async sendMessage(data: {
-    recipients: any[]
-    channels: string[]
-    subject?: string
-    content: string
-    priority: string
-    category: string
-    templateId?: string
-    scheduledAt?: string
-    attachments?: string[]
-  }): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }> {
+  async sendMessage(data: CreateMessageData): Promise<SendMessageResponse> {
     try {
       const response = await apiInstance.post('/communication/send', data)
       return extractApiData(response)
@@ -95,23 +114,9 @@ class CommunicationApiImpl implements ICommunicationApi {
   }
 
   /**
-   * Send a broadcast message
+   * Send a broadcast message to multiple audiences
    */
-  async sendBroadcast(data: {
-    audience: {
-      grades?: string[]
-      nurseIds?: string[]
-      studentIds?: string[]
-      includeParents?: boolean
-      includeEmergencyContacts?: boolean
-    }
-    channels: string[]
-    subject?: string
-    content: string
-    priority: string
-    category: string
-    scheduledAt?: string
-  }): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }> {
+  async sendBroadcast(data: BroadcastMessageData): Promise<SendMessageResponse> {
     try {
       const response = await apiInstance.post('/communication/broadcast', data)
       return extractApiData(response)
@@ -121,17 +126,21 @@ class CommunicationApiImpl implements ICommunicationApi {
   }
 
   /**
-   * Get communication messages with pagination
+   * Get communication messages with pagination and filters
    */
-  async getMessages(page = 1, limit = 20, filters?: any): Promise<{ messages: CommunicationMessage[]; pagination: any }> {
+  async getMessages(filters?: MessageFilters): Promise<GetMessagesResponse> {
     try {
-      const params = new URLSearchParams({ page: String(page), limit: String(limit) })
-      if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value !== undefined) params.append(key, String(value))
-        })
-      }
-      
+      const params = new URLSearchParams()
+
+      if (filters?.page) params.append('page', String(filters.page))
+      if (filters?.limit) params.append('limit', String(filters.limit))
+      if (filters?.senderId) params.append('senderId', filters.senderId)
+      if (filters?.category) params.append('category', filters.category)
+      if (filters?.priority) params.append('priority', filters.priority)
+      if (filters?.status) params.append('status', filters.status)
+      if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom)
+      if (filters?.dateTo) params.append('dateTo', filters.dateTo)
+
       const response = await apiInstance.get(`/communication/messages?${params.toString()}`)
       return extractApiData(response)
     } catch (error) {
@@ -140,9 +149,21 @@ class CommunicationApiImpl implements ICommunicationApi {
   }
 
   /**
-   * Get message delivery status
+   * Get a single message by ID with all details
    */
-  async getMessageDelivery(messageId: string): Promise<{ deliveries: any[]; summary: any }> {
+  async getMessageById(id: string): Promise<{ message: Message }> {
+    try {
+      const response = await apiInstance.get(`/communication/messages/${id}`)
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  /**
+   * Get message delivery status and summary
+   */
+  async getMessageDeliveryStatus(messageId: string): Promise<MessageDeliveryStatusResponse> {
     try {
       const response = await apiInstance.get(`/communication/messages/${messageId}/delivery`)
       return extractApiData(response)
@@ -151,18 +172,14 @@ class CommunicationApiImpl implements ICommunicationApi {
     }
   }
 
-  // Emergency Alert
+  // =====================
+  // EMERGENCY ALERTS
+  // =====================
+
   /**
-   * Send emergency alert
+   * Send emergency alert to staff or specific groups
    */
-  async sendEmergencyAlert(data: {
-    title: string
-    message: string
-    severity: string
-    audience: string
-    groups?: string[]
-    channels: string[]
-  }): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }> {
+  async sendEmergencyAlert(data: EmergencyAlertData): Promise<SendMessageResponse> {
     try {
       const response = await apiInstance.post('/communication/emergency-alert', data)
       return extractApiData(response)
@@ -171,16 +188,36 @@ class CommunicationApiImpl implements ICommunicationApi {
     }
   }
 
-  // Statistics
+  // =====================
+  // SCHEDULED MESSAGES
+  // =====================
+
   /**
-   * Get communication statistics
+   * Process scheduled messages (typically called by cron job)
    */
-  async getStatistics(dateFrom?: string, dateTo?: string): Promise<any> {
+  async processScheduledMessages(): Promise<ProcessScheduledMessagesResponse> {
+    try {
+      const response = await apiInstance.post('/communication/process-scheduled')
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  // =====================
+  // STATISTICS & ANALYTICS
+  // =====================
+
+  /**
+   * Get communication statistics with optional date filtering
+   */
+  async getStatistics(filters?: CommunicationStatisticsFilters): Promise<CommunicationStatistics> {
     try {
       const params = new URLSearchParams()
-      if (dateFrom) params.append('dateFrom', dateFrom)
-      if (dateTo) params.append('dateTo', dateTo)
-      
+
+      if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom)
+      if (filters?.dateTo) params.append('dateTo', filters.dateTo)
+
       const response = await apiInstance.get(`/communication/statistics?${params.toString()}`)
       return extractApiData(response)
     } catch (error) {
@@ -188,16 +225,32 @@ class CommunicationApiImpl implements ICommunicationApi {
     }
   }
 
-  // Translation
+  // =====================
+  // TRANSLATION
+  // =====================
+
   /**
-   * Translate message content
+   * Translate message content to target language
    */
-  async translateMessage(content: string, targetLanguage: string): Promise<{ translated: string }> {
+  async translateMessage(data: TranslationRequest): Promise<TranslationResponse> {
     try {
-      const response = await apiInstance.post('/communication/translate', {
-        content,
-        targetLanguage
-      })
+      const response = await apiInstance.post('/communication/translate', data)
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  // =====================
+  // COMMUNICATION OPTIONS
+  // =====================
+
+  /**
+   * Get communication options (channels, notification types, priority levels)
+   */
+  async getOptions(): Promise<CommunicationOptions> {
+    try {
+      const response = await apiInstance.get('/communication/options')
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)

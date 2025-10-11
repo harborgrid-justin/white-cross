@@ -5,6 +5,7 @@ import {
   Student,
   sequelize
 } from '../database/models';
+import { ContactPriority } from '../database/types/enums';
 
 export interface CreateEmergencyContactData {
   studentId: string;
@@ -14,7 +15,11 @@ export interface CreateEmergencyContactData {
   phoneNumber: string;
   email?: string;
   address?: string;
-  priority: 'PRIMARY' | 'SECONDARY' | 'EMERGENCY_ONLY';
+  priority: ContactPriority;
+  preferredContactMethod?: 'SMS' | 'EMAIL' | 'VOICE' | 'ANY';
+  notificationChannels?: ('sms' | 'email' | 'voice')[];
+  canPickupStudent?: boolean;
+  notes?: string;
 }
 
 export interface UpdateEmergencyContactData {
@@ -24,8 +29,13 @@ export interface UpdateEmergencyContactData {
   phoneNumber?: string;
   email?: string;
   address?: string;
-  priority?: 'PRIMARY' | 'SECONDARY' | 'EMERGENCY_ONLY';
+  priority?: ContactPriority;
   isActive?: boolean;
+  preferredContactMethod?: 'SMS' | 'EMAIL' | 'VOICE' | 'ANY';
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'FAILED';
+  notificationChannels?: ('sms' | 'email' | 'voice')[];
+  canPickupStudent?: boolean;
+  notes?: string;
 }
 
 export interface NotificationData {
@@ -88,6 +98,8 @@ export class EmergencyContactService {
    * Create new emergency contact
    */
   static async createEmergencyContact(data: CreateEmergencyContactData) {
+    const transaction = await sequelize.transaction();
+
     try {
       // Verify student exists
       const student = await Student.findByPk(data.studentId);
@@ -96,21 +108,71 @@ export class EmergencyContactService {
         throw new Error('Student not found');
       }
 
-      // Validate phone number format (basic validation)
-      const phoneRegex = /^\+?[\d\s\-()]+$/;
-      if (!phoneRegex.test(data.phoneNumber)) {
-        throw new Error('Invalid phone number format');
+      if (!student.isActive) {
+        throw new Error('Cannot add emergency contact to inactive student');
+      }
+
+      // Validate phone number format (model will validate, but add extra checks)
+      const cleanPhone = data.phoneNumber.replace(/[\s\-().]/g, '');
+      if (cleanPhone.length < 10) {
+        throw new Error('Phone number must contain at least 10 digits');
       }
 
       // Validate email format if provided
       if (data.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(data.email)) {
           throw new Error('Invalid email format');
         }
       }
 
-      const contact = await EmergencyContact.create(data);
+      // Validate notification channels
+      if (data.notificationChannels) {
+        const validChannels = ['sms', 'email', 'voice'];
+        for (const channel of data.notificationChannels) {
+          if (!validChannels.includes(channel)) {
+            throw new Error(`Invalid notification channel: ${channel}. Must be one of: ${validChannels.join(', ')}`);
+          }
+        }
+
+        // Ensure email channel has email address
+        if (data.notificationChannels.includes('email') && !data.email) {
+          throw new Error('Email address is required when email is selected as a notification channel');
+        }
+
+        // Ensure SMS/voice channels have phone number (always required, but good to validate)
+        if ((data.notificationChannels.includes('sms') || data.notificationChannels.includes('voice')) && !data.phoneNumber) {
+          throw new Error('Phone number is required for SMS or voice notification channels');
+        }
+      }
+
+      // Check if creating a PRIMARY contact and enforce business rules
+      if (data.priority === ContactPriority.PRIMARY) {
+        const existingPrimaryContacts = await EmergencyContact.count({
+          where: {
+            studentId: data.studentId,
+            priority: ContactPriority.PRIMARY,
+            isActive: true
+          },
+          transaction
+        });
+
+        if (existingPrimaryContacts >= 2) {
+          throw new Error(
+            'Student already has 2 primary contacts. Please set one as SECONDARY before adding another PRIMARY contact.'
+          );
+        }
+      }
+
+      // Prepare contact data with serialized notification channels
+      const contactData: any = {
+        ...data,
+        notificationChannels: data.notificationChannels
+          ? JSON.stringify(data.notificationChannels)
+          : JSON.stringify(['sms', 'email']) // Default channels
+      };
+
+      const contact = await EmergencyContact.create(contactData, { transaction });
 
       // Reload with associations
       await contact.reload({
@@ -120,12 +182,16 @@ export class EmergencyContactService {
             as: 'student',
             attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        ]
+        ],
+        transaction
       });
 
-      logger.info(`Emergency contact created: ${contact.firstName} ${contact.lastName} for student ${student.firstName} ${student.lastName}`);
+      await transaction.commit();
+
+      logger.info(`Emergency contact created: ${contact.firstName} ${contact.lastName} (${contact.priority}) for student ${student.firstName} ${student.lastName}`);
       return contact;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error creating emergency contact:', error);
       throw error;
     }
@@ -135,9 +201,12 @@ export class EmergencyContactService {
    * Update emergency contact
    */
   static async updateEmergencyContact(id: string, data: UpdateEmergencyContactData) {
+    const transaction = await sequelize.transaction();
+
     try {
       const existingContact = await EmergencyContact.findByPk(id, {
-        include: [{ model: Student, as: 'student' }]
+        include: [{ model: Student, as: 'student' }],
+        transaction
       });
 
       if (!existingContact) {
@@ -146,21 +215,101 @@ export class EmergencyContactService {
 
       // Validate phone number format if being updated
       if (data.phoneNumber) {
-        const phoneRegex = /^\+?[\d\s\-()]+$/;
-        if (!phoneRegex.test(data.phoneNumber)) {
-          throw new Error('Invalid phone number format');
+        const cleanPhone = data.phoneNumber.replace(/[\s\-().]/g, '');
+        if (cleanPhone.length < 10) {
+          throw new Error('Phone number must contain at least 10 digits');
         }
       }
 
       // Validate email format if being updated
       if (data.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(data.email)) {
           throw new Error('Invalid email format');
         }
       }
 
-      await existingContact.update(data);
+      // Validate notification channels if being updated
+      if (data.notificationChannels) {
+        const validChannels = ['sms', 'email', 'voice'];
+        for (const channel of data.notificationChannels) {
+          if (!validChannels.includes(channel)) {
+            throw new Error(`Invalid notification channel: ${channel}. Must be one of: ${validChannels.join(', ')}`);
+          }
+        }
+
+        // Check if email channel requires email address
+        const finalEmail = data.email !== undefined ? data.email : existingContact.email;
+        if (data.notificationChannels.includes('email') && !finalEmail) {
+          throw new Error('Email address is required when email is selected as a notification channel');
+        }
+      }
+
+      // Handle priority changes with PRIMARY contact enforcement
+      if (data.priority !== undefined && data.priority !== existingContact.priority) {
+        if (data.priority === ContactPriority.PRIMARY) {
+          // Check if student already has 2 PRIMARY contacts
+          const existingPrimaryContacts = await EmergencyContact.count({
+            where: {
+              studentId: existingContact.studentId,
+              priority: ContactPriority.PRIMARY,
+              isActive: true,
+              id: { [Op.ne]: id } // Exclude current contact
+            },
+            transaction
+          });
+
+          if (existingPrimaryContacts >= 2) {
+            throw new Error(
+              'Student already has 2 primary contacts. Please set one as SECONDARY before changing this contact to PRIMARY.'
+            );
+          }
+        } else if (existingContact.priority === ContactPriority.PRIMARY) {
+          // Downgrading from PRIMARY - ensure at least one PRIMARY contact remains
+          const otherPrimaryContacts = await EmergencyContact.count({
+            where: {
+              studentId: existingContact.studentId,
+              priority: ContactPriority.PRIMARY,
+              isActive: true,
+              id: { [Op.ne]: id }
+            },
+            transaction
+          });
+
+          if (otherPrimaryContacts === 0) {
+            throw new Error(
+              'Cannot change priority from PRIMARY. Student must have at least one PRIMARY contact. Add another PRIMARY contact first or change this to SECONDARY and promote another contact.'
+            );
+          }
+        }
+      }
+
+      // Handle deactivation - ensure at least one PRIMARY contact remains active
+      if (data.isActive === false && existingContact.isActive && existingContact.priority === ContactPriority.PRIMARY) {
+        const otherActivePrimaryContacts = await EmergencyContact.count({
+          where: {
+            studentId: existingContact.studentId,
+            priority: ContactPriority.PRIMARY,
+            isActive: true,
+            id: { [Op.ne]: id }
+          },
+          transaction
+        });
+
+        if (otherActivePrimaryContacts === 0) {
+          throw new Error(
+            'Cannot deactivate the only active PRIMARY contact. Student must have at least one active PRIMARY contact.'
+          );
+        }
+      }
+
+      // Prepare update data with serialized notification channels
+      const updateData: any = { ...data };
+      if (data.notificationChannels) {
+        updateData.notificationChannels = JSON.stringify(data.notificationChannels);
+      }
+
+      await existingContact.update(updateData, { transaction });
 
       // Reload with associations
       await existingContact.reload({
@@ -170,12 +319,16 @@ export class EmergencyContactService {
             as: 'student',
             attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        ]
+        ],
+        transaction
       });
+
+      await transaction.commit();
 
       logger.info(`Emergency contact updated: ${existingContact.firstName} ${existingContact.lastName} for student ${existingContact.student!.firstName} ${existingContact.student!.lastName}`);
       return existingContact;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error updating emergency contact:', error);
       throw error;
     }
@@ -185,20 +338,45 @@ export class EmergencyContactService {
    * Delete emergency contact (soft delete)
    */
   static async deleteEmergencyContact(id: string) {
+    const transaction = await sequelize.transaction();
+
     try {
       const contact = await EmergencyContact.findByPk(id, {
-        include: [{ model: Student, as: 'student' }]
+        include: [{ model: Student, as: 'student' }],
+        transaction
       });
 
       if (!contact) {
         throw new Error('Emergency contact not found');
       }
 
-      await contact.update({ isActive: false });
+      // Prevent deletion if this is the only active PRIMARY contact
+      if (contact.isActive && contact.priority === ContactPriority.PRIMARY) {
+        const otherActivePrimaryContacts = await EmergencyContact.count({
+          where: {
+            studentId: contact.studentId,
+            priority: ContactPriority.PRIMARY,
+            isActive: true,
+            id: { [Op.ne]: id }
+          },
+          transaction
+        });
+
+        if (otherActivePrimaryContacts === 0) {
+          throw new Error(
+            'Cannot delete the only active PRIMARY contact. Student must have at least one active PRIMARY contact. Add another PRIMARY contact first.'
+          );
+        }
+      }
+
+      await contact.update({ isActive: false }, { transaction });
+
+      await transaction.commit();
 
       logger.info(`Emergency contact deleted: ${contact.firstName} ${contact.lastName} for student ${contact.student!.firstName} ${contact.student!.lastName}`);
       return { success: true };
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error deleting emergency contact:', error);
       throw error;
     }

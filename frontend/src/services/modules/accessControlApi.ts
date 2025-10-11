@@ -1,14 +1,77 @@
-import type { IAccessControlApi } from '../types'
-import type { 
-  Role, 
-  Permission, 
-  RolePermission, 
-  Session, 
-  SecurityIncident, 
-  IpRestriction 
-} from '../types'
+import type {
+  Role,
+  Permission,
+  RolePermission,
+  Session,
+  SecurityIncident,
+  IpRestriction,
+  UserRoleAssignment,
+  CreateRoleData,
+  UpdateRoleData,
+  CreatePermissionData,
+  CreateSecurityIncidentData,
+  UpdateSecurityIncidentData,
+  AddIpRestrictionData,
+  SecurityIncidentFilters,
+  UserPermissionsResult,
+  SecurityStatistics,
+  SecurityIncidentsPaginatedResponse,
+  DeleteResponse,
+  DeleteSessionsResponse,
+  PermissionCheckResponse
+} from '@/types/accessControl'
 import { apiInstance } from '../config/apiConfig'
 import { extractApiData, handleApiError } from '../utils/apiUtils'
+
+/**
+ * Access Control API Interface
+ * Defines all access control, RBAC, and security management operations
+ */
+export interface IAccessControlApi {
+  // Role Management
+  getRoles(): Promise<{ roles: Role[] }>;
+  getRoleById(id: string): Promise<{ role: Role }>;
+  createRole(data: CreateRoleData): Promise<{ role: Role }>;
+  updateRole(id: string, data: UpdateRoleData): Promise<{ role: Role }>;
+  deleteRole(id: string): Promise<DeleteResponse>;
+
+  // Permission Management
+  getPermissions(): Promise<{ permissions: Permission[] }>;
+  createPermission(data: CreatePermissionData): Promise<{ permission: Permission }>;
+
+  // Role-Permission Assignments
+  assignPermissionToRole(roleId: string, permissionId: string): Promise<{ rolePermission: RolePermission }>;
+  removePermissionFromRole(roleId: string, permissionId: string): Promise<DeleteResponse>;
+
+  // User-Role Assignments
+  assignRoleToUser(userId: string, roleId: string): Promise<{ userRole: UserRoleAssignment }>;
+  removeRoleFromUser(userId: string, roleId: string): Promise<DeleteResponse>;
+
+  // User Permissions
+  getUserPermissions(userId: string): Promise<UserPermissionsResult>;
+  checkPermission(userId: string, resource: string, action: string): Promise<PermissionCheckResponse>;
+
+  // Session Management
+  getUserSessions(userId: string): Promise<{ sessions: Session[] }>;
+  deleteSession(token: string): Promise<DeleteResponse>;
+  deleteAllUserSessions(userId: string): Promise<DeleteSessionsResponse>;
+
+  // Security Incidents
+  getSecurityIncidents(params?: SecurityIncidentFilters): Promise<SecurityIncidentsPaginatedResponse>;
+  createSecurityIncident(data: CreateSecurityIncidentData): Promise<{ incident: SecurityIncident }>;
+  updateSecurityIncident(id: string, data: UpdateSecurityIncidentData): Promise<{ incident: SecurityIncident }>;
+
+  // IP Restrictions
+  getIpRestrictions(): Promise<{ restrictions: IpRestriction[] }>;
+  addIpRestriction(data: AddIpRestrictionData): Promise<{ restriction: IpRestriction }>;
+  removeIpRestriction(id: string): Promise<DeleteResponse>;
+
+  // Statistics
+  getStatistics(): Promise<SecurityStatistics>;
+
+  // System Initialization
+  initializeDefaultRoles(): Promise<{ roles: Role[] }>;
+}
 
 /**
  * Access Control API implementation
@@ -43,7 +106,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Create a new role
    */
-  async createRole(data: { name: string; description?: string }): Promise<{ role: Role }> {
+  async createRole(data: CreateRoleData): Promise<{ role: Role }> {
     try {
       const response = await apiInstance.post('/access-control/roles', data)
       return extractApiData(response)
@@ -55,7 +118,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Update an existing role
    */
-  async updateRole(id: string, data: Partial<Role>): Promise<{ role: Role }> {
+  async updateRole(id: string, data: UpdateRoleData): Promise<{ role: Role }> {
     try {
       const response = await apiInstance.put(`/access-control/roles/${id}`, data)
       return extractApiData(response)
@@ -67,7 +130,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Delete a role
    */
-  async deleteRole(id: string): Promise<{ success: boolean }> {
+  async deleteRole(id: string): Promise<DeleteResponse> {
     try {
       const response = await apiInstance.delete(`/access-control/roles/${id}`)
       return extractApiData(response)
@@ -92,11 +155,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Create a new permission
    */
-  async createPermission(data: { 
-    resource: string; 
-    action: string; 
-    description?: string 
-  }): Promise<{ permission: Permission }> {
+  async createPermission(data: CreatePermissionData): Promise<{ permission: Permission }> {
     try {
       const response = await apiInstance.post('/access-control/permissions', data)
       return extractApiData(response)
@@ -109,7 +168,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Assign permission to role
    */
-  async assignPermissionToRole(roleId: string, permissionId: string): Promise<{ assignment: RolePermission }> {
+  async assignPermissionToRole(roleId: string, permissionId: string): Promise<{ rolePermission: RolePermission }> {
     try {
       const response = await apiInstance.post(`/access-control/roles/${roleId}/permissions/${permissionId}`)
       return extractApiData(response)
@@ -121,7 +180,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Remove permission from role
    */
-  async removePermissionFromRole(roleId: string, permissionId: string): Promise<{ success: boolean }> {
+  async removePermissionFromRole(roleId: string, permissionId: string): Promise<DeleteResponse> {
     try {
       const response = await apiInstance.delete(`/access-control/roles/${roleId}/permissions/${permissionId}`)
       return extractApiData(response)
@@ -134,7 +193,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Assign role to user
    */
-  async assignRoleToUser(userId: string, roleId: string): Promise<{ assignment: any }> {
+  async assignRoleToUser(userId: string, roleId: string): Promise<{ userRole: UserRoleAssignment }> {
     try {
       const response = await apiInstance.post(`/access-control/users/${userId}/roles/${roleId}`)
       return extractApiData(response)
@@ -146,7 +205,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Remove role from user
    */
-  async removeRoleFromUser(userId: string, roleId: string): Promise<{ success: boolean }> {
+  async removeRoleFromUser(userId: string, roleId: string): Promise<DeleteResponse> {
     try {
       const response = await apiInstance.delete(`/access-control/users/${userId}/roles/${roleId}`)
       return extractApiData(response)
@@ -159,10 +218,10 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Get user permissions
    */
-  async getUserPermissions(userId: string): Promise<{ permissions: Permission[] }> {
+  async getUserPermissions(userId: string): Promise<UserPermissionsResult> {
     try {
       const response = await apiInstance.get(`/access-control/users/${userId}/permissions`)
-      return response.data
+      return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -171,7 +230,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Check if user has specific permission
    */
-  async checkPermission(userId: string, resource: string, action: string): Promise<{ hasPermission: boolean }> {
+  async checkPermission(userId: string, resource: string, action: string): Promise<PermissionCheckResponse> {
     try {
       const response = await apiInstance.get(`/access-control/users/${userId}/check`, {
         params: { resource, action }
@@ -198,7 +257,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Delete a specific session
    */
-  async deleteSession(token: string): Promise<{ success: boolean }> {
+  async deleteSession(token: string): Promise<DeleteResponse> {
     try {
       const response = await apiInstance.delete(`/access-control/sessions/${token}`)
       return extractApiData(response)
@@ -210,10 +269,10 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Delete all user sessions
    */
-  async deleteAllUserSessions(userId: string): Promise<{ deletedCount: number }> {
+  async deleteAllUserSessions(userId: string): Promise<DeleteSessionsResponse> {
     try {
       const response = await apiInstance.delete(`/access-control/users/${userId}/sessions`)
-      return response.data
+      return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -221,9 +280,9 @@ class AccessControlApiImpl implements IAccessControlApi {
 
   // Security Incidents
   /**
-   * Get security incidents
+   * Get security incidents with optional filters
    */
-  async getSecurityIncidents(params?: any): Promise<{ incidents: SecurityIncident[] }> {
+  async getSecurityIncidents(params?: SecurityIncidentFilters): Promise<SecurityIncidentsPaginatedResponse> {
     try {
       const response = await apiInstance.get('/access-control/security-incidents', { params })
       return extractApiData(response)
@@ -235,13 +294,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Create security incident
    */
-  async createSecurityIncident(data: {
-    type: string;
-    severity: string;
-    description: string;
-    affectedResources: string[];
-    detectedBy?: string;
-  }): Promise<{ incident: SecurityIncident }> {
+  async createSecurityIncident(data: CreateSecurityIncidentData): Promise<{ incident: SecurityIncident }> {
     try {
       const response = await apiInstance.post('/access-control/security-incidents', data)
       return extractApiData(response)
@@ -253,7 +306,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Update security incident
    */
-  async updateSecurityIncident(id: string, data: Partial<SecurityIncident>): Promise<{ incident: SecurityIncident }> {
+  async updateSecurityIncident(id: string, data: UpdateSecurityIncidentData): Promise<{ incident: SecurityIncident }> {
     try {
       const response = await apiInstance.put(`/access-control/security-incidents/${id}`, data)
       return extractApiData(response)
@@ -278,11 +331,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Add IP restriction
    */
-  async addIpRestriction(data: { 
-    ipAddress: string; 
-    type: string; 
-    reason?: string 
-  }): Promise<{ restriction: IpRestriction }> {
+  async addIpRestriction(data: AddIpRestrictionData): Promise<{ restriction: IpRestriction }> {
     try {
       const response = await apiInstance.post('/access-control/ip-restrictions', data)
       return extractApiData(response)
@@ -294,7 +343,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   /**
    * Remove IP restriction
    */
-  async removeIpRestriction(id: string): Promise<{ success: boolean }> {
+  async removeIpRestriction(id: string): Promise<DeleteResponse> {
     try {
       const response = await apiInstance.delete(`/access-control/ip-restrictions/${id}`)
       return extractApiData(response)
@@ -305,12 +354,12 @@ class AccessControlApiImpl implements IAccessControlApi {
 
   // Statistics
   /**
-   * Get access control statistics
+   * Get comprehensive security statistics
    */
-  async getStatistics(): Promise<any> {
+  async getStatistics(): Promise<SecurityStatistics> {
     try {
       const response = await apiInstance.get('/access-control/statistics')
-      return response.data
+      return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
     }

@@ -54,14 +54,41 @@ WitnessStatement.init(
     incidentReportId: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident report ID is required'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'Incident report ID must be a valid UUID'
+        }
+      }
     },
     witnessName: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Witness name is required'
+        },
+        len: {
+          args: [2, 100],
+          msg: 'Witness name must be between 2 and 100 characters'
+        }
+      }
     },
     witnessType: {
       type: DataTypes.ENUM(...Object.values(WitnessType)),
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Witness type is required'
+        },
+        isIn: {
+          args: [Object.values(WitnessType)],
+          msg: `Witness type must be one of: ${Object.values(WitnessType).join(', ')}`
+        }
+      }
     },
     witnessContact: {
       type: DataTypes.STRING,
@@ -70,6 +97,15 @@ WitnessStatement.init(
     statement: {
       type: DataTypes.TEXT,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Witness statement is required'
+        },
+        len: {
+          args: [20, 3000],
+          msg: 'Witness statement must be between 20 and 3000 characters for proper documentation'
+        }
+      }
     },
     verified: {
       type: DataTypes.BOOLEAN,
@@ -97,5 +133,21 @@ WitnessStatement.init(
       { fields: ['witnessType'] },
       { fields: ['verified'] },
     ],
+    validate: {
+      // Model-level validation: Verified statements must have verifier
+      verifiedMustHaveVerifier() {
+        if (this.verified && !this.verifiedBy) {
+          throw new Error('Verified statements must have a verifier (verifiedBy)');
+        }
+      }
+    }
   }
 );
+
+// Add hooks for verification tracking
+WitnessStatement.beforeUpdate((instance) => {
+  // Auto-set verification timestamp when verified
+  if (instance.verified && !instance.verifiedAt) {
+    instance.verifiedAt = new Date();
+  }
+});

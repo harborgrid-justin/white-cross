@@ -1,172 +1,203 @@
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { extractApiData } from '../utils/apiUtils';
 import { buildUrlParams } from '../utils/apiUtils';
-import type { Document, ApiResponse, PaginationParams } from '../types';
-
-export interface DocumentFilters extends PaginationParams {
-  category?: string;
-  status?: string;
-  tags?: string[];
-  studentId?: string;
-  accessLevel?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
-export interface DocumentTemplate {
-  id: string;
-  name: string;
-  category: string;
-  templateData: any;
-  variables: string[];
-  isActive: boolean;
-}
-
-export interface DocumentVersion {
-  id: string;
-  parentId: string;
-  version: number;
-  fileName: string;
-  fileSize: number;
-  uploadedBy: string;
-  uploadedAt: string;
-  changes?: string;
-}
+import type { ApiResponse } from '../types';
+import type {
+  Document,
+  DocumentFilters,
+  DocumentTemplate,
+  DocumentVersion,
+  DocumentSignature,
+  DocumentAuditTrail,
+  DocumentStatistics,
+  DocumentUsageAnalytics,
+  StorageUsage,
+  PaginatedDocumentsResponse,
+  CreateDocumentRequest,
+  UpdateDocumentRequest,
+  SignDocumentRequest,
+  CreateDocumentVersionRequest,
+  CreateFromTemplateRequest,
+  ShareDocumentRequest,
+  BulkDeleteDocumentsResponse,
+  FileUploadRequest,
+  FileUploadResponse,
+  ExportDocumentsRequest,
+  ImportDocumentsResponse,
+  ArchiveDocumentsResponse,
+  DocumentCategoryMetadata,
+  DocumentPermission,
+} from '../types/documents';
+import {
+  createDocumentSchema,
+  updateDocumentSchema,
+  signDocumentSchema,
+  createDocumentVersionSchema,
+  createFromTemplateSchema,
+  shareDocumentSchema,
+  bulkDeleteDocumentsSchema,
+  documentFiltersSchema,
+  validateStatusTransition,
+  type CreateDocumentInput,
+  type UpdateDocumentInput,
+  type SignDocumentInput,
+  type CreateDocumentVersionInput,
+  type CreateFromTemplateInput,
+  type ShareDocumentInput,
+  type BulkDeleteDocumentsInput,
+  type DocumentFiltersInput,
+} from '../../schemas/documentSchemas';
 
 export interface DocumentsApi {
   // Document CRUD
-  getDocuments(filters?: DocumentFilters): Promise<{ documents: Document[]; pagination: any }>;
+  getDocuments(filters?: DocumentFilters): Promise<PaginatedDocumentsResponse>;
   getDocumentById(id: string): Promise<{ document: Document }>;
-  createDocument(data: Partial<Document>): Promise<{ document: Document }>;
-  updateDocument(id: string, data: Partial<Document>): Promise<{ document: Document }>;
+  createDocument(data: CreateDocumentRequest): Promise<{ document: Document }>;
+  updateDocument(id: string, data: UpdateDocumentRequest): Promise<{ document: Document }>;
   deleteDocument(id: string): Promise<void>;
 
   // Document Versions
   getDocumentVersions(parentId: string): Promise<{ versions: DocumentVersion[] }>;
-  createDocumentVersion(parentId: string, data: FormData): Promise<{ version: DocumentVersion }>;
+  createDocumentVersion(parentId: string, data: CreateDocumentVersionRequest | FormData): Promise<{ document: DocumentVersion }>;
   getDocumentVersion(versionId: string): Promise<{ version: DocumentVersion }>;
-  deleteDocumentVersion(versionId: string): Promise<void>;
 
   // Document Actions
-  signDocument(id: string, signatureData?: string): Promise<{ document: Document }>;
+  signDocument(id: string, data: SignDocumentRequest): Promise<{ signature: DocumentSignature }>;
   downloadDocument(id: string, version?: number): Promise<Blob>;
-  previewDocument(id: string): Promise<{ previewUrl: string }>;
-  duplicateDocument(id: string, newTitle?: string): Promise<{ document: Document }>;
+  viewDocument(id: string): Promise<{ document: Document }>;
+  shareDocument(id: string, data: ShareDocumentRequest): Promise<{ shared: boolean; sharedWith: string[] }>;
 
   // Templates
   getTemplates(category?: string): Promise<{ templates: DocumentTemplate[] }>;
   getTemplateById(id: string): Promise<{ template: DocumentTemplate }>;
-  createTemplate(data: Partial<DocumentTemplate>): Promise<{ template: DocumentTemplate }>;
-  updateTemplate(id: string, data: Partial<DocumentTemplate>): Promise<{ template: DocumentTemplate }>;
-  deleteTemplate(id: string): Promise<void>;
-  createFromTemplate(templateId: string, data: any): Promise<{ document: Document }>;
+  createFromTemplate(templateId: string, data: CreateFromTemplateRequest): Promise<{ document: Document }>;
 
   // Student Documents
   getStudentDocuments(studentId: string, filters?: Omit<DocumentFilters, 'studentId'>): Promise<{ documents: Document[] }>;
-  addDocumentToStudent(studentId: string, documentData: Partial<Document>): Promise<{ document: Document }>;
-  removeDocumentFromStudent(studentId: string, documentId: string): Promise<void>;
 
   // Search and Filter
   searchDocuments(query: string, filters?: DocumentFilters): Promise<{ documents: Document[] }>;
-  getDocumentsByCategory(category: string, filters?: DocumentFilters): Promise<{ documents: Document[] }>;
-  getDocumentsByTag(tag: string, filters?: DocumentFilters): Promise<{ documents: Document[] }>;
   getExpiringDocuments(days?: number): Promise<{ documents: Document[] }>;
-  getRecentDocuments(limit?: number): Promise<{ documents: Document[] }>;
 
-  // Bulk Operations  
-  bulkUpdateDocuments(updates: Array<{ id: string; data: Partial<Document> }>): Promise<{ documents: Document[] }>;
-  bulkDeleteDocuments(documentIds: string[]): Promise<{ deleted: number }>;
-  bulkDownload(documentIds: string[]): Promise<Blob>;
+  // Bulk Operations
+  bulkDeleteDocuments(documentIds: string[]): Promise<BulkDeleteDocumentsResponse>;
 
-  // Access Control
-  shareDocument(id: string, data: { userIds: string[]; permissions: string[]; expiresAt?: string }): Promise<{ shared: boolean }>;
-  revokeAccess(id: string, userId: string): Promise<{ revoked: boolean }>;
-  getDocumentPermissions(id: string): Promise<{ permissions: any[] }>;
+  // Audit and Signatures
+  getDocumentAuditTrail(documentId: string, limit?: number): Promise<{ auditTrail: DocumentAuditTrail[] }>;
+  getDocumentSignatures(documentId: string): Promise<{ signatures: DocumentSignature[] }>;
 
-  // Statistics and Analytics
-  getStatistics(dateRange?: { startDate: string; endDate: string }): Promise<{ statistics: any }>;
-  getUsageAnalytics(documentId: string): Promise<{ analytics: any }>;
-  getStorageUsage(): Promise<{ usage: any }>;
+  // Categories and Statistics
+  getDocumentCategories(): Promise<{ categories: DocumentCategoryMetadata[] }>;
+  getStatistics(dateRange?: { startDate: string; endDate: string }): Promise<{ statistics: DocumentStatistics }>;
 
-  // Import/Export
-  exportDocuments(filters?: DocumentFilters, format?: 'zip' | 'pdf'): Promise<Blob>;
-  importDocuments(file: File): Promise<{ imported: number; errors: any[] }>;
+  // Archive Operations
+  archiveExpiredDocuments(): Promise<ArchiveDocumentsResponse>;
 }
 
 class DocumentsApiImpl implements DocumentsApi {
   // Document CRUD
-  async getDocuments(filters: DocumentFilters = {}): Promise<{ documents: Document[]; pagination: any }> {
-    const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[]; pagination: any })> | undefined>(
+  async getDocuments(filters: DocumentFilters = {}): Promise<PaginatedDocumentsResponse> {
+    // Validate filters
+    const validatedFilters = documentFiltersSchema.parse(filters);
+    const params = buildUrlParams(validatedFilters);
+    const response = await apiInstance.get<ApiResponse<PaginatedDocumentsResponse> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}?${params.toString()}`
     );
     return extractApiData(response as any);
   }
 
   async getDocumentById(id: string): Promise<{ document: Document }> {
-    const response = await apiInstance.get<ApiResponse<({ document: Document })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}`
+    // Validate ID is a UUID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+      throw new Error('Invalid document ID format');
+    }
+    const response = await apiInstance.get<ApiResponse<{ document: Document }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`
     );
     return extractApiData(response as any);
   }
 
-  async createDocument(data: Partial<Document>): Promise<{ document: Document }> {
-    const response = await apiInstance.post<ApiResponse<({ document: Document })> | undefined>(
+  async createDocument(data: CreateDocumentRequest): Promise<{ document: Document }> {
+    // Validate document data
+    const validatedData = createDocumentSchema.parse(data);
+    const response = await apiInstance.post<ApiResponse<{ document: Document }> | undefined>(
       API_ENDPOINTS.DOCUMENTS.BASE,
-      data
+      validatedData
     );
     return extractApiData(response as any);
   }
 
-  async updateDocument(id: string, data: Partial<Document>): Promise<{ document: Document }> {
-    const response = await apiInstance.put<ApiResponse<({ document: Document })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}`,
-      data
+  async updateDocument(id: string, data: UpdateDocumentRequest): Promise<{ document: Document }> {
+    // Validate ID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+      throw new Error('Invalid document ID format');
+    }
+    // Validate update data
+    const validatedData = updateDocumentSchema.parse(data);
+    const response = await apiInstance.put<ApiResponse<{ document: Document }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`,
+      validatedData
     );
     return extractApiData(response as any);
   }
 
   async deleteDocument(id: string): Promise<void> {
-    await apiInstance.delete(`${API_ENDPOINTS.DOCUMENTS}/${id}`);
+    // Validate ID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+      throw new Error('Invalid document ID format');
+    }
+    await apiInstance.delete(`${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`);
   }
 
   // Document Versions
   async getDocumentVersions(parentId: string): Promise<{ versions: DocumentVersion[] }> {
-    const response = await apiInstance.get<ApiResponse<({ versions: DocumentVersion[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${parentId}/versions`
-    );
-    return extractApiData(response as any);
+    const document = await this.getDocumentById(parentId);
+    // Versions are included in the document response
+    return { versions: (document.document.versions || []) as unknown as DocumentVersion[] };
   }
 
-  async createDocumentVersion(parentId: string, data: FormData): Promise<{ version: DocumentVersion }> {
-    const response = await apiInstance.post<ApiResponse<({ version: DocumentVersion })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${parentId}/version`,
-      data,
-      {
+  async createDocumentVersion(
+    parentId: string,
+    data: CreateDocumentVersionRequest | FormData
+  ): Promise<{ document: DocumentVersion }> {
+    // Validate parent ID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(parentId)) {
+      throw new Error('Invalid parent document ID format');
+    }
+
+    // Validate data if not FormData
+    let validatedData: any = data;
+    if (!(data instanceof FormData)) {
+      validatedData = createDocumentVersionSchema.parse(data);
+    }
+
+    const response = await apiInstance.post<ApiResponse<{ document: DocumentVersion }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${parentId}/version`,
+      validatedData,
+      data instanceof FormData ? {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-      }
+      } : undefined
     );
     return extractApiData(response as any);
   }
 
   async getDocumentVersion(versionId: string): Promise<{ version: DocumentVersion }> {
-    const response = await apiInstance.get<ApiResponse<({ version: DocumentVersion })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/version/${versionId}`
+    const response = await apiInstance.get<ApiResponse<{ document: Document }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${versionId}`
     );
-    return extractApiData(response as any);
-  }
-
-  async deleteDocumentVersion(versionId: string): Promise<void> {
-    await apiInstance.delete(`${API_ENDPOINTS.DOCUMENTS}/version/${versionId}`);
+    const data = extractApiData(response as any);
+    return { version: data.document as unknown as DocumentVersion };
   }
 
   // Document Actions
-  async signDocument(id: string, signatureData?: string): Promise<{ document: Document }> {
-    const response = await apiInstance.post<ApiResponse<({ document: Document })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/sign`,
-      { signatureData }
+  async signDocument(id: string, data: SignDocumentRequest): Promise<{ signature: DocumentSignature }> {
+    // Validate signature data
+    const validatedData = signDocumentSchema.parse({ ...data, documentId: id });
+    const response = await apiInstance.post<ApiResponse<{ signature: DocumentSignature }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/sign`,
+      { signatureData: validatedData.signatureData }
     );
     return extractApiData(response as any);
   }
@@ -174,67 +205,60 @@ class DocumentsApiImpl implements DocumentsApi {
   async downloadDocument(id: string, version?: number): Promise<Blob> {
     const params = version ? `?version=${version}` : '';
     const response = await apiInstance.get(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/download${params}`,
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/download${params}`,
       { responseType: 'blob' }
     );
     return response.data;
   }
 
-  async previewDocument(id: string): Promise<{ previewUrl: string }> {
-    const response = await apiInstance.get<ApiResponse<({ previewUrl: string })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/preview`
-    );
-    return extractApiData(response as any);
+  async viewDocument(id: string): Promise<{ document: Document }> {
+    // The getDocumentById already tracks viewing via the backend
+    return this.getDocumentById(id);
   }
 
-  async duplicateDocument(id: string, newTitle?: string): Promise<{ document: Document }> {
-    const response = await apiInstance.post<ApiResponse<({ document: Document })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/duplicate`,
-      { title: newTitle }
+  async shareDocument(id: string, data: ShareDocumentRequest): Promise<{ shared: boolean; sharedWith: string[] }> {
+    // Validate ID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+      throw new Error('Invalid document ID format');
+    }
+    // Validate share data
+    const validatedData = shareDocumentSchema.parse(data);
+    const response = await apiInstance.post<ApiResponse<{ success: boolean; sharedWith: string[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/share`,
+      { sharedWith: validatedData.userIds }
     );
-    return extractApiData(response as any);
+    const result = extractApiData(response as any);
+    return { shared: result.success, sharedWith: result.sharedWith };
   }
 
   // Templates
   async getTemplates(category?: string): Promise<{ templates: DocumentTemplate[] }> {
     const params = buildUrlParams({ category });
-    const response = await apiInstance.get<ApiResponse<({ templates: DocumentTemplate[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/templates/list?${params.toString()}`
+    const response = await apiInstance.get<ApiResponse<{ templates: Document[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/list?${params.toString()}`
     );
-    return extractApiData(response as any);
+    const result = extractApiData(response as any);
+    return { templates: result.templates as unknown as DocumentTemplate[] };
   }
 
   async getTemplateById(id: string): Promise<{ template: DocumentTemplate }> {
-    const response = await apiInstance.get<ApiResponse<({ template: DocumentTemplate })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/templates/${id}`
+    const response = await apiInstance.get<ApiResponse<{ document: Document }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`
     );
-    return extractApiData(response as any);
+    const result = extractApiData(response as any);
+    return { template: result.document as unknown as DocumentTemplate };
   }
 
-  async createTemplate(data: Partial<DocumentTemplate>): Promise<{ template: DocumentTemplate }> {
-    const response = await apiInstance.post<ApiResponse<({ template: DocumentTemplate })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/templates`,
-      data
-    );
-    return extractApiData(response as any);
-  }
-
-  async updateTemplate(id: string, data: Partial<DocumentTemplate>): Promise<{ template: DocumentTemplate }> {
-    const response = await apiInstance.put<ApiResponse<({ template: DocumentTemplate })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/templates/${id}`,
-      data
-    );
-    return extractApiData(response as any);
-  }
-
-  async deleteTemplate(id: string): Promise<void> {
-    await apiInstance.delete(`${API_ENDPOINTS.DOCUMENTS}/templates/${id}`);
-  }
-
-  async createFromTemplate(templateId: string, data: any): Promise<{ document: Document }> {
-    const response = await apiInstance.post<ApiResponse<({ document: Document })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/templates/${templateId}/create`,
-      data
+  async createFromTemplate(templateId: string, data: CreateFromTemplateRequest): Promise<{ document: Document }> {
+    // Validate template ID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(templateId)) {
+      throw new Error('Invalid template ID format');
+    }
+    // Validate data
+    const validatedData = createFromTemplateSchema.parse(data);
+    const response = await apiInstance.post<ApiResponse<{ document: Document }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/${templateId}/create`,
+      validatedData
     );
     return extractApiData(response as any);
   }
@@ -242,161 +266,80 @@ class DocumentsApiImpl implements DocumentsApi {
   // Student Documents
   async getStudentDocuments(studentId: string, filters: Omit<DocumentFilters, 'studentId'> = {}): Promise<{ documents: Document[] }> {
     const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/student/${studentId}?${params.toString()}`
+    const response = await apiInstance.get<ApiResponse<{ documents: Document[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/student/${studentId}?${params.toString()}`
     );
     return extractApiData(response as any);
-  }
-
-  async addDocumentToStudent(studentId: string, documentData: Partial<Document>): Promise<{ document: Document }> {
-    const response = await apiInstance.post<ApiResponse<({ document: Document })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/student/${studentId}`,
-      documentData
-    );
-    return extractApiData(response as any);
-  }
-
-  async removeDocumentFromStudent(studentId: string, documentId: string): Promise<void> {
-    await apiInstance.delete(`${API_ENDPOINTS.DOCUMENTS}/student/${studentId}/${documentId}`);
   }
 
   // Search and Filter
   async searchDocuments(query: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
     const params = buildUrlParams({ q: query, ...filters });
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/search/query?${params.toString()}`
-    );
-    return extractApiData(response as any);
-  }
-
-  async getDocumentsByCategory(category: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
-    const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/category/${category}?${params.toString()}`
-    );
-    return extractApiData(response as any);
-  }
-
-  async getDocumentsByTag(tag: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
-    const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/tag/${tag}?${params.toString()}`
+    const response = await apiInstance.get<ApiResponse<{ documents: Document[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/search/query?${params.toString()}`
     );
     return extractApiData(response as any);
   }
 
   async getExpiringDocuments(days: number = 30): Promise<{ documents: Document[] }> {
     const params = buildUrlParams({ days });
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/expiring/list?${params.toString()}`
-    );
-    return extractApiData(response as any);
-  }
-
-  async getRecentDocuments(limit: number = 10): Promise<{ documents: Document[] }> {
-    const params = buildUrlParams({ limit });
-    const response = await apiInstance.get<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/recent?${params.toString()}`
+    const response = await apiInstance.get<ApiResponse<{ documents: Document[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/expiring/list?${params.toString()}`
     );
     return extractApiData(response as any);
   }
 
   // Bulk Operations
-  async bulkUpdateDocuments(updates: Array<{ id: string; data: Partial<Document> }>): Promise<{ documents: Document[] }> {
-    const response = await apiInstance.put<ApiResponse<({ documents: Document[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/bulk-update`,
-      { updates }
+  async bulkDeleteDocuments(documentIds: string[]): Promise<BulkDeleteDocumentsResponse> {
+    // Validate bulk delete request
+    const validatedData = bulkDeleteDocumentsSchema.parse({ documentIds });
+    const response = await apiInstance.post<ApiResponse<BulkDeleteDocumentsResponse> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/bulk-delete`,
+      validatedData
     );
     return extractApiData(response as any);
   }
 
-  async bulkDeleteDocuments(documentIds: string[]): Promise<{ deleted: number }> {
-    const response = await apiInstance.delete<ApiResponse<({ deleted: number })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/bulk-delete`,
-      { data: { documentIds } }
+  // Audit and Signatures
+  async getDocumentAuditTrail(documentId: string, limit: number = 100): Promise<{ auditTrail: DocumentAuditTrail[] }> {
+    const params = buildUrlParams({ limit });
+    const response = await apiInstance.get<ApiResponse<{ auditTrail: DocumentAuditTrail[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/audit-trail?${params.toString()}`
     );
     return extractApiData(response as any);
   }
 
-  async bulkDownload(documentIds: string[]): Promise<Blob> {
-    const response = await apiInstance.post(
-      `${API_ENDPOINTS.DOCUMENTS}/bulk-download`,
-      { documentIds },
-      { responseType: 'blob' }
-    );
-    return response.data;
-  }
-
-  // Access Control
-  async shareDocument(id: string, data: { userIds: string[]; permissions: string[]; expiresAt?: string }): Promise<{ shared: boolean }> {
-    const response = await apiInstance.post<ApiResponse<({ shared: boolean })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/share`,
-      data
+  async getDocumentSignatures(documentId: string): Promise<{ signatures: DocumentSignature[] }> {
+    const response = await apiInstance.get<ApiResponse<{ signatures: DocumentSignature[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/signatures`
     );
     return extractApiData(response as any);
   }
 
-  async revokeAccess(id: string, userId: string): Promise<{ revoked: boolean }> {
-    const response = await apiInstance.delete<ApiResponse<({ revoked: boolean })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/share/${userId}`
+  // Categories and Statistics
+  async getDocumentCategories(): Promise<{ categories: DocumentCategoryMetadata[] }> {
+    const response = await apiInstance.get<ApiResponse<{ categories: DocumentCategoryMetadata[] }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/categories`
     );
     return extractApiData(response as any);
   }
 
-  async getDocumentPermissions(id: string): Promise<{ permissions: any[] }> {
-    const response = await apiInstance.get<ApiResponse<({ permissions: any[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${id}/permissions`
-    );
-    return extractApiData(response as any);
-  }
-
-  // Statistics and Analytics
-  async getStatistics(dateRange?: { startDate: string; endDate: string }): Promise<{ statistics: any }> {
+  async getStatistics(dateRange?: { startDate: string; endDate: string }): Promise<{ statistics: DocumentStatistics }> {
     const params = buildUrlParams(dateRange || {});
-    const response = await apiInstance.get<ApiResponse<({ statistics: any })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/statistics/overview?${params.toString()}`
+    const response = await apiInstance.get<ApiResponse<DocumentStatistics> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/statistics/overview?${params.toString()}`
     );
-    return extractApiData(response as any);
+    const data = extractApiData(response as any);
+    return { statistics: data as DocumentStatistics };
   }
 
-  async getUsageAnalytics(documentId: string): Promise<{ analytics: any }> {
-    const response = await apiInstance.get<ApiResponse<({ analytics: any })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/${documentId}/analytics`
+  // Archive Operations
+  async archiveExpiredDocuments(): Promise<ArchiveDocumentsResponse> {
+    const response = await apiInstance.post<ApiResponse<{ archived: number }> | undefined>(
+      `${API_ENDPOINTS.DOCUMENTS.BASE}/archive-expired`
     );
-    return extractApiData(response as any);
-  }
-
-  async getStorageUsage(): Promise<{ usage: any }> {
-    const response = await apiInstance.get<ApiResponse<({ usage: any })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/storage/usage`
-    );
-    return extractApiData(response as any);
-  }
-
-  // Import/Export
-  async exportDocuments(filters: DocumentFilters = {}, format: 'zip' | 'pdf' = 'zip'): Promise<Blob> {
-    const params = buildUrlParams({ ...filters, format });
-    const response = await apiInstance.get(
-      `${API_ENDPOINTS.DOCUMENTS}/export?${params.toString()}`,
-      { responseType: 'blob' }
-    );
-    return response.data;
-  }
-
-  async importDocuments(file: File): Promise<{ imported: number; errors: any[] }> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await apiInstance.post<ApiResponse<({ imported: number; errors: any[] })> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS}/import`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return extractApiData(response as any);
+    const result = extractApiData(response as any);
+    return { archived: result.archived, failed: 0 };
   }
 }
 

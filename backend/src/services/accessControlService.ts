@@ -1,7 +1,25 @@
-import { PrismaClient, SecurityIncidentType, IncidentSeverity, IpRestrictionType, Prisma } from '@prisma/client';
+import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  Role,
+  Permission,
+  RolePermission,
+  UserRoleAssignment,
+  Session,
+  LoginAttempt,
+  IpRestriction,
+  SecurityIncident,
+  User,
+  sequelize
+} from '../database/models';
+import {
+  SecurityIncidentType,
+  IncidentSeverity,
+  IpRestrictionType,
+  SecurityIncidentStatus,
+  AuditAction
+} from '../database/types/enums';
+import { auditService, AuditLogEntry } from './auditService';
 
 export interface CreateRoleData {
   name: string;
@@ -15,29 +33,101 @@ export interface CreatePermissionData {
 }
 
 export interface CreateSecurityIncidentData {
-  type: string;
-  severity: string;
+  type: SecurityIncidentType;
+  severity: IncidentSeverity;
   description: string;
   affectedResources?: string[];
   detectedBy?: string;
 }
 
+export interface UpdateRoleData {
+  name?: string;
+  description?: string;
+}
+
+export interface CreateSessionData {
+  userId: string;
+  token: string;
+  ipAddress?: string;
+  userAgent?: string;
+  expiresAt: Date;
+}
+
+export interface LogLoginAttemptData {
+  email: string;
+  success: boolean;
+  ipAddress?: string;
+  userAgent?: string;
+  failureReason?: string;
+}
+
+export interface UpdateSecurityIncidentData {
+  status?: SecurityIncidentStatus;
+  resolution?: string;
+  resolvedBy?: string;
+}
+
+export interface SecurityIncidentFilters {
+  type?: SecurityIncidentType;
+  severity?: IncidentSeverity;
+  status?: SecurityIncidentStatus;
+}
+
+export interface AddIpRestrictionData {
+  ipAddress: string;
+  type: IpRestrictionType;
+  reason?: string;
+  createdBy: string;
+}
+
+export interface IpRestrictionCheckResult {
+  isRestricted: boolean;
+  type?: IpRestrictionType;
+  reason?: string;
+}
+
+export interface UserPermissionsResult {
+  roles: Role[];
+  permissions: Permission[];
+}
+
+export interface SecurityStatistics {
+  incidents: {
+    total: number;
+    open: number;
+    critical: number;
+  };
+  authentication: {
+    recentFailedLogins: number;
+    activeSessions: number;
+  };
+  ipRestrictions: number;
+}
+
 export class AccessControlService {
   /**
-   * Get all roles
+   * Get all roles with their permissions and user assignments
    */
-  static async getRoles() {
+  static async getRoles(): Promise<Role[]> {
     try {
-      const roles = await prisma.role.findMany({
-        include: {
-          permissions: {
-            include: {
-              permission: true,
-            },
+      const roles = await Role.findAll({
+        include: [
+          {
+            model: RolePermission,
+            as: 'permissions',
+            include: [
+              {
+                model: Permission,
+                as: 'permission'
+              }
+            ]
           },
-          userRoles: true,
-        },
-        orderBy: { name: 'asc' },
+          {
+            model: UserRoleAssignment,
+            as: 'userRoles'
+          }
+        ],
+        order: [['name', 'ASC']]
       });
 
       logger.info(`Retrieved ${roles.length} roles`);
@@ -49,20 +139,27 @@ export class AccessControlService {
   }
 
   /**
-   * Get role by ID
+   * Get role by ID with permissions and user assignments
    */
-  static async getRoleById(id: string) {
+  static async getRoleById(id: string): Promise<Role> {
     try {
-      const role = await prisma.role.findUnique({
-        where: { id },
-        include: {
-          permissions: {
-            include: {
-              permission: true,
-            },
+      const role = await Role.findByPk(id, {
+        include: [
+          {
+            model: RolePermission,
+            as: 'permissions',
+            include: [
+              {
+                model: Permission,
+                as: 'permission'
+              }
+            ]
           },
-          userRoles: true,
-        },
+          {
+            model: UserRoleAssignment,
+            as: 'userRoles'
+          }
+        ]
       });
 
       if (!role) {
@@ -78,82 +175,287 @@ export class AccessControlService {
   }
 
   /**
-   * Create a new role
+   * Create a new role with validation and audit logging
    */
-  static async createRole(data: CreateRoleData) {
+  static async createRole(data: CreateRoleData, auditUserId?: string): Promise<Role> {
+    const transaction = await sequelize.transaction();
+
     try {
-      const role = await prisma.role.create({
-        data: {
-          name: data.name,
-          description: data.description,
-          isSystem: false,
-        },
-        include: {
-          permissions: true,
-        },
+      // Validation: Check for duplicate role name (case-insensitive)
+      const existingRole = await Role.findOne({
+        where: sequelize.where(
+          sequelize.fn('LOWER', sequelize.col('name')),
+          sequelize.fn('LOWER', data.name)
+        ),
+        transaction
       });
 
-      logger.info(`Created role: ${role.id}`);
+      if (existingRole) {
+        throw new Error(`Role with name '${data.name}' already exists`);
+      }
+
+      // Validation: Trim and validate name
+      const trimmedName = data.name.trim();
+      if (trimmedName.length < 2 || trimmedName.length > 100) {
+        throw new Error('Role name must be between 2 and 100 characters');
+      }
+
+      // Create role
+      const role = await Role.create({
+        name: trimmedName,
+        description: data.description?.trim(),
+        isSystem: false
+      }, { transaction });
+
+      // Reload with associations
+      await role.reload({
+        include: [
+          {
+            model: RolePermission,
+            as: 'permissions',
+            include: [
+              {
+                model: Permission,
+                as: 'permission'
+              }
+            ]
+          }
+        ],
+        transaction
+      });
+
+      await transaction.commit();
+
+      // Audit logging
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.CREATE,
+        entityType: 'Role',
+        entityId: role.id,
+        changes: {
+          name: role.name,
+          description: role.description,
+          isSystem: role.isSystem
+        }
+      });
+
+      logger.info(`Created role: ${role.id} (${role.name}) by user ${auditUserId || 'SYSTEM'}`);
       return role;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error creating role:', error);
-      throw error;
-    }
-  }
 
-  /**
-   * Update role
-   */
-  static async updateRole(id: string, data: { name?: string; description?: string }) {
-    try {
-      const role = await prisma.role.update({
-        where: { id },
-        data,
-        include: {
-          permissions: {
-            include: {
-              permission: true,
-            },
-          },
-        },
+      // Audit failed attempt
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.CREATE,
+        entityType: 'Role',
+        changes: { name: data.name },
+        success: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
       });
 
-      logger.info(`Updated role: ${id}`);
-      return role;
-    } catch (error) {
-      logger.error(`Error updating role ${id}:`, error);
       throw error;
     }
   }
 
   /**
-   * Delete role
+   * Update role with validation and audit logging
    */
-  static async deleteRole(id: string) {
+  static async updateRole(id: string, data: UpdateRoleData, auditUserId?: string): Promise<Role> {
+    const transaction = await sequelize.transaction();
+
     try {
-      const role = await prisma.role.findUnique({ where: { id } });
-      
-      if (role?.isSystem) {
+      const role = await Role.findByPk(id, { transaction });
+
+      if (!role) {
+        throw new Error('Role not found');
+      }
+
+      // Validation: Prevent modification of system roles
+      if (role.isSystem) {
+        throw new Error('Cannot modify system roles');
+      }
+
+      // Store original values for audit trail
+      const originalValues = {
+        name: role.name,
+        description: role.description
+      };
+
+      // Validation: Check for duplicate name if name is being changed
+      if (data.name && data.name.trim() !== role.name) {
+        const trimmedName = data.name.trim();
+
+        const existingRole = await Role.findOne({
+          where: {
+            id: { [Op.ne]: id },
+            [Op.and]: sequelize.where(
+              sequelize.fn('LOWER', sequelize.col('name')),
+              sequelize.fn('LOWER', trimmedName)
+            )
+          },
+          transaction
+        });
+
+        if (existingRole) {
+          throw new Error(`Role with name '${trimmedName}' already exists`);
+        }
+
+        // Validate name length
+        if (trimmedName.length < 2 || trimmedName.length > 100) {
+          throw new Error('Role name must be between 2 and 100 characters');
+        }
+      }
+
+      // Prepare update data
+      const updateData: any = {};
+      if (data.name) updateData.name = data.name.trim();
+      if (data.description !== undefined) updateData.description = data.description?.trim();
+
+      await role.update(updateData, { transaction });
+
+      // Reload with associations
+      await role.reload({
+        include: [
+          {
+            model: RolePermission,
+            as: 'permissions',
+            include: [
+              {
+                model: Permission,
+                as: 'permission'
+              }
+            ]
+          }
+        ],
+        transaction
+      });
+
+      await transaction.commit();
+
+      // Audit logging
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.UPDATE,
+        entityType: 'Role',
+        entityId: role.id,
+        changes: {
+          before: originalValues,
+          after: {
+            name: role.name,
+            description: role.description
+          }
+        }
+      });
+
+      logger.info(`Updated role: ${id} by user ${auditUserId || 'SYSTEM'}`);
+      return role;
+    } catch (error) {
+      await transaction.rollback();
+      logger.error(`Error updating role ${id}:`, error);
+
+      // Audit failed attempt
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.UPDATE,
+        entityType: 'Role',
+        entityId: id,
+        changes: data,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Delete role with validation and audit logging (prevents deletion of system roles)
+   */
+  static async deleteRole(id: string, auditUserId?: string): Promise<{ success: boolean }> {
+    const transaction = await sequelize.transaction();
+
+    try {
+      const role = await Role.findByPk(id, {
+        include: [
+          {
+            model: UserRoleAssignment,
+            as: 'userRoles'
+          }
+        ],
+        transaction
+      });
+
+      if (!role) {
+        throw new Error('Role not found');
+      }
+
+      // Validation: Prevent deletion of system roles
+      if (role.isSystem) {
         throw new Error('Cannot delete system role');
       }
 
-      await prisma.role.delete({ where: { id } });
+      // Validation: Check if role is assigned to users
+      const assignedUsers = await UserRoleAssignment.count({
+        where: { roleId: id },
+        transaction
+      });
 
-      logger.info(`Deleted role: ${id}`);
+      if (assignedUsers > 0) {
+        throw new Error(`Cannot delete role: It is currently assigned to ${assignedUsers} user(s). Remove all user assignments first.`);
+      }
+
+      // Store role data for audit trail
+      const roleData = {
+        id: role.id,
+        name: role.name,
+        description: role.description,
+        isSystem: role.isSystem
+      };
+
+      await role.destroy({ transaction });
+      await transaction.commit();
+
+      // Audit logging
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.DELETE,
+        entityType: 'Role',
+        entityId: id,
+        changes: { deletedRole: roleData }
+      });
+
+      logger.info(`Deleted role: ${id} (${roleData.name}) by user ${auditUserId || 'SYSTEM'}`);
       return { success: true };
     } catch (error) {
+      await transaction.rollback();
       logger.error(`Error deleting role ${id}:`, error);
+
+      // Audit failed attempt
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.DELETE,
+        entityType: 'Role',
+        entityId: id,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+
       throw error;
     }
   }
 
   /**
-   * Get all permissions
+   * Get all permissions ordered by resource and action
    */
-  static async getPermissions() {
+  static async getPermissions(): Promise<Permission[]> {
     try {
-      const permissions = await prisma.permission.findMany({
-        orderBy: [{ resource: 'asc' }, { action: 'asc' }],
+      const permissions = await Permission.findAll({
+        order: [
+          ['resource', 'ASC'],
+          ['action', 'ASC']
+        ]
       });
 
       logger.info(`Retrieved ${permissions.length} permissions`);
@@ -165,16 +467,14 @@ export class AccessControlService {
   }
 
   /**
-   * Create permission
+   * Create a new permission
    */
-  static async createPermission(data: CreatePermissionData) {
+  static async createPermission(data: CreatePermissionData): Promise<Permission> {
     try {
-      const permission = await prisma.permission.create({
-        data: {
-          resource: data.resource,
-          action: data.action,
-          description: data.description,
-        },
+      const permission = await Permission.create({
+        resource: data.resource,
+        action: data.action,
+        description: data.description
       });
 
       logger.info(`Created permission: ${permission.id}`);
@@ -186,25 +486,97 @@ export class AccessControlService {
   }
 
   /**
-   * Assign permission to role
+   * Assign permission to role with validation and audit logging
    */
-  static async assignPermissionToRole(roleId: string, permissionId: string) {
+  static async assignPermissionToRole(roleId: string, permissionId: string, auditUserId?: string): Promise<RolePermission> {
+    const transaction = await sequelize.transaction();
+
     try {
-      const rolePermission = await prisma.rolePermission.create({
-        data: {
+      // Verify role and permission exist
+      const [role, permission] = await Promise.all([
+        Role.findByPk(roleId, { transaction }),
+        Permission.findByPk(permissionId, { transaction })
+      ]);
+
+      if (!role) {
+        throw new Error('Role not found');
+      }
+
+      if (!permission) {
+        throw new Error('Permission not found');
+      }
+
+      // Validation: Prevent modification of system role permissions
+      if (role.isSystem) {
+        throw new Error('Cannot modify permissions of system roles');
+      }
+
+      // Check if assignment already exists
+      const existingAssignment = await RolePermission.findOne({
+        where: {
           roleId,
-          permissionId,
+          permissionId
         },
-        include: {
-          role: true,
-          permission: true,
-        },
+        transaction
       });
 
-      logger.info(`Assigned permission ${permissionId} to role ${roleId}`);
+      if (existingAssignment) {
+        throw new Error('Permission already assigned to role');
+      }
+
+      const rolePermission = await RolePermission.create({
+        roleId,
+        permissionId
+      }, { transaction });
+
+      // Reload with associations
+      await rolePermission.reload({
+        include: [
+          {
+            model: Role,
+            as: 'role'
+          },
+          {
+            model: Permission,
+            as: 'permission'
+          }
+        ],
+        transaction
+      });
+
+      await transaction.commit();
+
+      // Audit logging
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.CREATE,
+        entityType: 'RolePermission',
+        entityId: rolePermission.id,
+        changes: {
+          roleId,
+          roleName: role.name,
+          permissionId,
+          permissionResource: permission.resource,
+          permissionAction: permission.action
+        }
+      });
+
+      logger.info(`Assigned permission ${permissionId} (${permission.resource}.${permission.action}) to role ${roleId} (${role.name}) by user ${auditUserId || 'SYSTEM'}`);
       return rolePermission;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error assigning permission to role:', error);
+
+      // Audit failed attempt
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.CREATE,
+        entityType: 'RolePermission',
+        changes: { roleId, permissionId },
+        success: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+
       throw error;
     }
   }
@@ -212,14 +584,18 @@ export class AccessControlService {
   /**
    * Remove permission from role
    */
-  static async removePermissionFromRole(roleId: string, permissionId: string) {
+  static async removePermissionFromRole(roleId: string, permissionId: string): Promise<{ success: boolean }> {
     try {
-      await prisma.rolePermission.deleteMany({
+      const deletedCount = await RolePermission.destroy({
         where: {
           roleId,
-          permissionId,
-        },
+          permissionId
+        }
       });
+
+      if (deletedCount === 0) {
+        throw new Error('Permission assignment not found');
+      }
 
       logger.info(`Removed permission ${permissionId} from role ${roleId}`);
       return { success: true };
@@ -230,32 +606,167 @@ export class AccessControlService {
   }
 
   /**
-   * Assign role to user
+   * Assign role to user with privilege escalation prevention and audit logging
    */
-  static async assignRoleToUser(userId: string, roleId: string) {
+  static async assignRoleToUser(userId: string, roleId: string, auditUserId?: string, bypassPrivilegeCheck: boolean = false): Promise<UserRoleAssignment> {
+    const transaction = await sequelize.transaction();
+
     try {
-      const userRole = await prisma.userRoleAssignment.create({
-        data: {
-          userId,
-          roleId,
-        },
-        include: {
-          role: {
-            include: {
-              permissions: {
-                include: {
-                  permission: true,
-                },
-              },
-            },
-          },
-        },
+      // Verify target user exists
+      const targetUser = await User.findByPk(userId, { transaction });
+      if (!targetUser) {
+        throw new Error('User not found');
+      }
+
+      // Verify role exists
+      const role = await Role.findByPk(roleId, {
+        include: [
+          {
+            model: RolePermission,
+            as: 'permissions',
+            include: [
+              {
+                model: Permission,
+                as: 'permission'
+              }
+            ]
+          }
+        ],
+        transaction
       });
 
-      logger.info(`Assigned role ${roleId} to user ${userId}`);
+      if (!role) {
+        throw new Error('Role not found');
+      }
+
+      // Validation: Privilege escalation prevention
+      if (!bypassPrivilegeCheck && auditUserId) {
+        // Get assigning user's roles and permissions
+        const assigningUserRoles = await this.getUserPermissions(auditUserId);
+
+        // Check if assigning user has permission to manage users
+        const canManageUsers = assigningUserRoles.permissions.some(
+          p => p.resource === 'users' && p.action === 'manage'
+        );
+
+        if (!canManageUsers) {
+          throw new Error('You do not have permission to assign roles to users');
+        }
+
+        // Prevent assigning higher-privilege roles
+        // Check if the role being assigned has security or system management permissions
+        const rolePermissions = role.permissions as any[] || [];
+        const hasCriticalPermissions = rolePermissions.some((rp: any) => {
+          const perm = rp.permission;
+          return (perm.resource === 'security' && perm.action === 'manage') ||
+                 (perm.resource === 'system' && perm.action === 'configure');
+        });
+
+        if (hasCriticalPermissions) {
+          // Only users with security.manage can assign security-sensitive roles
+          const canManageSecurity = assigningUserRoles.permissions.some(
+            p => p.resource === 'security' && p.action === 'manage'
+          );
+
+          if (!canManageSecurity) {
+            throw new Error('You do not have sufficient privileges to assign this role. Security management permission required.');
+          }
+        }
+      }
+
+      // Check if assignment already exists
+      const existingAssignment = await UserRoleAssignment.findOne({
+        where: {
+          userId,
+          roleId
+        },
+        transaction
+      });
+
+      if (existingAssignment) {
+        throw new Error('Role already assigned to user');
+      }
+
+      const userRole = await UserRoleAssignment.create({
+        userId,
+        roleId
+      }, { transaction });
+
+      // Reload with associations
+      await userRole.reload({
+        include: [
+          {
+            model: Role,
+            as: 'role',
+            include: [
+              {
+                model: RolePermission,
+                as: 'permissions',
+                include: [
+                  {
+                    model: Permission,
+                    as: 'permission'
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        transaction
+      });
+
+      await transaction.commit();
+
+      // Audit logging - Security-critical operation
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.CREATE,
+        entityType: 'UserRoleAssignment',
+        entityId: userRole.id,
+        changes: {
+          targetUserId: userId,
+          targetUserEmail: targetUser.email,
+          roleId,
+          roleName: role.name,
+          assignedBy: auditUserId || 'SYSTEM'
+        }
+      });
+
+      // Log security incident if assigning high-privilege role
+      const rolePermissions = role.permissions as any[] || [];
+      const hasHighPrivilege = rolePermissions.some((rp: any) => {
+        const perm = rp.permission;
+        return perm.resource === 'security' || perm.resource === 'system';
+      });
+
+      if (hasHighPrivilege) {
+        await SecurityIncident.create({
+          type: SecurityIncidentType.POLICY_VIOLATION,
+          severity: IncidentSeverity.LOW,
+          description: `High-privilege role '${role.name}' assigned to user ${targetUser.email}`,
+          affectedResources: [`user:${userId}`, `role:${roleId}`],
+          detectedBy: auditUserId || 'SYSTEM',
+          status: SecurityIncidentStatus.CLOSED,
+          resolution: 'Role assignment completed successfully. Review for compliance.'
+        });
+      }
+
+      logger.info(`Assigned role ${roleId} (${role.name}) to user ${userId} (${targetUser.email}) by user ${auditUserId || 'SYSTEM'}`);
       return userRole;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error assigning role to user:', error);
+
+      // Audit failed attempt - Security-critical
+      await auditService.logAction({
+        userId: auditUserId,
+        action: AuditAction.CREATE,
+        entityType: 'UserRoleAssignment',
+        changes: { userId, roleId },
+        success: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+
       throw error;
     }
   }
@@ -263,14 +774,18 @@ export class AccessControlService {
   /**
    * Remove role from user
    */
-  static async removeRoleFromUser(userId: string, roleId: string) {
+  static async removeRoleFromUser(userId: string, roleId: string): Promise<{ success: boolean }> {
     try {
-      await prisma.userRoleAssignment.deleteMany({
+      const deletedCount = await UserRoleAssignment.destroy({
         where: {
           userId,
-          roleId,
-        },
+          roleId
+        }
       });
+
+      if (deletedCount === 0) {
+        throw new Error('Role assignment not found');
+      }
 
       logger.info(`Removed role ${roleId} from user ${userId}`);
       return { success: true };
@@ -283,37 +798,53 @@ export class AccessControlService {
   /**
    * Get user roles and permissions
    */
-  static async getUserPermissions(userId: string) {
+  static async getUserPermissions(userId: string): Promise<UserPermissionsResult> {
     try {
-      const userRoles = await prisma.userRoleAssignment.findMany({
+      const userRoles = await UserRoleAssignment.findAll({
         where: { userId },
-        include: {
-          role: {
-            include: {
-              permissions: {
-                include: {
-                  permission: true,
-                },
-              },
-            },
-          },
-        },
+        include: [
+          {
+            model: Role,
+            as: 'role',
+            include: [
+              {
+                model: RolePermission,
+                as: 'permissions',
+                include: [
+                  {
+                    model: Permission,
+                    as: 'permission'
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       });
 
-      // Flatten permissions
-      const permissions = userRoles.flatMap(ur =>
-        ur.role.permissions.map(rp => rp.permission)
-      );
+      // Extract roles
+      const roles = userRoles.map(ur => ur.role!);
 
-      // Remove duplicates
-      const uniquePermissions = Array.from(
-        new Map(permissions.map(p => [p.id, p])).values()
-      );
+      // Flatten permissions from all roles
+      const permissionsMap = new Map<string, Permission>();
 
-      logger.info(`Retrieved ${uniquePermissions.length} permissions for user ${userId}`);
+      for (const userRole of userRoles) {
+        if (userRole.role && userRole.role.permissions) {
+          for (const rolePermission of userRole.role.permissions as any[]) {
+            if (rolePermission.permission) {
+              const perm = rolePermission.permission;
+              permissionsMap.set(perm.id, perm);
+            }
+          }
+        }
+      }
+
+      const permissions = Array.from(permissionsMap.values());
+
+      logger.info(`Retrieved ${permissions.length} permissions for user ${userId}`);
       return {
-        roles: userRoles.map(ur => ur.role),
-        permissions: uniquePermissions,
+        roles,
+        permissions
       };
     } catch (error) {
       logger.error(`Error getting user permissions for ${userId}:`, error);
@@ -322,12 +853,12 @@ export class AccessControlService {
   }
 
   /**
-   * Check if user has permission
+   * Check if user has a specific permission
    */
   static async checkPermission(userId: string, resource: string, action: string): Promise<boolean> {
     try {
       const userPermissions = await this.getUserPermissions(userId);
-      
+
       const hasPermission = userPermissions.permissions.some(
         p => p.resource === resource && p.action === action
       );
@@ -341,24 +872,17 @@ export class AccessControlService {
   }
 
   /**
-   * Create session
+   * Create a new session for user authentication
    */
-  static async createSession(data: {
-    userId: string;
-    token: string;
-    ipAddress?: string;
-    userAgent?: string;
-    expiresAt: Date;
-  }) {
+  static async createSession(data: CreateSessionData): Promise<Session> {
     try {
-      const session = await prisma.session.create({
-        data: {
-          userId: data.userId,
-          token: data.token,
-          ipAddress: data.ipAddress,
-          userAgent: data.userAgent,
-          expiresAt: data.expiresAt,
-        },
+      const session = await Session.create({
+        userId: data.userId,
+        token: data.token,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+        expiresAt: data.expiresAt,
+        lastActivity: new Date()
       });
 
       logger.info(`Created session for user ${data.userId}`);
@@ -370,16 +894,18 @@ export class AccessControlService {
   }
 
   /**
-   * Get active sessions for user
+   * Get active sessions for a user
    */
-  static async getUserSessions(userId: string) {
+  static async getUserSessions(userId: string): Promise<Session[]> {
     try {
-      const sessions = await prisma.session.findMany({
+      const sessions = await Session.findAll({
         where: {
           userId,
-          expiresAt: { gt: new Date() },
+          expiresAt: {
+            [Op.gt]: new Date()
+          }
         },
-        orderBy: { createdAt: 'desc' },
+        order: [['createdAt', 'DESC']]
       });
 
       logger.info(`Retrieved ${sessions.length} active sessions for user ${userId}`);
@@ -391,14 +917,19 @@ export class AccessControlService {
   }
 
   /**
-   * Update session activity
+   * Update session last activity timestamp
    */
-  static async updateSessionActivity(token: string) {
+  static async updateSessionActivity(token: string): Promise<void> {
     try {
-      await prisma.session.update({
-        where: { token },
-        data: { lastActivity: new Date() },
+      const session = await Session.findOne({
+        where: { token }
       });
+
+      if (session) {
+        await session.update({
+          lastActivity: new Date()
+        });
+      }
     } catch (error) {
       logger.error('Error updating session activity:', error);
       // Don't throw - this is a background operation
@@ -408,11 +939,15 @@ export class AccessControlService {
   /**
    * Delete session (logout)
    */
-  static async deleteSession(token: string) {
+  static async deleteSession(token: string): Promise<{ success: boolean }> {
     try {
-      await prisma.session.delete({
-        where: { token },
+      const deletedCount = await Session.destroy({
+        where: { token }
       });
+
+      if (deletedCount === 0) {
+        throw new Error('Session not found');
+      }
 
       logger.info('Session deleted');
       return { success: true };
@@ -423,16 +958,16 @@ export class AccessControlService {
   }
 
   /**
-   * Delete all user sessions (logout all devices)
+   * Delete all user sessions (logout from all devices)
    */
-  static async deleteAllUserSessions(userId: string) {
+  static async deleteAllUserSessions(userId: string): Promise<{ deleted: number }> {
     try {
-      const result = await prisma.session.deleteMany({
-        where: { userId },
+      const deletedCount = await Session.destroy({
+        where: { userId }
       });
 
-      logger.info(`Deleted ${result.count} sessions for user ${userId}`);
-      return { deleted: result.count };
+      logger.info(`Deleted ${deletedCount} sessions for user ${userId}`);
+      return { deleted: deletedCount };
     } catch (error) {
       logger.error(`Error deleting sessions for user ${userId}:`, error);
       throw error;
@@ -440,18 +975,20 @@ export class AccessControlService {
   }
 
   /**
-   * Clean up expired sessions
+   * Clean up expired sessions (maintenance operation)
    */
-  static async cleanupExpiredSessions() {
+  static async cleanupExpiredSessions(): Promise<{ deleted: number }> {
     try {
-      const result = await prisma.session.deleteMany({
+      const deletedCount = await Session.destroy({
         where: {
-          expiresAt: { lt: new Date() },
-        },
+          expiresAt: {
+            [Op.lt]: new Date()
+          }
+        }
       });
 
-      logger.info(`Cleaned up ${result.count} expired sessions`);
-      return { deleted: result.count };
+      logger.info(`Cleaned up ${deletedCount} expired sessions`);
+      return { deleted: deletedCount };
     } catch (error) {
       logger.error('Error cleaning up expired sessions:', error);
       throw error;
@@ -459,24 +996,16 @@ export class AccessControlService {
   }
 
   /**
-   * Log login attempt
+   * Log a login attempt for security monitoring
    */
-  static async logLoginAttempt(data: {
-    email: string;
-    success: boolean;
-    ipAddress?: string;
-    userAgent?: string;
-    failureReason?: string;
-  }) {
+  static async logLoginAttempt(data: LogLoginAttemptData): Promise<LoginAttempt | undefined> {
     try {
-      const attempt = await prisma.loginAttempt.create({
-        data: {
-          email: data.email,
-          success: data.success,
-          ipAddress: data.ipAddress,
-          userAgent: data.userAgent,
-          failureReason: data.failureReason,
-        },
+      const attempt = await LoginAttempt.create({
+        email: data.email,
+        success: data.success,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+        failureReason: data.failureReason
       });
 
       logger.info(`Logged login attempt for ${data.email}: ${data.success ? 'success' : 'failure'}`);
@@ -484,23 +1013,26 @@ export class AccessControlService {
     } catch (error) {
       logger.error('Error logging login attempt:', error);
       // Don't throw - logging failures shouldn't break login
+      return undefined;
     }
   }
 
   /**
-   * Get recent failed login attempts
+   * Get recent failed login attempts for an email address
    */
-  static async getFailedLoginAttempts(email: string, minutes: number = 15) {
+  static async getFailedLoginAttempts(email: string, minutes: number = 15): Promise<LoginAttempt[]> {
     try {
       const since = new Date(Date.now() - minutes * 60 * 1000);
 
-      const attempts = await prisma.loginAttempt.findMany({
+      const attempts = await LoginAttempt.findAll({
         where: {
           email,
           success: false,
-          createdAt: { gte: since },
+          createdAt: {
+            [Op.gte]: since
+          }
         },
-        orderBy: { createdAt: 'desc' },
+        order: [['createdAt', 'DESC']]
       });
 
       logger.info(`Retrieved ${attempts.length} failed login attempts for ${email}`);
@@ -512,19 +1044,17 @@ export class AccessControlService {
   }
 
   /**
-   * Create security incident
+   * Create a security incident record
    */
-  static async createSecurityIncident(data: CreateSecurityIncidentData) {
+  static async createSecurityIncident(data: CreateSecurityIncidentData): Promise<SecurityIncident> {
     try {
-      const incident = await prisma.securityIncident.create({
-        data: {
-          type: data.type as SecurityIncidentType,
-          severity: data.severity as IncidentSeverity,
-          description: data.description,
-          affectedResources: data.affectedResources || [],
-          detectedBy: data.detectedBy,
-          status: 'OPEN',
-        },
+      const incident = await SecurityIncident.create({
+        type: data.type,
+        severity: data.severity,
+        description: data.description,
+        affectedResources: data.affectedResources || [],
+        detectedBy: data.detectedBy,
+        status: SecurityIncidentStatus.OPEN
       });
 
       logger.warn(`Security incident created: ${incident.id} - ${data.type}`);
@@ -536,30 +1066,39 @@ export class AccessControlService {
   }
 
   /**
-   * Update security incident
+   * Update a security incident
    */
   static async updateSecurityIncident(
     id: string,
-    data: {
-      status?: string;
-      resolution?: string;
-      resolvedBy?: string;
-    }
-  ) {
+    data: UpdateSecurityIncidentData
+  ): Promise<SecurityIncident> {
     try {
-      const updateData: Prisma.SecurityIncidentUpdateInput = {};
-      if (data.status) updateData.status = data.status as any;
-      if (data.resolution) updateData.resolution = data.resolution;
-      if (data.resolvedBy) updateData.resolvedBy = data.resolvedBy;
+      const incident = await SecurityIncident.findByPk(id);
 
-      if (data.status === 'RESOLVED' && !updateData.resolvedAt) {
+      if (!incident) {
+        throw new Error('Security incident not found');
+      }
+
+      const updateData: any = {};
+
+      if (data.status) {
+        updateData.status = data.status;
+      }
+
+      if (data.resolution) {
+        updateData.resolution = data.resolution;
+      }
+
+      if (data.resolvedBy) {
+        updateData.resolvedBy = data.resolvedBy;
+      }
+
+      // Automatically set resolvedAt when status changes to RESOLVED
+      if (data.status === SecurityIncidentStatus.RESOLVED && !incident.resolvedAt) {
         updateData.resolvedAt = new Date();
       }
 
-      const incident = await prisma.securityIncident.update({
-        where: { id },
-        data: updateData,
-      });
+      await incident.update(updateData);
 
       logger.info(`Updated security incident: ${id}`);
       return incident;
@@ -570,40 +1109,43 @@ export class AccessControlService {
   }
 
   /**
-   * Get security incidents
+   * Get security incidents with pagination and filtering
    */
   static async getSecurityIncidents(
     page: number = 1,
     limit: number = 20,
-    filters: {
-      type?: string;
-      severity?: string;
-      status?: string;
-    } = {}
-  ) {
+    filters: SecurityIncidentFilters = {}
+  ): Promise<{
+    incidents: SecurityIncident[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+  }> {
     try {
-      const skip = (page - 1) * limit;
-      const where: Prisma.SecurityIncidentWhereInput = {};
+      const offset = (page - 1) * limit;
+      const whereClause: any = {};
 
       if (filters.type) {
-        where.type = filters.type as SecurityIncidentType;
-      }
-      if (filters.severity) {
-        where.severity = filters.severity as IncidentSeverity;
-      }
-      if (filters.status) {
-        where.status = filters.status as Prisma.EnumSecurityIncidentStatusFilter;
+        whereClause.type = filters.type;
       }
 
-      const [incidents, total] = await Promise.all([
-        prisma.securityIncident.findMany({
-          where,
-          skip,
-          take: limit,
-          orderBy: { createdAt: 'desc' },
-        }),
-        prisma.securityIncident.count({ where }),
-      ]);
+      if (filters.severity) {
+        whereClause.severity = filters.severity;
+      }
+
+      if (filters.status) {
+        whereClause.status = filters.status;
+      }
+
+      const { rows: incidents, count: total } = await SecurityIncident.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']]
+      });
 
       logger.info(`Retrieved ${incidents.length} security incidents`);
 
@@ -613,8 +1155,8 @@ export class AccessControlService {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit),
-        },
+          pages: Math.ceil(total / limit)
+        }
       };
     } catch (error) {
       logger.error('Error getting security incidents:', error);
@@ -623,13 +1165,13 @@ export class AccessControlService {
   }
 
   /**
-   * Get IP restrictions
+   * Get all active IP restrictions
    */
-  static async getIpRestrictions() {
+  static async getIpRestrictions(): Promise<IpRestriction[]> {
     try {
-      const restrictions = await prisma.ipRestriction.findMany({
+      const restrictions = await IpRestriction.findAll({
         where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
+        order: [['createdAt', 'DESC']]
       });
 
       logger.info(`Retrieved ${restrictions.length} IP restrictions`);
@@ -641,23 +1183,28 @@ export class AccessControlService {
   }
 
   /**
-   * Add IP restriction
+   * Add an IP restriction (whitelist or blacklist)
    */
-  static async addIpRestriction(data: {
-    ipAddress: string;
-    type: string;
-    reason?: string;
-    createdBy: string;
-  }) {
+  static async addIpRestriction(data: AddIpRestrictionData): Promise<IpRestriction> {
     try {
-      const restriction = await prisma.ipRestriction.create({
-        data: {
+      // Check if restriction already exists for this IP
+      const existingRestriction = await IpRestriction.findOne({
+        where: {
           ipAddress: data.ipAddress,
-          type: data.type as IpRestrictionType,
-          reason: data.reason,
-          isActive: true,
-          createdBy: data.createdBy,
-        },
+          isActive: true
+        }
+      });
+
+      if (existingRestriction) {
+        throw new Error('IP restriction already exists for this address');
+      }
+
+      const restriction = await IpRestriction.create({
+        ipAddress: data.ipAddress,
+        type: data.type,
+        reason: data.reason,
+        isActive: true,
+        createdBy: data.createdBy
       });
 
       logger.info(`Added IP restriction: ${data.ipAddress} (${data.type})`);
@@ -669,13 +1216,18 @@ export class AccessControlService {
   }
 
   /**
-   * Remove IP restriction
+   * Remove (deactivate) an IP restriction
    */
-  static async removeIpRestriction(id: string) {
+  static async removeIpRestriction(id: string): Promise<{ success: boolean }> {
     try {
-      await prisma.ipRestriction.update({
-        where: { id },
-        data: { isActive: false },
+      const restriction = await IpRestriction.findByPk(id);
+
+      if (!restriction) {
+        throw new Error('IP restriction not found');
+      }
+
+      await restriction.update({
+        isActive: false
       });
 
       logger.info(`Removed IP restriction: ${id}`);
@@ -687,31 +1239,27 @@ export class AccessControlService {
   }
 
   /**
-   * Check if IP is restricted
+   * Check if an IP address is restricted
    */
-  static async checkIpRestriction(ipAddress: string): Promise<{
-    isRestricted: boolean;
-    type?: string;
-    reason?: string;
-  }> {
+  static async checkIpRestriction(ipAddress: string): Promise<IpRestrictionCheckResult> {
     try {
-      const restriction = await prisma.ipRestriction.findFirst({
+      const restriction = await IpRestriction.findOne({
         where: {
           ipAddress,
-          isActive: true,
-        },
+          isActive: true
+        }
       });
 
       if (!restriction) {
         return { isRestricted: false };
       }
 
-      const isRestricted = restriction.type === 'BLACKLIST';
+      const isRestricted = restriction.type === IpRestrictionType.BLACKLIST;
 
       return {
         isRestricted,
         type: restriction.type,
-        reason: restriction.reason || undefined,
+        reason: restriction.reason || undefined
       };
     } catch (error) {
       logger.error('Error checking IP restriction:', error);
@@ -720,53 +1268,63 @@ export class AccessControlService {
   }
 
   /**
-   * Get security statistics
+   * Get comprehensive security statistics
    */
-  static async getSecurityStatistics() {
+  static async getSecurityStatistics(): Promise<SecurityStatistics> {
     try {
+      const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
       const [
         totalIncidents,
         openIncidents,
         criticalIncidents,
         recentFailedLogins,
         activeSessions,
-        ipRestrictions,
+        activeIpRestrictions
       ] = await Promise.all([
-        prisma.securityIncident.count(),
-        prisma.securityIncident.count({ where: { status: 'OPEN' } }),
-        prisma.securityIncident.count({
-          where: {
-            severity: 'CRITICAL',
-            status: { not: 'CLOSED' },
-          },
+        SecurityIncident.count(),
+        SecurityIncident.count({
+          where: { status: SecurityIncidentStatus.OPEN }
         }),
-        prisma.loginAttempt.count({
+        SecurityIncident.count({
+          where: {
+            severity: IncidentSeverity.CRITICAL,
+            status: {
+              [Op.ne]: SecurityIncidentStatus.CLOSED
+            }
+          }
+        }),
+        LoginAttempt.count({
           where: {
             success: false,
             createdAt: {
-              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-            },
-          },
+              [Op.gte]: last24Hours
+            }
+          }
         }),
-        prisma.session.count({
+        Session.count({
           where: {
-            expiresAt: { gt: new Date() },
-          },
+            expiresAt: {
+              [Op.gt]: new Date()
+            }
+          }
         }),
-        prisma.ipRestriction.count({ where: { isActive: true } }),
+        IpRestriction.count({
+          where: { isActive: true }
+        })
       ]);
 
-      const statistics = {
+      const statistics: SecurityStatistics = {
         incidents: {
           total: totalIncidents,
           open: openIncidents,
-          critical: criticalIncidents,
+          critical: criticalIncidents
         },
         authentication: {
           recentFailedLogins,
-          activeSessions,
+          activeSessions
         },
-        ipRestrictions,
+        ipRestrictions: activeIpRestrictions
       };
 
       logger.info('Retrieved security statistics');
@@ -778,71 +1336,104 @@ export class AccessControlService {
   }
 
   /**
-   * Initialize default roles and permissions
+   * Initialize default roles and permissions for the platform
+   * This should be run once during system setup
    */
-  static async initializeDefaultRoles() {
+  static async initializeDefaultRoles(): Promise<void> {
+    const transaction = await sequelize.transaction();
+
     try {
       // Check if roles already exist
-      const existingRoles = await prisma.role.count();
-      if (existingRoles > 0) {
+      const existingRolesCount = await Role.count({ transaction });
+      if (existingRolesCount > 0) {
         logger.info('Roles already initialized');
+        await transaction.rollback();
         return;
       }
 
       // Create default permissions
-      const permissions = await Promise.all([
+      const permissionsData: CreatePermissionData[] = [
         // Student permissions
-        this.createPermission({ resource: 'students', action: 'read', description: 'View students' }),
-        this.createPermission({ resource: 'students', action: 'create', description: 'Create students' }),
-        this.createPermission({ resource: 'students', action: 'update', description: 'Update students' }),
-        this.createPermission({ resource: 'students', action: 'delete', description: 'Delete students' }),
-        
+        { resource: 'students', action: 'read', description: 'View students' },
+        { resource: 'students', action: 'create', description: 'Create students' },
+        { resource: 'students', action: 'update', description: 'Update students' },
+        { resource: 'students', action: 'delete', description: 'Delete students' },
+
         // Medication permissions
-        this.createPermission({ resource: 'medications', action: 'read', description: 'View medications' }),
-        this.createPermission({ resource: 'medications', action: 'administer', description: 'Administer medications' }),
-        this.createPermission({ resource: 'medications', action: 'manage', description: 'Manage medication inventory' }),
-        
+        { resource: 'medications', action: 'read', description: 'View medications' },
+        { resource: 'medications', action: 'administer', description: 'Administer medications' },
+        { resource: 'medications', action: 'manage', description: 'Manage medication inventory' },
+
         // Health records permissions
-        this.createPermission({ resource: 'health_records', action: 'read', description: 'View health records' }),
-        this.createPermission({ resource: 'health_records', action: 'create', description: 'Create health records' }),
-        this.createPermission({ resource: 'health_records', action: 'update', description: 'Update health records' }),
-        
+        { resource: 'health_records', action: 'read', description: 'View health records' },
+        { resource: 'health_records', action: 'create', description: 'Create health records' },
+        { resource: 'health_records', action: 'update', description: 'Update health records' },
+
         // Reports permissions
-        this.createPermission({ resource: 'reports', action: 'read', description: 'View reports' }),
-        this.createPermission({ resource: 'reports', action: 'create', description: 'Create reports' }),
-        
+        { resource: 'reports', action: 'read', description: 'View reports' },
+        { resource: 'reports', action: 'create', description: 'Create reports' },
+
         // Admin permissions
-        this.createPermission({ resource: 'users', action: 'manage', description: 'Manage users' }),
-        this.createPermission({ resource: 'system', action: 'configure', description: 'Configure system' }),
-      ]);
+        { resource: 'users', action: 'manage', description: 'Manage users' },
+        { resource: 'system', action: 'configure', description: 'Configure system' },
+        { resource: 'security', action: 'manage', description: 'Manage security settings' }
+      ];
+
+      const permissions: Permission[] = [];
+      for (const permData of permissionsData) {
+        const permission = await Permission.create(permData, { transaction });
+        permissions.push(permission);
+      }
 
       // Create default roles
-      const nurseRole = await this.createRole({
-        name: 'Nurse',
-        description: 'School nurse with full access to student health management',
-      });
+      const nurseRole = await Role.create(
+        {
+          name: 'Nurse',
+          description: 'School nurse with full access to student health management',
+          isSystem: true
+        },
+        { transaction }
+      );
 
-      const adminRole = await this.createRole({
-        name: 'Administrator',
-        description: 'System administrator with full access',
-      });
+      const adminRole = await Role.create(
+        {
+          name: 'Administrator',
+          description: 'System administrator with full access',
+          isSystem: true
+        },
+        { transaction }
+      );
 
       // Assign permissions to nurse role
       const nursePermissions = permissions.filter(p =>
         ['students', 'medications', 'health_records', 'reports'].includes(p.resource)
       );
-      
+
       for (const permission of nursePermissions) {
-        await this.assignPermissionToRole(nurseRole.id, permission.id);
+        await RolePermission.create(
+          {
+            roleId: nurseRole.id,
+            permissionId: permission.id
+          },
+          { transaction }
+        );
       }
 
       // Assign all permissions to admin role
       for (const permission of permissions) {
-        await this.assignPermissionToRole(adminRole.id, permission.id);
+        await RolePermission.create(
+          {
+            roleId: adminRole.id,
+            permissionId: permission.id
+          },
+          { transaction }
+        );
       }
 
-      logger.info('Initialized default roles and permissions');
+      await transaction.commit();
+      logger.info('Initialized default roles and permissions successfully');
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error initializing default roles:', error);
       throw error;
     }

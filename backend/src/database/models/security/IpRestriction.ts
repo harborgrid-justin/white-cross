@@ -55,6 +55,48 @@ IpRestriction.init(
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'IP address or CIDR range',
+      validate: {
+        notEmpty: {
+          msg: 'IP address cannot be empty'
+        },
+        isValidIpOrCidr(value: string) {
+          // IPv4 validation
+          const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+          // IPv4 CIDR validation
+          const cidrRegex = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+          // IPv6 validation (simplified)
+          const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+
+          if (!ipv4Regex.test(value) && !cidrRegex.test(value) && !ipv6Regex.test(value)) {
+            throw new Error('Invalid IP address or CIDR range format');
+          }
+
+          // Validate IPv4 octets if it's IPv4
+          if (ipv4Regex.test(value) || cidrRegex.test(value)) {
+            const parts = value.split('/')[0].split('.');
+            for (const part of parts) {
+              const num = parseInt(part);
+              if (num < 0 || num > 255) {
+                throw new Error('IPv4 octets must be between 0 and 255');
+              }
+            }
+
+            // Validate CIDR notation
+            if (cidrRegex.test(value)) {
+              const cidrBits = parseInt(value.split('/')[1]);
+              if (cidrBits < 0 || cidrBits > 32) {
+                throw new Error('CIDR notation must be between /0 and /32 for IPv4');
+              }
+            }
+          }
+        },
+        notLocalhost(value: string) {
+          const localhostPatterns = ['127.0.0.1', 'localhost', '::1', '0.0.0.0'];
+          if (localhostPatterns.some(pattern => value.includes(pattern))) {
+            throw new Error('Cannot restrict localhost addresses');
+          }
+        },
+      },
     },
     type: {
       type: DataTypes.ENUM(...Object.values(IpRestrictionType)),
@@ -66,6 +108,12 @@ IpRestriction.init(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Reason for the IP restriction',
+      validate: {
+        len: {
+          args: [0, 1000],
+          msg: 'Reason must not exceed 1000 characters'
+        },
+      },
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -77,6 +125,15 @@ IpRestriction.init(
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'User ID who created the restriction',
+      validate: {
+        notEmpty: {
+          msg: 'Created by user ID cannot be empty'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'Created by must be a valid UUID'
+        },
+      },
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,

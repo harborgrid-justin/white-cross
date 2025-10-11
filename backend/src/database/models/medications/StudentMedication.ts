@@ -19,6 +19,8 @@ interface StudentMedicationAttributes {
   endDate?: Date;
   isActive: boolean;
   prescribedBy: string;
+  prescriptionNumber?: string;
+  refillsRemaining?: number;
   createdAt: Date;
   updatedAt: Date;
 
@@ -32,7 +34,7 @@ interface StudentMedicationAttributes {
 }
 
 interface StudentMedicationCreationAttributes
-  extends Optional<StudentMedicationAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isActive' | 'instructions' | 'endDate' | 'createdBy' | 'updatedBy'> {}
+  extends Optional<StudentMedicationAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isActive' | 'instructions' | 'endDate' | 'prescriptionNumber' | 'refillsRemaining' | 'createdBy' | 'updatedBy'> {}
 
 export class StudentMedication extends Model<StudentMedicationAttributes, StudentMedicationCreationAttributes> implements StudentMedicationAttributes {
   public id!: string;
@@ -44,6 +46,8 @@ export class StudentMedication extends Model<StudentMedicationAttributes, Studen
   public endDate?: Date;
   public isActive!: boolean;
   public prescribedBy!: string;
+  public prescriptionNumber?: string;
+  public refillsRemaining?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -123,6 +127,21 @@ StudentMedication.init(
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'Name of prescribing healthcare provider',
+    },
+    prescriptionNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Prescription number for tracking and verification',
+    },
+    refillsRemaining: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+        max: 12
+      },
+      comment: 'Number of refills remaining for this prescription',
     },
     studentId: {
       type: DataTypes.STRING,

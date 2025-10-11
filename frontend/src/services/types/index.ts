@@ -91,12 +91,23 @@ export interface Student {
 
 export interface EmergencyContact {
   id: string;
-  name: string;
+  studentId: string;
+  firstName: string;
+  lastName: string;
   relationship: string;
-  phone: string;
+  phoneNumber: string;
   email?: string;
-  isPrimary: boolean;
-  canPickup: boolean;
+  address?: string;
+  priority: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  student?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    studentNumber: string;
+  };
 }
 
 // Health Record Types
@@ -264,13 +275,18 @@ export interface AppointmentUpdateData {
 }
 
 export interface AppointmentStatistics {
-  totalAppointments: number;
-  scheduledCount: number;
-  completedCount: number;
-  cancelledCount: number;
-  noShowCount: number;
-  averageDuration: number;
-  utilizationRate: number;
+  total: number;
+  byStatus: Record<string, number>;
+  byType: Record<string, number>;
+  noShowRate: number;
+  completionRate: number;
+  totalAppointments?: number;
+  scheduledCount?: number;
+  completedCount?: number;
+  cancelledCount?: number;
+  noShowCount?: number;
+  averageDuration?: number;
+  utilizationRate?: number;
   trendsData?: any[];
 }
 
@@ -300,10 +316,14 @@ export interface NurseAvailabilityData {
 }
 
 export interface AvailabilitySlot {
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  duration: number;
+  start: Date;
+  end: Date;
+  available: boolean;
+  conflictingAppointment?: {
+    id: string;
+    student: string;
+    reason: string;
+  };
 }
 
 export interface WaitlistEntry {
@@ -317,9 +337,13 @@ export interface WaitlistEntry {
   duration?: number;
   notes?: string;
   status: string;
-  addedAt: string;
+  expiresAt?: string;
+  notifiedAt?: string;
+  addedAt?: string;
   student: Student;
   nurse?: User;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface WaitlistFilters {
@@ -581,36 +605,22 @@ export interface FollowUpAction {
   updatedAt: string;
 }
 
-// Access Control Types
-export interface AccessControlEntry {
-  id: string;
-  userId: string;
-  resourceType: string;
-  resourceId?: string;
-  permissions: string[];
-  grantedBy: string;
-  grantedAt: string;
-  expiresAt?: string;
-  isActive: boolean;
-}
-
-export interface Role {
-  id: string;
-  name: string;
-  description?: string;
-  isSystem: boolean;
-  createdAt: string;
-  updatedAt: string;
-  permissions?: RolePermission[];
-}
-
-export interface Permission {
-  id: string;
-  resource: string;
-  action: string;
-  description?: string;
-  createdAt: string;
-}
+// Access Control Types - Re-exported from main types
+// Import from main types to avoid duplication
+export type {
+  Role,
+  Permission,
+  RolePermission,
+  UserRoleAssignment,
+  Session,
+  LoginAttempt,
+  SecurityIncident,
+  IpRestriction,
+  SecurityIncidentType,
+  IncidentSeverity,
+  SecurityIncidentStatus,
+  IpRestrictionType
+} from '../../types/accessControl';
 
 // Missing types that are being imported
 export interface InventoryAlert {
@@ -704,50 +714,6 @@ export interface Medication {
   updatedAt: string;
 }
 
-export interface RolePermission {
-  id: string;
-  roleId: string;
-  permissionId: string;
-  permission: Permission;
-  createdAt: string;
-}
-
-export interface Session {
-  id: string;
-  userId: string;
-  token: string;
-  ipAddress?: string;
-  userAgent?: string;
-  expiresAt: string;
-  lastActivity: string;
-  createdAt: string;
-}
-
-export interface SecurityIncident {
-  id: string;
-  type: string;
-  severity: string;
-  description: string;
-  affectedResources: string[];
-  detectedBy?: string;
-  status: string;
-  resolvedAt?: string;
-  resolvedBy?: string;
-  resolution?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface IpRestriction {
-  id: string;
-  ipAddress: string;
-  type: string;
-  reason?: string;
-  isActive: boolean;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 // Audit Types
 export interface AuditLog {
@@ -764,97 +730,211 @@ export interface AuditLog {
 
 // API Interface Types
 export interface IAppointmentsApi {
+  // Core CRUD Operations
   getAll(filters?: AppointmentFilters): Promise<PaginatedResponse<Appointment>>;
+  getById(id: string): Promise<{ appointment: Appointment }>;
   create(appointmentData: AppointmentCreateData): Promise<{ appointment: Appointment }>;
   update(id: string, data: AppointmentUpdateData): Promise<{ appointment: Appointment }>;
   cancel(id: string, reason?: string): Promise<{ appointment: Appointment }>;
   markNoShow(id: string): Promise<{ appointment: Appointment }>;
+
+  // Appointment Lifecycle
+  start(id: string): Promise<{ appointment: Appointment }>;
+  complete(id: string, data?: { notes?: string; outcomes?: string; followUpRequired?: boolean; followUpDate?: string }): Promise<{ appointment: Appointment }>;
+  reschedule(id: string, newScheduledAt: string, reason?: string): Promise<{ appointment: Appointment }>;
+
+  // Availability & Scheduling
   getAvailability(nurseId: string, date?: string, duration?: number): Promise<{ slots: AvailabilitySlot[] }>;
+  checkConflicts(nurseId: string, startTime: string, duration: number, excludeAppointmentId?: string): Promise<any>;
   getUpcoming(nurseId: string, limit?: number): Promise<{ appointments: Appointment[] }>;
+
+  // Statistics & Analytics
   getStatistics(filters?: { nurseId?: string; dateFrom?: string; dateTo?: string }): Promise<AppointmentStatistics>;
+  getTrends(dateFrom: string, dateTo: string, groupBy?: 'day' | 'week' | 'month'): Promise<{ trends: any[] }>;
+  getNoShowStats(nurseId?: string, dateFrom?: string, dateTo?: string): Promise<{ rate: number; total: number; noShows: number; byStudent: any[] }>;
+  getUtilizationStats(nurseId: string, dateFrom: string, dateTo: string): Promise<{ utilizationRate: number; totalSlots: number; bookedSlots: number; availableSlots: number; byDay: any[] }>;
+
+  // Recurring Appointments
   createRecurring(data: RecurringAppointmentData): Promise<{ appointments: Appointment[]; count: number }>;
+
+  // Nurse Availability Management
   setAvailability(data: NurseAvailabilityData): Promise<{ availability: NurseAvailability }>;
   getNurseAvailability(nurseId: string, date?: string): Promise<{ availability: NurseAvailability[] }>;
   updateAvailability(id: string, data: Partial<NurseAvailabilityData>): Promise<{ availability: NurseAvailability }>;
   deleteAvailability(id: string): Promise<void>;
+
+  // Waitlist Management
   addToWaitlist(data: { studentId: string; nurseId?: string; type: string; reason: string; priority?: string; preferredDate?: string; duration?: number; notes?: string }): Promise<{ entry: WaitlistEntry }>;
   getWaitlist(filters?: WaitlistFilters): Promise<{ waitlist: WaitlistEntry[] }>;
   removeFromWaitlist(id: string, reason?: string): Promise<{ entry: WaitlistEntry }>;
+  updateWaitlistPriority(id: string, priority: string): Promise<{ entry: WaitlistEntry }>;
+  getWaitlistPosition(waitlistEntryId: string): Promise<{ position: number; total: number }>;
+  notifyWaitlistEntry(id: string, message?: string): Promise<{ entry: WaitlistEntry; notification: any }>;
+
+  // Reminder Management
+  processPendingReminders(): Promise<any>;
+  getAppointmentReminders(appointmentId: string): Promise<{ reminders: any[] }>;
+  scheduleReminder(data: { appointmentId: string; type: string; scheduleTime: string; message?: string }): Promise<{ reminder: any }>;
+  cancelReminder(reminderId: string): Promise<{ reminder: any }>;
+
+  // Bulk Operations
+  cancelMultiple(appointmentIds: string[], reason?: string): Promise<{ cancelled: number; failed: number }>;
+  getForStudents(studentIds: string[], filters?: Partial<AppointmentFilters>): Promise<{ appointments: Appointment[] }>;
+
+  // Advanced Filtering & Search
+  getByDateRange(dateFrom: string, dateTo: string, nurseId?: string): Promise<{ appointments: Appointment[] }>;
+  search(query: string, filters?: Partial<AppointmentFilters>): Promise<PaginatedResponse<Appointment>>;
+
+  // Calendar Export
   exportCalendar(nurseId: string, dateFrom?: string, dateTo?: string): Promise<Blob>;
 }
 
 export interface ICommunicationApi {
-  getTemplates(type?: string, category?: string, isActive?: boolean): Promise<{ templates: CommunicationTemplate[] }>;
-  createTemplate(data: { name: string; subject?: string; content: string; type: string; category: string; variables?: string[]; isActive?: boolean }): Promise<{ template: CommunicationTemplate }>;
-  updateTemplate(id: string, data: Partial<CommunicationTemplate>): Promise<{ template: CommunicationTemplate }>;
-  deleteTemplate(id: string): Promise<void>;
-  sendMessage(data: { recipients: any[]; channels: string[]; subject?: string; content: string; priority: string; category: string; templateId?: string; scheduledAt?: string; attachments?: string[] }): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }>;
-  sendBroadcast(data: { audience: { grades?: string[]; nurseIds?: string[]; studentIds?: string[]; includeParents?: boolean; includeEmergencyContacts?: boolean }; channels: string[]; subject?: string; content: string; priority: string; category: string; scheduledAt?: string }): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }>;
-  getMessages(page?: number, limit?: number, filters?: any): Promise<{ messages: CommunicationMessage[]; pagination: any }>;
-  getMessageDelivery(messageId: string): Promise<{ deliveries: any[]; summary: any }>;
-  sendEmergencyAlert(data: { title: string; message: string; severity: string; audience: string; groups?: string[]; channels: string[] }): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }>;
-  getStatistics(dateFrom?: string, dateTo?: string): Promise<any>;
-  translateMessage(content: string, targetLanguage: string): Promise<{ translated: string }>;
+  // Template Operations
+  getTemplates(filters?: any): Promise<{ templates: CommunicationTemplate[] }>;
+  getTemplateById(id: string): Promise<{ template: CommunicationTemplate }>;
+  createTemplate(data: any): Promise<{ template: CommunicationTemplate }>;
+  updateTemplate(id: string, data: any): Promise<{ template: CommunicationTemplate }>;
+  deleteTemplate(id: string): Promise<{ success: boolean }>;
+
+  // Message Operations
+  sendMessage(data: any): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }>;
+  sendBroadcast(data: any): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }>;
+  getMessages(filters?: any): Promise<{ messages: CommunicationMessage[]; pagination: any }>;
+  getMessageById(id: string): Promise<{ message: CommunicationMessage }>;
+  getMessageDeliveryStatus(messageId: string): Promise<{ deliveries: any[]; summary: any }>;
+
+  // Emergency Alerts
+  sendEmergencyAlert(data: any): Promise<{ message: CommunicationMessage; deliveryStatuses: any[] }>;
+
+  // Scheduled Messages
+  processScheduledMessages(): Promise<{ processedCount: number }>;
+
+  // Statistics & Analytics
+  getStatistics(filters?: any): Promise<any>;
+
+  // Translation
+  translateMessage(data: any): Promise<{ translated: string }>;
+
+  // Communication Options
+  getOptions(): Promise<any>;
 }
 
-export interface IAccessControlApi {
-  getRoles(): Promise<{ roles: Role[] }>;
-  getRoleById(id: string): Promise<{ role: Role }>;
-  createRole(data: { name: string; description?: string }): Promise<{ role: Role }>;
-  updateRole(id: string, data: Partial<Role>): Promise<{ role: Role }>;
-  deleteRole(id: string): Promise<{ success: boolean }>;
-  getPermissions(): Promise<{ permissions: Permission[] }>;
-  createPermission(data: { resource: string; action: string; description?: string }): Promise<{ permission: Permission }>;
-  assignPermissionToRole(roleId: string, permissionId: string): Promise<{ assignment: RolePermission }>;
-  removePermissionFromRole(roleId: string, permissionId: string): Promise<{ success: boolean }>;
-  assignRoleToUser(userId: string, roleId: string): Promise<{ assignment: any }>;
-  removeRoleFromUser(userId: string, roleId: string): Promise<{ success: boolean }>;
-  getUserPermissions(userId: string): Promise<{ permissions: Permission[] }>;
-  checkPermission(userId: string, resource: string, action: string): Promise<{ hasPermission: boolean }>;
-  getUserSessions(userId: string): Promise<{ sessions: Session[] }>;
-  deleteSession(token: string): Promise<{ success: boolean }>;
-  deleteAllUserSessions(userId: string): Promise<{ deletedCount: number }>;
-  getSecurityIncidents(params?: any): Promise<{ incidents: SecurityIncident[] }>;
-  createSecurityIncident(data: { type: string; severity: string; description: string; affectedResources: string[]; detectedBy?: string }): Promise<{ incident: SecurityIncident }>;
-  updateSecurityIncident(id: string, data: Partial<SecurityIncident>): Promise<{ incident: SecurityIncident }>;
-  getIpRestrictions(): Promise<{ restrictions: IpRestriction[] }>;
-  addIpRestriction(data: { ipAddress: string; type: string; reason?: string }): Promise<{ restriction: IpRestriction }>;
-  removeIpRestriction(id: string): Promise<{ success: boolean }>;
-  getStatistics(): Promise<any>;
-  initializeDefaultRoles(): Promise<{ roles: Role[] }>;
-}
+// IAccessControlApi is now defined in the accessControlApi.ts file
+// Re-export for convenience
+export type { IAccessControlApi } from '../modules/accessControlApi';
 
 export interface IComplianceApi {
-  getReports(params?: any): Promise<{ reports: ComplianceReport[] }>;
+  // Compliance Reports
+  getReports(params?: any): Promise<{ reports: ComplianceReport[]; pagination?: any }>;
   getReportById(id: string): Promise<{ report: ComplianceReport }>;
   createReport(data: { reportType: string; title: string; description?: string; period: string; dueDate?: string }): Promise<{ report: ComplianceReport }>;
-  updateReport(id: string, data: Partial<ComplianceReport>): Promise<{ report: ComplianceReport }>;
+  updateReport(id: string, data: any): Promise<{ report: ComplianceReport }>;
   deleteReport(id: string): Promise<{ success: boolean }>;
   generateReport(reportType: string, period: string): Promise<{ report: ComplianceReport }>;
-  addChecklistItem(data: { requirement: string; description?: string; category: string; dueDate?: string }): Promise<{ item: ChecklistItem }>;
-  updateChecklistItem(id: string, data: Partial<ChecklistItem>): Promise<{ item: ChecklistItem }>;
-  getConsentForms(isActive?: boolean): Promise<{ forms: ConsentForm[] }>;
-  createConsentForm(data: { type: string; title: string; description: string; content: string; version: string; expiresAt?: string }): Promise<{ form: ConsentForm }>;
-  signConsentForm(data: { formId: string; studentId: string; signatureData: string; signedBy: string; signedByRole: string }): Promise<{ signature: any }>;
+
+  // Checklist Items
+  addChecklistItem(data: { requirement: string; description?: string; category: string; dueDate?: string; reportId?: string }): Promise<{ item: ChecklistItem }>;
+  updateChecklistItem(id: string, data: any): Promise<{ item: ChecklistItem }>;
+
+  // Consent Forms
+  getConsentForms(filters?: any): Promise<{ forms: ConsentForm[] }>;
+  createConsentForm(data: { type: string; title: string; description: string; content: string; version?: string; expiresAt?: string }): Promise<{ form: ConsentForm }>;
+  signConsentForm(data: { consentFormId: string; studentId: string; signatureData?: string; signedBy: string; relationship: string }): Promise<{ signature: any }>;
   getStudentConsents(studentId: string): Promise<{ consents: any[] }>;
-  withdrawConsent(signatureId: string): Promise<{ success: boolean }>;
+  withdrawConsent(signatureId: string): Promise<{ signature: any }>;
+
+  // Policy Documents
   getPolicies(params?: any): Promise<{ policies: PolicyDocument[] }>;
-  createPolicy(data: { title: string; category: string; content: string; version: string; effectiveDate: string; reviewDate?: string }): Promise<{ policy: PolicyDocument }>;
-  updatePolicy(id: string, data: Partial<PolicyDocument>): Promise<{ policy: PolicyDocument }>;
+  createPolicy(data: { title: string; category: string; content: string; version?: string; effectiveDate: string; reviewDate?: string }): Promise<{ policy: PolicyDocument }>;
+  updatePolicy(id: string, data: any): Promise<{ policy: PolicyDocument }>;
   acknowledgePolicy(policyId: string): Promise<{ acknowledgment: any }>;
+
+  // Statistics and Audit
   getStatistics(period?: string): Promise<any>;
-  getAuditLogs(params?: any): Promise<{ logs: any[] }>;
+  getAuditLogs(params?: any): Promise<{ logs: any[]; pagination?: any }>;
 }
 
 export interface IEmergencyContactsApi {
-  getByStudent(studentId: string): Promise<{ contacts: EmergencyContact[] }>;
-  create(data: { studentId: string; name: string; relationship: string; phone: string; email?: string; isPrimary?: boolean; canPickup?: boolean }): Promise<{ contact: EmergencyContact }>;
-  update(id: string, data: Partial<EmergencyContact>): Promise<{ contact: EmergencyContact }>;
+  /**
+   * Get emergency contacts for a student
+   */
+  getByStudent(studentId: string): Promise<{ contacts: any[] }>;
+
+  /**
+   * Create a new emergency contact
+   */
+  create(data: {
+    studentId: string;
+    firstName: string;
+    lastName: string;
+    relationship: string;
+    phoneNumber: string;
+    email?: string;
+    address?: string;
+    priority: string;
+  }): Promise<{ contact: any }>;
+
+  /**
+   * Update an emergency contact
+   */
+  update(id: string, data: {
+    firstName?: string;
+    lastName?: string;
+    relationship?: string;
+    phoneNumber?: string;
+    email?: string;
+    address?: string;
+    priority?: string;
+    isActive?: boolean;
+  }): Promise<{ contact: any }>;
+
+  /**
+   * Delete an emergency contact (soft delete)
+   */
   delete(id: string): Promise<{ success: boolean }>;
-  notifyStudent(studentId: string, notification: { title: string; message: string; priority: string; channels?: string[] }): Promise<{ notifications: any[] }>;
-  notifyContact(contactId: string, notification: { title: string; message: string; priority: string; channels?: string[] }): Promise<{ notification: any }>;
-  verify(contactId: string, method: 'sms' | 'email' | 'voice'): Promise<{ verification: any }>;
-  getStatistics(): Promise<any>;
+
+  /**
+   * Send emergency notification to all contacts for a student
+   */
+  notifyStudent(studentId: string, notification: {
+    message: string;
+    type: 'emergency' | 'health' | 'medication' | 'general';
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    channels: ('sms' | 'email' | 'voice')[];
+    attachments?: string[];
+  }): Promise<{ results: any[] }>;
+
+  /**
+   * Send notification to specific contact
+   */
+  notifyContact(contactId: string, notification: {
+    message: string;
+    type: 'emergency' | 'health' | 'medication' | 'general';
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    channels: ('sms' | 'email' | 'voice')[];
+    attachments?: string[];
+  }): Promise<{ result: any }>;
+
+  /**
+   * Verify emergency contact information
+   */
+  verify(contactId: string, method: 'sms' | 'email' | 'voice'): Promise<{
+    verificationCode?: string;
+    method: 'sms' | 'email' | 'voice';
+    messageId?: string;
+    callId?: string;
+    success: boolean;
+  }>;
+
+  /**
+   * Get emergency contacts statistics
+   */
+  getStatistics(): Promise<{
+    totalContacts: number;
+    studentsWithoutContacts: number;
+    byPriority: Record<string, number>;
+  }>;
 }
 
 export interface IIncidentReportsApi {

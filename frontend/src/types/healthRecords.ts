@@ -1,91 +1,312 @@
+/**
+ * Health Records Type Definitions
+ * Aligned with backend enums and service interfaces
+ */
+
+// Tab Navigation Types
 export type TabType = 'overview' | 'records' | 'allergies' | 'chronic' | 'vaccinations' | 'growth' | 'screenings' | 'vitals' | 'analytics'
 
-export type RecordType = 'CHECKUP' | 'VACCINATION' | 'ILLNESS' | 'INJURY' | 'SCREENING' | 'VISION' | 'HEARING' | 'PHYSICAL_EXAM'
+// Health Record Type Enum - matches backend HealthRecordType
+export type HealthRecordType =
+  | 'CHECKUP'
+  | 'VACCINATION'
+  | 'ILLNESS'
+  | 'INJURY'
+  | 'SCREENING'
+  | 'PHYSICAL_EXAM'
+  | 'MENTAL_HEALTH'
+  | 'DENTAL'
+  | 'VISION'
+  | 'HEARING'
+  | 'EXAMINATION'
+  | 'ALLERGY_DOCUMENTATION'
+  | 'CHRONIC_CONDITION_REVIEW'
+  | 'GROWTH_ASSESSMENT'
+  | 'VITAL_SIGNS_CHECK'
+  | 'EMERGENCY_VISIT'
+  | 'FOLLOW_UP'
+  | 'CONSULTATION'
+  | 'DIAGNOSTIC_TEST'
+  | 'PROCEDURE'
+  | 'HOSPITALIZATION'
+  | 'SURGERY'
+  | 'COUNSELING'
+  | 'THERAPY'
+  | 'NUTRITION'
+  | 'MEDICATION_REVIEW'
+  | 'IMMUNIZATION'
+  | 'LAB_RESULT'
+  | 'RADIOLOGY'
+  | 'OTHER'
 
-export type SeverityLevel = 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING'
+// Allergy Severity Levels - matches backend AllergySeverity
+export type AllergySeverity = 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING'
 
-export type ConditionStatus = 'ACTIVE' | 'MANAGED' | 'RESOLVED'
+// Allergy Type Enum - matches backend AllergyType
+export type AllergyType =
+  | 'FOOD'
+  | 'MEDICATION'
+  | 'ENVIRONMENTAL'
+  | 'INSECT'
+  | 'LATEX'
+  | 'ANIMAL'
+  | 'CHEMICAL'
+  | 'SEASONAL'
+  | 'OTHER'
 
-export type VaccinationStatus = 'Completed' | 'Overdue' | 'Scheduled'
+// Chronic Condition Status - matches backend ConditionStatus
+export type ConditionStatus = 'ACTIVE' | 'MANAGED' | 'RESOLVED' | 'MONITORING' | 'INACTIVE'
 
+// Chronic Condition Severity - matches backend ConditionSeverity
+export type ConditionSeverity = 'MILD' | 'MODERATE' | 'SEVERE' | 'CRITICAL'
+
+// Vaccination Compliance Status - matches backend VaccineComplianceStatus
+export type VaccinationComplianceStatus = 'COMPLIANT' | 'OVERDUE' | 'PARTIALLY_COMPLIANT' | 'EXEMPT' | 'NON_COMPLIANT'
+
+// Screening Type - matches backend ScreeningType
+export type ScreeningType =
+  | 'VISION'
+  | 'HEARING'
+  | 'SCOLIOSIS'
+  | 'DENTAL'
+  | 'BMI'
+  | 'BLOOD_PRESSURE'
+  | 'DEVELOPMENTAL'
+  | 'SPEECH'
+  | 'MENTAL_HEALTH'
+  | 'TUBERCULOSIS'
+  | 'LEAD'
+  | 'ANEMIA'
+  | 'OTHER'
+
+// Screening Outcome - matches backend ScreeningOutcome
+export type ScreeningOutcome = 'PASS' | 'REFER' | 'FAIL' | 'INCONCLUSIVE' | 'INCOMPLETE'
+
+// Alert Severity
 export type AlertSeverity = 'low' | 'medium' | 'high'
 
+// Reminder Method
 export type ReminderMethod = 'Email' | 'SMS' | 'Both'
 
+// Report Type
 export type ReportType = 'Summary' | 'Comprehensive' | 'Compliance'
 
+// Export Format
 export type ExportFormat = 'CSV' | 'PDF' | 'Excel'
+
+// ==========================================
+// MAIN HEALTH RECORD INTERFACES
+// ==========================================
 
 export interface HealthRecord {
   id: string
-  type: RecordType
-  title: string
-  description: string
-  provider: string
+  studentId: string
+  type: HealthRecordType
   date: string
-  vitals?: {
-    height?: string
-    weight?: string
-    bloodPressure?: string
-    pulse?: string
+  description: string
+  vital?: VitalSigns // Changed to match backend - uses 'vital' not 'vitals'
+  provider?: string
+  notes?: string
+  attachments?: string[]
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
   }
+  createdAt: string
+  updatedAt: string
 }
+
+// ==========================================
+// ALLERGY INTERFACES
+// ==========================================
 
 export interface Allergy {
   id: string
-  studentId?: string
+  studentId: string
   allergen: string
-  severity: SeverityLevel
-  verified: boolean
+  allergyType?: AllergyType
+  severity: AllergySeverity
   reaction?: string
+  symptoms?: string[]
   treatment?: string
-  dateIdentified?: string
-  providerName?: string
-  epiPenLocation?: string
-  epiPenExpirationDate?: string
+  onsetDate?: string
+  diagnosedBy?: string
+  verified: boolean
+  verifiedBy?: string
+  verifiedAt?: string
+  isCritical?: boolean
+  notes?: string
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+  }
+  createdAt: string
+  updatedAt: string
 }
+
+// ==========================================
+// CHRONIC CONDITION INTERFACES
+// ==========================================
 
 export interface ChronicCondition {
   id: string
+  studentId: string
   condition: string
+  icdCode?: string
+  diagnosisDate: string
   status: ConditionStatus
-  severity: SeverityLevel
-  diagnosedDate?: string
+  severity: ConditionSeverity
+  notes?: string
   carePlan?: string
-  nextReview?: string
+  medications?: string[]
+  restrictions?: string[]
+  triggers?: string[]
+  diagnosedBy?: string
+  lastReviewDate?: string
+  nextReviewDate?: string
+  isActive?: boolean
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+  }
+  createdAt: string
+  updatedAt: string
 }
+
+// ==========================================
+// VACCINATION INTERFACES
+// ==========================================
 
 export interface Vaccination {
   id: string
+  studentId: string
   vaccineName: string
-  dateAdministered?: string
-  administeredBy?: string
-  dose?: string
+  vaccineType: string
+  cvxCode?: string
+  doseNumber?: number
+  totalDoses?: number
+  administeredDate: string
+  expirationDate?: string
   lotNumber?: string
+  manufacturer?: string
+  administeredBy?: string
+  administeredByNPI?: string
+  site?: string
+  route?: string
+  dosage?: string
+  status?: VaccinationComplianceStatus
+  reactions?: string[]
   notes?: string
-  compliant: boolean
-  dueDate?: string
-  priority?: 'High' | 'Medium' | 'Low'
+  nextDueDate?: string
+  isCompliant?: boolean
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+  }
+  createdAt: string
+  updatedAt: string
 }
+
+// ==========================================
+// GROWTH MEASUREMENT INTERFACES
+// ==========================================
 
 export interface GrowthMeasurement {
   id: string
-  date: string
-  height: string
-  weight: string
-  bmi: string
-  headCircumference?: string
+  studentId: string
+  measurementDate: string
+  height?: number // in cm
+  weight?: number // in kg
+  headCircumference?: number // in cm
+  bmi?: number
+  bmiPercentile?: number
+  heightPercentile?: number
+  weightPercentile?: number
+  measuredBy: string
   notes?: string
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+    dateOfBirth: string
+    gender: string
+  }
+  createdAt: string
+  updatedAt: string
 }
+
+// ==========================================
+// SCREENING INTERFACES
+// ==========================================
 
 export interface Screening {
   id: string
-  type: 'Vision' | 'Hearing'
-  date: string
-  result: 'Pass' | 'Refer'
-  provider: string
+  studentId: string
+  screeningType: ScreeningType
+  screeningDate: string
+  performedBy: string
+  outcome: ScreeningOutcome
+  results?: string
+  measurements?: Record<string, any>
+  referralRequired: boolean
+  referralTo?: string
+  followUpRequired: boolean
+  followUpDate?: string
   notes?: string
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+  }
+  createdAt: string
+  updatedAt: string
 }
+
+// ==========================================
+// VITAL SIGNS INTERFACES
+// ==========================================
+
+export interface VitalSigns {
+  id?: string
+  studentId?: string
+  recordDate?: string
+  temperature?: number // in Celsius
+  temperatureMethod?: 'oral' | 'axillary' | 'tympanic' | 'temporal'
+  bloodPressureSystolic?: number
+  bloodPressureDiastolic?: number
+  heartRate?: number // beats per minute
+  respiratoryRate?: number // breaths per minute
+  oxygenSaturation?: number // percentage
+  pain?: number // 0-10 scale
+  glucose?: number // mg/dL
+  weight?: number // in kg
+  height?: number // in cm
+  bmi?: number
+  notes?: string
+  recordedBy?: string
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+  }
+  createdAt?: string
+  updatedAt?: string
+}
+
+// ==========================================
+// FORM VALIDATION INTERFACES
+// ==========================================
 
 export interface FormErrors {
   [key: string]: string
@@ -187,4 +408,268 @@ export interface RecordCompleteness {
     name: string
     priority: 'High' | 'Medium' | 'Low'
   }>
+}
+
+// ==========================================
+// API RESPONSE INTERFACES
+// ==========================================
+
+export interface HealthRecordFilters {
+  type?: HealthRecordType
+  dateFrom?: string
+  dateTo?: string
+  provider?: string
+  page?: number
+  limit?: number
+}
+
+export interface PaginatedHealthRecords {
+  records: HealthRecord[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+}
+
+export interface HealthSummary {
+  student: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+    dateOfBirth: string
+    gender: string
+  }
+  allergies: Allergy[]
+  recentVitals: Array<{
+    id: string
+    date: string
+    vital: VitalSigns
+    type: HealthRecordType
+    provider?: string
+  }>
+  recentVaccinations: HealthRecord[]
+  recordCounts: Record<string, number>
+}
+
+export interface GrowthChartData {
+  date: string
+  height?: number
+  weight?: number
+  bmi?: number
+  recordType: HealthRecordType
+}
+
+// ==========================================
+// CREATE/UPDATE INTERFACES
+// ==========================================
+
+export interface CreateHealthRecordData {
+  studentId: string
+  type: HealthRecordType
+  date: string
+  description: string
+  vital?: VitalSigns
+  provider?: string
+  notes?: string
+  attachments?: string[]
+}
+
+export interface UpdateHealthRecordData {
+  type?: HealthRecordType
+  date?: string
+  description?: string
+  vital?: VitalSigns
+  provider?: string
+  notes?: string
+  attachments?: string[]
+}
+
+export interface CreateAllergyData {
+  studentId: string
+  allergen: string
+  allergyType: AllergyType
+  severity: AllergySeverity
+  reaction?: string
+  symptoms?: string[]
+  treatment?: string
+  onsetDate?: string
+  diagnosedBy?: string
+  verified?: boolean
+  isCritical?: boolean
+  notes?: string
+}
+
+export interface UpdateAllergyData {
+  allergen?: string
+  allergyType?: AllergyType
+  severity?: AllergySeverity
+  reaction?: string
+  symptoms?: string[]
+  treatment?: string
+  onsetDate?: string
+  diagnosedBy?: string
+  verified?: boolean
+  isCritical?: boolean
+  notes?: string
+}
+
+export interface CreateChronicConditionData {
+  studentId: string
+  condition: string
+  icdCode?: string
+  diagnosisDate: string
+  status: ConditionStatus
+  severity: ConditionSeverity
+  notes?: string
+  carePlan?: string
+  medications?: string[]
+  restrictions?: string[]
+  triggers?: string[]
+  diagnosedBy?: string
+  nextReviewDate?: string
+}
+
+export interface UpdateChronicConditionData {
+  condition?: string
+  icdCode?: string
+  diagnosisDate?: string
+  status?: ConditionStatus
+  severity?: ConditionSeverity
+  notes?: string
+  carePlan?: string
+  medications?: string[]
+  restrictions?: string[]
+  triggers?: string[]
+  diagnosedBy?: string
+  lastReviewDate?: string
+  nextReviewDate?: string
+  isActive?: boolean
+}
+
+export interface CreateVaccinationData {
+  studentId: string
+  vaccineName: string
+  vaccineType: string
+  cvxCode?: string
+  doseNumber?: number
+  totalDoses?: number
+  administeredDate: string
+  expirationDate?: string
+  lotNumber?: string
+  manufacturer?: string
+  administeredBy?: string
+  administeredByNPI?: string
+  site?: string
+  route?: string
+  dosage?: string
+  status?: VaccinationComplianceStatus
+  reactions?: string[]
+  notes?: string
+  nextDueDate?: string
+}
+
+export interface UpdateVaccinationData {
+  vaccineName?: string
+  vaccineType?: string
+  cvxCode?: string
+  doseNumber?: number
+  totalDoses?: number
+  administeredDate?: string
+  expirationDate?: string
+  lotNumber?: string
+  manufacturer?: string
+  administeredBy?: string
+  administeredByNPI?: string
+  site?: string
+  route?: string
+  dosage?: string
+  status?: VaccinationComplianceStatus
+  reactions?: string[]
+  notes?: string
+  nextDueDate?: string
+}
+
+export interface CreateScreeningData {
+  studentId: string
+  screeningType: ScreeningType
+  screeningDate: string
+  performedBy: string
+  outcome: ScreeningOutcome
+  results?: string
+  measurements?: Record<string, any>
+  referralRequired?: boolean
+  referralTo?: string
+  followUpRequired?: boolean
+  followUpDate?: string
+  notes?: string
+}
+
+export interface UpdateScreeningData {
+  screeningType?: ScreeningType
+  screeningDate?: string
+  performedBy?: string
+  outcome?: ScreeningOutcome
+  results?: string
+  measurements?: Record<string, any>
+  referralRequired?: boolean
+  referralTo?: string
+  followUpRequired?: boolean
+  followUpDate?: string
+  notes?: string
+}
+
+export interface CreateGrowthMeasurementData {
+  studentId: string
+  measurementDate: string
+  height?: number
+  weight?: number
+  headCircumference?: number
+  measuredBy: string
+  notes?: string
+}
+
+export interface UpdateGrowthMeasurementData {
+  measurementDate?: string
+  height?: number
+  weight?: number
+  headCircumference?: number
+  measuredBy?: string
+  notes?: string
+}
+
+export interface CreateVitalSignsData {
+  studentId: string
+  recordDate: string
+  temperature?: number
+  temperatureMethod?: 'oral' | 'axillary' | 'tympanic' | 'temporal'
+  bloodPressureSystolic?: number
+  bloodPressureDiastolic?: number
+  heartRate?: number
+  respiratoryRate?: number
+  oxygenSaturation?: number
+  pain?: number
+  glucose?: number
+  weight?: number
+  height?: number
+  notes?: string
+  recordedBy: string
+}
+
+export interface UpdateVitalSignsData {
+  recordDate?: string
+  temperature?: number
+  temperatureMethod?: 'oral' | 'axillary' | 'tympanic' | 'temporal'
+  bloodPressureSystolic?: number
+  bloodPressureDiastolic?: number
+  heartRate?: number
+  respiratoryRate?: number
+  oxygenSaturation?: number
+  pain?: number
+  glucose?: number
+  weight?: number
+  height?: number
+  notes?: string
 }

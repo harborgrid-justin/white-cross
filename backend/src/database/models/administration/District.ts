@@ -47,35 +47,106 @@ District.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'District name cannot be empty'
+        },
+        len: {
+          args: [2, 200],
+          msg: 'District name must be between 2 and 200 characters'
+        }
+      }
     },
     code: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+      validate: {
+        notEmpty: {
+          msg: 'District code cannot be empty'
+        },
+        len: {
+          args: [2, 50],
+          msg: 'District code must be between 2 and 50 characters'
+        },
+        isUppercase: {
+          msg: 'District code must be uppercase'
+        },
+        is: {
+          args: /^[A-Z0-9_-]+$/,
+          msg: 'District code can only contain uppercase letters, numbers, hyphens, and underscores'
+        }
+      }
     },
     address: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 500],
+          msg: 'Address cannot exceed 500 characters'
+        }
+      }
     },
     city: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 100],
+          msg: 'City cannot exceed 100 characters'
+        }
+      }
     },
     state: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 2],
+          msg: 'State must be a 2-letter abbreviation'
+        },
+        isUppercase: {
+          msg: 'State abbreviation must be uppercase'
+        }
+      }
     },
     zipCode: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        is: {
+          args: /^[0-9]{5}(-[0-9]{4})?$/,
+          msg: 'ZIP code must be in format 12345 or 12345-6789'
+        }
+      }
     },
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        is: {
+          args: /^[\d\s\-\(\)\+\.]+$/,
+          msg: 'Phone number contains invalid characters'
+        },
+        len: {
+          args: [10, 20],
+          msg: 'Phone number must be between 10 and 20 characters'
+        }
+      }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        isEmail: {
+          msg: 'Invalid email address format'
+        },
+        len: {
+          args: [0, 255],
+          msg: 'Email cannot exceed 255 characters'
+        }
+      }
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -90,5 +161,13 @@ District.init(
     tableName: 'districts',
     timestamps: true,
     indexes: [{ fields: ['code'] }, { fields: ['isActive'] }],
+    validate: {
+      // Custom validation to ensure at least contact information is provided
+      hasContactInfo() {
+        if (!this.phone && !this.email && !this.address) {
+          throw new Error('District must have at least one form of contact information (phone, email, or address)');
+        }
+      }
+    }
   }
 );

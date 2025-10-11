@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { X } from 'lucide-react'
-import { Student } from '@/types/student.types'
+import { Student, getPrimaryContact } from '@/types/student.types'
 
 interface StudentDetailsModalProps {
   show: boolean
@@ -22,7 +22,7 @@ export const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
 }) => {
   if (!show || !student) return null
 
-  const primaryContact = student.emergencyContacts.find(c => c.isPrimary)
+  const primaryContact = student.emergencyContacts ? getPrimaryContact(student.emergencyContacts) : undefined
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">

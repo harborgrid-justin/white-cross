@@ -3,36 +3,72 @@
 // Main Types
 export type MedicationTab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions'
 
-export type DosageForm = 
+export type DosageForm =
   | 'Tablet'
-  | 'Capsule' 
+  | 'Capsule'
   | 'Liquid'
   | 'Inhaler'
   | 'Injection'
   | 'Cream'
   | 'Ointment'
+  | 'Drops'
+  | 'Patch'
+  | 'Suppository'
+  | 'Powder'
+  | 'Gel'
+  | 'Spray'
+  | 'Lozenge'
+  | 'Topical'
 
-export type SeverityLevel = 
+export type AdministrationRoute =
+  | 'Oral'
+  | 'Sublingual'
+  | 'Topical'
+  | 'Intravenous'
+  | 'Intramuscular'
+  | 'Subcutaneous'
+  | 'Inhalation'
+  | 'Ophthalmic'
+  | 'Otic'
+  | 'Nasal'
+  | 'Rectal'
+  | 'Transdermal'
+
+export type SeverityLevel =
   | 'LOW'
-  | 'MEDIUM' 
+  | 'MEDIUM'
   | 'HIGH'
   | 'CRITICAL'
 
-export type ReminderStatus = 
+export type AdverseReactionSeverity =
+  | 'MILD'
+  | 'MODERATE'
+  | 'SEVERE'
+  | 'LIFE_THREATENING'
+
+export type ReminderStatus =
   | 'PENDING'
   | 'COMPLETED'
   | 'MISSED'
+
+export type MedicationLogStatus =
+  | 'administered'
+  | 'missed'
+  | 'refused'
+  | 'held'
 
 // Medication Interfaces
 export interface Medication {
   id: string
   name: string
   genericName?: string
-  dosageForm: DosageForm
+  dosageForm: string
   strength: string
   manufacturer?: string
+  ndc?: string
   isControlled: boolean
   inventory?: InventoryItem[]
+  studentMedicationCount?: number
   _count?: {
     studentMedications: number
   }
@@ -40,14 +76,59 @@ export interface Medication {
   updatedAt: string
 }
 
+export interface StudentMedication {
+  id: string
+  studentId: string
+  medicationId: string
+  dosage: string
+  frequency: string
+  route: string
+  instructions?: string
+  startDate: string
+  endDate?: string
+  prescribedBy: string
+  isActive: boolean
+  medication?: Medication
+  student?: {
+    id: string
+    firstName: string
+    lastName: string
+    studentNumber: string
+  }
+  logs?: MedicationLog[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MedicationLog {
+  id: string
+  studentMedicationId: string
+  nurseId: string
+  administeredBy: string
+  dosageGiven: string
+  timeGiven: string
+  notes?: string
+  sideEffects?: string
+  nurse?: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+  }
+  studentMedication?: StudentMedication
+  createdAt: string
+  updatedAt: string
+}
+
 export interface InventoryItem {
   id: string
   medicationId: string
-  medication: Medication
+  medication?: Medication
   batchNumber: string
   quantity: number
   reorderLevel: number
   expirationDate: string
+  costPerUnit?: number
   supplier?: string
   alerts?: {
     expired: boolean
@@ -60,42 +141,49 @@ export interface InventoryItem {
 
 export interface MedicationReminder {
   id: string
-  studentId: string
+  studentMedicationId: string
   studentName: string
-  medicationId: string
   medicationName: string
   dosage: string
   scheduledTime: string
   status: ReminderStatus
   notes?: string
-  administeredAt?: string
-  administeredBy?: string
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface AdverseReaction {
   id: string
+  studentMedicationId?: string
   studentId: string
   medicationId: string
-  severity: SeverityLevel
+  type: string
+  severity: SeverityLevel | AdverseReactionSeverity
   description: string
+  reaction?: string
   actionsTaken: string
   occurredAt: string
+  reportedAt?: string
   reportedById: string
-  student: {
+  parentNotified: boolean
+  followUpRequired: boolean
+  followUpNotes?: string
+  student?: {
     id: string
     firstName: string
     lastName: string
+    studentNumber?: string
   }
-  medication: {
+  medication?: {
     id: string
     name: string
+    genericName?: string
   }
-  reportedBy: {
+  reportedBy?: {
     id: string
     firstName: string
     lastName: string
+    email?: string
   }
   createdAt: string
   updatedAt: string
@@ -104,20 +192,66 @@ export interface AdverseReaction {
 // Form Data Interfaces
 export interface MedicationFormData {
   name: string
-  genericName: string
+  genericName?: string
   dosageForm: string
   strength: string
-  manufacturer: string
+  manufacturer?: string
+  ndc?: string
   isControlled: boolean
 }
 
-export interface AdverseReactionFormData {
+export interface StudentMedicationFormData {
   studentId: string
   medicationId: string
-  severity: SeverityLevel
+  dosage: string
+  frequency: string
+  route: string
+  instructions?: string
+  startDate: string
+  endDate?: string
+  prescribedBy: string
+}
+
+export interface MedicationAdministrationData {
+  studentMedicationId: string
+  nurseId?: string
+  dosageGiven: string
+  timeGiven: string
+  notes?: string
+  sideEffects?: string
+  deviceId?: string
+}
+
+export interface AdverseReactionData {
+  studentMedicationId: string
+  reportedBy?: string
+  severity: AdverseReactionSeverity
+  reaction: string
+  actionTaken: string
+  notes?: string
+  reportedAt: string
+}
+
+export interface PrescriptionData {
+  studentId: string
+  medicationId: string
+  dosage: string
+  frequency: string
+  route: string
+  instructions?: string
+  startDate: string
+  endDate?: string
+  prescribedBy: string
+}
+
+export interface AdverseReactionFormData {
+  studentMedicationId: string
+  severity: AdverseReactionSeverity
   description: string
+  reaction: string
   actionsTaken: string
   occurredAt: string
+  notes?: string
 }
 
 export interface InventoryFormData {
@@ -126,7 +260,8 @@ export interface InventoryFormData {
   quantity: number
   reorderLevel: number
   expirationDate: string
-  supplier: string
+  costPerUnit?: number
+  supplier?: string
 }
 
 // Form Error Types
@@ -140,23 +275,50 @@ export interface MedicationFormErrors {
   dosageForm?: string
   strength?: string
   manufacturer?: string
+  ndc?: string
+}
+
+export interface StudentMedicationFormErrors {
+  studentId?: string
+  medicationId?: string
+  dosage?: string
+  frequency?: string
+  route?: string
+  instructions?: string
+  startDate?: string
+  endDate?: string
+  prescribedBy?: string
 }
 
 export interface AdverseReactionFormErrors {
-  studentId?: string
-  medicationId?: string
+  studentMedicationId?: string
   severity?: string
   description?: string
+  reaction?: string
   actionsTaken?: string
   occurredAt?: string
+  notes?: string
 }
 
 // API Response Interfaces
 export interface MedicationsResponse {
   medications: Medication[]
-  total: number
-  page: number
-  limit: number
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+}
+
+export interface StudentMedicationsResponse {
+  logs: MedicationLog[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
 }
 
 export interface InventoryResponse {
@@ -170,12 +332,44 @@ export interface InventoryResponse {
 
 export interface RemindersResponse {
   reminders: MedicationReminder[]
-  total: number
 }
 
 export interface AdverseReactionsResponse {
   reactions: AdverseReaction[]
-  total: number
+}
+
+export interface MedicationScheduleResponse {
+  schedule: StudentMedication[]
+}
+
+export interface MedicationAlert {
+  id: string
+  type: 'LOW_STOCK' | 'EXPIRING' | 'MISSED_DOSE'
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  message: string
+  medicationId?: string
+  medicationName?: string
+  currentQuantity?: number
+  reorderLevel?: number
+  expirationDate?: string
+  daysUntilExpiry?: number
+  studentName?: string
+  dosage?: string
+  scheduledTime?: string
+}
+
+export interface MedicationAlertsResponse {
+  lowStock: MedicationAlert[]
+  expiring: MedicationAlert[]
+  missedDoses: MedicationAlert[]
+}
+
+export interface MedicationFormOptions {
+  dosageForms: string[]
+  categories: string[]
+  strengthUnits: string[]
+  routes: string[]
+  frequencies: string[]
 }
 
 // Tab Configuration Interface
@@ -188,12 +382,11 @@ export interface MedicationTabConfig {
 // Statistics Interface
 export interface MedicationStats {
   totalMedications: number
-  controlledSubstances: number
   activePrescriptions: number
-  lowStockItems: number
-  expiringItems: number
-  todayReminders: number
+  administeredToday: number
   adverseReactions: number
+  lowStockCount: number
+  expiringCount: number
 }
 
 // Search and Filter Interfaces
@@ -259,38 +452,67 @@ export interface AdverseReactionModalProps extends ModalProps {
   reaction?: AdverseReaction | null
 }
 
+// Five Rights Validation Interface
+export interface FiveRightsValidation {
+  rightPatient: boolean
+  rightMedication: boolean
+  rightDose: boolean
+  rightRoute: boolean
+  rightTime: boolean
+  allergyChecked: boolean
+  errors?: string[]
+}
+
 // Hook Return Types
 export interface UseMedicationsDataReturn {
   // Data
   medications: Medication[]
+  studentMedications: StudentMedication[]
+  medicationLogs: MedicationLog[]
   inventory: InventoryItem[]
   reminders: MedicationReminder[]
   adverseReactions: AdverseReaction[]
+  alerts: MedicationAlertsResponse | null
   stats: MedicationStats | null
-  
+  formOptions: MedicationFormOptions | null
+
   // Loading states
   medicationsLoading: boolean
   inventoryLoading: boolean
   remindersLoading: boolean
   adverseReactionsLoading: boolean
-  
+  logsLoading: boolean
+
   // CRUD operations
   createMedication: (data: MedicationFormData) => Promise<boolean>
   updateMedication: (id: string, data: Partial<MedicationFormData>) => Promise<boolean>
   deleteMedication: (id: string) => Promise<boolean>
-  
+
+  // Student medication operations
+  assignMedication: (data: StudentMedicationFormData) => Promise<boolean>
+  deactivateStudentMedication: (id: string, reason?: string) => Promise<boolean>
+
+  // Administration operations
+  logAdministration: (data: MedicationAdministrationData) => Promise<boolean>
+  getStudentLogs: (studentId: string, page?: number, limit?: number) => Promise<void>
+
   // Inventory operations
-  updateStock: (itemId: string, quantity: number) => Promise<boolean>
-  disposeExpired: (itemId: string) => Promise<boolean>
-  
-  // Reminder operations
-  markReminderCompleted: (reminderId: string) => Promise<boolean>
-  markReminderMissed: (reminderId: string) => Promise<boolean>
-  
+  addToInventory: (data: InventoryFormData) => Promise<boolean>
+  updateInventoryQuantity: (id: string, quantity: number, reason?: string) => Promise<boolean>
+
+  // Schedule operations
+  getSchedule: (startDate?: string, endDate?: string, nurseId?: string) => Promise<StudentMedication[]>
+  getReminders: (date?: string) => Promise<MedicationReminder[]>
+
   // Adverse reaction operations
-  reportAdverseReaction: (data: AdverseReactionFormData) => Promise<boolean>
-  updateAdverseReaction: (id: string, data: Partial<AdverseReactionFormData>) => Promise<boolean>
-  
+  reportAdverseReaction: (data: AdverseReactionData) => Promise<boolean>
+  getAdverseReactions: (medicationId?: string, studentId?: string) => Promise<AdverseReaction[]>
+
+  // Statistics and alerts
+  getStats: () => Promise<MedicationStats>
+  getAlerts: () => Promise<MedicationAlertsResponse>
+  getFormOptions: () => Promise<MedicationFormOptions>
+
   // Data loading
   loadMedications: (page?: number, limit?: number, search?: string) => void
   loadInventory: () => void
@@ -301,8 +523,10 @@ export interface UseMedicationsDataReturn {
 export interface UseFormValidationReturn {
   errors: FormErrors
   validateMedicationForm: (data: MedicationFormData) => FormErrors
+  validateStudentMedicationForm: (data: StudentMedicationFormData) => FormErrors
   validateAdverseReactionForm: (data: AdverseReactionFormData) => FormErrors
   validateInventoryForm: (data: InventoryFormData) => FormErrors
+  validateFiveRights: (data: MedicationAdministrationData, prescription: StudentMedication) => FiveRightsValidation
   clearErrors: () => void
   setFieldError: (field: string, error: string) => void
   displayValidationErrors: (errors: FormErrors, prefix?: string) => void

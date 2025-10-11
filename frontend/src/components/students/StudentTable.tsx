@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { Edit, Trash2, AlertTriangle, Pill } from 'lucide-react'
-import { Student } from '@/types/student.types'
+import { Student, getPrimaryContact } from '@/types/student.types'
 
 interface StudentTableProps {
   students: Student[]
@@ -141,12 +141,12 @@ export const StudentTable: React.FC<StudentTableProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {student.emergencyContacts.find(c => c.isPrimary) && (
+                    {student.emergencyContacts && getPrimaryContact(student.emergencyContacts) && (
                       <div className="text-sm text-gray-900">
-                        {student.emergencyContacts.find(c => c.isPrimary)?.firstName}{' '}
-                        {student.emergencyContacts.find(c => c.isPrimary)?.lastName}
+                        {getPrimaryContact(student.emergencyContacts)?.firstName}{' '}
+                        {getPrimaryContact(student.emergencyContacts)?.lastName}
                         <div className="text-xs text-gray-500">
-                          {student.emergencyContacts.find(c => c.isPrimary)?.phoneNumber}
+                          {getPrimaryContact(student.emergencyContacts)?.phoneNumber}
                         </div>
                       </div>
                     )}

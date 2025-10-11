@@ -88,26 +88,80 @@ IncidentReport.init(
     studentId: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Student ID is required'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'Student ID must be a valid UUID'
+        }
+      }
     },
     reportedById: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Reporter ID is required'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'Reporter ID must be a valid UUID'
+        }
+      }
     },
     type: {
       type: DataTypes.ENUM(...Object.values(IncidentType)),
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident type is required'
+        },
+        isIn: {
+          args: [Object.values(IncidentType)],
+          msg: `Incident type must be one of: ${Object.values(IncidentType).join(', ')}`
+        }
+      }
     },
     severity: {
       type: DataTypes.ENUM(...Object.values(IncidentSeverity)),
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident severity is required'
+        },
+        isIn: {
+          args: [Object.values(IncidentSeverity)],
+          msg: `Severity must be one of: ${Object.values(IncidentSeverity).join(', ')}`
+        }
+      }
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident description is required'
+        },
+        len: {
+          args: [20, 5000],
+          msg: 'Description must be between 20 and 5000 characters for proper documentation'
+        }
+      }
     },
     location: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident location is required for safety documentation'
+        },
+        len: {
+          args: [3, 200],
+          msg: 'Location must be between 3 and 200 characters'
+        }
+      }
     },
     witnesses: {
       type: DataTypes.ARRAY(DataTypes.STRING),
@@ -117,6 +171,15 @@ IncidentReport.init(
     actionsTaken: {
       type: DataTypes.TEXT,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Actions taken must be documented for all incidents'
+        },
+        len: {
+          args: [10, 2000],
+          msg: 'Actions taken must be between 10 and 2000 characters'
+        }
+      }
     },
     parentNotified: {
       type: DataTypes.BOOLEAN,
@@ -143,6 +206,12 @@ IncidentReport.init(
     followUpNotes: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 2000],
+          msg: 'Follow-up notes cannot exceed 2000 characters'
+        }
+      }
     },
     attachments: {
       type: DataTypes.ARRAY(DataTypes.STRING),
@@ -162,6 +231,19 @@ IncidentReport.init(
     occurredAt: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'Incident occurrence time is required'
+        },
+        isDate: {
+          msg: 'Invalid incident date/time'
+        },
+        isNotFuture(value: Date) {
+          if (new Date(value) > new Date()) {
+            throw new Error('Incident time cannot be in the future');
+          }
+        }
+      }
     },
     insuranceClaimNumber: {
       type: DataTypes.STRING,
@@ -189,7 +271,36 @@ IncidentReport.init(
       { fields: ['type', 'occurredAt'] },
       { fields: ['severity'] },
     ],
+    validate: {
+      // Model-level validation: Injury incidents require follow-up
+      injuryRequiresFollowUp() {
+        if (this.type === IncidentType.INJURY && !this.followUpRequired) {
+          throw new Error('Injury incidents require follow-up to be marked as required');
+        }
+      },
+      // Model-level validation: Medication errors require detailed description
+      medicationErrorDetailRequired() {
+        if (this.type === IncidentType.MEDICATION_ERROR && this.description.length < 50) {
+          throw new Error('Medication error incidents require detailed description (minimum 50 characters)');
+        }
+      }
+    }
   }
 );
+
+// Add hooks for additional business logic validation
+IncidentReport.beforeCreate((instance) => {
+  // Auto-set follow-up required for injuries
+  if (instance.type === IncidentType.INJURY && !instance.followUpRequired) {
+    instance.followUpRequired = true;
+  }
+});
+
+IncidentReport.beforeUpdate((instance) => {
+  // Validate parent notification tracking
+  if (instance.parentNotified && !instance.parentNotifiedAt) {
+    instance.parentNotifiedAt = new Date();
+  }
+});
 
 AuditableModel.setupAuditHooks(IncidentReport, 'IncidentReport');

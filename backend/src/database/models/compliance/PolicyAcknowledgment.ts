@@ -47,22 +47,70 @@ PolicyAcknowledgment.init(
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'Associated policy document ID',
+      validate: {
+        notNull: {
+          msg: 'Policy ID is required'
+        },
+        notEmpty: {
+          msg: 'Policy ID cannot be empty'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'Policy ID must be a valid UUID'
+        }
+      }
     },
     userId: {
       type: DataTypes.STRING,
       allowNull: false,
       comment: 'User who acknowledged the policy',
+      validate: {
+        notNull: {
+          msg: 'User ID is required for acknowledgment tracking'
+        },
+        notEmpty: {
+          msg: 'User ID cannot be empty'
+        },
+        isUUID: {
+          args: 4,
+          msg: 'User ID must be a valid UUID'
+        }
+      }
     },
     acknowledgedAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
       comment: 'When the policy was acknowledged',
+      validate: {
+        notNull: {
+          msg: 'Acknowledgment timestamp is required for compliance'
+        },
+        isDate: {
+          msg: 'Acknowledgment timestamp must be a valid date'
+        },
+        notInFuture(value: Date) {
+          if (value && value > new Date()) {
+            throw new Error('Acknowledgment timestamp cannot be in the future');
+          }
+        }
+      }
     },
     ipAddress: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'IP address from which acknowledgment was made',
+      validate: {
+        isValidIP(value: string | null) {
+          if (value) {
+            const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+            const ipv6Pattern = /^([\da-fA-F]{1,4}:){7}[\da-fA-F]{1,4}$/;
+            if (!ipv4Pattern.test(value) && !ipv6Pattern.test(value)) {
+              throw new Error('IP address must be in valid IPv4 or IPv6 format');
+            }
+          }
+        }
+      }
     },
   },
   {

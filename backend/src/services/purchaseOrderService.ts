@@ -1,7 +1,14 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  PurchaseOrder,
+  PurchaseOrderItem,
+  Vendor,
+  InventoryItem,
+  InventoryTransaction,
+  sequelize
+} from '../database/models';
+import { PurchaseOrderStatus, InventoryTransactionType } from '../database/types/enums';
 
 export interface CreatePurchaseOrderData {
   vendorId: string;
@@ -9,6 +16,7 @@ export interface CreatePurchaseOrderData {
     inventoryItemId: string;
     quantity: number;
     unitCost: number;
+    notes?: string;
   }>;
   expectedDate?: Date;
   notes?: string;
@@ -17,7 +25,7 @@ export interface CreatePurchaseOrderData {
 }
 
 export interface UpdatePurchaseOrderData {
-  status?: 'PENDING' | 'APPROVED' | 'ORDERED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
+  status?: PurchaseOrderStatus;
   expectedDate?: Date;
   receivedDate?: Date;
   notes?: string;
@@ -31,52 +39,70 @@ export interface ReceiveItemsData {
   }>;
 }
 
+export interface PurchaseOrderFilters {
+  status?: PurchaseOrderStatus;
+  vendorId?: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export class PurchaseOrderService {
   /**
-   * Get purchase orders with filters
+   * Get purchase orders with filters and pagination
    */
   static async getPurchaseOrders(
     page: number = 1,
     limit: number = 20,
-    filters: {
-      status?: string;
-      vendorId?: string;
-      startDate?: Date;
-      endDate?: Date;
-    } = {}
+    filters: PurchaseOrderFilters = {}
   ) {
     try {
-      const skip = (page - 1) * limit;
-      
-      const where: Prisma.PurchaseOrderWhereInput = {};
+      const offset = (page - 1) * limit;
+
+      const whereClause: any = {};
 
       if (filters.status) {
-        where.status = filters.status as any;
+        whereClause.status = filters.status;
       }
-      
+
       if (filters.vendorId) {
-        where.vendorId = filters.vendorId;
+        whereClause.vendorId = filters.vendorId;
       }
-      
+
       if (filters.startDate || filters.endDate) {
-        where.orderDate = {};
-        if (filters.startDate) where.orderDate.gte = filters.startDate;
-        if (filters.endDate) where.orderDate.lte = filters.endDate;
+        whereClause.orderDate = {};
+        if (filters.startDate) {
+          whereClause.orderDate[Op.gte] = filters.startDate;
+        }
+        if (filters.endDate) {
+          whereClause.orderDate[Op.lte] = filters.endDate;
+        }
       }
-      
-      const [orders, total] = await Promise.all([
-        prisma.purchaseOrder.findMany({
-          where,
-          include: {
-            vendor: true,
-            items: true
+
+      const { rows: orders, count: total } = await PurchaseOrder.findAndCountAll({
+        where: whereClause,
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor',
+            attributes: ['id', 'name', 'contactName', 'email', 'phone']
           },
-          skip,
-          take: limit,
-          orderBy: { orderDate: 'desc' }
-        }),
-        prisma.purchaseOrder.count({ where })
-      ]);
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem',
+                attributes: ['id', 'name', 'sku', 'category']
+              }
+            ]
+          }
+        ],
+        offset,
+        limit,
+        order: [['orderDate', 'DESC']],
+        distinct: true
+      });
 
       return {
         orders,
@@ -94,39 +120,34 @@ export class PurchaseOrderService {
   }
 
   /**
-   * Get purchase order by ID
+   * Get purchase order by ID with full details
    */
   static async getPurchaseOrderById(id: string) {
     try {
-      const order = await prisma.purchaseOrder.findUnique({
-        where: { id },
-        include: {
-          vendor: true,
-          items: true
-        }
+      const order = await PurchaseOrder.findByPk(id, {
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem'
+              }
+            ]
+          }
+        ]
       });
 
       if (!order) {
         throw new Error('Purchase order not found');
       }
 
-      // Enrich items with inventory item details
-      const enrichedItems = await Promise.all(
-        order.items.map(async (item) => {
-          const inventoryItem = await prisma.inventoryItem.findUnique({
-            where: { id: item.inventoryItemId }
-          });
-          return {
-            ...item,
-            inventoryItem
-          };
-        })
-      );
-
-      return {
-        ...order,
-        items: enrichedItems
-      };
+      return order;
     } catch (error) {
       logger.error('Error fetching purchase order:', error);
       throw error;
@@ -134,16 +155,17 @@ export class PurchaseOrderService {
   }
 
   /**
-   * Create purchase order
+   * Create purchase order with transaction handling
    */
   static async createPurchaseOrder(data: CreatePurchaseOrderData) {
+    const transaction: Transaction = await sequelize.transaction();
+
     try {
       // Verify vendor exists
-      const vendor = await prisma.vendor.findUnique({
-        where: { id: data.vendorId }
-      });
+      const vendor = await Vendor.findByPk(data.vendorId, { transaction });
 
       if (!vendor) {
+        await transaction.rollback();
         throw new Error('Vendor not found');
       }
 
@@ -152,11 +174,10 @@ export class PurchaseOrderService {
       const itemsData = [];
 
       for (const item of data.items) {
-        const inventoryItem = await prisma.inventoryItem.findUnique({
-          where: { id: item.inventoryItemId }
-        });
+        const inventoryItem = await InventoryItem.findByPk(item.inventoryItemId, { transaction });
 
         if (!inventoryItem) {
+          await transaction.rollback();
           throw new Error(`Inventory item not found: ${item.inventoryItemId}`);
         }
 
@@ -167,7 +188,8 @@ export class PurchaseOrderService {
           inventoryItemId: item.inventoryItemId,
           quantity: item.quantity,
           unitCost: item.unitCost,
-          totalCost
+          totalCost,
+          notes: item.notes
         });
       }
 
@@ -175,11 +197,13 @@ export class PurchaseOrderService {
       const shipping = data.shipping || 0;
       const total = subtotal + tax + shipping;
 
-      // Generate unique order number
-      const orderNumber = `PO-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      // Generate unique order number with date prefix
+      const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const orderNumber = `PO-${datePrefix}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
-      const purchaseOrder = await prisma.purchaseOrder.create({
-        data: {
+      // Create purchase order
+      const purchaseOrder = await PurchaseOrder.create(
+        {
           orderNumber,
           vendorId: data.vendorId,
           expectedDate: data.expectedDate,
@@ -188,19 +212,48 @@ export class PurchaseOrderService {
           tax,
           shipping,
           total,
-          items: {
-            create: itemsData
-          }
+          status: PurchaseOrderStatus.PENDING
         },
-        include: {
-          vendor: true,
-          items: true
-        }
+        { transaction }
+      );
+
+      // Create purchase order items
+      for (const itemData of itemsData) {
+        await PurchaseOrderItem.create(
+          {
+            purchaseOrderId: purchaseOrder.id,
+            ...itemData
+          },
+          { transaction }
+        );
+      }
+
+      await transaction.commit();
+
+      // Reload with associations
+      await purchaseOrder.reload({
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem'
+              }
+            ]
+          }
+        ]
       });
 
       logger.info(`Purchase order created: ${orderNumber} for ${vendor.name}`);
       return purchaseOrder;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error creating purchase order:', error);
       throw error;
     }
@@ -211,24 +264,50 @@ export class PurchaseOrderService {
    */
   static async updatePurchaseOrder(id: string, data: UpdatePurchaseOrderData) {
     try {
-      const updateData: Prisma.PurchaseOrderUpdateInput = { ...data };
+      const existingOrder = await PurchaseOrder.findByPk(id, {
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          }
+        ]
+      });
+
+      if (!existingOrder) {
+        throw new Error('Purchase order not found');
+      }
+
+      const updateData: any = { ...data };
 
       // If approving, set approval timestamp
-      if (data.status === 'APPROVED' && !data.approvedBy) {
+      if (data.status === PurchaseOrderStatus.APPROVED && !existingOrder.approvedAt) {
         updateData.approvedAt = new Date();
       }
 
-      const order = await prisma.purchaseOrder.update({
-        where: { id },
-        data: updateData,
-        include: {
-          vendor: true,
-          items: true
-        }
+      await existingOrder.update(updateData);
+
+      // Reload with full associations
+      await existingOrder.reload({
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem'
+              }
+            ]
+          }
+        ]
       });
 
-      logger.info(`Purchase order updated: ${order.orderNumber} - Status: ${order.status}`);
-      return order;
+      logger.info(`Purchase order updated: ${existingOrder.orderNumber} - Status: ${existingOrder.status}`);
+      return existingOrder;
     } catch (error) {
       logger.error('Error updating purchase order:', error);
       throw error;
@@ -240,17 +319,40 @@ export class PurchaseOrderService {
    */
   static async approvePurchaseOrder(id: string, approvedBy: string) {
     try {
-      const order = await prisma.purchaseOrder.update({
-        where: { id },
-        data: {
-          status: 'APPROVED',
-          approvedBy,
-          approvedAt: new Date()
-        },
-        include: {
-          vendor: true,
-          items: true
-        }
+      const order = await PurchaseOrder.findByPk(id);
+
+      if (!order) {
+        throw new Error('Purchase order not found');
+      }
+
+      if (order.status !== PurchaseOrderStatus.PENDING) {
+        throw new Error(`Cannot approve order with status: ${order.status}`);
+      }
+
+      await order.update({
+        status: PurchaseOrderStatus.APPROVED,
+        approvedBy,
+        approvedAt: new Date()
+      });
+
+      // Reload with associations
+      await order.reload({
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem'
+              }
+            ]
+          }
+        ]
       });
 
       logger.info(`Purchase order approved: ${order.orderNumber} by ${approvedBy}`);
@@ -262,76 +364,127 @@ export class PurchaseOrderService {
   }
 
   /**
-   * Receive items from purchase order
+   * Receive items from purchase order with transaction handling
    */
   static async receiveItems(id: string, data: ReceiveItemsData, performedBy: string) {
+    const transaction: Transaction = await sequelize.transaction();
+
     try {
-      const order = await prisma.purchaseOrder.findUnique({
-        where: { id },
-        include: { items: true }
+      const order = await PurchaseOrder.findByPk(id, {
+        include: [
+          {
+            model: PurchaseOrderItem,
+            as: 'items'
+          }
+        ],
+        transaction
       });
 
       if (!order) {
+        await transaction.rollback();
         throw new Error('Purchase order not found');
+      }
+
+      if (order.status !== PurchaseOrderStatus.APPROVED && order.status !== PurchaseOrderStatus.ORDERED && order.status !== PurchaseOrderStatus.PARTIALLY_RECEIVED) {
+        await transaction.rollback();
+        throw new Error(`Cannot receive items for order with status: ${order.status}`);
       }
 
       // Update received quantities and create inventory transactions
       for (const receivedItem of data.items) {
-        const poItem = order.items.find((item) => item.id === receivedItem.purchaseOrderItemId);
-        
+        const poItem = order.items?.find((item: any) => item.id === receivedItem.purchaseOrderItemId);
+
         if (!poItem) {
+          await transaction.rollback();
           throw new Error(`Purchase order item not found: ${receivedItem.purchaseOrderItemId}`);
         }
 
+        // Validate received quantity
+        const newReceivedQty = poItem.receivedQty + receivedItem.receivedQty;
+        if (newReceivedQty > poItem.quantity) {
+          await transaction.rollback();
+          throw new Error(`Received quantity (${newReceivedQty}) exceeds ordered quantity (${poItem.quantity}) for item`);
+        }
+
         // Update purchase order item
-        await prisma.purchaseOrderItem.update({
-          where: { id: receivedItem.purchaseOrderItemId },
-          data: {
-            receivedQty: {
-              increment: receivedItem.receivedQty
-            }
+        await PurchaseOrderItem.update(
+          {
+            receivedQty: newReceivedQty
+          },
+          {
+            where: { id: receivedItem.purchaseOrderItemId },
+            transaction
           }
-        });
+        );
 
         // Create inventory transaction
-        await prisma.inventoryTransaction.create({
-          data: {
+        await InventoryTransaction.create(
+          {
             inventoryItemId: poItem.inventoryItemId,
-            type: 'PURCHASE',
+            type: InventoryTransactionType.PURCHASE,
             quantity: receivedItem.receivedQty,
             unitCost: poItem.unitCost,
             reason: `Received from PO ${order.orderNumber}`,
             performedById: performedBy
-          }
-        });
+          },
+          { transaction }
+        );
       }
 
       // Check if all items are fully received
-      const updatedOrder = await prisma.purchaseOrder.findUnique({
-        where: { id },
-        include: { items: true }
+      const updatedOrder = await PurchaseOrder.findByPk(id, {
+        include: [
+          {
+            model: PurchaseOrderItem,
+            as: 'items'
+          }
+        ],
+        transaction
       });
 
-      const allReceived = updatedOrder!.items.every((item) => item.receivedQty >= item.quantity);
-      const partiallyReceived = updatedOrder!.items.some((item) => item.receivedQty > 0);
+      const allReceived = updatedOrder!.items!.every((item: any) => item.receivedQty >= item.quantity);
+      const partiallyReceived = updatedOrder!.items!.some((item: any) => item.receivedQty > 0);
 
-      const newStatus = allReceived ? 'RECEIVED' : partiallyReceived ? 'PARTIALLY_RECEIVED' : order.status;
+      let newStatus = order.status;
+      if (allReceived) {
+        newStatus = PurchaseOrderStatus.RECEIVED;
+      } else if (partiallyReceived) {
+        newStatus = PurchaseOrderStatus.PARTIALLY_RECEIVED;
+      }
 
-      const finalOrder = await prisma.purchaseOrder.update({
-        where: { id },
-        data: {
-          status: newStatus,
-          receivedDate: allReceived ? new Date() : undefined
-        },
-        include: {
-          vendor: true,
-          items: true
-        }
+      const updateData: any = { status: newStatus };
+      if (allReceived) {
+        updateData.receivedDate = new Date();
+      }
+
+      await order.update(updateData, { transaction });
+
+      await transaction.commit();
+
+      // Reload with full associations
+      await order.reload({
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem'
+              }
+            ]
+          }
+        ]
       });
 
       logger.info(`Items received for PO ${order.orderNumber}. Status: ${newStatus}`);
-      return finalOrder;
+      return order;
     } catch (error) {
+      await transaction.rollback();
       logger.error('Error receiving items:', error);
       throw error;
     }
@@ -342,19 +495,47 @@ export class PurchaseOrderService {
    */
   static async cancelPurchaseOrder(id: string, reason?: string) {
     try {
-      const order = await prisma.purchaseOrder.update({
-        where: { id },
-        data: {
-          status: 'CANCELLED',
-          notes: reason ? `CANCELLED: ${reason}` : undefined
-        },
-        include: {
-          vendor: true,
-          items: true
-        }
+      const order = await PurchaseOrder.findByPk(id);
+
+      if (!order) {
+        throw new Error('Purchase order not found');
+      }
+
+      if (order.status === PurchaseOrderStatus.RECEIVED || order.status === PurchaseOrderStatus.CANCELLED) {
+        throw new Error(`Cannot cancel order with status: ${order.status}`);
+      }
+
+      const updateData: any = {
+        status: PurchaseOrderStatus.CANCELLED
+      };
+
+      if (reason) {
+        updateData.notes = order.notes ? `${order.notes}\n\nCANCELLED: ${reason}` : `CANCELLED: ${reason}`;
+      }
+
+      await order.update(updateData);
+
+      // Reload with associations
+      await order.reload({
+        include: [
+          {
+            model: Vendor,
+            as: 'vendor'
+          },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem'
+              }
+            ]
+          }
+        ]
       });
 
-      logger.info(`Purchase order cancelled: ${order.orderNumber}`);
+      logger.info(`Purchase order cancelled: ${order.orderNumber}${reason ? ` - Reason: ${reason}` : ''}`);
       return order;
     } catch (error) {
       logger.error('Error cancelling purchase order:', error);
@@ -363,31 +544,195 @@ export class PurchaseOrderService {
   }
 
   /**
-   * Get items needing reorder
+   * Get items needing reorder based on current stock levels
    */
   static async getItemsNeedingReorder() {
     try {
-      const items = await prisma.$queryRaw`
-        SELECT 
-          i.*,
-          COALESCE(stock.totalQuantity, 0) as currentStock,
-          i."reorderQuantity" as suggestedOrderQty
-        FROM inventory_items i
-        LEFT JOIN (
-          SELECT 
-            "inventoryItemId",
-            SUM(quantity) as totalQuantity
-          FROM inventory_transactions
-          GROUP BY "inventoryItemId"
-        ) stock ON i.id = stock."inventoryItemId"
-        WHERE i."isActive" = true
-        AND COALESCE(stock.totalQuantity, 0) <= i."reorderLevel"
-        ORDER BY COALESCE(stock.totalQuantity, 0) ASC
-      `;
+      // Get all active inventory items with their transaction totals
+      const items = await InventoryItem.findAll({
+        where: {
+          isActive: true
+        },
+        include: [
+          {
+            model: InventoryTransaction,
+            as: 'transactions',
+            attributes: []
+          }
+        ],
+        attributes: [
+          'id',
+          'name',
+          'category',
+          'description',
+          'sku',
+          'supplier',
+          'unitCost',
+          'reorderLevel',
+          'reorderQuantity',
+          'location',
+          [
+            sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('transactions.quantity')), 0),
+            'currentStock'
+          ]
+        ],
+        group: ['InventoryItem.id'],
+        having: sequelize.where(
+          sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('transactions.quantity')), 0),
+          Op.lte,
+          sequelize.col('InventoryItem.reorderLevel')
+        ),
+        order: [[sequelize.literal('currentStock'), 'ASC']],
+        raw: true
+      });
 
-      return items;
+      // Format the results
+      const formattedItems = items.map((item: any) => ({
+        ...item,
+        currentStock: parseInt(item.currentStock || '0', 10),
+        suggestedOrderQty: item.reorderQuantity
+      }));
+
+      return formattedItems;
     } catch (error) {
       logger.error('Error getting items needing reorder:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete purchase order (admin only, for draft orders)
+   */
+  static async deletePurchaseOrder(id: string) {
+    try {
+      const order = await PurchaseOrder.findByPk(id, {
+        include: [
+          {
+            model: PurchaseOrderItem,
+            as: 'items'
+          }
+        ]
+      });
+
+      if (!order) {
+        throw new Error('Purchase order not found');
+      }
+
+      if (order.status !== PurchaseOrderStatus.PENDING) {
+        throw new Error(`Cannot delete order with status: ${order.status}. Only PENDING orders can be deleted.`);
+      }
+
+      await order.destroy();
+
+      logger.info(`Purchase order deleted: ${order.orderNumber}`);
+      return { success: true, message: 'Purchase order deleted successfully' };
+    } catch (error) {
+      logger.error('Error deleting purchase order:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get purchase order statistics
+   */
+  static async getPurchaseOrderStatistics() {
+    try {
+      const [
+        totalOrders,
+        pendingOrders,
+        approvedOrders,
+        partiallyReceivedOrders,
+        totalValue,
+        recentOrders
+      ] = await Promise.all([
+        PurchaseOrder.count(),
+        PurchaseOrder.count({
+          where: {
+            status: PurchaseOrderStatus.PENDING
+          }
+        }),
+        PurchaseOrder.count({
+          where: {
+            status: PurchaseOrderStatus.APPROVED
+          }
+        }),
+        PurchaseOrder.count({
+          where: {
+            status: PurchaseOrderStatus.PARTIALLY_RECEIVED
+          }
+        }),
+        PurchaseOrder.sum('total', {
+          where: {
+            status: {
+              [Op.in]: [PurchaseOrderStatus.APPROVED, PurchaseOrderStatus.ORDERED, PurchaseOrderStatus.PARTIALLY_RECEIVED, PurchaseOrderStatus.RECEIVED]
+            }
+          }
+        }),
+        PurchaseOrder.count({
+          where: {
+            createdAt: {
+              [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+            }
+          }
+        })
+      ]);
+
+      const statistics = {
+        totalOrders,
+        pendingOrders,
+        approvedOrders,
+        partiallyReceivedOrders,
+        totalValue: totalValue || 0,
+        recentOrders
+      };
+
+      logger.info('Retrieved purchase order statistics');
+      return statistics;
+    } catch (error) {
+      logger.error('Error getting purchase order statistics:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get vendor purchase order history
+   */
+  static async getVendorPurchaseHistory(vendorId: string, limit: number = 10) {
+    try {
+      const vendor = await Vendor.findByPk(vendorId);
+
+      if (!vendor) {
+        throw new Error('Vendor not found');
+      }
+
+      const orders = await PurchaseOrder.findAll({
+        where: {
+          vendorId
+        },
+        include: [
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [
+              {
+                model: InventoryItem,
+                as: 'inventoryItem',
+                attributes: ['id', 'name', 'sku']
+              }
+            ]
+          }
+        ],
+        order: [['orderDate', 'DESC']],
+        limit
+      });
+
+      return {
+        vendor,
+        orders,
+        totalOrders: orders.length
+      };
+    } catch (error) {
+      logger.error('Error fetching vendor purchase history:', error);
       throw error;
     }
   }

@@ -7,6 +7,45 @@ export * from './common'
 // Re-export API types for convenient access
 export * from './api'
 
+// Re-export compliance types
+export * from './compliance'
+
+// Re-export appointment types
+export * from './appointments'
+
+// Re-export administration types
+export * from './administration'
+
+// Re-export communication types
+export * from './communication'
+
+// Re-export incident types
+export * from './incidents'
+
+// Re-export report types
+export * from './reports'
+
+// Re-export dashboard types
+export * from './dashboard'
+
+// Re-export access control types
+export * from './accessControl'
+
+// Re-export integration types
+export * from './integrations'
+
+// Re-export vendor types
+export * from './vendors'
+
+// Re-export purchase order types
+export * from './purchaseOrders'
+
+// Re-export inventory types
+export * from './inventory'
+
+// Re-export budget types
+export * from './budget'
+
 // Legacy ApiResponse interface for backward compatibility
 export interface ApiResponse<T> {
   success: boolean
