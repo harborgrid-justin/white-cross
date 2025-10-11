@@ -133,16 +133,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.error('Token verification failed:', error)
             expireSession()
           }
+        } else {
+          // No token found, user is not authenticated
+          setLoading(false)
         }
       } catch (error) {
         console.error('Auth initialization failed:', error)
-        expireSession()
-      } finally {
+        // Don't call expireSession on initialization failure, just set loading to false
         setLoading(false)
       }
     }
 
     initializeAuth()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const login = async (email: string, password: string) => {

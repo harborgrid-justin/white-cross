@@ -263,7 +263,9 @@ export default function Appointments() {
         <div className="card p-4">
           <div className="flex gap-4 items-center">
             <Filter className="h-5 w-5 text-gray-400" />
+            <label htmlFor="filterStatus" className="sr-only">Status filter</label>
             <select
+              id="filterStatus"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -274,7 +276,9 @@ export default function Appointments() {
                 </option>
               ))}
             </select>
+            <label htmlFor="filterType" className="sr-only">Type filter</label>
             <select
+              id="filterType"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

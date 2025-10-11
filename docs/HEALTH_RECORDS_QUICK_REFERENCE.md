@@ -1,665 +1,482 @@
----
-title: Health Records - Quick Reference Card
-description: Quick reference for developers using the new health records architecture
-date: 2025-10-10
----
+# Health Records Schema - Quick Reference Guide
 
-# Health Records - Quick Reference Card
+## Overview
 
-## 🚀 Quick Start
+Quick reference for developers working with the White Cross health records database schema.
 
-### Import What You Need
+## Table Summary
+
+| Model | Purpose | Key Fields | Common Queries |
+|-------|---------|-----------|----------------|
+| **HealthRecord** | Main health documentation | recordType, recordDate, diagnosis, followUpRequired | Student history, follow-ups needed |
+| **Allergy** | Allergy tracking | allergen, allergyType, severity, epiPenExpiration | Active allergies, expiring EpiPens |
+| **ChronicCondition** | Chronic disease management | condition, severity, status, nextReviewDate | Active conditions, reviews due |
+| **Vaccination** | Immunization records | vaccineName, vaccineType, complianceStatus, nextDueDate | Compliance reports, upcoming doses |
+| **Screening** | Health screenings | screeningType, outcome, referralRequired | Failed screenings, pending referrals |
+| **GrowthMeasurement** | Growth tracking | height, weight, bmi, bmiPercentile | Growth charts, BMI trends |
+| **VitalSigns** | Vital signs | temperature, bloodPressure, heartRate, oxygenSaturation | Latest vitals, trending data |
+
+## Common Query Patterns
+
+### 1. Get Active Student Allergies (Emergency View)
 
 ```typescript
-// Hooks
-import {
-  useHealthRecords,
-  useAllergies,
-  useChronicConditions,
-  useVaccinations,
-  useCreateHealthRecord,
-  useUpdateHealthRecord,
-  useDeleteHealthRecord,
-} from '@/hooks/useHealthRecords';
-
-// Error Boundary
-import { HealthRecordsErrorBoundaryWrapper } from '@/components/healthRecords/HealthRecordsErrorBoundary';
-
-// Cleanup Utilities
-import { SessionMonitor, clearAllPHI } from '@/utils/healthRecordsCleanup';
-
-// Service (rarely needed directly)
-import { healthRecordsApiService } from '@/services/modules/healthRecordsApi.enhanced';
+const allergies = await prisma.allergy.findMany({
+  where: {
+    studentId: 'student_id',
+    active: true
+  },
+  orderBy: { severity: 'desc' },
+  select: {
+    allergen: true,
+    allergyType: true,
+    severity: true,
+    reactions: true,
+    emergencyProtocol: true,
+    epiPenRequired: true,
+    epiPenLocation: true
+  }
+});
 ```
 
----
+**Index Used**: `allergies_studentId_active_idx`
 
-## 📖 Common Use Cases
-
-### 1. Fetch Health Records
+### 2. Get Vaccination Compliance Status
 
 ```typescript
-function HealthRecordsList({ studentId }: { studentId: string }) {
-  const { data, isLoading, error, refetch } = useHealthRecords(studentId, {
-    type: 'CHECKUP', // Optional filter
-  });
-
-  if (isLoading) return <Loading />;
-  if (error) return <Error message={error.message} />;
-
-  return (
-    <div>
-      {data?.map(record => (
-        <RecordCard key={record.id} record={record} />
-      ))}
-      <button onClick={() => refetch()}>Refresh</button>
-    </div>
-  );
-}
+const vaccinations = await prisma.vaccination.findMany({
+  where: {
+    studentId: 'student_id'
+  },
+  orderBy: { administrationDate: 'desc' },
+  select: {
+    vaccineName: true,
+    vaccineType: true,
+    administrationDate: true,
+    doseNumber: true,
+    totalDoses: true,
+    seriesComplete: true,
+    complianceStatus: true,
+    nextDueDate: true
+  }
+});
 ```
 
-### 2. Create Health Record
+**Index Used**: `vaccinations_studentId_administrationDate_idx`
+
+### 3. Get Active Chronic Conditions
 
 ```typescript
-function CreateRecordForm({ studentId }: { studentId: string }) {
-  const createMutation = useCreateHealthRecord();
+const conditions = await prisma.chronicCondition.findMany({
+  where: {
+    studentId: 'student_id',
+    status: 'ACTIVE'
+  },
+  orderBy: { severity: 'desc' },
+  select: {
+    condition: true,
+    icdCode: true,
+    severity: true,
+    emergencyProtocol: true,
+    actionPlan: true,
+    accommodationsRequired: true,
+    accommodationDetails: true,
+    medications: true,
+    restrictions: true
+  }
+});
+```
 
-  const handleSubmit = async (formData: CreateHealthRecordRequest) => {
-    try {
-      await createMutation.mutateAsync({
-        studentId,
-        ...formData,
-      });
-      // Success toast shown automatically
-      // Cache invalidated automatically
-    } catch (error) {
-      // Error handled automatically
+**Index Used**: `chronic_conditions_studentId_status_idx`
+
+### 4. Get Latest Vital Signs
+
+```typescript
+const latestVitals = await prisma.vitalSigns.findFirst({
+  where: { studentId: 'student_id' },
+  orderBy: { measurementDate: 'desc' },
+  select: {
+    measurementDate: true,
+    temperature: true,
+    temperatureUnit: true,
+    bloodPressureSystolic: true,
+    bloodPressureDiastolic: true,
+    heartRate: true,
+    respiratoryRate: true,
+    oxygenSaturation: true,
+    painLevel: true,
+    consciousness: true
+  }
+});
+```
+
+**Index Used**: `vital_signs_studentId_measurementDate_idx`
+
+### 5. Get Growth Chart Data
+
+```typescript
+const growthData = await prisma.growthMeasurement.findMany({
+  where: { studentId: 'student_id' },
+  orderBy: { measurementDate: 'asc' },
+  select: {
+    measurementDate: true,
+    height: true,
+    weight: true,
+    bmi: true,
+    bmiPercentile: true,
+    heightPercentile: true,
+    weightPercentile: true,
+    nutritionalStatus: true
+  }
+});
+```
+
+**Index Used**: `growth_measurements_studentId_measurementDate_idx`
+
+### 6. Find Students with Overdue Vaccinations
+
+```typescript
+const overdueStudents = await prisma.vaccination.findMany({
+  where: {
+    complianceStatus: {
+      in: ['OVERDUE', 'NON_COMPLIANT']
+    },
+    student: {
+      isActive: true
     }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* Form fields */}
-      <button disabled={createMutation.isPending}>
-        {createMutation.isPending ? 'Creating...' : 'Create'}
-      </button>
-    </form>
-  );
-}
-```
-
-### 3. Update Health Record
-
-```typescript
-function EditRecordForm({ recordId, initialData }) {
-  const updateMutation = useUpdateHealthRecord();
-
-  const handleUpdate = async (formData) => {
-    await updateMutation.mutateAsync({
-      id: recordId,
-      data: formData,
-    });
-    // Optimistic update applied automatically
-    // Rollback on error automatic
-  };
-
-  return <form onSubmit={handleUpdate}>{/* ... */}</form>;
-}
-```
-
-### 4. Delete Health Record
-
-```typescript
-function DeleteRecordButton({ recordId }) {
-  const deleteMutation = useDeleteHealthRecord();
-
-  const handleDelete = async () => {
-    if (confirm('Are you sure?')) {
-      await deleteMutation.mutateAsync(recordId);
-      // Record removed from cache automatically
+  },
+  include: {
+    student: {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        grade: true
+      }
     }
-  };
-
-  return (
-    <button
-      onClick={handleDelete}
-      disabled={deleteMutation.isPending}
-    >
-      Delete
-    </button>
-  );
-}
+  },
+  orderBy: { nextDueDate: 'asc' }
+});
 ```
 
-### 5. Fetch with Filters
+**Index Used**: `vaccinations_vaccineType_complianceStatus_idx`
+
+### 7. Find Expiring EpiPens
 
 ```typescript
-function FilteredRecords({ studentId }) {
-  const [filters, setFilters] = useState<HealthRecordFilters>({
-    type: 'CHECKUP',
-    dateFrom: '2024-01-01',
-    dateTo: '2024-12-31',
-  });
-
-  const { data } = useHealthRecords(studentId, filters);
-
-  return (
-    <div>
-      <FilterForm filters={filters} onChange={setFilters} />
-      <RecordsList records={data} />
-    </div>
-  );
-}
-```
-
-### 6. Search Health Records
-
-```typescript
-function SearchRecords({ studentId }) {
-  const [query, setQuery] = useState('');
-
-  const { data, isLoading } = useSearchHealthRecords(
-    query,
-    { studentId },
-    {
-      enabled: query.length >= 2, // Only search when 2+ chars
+const expiringEpiPens = await prisma.allergy.findMany({
+  where: {
+    epiPenRequired: true,
+    epiPenExpiration: {
+      lte: addMonths(new Date(), 3) // Within 3 months
+    },
+    active: true,
+    student: {
+      isActive: true
     }
-  );
-
-  return (
-    <div>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search records..."
-      />
-      {isLoading && <Loading />}
-      {data?.map(record => <RecordCard key={record.id} record={record} />)}
-    </div>
-  );
-}
+  },
+  include: {
+    student: {
+      select: {
+        firstName: true,
+        lastName: true,
+        grade: true
+      }
+    }
+  },
+  orderBy: { epiPenExpiration: 'asc' }
+});
 ```
 
-### 7. Allergies Management
+**Index Used**: `allergies_epiPenExpiration_idx`
+
+### 8. Get Health Records Needing Follow-Up
 
 ```typescript
-function AllergiesTab({ studentId }) {
-  const { data: allergies, isLoading } = useAllergies(studentId);
-  const createMutation = useCreateAllergy();
-  const deleteMutation = useDeleteAllergy();
-
-  const handleAdd = async (allergyData: CreateAllergyRequest) => {
-    await createMutation.mutateAsync({
-      studentId,
-      ...allergyData,
-    });
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteMutation.mutateAsync({ id, studentId });
-  };
-
-  return (
-    <div>
-      {allergies?.map(allergy => (
-        <AllergyCard
-          key={allergy.id}
-          allergy={allergy}
-          onDelete={() => handleDelete(allergy.id)}
-        />
-      ))}
-      <AddAllergyButton onAdd={handleAdd} />
-    </div>
-  );
-}
+const followUpNeeded = await prisma.healthRecord.findMany({
+  where: {
+    followUpRequired: true,
+    followUpCompleted: false,
+    followUpDate: {
+      lte: addDays(new Date(), 7) // Due within 7 days
+    }
+  },
+  include: {
+    student: {
+      select: {
+        firstName: true,
+        lastName: true,
+        grade: true
+      }
+    }
+  },
+  orderBy: { followUpDate: 'asc' }
+});
 ```
 
-### 8. Health Summary Dashboard
+**Index Used**: `health_records_followUpRequired_followUpDate_idx`
+
+### 9. Get Failed Screenings Requiring Referrals
 
 ```typescript
-function HealthSummaryDashboard({ studentId }) {
-  const { data: summary, isLoading, error } = useHealthSummary(studentId);
-
-  if (isLoading) return <Loading />;
-  if (error) return <Error message={error.message} />;
-  if (!summary) return null;
-
-  return (
-    <div>
-      <StudentInfo student={summary.student} />
-
-      <Section title="Allergies">
-        {summary.allergies.map(allergy => (
-          <AllergyBadge key={allergy.id} allergy={allergy} />
-        ))}
-      </Section>
-
-      <Section title="Chronic Conditions">
-        {summary.chronicConditions.map(condition => (
-          <ConditionCard key={condition.id} condition={condition} />
-        ))}
-      </Section>
-
-      <Section title="Alerts">
-        {summary.alerts.map(alert => (
-          <AlertBanner key={alert.id} alert={alert} />
-        ))}
-      </Section>
-
-      <CompletionScore score={summary.completeness} />
-    </div>
-  );
-}
+const referralsNeeded = await prisma.screening.findMany({
+  where: {
+    outcome: {
+      in: ['REFER', 'FAIL']
+    },
+    referralRequired: true,
+    followUpStatus: {
+      in: ['PENDING', 'SCHEDULED']
+    }
+  },
+  include: {
+    student: {
+      select: {
+        firstName: true,
+        lastName: true,
+        grade: true
+      }
+    }
+  },
+  orderBy: { screeningDate: 'desc' }
+});
 ```
 
----
+**Index Used**: `screenings_referralRequired_followUpRequired_idx`
 
-## 🛡️ Error Boundary Setup
-
-### Wrap Your Component
+### 10. Complete Student Health Summary
 
 ```typescript
-import { HealthRecordsErrorBoundaryWrapper } from '@/components/healthRecords/HealthRecordsErrorBoundary';
-
-function HealthRecordsPage({ studentId }) {
-  return (
-    <HealthRecordsErrorBoundaryWrapper studentId={studentId}>
-      <HealthRecordsContent studentId={studentId} />
-    </HealthRecordsErrorBoundaryWrapper>
-  );
-}
-```
-
-### Using HOC
-
-```typescript
-import { withHealthRecordsErrorBoundary } from '@/components/healthRecords/HealthRecordsErrorBoundary';
-
-const HealthRecordsContent = ({ studentId }) => {
-  // Your component
-};
-
-export default withHealthRecordsErrorBoundary(HealthRecordsContent);
-```
-
-### Custom Fallback
-
-```typescript
-<HealthRecordsErrorBoundaryWrapper
-  studentId={studentId}
-  fallback={<CustomErrorUI />}
-  onError={(error, errorInfo) => {
-    console.error('Health records error:', error);
-  }}
->
-  <HealthRecordsContent />
-</HealthRecordsErrorBoundaryWrapper>
-```
-
----
-
-## 🔐 HIPAA Compliance
-
-### Session Monitoring
-
-```typescript
-import { SessionMonitor, logCleanupEvent } from '@/utils/healthRecordsCleanup';
-
-function HealthRecordsPage() {
-  const [sessionMonitor] = useState(() =>
-    new SessionMonitor({
-      timeoutMs: 15 * 60 * 1000, // 15 minutes
-      warningMs: 13 * 60 * 1000, // 13 minutes
-
-      onWarning: (remainingTime) => {
-        const minutes = Math.floor(remainingTime / 1000 / 60);
-        toast.error(`Session expires in ${minutes} minutes`);
+async function getCompleteHealthSummary(studentId: string) {
+  return await prisma.student.findUnique({
+    where: { id: studentId },
+    include: {
+      allergies: {
+        where: { active: true },
+        orderBy: { severity: 'desc' }
       },
-
-      onTimeout: () => {
-        handleLogout();
+      chronicConditions: {
+        where: { status: 'ACTIVE' },
+        orderBy: { severity: 'desc' }
       },
-    })
-  );
-
-  useEffect(() => {
-    sessionMonitor.start();
-    return () => sessionMonitor.stop();
-  }, [sessionMonitor]);
-
-  return <HealthRecordsContent />;
-}
-```
-
-### Automatic Cleanup
-
-```typescript
-import { useHealthRecordsCleanup } from '@/hooks/useHealthRecords';
-
-function HealthRecordsPage({ studentId }) {
-  // Automatically cleans up PHI on unmount
-  useHealthRecordsCleanup(studentId);
-
-  return <HealthRecordsContent />;
-}
-```
-
-### Manual Cleanup
-
-```typescript
-import { clearAllPHI } from '@/utils/healthRecordsCleanup';
-
-const handleLogout = async () => {
-  await clearAllPHI(queryClient, {
-    clearCache: true,
-    clearLocalStorage: true,
-    clearSessionStorage: true,
-    logAudit: true,
+      vaccinations: {
+        orderBy: { administrationDate: 'desc' },
+        take: 10
+      },
+      screenings: {
+        orderBy: { screeningDate: 'desc' },
+        take: 5
+      },
+      growthMeasurements: {
+        orderBy: { measurementDate: 'desc' },
+        take: 1
+      },
+      vitalSigns: {
+        orderBy: { measurementDate: 'desc' },
+        take: 1
+      }
+    }
   });
-
-  // Redirect to login
-  window.location.href = '/login';
-};
-```
-
-### Audit Logging
-
-```typescript
-import { logCleanupEvent } from '@/utils/healthRecordsCleanup';
-
-// Log custom events
-logCleanupEvent('CUSTOM_ACTION', {
-  userId: user.id,
-  studentId: student.id,
-  details: { /* ... */ },
-});
-
-// View audit log (development only)
-import { getAuditLog } from '@/utils/healthRecordsCleanup';
-console.table(getAuditLog());
-```
-
----
-
-## ⚡ Performance Tips
-
-### Configure Stale Time
-
-```typescript
-// Critical data - cache longer
-const { data: allergies } = useAllergies(studentId, {
-  staleTime: 10 * 60 * 1000, // 10 minutes
-});
-
-// Frequently updated - cache shorter
-const { data: summary } = useHealthSummary(studentId, {
-  staleTime: 2 * 60 * 1000, // 2 minutes
-});
-
-// Never cache
-const { data: realtime } = useHealthRecords(studentId, filters, {
-  staleTime: 0,
-});
-```
-
-### Prefetch Data
-
-```typescript
-import { useQueryClient } from '@tanstack/react-query';
-import { healthRecordsKeys } from '@/hooks/useHealthRecords';
-
-function StudentSelector() {
-  const queryClient = useQueryClient();
-
-  const handleStudentHover = (studentId: string) => {
-    // Prefetch on hover
-    queryClient.prefetchQuery({
-      queryKey: healthRecordsKeys.summary(studentId),
-      queryFn: () => healthRecordsApiService.getHealthSummary(studentId),
-    });
-  };
-
-  return <select onMouseEnter={handleStudentHover}>{/* ... */}</select>;
 }
 ```
 
-### Lazy Loading
+## Field Reference
 
-```typescript
-const AllergiesTab = lazy(() => import('./tabs/AllergiesTab'));
-const ChronicConditionsTab = lazy(() => import('./tabs/ChronicConditionsTab'));
+### HealthRecord Key Fields
 
-function HealthRecords() {
-  return (
-    <Suspense fallback={<Loading />}>
-      {activeTab === 'allergies' && <AllergiesTab />}
-      {activeTab === 'chronic' && <ChronicConditionsTab />}
-    </Suspense>
-  );
-}
+- `recordType`: Type of health record (enum: CHECKUP, VACCINATION, ILLNESS, etc.)
+- `recordDate`: Date of the health record event
+- `provider`: Name of healthcare provider
+- `providerNpi`: National Provider Identifier
+- `diagnosisCode`: ICD-10 diagnosis code
+- `followUpRequired`: Boolean flag for follow-up needed
+- `followUpDate`: When follow-up is due
+- `isConfidential`: Extra sensitivity flag
+- `createdBy`: User ID who created the record
+- `updatedBy`: User ID who last updated
+
+### Allergy Key Fields
+
+- `allergen`: Name of allergen (e.g., "Peanuts")
+- `allergyType`: Category (FOOD, MEDICATION, ENVIRONMENTAL, etc.)
+- `severity`: Level (MILD, MODERATE, SEVERE, LIFE_THREATENING)
+- `emergencyProtocol`: Emergency response steps
+- `epiPenRequired`: Boolean for EpiPen necessity
+- `epiPenExpiration`: Expiration date of EpiPen
+- `active`: Boolean for active/resolved status
+- `verified`: Boolean for verification status
+
+### ChronicCondition Key Fields
+
+- `condition`: Name of condition (e.g., "Type 1 Diabetes")
+- `icdCode`: ICD-10 code
+- `severity`: Level (MILD, MODERATE, SEVERE, CRITICAL)
+- `status`: Status (ACTIVE, MANAGED, RESOLVED, MONITORING)
+- `emergencyProtocol`: Emergency action plan
+- `actionPlan`: Care/management plan
+- `accommodationsRequired`: Boolean for 504 plan
+- `nextReviewDate`: When condition should be reviewed
+
+### Vaccination Key Fields
+
+- `vaccineName`: Name of vaccine
+- `vaccineType`: Category (COVID_19, FLU, MMR, etc.)
+- `cvxCode`: CDC vaccine code
+- `ndcCode`: National Drug Code
+- `doseNumber`: Which dose in series (1, 2, 3, etc.)
+- `seriesComplete`: Boolean for series completion
+- `complianceStatus`: Status (COMPLIANT, OVERDUE, EXEMPT, etc.)
+- `nextDueDate`: When next dose is due
+- `exemptionStatus`: Boolean for exemption
+
+### Screening Key Fields
+
+- `screeningType`: Type (VISION, HEARING, SCOLIOSIS, etc.)
+- `outcome`: Result (PASS, REFER, FAIL, INCONCLUSIVE)
+- `referralRequired`: Boolean for referral needed
+- `followUpStatus`: Status (PENDING, SCHEDULED, COMPLETED, etc.)
+- `rightEye` / `leftEye`: Vision screening results
+- `rightEar` / `leftEar`: Hearing screening results
+
+### GrowthMeasurement Key Fields
+
+- `height`: Height value (stored in cm)
+- `weight`: Weight value (stored in kg)
+- `bmi`: Calculated BMI
+- `bmiPercentile`: BMI percentile for age/gender
+- `heightPercentile`: Height percentile
+- `weightPercentile`: Weight percentile
+- `nutritionalStatus`: Status (Underweight, Normal, Overweight, Obese)
+
+### VitalSigns Key Fields
+
+- `temperature`: Temperature value
+- `temperatureUnit`: Unit (F or C)
+- `bloodPressureSystolic`: Systolic BP (mmHg)
+- `bloodPressureDiastolic`: Diastolic BP (mmHg)
+- `heartRate`: Heart rate (bpm)
+- `respiratoryRate`: Respiratory rate (breaths/min)
+- `oxygenSaturation`: O2 saturation (percentage)
+- `painLevel`: Pain scale (0-10)
+- `consciousness`: Level (ALERT, VERBAL, PAIN, UNRESPONSIVE, etc.)
+
+## Enum Values Quick Reference
+
+### AllergyType
+`FOOD | MEDICATION | ENVIRONMENTAL | INSECT | LATEX | ANIMAL | CHEMICAL | SEASONAL | OTHER`
+
+### AllergySeverity
+`MILD | MODERATE | SEVERE | LIFE_THREATENING`
+
+### ConditionStatus
+`ACTIVE | MANAGED | RESOLVED | MONITORING | INACTIVE`
+
+### ConditionSeverity
+`MILD | MODERATE | SEVERE | CRITICAL`
+
+### VaccineComplianceStatus
+`COMPLIANT | OVERDUE | PARTIALLY_COMPLIANT | EXEMPT | NON_COMPLIANT`
+
+### ScreeningOutcome
+`PASS | REFER | FAIL | INCONCLUSIVE | INCOMPLETE`
+
+### ScreeningType
+`VISION | HEARING | SCOLIOSIS | DENTAL | BMI | BLOOD_PRESSURE | DEVELOPMENTAL | SPEECH | MENTAL_HEALTH | TUBERCULOSIS | LEAD | ANEMIA | OTHER`
+
+### ConsciousnessLevel
+`ALERT | VERBAL | PAIN | UNRESPONSIVE | DROWSY | CONFUSED | LETHARGIC`
+
+## Index Reference
+
+### HealthRecord Indexes
+- `health_records_studentId_recordDate_idx` - Student health history
+- `health_records_recordType_recordDate_idx` - Filter by type and date
+- `health_records_createdBy_idx` - Audit queries
+- `health_records_followUpRequired_followUpDate_idx` - Follow-up management
+
+### Allergy Indexes
+- `allergies_studentId_active_idx` - Active allergies by student
+- `allergies_allergyType_severity_idx` - Filtering by type/severity
+- `allergies_epiPenExpiration_idx` - EpiPen expiration tracking
+
+### ChronicCondition Indexes
+- `chronic_conditions_studentId_status_idx` - Active conditions by student
+- `chronic_conditions_severity_status_idx` - Critical condition monitoring
+- `chronic_conditions_nextReviewDate_idx` - Review scheduling
+
+### Vaccination Indexes
+- `vaccinations_studentId_administrationDate_idx` - Vaccination history
+- `vaccinations_vaccineType_complianceStatus_idx` - Compliance reporting
+- `vaccinations_nextDueDate_idx` - Upcoming vaccinations
+- `vaccinations_expirationDate_idx` - Vaccine lot expiration
+
+### Screening Indexes
+- `screenings_studentId_screeningDate_idx` - Screening history
+- `screenings_screeningType_outcome_idx` - Screening results
+- `screenings_referralRequired_followUpRequired_idx` - Referral tracking
+- `screenings_followUpDate_idx` - Follow-up scheduling
+
+### GrowthMeasurement Indexes
+- `growth_measurements_studentId_measurementDate_idx` - Growth charts
+- `growth_measurements_measurementDate_idx` - Batch measurements
+
+### VitalSigns Indexes
+- `vital_signs_studentId_measurementDate_idx` - Vital signs history
+- `vital_signs_measurementDate_idx` - Date-based queries
+- `vital_signs_appointmentId_idx` - Appointment vitals
+
+## Performance Tips
+
+1. **Always Filter by studentId First**: Most indexes are compound with studentId
+2. **Use Select to Limit Fields**: Only fetch fields you need
+3. **Leverage Indexes**: Check EXPLAIN ANALYZE to verify index usage
+4. **Cache Frequently Accessed Data**: Active allergies, compliance status
+5. **Use Prisma's Include Wisely**: Deep nesting can cause N+1 queries
+6. **Batch Operations**: Use `createMany` for bulk inserts
+7. **Pagination**: Use `skip` and `take` for large result sets
+
+## HIPAA Compliance Reminders
+
+- Always log access to health records (use `createdBy`, `updatedBy`)
+- Mark sensitive records with `isConfidential` flag
+- Use role-based access control (RBAC) before queries
+- Audit trail required for all PHI access
+- Encrypt data in transit and at rest
+- Implement minimum necessary access principle
+
+## Migration Commands
+
+```bash
+# Generate migration
+npx prisma migrate dev --name complete_health_records_schema
+
+# Apply migration to production
+npx prisma migrate deploy
+
+# Generate Prisma client
+npx prisma generate
+
+# View database in browser
+npx prisma studio
 ```
+
+## Common Gotchas
+
+1. **Field Rename**: `type` → `recordType`, `date` → `recordDate` in HealthRecord
+2. **Enum Changes**: ConditionStatus changed from string to enum
+3. **Optional Relations**: healthRecordId is nullable on all specialized tables
+4. **Unit Storage**: Height in cm, weight in kg (convert on input/output)
+5. **Cascade Deletes**: Student deletion cascades to ALL health records
+6. **JSON Fields**: reactions, metadata, restrictions use JSONB (queryable)
+
+## Support Resources
+
+- **Schema File**: `F:\temp\white-cross\backend\prisma\schema.prisma`
+- **Migration SQL**: `F:\temp\white-cross\backend\prisma\migrations\20251010_complete_health_records_schema\migration.sql`
+- **Full Documentation**: `F:\temp\white-cross\HEALTH_RECORDS_SCHEMA_DESIGN.md`
+- **Prisma Docs**: https://www.prisma.io/docs/
 
 ---
 
-## 🧪 Testing Examples
-
-### Test Component with Hook
-
-```typescript
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useHealthRecords } from '@/hooks/useHealthRecords';
-
-describe('useHealthRecords', () => {
-  it('should fetch health records', async () => {
-    const queryClient = new QueryClient();
-    const wrapper = ({ children }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
-
-    const { result } = renderHook(
-      () => useHealthRecords('student-1'),
-      { wrapper }
-    );
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toHaveLength(5);
-  });
-});
-```
-
-### Test Component with Mutation
-
-```typescript
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CreateRecordForm from './CreateRecordForm';
-
-describe('CreateRecordForm', () => {
-  it('should create health record', async () => {
-    const queryClient = new QueryClient();
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <CreateRecordForm studentId="student-1" />
-      </QueryClientProvider>
-    );
-
-    fireEvent.change(screen.getByLabelText('Title'), {
-      target: { value: 'Annual Checkup' },
-    });
-
-    fireEvent.click(screen.getByText('Create'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Health record created successfully')).toBeInTheDocument();
-    });
-  });
-});
-```
-
-### Mock Service
-
-```typescript
-import { healthRecordsApiService } from '@/services/modules/healthRecordsApi.enhanced';
-
-jest.mock('@/services/modules/healthRecordsApi.enhanced');
-
-const mockService = healthRecordsApiService as jest.Mocked<typeof healthRecordsApiService>;
-
-beforeEach(() => {
-  mockService.getStudentHealthRecords.mockResolvedValue([
-    { id: '1', type: 'CHECKUP', /* ... */ },
-  ]);
-});
-
-test('should display records', async () => {
-  render(<HealthRecordsList studentId="student-1" />);
-
-  await waitFor(() => {
-    expect(screen.getByText('Annual Checkup')).toBeInTheDocument();
-  });
-});
-```
-
----
-
-## 🐛 Common Issues & Solutions
-
-### Issue: Query Not Fetching
-
-```typescript
-// ❌ Problem: enabled is false
-const { data } = useHealthRecords(studentId, filters, {
-  enabled: false, // Query won't run!
-});
-
-// ✅ Solution: Check enabled condition
-const { data } = useHealthRecords(studentId, filters, {
-  enabled: !!studentId, // Ensure it's truthy
-});
-```
-
-### Issue: Stale Data
-
-```typescript
-// ❌ Problem: Cache is stale
-const { data } = useHealthRecords(studentId);
-// Showing old data
-
-// ✅ Solution: Invalidate or refetch
-import { useQueryClient } from '@tanstack/react-query';
-import { healthRecordsKeys } from '@/hooks/useHealthRecords';
-
-const queryClient = useQueryClient();
-
-// Option 1: Invalidate
-queryClient.invalidateQueries({
-  queryKey: healthRecordsKeys.records(studentId),
-});
-
-// Option 2: Refetch
-const { refetch } = useHealthRecords(studentId);
-refetch();
-
-// Option 3: Reduce staleTime
-const { data } = useHealthRecords(studentId, filters, {
-  staleTime: 0, // Always fresh
-});
-```
-
-### Issue: Session Not Timing Out
-
-```typescript
-// ❌ Problem: Monitor not started
-const sessionMonitor = new SessionMonitor({ /* ... */ });
-// Forgot to start!
-
-// ✅ Solution: Start monitor
-useEffect(() => {
-  sessionMonitor.start();
-  return () => sessionMonitor.stop();
-}, [sessionMonitor]);
-```
-
-### Issue: Error Not Caught
-
-```typescript
-// ❌ Problem: Async error in useEffect
-useEffect(() => {
-  throw new Error('Not caught by error boundary!');
-}, []);
-
-// ✅ Solution: Use hook error handling
-const { error } = useHealthRecords(studentId);
-
-if (error) {
-  // Handle error
-}
-```
-
----
-
-## 📚 API Reference
-
-### Query Hooks
-
-| Hook | Description | Parameters |
-|------|-------------|------------|
-| `useHealthRecords()` | Fetch health records | `studentId, filters?, options?` |
-| `useHealthRecord()` | Fetch single record | `id, options?` |
-| `useAllergies()` | Fetch allergies | `studentId, options?` |
-| `useChronicConditions()` | Fetch chronic conditions | `studentId, options?` |
-| `useVaccinations()` | Fetch vaccinations | `studentId, options?` |
-| `useGrowthMeasurements()` | Fetch growth data | `studentId, options?` |
-| `useScreenings()` | Fetch screenings | `studentId, options?` |
-| `useRecentVitals()` | Fetch recent vitals | `studentId, limit?, options?` |
-| `useHealthSummary()` | Fetch health summary | `studentId, options?` |
-| `useSearchHealthRecords()` | Search records | `query, filters?, options?` |
-
-### Mutation Hooks
-
-| Hook | Description | Parameters |
-|------|-------------|------------|
-| `useCreateHealthRecord()` | Create record | `options?` |
-| `useUpdateHealthRecord()` | Update record | `options?` |
-| `useDeleteHealthRecord()` | Delete record | `options?` |
-| `useCreateAllergy()` | Create allergy | `options?` |
-| `useUpdateAllergy()` | Update allergy | `options?` |
-| `useDeleteAllergy()` | Delete allergy | `options?` |
-| `useVerifyAllergy()` | Verify allergy | `options?` |
-| `useCreateChronicCondition()` | Create condition | `options?` |
-| `useUpdateChronicCondition()` | Update condition | `options?` |
-| `useDeleteChronicCondition()` | Delete condition | `options?` |
-| `useCreateVaccination()` | Create vaccination | `options?` |
-| `useUpdateVaccination()` | Update vaccination | `options?` |
-| `useDeleteVaccination()` | Delete vaccination | `options?` |
-| `useRecordVitals()` | Record vitals | `options?` |
-| `useExportHealthHistory()` | Export health data | `options?` |
-| `useImportHealthRecords()` | Import health data | `options?` |
-
-### Utility Functions
-
-| Function | Description | Parameters |
-|----------|-------------|------------|
-| `clearHealthRecordsCache()` | Clear React Query cache | `queryClient` |
-| `clearSensitiveStorage()` | Clear browser storage | `options?` |
-| `clearAllPHI()` | Clear all PHI data | `queryClient, options?` |
-| `logCleanupEvent()` | Log audit event | `event, details?` |
-| `getAuditLog()` | Get audit log | - |
-| `SessionMonitor` | Monitor session | `options` |
-
----
-
-## 🔗 Related Documentation
-
-- [Architecture Guide](./HEALTH_RECORDS_SOA_REFACTORING.md)
-- [Migration Guide](./HEALTH_RECORDS_MIGRATION_GUIDE.md)
-- [Executive Summary](./HEALTH_RECORDS_REFACTORING_SUMMARY.md)
-
----
-
-**Last Updated:** 2025-10-10
-**Version:** 1.0.0
+**Version**: 1.0
+**Last Updated**: 2025-10-10

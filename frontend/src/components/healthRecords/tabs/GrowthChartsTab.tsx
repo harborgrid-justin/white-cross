@@ -14,7 +14,7 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
   onAddMeasurement,
   user
 }) => {
-  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
+  const canModify = user?.role ? ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR'].includes(user.role) : false
 
   // Use the measurements prop passed from parent component (real API data)
   // No mock data - this is CRITICAL for HIPAA compliance
@@ -37,8 +37,8 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
 
       {/* Chart Type Selector */}
       <div className="flex gap-4 items-center">
-        <label className="text-sm font-medium text-gray-700">Chart Type:</label>
-        <select className="border border-gray-300 rounded-lg px-3 py-2" data-testid="chart-type-selector">
+        <label htmlFor="chart-type" className="text-sm font-medium text-gray-700">Chart Type:</label>
+        <select id="chart-type" name="chartType" className="border border-gray-300 rounded-lg px-3 py-2" data-testid="chart-type-selector">
           <option value="Height">Height</option>
           <option value="Weight">Weight</option>
           <option value="BMI">BMI</option>

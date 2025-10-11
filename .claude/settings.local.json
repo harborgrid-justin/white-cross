@@ -73,7 +73,8 @@
       "Bash(find:*)",
       "Bash(powershell:*)",
       "Bash(tee:*)",
-      "Bash(del verify-migration.js)"
+      "Bash(del verify-migration.js)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []
