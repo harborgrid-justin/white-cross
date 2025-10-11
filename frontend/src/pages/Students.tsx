@@ -19,6 +19,17 @@ import { ConfirmArchiveModal } from '@/components/students/modals/ConfirmArchive
 import { EmergencyContactModal } from '@/components/students/modals/EmergencyContactModal'
 import { ExportModal } from '@/components/students/modals/ExportModal'
 import { PHIWarningModal } from '@/components/students/modals/PHIWarningModal'
+import { usePersistedFilters, usePageState, useSortState } from '@/hooks/useRouteState'
+
+interface StudentFilters {
+  searchTerm: string
+  gradeFilter: string
+  genderFilter: string
+  statusFilter: string
+  showArchived: boolean
+}
+
+type StudentSortColumn = 'lastName' | 'firstName' | 'grade' | 'studentNumber' | 'dateOfBirth'
 
 export default function Students() {
   const { user } = useAuthContext()
@@ -33,17 +44,36 @@ export default function Students() {
   const [showEditEmergencyContact, setShowEditEmergencyContact] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [showPhiWarning, setShowPhiWarning] = useState(false)
-
-  // Filter and pagination states
-  const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
-  const [gradeFilter, setGradeFilter] = useState('')
-  const [genderFilter, setGenderFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [sortBy, setSortBy] = useState('')
-  const [showArchived, setShowArchived] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [perPage, setPerPage] = useState(10)
+
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<StudentFilters>({
+    storageKey: 'student-filters',
+    defaultFilters: {
+      searchTerm: '',
+      gradeFilter: '',
+      genderFilter: '',
+      statusFilter: '',
+      showArchived: false,
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
+
+  const { page, pageSize, setPage, setPageSize } = usePageState({
+    defaultPage: 1,
+    defaultPageSize: 10,
+    pageSizeOptions: [10, 20, 50, 100],
+    resetOnFilterChange: true,
+  })
+
+  const { column, direction, toggleSort, getSortIndicator } = useSortState<StudentSortColumn>({
+    validColumns: ['lastName', 'firstName', 'grade', 'studentNumber', 'dateOfBirth'],
+    defaultColumn: 'lastName',
+    defaultDirection: 'asc',
+    persistPreference: true,
+    storageKey: 'student-sort-preference',
+  })
 
   // Selection and other states
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
@@ -219,36 +249,49 @@ export default function Students() {
     }
   }
 
+  // Show loading state while filters restore
+  const isLoadingState = loading || !isRestored
+
   // Filtering and sorting
   let filteredStudents = students.filter(student => {
-    const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.studentNumber.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesGrade = !gradeFilter || student.grade === gradeFilter
-    const matchesGender = !genderFilter || student.gender === genderFilter
-    const matchesStatus = !statusFilter ||
-      (statusFilter === 'active' && student.isActive) ||
-      (statusFilter === 'inactive' && !student.isActive)
-    const matchesArchived = showArchived ? !student.isActive : student.isActive
+    const matchesSearch = student.firstName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      student.lastName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      student.studentNumber.toLowerCase().includes(filters.searchTerm.toLowerCase())
+    const matchesGrade = !filters.gradeFilter || student.grade === filters.gradeFilter
+    const matchesGender = !filters.genderFilter || student.gender === filters.genderFilter
+    const matchesStatus = !filters.statusFilter ||
+      (filters.statusFilter === 'active' && student.isActive) ||
+      (filters.statusFilter === 'inactive' && !student.isActive)
+    const matchesArchived = filters.showArchived ? !student.isActive : student.isActive
     return matchesSearch && matchesGrade && matchesGender && matchesStatus && matchesArchived
   })
 
-  // Apply sorting
-  if (sortBy === 'lastName-asc') {
-    filteredStudents = [...filteredStudents].sort((a, b) => a.lastName.localeCompare(b.lastName))
-  } else if (sortBy === 'lastName-desc') {
-    filteredStudents = [...filteredStudents].sort((a, b) => b.lastName.localeCompare(a.lastName))
-  } else if (sortBy === 'grade-asc') {
-    filteredStudents = [...filteredStudents].sort((a, b) => parseInt(a.grade) - parseInt(b.grade))
-  } else if (sortBy === 'grade-desc') {
-    filteredStudents = [...filteredStudents].sort((a, b) => parseInt(b.grade) - parseInt(a.grade))
+  // Apply sorting based on column and direction
+  if (column) {
+    filteredStudents = [...filteredStudents].sort((a, b) => {
+      let valueA: any = a[column]
+      let valueB: any = b[column]
+
+      // Handle different data types
+      if (column === 'grade') {
+        valueA = parseInt(valueA) || 0
+        valueB = parseInt(valueB) || 0
+      } else if (typeof valueA === 'string') {
+        valueA = valueA.toLowerCase()
+        valueB = valueB.toLowerCase()
+      }
+
+      if (valueA < valueB) return direction === 'asc' ? -1 : 1
+      if (valueA > valueB) return direction === 'asc' ? 1 : -1
+      return 0
+    })
   }
 
   // Pagination
-  const totalPages = Math.ceil(filteredStudents.length / perPage)
+  const totalPages = Math.ceil(filteredStudents.length / pageSize)
   const paginatedStudents = filteredStudents.slice(
-    (currentPage - 1) * perPage,
-    currentPage * perPage
+    (page - 1) * pageSize,
+    page * pageSize
   )
 
   return (
@@ -274,30 +317,35 @@ export default function Students() {
 
       {/* Search and Filters */}
       <StudentFilters
-        searchTerm={searchTerm}
-        sortBy={sortBy}
+        searchTerm={filters.searchTerm}
+        sortBy={column ? `${column}-${direction}` : ''}
         showFilters={showFilters}
-        gradeFilter={gradeFilter}
-        genderFilter={genderFilter}
-        statusFilter={statusFilter}
-        showArchived={showArchived}
+        gradeFilter={filters.gradeFilter}
+        genderFilter={filters.genderFilter}
+        statusFilter={filters.statusFilter}
+        showArchived={filters.showArchived}
         resultsCount={filteredStudents.length}
-        onSearchChange={setSearchTerm}
-        onClearSearch={() => setSearchTerm('')}
-        onSortChange={setSortBy}
+        onSearchChange={(value) => updateFilter('searchTerm', value)}
+        onClearSearch={() => clearFilters()}
+        onSortChange={(value) => {
+          if (value) {
+            const [col, dir] = value.split('-') as [StudentSortColumn, 'asc' | 'desc']
+            toggleSort(col)
+          }
+        }}
         onToggleFilters={() => setShowFilters(!showFilters)}
-        onGradeFilterChange={setGradeFilter}
-        onGenderFilterChange={setGenderFilter}
-        onStatusFilterChange={setStatusFilter}
-        onToggleArchived={() => setShowArchived(!showArchived)}
+        onGradeFilterChange={(value) => updateFilter('gradeFilter', value)}
+        onGenderFilterChange={(value) => updateFilter('genderFilter', value)}
+        onStatusFilterChange={(value) => updateFilter('statusFilter', value)}
+        onToggleArchived={() => updateFilter('showArchived', !filters.showArchived)}
       />
 
       {/* Student Table */}
       <div className="card p-6">
         <div className="mb-4 flex justify-between items-center">
           <h3 className="text-lg font-semibold">
-            {showArchived ? 'Archived Students' : 'Students'}{' '}
-            <span data-testid={showArchived ? "archived-count" : "student-count"}>
+            {filters.showArchived ? 'Archived Students' : 'Students'}{' '}
+            <span data-testid={filters.showArchived ? "archived-count" : "student-count"}>
               ({filteredStudents.length} {filteredStudents.length === 1 ? 'student' : 'students'})
             </span>
           </h3>
@@ -314,7 +362,7 @@ export default function Students() {
                 >
                   Export Selected
                 </button>
-                {!showArchived && (
+                {!filters.showArchived && (
                   <button
                     className="btn-secondary text-sm bg-red-50 text-red-700 hover:bg-red-100"
                     data-testid="bulk-archive-button"
@@ -352,8 +400,8 @@ export default function Students() {
 
         <StudentTable
           students={paginatedStudents}
-          loading={loading}
-          showArchived={showArchived}
+          loading={isLoadingState}
+          showArchived={filters.showArchived}
           selectedStudents={selectedStudents}
           canEdit={canEdit}
           canDelete={canDelete}
@@ -366,12 +414,12 @@ export default function Students() {
 
         {paginatedStudents.length > 0 && filteredStudents.length > 0 && (
           <StudentPagination
-            currentPage={currentPage}
+            currentPage={page}
             totalPages={totalPages}
-            perPage={perPage}
+            perPage={pageSize}
             totalResults={filteredStudents.length}
-            onPageChange={setCurrentPage}
-            onPerPageChange={setPerPage}
+            onPageChange={setPage}
+            onPerPageChange={setPageSize}
           />
         )}
       </div>

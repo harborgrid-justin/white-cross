@@ -13,8 +13,18 @@ import {
   getStatusBadgeClass,
   getPriorityBadgeClass
 } from '../constants/appointmentOptions'
+import { usePersistedFilters, usePageState, useSortState } from '@/hooks/useRouteState'
 
 type ViewMode = 'calendar' | 'list' | 'waitlist' | 'availability'
+
+interface AppointmentFilters {
+  filterStatus: string
+  filterType: string
+  dateFrom: string
+  dateTo: string
+}
+
+type AppointmentSortColumn = 'scheduledAt' | 'type' | 'status' | 'studentName'
 
 export default function Appointments() {
   const { user } = useAuthContext()
@@ -30,18 +40,46 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showWaitlistModal, setShowWaitlistModal] = useState(false)
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterType, setFilterType] = useState<string>('all')
+
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<AppointmentFilters>({
+    storageKey: 'appointment-filters',
+    defaultFilters: {
+      filterStatus: 'all',
+      filterType: 'all',
+      dateFrom: '',
+      dateTo: '',
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
+
+  const { page, pageSize, setPage, setPageSize } = usePageState({
+    defaultPage: 1,
+    defaultPageSize: 20,
+    pageSizeOptions: [10, 20, 50, 100],
+    resetOnFilterChange: true,
+  })
+
+  const { column, direction, toggleSort } = useSortState<AppointmentSortColumn>({
+    validColumns: ['scheduledAt', 'type', 'status', 'studentName'],
+    defaultColumn: 'scheduledAt',
+    defaultDirection: 'asc',
+    persistPreference: true,
+    storageKey: 'appointment-sort-preference',
+  })
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true)
-      const filters: Record<string, string> = {}
-      if (filterStatus !== 'all') filters.status = filterStatus.toUpperCase()
-      if (filterType !== 'all') filters.type = filterType.toUpperCase()
+      const apiFilters: Record<string, string> = {}
+      if (filters.filterStatus !== 'all') apiFilters.status = filters.filterStatus.toUpperCase()
+      if (filters.filterType !== 'all') apiFilters.type = filters.filterType.toUpperCase()
+      if (filters.dateFrom) apiFilters.dateFrom = filters.dateFrom
+      if (filters.dateTo) apiFilters.dateTo = filters.dateTo
 
       const [appointmentsData, waitlistData, stats] = await Promise.all([
-        appointmentsApi.getAll(filters),
+        appointmentsApi.getAll(apiFilters),
         appointmentsApi.getWaitlist({ status: 'WAITING' }),
         appointmentsApi.getStatistics()
       ])
@@ -55,7 +93,7 @@ export default function Appointments() {
     } finally {
       setLoading(false)
     }
-  }, [filterStatus, filterType])
+  }, [filters.filterStatus, filters.filterType, filters.dateFrom, filters.dateTo])
 
   useEffect(() => {
     loadData()
@@ -140,10 +178,13 @@ export default function Appointments() {
     })
   }
 
-  if (loading) {
+  const isLoadingState = loading || !isRestored
+
+  if (isLoadingState) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading appointments...</span>
       </div>
     )
   }
@@ -266,8 +307,8 @@ export default function Appointments() {
             <label htmlFor="filterStatus" className="sr-only">Status filter</label>
             <select
               id="filterStatus"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              value={filters.filterStatus}
+              onChange={(e) => updateFilter('filterStatus', e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {APPOINTMENT_STATUS_OPTIONS.map(option => (
@@ -279,8 +320,8 @@ export default function Appointments() {
             <label htmlFor="filterType" className="sr-only">Type filter</label>
             <select
               id="filterType"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              value={filters.filterType}
+              onChange={(e) => updateFilter('filterType', e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {APPOINTMENT_TYPE_OPTIONS.map(option => (
@@ -290,10 +331,10 @@ export default function Appointments() {
               ))}
             </select>
             <button
-              onClick={loadData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={clearFilters}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Apply Filters
+              Clear Filters
             </button>
           </div>
         </div>
