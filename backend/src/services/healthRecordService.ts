@@ -1,14 +1,19 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  HealthRecord,
+  Allergy,
+  ChronicCondition,
+  Student,
+  sequelize
+} from '../database/models';
 
 export interface CreateHealthRecordData {
   studentId: string;
   type: 'CHECKUP' | 'VACCINATION' | 'ILLNESS' | 'INJURY' | 'SCREENING' | 'PHYSICAL_EXAM' | 'MENTAL_HEALTH' | 'DENTAL' | 'VISION' | 'HEARING';
   date: Date;
   description: string;
-  vital?: Prisma.InputJsonValue; // JSON data for vitals
+  vital?: any; // JSON data for vitals
   provider?: string;
   notes?: string;
   attachments?: string[];
@@ -70,47 +75,42 @@ export class HealthRecordService {
     filters: HealthRecordFilters = {}
   ) {
     try {
-      const skip = (page - 1) * limit;
-      
-      const whereClause: Prisma.HealthRecordWhereInput = { studentId };
-      
+      const offset = (page - 1) * limit;
+
+      const whereClause: any = { studentId };
+
       if (filters.type) {
         whereClause.type = filters.type;
       }
-      
+
       if (filters.dateFrom || filters.dateTo) {
         whereClause.date = {};
         if (filters.dateFrom) {
-          whereClause.date.gte = filters.dateFrom;
+          whereClause.date[Op.gte] = filters.dateFrom;
         }
         if (filters.dateTo) {
-          whereClause.date.lte = filters.dateTo;
+          whereClause.date[Op.lte] = filters.dateTo;
         }
       }
-      
+
       if (filters.provider) {
-        whereClause.provider = { contains: filters.provider, mode: 'insensitive' };
+        whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
       }
 
-      const [records, total] = await Promise.all([
-        prisma.healthRecord.findMany({
-          where: whereClause,
-          skip,
-          take: limit,
-          include: {
-            student: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                studentNumber: true
-              }
-            }
-          },
-          orderBy: { date: 'desc' }
-        }),
-        prisma.healthRecord.count({ where: whereClause })
-      ]);
+      const { rows: records, count: total } = await HealthRecord.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+          }
+        ],
+        order: [['date', 'DESC']],
+        distinct: true
+      });
 
       return {
         records,
@@ -133,9 +133,7 @@ export class HealthRecordService {
   static async createHealthRecord(data: CreateHealthRecordData) {
     try {
       // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: data.studentId }
-      });
+      const student = await Student.findByPk(data.studentId);
 
       if (!student) {
         throw new Error('Student not found');
@@ -152,18 +150,17 @@ export class HealthRecordService {
         }
       }
 
-      const healthRecord = await prisma.healthRecord.create({
-        data,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      const healthRecord = await HealthRecord.create(data);
+
+      // Reload with associations
+      await healthRecord.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
       logger.info(`Health record created: ${data.type} for ${student.firstName} ${student.lastName}`);
@@ -179,11 +176,13 @@ export class HealthRecordService {
    */
   static async updateHealthRecord(id: string, data: Partial<CreateHealthRecordData>) {
     try {
-      const existingRecord = await prisma.healthRecord.findUnique({
-        where: { id },
-        include: {
-          student: true
-        }
+      const existingRecord = await HealthRecord.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student'
+          }
+        ]
       });
 
       if (!existingRecord) {
@@ -192,38 +191,36 @@ export class HealthRecordService {
 
       // Recalculate BMI if height or weight is being updated
       if (data.vital && typeof data.vital === 'object' && data.vital !== null) {
-        const currentVitals = (existingRecord.vital && typeof existingRecord.vital === 'object' && existingRecord.vital !== null) 
-          ? existingRecord.vital as any 
+        const currentVitals = (existingRecord.vital && typeof existingRecord.vital === 'object' && existingRecord.vital !== null)
+          ? existingRecord.vital as any
           : {};
         const vitalsUpdate = data.vital as any;
         const updatedVitals = { ...currentVitals, ...vitalsUpdate };
-        
+
         if (updatedVitals.height && updatedVitals.weight) {
           const heightInMeters = updatedVitals.height / 100;
           const bmi = updatedVitals.weight / (heightInMeters * heightInMeters);
           updatedVitals.bmi = Math.round(bmi * 10) / 10;
         }
-        
+
         data.vital = updatedVitals;
       }
 
-      const healthRecord = await prisma.healthRecord.update({
-        where: { id },
-        data,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      await existingRecord.update(data);
+
+      // Reload with associations
+      await existingRecord.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
-      logger.info(`Health record updated: ${healthRecord.type} for ${existingRecord.student.firstName} ${existingRecord.student.lastName}`);
-      return healthRecord;
+      logger.info(`Health record updated: ${existingRecord.type} for ${existingRecord.student!.firstName} ${existingRecord.student!.lastName}`);
+      return existingRecord;
     } catch (error) {
       logger.error('Error updating health record:', error);
       throw error;
@@ -236,16 +233,14 @@ export class HealthRecordService {
   static async addAllergy(data: CreateAllergyData) {
     try {
       // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: data.studentId }
-      });
+      const student = await Student.findByPk(data.studentId);
 
       if (!student) {
         throw new Error('Student not found');
       }
 
       // Check if allergy already exists for this student
-      const existingAllergy = await prisma.allergy.findFirst({
+      const existingAllergy = await Allergy.findOne({
         where: {
           studentId: data.studentId,
           allergen: data.allergen
@@ -256,21 +251,20 @@ export class HealthRecordService {
         throw new Error('Allergy already exists for this student');
       }
 
-      const allergy = await prisma.allergy.create({
-        data: {
-          ...data,
-          verifiedAt: data.verified ? new Date() : null
-        },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      const allergy = await Allergy.create({
+        ...data,
+        verifiedAt: data.verified ? new Date() : null
+      });
+
+      // Reload with associations
+      await allergy.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
       logger.info(`Allergy added: ${data.allergen} (${data.severity}) for ${student.firstName} ${student.lastName}`);
@@ -286,9 +280,8 @@ export class HealthRecordService {
    */
   static async updateAllergy(id: string, data: Partial<CreateAllergyData>) {
     try {
-      const existingAllergy = await prisma.allergy.findUnique({
-        where: { id },
-        include: { student: true }
+      const existingAllergy = await Allergy.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!existingAllergy) {
@@ -296,28 +289,26 @@ export class HealthRecordService {
       }
 
       // Update verification timestamp if being verified
-      const updateData: Prisma.AllergyUpdateInput = { ...data };
+      const updateData: any = { ...data };
       if (data.verified && !existingAllergy.verified) {
         updateData.verifiedAt = new Date();
       }
 
-      const allergy = await prisma.allergy.update({
-        where: { id },
-        data: updateData,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      await existingAllergy.update(updateData);
+
+      // Reload with associations
+      await existingAllergy.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
-      logger.info(`Allergy updated: ${allergy.allergen} for ${existingAllergy.student.firstName} ${existingAllergy.student.lastName}`);
-      return allergy;
+      logger.info(`Allergy updated: ${existingAllergy.allergen} for ${existingAllergy.student!.firstName} ${existingAllergy.student!.lastName}`);
+      return existingAllergy;
     } catch (error) {
       logger.error('Error updating allergy:', error);
       throw error;
@@ -329,21 +320,18 @@ export class HealthRecordService {
    */
   static async getStudentAllergies(studentId: string) {
     try {
-      const allergies = await prisma.allergy.findMany({
+      const allergies = await Allergy.findAll({
         where: { studentId },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        },
-        orderBy: [
-          { severity: 'desc' }, // Most severe first
-          { allergen: 'asc' }
+        ],
+        order: [
+          ['severity', 'DESC'], // Most severe first
+          ['allergen', 'ASC']
         ]
       });
 
@@ -359,20 +347,17 @@ export class HealthRecordService {
    */
   static async deleteAllergy(id: string) {
     try {
-      const allergy = await prisma.allergy.findUnique({
-        where: { id },
-        include: { student: true }
+      const allergy = await Allergy.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!allergy) {
         throw new Error('Allergy not found');
       }
 
-      await prisma.allergy.delete({
-        where: { id }
-      });
+      await allergy.destroy();
 
-      logger.info(`Allergy deleted: ${allergy.allergen} for ${allergy.student.firstName} ${allergy.student.lastName}`);
+      logger.info(`Allergy deleted: ${allergy.allergen} for ${allergy.student!.firstName} ${allergy.student!.lastName}`);
       return { success: true };
     } catch (error) {
       logger.error('Error deleting allergy:', error);
@@ -385,22 +370,19 @@ export class HealthRecordService {
    */
   static async getVaccinationRecords(studentId: string) {
     try {
-      const records = await prisma.healthRecord.findMany({
+      const records = await HealthRecord.findAll({
         where: {
           studentId,
           type: 'VACCINATION'
         },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        },
-        orderBy: { date: 'desc' }
+        ],
+        order: [['date', 'DESC']]
       });
 
       return records;
@@ -415,21 +397,13 @@ export class HealthRecordService {
    */
   static async getGrowthChartData(studentId: string) {
     try {
-      const records = await prisma.healthRecord.findMany({
+      const records = await HealthRecord.findAll({
         where: {
           studentId,
-          vital: {
-            path: ['height'],
-            not: Prisma.JsonNull
-          }
+          'vital.height': { [Op.ne]: null }
         },
-        select: {
-          id: true,
-          date: true,
-          vital: true,
-          type: true
-        },
-        orderBy: { date: 'asc' }
+        attributes: ['id', 'date', 'vital', 'type'],
+        order: [['date', 'ASC']]
       });
 
       // Extract height and weight data points
@@ -458,26 +432,18 @@ export class HealthRecordService {
    */
   static async getRecentVitals(studentId: string, limit: number = 10) {
     try {
-      const records = await prisma.healthRecord.findMany({
+      const records = await HealthRecord.findAll({
         where: {
           studentId,
-          vital: {
-            not: Prisma.JsonNull
-          }
+          vital: { [Op.ne]: null }
         },
-        select: {
-          id: true,
-          date: true,
-          vital: true,
-          type: true,
-          provider: true
-        },
-        orderBy: { date: 'desc' },
-        take: limit
+        attributes: ['id', 'date', 'vital', 'type', 'provider'],
+        order: [['date', 'DESC']],
+        limit
       });
 
       return records.map((record) => ({
-        ...record,
+        ...record.get({ plain: true }),
         vital: record.vital as VitalSigns
       }));
     } catch (error) {
@@ -492,16 +458,8 @@ export class HealthRecordService {
   static async getHealthSummary(studentId: string) {
     try {
       const [student, allergies, recentRecords, vaccinations] = await Promise.all([
-        prisma.student.findUnique({
-          where: { id: studentId },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            studentNumber: true,
-            dateOfBirth: true,
-            gender: true
-          }
+        Student.findByPk(studentId, {
+          attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'dateOfBirth', 'gender']
         }),
         this.getStudentAllergies(studentId),
         this.getRecentVitals(studentId, 5),
@@ -512,10 +470,14 @@ export class HealthRecordService {
         throw new Error('Student not found');
       }
 
-      const recordCounts = await prisma.healthRecord.groupBy({
-        by: ['type'],
+      const recordCounts = await HealthRecord.findAll({
         where: { studentId },
-        _count: { type: true }
+        attributes: [
+          'type',
+          [sequelize.fn('COUNT', sequelize.col('type')), 'count']
+        ],
+        group: ['type'],
+        raw: true
       });
 
       return {
@@ -523,8 +485,8 @@ export class HealthRecordService {
         allergies,
         recentVitals: recentRecords,
         recentVaccinations: vaccinations.slice(0, 5),
-        recordCounts: recordCounts.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.type] = curr._count.type;
+        recordCounts: recordCounts.reduce((acc: Record<string, number>, curr: any) => {
+          acc[curr.type] = parseInt(curr.count, 10);
           return acc;
         }, {} as Record<string, number>)
       };
@@ -544,22 +506,13 @@ export class HealthRecordService {
     limit: number = 20
   ) {
     try {
-      const skip = (page - 1) * limit;
-      
-      const whereClause: Prisma.HealthRecordWhereInput = {
-        OR: [
-          { description: { contains: query, mode: 'insensitive' } },
-          { notes: { contains: query, mode: 'insensitive' } },
-          { provider: { contains: query, mode: 'insensitive' } },
-          {
-            student: {
-              OR: [
-                { firstName: { contains: query, mode: 'insensitive' } },
-                { lastName: { contains: query, mode: 'insensitive' } },
-                { studentNumber: { contains: query, mode: 'insensitive' } }
-              ]
-            }
-          }
+      const offset = (page - 1) * limit;
+
+      const whereClause: any = {
+        [Op.or]: [
+          { description: { [Op.iLike]: `%${query}%` } },
+          { notes: { [Op.iLike]: `%${query}%` } },
+          { provider: { [Op.iLike]: `%${query}%` } }
         ]
       };
 
@@ -567,26 +520,28 @@ export class HealthRecordService {
         whereClause.type = type;
       }
 
-      const [records, total] = await Promise.all([
-        prisma.healthRecord.findMany({
-          where: whereClause,
-          skip,
-          take: limit,
-          include: {
-            student: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                studentNumber: true,
-                grade: true
-              }
-            }
-          },
-          orderBy: { date: 'desc' }
-        }),
-        prisma.healthRecord.count({ where: whereClause })
-      ]);
+      const { rows: records, count: total } = await HealthRecord.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+            where: {
+              [Op.or]: [
+                { firstName: { [Op.iLike]: `%${query}%` } },
+                { lastName: { [Op.iLike]: `%${query}%` } },
+                { studentNumber: { [Op.iLike]: `%${query}%` } }
+              ]
+            },
+            required: false
+          }
+        ],
+        order: [['date', 'DESC']],
+        distinct: true
+      });
 
       return {
         records,
@@ -609,32 +564,29 @@ export class HealthRecordService {
   static async addChronicCondition(data: CreateChronicConditionData) {
     try {
       // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: data.studentId }
-      });
+      const student = await Student.findByPk(data.studentId);
 
       if (!student) {
         throw new Error('Student not found');
       }
 
-      const chronicCondition = await prisma.chronicCondition.create({
-        data: {
-          ...data,
-          status: data.status || 'ACTIVE',
-          medications: data.medications || [],
-          restrictions: data.restrictions || [],
-          triggers: data.triggers || []
-        },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      const chronicCondition = await ChronicCondition.create({
+        ...data,
+        status: data.status || 'ACTIVE',
+        medications: data.medications || [],
+        restrictions: data.restrictions || [],
+        triggers: data.triggers || []
+      });
+
+      // Reload with associations
+      await chronicCondition.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
       logger.info(`Chronic condition added: ${data.condition} for ${student.firstName} ${student.lastName}`);
@@ -650,21 +602,18 @@ export class HealthRecordService {
    */
   static async getStudentChronicConditions(studentId: string) {
     try {
-      const conditions = await prisma.chronicCondition.findMany({
+      const conditions = await ChronicCondition.findAll({
         where: { studentId },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        },
-        orderBy: [
-          { status: 'asc' }, // Active first
-          { condition: 'asc' }
+        ],
+        order: [
+          ['status', 'ASC'], // Active first
+          ['condition', 'ASC']
         ]
       });
 
@@ -680,32 +629,29 @@ export class HealthRecordService {
    */
   static async updateChronicCondition(id: string, data: Partial<CreateChronicConditionData>) {
     try {
-      const existingCondition = await prisma.chronicCondition.findUnique({
-        where: { id },
-        include: { student: true }
+      const existingCondition = await ChronicCondition.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!existingCondition) {
         throw new Error('Chronic condition not found');
       }
 
-      const condition = await prisma.chronicCondition.update({
-        where: { id },
-        data,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      await existingCondition.update(data);
+
+      // Reload with associations
+      await existingCondition.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
-      logger.info(`Chronic condition updated: ${condition.condition} for ${existingCondition.student.firstName} ${existingCondition.student.lastName}`);
-      return condition;
+      logger.info(`Chronic condition updated: ${existingCondition.condition} for ${existingCondition.student!.firstName} ${existingCondition.student!.lastName}`);
+      return existingCondition;
     } catch (error) {
       logger.error('Error updating chronic condition:', error);
       throw error;
@@ -717,20 +663,17 @@ export class HealthRecordService {
    */
   static async deleteChronicCondition(id: string) {
     try {
-      const condition = await prisma.chronicCondition.findUnique({
-        where: { id },
-        include: { student: true }
+      const condition = await ChronicCondition.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!condition) {
         throw new Error('Chronic condition not found');
       }
 
-      await prisma.chronicCondition.delete({
-        where: { id }
-      });
+      await condition.destroy();
 
-      logger.info(`Chronic condition deleted: ${condition.condition} for ${condition.student.firstName} ${condition.student.lastName}`);
+      logger.info(`Chronic condition deleted: ${condition.condition} for ${condition.student!.firstName} ${condition.student!.lastName}`);
       return { success: true };
     } catch (error) {
       logger.error('Error deleting chronic condition:', error);
@@ -744,17 +687,8 @@ export class HealthRecordService {
   static async exportHealthHistory(studentId: string) {
     try {
       const [student, healthRecords, allergies, chronicConditions, vaccinations, growthData] = await Promise.all([
-        prisma.student.findUnique({
-          where: { id: studentId },
-          select: {
-            id: true,
-            studentNumber: true,
-            firstName: true,
-            lastName: true,
-            dateOfBirth: true,
-            gender: true,
-            grade: true
-          }
+        Student.findByPk(studentId, {
+          attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'dateOfBirth', 'gender', 'grade']
         }),
         this.getStudentHealthRecords(studentId, 1, 1000),
         this.getStudentAllergies(studentId),
@@ -788,12 +722,10 @@ export class HealthRecordService {
   /**
    * Import health records from JSON (basic import functionality)
    */
-  static async importHealthRecords(studentId: string, importData: Prisma.InputJsonValue) {
+  static async importHealthRecords(studentId: string, importData: any) {
     try {
       // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: studentId }
-      });
+      const student = await Student.findByPk(studentId);
 
       if (!student) {
         throw new Error('Student not found');
@@ -848,36 +780,33 @@ export class HealthRecordService {
       }
 
       // Get records to be deleted for logging
-      const recordsToDelete = await prisma.healthRecord.findMany({
+      const recordsToDelete = await HealthRecord.findAll({
         where: {
-          id: { in: recordIds }
+          id: { [Op.in]: recordIds }
         },
-        include: {
-          student: {
-            select: {
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
       // Delete the records
-      const result = await prisma.healthRecord.deleteMany({
+      const deletedCount = await HealthRecord.destroy({
         where: {
-          id: { in: recordIds }
+          id: { [Op.in]: recordIds }
         }
       });
 
-      const deletedCount = result.count;
       const notFoundCount = recordIds.length - deletedCount;
 
       // Log the bulk deletion
       logger.info(`Bulk delete completed: ${deletedCount} records deleted, ${notFoundCount} not found`);
 
       if (recordsToDelete.length > 0) {
-        const studentNames = [...new Set(recordsToDelete.map(r => `${r.student.firstName} ${r.student.lastName}`))];
+        const studentNames = [...new Set(recordsToDelete.map(r => `${r.student!.firstName} ${r.student!.lastName}`))];
         logger.info(`Records deleted for students: ${studentNames.join(', ')}`);
       }
 
@@ -904,29 +833,29 @@ export class HealthRecordService {
         vaccinationsDue,
         recentRecords
       ] = await Promise.all([
-        prisma.healthRecord.count(),
-        prisma.allergy.count({
+        HealthRecord.count(),
+        Allergy.count({
           where: {
             verified: true
           }
         }),
-        prisma.chronicCondition.count({
+        ChronicCondition.count({
           where: {
             status: 'ACTIVE'
           }
         }),
-        prisma.healthRecord.count({
+        HealthRecord.count({
           where: {
             type: 'VACCINATION',
             createdAt: {
-              gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days
+              [Op.gte]: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days
             }
           }
         }),
-        prisma.healthRecord.count({
+        HealthRecord.count({
           where: {
             createdAt: {
-              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+              [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
             }
           }
         })

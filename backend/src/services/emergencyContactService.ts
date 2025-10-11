@@ -1,7 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  EmergencyContact,
+  Student,
+  sequelize
+} from '../database/models';
 
 export interface CreateEmergencyContactData {
   studentId: string;
@@ -56,24 +59,21 @@ export class EmergencyContactService {
    */
   static async getStudentEmergencyContacts(studentId: string) {
     try {
-      const contacts = await prisma.emergencyContact.findMany({
+      const contacts = await EmergencyContact.findAll({
         where: {
           studentId,
           isActive: true
         },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        },
-        orderBy: [
-          { priority: 'asc' },
-          { firstName: 'asc' }
+        ],
+        order: [
+          ['priority', 'ASC'],
+          ['firstName', 'ASC']
         ]
       });
 
@@ -90,9 +90,7 @@ export class EmergencyContactService {
   static async createEmergencyContact(data: CreateEmergencyContactData) {
     try {
       // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: data.studentId }
-      });
+      const student = await Student.findByPk(data.studentId);
 
       if (!student) {
         throw new Error('Student not found');
@@ -112,18 +110,17 @@ export class EmergencyContactService {
         }
       }
 
-      const contact = await prisma.emergencyContact.create({
-        data,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      const contact = await EmergencyContact.create(data);
+
+      // Reload with associations
+      await contact.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
       logger.info(`Emergency contact created: ${contact.firstName} ${contact.lastName} for student ${student.firstName} ${student.lastName}`);
@@ -139,9 +136,8 @@ export class EmergencyContactService {
    */
   static async updateEmergencyContact(id: string, data: UpdateEmergencyContactData) {
     try {
-      const existingContact = await prisma.emergencyContact.findUnique({
-        where: { id },
-        include: { student: true }
+      const existingContact = await EmergencyContact.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!existingContact) {
@@ -164,23 +160,21 @@ export class EmergencyContactService {
         }
       }
 
-      const contact = await prisma.emergencyContact.update({
-        where: { id },
-        data,
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true
-            }
+      await existingContact.update(data);
+
+      // Reload with associations
+      await existingContact.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        }
+        ]
       });
 
-      logger.info(`Emergency contact updated: ${contact.firstName} ${contact.lastName} for student ${existingContact.student.firstName} ${existingContact.student.lastName}`);
-      return contact;
+      logger.info(`Emergency contact updated: ${existingContact.firstName} ${existingContact.lastName} for student ${existingContact.student!.firstName} ${existingContact.student!.lastName}`);
+      return existingContact;
     } catch (error) {
       logger.error('Error updating emergency contact:', error);
       throw error;
@@ -192,21 +186,17 @@ export class EmergencyContactService {
    */
   static async deleteEmergencyContact(id: string) {
     try {
-      const contact = await prisma.emergencyContact.findUnique({
-        where: { id },
-        include: { student: true }
+      const contact = await EmergencyContact.findByPk(id, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!contact) {
         throw new Error('Emergency contact not found');
       }
 
-      await prisma.emergencyContact.update({
-        where: { id },
-        data: { isActive: false }
-      });
+      await contact.update({ isActive: false });
 
-      logger.info(`Emergency contact deleted: ${contact.firstName} ${contact.lastName} for student ${contact.student.firstName} ${contact.student.lastName}`);
+      logger.info(`Emergency contact deleted: ${contact.firstName} ${contact.lastName} for student ${contact.student!.firstName} ${contact.student!.lastName}`);
       return { success: true };
     } catch (error) {
       logger.error('Error deleting emergency contact:', error);
@@ -224,7 +214,7 @@ export class EmergencyContactService {
     try {
       // Get all active emergency contacts for the student
       const contacts = await this.getStudentEmergencyContacts(studentId);
-      
+
       if (contacts.length === 0) {
         throw new Error('No emergency contacts found for student');
       }
@@ -260,7 +250,7 @@ export class EmergencyContactService {
           try {
             const emailResult = await this.sendEmail(
               contact.email,
-              `Emergency Notification - ${contact.student.firstName} ${contact.student.lastName}`,
+              `Emergency Notification - ${contact.student!.firstName} ${contact.student!.lastName}`,
               notificationData.message,
               notificationData.attachments
             );
@@ -285,7 +275,7 @@ export class EmergencyContactService {
 
       // Log the notification attempt
       logger.info(`Emergency notification sent for student ${studentId}: ${notificationData.type} (${notificationData.priority})`);
-      
+
       return results;
     } catch (error) {
       logger.error('Error sending emergency notification:', error);
@@ -301,17 +291,14 @@ export class EmergencyContactService {
     notificationData: NotificationData
   ): Promise<NotificationResult> {
     try {
-      const contact = await prisma.emergencyContact.findUnique({
-        where: { id: contactId },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true
-            }
+      const contact = await EmergencyContact.findByPk(contactId, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName']
           }
-        }
+        ]
       });
 
       if (!contact) {
@@ -353,7 +340,7 @@ export class EmergencyContactService {
               try {
                 const emailResult = await this.sendEmail(
                   contact.email,
-                  `Notification - ${contact.student.firstName} ${contact.student.lastName}`,
+                  `Notification - ${contact.student!.firstName} ${contact.student!.lastName}`,
                   notificationData.message,
                   notificationData.attachments
                 );
@@ -377,7 +364,7 @@ export class EmergencyContactService {
         }
       }
 
-      logger.info(`Notification sent to contact ${contact.firstName} ${contact.lastName} for student ${contact.student.firstName} ${contact.student.lastName}`);
+      logger.info(`Notification sent to contact ${contact.firstName} ${contact.lastName} for student ${contact.student!.firstName} ${contact.student!.lastName}`);
       return result;
     } catch (error) {
       logger.error('Error sending contact notification:', error);
@@ -390,9 +377,8 @@ export class EmergencyContactService {
    */
   static async verifyContact(contactId: string, verificationMethod: 'sms' | 'email' | 'voice') {
     try {
-      const contact = await prisma.emergencyContact.findUnique({
-        where: { id: contactId },
-        include: { student: true }
+      const contact = await EmergencyContact.findByPk(contactId, {
+        include: [{ model: Student, as: 'student' }]
       });
 
       if (!contact) {
@@ -400,7 +386,7 @@ export class EmergencyContactService {
       }
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const message = `Verification code for ${contact.student.firstName} ${contact.student.lastName}: ${verificationCode}`;
+      const message = `Verification code for ${contact.student!.firstName} ${contact.student!.lastName}: ${verificationCode}`;
 
       let result;
       switch (verificationMethod) {
@@ -436,7 +422,7 @@ export class EmergencyContactService {
       // Store verification code in cache/database for validation
       // This would typically use Redis or similar for temporary storage
       logger.info(`Verification ${verificationMethod} sent to contact ${contact.firstName} ${contact.lastName}`);
-      
+
       return {
         verificationCode, // In production, this should not be returned
         method: verificationMethod,
@@ -453,32 +439,41 @@ export class EmergencyContactService {
    */
   static async getContactStatistics() {
     try {
-      const stats = await prisma.emergencyContact.groupBy({
-        by: ['priority'],
+      const stats = await EmergencyContact.findAll({
         where: { isActive: true },
-        _count: { priority: true }
+        attributes: [
+          'priority',
+          [sequelize.fn('COUNT', sequelize.col('priority')), 'count']
+        ],
+        group: ['priority'],
+        raw: true
       });
 
-      const totalContacts = await prisma.emergencyContact.count({
+      const totalContacts = await EmergencyContact.count({
         where: { isActive: true }
       });
 
-      const studentsWithoutContacts = await prisma.student.count({
+      const studentsWithoutContacts = await Student.count({
         where: {
           isActive: true,
-          emergencyContacts: {
-            none: {
-              isActive: true
-            }
+          '$emergencyContacts.id$': null
+        },
+        include: [
+          {
+            model: EmergencyContact,
+            as: 'emergencyContacts',
+            where: { isActive: true },
+            required: false
           }
-        }
+        ],
+        distinct: true
       });
 
       return {
         totalContacts,
         studentsWithoutContacts,
-        byPriority: stats.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.priority] = curr._count.priority;
+        byPriority: stats.reduce((acc: Record<string, number>, curr: any) => {
+          acc[curr.priority] = parseInt(curr.count, 10);
           return acc;
         }, {} as Record<string, number>)
       };

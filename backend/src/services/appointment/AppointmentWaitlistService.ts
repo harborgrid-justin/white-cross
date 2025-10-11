@@ -1,8 +1,7 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
+import { AppointmentWaitlist, Student, User, EmergencyContact } from '../../database/models';
 import { WaitlistEntry } from '../../types/appointment';
-
-const prisma = new PrismaClient();
 
 export class AppointmentWaitlistService {
   /**
@@ -10,25 +9,33 @@ export class AppointmentWaitlistService {
    */
   static async addToWaitlist(data: WaitlistEntry) {
     try {
-      const student = await prisma.student.findUnique({ where: { id: data.studentId } });
+      const student = await Student.findByPk(data.studentId);
       if (!student) throw new Error('Student not found');
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30);
 
-      const waitlistEntry = await prisma.appointmentWaitlist.create({
-        data: {
-          studentId: data.studentId,
-          nurseId: data.nurseId,
-          type: data.type,
-          preferredDate: data.preferredDate,
-          duration: data.duration || 30,
-          priority: data.priority || 'NORMAL',
-          reason: data.reason,
-          notes: data.notes,
-          expiresAt
-        },
-        include: { student: { select: { firstName: true, lastName: true } } }
+      const waitlistEntry = await AppointmentWaitlist.create({
+        studentId: data.studentId,
+        nurseId: data.nurseId,
+        type: data.type,
+        preferredDate: data.preferredDate,
+        duration: data.duration || 30,
+        priority: data.priority || 'NORMAL',
+        reason: data.reason,
+        notes: data.notes,
+        expiresAt
+      });
+
+      // Reload with associations
+      await waitlistEntry.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
+          }
+        ]
       });
 
       logger.info(`Added ${student.firstName} ${student.lastName} to waitlist for ${data.type}`);
@@ -44,19 +51,30 @@ export class AppointmentWaitlistService {
    */
   static async getWaitlist(filters?: { nurseId?: string; status?: string; priority?: string }) {
     try {
-      const whereClause: Prisma.AppointmentWaitlistWhereInput = {};
+      const whereClause: any = {};
 
       if (filters?.nurseId) whereClause.nurseId = filters.nurseId;
-      if (filters?.status) whereClause.status = filters.status as any;
-      if (filters?.priority) whereClause.priority = filters.priority as any;
+      if (filters?.status) whereClause.status = filters.status;
+      if (filters?.priority) whereClause.priority = filters.priority;
 
-      const waitlist = await prisma.appointmentWaitlist.findMany({
+      const waitlist = await AppointmentWaitlist.findAll({
         where: whereClause,
-        include: {
-          student: { select: { id: true, firstName: true, lastName: true, studentNumber: true, grade: true } },
-          nurse: { select: { id: true, firstName: true, lastName: true } }
-        },
-        orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }]
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName']
+          }
+        ],
+        order: [
+          ['priority', 'DESC'],
+          ['createdAt', 'ASC']
+        ]
       });
 
       return waitlist;
@@ -71,9 +89,15 @@ export class AppointmentWaitlistService {
    */
   static async removeFromWaitlist(id: string, reason?: string) {
     try {
-      const entry = await prisma.appointmentWaitlist.update({
-        where: { id },
-        data: { status: 'CANCELLED', notes: reason ? `Cancelled: ${reason}` : undefined }
+      const entry = await AppointmentWaitlist.findByPk(id);
+
+      if (!entry) {
+        throw new Error('Waitlist entry not found');
+      }
+
+      await entry.update({
+        status: 'CANCELLED',
+        notes: reason ? `Cancelled: ${reason}` : entry.notes
       });
 
       logger.info(`Removed entry ${id} from waitlist`);
@@ -94,21 +118,36 @@ export class AppointmentWaitlistService {
     type: string;
   }) {
     try {
-      const waitlistEntries = await prisma.appointmentWaitlist.findMany({
+      const waitlistEntries = await AppointmentWaitlist.findAll({
         where: {
           status: 'WAITING',
-          type: cancelledAppointment.type as any,
-          OR: [{ nurseId: cancelledAppointment.nurseId }, { nurseId: null }]
+          type: cancelledAppointment.type,
+          [Op.or]: [
+            { nurseId: cancelledAppointment.nurseId },
+            { nurseId: null }
+          ]
         },
-        include: {
-          student: {
-            include: {
-              emergencyContacts: { where: { isActive: true }, orderBy: { priority: 'asc' }, take: 1 }
-            }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            include: [
+              {
+                model: EmergencyContact,
+                as: 'emergencyContacts',
+                where: { isActive: true },
+                required: false,
+                limit: 1,
+                order: [['priority', 'ASC']]
+              }
+            ]
           }
-        },
-        orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
-        take: 5
+        ],
+        order: [
+          ['priority', 'DESC'],
+          ['createdAt', 'ASC']
+        ],
+        limit: 5
       });
 
       for (const entry of waitlistEntries) {
@@ -126,15 +165,15 @@ export class AppointmentWaitlistService {
             notes: `Auto-scheduled from waitlist: ${entry.notes || ''}`
           });
 
-          await prisma.appointmentWaitlist.update({
-            where: { id: entry.id },
-            data: { status: 'SCHEDULED', notifiedAt: new Date() }
+          await entry.update({
+            status: 'SCHEDULED',
+            notifiedAt: new Date()
           });
 
-          logger.info(`Auto-filled slot for ${entry.student.firstName} ${entry.student.lastName} from waitlist`);
+          logger.info(`Auto-filled slot for ${entry.student!.firstName} ${entry.student!.lastName} from waitlist`);
 
-          if (entry.student.emergencyContacts.length > 0) {
-            const contact = entry.student.emergencyContacts[0];
+          if (entry.student!.emergencyContacts && entry.student!.emergencyContacts.length > 0) {
+            const contact = entry.student!.emergencyContacts[0];
             logger.info(`Would notify ${contact.firstName} ${contact.lastName} at ${contact.phoneNumber}`);
           }
 

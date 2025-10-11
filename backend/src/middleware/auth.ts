@@ -1,10 +1,8 @@
 import { Server, Request as HapiRequest, ResponseToolkit } from '@hapi/hapi';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from '@hapi/jwt';
-import { PrismaClient } from '@prisma/client';
+import { User } from '../database/models/core/User';
 import { ENVIRONMENT, JWT_CONFIG } from '../constants';
-
-const prisma = new PrismaClient();
 
 // Hapi-specific AuthRequest interface
 export interface AuthRequest extends HapiRequest {
@@ -43,9 +41,8 @@ export const configureAuth = async (server: Server) => {
         const payload = decoded.payload as any;
 
         // Verify user still exists and is active
-        const user = await prisma.user.findUnique({
-          where: { id: payload.userId },
-          select: { id: true, email: true, role: true, isActive: true }
+        const user = await User.findByPk(payload.userId, {
+          attributes: ['id', 'email', 'role', 'isActive']
         });
 
         if (!user || !user.isActive) {
@@ -112,11 +109,10 @@ export const auth = async (req: Request, res: Response, next: NextFunction): Pro
     }
 
     const payload = decoded.decoded.payload as { userId?: string; email?: string; role?: string };
-    
+
     // Verify user still exists and is active
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, role: true, isActive: true }
+    const user = await User.findByPk(payload.userId, {
+      attributes: ['id', 'email', 'role', 'isActive']
     });
 
     if (!user || !user.isActive) {

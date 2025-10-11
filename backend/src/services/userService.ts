@@ -1,8 +1,15 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import {
+  User,
+  Student,
+  Appointment,
+  IncidentReport,
+  MedicationLog,
+  InventoryTransaction,
+  sequelize
+} from '../database/models';
 
 export interface CreateUserData {
   email: string;
@@ -49,56 +56,89 @@ export class UserService {
     filters: UserFilters = {}
   ) {
     try {
-      const skip = (page - 1) * limit;
-      
-      const whereClause: Prisma.UserWhereInput = {};
-      
+      const offset = (page - 1) * limit;
+
+      const whereClause: any = {};
+
       if (filters.search) {
-        whereClause.OR = [
-          { firstName: { contains: filters.search, mode: 'insensitive' } },
-          { lastName: { contains: filters.search, mode: 'insensitive' } },
-          { email: { contains: filters.search, mode: 'insensitive' } }
+        whereClause[Op.or] = [
+          { firstName: { [Op.iLike]: `%${filters.search}%` } },
+          { lastName: { [Op.iLike]: `%${filters.search}%` } },
+          { email: { [Op.iLike]: `%${filters.search}%` } }
         ];
       }
-      
+
       if (filters.role) {
         whereClause.role = filters.role;
       }
-      
+
       if (filters.isActive !== undefined) {
         whereClause.isActive = filters.isActive;
       }
 
-      const [users, total] = await Promise.all([
-        prisma.user.findMany({
-          where: whereClause,
-          skip,
-          take: limit,
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            isActive: true,
-            lastLogin: true,
-            createdAt: true,
-            updatedAt: true,
-            _count: {
-              select: {
-                nurseManagedStudents: true,
-                appointments: true,
-                incidentReports: true
-              }
-            }
+      const { count: total, rows: users } = await User.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        attributes: [
+          'id',
+          'email',
+          'firstName',
+          'lastName',
+          'role',
+          'isActive',
+          'lastLogin',
+          'createdAt',
+          'updatedAt'
+        ],
+        include: [
+          {
+            model: Student,
+            as: 'nurseManagedStudents',
+            attributes: [],
+            required: false
           },
-          orderBy: { createdAt: 'desc' }
-        }),
-        prisma.user.count({ where: whereClause })
-      ]);
+          {
+            model: Appointment,
+            as: 'appointments',
+            attributes: [],
+            required: false
+          },
+          {
+            model: IncidentReport,
+            as: 'incidentReports',
+            attributes: [],
+            required: false
+          }
+        ],
+        order: [['createdAt', 'DESC']],
+        subQuery: false,
+        group: ['User.id'],
+        raw: false
+      });
+
+      // Get counts separately for each user
+      const usersWithCounts = await Promise.all(
+        users.map(async (user) => {
+          const [nurseManagedStudentsCount, appointmentsCount, incidentReportsCount] = await Promise.all([
+            Student.count({ where: { nurseId: user.id } }),
+            Appointment.count({ where: { nurseId: user.id } }),
+            IncidentReport.count({ where: { reportedById: user.id } })
+          ]);
+
+          return {
+            ...user.toJSON(),
+            _count: {
+              nurseManagedStudents: nurseManagedStudentsCount,
+              appointments: appointmentsCount,
+              incidentReports: incidentReportsCount
+            }
+          };
+        })
+      );
 
       return {
-        users,
+        users: usersWithCounts,
         pagination: {
           total,
           page,
@@ -117,45 +157,51 @@ export class UserService {
    */
   static async getUserById(id: string) {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          isActive: true,
-          lastLogin: true,
-          createdAt: true,
-          updatedAt: true,
-          nurseManagedStudents: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              studentNumber: true,
-              grade: true
-            },
+      const user = await User.findByPk(id, {
+        attributes: [
+          'id',
+          'email',
+          'firstName',
+          'lastName',
+          'role',
+          'isActive',
+          'lastLogin',
+          'createdAt',
+          'updatedAt'
+        ],
+        include: [
+          {
+            model: Student,
+            as: 'nurseManagedStudents',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
             where: { isActive: true },
-            orderBy: { lastName: 'asc' }
-          },
-          _count: {
-            select: {
-              appointments: true,
-              incidentReports: true,
-              medicationLogs: true,
-              inventoryTransactions: true
-            }
+            required: false,
+            order: [['lastName', 'ASC']]
           }
-        }
+        ]
       });
 
       if (!user) {
         throw new Error('User not found');
       }
 
-      return user;
+      // Get activity counts
+      const [appointmentsCount, incidentReportsCount, medicationLogsCount, inventoryTransactionsCount] = await Promise.all([
+        Appointment.count({ where: { nurseId: id } }),
+        IncidentReport.count({ where: { reportedById: id } }),
+        MedicationLog.count({ where: { nurseId: id } }),
+        InventoryTransaction.count({ where: { performedById: id } })
+      ]);
+
+      return {
+        ...user.toJSON(),
+        _count: {
+          appointments: appointmentsCount,
+          incidentReports: incidentReportsCount,
+          medicationLogs: medicationLogsCount,
+          inventoryTransactions: inventoryTransactionsCount
+        }
+      };
     } catch (error) {
       logger.error('Error fetching user by ID:', error);
       throw error;
@@ -168,7 +214,7 @@ export class UserService {
   static async createUser(data: CreateUserData) {
     try {
       // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
+      const existingUser = await User.findOne({
         where: { email: data.email }
       });
 
@@ -179,24 +225,22 @@ export class UserService {
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 12);
 
-      const user = await prisma.user.create({
-        data: {
-          ...data,
-          password: hashedPassword
-        },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          isActive: true,
-          createdAt: true
-        }
+      const user = await User.create({
+        ...data,
+        password: hashedPassword
       });
 
       logger.info(`User created: ${user.firstName} ${user.lastName} (${user.email})`);
-      return user;
+
+      return {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt
+      };
     } catch (error) {
       logger.error('Error creating user:', error);
       throw error;
@@ -209,9 +253,7 @@ export class UserService {
   static async updateUser(id: string, data: UpdateUserData) {
     try {
       // Check if user exists
-      const existingUser = await prisma.user.findUnique({
-        where: { id }
-      });
+      const existingUser = await User.findByPk(id);
 
       if (!existingUser) {
         throw new Error('User not found');
@@ -219,7 +261,7 @@ export class UserService {
 
       // Check if email is taken by another user
       if (data.email && data.email !== existingUser.email) {
-        const emailTaken = await prisma.user.findUnique({
+        const emailTaken = await User.findOne({
           where: { email: data.email }
         });
 
@@ -228,22 +270,19 @@ export class UserService {
         }
       }
 
-      const user = await prisma.user.update({
-        where: { id },
-        data,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          isActive: true,
-          updatedAt: true
-        }
-      });
+      await existingUser.update(data);
 
-      logger.info(`User updated: ${user.firstName} ${user.lastName} (${user.email})`);
-      return user;
+      logger.info(`User updated: ${existingUser.firstName} ${existingUser.lastName} (${existingUser.email})`);
+
+      return {
+        id: existingUser.id,
+        email: existingUser.email,
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
+        role: existingUser.role,
+        isActive: existingUser.isActive,
+        updatedAt: existingUser.updatedAt
+      };
     } catch (error) {
       logger.error('Error updating user:', error);
       throw error;
@@ -255,9 +294,7 @@ export class UserService {
    */
   static async changePassword(id: string, data: ChangePasswordData) {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id }
-      });
+      const user = await User.findByPk(id);
 
       if (!user) {
         throw new Error('User not found');
@@ -272,10 +309,7 @@ export class UserService {
       // Hash new password
       const hashedPassword = await bcrypt.hash(data.newPassword, 12);
 
-      await prisma.user.update({
-        where: { id },
-        data: { password: hashedPassword }
-      });
+      await user.update({ password: hashedPassword });
 
       logger.info(`Password changed for user: ${user.firstName} ${user.lastName}`);
       return { success: true };
@@ -290,20 +324,23 @@ export class UserService {
    */
   static async deactivateUser(id: string) {
     try {
-      const user = await prisma.user.update({
-        where: { id },
-        data: { isActive: false },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          isActive: true
-        }
-      });
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      await user.update({ isActive: false });
 
       logger.info(`User deactivated: ${user.firstName} ${user.lastName} (${user.email})`);
-      return user;
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        isActive: user.isActive
+      };
     } catch (error) {
       logger.error('Error deactivating user:', error);
       throw error;
@@ -315,20 +352,23 @@ export class UserService {
    */
   static async reactivateUser(id: string) {
     try {
-      const user = await prisma.user.update({
-        where: { id },
-        data: { isActive: true },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          isActive: true
-        }
-      });
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      await user.update({ isActive: true });
 
       logger.info(`User reactivated: ${user.firstName} ${user.lastName} (${user.email})`);
-      return user;
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        isActive: user.isActive
+      };
     } catch (error) {
       logger.error('Error reactivating user:', error);
       throw error;
@@ -340,25 +380,29 @@ export class UserService {
    */
   static async getUserStatistics(): Promise<UserStatistics> {
     try {
-      const [total, active, inactive, byRole, recentLogins] = await Promise.all([
-        prisma.user.count(),
-        prisma.user.count({ where: { isActive: true } }),
-        prisma.user.count({ where: { isActive: false } }),
-        prisma.user.groupBy({
-          by: ['role'],
-          _count: { role: true }
-        }),
-        prisma.user.count({
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const [total, active, inactive, byRoleResults, recentLogins] = await Promise.all([
+        User.count(),
+        User.count({ where: { isActive: true } }),
+        User.count({ where: { isActive: false } }),
+        sequelize.query(
+          'SELECT role, COUNT(*) as count FROM "Users" GROUP BY role',
+          {
+            type: sequelize.QueryTypes.SELECT as any
+          }
+        ),
+        User.count({
           where: {
             lastLogin: {
-              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+              [Op.gte]: thirtyDaysAgo
             }
           }
         })
       ]);
 
-      const roleStats = byRole.reduce((acc: Record<string, number>, item) => {
-        acc[item.role] = item._count.role;
+      const roleStats = (byRoleResults as any[]).reduce((acc: Record<string, number>, item: any) => {
+        acc[item.role] = parseInt(item.count, 10);
         return acc;
       }, {} as Record<string, number>);
 
@@ -380,19 +424,13 @@ export class UserService {
    */
   static async getUsersByRole(role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN') {
     try {
-      const users = await prisma.user.findMany({
-        where: { 
+      const users = await User.findAll({
+        where: {
           role,
           isActive: true
         },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          lastLogin: true
-        },
-        orderBy: { lastName: 'asc' }
+        attributes: ['id', 'firstName', 'lastName', 'email', 'lastLogin'],
+        order: [['lastName', 'ASC']]
       });
 
       return users;
@@ -407,9 +445,8 @@ export class UserService {
    */
   static async resetUserPassword(id: string, newPassword: string) {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id },
-        select: { firstName: true, lastName: true, email: true }
+      const user = await User.findByPk(id, {
+        attributes: ['id', 'firstName', 'lastName', 'email']
       });
 
       if (!user) {
@@ -419,10 +456,7 @@ export class UserService {
       // Hash new password
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-      await prisma.user.update({
-        where: { id },
-        data: { password: hashedPassword }
-      });
+      await user.update({ password: hashedPassword });
 
       logger.info(`Password reset for user: ${user.firstName} ${user.lastName} (${user.email})`);
       return { success: true };
@@ -437,31 +471,36 @@ export class UserService {
    */
   static async getAvailableNurses() {
     try {
-      const nurses = await prisma.user.findMany({
+      const nurses = await User.findAll({
         where: {
           role: 'NURSE',
           isActive: true
         },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          _count: {
-            select: {
-              nurseManagedStudents: {
-                where: { isActive: true }
-              }
-            }
-          }
-        },
-        orderBy: { lastName: 'asc' }
+        attributes: ['id', 'firstName', 'lastName', 'email'],
+        order: [['lastName', 'ASC']]
       });
 
-      return nurses.map((nurse) => ({
-        ...nurse,
-        currentStudentCount: nurse._count.nurseManagedStudents
-      }));
+      // Get student count for each nurse
+      const nursesWithCounts = await Promise.all(
+        nurses.map(async (nurse) => {
+          const currentStudentCount = await Student.count({
+            where: {
+              nurseId: nurse.id,
+              isActive: true
+            }
+          });
+
+          return {
+            ...nurse.toJSON(),
+            _count: {
+              nurseManagedStudents: currentStudentCount
+            },
+            currentStudentCount
+          };
+        })
+      );
+
+      return nursesWithCounts;
     } catch (error) {
       logger.error('Error fetching available nurses:', error);
       throw error;

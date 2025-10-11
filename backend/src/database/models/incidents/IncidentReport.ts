@@ -16,9 +16,15 @@ interface IncidentReportAttributes {
   parentNotified: boolean;
   parentNotificationMethod?: string;
   parentNotifiedAt?: Date;
+  parentNotifiedBy?: string;
   followUpRequired: boolean;
   followUpNotes?: string;
   attachments: string[];
+  evidencePhotos: string[];
+  evidenceVideos: string[];
+  insuranceClaimNumber?: string;
+  insuranceClaimStatus?: string;
+  legalComplianceStatus: string;
   occurredAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -32,9 +38,14 @@ interface IncidentReportCreationAttributes
     | 'updatedAt'
     | 'parentNotificationMethod'
     | 'parentNotifiedAt'
+    | 'parentNotifiedBy'
     | 'followUpNotes'
     | 'attachments'
     | 'witnesses'
+    | 'evidencePhotos'
+    | 'evidenceVideos'
+    | 'insuranceClaimNumber'
+    | 'insuranceClaimStatus'
   > {}
 
 export class IncidentReport
@@ -53,9 +64,15 @@ export class IncidentReport
   public parentNotified!: boolean;
   public parentNotificationMethod?: string;
   public parentNotifiedAt?: Date;
+  public parentNotifiedBy?: string;
   public followUpRequired!: boolean;
   public followUpNotes?: string;
   public attachments!: string[];
+  public evidencePhotos!: string[];
+  public evidenceVideos!: string[];
+  public insuranceClaimNumber?: string;
+  public insuranceClaimStatus?: string;
+  public legalComplianceStatus!: string;
   public occurredAt!: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -114,6 +131,10 @@ IncidentReport.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    parentNotifiedBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     followUpRequired: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -128,9 +149,32 @@ IncidentReport.init(
       allowNull: false,
       defaultValue: [],
     },
+    evidencePhotos: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
+    evidenceVideos: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
     occurredAt: {
       type: DataTypes.DATE,
       allowNull: false,
+    },
+    insuranceClaimNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    insuranceClaimStatus: {
+      type: DataTypes.ENUM('NOT_FILED', 'FILED', 'PENDING', 'APPROVED', 'DENIED', 'CLOSED'),
+      allowNull: true,
+    },
+    legalComplianceStatus: {
+      type: DataTypes.ENUM('PENDING', 'COMPLIANT', 'NON_COMPLIANT', 'UNDER_REVIEW'),
+      allowNull: false,
+      defaultValue: 'PENDING',
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
