@@ -1,5 +1,5 @@
 import Hapi from '@hapi/hapi';
-import { PrismaClient } from '@prisma/client';
+import sequelize from './database/models';
 import dotenv from 'dotenv';
 import Joi from 'joi';
 
@@ -41,8 +41,6 @@ import { swaggerOptions } from './config/swagger';
 
 dotenv.config();
 
-const prisma = new PrismaClient();
-
 // Create Hapi server instance
 const server = Hapi.server({
   port: ENVIRONMENT.PORT,
@@ -58,6 +56,10 @@ const server = Hapi.server({
 // Register plugins and middleware
 const init = async () => {
   try {
+    // Test database connection
+    await sequelize.authenticate();
+    logger.info('Sequelize connected to PostgreSQL');
+
     // Register Inert and Vision (required for Swagger)
     await server.register([
       require('@hapi/inert'),
@@ -174,7 +176,8 @@ const init = async () => {
     const gracefulShutdown = async (signal: string) => {
       logger.info(`${signal} signal received`);
       await server.stop({ timeout: 10000 });
-      await prisma.$disconnect();
+      await sequelize.close();
+      logger.info('Sequelize connection closed');
       process.exit(0);
     };
 

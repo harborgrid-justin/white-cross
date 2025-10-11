@@ -1,7 +1,6 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
-
-const prisma = new PrismaClient();
+import { Appointment, sequelize } from '../../database/models';
 
 export class AppointmentStatisticsService {
   /**
@@ -9,41 +8,49 @@ export class AppointmentStatisticsService {
    */
   static async getAppointmentStatistics(nurseId?: string, dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: Prisma.AppointmentWhereInput = {};
+      const whereClause: any = {};
 
       if (nurseId) whereClause.nurseId = nurseId;
 
       if (dateFrom || dateTo) {
         whereClause.scheduledAt = {};
-        if (dateFrom) whereClause.scheduledAt.gte = dateFrom;
-        if (dateTo) whereClause.scheduledAt.lte = dateTo;
+        if (dateFrom) whereClause.scheduledAt[Op.gte] = dateFrom;
+        if (dateTo) whereClause.scheduledAt[Op.lte] = dateTo;
       }
 
       const [statusStats, typeStats, totalAppointments] = await Promise.all([
-        prisma.appointment.groupBy({
-          by: ['status'],
+        Appointment.findAll({
           where: whereClause,
-          _count: { status: true }
+          attributes: [
+            'status',
+            [sequelize.fn('COUNT', sequelize.col('status')), 'count']
+          ],
+          group: ['status'],
+          raw: true
         }),
-        prisma.appointment.groupBy({
-          by: ['type'],
+        Appointment.findAll({
           where: whereClause,
-          _count: { type: true }
+          attributes: [
+            'type',
+            [sequelize.fn('COUNT', sequelize.col('type')), 'count']
+          ],
+          group: ['type'],
+          raw: true
         }),
-        prisma.appointment.count({ where: whereClause })
+        Appointment.count({ where: whereClause })
       ]);
 
-      const noShowRate = statusStats.find((s) => s.status === 'NO_SHOW')?._count.status || 0;
-      const completedCount = statusStats.find((s) => s.status === 'COMPLETED')?._count.status || 0;
+      const noShowRate = (statusStats as any[]).find((s: any) => s.status === 'NO_SHOW')?.count || 0;
+      const completedCount = (statusStats as any[]).find((s: any) => s.status === 'COMPLETED')?.count || 0;
 
       return {
         total: totalAppointments,
-        byStatus: statusStats.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.status] = curr._count.status;
+        byStatus: (statusStats as any[]).reduce((acc: Record<string, number>, curr: any) => {
+          acc[curr.status] = parseInt(curr.count, 10);
           return acc;
         }, {}),
-        byType: typeStats.reduce((acc: Record<string, number>, curr) => {
-          acc[curr.type] = curr._count.type;
+        byType: (typeStats as any[]).reduce((acc: Record<string, number>, curr: any) => {
+          acc[curr.type] = parseInt(curr.count, 10);
           return acc;
         }, {}),
         noShowRate: totalAppointments > 0 ? (noShowRate / totalAppointments) * 100 : 0,

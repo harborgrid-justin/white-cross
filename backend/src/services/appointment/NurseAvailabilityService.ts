@@ -1,8 +1,7 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
+import { NurseAvailability } from '../../database/models';
 import { NurseAvailabilityData } from '../../types/appointment';
-
-const prisma = new PrismaClient();
 
 export class NurseAvailabilityService {
   /**
@@ -10,17 +9,15 @@ export class NurseAvailabilityService {
    */
   static async setNurseAvailability(data: NurseAvailabilityData) {
     try {
-      const availability = await prisma.nurseAvailability.create({
-        data: {
-          nurseId: data.nurseId,
-          dayOfWeek: data.dayOfWeek ?? 0,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          isRecurring: data.isRecurring ?? true,
-          specificDate: data.specificDate,
-          isAvailable: data.isAvailable ?? true,
-          reason: data.reason
-        }
+      const availability = await NurseAvailability.create({
+        nurseId: data.nurseId,
+        dayOfWeek: data.dayOfWeek ?? 0,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        isRecurring: data.isRecurring ?? true,
+        specificDate: data.specificDate,
+        isAvailable: data.isAvailable ?? true,
+        reason: data.reason
       });
 
       logger.info(`Availability set for nurse ${data.nurseId}`);
@@ -36,19 +33,22 @@ export class NurseAvailabilityService {
    */
   static async getNurseAvailability(nurseId: string, date?: Date) {
     try {
-      const whereClause: Prisma.NurseAvailabilityWhereInput = { nurseId };
+      const whereClause: any = { nurseId };
 
       if (date) {
         const dayOfWeek = date.getDay();
-        whereClause.OR = [
+        whereClause[Op.or] = [
           { isRecurring: true, dayOfWeek },
           { isRecurring: false, specificDate: date }
         ];
       }
 
-      const availability = await prisma.nurseAvailability.findMany({
+      const availability = await NurseAvailability.findAll({
         where: whereClause,
-        orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
+        order: [
+          ['dayOfWeek', 'ASC'],
+          ['startTime', 'ASC']
+        ]
       });
 
       return availability;
@@ -63,10 +63,13 @@ export class NurseAvailabilityService {
    */
   static async updateNurseAvailability(id: string, data: Partial<NurseAvailabilityData>) {
     try {
-      const availability = await prisma.nurseAvailability.update({
-        where: { id },
-        data
-      });
+      const availability = await NurseAvailability.findByPk(id);
+
+      if (!availability) {
+        throw new Error('Availability schedule not found');
+      }
+
+      await availability.update(data);
 
       logger.info(`Availability updated for schedule ${id}`);
       return availability;
@@ -81,7 +84,13 @@ export class NurseAvailabilityService {
    */
   static async deleteNurseAvailability(id: string) {
     try {
-      await prisma.nurseAvailability.delete({ where: { id } });
+      const availability = await NurseAvailability.findByPk(id);
+
+      if (!availability) {
+        throw new Error('Availability schedule not found');
+      }
+
+      await availability.destroy();
       logger.info(`Availability schedule ${id} deleted`);
     } catch (error) {
       logger.error('Error deleting nurse availability:', error);

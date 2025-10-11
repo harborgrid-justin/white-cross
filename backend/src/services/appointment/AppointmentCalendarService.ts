@@ -1,7 +1,6 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
-
-const prisma = new PrismaClient();
+import { Appointment, Student } from '../../database/models';
 
 export class AppointmentCalendarService {
   /**
@@ -9,20 +8,24 @@ export class AppointmentCalendarService {
    */
   static async generateCalendarExport(nurseId: string, dateFrom?: Date, dateTo?: Date) {
     try {
-      const whereClause: Prisma.AppointmentWhereInput = { nurseId };
+      const whereClause: any = { nurseId };
 
       if (dateFrom || dateTo) {
         whereClause.scheduledAt = {};
-        if (dateFrom) whereClause.scheduledAt.gte = dateFrom;
-        if (dateTo) whereClause.scheduledAt.lte = dateTo;
+        if (dateFrom) whereClause.scheduledAt[Op.gte] = dateFrom;
+        if (dateTo) whereClause.scheduledAt[Op.lte] = dateTo;
       }
 
-      const appointments = await prisma.appointment.findMany({
+      const appointments = await Appointment.findAll({
         where: whereClause,
-        include: {
-          student: { select: { firstName: true, lastName: true, studentNumber: true } }
-        },
-        orderBy: { scheduledAt: 'asc' }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName', 'studentNumber']
+          }
+        ],
+        order: [['scheduledAt', 'ASC']]
       });
 
       let ical = 'BEGIN:VCALENDAR\r\n';
@@ -40,8 +43,8 @@ export class AppointmentCalendarService {
         ical += `DTSTAMP:${this.formatICalDate(new Date())}\r\n`;
         ical += `DTSTART:${this.formatICalDate(startDate)}\r\n`;
         ical += `DTEND:${this.formatICalDate(endDate)}\r\n`;
-        ical += `SUMMARY:${appointment.type.replace(/_/g, ' ')} - ${appointment.student.firstName} ${appointment.student.lastName}\r\n`;
-        ical += `DESCRIPTION:${appointment.reason}\\n\\nStudent: ${appointment.student.firstName} ${appointment.student.lastName} (${appointment.student.studentNumber})\\nStatus: ${appointment.status}\r\n`;
+        ical += `SUMMARY:${appointment.type.replace(/_/g, ' ')} - ${appointment.student!.firstName} ${appointment.student!.lastName}\r\n`;
+        ical += `DESCRIPTION:${appointment.reason}\\n\\nStudent: ${appointment.student!.firstName} ${appointment.student!.lastName} (${appointment.student!.studentNumber})\\nStatus: ${appointment.status}\r\n`;
         ical += `STATUS:${
           appointment.status === 'COMPLETED'
             ? 'CONFIRMED'
