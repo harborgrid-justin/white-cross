@@ -46,6 +46,9 @@ export * from './inventory'
 // Re-export budget types
 export * from './budget'
 
+// Re-export state management types
+export * from './state'
+
 // Legacy ApiResponse interface for backward compatibility
 export interface ApiResponse<T> {
   success: boolean

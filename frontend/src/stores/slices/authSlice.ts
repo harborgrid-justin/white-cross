@@ -3,6 +3,7 @@ import { authApi, LoginCredentials, RegisterData } from '../../services/modules/
 import { User } from '../../types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
+import { clearPersistedState } from '../reduxStore';
 
 const log = debug('whitecross:auth-slice');
 
@@ -133,6 +134,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;
+        // Clear all persisted state from storage
+        clearPersistedState();
         toast.success('You have been logged out successfully');
       })
       .addCase(logoutUser.rejected, (state) => {
@@ -141,6 +144,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;
+        // Clear all persisted state from storage
+        clearPersistedState();
         toast.success('You have been logged out successfully');
       })
 

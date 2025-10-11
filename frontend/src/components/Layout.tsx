@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Users,
@@ -14,10 +14,14 @@ import {
   X,
   LogOut,
   Home,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { PROTECTED_ROUTES } from '../constants/routes'
+import { NavigationItem } from '../types/navigation'
+import { filterNavigationItems, markActiveNavigationItems, getDisabledReasonMessage } from '../utils/navigationUtils'
+import Breadcrumbs from './Breadcrumbs'
 
 // Icon mapping for navigation items
 const iconMap: Record<string, any> = {
@@ -32,20 +36,111 @@ const iconMap: Record<string, any> = {
   Package,
   BarChart3,
   Settings,
+  Shield,
 }
 
-const navigation = [
-  { name: 'Dashboard', href: PROTECTED_ROUTES.DASHBOARD, icon: 'Home' },
-  { name: 'Students', href: PROTECTED_ROUTES.STUDENTS, icon: 'Users' },
-  { name: 'Medications', href: PROTECTED_ROUTES.MEDICATIONS, icon: 'Pill' },
-  { name: 'Appointments', href: PROTECTED_ROUTES.APPOINTMENTS, icon: 'Calendar' },
-  { name: 'Health Records', href: PROTECTED_ROUTES.HEALTH_RECORDS, icon: 'FileText' },
-  { name: 'Incident Reports', href: PROTECTED_ROUTES.INCIDENT_REPORTS, icon: 'AlertTriangle' },
-  { name: 'Emergency Contacts', href: PROTECTED_ROUTES.EMERGENCY_CONTACTS, icon: 'Phone' },
-  { name: 'Communication', href: PROTECTED_ROUTES.COMMUNICATION, icon: 'MessageSquare' },
-  { name: 'Inventory', href: PROTECTED_ROUTES.INVENTORY, icon: 'Package' },
-  { name: 'Reports', href: PROTECTED_ROUTES.REPORTS, icon: 'BarChart3' },
-  { name: 'Administration', href: PROTECTED_ROUTES.ADMIN, icon: 'Settings' },
+// Navigation configuration with roles and permissions
+const navigationConfig: NavigationItem[] = [
+  {
+    id: 'dashboard',
+    name: 'Dashboard',
+    path: PROTECTED_ROUTES.DASHBOARD,
+    icon: 'Home',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR'],
+    order: 1,
+  },
+  {
+    id: 'students',
+    name: 'Students',
+    path: PROTECTED_ROUTES.STUDENTS,
+    icon: 'Users',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR'],
+    permissions: [{ resource: 'students', action: 'read' }],
+    dataTestId: 'students-nav',
+    order: 2,
+  },
+  {
+    id: 'medications',
+    name: 'Medications',
+    path: PROTECTED_ROUTES.MEDICATIONS,
+    icon: 'Pill',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY'],
+    permissions: [{ resource: 'medications', action: 'read' }],
+    order: 3,
+  },
+  {
+    id: 'appointments',
+    name: 'Appointments',
+    path: PROTECTED_ROUTES.APPOINTMENTS,
+    icon: 'Calendar',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY'],
+    permissions: [{ resource: 'appointments', action: 'read' }],
+    order: 4,
+  },
+  {
+    id: 'health-records',
+    name: 'Health Records',
+    path: PROTECTED_ROUTES.HEALTH_RECORDS,
+    icon: 'FileText',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR'],
+    permissions: [{ resource: 'health_records', action: 'read' }],
+    order: 5,
+  },
+  {
+    id: 'incident-reports',
+    name: 'Incident Reports',
+    path: PROTECTED_ROUTES.INCIDENT_REPORTS,
+    icon: 'AlertTriangle',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR'],
+    permissions: [{ resource: 'incident_reports', action: 'read' }],
+    order: 6,
+  },
+  {
+    id: 'emergency-contacts',
+    name: 'Emergency Contacts',
+    path: PROTECTED_ROUTES.EMERGENCY_CONTACTS,
+    icon: 'Phone',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'],
+    permissions: [{ resource: 'emergency_contacts', action: 'read' }],
+    order: 7,
+  },
+  {
+    id: 'communication',
+    name: 'Communication',
+    path: PROTECTED_ROUTES.COMMUNICATION,
+    icon: 'MessageSquare',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'],
+    permissions: [{ resource: 'communication', action: 'read' }],
+    order: 8,
+  },
+  {
+    id: 'inventory',
+    name: 'Inventory',
+    path: PROTECTED_ROUTES.INVENTORY,
+    icon: 'Package',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN'],
+    permissions: [{ resource: 'inventory', action: 'read' }],
+    order: 9,
+  },
+  {
+    id: 'reports',
+    name: 'Reports',
+    path: PROTECTED_ROUTES.REPORTS,
+    icon: 'BarChart3',
+    roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY'],
+    permissions: [{ resource: 'reports', action: 'read' }],
+    order: 10,
+  },
+  {
+    id: 'administration',
+    name: 'Administration',
+    path: PROTECTED_ROUTES.ADMIN,
+    icon: 'Settings',
+    roles: ['ADMIN'],
+    permissions: [{ resource: 'system', action: 'manage' }],
+    dataTestId: 'admin-panel-link',
+    order: 11,
+  },
 ]
 
 interface LayoutProps {
@@ -56,6 +151,12 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { user, logout } = useAuthContext()
   const location = useLocation()
+
+  // Filter and mark active navigation items based on user permissions
+  const filteredNavigation = useMemo(() => {
+    const filtered = filterNavigationItems(navigationConfig, user)
+    return markActiveNavigationItems(filtered, location.pathname)
+  }, [user, location.pathname])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,28 +188,71 @@ export default function Layout({ children }: LayoutProps) {
           
           <div className="mt-5 flex-1 h-0 overflow-y-auto">
             <nav className="px-2 space-y-1" role="navigation" aria-label="Main navigation">
-              {navigation.map((item) => {
+              {filteredNavigation.map((item) => {
                 const Icon = iconMap[item.icon]
-                const isActive = location.pathname.startsWith(item.href)
+                const tooltipMessage = !item.hasAccess
+                  ? getDisabledReasonMessage(item.noAccessReason, item)
+                  : item.disabledMessage
+
                 return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                    data-cy={
-                      item.name === 'Administration' ? 'admin-panel-link' : 
-                      item.name === 'Students' ? 'students-nav' : 
-                      undefined
-                    }
-                  >
-                    <Icon className="mr-3 h-5 w-5" />
-                    {item.name}
-                  </Link>
+                  <div key={item.id} className="relative group/nav">
+                    <Link
+                      to={item.path}
+                      className={`
+                        group flex items-center px-2 py-2 text-sm font-medium rounded-md
+                        transition-colors duration-150
+                        ${item.isActive
+                          ? 'bg-primary-100 text-primary-900'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }
+                        ${!item.hasAccess ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                      onClick={(e) => {
+                        if (!item.hasAccess) {
+                          e.preventDefault()
+                        } else {
+                          setSidebarOpen(false)
+                        }
+                      }}
+                      data-cy={item.dataTestId}
+                      aria-label={`${item.name}${item.isActive ? ' (current page)' : ''}`}
+                      aria-disabled={!item.hasAccess}
+                      title={tooltipMessage}
+                    >
+                      <Icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge && (
+                        <span
+                          className={`
+                            ml-2 px-2 py-0.5 text-xs font-medium rounded-full
+                            ${item.badgeVariant === 'error' ? 'bg-red-100 text-red-700' :
+                              item.badgeVariant === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                              item.badgeVariant === 'success' ? 'bg-green-100 text-green-700' :
+                              'bg-gray-100 text-gray-700'}
+                          `}
+                          aria-label={`${item.badge} notifications`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+
+                    {/* Tooltip for disabled items */}
+                    {!item.hasAccess && tooltipMessage && (
+                      <div className="
+                        absolute left-full ml-2 top-1/2 -translate-y-1/2
+                        hidden group-hover/nav:block
+                        bg-gray-900 text-white text-xs rounded py-1 px-2
+                        whitespace-nowrap z-50
+                        pointer-events-none
+                      ">
+                        {tooltipMessage}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2
+                          border-4 border-transparent border-r-gray-900"
+                        />
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </nav>
@@ -124,27 +268,71 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           <div className="mt-5 flex-grow flex flex-col">
             <nav className="flex-1 px-2 space-y-1" role="navigation" aria-label="Main navigation">
-              {navigation.map((item) => {
+              {filteredNavigation.map((item) => {
                 const Icon = iconMap[item.icon]
-                const isActive = location.pathname.startsWith(item.href)
+                const tooltipMessage = !item.hasAccess
+                  ? getDisabledReasonMessage(item.noAccessReason, item)
+                  : item.disabledMessage
+
                 return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                    data-cy={
-                      item.name === 'Administration' ? 'admin-panel-link' : 
-                      item.name === 'Students' ? 'students-nav' : 
-                      undefined
-                    }
-                  >
-                    <Icon className="mr-3 h-5 w-5" />
-                    {item.name}
-                  </Link>
+                  <div key={item.id} className="relative group/nav">
+                    <Link
+                      to={item.path}
+                      className={`
+                        group flex items-center px-2 py-2 text-sm font-medium rounded-md
+                        transition-colors duration-150
+                        ${item.isActive
+                          ? 'bg-primary-100 text-primary-900'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }
+                        ${!item.hasAccess ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                      onClick={(e) => {
+                        if (!item.hasAccess) {
+                          e.preventDefault()
+                        }
+                      }}
+                      data-cy={item.dataTestId}
+                      aria-label={`${item.name}${item.isActive ? ' (current page)' : ''}`}
+                      aria-disabled={!item.hasAccess}
+                      aria-current={item.isActive ? 'page' : undefined}
+                      title={tooltipMessage}
+                      tabIndex={!item.hasAccess ? -1 : 0}
+                    >
+                      <Icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge && (
+                        <span
+                          className={`
+                            ml-2 px-2 py-0.5 text-xs font-medium rounded-full
+                            ${item.badgeVariant === 'error' ? 'bg-red-100 text-red-700' :
+                              item.badgeVariant === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                              item.badgeVariant === 'success' ? 'bg-green-100 text-green-700' :
+                              'bg-gray-100 text-gray-700'}
+                          `}
+                          aria-label={`${item.badge} notifications`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+
+                    {/* Tooltip for disabled items on desktop */}
+                    {!item.hasAccess && tooltipMessage && (
+                      <div className="
+                        absolute left-full ml-2 top-1/2 -translate-y-1/2
+                        hidden group-hover/nav:block
+                        bg-gray-900 text-white text-xs rounded py-1 px-2
+                        whitespace-nowrap z-50
+                        pointer-events-none
+                      ">
+                        {tooltipMessage}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2
+                          border-4 border-transparent border-r-gray-900"
+                        />
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </nav>

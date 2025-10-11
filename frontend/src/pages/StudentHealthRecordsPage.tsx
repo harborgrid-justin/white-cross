@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../contexts/AuthContext'
 import { healthRecordsApi } from '../services/api'
+import { useValidatedParams, StudentHealthRecordParamSchema } from '@/utils/routeValidation'
 import AccessDeniedPage from '../components/AccessDeniedPage'
 import SensitiveRecordWarning from '../components/SensitiveRecordWarning'
 
 interface StudentHealthRecordsPageProps {}
 
 export const StudentHealthRecordsPage: React.FC<StudentHealthRecordsPageProps> = () => {
-  const { studentId } = useParams<{ studentId: string }>()
+  // Validate route parameters
+  const { data: params, loading: paramsLoading, error: paramsError } = useValidatedParams(
+    StudentHealthRecordParamSchema,
+    { fallbackRoute: '/health-records' }
+  )
+
   const { user } = useAuthContext()
   const navigate = useNavigate()
+
+  // Extract validated studentId
+  const studentId = params?.studentId
   
   const [loading, setLoading] = useState(true)
   const [hasAccess, setHasAccess] = useState(true)
@@ -96,10 +105,30 @@ export const StudentHealthRecordsPage: React.FC<StudentHealthRecordsPageProps> =
     navigate('/health-records')
   }
 
-  if (loading) {
+  // Handle loading states
+  if (paramsLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Validating route parameters...</span>
+      </div>
+    )
+  }
+
+  // Handle validation errors
+  if (paramsError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Invalid Student ID</h2>
+          <p className="text-gray-600 mb-4">{paramsError.userMessage}</p>
+          <button
+            onClick={handleBackToRecords}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Health Records
+          </button>
+        </div>
       </div>
     )
   }

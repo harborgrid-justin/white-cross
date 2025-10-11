@@ -16,6 +16,7 @@ import {
   useNotificationTypes,
   usePriorityLevels,
 } from '../hooks/useCommunicationOptions'
+import { usePersistedFilters } from '@/hooks/useRouteState'
 
 interface Contact {
   id: string
@@ -37,12 +38,30 @@ interface Contact {
   }
 }
 
+interface EmergencyContactFilters {
+  searchQuery: string
+  selectedStudent: string
+  priority: string
+  verified: string
+}
+
 export default function EmergencyContacts() {
   const [activeTab, setActiveTab] = useState<'overview' | 'contacts' | 'notify'>('overview')
-  const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<string>('')
   const [editingContact, setEditingContact] = useState<Contact | null>(null)
+
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<EmergencyContactFilters>({
+    storageKey: 'emergency-contact-filters',
+    defaultFilters: {
+      searchQuery: '',
+      selectedStudent: '',
+      priority: 'all',
+      verified: 'all',
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
 
   const [formData, setFormData] = useState({
     studentId: '',
@@ -67,14 +86,14 @@ export default function EmergencyContacts() {
 
   // Set initial selected student when students load
   React.useEffect(() => {
-    if (students.length > 0 && !selectedStudent) {
-      setSelectedStudent(students[0].id)
+    if (students.length > 0 && !filters.selectedStudent) {
+      updateFilter('selectedStudent', students[0].id)
     }
-  }, [students, selectedStudent])
+  }, [students, filters.selectedStudent, updateFilter])
 
   // Fetch emergency contacts for selected student
-  const { data: contactsData, isLoading: contactsLoading } = useEmergencyContacts(selectedStudent, {
-    enabled: !!selectedStudent,
+  const { data: contactsData, isLoading: contactsLoading } = useEmergencyContacts(filters.selectedStudent, {
+    enabled: !!filters.selectedStudent,
   })
   const contacts = contactsData?.contacts || []
 
@@ -104,7 +123,7 @@ export default function EmergencyContacts() {
       } else {
         await createContact.mutateAsync({
           ...formData,
-          studentId: selectedStudent,
+          studentId: filters.selectedStudent,
         })
       }
       setShowAddModal(false)
@@ -118,7 +137,7 @@ export default function EmergencyContacts() {
     if (!confirm('Are you sure you want to delete this contact?')) return
 
     try {
-      await deleteContact.mutateAsync({ id, studentId: selectedStudent })
+      await deleteContact.mutateAsync({ id, studentId: filters.selectedStudent })
     } catch (error) {
       // Error is handled by the hook
     }
@@ -128,7 +147,7 @@ export default function EmergencyContacts() {
     e.preventDefault()
     try {
       await notifyContacts.mutateAsync({
-        studentId: selectedStudent,
+        studentId: filters.selectedStudent,
         notification: notificationData,
       })
       resetNotificationData()
@@ -141,7 +160,7 @@ export default function EmergencyContacts() {
     try {
       await verifyContact.mutateAsync({
         contactId,
-        studentId: selectedStudent,
+        studentId: filters.selectedStudent,
         method,
       })
     } catch (error) {

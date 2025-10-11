@@ -9,12 +9,18 @@ import MedicationsInventoryTab from '../components/medications/tabs/MedicationsI
 import MedicationsRemindersTab from '../components/medications/tabs/MedicationsRemindersTab'
 import MedicationsAdverseReactionsTab from '../components/medications/tabs/MedicationsAdverseReactionsTab'
 import { QUERY_INTERVALS, PAGINATION_CONFIG } from '../constants'
+import { usePersistedFilters, usePageState } from '@/hooks/useRouteState'
 
 type Tab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions'
 
+interface MedicationFilters {
+  searchTerm: string
+  dosageForm: string
+  controlledStatus: string
+}
+
 export default function Medications() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
-  const [searchTerm, setSearchTerm] = useState('')
   const [showAddMedication, setShowAddMedication] = useState(false)
   const [showMedicationDetails, setShowMedicationDetails] = useState(false)
   const [showAdverseReactionForm, setShowAdverseReactionForm] = useState(false)
@@ -30,9 +36,34 @@ export default function Medications() {
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<MedicationFilters>({
+    storageKey: 'medication-filters',
+    defaultFilters: {
+      searchTerm: '',
+      dosageForm: '',
+      controlledStatus: '',
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
+
+  const { page, pageSize, setPage, setPageSize } = usePageState({
+    defaultPage: 1,
+    defaultPageSize: 20,
+    pageSizeOptions: [10, 20, 50, 100],
+    resetOnFilterChange: true,
+  })
+
   const { data: medicationsData, isLoading: medicationsLoading, isFetching: medicationsFetching } = useQuery({
-    queryKey: ['medications', searchTerm],
-    queryFn: () => medicationsApi.getAll({ page: 1, limit: 20, search: searchTerm }),
+    queryKey: ['medications', filters.searchTerm, page, pageSize, filters.dosageForm, filters.controlledStatus],
+    queryFn: () => medicationsApi.getAll({
+      page,
+      limit: pageSize,
+      search: filters.searchTerm,
+      dosageForm: filters.dosageForm,
+      controlled: filters.controlledStatus
+    }),
     enabled: activeTab === 'medications'
   })
 
@@ -165,13 +196,13 @@ export default function Medications() {
           </div>
           <MedicationsListTab
             medications={(medicationsData as any)?.data || []}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            searchTerm={filters.searchTerm}
+            onSearchChange={(value) => updateFilter('searchTerm', value)}
             onMedicationSelect={(medication) => {
               setSelectedMedication(medication)
               setShowMedicationDetails(true)
             }}
-            loading={medicationsLoading}
+            loading={medicationsLoading || !isRestored}
           />
         </>
       )}

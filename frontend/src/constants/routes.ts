@@ -53,6 +53,11 @@ export const PROTECTED_ROUTES = {
   INCIDENT_REPORTS_DETAIL: '/incident-reports/:id',
   INCIDENT_REPORTS_CREATE: '/incident-reports/new',
   INCIDENT_REPORTS_EDIT: '/incident-reports/:id/edit',
+  INCIDENT_REPORTS_WITNESSES: '/incident-reports/:id/witnesses',
+  INCIDENT_REPORTS_ACTIONS: '/incident-reports/:id/actions',
+  INCIDENT_REPORTS_EVIDENCE: '/incident-reports/:id/evidence',
+  INCIDENT_REPORTS_TIMELINE: '/incident-reports/:id/timeline',
+  INCIDENT_REPORTS_EXPORT: '/incident-reports/:id/export',
 
   // Emergency Contacts
   EMERGENCY_CONTACTS: '/emergency-contacts',
@@ -183,6 +188,42 @@ export const buildAppointmentRoute = (appointmentId: string | number) =>
  */
 export const buildIncidentReportRoute = (reportId: string | number) =>
   buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_DETAIL, { id: reportId });
+
+/**
+ * Build incident report edit route
+ */
+export const buildIncidentReportEditRoute = (reportId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_EDIT, { id: reportId });
+
+/**
+ * Build incident report witnesses route
+ */
+export const buildIncidentReportWitnessesRoute = (reportId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_WITNESSES, { id: reportId });
+
+/**
+ * Build incident report actions route
+ */
+export const buildIncidentReportActionsRoute = (reportId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_ACTIONS, { id: reportId });
+
+/**
+ * Build incident report evidence route
+ */
+export const buildIncidentReportEvidenceRoute = (reportId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_EVIDENCE, { id: reportId });
+
+/**
+ * Build incident report timeline route
+ */
+export const buildIncidentReportTimelineRoute = (reportId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_TIMELINE, { id: reportId });
+
+/**
+ * Build incident report export route
+ */
+export const buildIncidentReportExportRoute = (reportId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.INCIDENT_REPORTS_EXPORT, { id: reportId });
 
 /**
  * Build emergency contacts for student route
