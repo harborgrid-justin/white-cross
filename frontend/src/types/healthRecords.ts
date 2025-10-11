@@ -1,4 +1,4 @@
-export type TabType = 'overview' | 'records' | 'allergies' | 'chronic' | 'vaccinations' | 'growth' | 'screenings' | 'analytics'
+export type TabType = 'overview' | 'records' | 'allergies' | 'chronic' | 'vaccinations' | 'growth' | 'screenings' | 'vitals' | 'analytics'
 
 export type RecordType = 'CHECKUP' | 'VACCINATION' | 'ILLNESS' | 'INJURY' | 'SCREENING' | 'VISION' | 'HEARING' | 'PHYSICAL_EXAM'
 
@@ -33,6 +33,7 @@ export interface HealthRecord {
 
 export interface Allergy {
   id: string
+  studentId?: string
   allergen: string
   severity: SeverityLevel
   verified: boolean
@@ -40,6 +41,8 @@ export interface Allergy {
   treatment?: string
   dateIdentified?: string
   providerName?: string
+  epiPenLocation?: string
+  epiPenExpirationDate?: string
 }
 
 export interface ChronicCondition {

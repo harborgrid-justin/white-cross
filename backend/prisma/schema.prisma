@@ -57,16 +57,20 @@ model Student {
   updatedAt        DateTime @updatedAt
 
   // Relations
-  nurse             User?                 @relation("NurseStudents", fields: [nurseId], references: [id])
-  nurseId           String?
-  emergencyContacts EmergencyContact[]
-  medications       StudentMedication[]
-  healthRecords     HealthRecord[]
-  appointments      Appointment[]
-  incidentReports   IncidentReport[]
-  allergies         Allergy[]
-  chronicConditions ChronicCondition[]
-  waitlistEntries   AppointmentWaitlist[]
+  nurse              User?                 @relation("NurseStudents", fields: [nurseId], references: [id])
+  nurseId            String?
+  emergencyContacts  EmergencyContact[]
+  medications        StudentMedication[]
+  healthRecords      HealthRecord[]
+  appointments       Appointment[]
+  incidentReports    IncidentReport[]
+  allergies          Allergy[]
+  chronicConditions  ChronicCondition[]
+  vaccinations       Vaccination[]
+  screenings         Screening[]
+  growthMeasurements GrowthMeasurement[]
+  vitalSigns         VitalSigns[]
+  waitlistEntries    AppointmentWaitlist[]
 
   @@map("students")
 }
@@ -393,65 +397,287 @@ model MessageDelivery {
 }
 
 model HealthRecord {
-  id          String           @id @default(cuid())
-  type        HealthRecordType
-  date        DateTime
-  description String
-  vital       Json? // Store vitals as JSON
-  provider    String?
-  notes       String?
-  attachments String[] // Array of file URLs
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id                String           @id @default(cuid())
+  recordType        HealthRecordType
+  title             String
+  description       String
+  recordDate        DateTime
+  provider          String?
+  providerNpi       String? // National Provider Identifier
+  facility          String?
+  facilityNpi       String?
+  diagnosis         String?
+  diagnosisCode     String? // ICD-10 code
+  treatment         String?
+  followUpRequired  Boolean          @default(false)
+  followUpDate      DateTime?
+  followUpCompleted Boolean          @default(false)
+  attachments       String[] // Array of file URLs
+  metadata          Json? // Additional flexible data
+  isConfidential    Boolean          @default(false)
+  notes             String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdBy         String? // User ID who created record
+  updatedBy         String? // User ID who last updated
 
   // Relations
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId String
+  student      Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  allergies    Allergy[]
+  conditions   ChronicCondition[]
+  vaccinations Vaccination[]
+  screenings   Screening[]
+  vitalSigns   VitalSigns[]
+  measurements GrowthMeasurement[]
 
+  @@index([studentId, recordDate])
+  @@index([recordType, recordDate])
+  @@index([createdBy])
+  @@index([followUpRequired, followUpDate])
   @@map("health_records")
 }
 
 model Allergy {
-  id         String          @id @default(cuid())
-  allergen   String
-  severity   AllergySeverity
-  reaction   String?
-  treatment  String?
-  verified   Boolean         @default(false)
-  verifiedBy String?
-  verifiedAt DateTime?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  id                String          @id @default(cuid())
+  allergen          String
+  allergyType       AllergyType     @default(OTHER)
+  severity          AllergySeverity
+  symptoms          String? // Detailed symptom description
+  reactions         Json? // Array of specific reactions
+  treatment         String?
+  emergencyProtocol String? // Emergency response protocol
+  onsetDate         DateTime?
+  diagnosedDate     DateTime?
+  diagnosedBy       String?
+  verified          Boolean         @default(false)
+  verifiedBy        String? // User ID
+  verificationDate  DateTime?
+  active            Boolean         @default(true)
+  notes             String?
+  epiPenRequired    Boolean         @default(false)
+  epiPenLocation    String?
+  epiPenExpiration  DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  createdBy         String? // User ID who created record
+  updatedBy         String? // User ID who last updated
 
   // Relations
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId String
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  healthRecord   HealthRecord? @relation(fields: [healthRecordId], references: [id])
+  healthRecordId String?
 
+  @@index([studentId, active])
+  @@index([allergyType, severity])
+  @@index([epiPenExpiration])
   @@map("allergies")
 }
 
 model ChronicCondition {
-  id             String    @id @default(cuid())
-  condition      String
-  diagnosedDate  DateTime
-  status         String    @default("ACTIVE") // ACTIVE, MANAGED, RESOLVED
-  severity       String? // MILD, MODERATE, SEVERE
-  notes          String?
-  carePlan       String?
-  medications    String[] // Related medications
-  restrictions   String[] // Activity/dietary restrictions
-  triggers       String[] // Known triggers
-  diagnosedBy    String?
-  lastReviewDate DateTime?
-  nextReviewDate DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                     String            @id @default(cuid())
+  condition              String
+  icdCode                String? // ICD-10 diagnosis code
+  diagnosisDate          DateTime
+  diagnosedBy            String?
+  severity               ConditionSeverity @default(MODERATE)
+  status                 ConditionStatus   @default(ACTIVE)
+  medications            Json? // Related medication details
+  treatments             String?
+  accommodationsRequired Boolean           @default(false)
+  accommodationDetails   String?
+  emergencyProtocol      String? // Emergency action plan
+  actionPlan             String? // Care/management action plan
+  nextReviewDate         DateTime?
+  reviewFrequency        String? // e.g., "Every 6 months"
+  restrictions           Json? // Activity/dietary/environmental restrictions
+  precautions            Json? // Special precautions to take
+  triggers               String[] // Known triggers
+  notes                  String?
+  carePlan               String?
+  lastReviewDate         DateTime?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  createdBy              String? // User ID who created record
+  updatedBy              String? // User ID who last updated
 
   // Relations
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId String
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  healthRecord   HealthRecord? @relation(fields: [healthRecordId], references: [id])
+  healthRecordId String?
 
+  @@index([studentId, status])
+  @@index([severity, status])
+  @@index([nextReviewDate])
   @@map("chronic_conditions")
+}
+
+model Vaccination {
+  id                    String                  @id @default(cuid())
+  vaccineName           String
+  vaccineType           VaccineType?
+  manufacturer          String?
+  lotNumber             String?
+  cvxCode               String? // CDC vaccine code
+  ndcCode               String? // National Drug Code
+  doseNumber            Int? // Which dose in series (e.g., 1, 2, 3)
+  totalDoses            Int? // Total doses in series
+  seriesComplete        Boolean                 @default(false)
+  administrationDate    DateTime
+  administeredBy        String
+  administeredByRole    String?
+  facility              String?
+  siteOfAdministration  AdministrationSite?
+  routeOfAdministration AdministrationRoute?
+  dosageAmount          String?
+  expirationDate        DateTime?
+  nextDueDate           DateTime?
+  reactions             String? // Adverse reactions
+  adverseEvents         Json? // Structured adverse event data
+  exemptionStatus       Boolean                 @default(false)
+  exemptionReason       String?
+  exemptionDocument     String? // URL to exemption documentation
+  complianceStatus      VaccineComplianceStatus @default(COMPLIANT)
+  vfcEligibility        Boolean                 @default(false) // Vaccines for Children program
+  visProvided           Boolean                 @default(false) // Vaccine Information Statement
+  visDate               DateTime?
+  consentObtained       Boolean                 @default(false)
+  consentBy             String?
+  notes                 String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  createdBy             String? // User ID who created record
+  updatedBy             String? // User ID who last updated
+
+  // Relations
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  healthRecord   HealthRecord? @relation(fields: [healthRecordId], references: [id])
+  healthRecordId String?
+
+  @@index([studentId, administrationDate])
+  @@index([vaccineType, complianceStatus])
+  @@index([nextDueDate])
+  @@index([expirationDate])
+  @@map("vaccinations")
+}
+
+model Screening {
+  id               String           @id @default(cuid())
+  screeningType    ScreeningType
+  screeningDate    DateTime
+  screenedBy       String
+  screenedByRole   String?
+  results          Json? // Detailed findings (structured data)
+  outcome          ScreeningOutcome @default(PASS)
+  referralRequired Boolean          @default(false)
+  referralTo       String? // Specialist or facility
+  referralDate     DateTime?
+  referralReason   String?
+  followUpRequired Boolean          @default(false)
+  followUpDate     DateTime?
+  followUpStatus   FollowUpStatus?
+  equipmentUsed    String?
+  testDetails      Json? // Additional test-specific details
+  rightEye         String? // For vision screenings
+  leftEye          String? // For vision screenings
+  rightEar         String? // For hearing screenings
+  leftEar          String? // For hearing screenings
+  passedCriteria   Boolean?
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdBy        String? // User ID who created record
+  updatedBy        String? // User ID who last updated
+
+  // Relations
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  healthRecord   HealthRecord? @relation(fields: [healthRecordId], references: [id])
+  healthRecordId String?
+
+  @@index([studentId, screeningDate])
+  @@index([screeningType, outcome])
+  @@index([referralRequired, followUpRequired])
+  @@index([followUpDate])
+  @@map("screenings")
+}
+
+model GrowthMeasurement {
+  id                String   @id @default(cuid())
+  measurementDate   DateTime
+  measuredBy        String
+  measuredByRole    String?
+  height            Decimal? // Store in centimeters for consistency
+  heightUnit        String   @default("cm") // cm or in
+  weight            Decimal? // Store in kilograms for consistency
+  weightUnit        String   @default("kg") // kg or lb
+  bmi               Decimal?
+  bmiPercentile     Decimal?
+  headCircumference Decimal? // For younger students, in cm
+  heightPercentile  Decimal?
+  weightPercentile  Decimal?
+  growthPercentiles Json? // Additional percentile data
+  nutritionalStatus String? // Underweight, Normal, Overweight, Obese
+  concerns          String? // Any growth concerns
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String? // User ID who created record
+  updatedBy         String? // User ID who last updated
+
+  // Relations
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  healthRecord   HealthRecord? @relation(fields: [healthRecordId], references: [id])
+  healthRecordId String?
+
+  @@index([studentId, measurementDate])
+  @@index([measurementDate])
+  @@map("growth_measurements")
+}
+
+model VitalSigns {
+  id                     String              @id @default(cuid())
+  measurementDate        DateTime
+  measuredBy             String
+  measuredByRole         String?
+  temperature            Decimal?
+  temperatureUnit        String              @default("F") // F or C
+  temperatureSite        String? // Oral, Axillary, Tympanic, Temporal
+  bloodPressureSystolic  Int?
+  bloodPressureDiastolic Int?
+  bloodPressurePosition  String? // Sitting, Standing, Lying
+  heartRate              Int? // beats per minute
+  heartRhythm            String? // Regular, Irregular
+  respiratoryRate        Int? // breaths per minute
+  oxygenSaturation       Int? // percentage (0-100)
+  oxygenSupplemental     Boolean             @default(false)
+  painLevel              Int? // 0-10 scale
+  painLocation           String?
+  consciousness          ConsciousnessLevel?
+  glucoseLevel           Decimal? // mg/dL
+  peakFlow               Int? // For asthma patients, L/min
+  notes                  String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  createdBy              String? // User ID who created record
+  updatedBy              String? // User ID who last updated
+
+  // Relations
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  healthRecord   HealthRecord? @relation(fields: [healthRecordId], references: [id])
+  healthRecordId String?
+  appointment    Appointment?  @relation(fields: [appointmentId], references: [id])
+  appointmentId  String?
+
+  @@index([studentId, measurementDate])
+  @@index([measurementDate])
+  @@index([appointmentId])
+  @@map("vital_signs")
 }
 
 model Appointment {
@@ -466,12 +692,12 @@ model Appointment {
   updatedAt   DateTime          @updatedAt
 
   // Relations
-
-  student   Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId String
-  nurse     User                  @relation(fields: [nurseId], references: [id])
-  nurseId   String
-  reminders AppointmentReminder[]
+  student    Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  nurse      User                  @relation(fields: [nurseId], references: [id])
+  nurseId    String
+  reminders  AppointmentReminder[]
+  vitalSigns VitalSigns[]
 
   @@map("appointments")
 }
@@ -644,6 +870,26 @@ enum HealthRecordType {
   DENTAL
   VISION
   HEARING
+  EXAMINATION
+  ALLERGY_DOCUMENTATION
+  CHRONIC_CONDITION_REVIEW
+  GROWTH_ASSESSMENT
+  VITAL_SIGNS_CHECK
+  EMERGENCY_VISIT
+  FOLLOW_UP
+  CONSULTATION
+  DIAGNOSTIC_TEST
+  PROCEDURE
+  HOSPITALIZATION
+  SURGERY
+  COUNSELING
+  THERAPY
+  NUTRITION
+  MEDICATION_REVIEW
+  IMMUNIZATION
+  LAB_RESULT
+  RADIOLOGY
+  OTHER
 }
 
 enum AllergySeverity {
@@ -651,6 +897,132 @@ enum AllergySeverity {
   MODERATE
   SEVERE
   LIFE_THREATENING
+}
+
+enum AllergyType {
+  FOOD
+  MEDICATION
+  ENVIRONMENTAL
+  INSECT
+  LATEX
+  ANIMAL
+  CHEMICAL
+  SEASONAL
+  OTHER
+}
+
+enum ConditionSeverity {
+  MILD
+  MODERATE
+  SEVERE
+  CRITICAL
+}
+
+enum ConditionStatus {
+  ACTIVE
+  MANAGED
+  RESOLVED
+  MONITORING
+  INACTIVE
+}
+
+enum VaccineType {
+  COVID_19
+  FLU
+  MEASLES
+  MUMPS
+  RUBELLA
+  MMR
+  POLIO
+  HEPATITIS_A
+  HEPATITIS_B
+  VARICELLA
+  TETANUS
+  DIPHTHERIA
+  PERTUSSIS
+  TDAP
+  DTaP
+  HIB
+  PNEUMOCOCCAL
+  ROTAVIRUS
+  MENINGOCOCCAL
+  HPV
+  OTHER
+}
+
+enum AdministrationSite {
+  ARM_LEFT
+  ARM_RIGHT
+  THIGH_LEFT
+  THIGH_RIGHT
+  DELTOID_LEFT
+  DELTOID_RIGHT
+  BUTTOCK_LEFT
+  BUTTOCK_RIGHT
+  ORAL
+  NASAL
+  OTHER
+}
+
+enum AdministrationRoute {
+  INTRAMUSCULAR
+  SUBCUTANEOUS
+  INTRADERMAL
+  ORAL
+  INTRANASAL
+  INTRAVENOUS
+  OTHER
+}
+
+enum VaccineComplianceStatus {
+  COMPLIANT
+  OVERDUE
+  PARTIALLY_COMPLIANT
+  EXEMPT
+  NON_COMPLIANT
+}
+
+enum ScreeningType {
+  VISION
+  HEARING
+  SCOLIOSIS
+  DENTAL
+  BMI
+  BLOOD_PRESSURE
+  DEVELOPMENTAL
+  SPEECH
+  MENTAL_HEALTH
+  TUBERCULOSIS
+  LEAD
+  ANEMIA
+  OTHER
+}
+
+enum ScreeningOutcome {
+  PASS
+  REFER
+  FAIL
+  INCONCLUSIVE
+  INCOMPLETE
+}
+
+enum FollowUpStatus {
+  PENDING
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  OVERDUE
+  NOT_NEEDED
+}
+
+enum ConsciousnessLevel {
+  ALERT
+  VERBAL
+  PAIN
+  UNRESPONSIVE
+  DROWSY
+  CONFUSED
+  LETHARGIC
 }
 
 enum AppointmentType {
@@ -871,26 +1243,26 @@ model School {
 }
 
 model SystemConfiguration {
-  id           String         @id @default(cuid())
-  key          String         @unique
-  value        String
-  valueType    ConfigValueType @default(STRING) // Type for validation and parsing
-  category     ConfigCategory
-  subCategory  String?
-  description  String?
-  defaultValue String?
-  validValues  String[] // For enum-like values
-  minValue     Float? // For numeric values
-  maxValue     Float? // For numeric values
-  isPublic     Boolean        @default(false) // Whether non-admin users can view
-  isEditable   Boolean        @default(true) // Whether value can be changed via UI
-  requiresRestart Boolean     @default(false) // Whether changing requires app restart
-  scope        ConfigScope    @default(SYSTEM) // SYSTEM, DISTRICT, SCHOOL
-  scopeId      String? // District or School ID if scope is not SYSTEM
-  tags         String[] // For grouping and filtering
-  sortOrder    Int            @default(0)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id              String          @id @default(cuid())
+  key             String          @unique
+  value           String
+  valueType       ConfigValueType @default(STRING) // Type for validation and parsing
+  category        ConfigCategory
+  subCategory     String?
+  description     String?
+  defaultValue    String?
+  validValues     String[] // For enum-like values
+  minValue        Float? // For numeric values
+  maxValue        Float? // For numeric values
+  isPublic        Boolean         @default(false) // Whether non-admin users can view
+  isEditable      Boolean         @default(true) // Whether value can be changed via UI
+  requiresRestart Boolean         @default(false) // Whether changing requires app restart
+  scope           ConfigScope     @default(SYSTEM) // SYSTEM, DISTRICT, SCHOOL
+  scopeId         String? // District or School ID if scope is not SYSTEM
+  tags            String[] // For grouping and filtering
+  sortOrder       Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   // Relations
   history ConfigurationHistory[]
@@ -902,16 +1274,16 @@ model SystemConfiguration {
 }
 
 model ConfigurationHistory {
-  id           String   @id @default(cuid())
-  configKey    String
-  oldValue     String?
-  newValue     String
-  changedBy    String // User ID
+  id            String   @id @default(cuid())
+  configKey     String
+  oldValue      String?
+  newValue      String
+  changedBy     String // User ID
   changedByName String? // User's name for easier reference
-  changeReason String?
-  ipAddress    String?
-  userAgent    String?
-  createdAt    DateTime @default(now())
+  changeReason  String?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
 
   // Relations
   configuration   SystemConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)

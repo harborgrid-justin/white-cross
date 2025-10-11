@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { FileText, AlertTriangle, Activity, Shield, Settings, BarChart3 } from 'lucide-react'
+import { FileText, AlertTriangle, Activity, Shield, Settings, BarChart3, Download } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
+import toast from 'react-hot-toast'
 
 // Import types
 import type {
@@ -12,6 +13,7 @@ import type {
 
 // Import custom hooks
 import { useHealthRecordsData } from '../hooks/useHealthRecordsData'
+import { useHealthSummary, useExportHealthHistory } from '../hooks/useHealthRecords'
 
 // Import constants
 import { HEALTH_TABS } from '../constants/healthRecords'
@@ -31,6 +33,7 @@ import { ChronicConditionsTab } from '../components/healthRecords/tabs/ChronicCo
 import { VaccinationsTab } from '../components/healthRecords/tabs/VaccinationsTab'
 import { GrowthChartsTab } from '../components/healthRecords/tabs/GrowthChartsTab'
 import { ScreeningsTab } from '../components/healthRecords/tabs/ScreeningsTab'
+import { VitalsTab } from '../components/healthRecords/tabs/VitalsTab'
 import { AnalyticsTab } from '../components/healthRecords/tabs/AnalyticsTab'
 
 // Import modal components
@@ -60,6 +63,14 @@ const HealthRecords: React.FC = () => {
   const [vaccinationSort, setVaccinationSort] = useState('date')
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
 
+  // API hooks for statistics
+  const { data: healthSummary, isLoading: summaryLoading } = useHealthSummary(
+    selectedStudent?.id || '1',
+    { enabled: !!selectedStudent?.id }
+  )
+
+  const exportMutation = useExportHealthHistory()
+
   // Modal state
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false)
   const [showSensitiveRecordWarning, setShowSensitiveRecordWarning] = useState(false)
@@ -72,6 +83,22 @@ const HealthRecords: React.FC = () => {
     // Here you would normally make an API call to save the record
     setShowHealthRecordModal(false)
     setEditingRecord(null)
+  }
+
+  const handleExport = async (format: 'pdf' | 'json') => {
+    if (!selectedStudent?.id) {
+      toast.error('Please select a student first')
+      return
+    }
+
+    try {
+      await exportMutation.mutateAsync({
+        studentId: selectedStudent.id,
+        format
+      })
+    } catch (error) {
+      console.error('Export failed:', error)
+    }
   }
 
   const handleTabChange = async (tabId: TabType) => {
@@ -161,14 +188,35 @@ const HealthRecords: React.FC = () => {
               Import
             </button>
           )}
-          <button
-            className="btn-secondary flex items-center"
-            data-testid="export-button"
-            onClick={() => console.log('Export')}
-            aria-label="Export health records"
-          >
-            Export
-          </button>
+          <div className="relative group">
+            <button
+              className="btn-secondary flex items-center"
+              data-testid="export-button"
+              aria-label="Export health records"
+              disabled={!selectedStudent?.id || exportMutation.isPending}
+            >
+              <Download className="h-4 w-4 mr-2" aria-hidden="true" />
+              {exportMutation.isPending ? 'Exporting...' : 'Export'}
+            </button>
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+              <div className="py-1">
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  disabled={exportMutation.isPending}
+                >
+                  Export as PDF
+                </button>
+                <button
+                  onClick={() => handleExport('json')}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  disabled={exportMutation.isPending}
+                >
+                  Export as JSON
+                </button>
+              </div>
+            </div>
+          </div>
           {user?.role === 'ADMIN' && (
             <>
               <button
@@ -239,10 +287,54 @@ const HealthRecords: React.FC = () => {
 
       {/* Summary Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatsCard title="Total Records" value="247" trend="+12 this month" icon={FileText} iconColor="text-blue-600" />
-        <StatsCard title="Active Allergies" value="18" trend="2 new" icon={AlertTriangle} iconColor="text-red-600" />
-        <StatsCard title="Chronic Conditions" value="31" trend="Stable" icon={Activity} iconColor="text-orange-600" />
-        <StatsCard title="Vaccinations Due" value="8" trend="Next 30 days" icon={Shield} iconColor="text-green-600" />
+        {summaryLoading ? (
+          <>
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-white p-6 rounded-lg shadow animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            ))}
+          </>
+        ) : healthSummary ? (
+          <>
+            <StatsCard
+              title="Total Records"
+              value={healthSummary.totalRecords || 0}
+              trend={`${healthSummary.recentRecordsCount || 0} this month`}
+              icon={FileText}
+              iconColor="text-blue-600"
+            />
+            <StatsCard
+              title="Active Allergies"
+              value={healthSummary.activeAllergiesCount || 0}
+              trend={healthSummary.unverifiedAllergiesCount ? `${healthSummary.unverifiedAllergiesCount} unverified` : 'All verified'}
+              icon={AlertTriangle}
+              iconColor="text-red-600"
+            />
+            <StatsCard
+              title="Chronic Conditions"
+              value={healthSummary.activeConditionsCount || 0}
+              trend={healthSummary.managedConditionsCount ? `${healthSummary.managedConditionsCount} managed` : 'Stable'}
+              icon={Activity}
+              iconColor="text-orange-600"
+            />
+            <StatsCard
+              title="Vaccinations Due"
+              value={healthSummary.upcomingVaccinationsCount || 0}
+              trend="Next 30 days"
+              icon={Shield}
+              iconColor="text-green-600"
+            />
+          </>
+        ) : (
+          <>
+            <StatsCard title="Total Records" value="0" trend="No data" icon={FileText} iconColor="text-blue-600" />
+            <StatsCard title="Active Allergies" value="0" trend="No data" icon={AlertTriangle} iconColor="text-red-600" />
+            <StatsCard title="Chronic Conditions" value="0" trend="No data" icon={Activity} iconColor="text-orange-600" />
+            <StatsCard title="Vaccinations Due" value="0" trend="No data" icon={Shield} iconColor="text-green-600" />
+          </>
+        )}
       </div>
 
       {/* Privacy Notice */}
@@ -455,6 +547,12 @@ const HealthRecords: React.FC = () => {
             <ScreeningsTab
               screenings={screenings}
               onRecordScreening={() => console.log('Record screening')}
+              user={user}
+            />
+          )}
+          {activeTab === 'vitals' && (
+            <VitalsTab
+              studentId={selectedStudent?.id || '1'}
               user={user}
             />
           )}

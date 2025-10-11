@@ -20,7 +20,7 @@ import {
   CircuitBreakerError,
   UnauthorizedError,
   ForbiddenError,
-} from '../../services/modules/healthRecordsApi.enhanced';
+} from '../../services/modules/healthRecordsApi';
 
 interface Props {
   children: ReactNode;

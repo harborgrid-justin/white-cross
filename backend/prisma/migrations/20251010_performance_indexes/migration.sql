@@ -1,44 +1,41 @@
 -- Performance optimization indexes for health records service
 -- Generated: 2025-10-10
+-- Note: CONCURRENTLY removed to allow execution within migration transaction
 
--- Health Records table indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_student_date"
-  ON "health_records"("studentId", "date" DESC);
+-- Health Records table indexes (using new column names: recordDate, recordType)
+CREATE INDEX IF NOT EXISTS "idx_health_records_student_date"
+  ON "health_records"("studentId", "recordDate" DESC);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_student_type"
-  ON "health_records"("studentId", "type");
+CREATE INDEX IF NOT EXISTS "idx_health_records_student_type"
+  ON "health_records"("studentId", "recordType");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_date_type"
-  ON "health_records"("date" DESC, "type");
+CREATE INDEX IF NOT EXISTS "idx_health_records_date_type"
+  ON "health_records"("recordDate" DESC, "recordType");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_provider"
+CREATE INDEX IF NOT EXISTS "idx_health_records_provider"
   ON "health_records"("provider") WHERE "provider" IS NOT NULL;
 
--- GIN index for JSON vital fields (PostgreSQL specific)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_vital_gin"
-  ON "health_records" USING GIN ("vital");
-
 -- Allergies table indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_allergies_student_severity"
+CREATE INDEX IF NOT EXISTS "idx_allergies_student_severity"
   ON "allergies"("studentId", "severity" DESC);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_allergies_allergen"
+CREATE INDEX IF NOT EXISTS "idx_allergies_allergen"
   ON "allergies"("allergen");
 
 -- Chronic Conditions table indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_chronic_conditions_student_status"
+CREATE INDEX IF NOT EXISTS "idx_chronic_conditions_student_status"
   ON "chronic_conditions"("studentId", "status");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_chronic_conditions_next_review"
+CREATE INDEX IF NOT EXISTS "idx_chronic_conditions_next_review"
   ON "chronic_conditions"("nextReviewDate")
   WHERE "nextReviewDate" IS NOT NULL AND "status" = 'ACTIVE';
 
 -- Students table indexes (if not already present)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_students_nurse"
+CREATE INDEX IF NOT EXISTS "idx_students_nurse"
   ON "students"("nurseId") WHERE "nurseId" IS NOT NULL;
 
 -- Composite index for search operations
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_search"
+CREATE INDEX IF NOT EXISTS "idx_health_records_search"
   ON "health_records"
   USING GIN (to_tsvector('english',
     COALESCE("description", '') || ' ' ||
@@ -47,7 +44,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_health_records_search"
   ));
 
 -- Partial index for active records only
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_students_active"
+CREATE INDEX IF NOT EXISTS "idx_students_active"
   ON "students"("isActive", "nurseId")
   WHERE "isActive" = true;
 

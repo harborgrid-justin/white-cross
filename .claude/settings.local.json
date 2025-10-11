@@ -70,7 +70,10 @@
       "Bash(xargs kill:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(powershell:*)",
+      "Bash(tee:*)",
+      "Bash(del verify-migration.js)"
     ],
     "deny": [],
     "ask": []

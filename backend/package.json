@@ -16,7 +16,10 @@
     "migrate": "prisma migrate dev",
     "generate": "prisma generate",
     "studio": "prisma studio",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "seed:enhanced": "ts-node prisma/seed.enhanced.ts",
+    "db:reset": "ts-node prisma/reset-database.ts",
+    "db:seed-all": "npm run seed && npm run seed:enhanced"
   },
   "dependencies": {
     "@hapi/bell": "^13.1.0",
