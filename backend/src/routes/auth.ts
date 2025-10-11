@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
+import { ENVIRONMENT, JWT_CONFIG } from '../constants';
 
 const prisma = new PrismaClient();
 
@@ -96,10 +97,10 @@ const loginHandler = async (request: any, h: any) => {
         userId: user.id,
         email: user.email,
         role: user.role,
-        aud: 'urn:audience:api',
-        iss: 'urn:issuer:api'
+        aud: JWT_CONFIG.AUDIENCE,
+        iss: JWT_CONFIG.ISSUER
       },
-      process.env.JWT_SECRET as string,
+      (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string,
       {
         expiresIn: '24h'
       }
@@ -139,7 +140,7 @@ const verifyHandler = async (request: any, h: any) => {
       }).code(401);
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload & { userId: string };
+    const decoded = jwt.verify(token, (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string) as jwt.JwtPayload & { userId: string };
 
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({
@@ -189,7 +190,7 @@ const refreshHandler = async (request: any, h: any) => {
     // Verify the existing token (even if expired, we can still read the payload)
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload & { userId: string };
+      decoded = jwt.verify(token, (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string) as jwt.JwtPayload & { userId: string };
     } catch (error: any) {
       // If token is expired, we can still decode it without verification to get user info
       if (error.name === 'TokenExpiredError') {
@@ -235,10 +236,10 @@ const refreshHandler = async (request: any, h: any) => {
         userId: user.id,
         email: user.email,
         role: user.role,
-        aud: 'urn:audience:api',
-        iss: 'urn:issuer:api'
+        aud: JWT_CONFIG.AUDIENCE,
+        iss: JWT_CONFIG.ISSUER
       },
-      process.env.JWT_SECRET as string,
+      (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string,
       {
         expiresIn: '24h'
       }

@@ -21,6 +21,9 @@
     "db:reset": "ts-node prisma/reset-database.ts",
     "db:seed-all": "npm run seed && npm run seed:enhanced"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@hapi/bell": "^13.1.0",
     "@hapi/boom": "^10.0.1",

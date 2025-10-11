@@ -18,7 +18,8 @@
     "lint:frontend": "cd frontend && npm run lint",
     "setup": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "start": "npm run start:backend",
-    "start:backend": "cd backend && npm start"
+    "start:backend": "cd backend && npm start",
+    "seed": "cd backend && npx prisma db seed"
   },
   "keywords": [
     "healthcare",
