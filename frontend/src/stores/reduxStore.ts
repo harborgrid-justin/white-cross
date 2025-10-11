@@ -224,7 +224,7 @@ export function getStorageStats(): {
 } {
   const getSize = (storage: Storage): number => {
     let size = 0;
-    for (let key in storage) {
+    for (const key in storage) {
       if (storage.hasOwnProperty(key) && key.startsWith('whitecross_')) {
         size += storage[key].length + key.length;
       }

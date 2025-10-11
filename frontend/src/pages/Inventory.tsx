@@ -20,6 +20,7 @@ import InventoryVendorsTab from '../components/inventory/tabs/InventoryVendorsTa
 import InventoryOrdersTab from '../components/inventory/tabs/InventoryOrdersTab'
 import InventoryBudgetTab from '../components/inventory/tabs/InventoryBudgetTab'
 import InventoryAnalyticsTab from '../components/inventory/tabs/InventoryAnalyticsTab'
+import { usePersistedFilters, usePageState, useSortState } from '@/hooks/useRouteState'
 
 // Using any types for now since these don't exist in the types file
 type InventoryItem = any
@@ -27,6 +28,15 @@ type InventoryAlert = any
 type Vendor = any
 type PurchaseOrder = any
 type BudgetCategory = any
+
+interface InventoryFilters {
+  searchQuery: string
+  selectedCategory: string
+  alertLevel: string
+  stockStatus: string
+}
+
+type InventorySortColumn = 'name' | 'category' | 'quantity' | 'reorderLevel'
 
 export default function Inventory() {
   const [activeTab, setActiveTab] = useState<'items' | 'vendors' | 'orders' | 'budget' | 'analytics'>('items')
@@ -36,9 +46,35 @@ export default function Inventory() {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showAddModal, setShowAddModal] = useState(false)
+
+  // State persistence hooks
+  const { filters, updateFilter, clearFilters, isRestored } = usePersistedFilters<InventoryFilters>({
+    storageKey: 'inventory-filters',
+    defaultFilters: {
+      searchQuery: '',
+      selectedCategory: 'all',
+      alertLevel: 'all',
+      stockStatus: 'all',
+    },
+    syncWithUrl: true,
+    debounceMs: 300,
+  })
+
+  const { page, pageSize, setPage, setPageSize } = usePageState({
+    defaultPage: 1,
+    defaultPageSize: 20,
+    pageSizeOptions: [10, 20, 50, 100],
+    resetOnFilterChange: true,
+  })
+
+  const { column, direction, toggleSort } = useSortState<InventorySortColumn>({
+    validColumns: ['name', 'category', 'quantity', 'reorderLevel'],
+    defaultColumn: 'name',
+    defaultDirection: 'asc',
+    persistPreference: true,
+    storageKey: 'inventory-sort-preference',
+  })
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -82,11 +118,13 @@ export default function Inventory() {
   }, [loadData])
 
   const filteredItems = inventoryItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.category.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory
+    const matchesSearch = item.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                         item.category.toLowerCase().includes(filters.searchQuery.toLowerCase())
+    const matchesCategory = filters.selectedCategory === 'all' || item.category === filters.selectedCategory
     return matchesSearch && matchesCategory
   })
+
+  const isLoadingState = loading || !isRestored
 
   const categories = Array.from(new Set(inventoryItems.map(item => item.category)))
 
@@ -235,9 +273,10 @@ export default function Inventory() {
 
       {/* Content Area */}
       <div className="card p-6">
-        {loading ? (
+        {isLoadingState ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Loading inventory...</span>
           </div>
         ) : (
           <>
@@ -245,10 +284,10 @@ export default function Inventory() {
               <InventoryItemsTab
                 items={inventoryItems}
                 categories={categories}
-                searchQuery={searchQuery}
-                selectedCategory={selectedCategory}
-                onSearchChange={setSearchQuery}
-                onCategoryChange={setSelectedCategory}
+                searchQuery={filters.searchQuery}
+                selectedCategory={filters.selectedCategory}
+                onSearchChange={(value) => updateFilter('searchQuery', value)}
+                onCategoryChange={(value) => updateFilter('selectedCategory', value)}
               />
             )}
 
