@@ -9,6 +9,8 @@ import { AppointmentAvailabilityService } from './AppointmentAvailabilityService
 import { AppointmentReminderService } from './AppointmentReminderService';
 import { AppointmentWaitlistService } from './AppointmentWaitlistService';
 import { Appointment, Student, User } from '../../database/models';
+import { AppointmentStatus } from '../../database/types/enums';
+
 
 export class AppointmentService {
   /**
@@ -76,7 +78,7 @@ export class AppointmentService {
       if (conflicts.length > 0) throw new Error('Nurse is not available at the requested time');
 
       const appointment = await Appointment.create(
-        { ...data, duration: data.duration || 30 }
+        { ...data, duration: data.duration || 30 } as any
       );
 
       // Reload with associations
@@ -130,7 +132,7 @@ export class AppointmentService {
         if (conflicts.length > 0) throw new Error('Nurse is not available at the requested time');
       }
 
-      await existing.update(data);
+      await existing.update(data as any);
       
       // Reload with associations
       await existing.reload({
@@ -167,7 +169,7 @@ export class AppointmentService {
       if (!appointment) throw new Error('Appointment not found');
       
       await appointment.update({
-        status: 'CANCELLED',
+        status: AppointmentStatus.CANCELLED,
         notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
       });
 
@@ -215,7 +217,7 @@ export class AppointmentService {
       const appointment = await Appointment.findByPk(id);
       if (!appointment) throw new Error('Appointment not found');
       
-      await appointment.update({ status: 'NO_SHOW' });
+      await appointment.update({ status: AppointmentStatus.NO_SHOW });
 
       // Reload with associations
       await appointment.reload({
@@ -245,7 +247,7 @@ export class AppointmentService {
         where: {
           nurseId,
           scheduledAt: { [Op.gte]: new Date() },
-          status: { [Op.in]: ['SCHEDULED', 'IN_PROGRESS'] }
+          status: { [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS] }
         },
         include: [
           {

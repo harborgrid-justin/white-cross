@@ -40,9 +40,9 @@ export const configurationRoutes = (server: Server) => {
         const parsedTags = tags ? (Array.isArray(tags) ? tags : [tags]) : undefined;
 
         const configs = await configurationService.getConfigurations({
-          category: category as ConfigCategory,
+          category: category as any,
           subCategory,
-          scope: scope as ConfigScope,
+          scope: scope as any,
           scopeId,
           tags: parsedTags,
           isPublic,
@@ -163,7 +163,7 @@ export const configurationRoutes = (server: Server) => {
         const { scopeId } = request.query;
 
         const configs = await configurationService.getConfigsByCategory(
-          category as ConfigCategory,
+          category as any,
           scopeId
         );
 
@@ -669,8 +669,8 @@ export const configurationRoutes = (server: Server) => {
         const { category, scope } = request.query;
 
         const json = await configurationService.exportConfigurations({
-          category: category as ConfigCategory,
-          scope: scope as ConfigScope
+          category: category as any,
+          scope: scope as any
         });
 
         return h.response(json)

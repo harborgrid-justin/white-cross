@@ -11,6 +11,62 @@ import {
   sequelize
 } from '../database/models';
 
+// Type augmentations for model associations
+declare module '../database/models' {
+  interface Medication {
+    inventory?: MedicationInventory[];
+    studentMedications?: StudentMedication[];
+    name: string;
+    strength: string;
+    dosageForm: string;
+  }
+  
+  interface StudentMedication {
+    medication?: Medication;
+    student?: Student;
+    logs?: MedicationLog[];
+    id: string;
+    isActive: boolean;
+    frequency: string;
+    dosage: string;
+    studentId: string;
+  }
+  
+  interface MedicationLog {
+    nurse?: User;
+    studentMedication?: StudentMedication;
+    timeGiven: Date;
+  }
+  
+  interface MedicationInventory {
+    medication?: Medication;
+    quantity: number;
+    reorderLevel: number;
+    expirationDate: Date;
+    batchNumber: string;
+    medicationId: string;
+  }
+  
+  interface Student {
+    medications?: any[];
+    firstName: string;
+    lastName: string;
+    studentNumber: string;
+    id: string;
+  }
+  
+  interface User {
+    firstName: string;
+    lastName: string;
+  }
+  
+  interface IncidentReport {
+    student?: Student;
+    reportedBy?: User;
+    studentId: string;
+  }
+}
+
 export interface CreateMedicationData {
   name: string;
   genericName?: string;
@@ -765,7 +821,7 @@ export class MedicationService {
       }
 
       const incidentReport = await IncidentReport.create({
-        type: 'ALLERGIC_REACTION',
+        type: 'ALLERGIC_REACTION' as any,
         severity: data.severity as any,
         description: `Adverse reaction to ${studentMedication.medication!.name}: ${data.reaction}`,
         location: 'School Nurse Office',

@@ -109,7 +109,7 @@ export function setupAssociations() {
   User.hasMany(AppointmentWaitlist, { foreignKey: 'nurseId', as: 'waitlistEntries' });
 
   // ============ STUDENT ASSOCIATIONS (lines 59-73 in Prisma) - CASCADE DELETES FOR PHI ============
-  Student.belongsTo(User, { foreignKey: 'nurseId', as: 'nurse' });
+  Student.belongsTo(User, { foreignKey: 'nurseId', as: 'assignedNurse' });
   Student.hasMany(EmergencyContact, {
     foreignKey: 'studentId',
     as: 'emergencyContacts',
@@ -173,20 +173,20 @@ export function setupAssociations() {
   });
 
   // ============ EMERGENCY CONTACT ASSOCIATIONS ============
-  EmergencyContact.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  EmergencyContact.belongsTo(Student, { foreignKey: 'studentId', as: 'studentRecord' });
 
   // ============ MEDICATION ASSOCIATIONS (lines 110-135 in Prisma) ============
   Medication.hasMany(StudentMedication, { foreignKey: 'medicationId', as: 'studentMedications' });
   Medication.hasMany(MedicationInventory, { foreignKey: 'medicationId', as: 'inventory' });
 
   // ============ STUDENT MEDICATION ASSOCIATIONS ============
-  StudentMedication.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  StudentMedication.belongsTo(Student, { foreignKey: 'studentId', as: 'studentInfo' });
   StudentMedication.belongsTo(Medication, { foreignKey: 'medicationId', as: 'medication' });
   StudentMedication.hasMany(MedicationLog, { foreignKey: 'studentMedicationId', as: 'logs' });
 
   // ============ MEDICATION LOG ASSOCIATIONS ============
   MedicationLog.belongsTo(StudentMedication, { foreignKey: 'studentMedicationId', as: 'studentMedication' });
-  MedicationLog.belongsTo(User, { foreignKey: 'nurseId', as: 'nurse' });
+  MedicationLog.belongsTo(User, { foreignKey: 'nurseId', as: 'administeringNurse' });
 
   // ============ MEDICATION INVENTORY ASSOCIATIONS ============
   MedicationInventory.belongsTo(Medication, { foreignKey: 'medicationId', as: 'medication' });
@@ -220,7 +220,7 @@ export function setupAssociations() {
   BudgetTransaction.belongsTo(BudgetCategory, { foreignKey: 'categoryId', as: 'category' });
 
   // ============ HEALTH RECORD ASSOCIATIONS (lines 424-432 in Prisma) ============
-  HealthRecord.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  HealthRecord.belongsTo(Student, { foreignKey: 'studentId', as: 'studentProfile' });
   HealthRecord.hasMany(Allergy, { foreignKey: 'healthRecordId', as: 'allergies' });
   HealthRecord.hasMany(ChronicCondition, { foreignKey: 'healthRecordId', as: 'conditions' });
   HealthRecord.hasMany(Vaccination, { foreignKey: 'healthRecordId', as: 'vaccinations' });
@@ -229,48 +229,48 @@ export function setupAssociations() {
   HealthRecord.hasMany(GrowthMeasurement, { foreignKey: 'healthRecordId', as: 'measurements' });
 
   // ============ ALLERGY ASSOCIATIONS (lines 466-470 in Prisma) ============
-  Allergy.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  Allergy.belongsTo(Student, { foreignKey: 'studentId', as: 'studentWithAllergy' });
   Allergy.belongsTo(HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' });
 
   // ============ CHRONIC CONDITION ASSOCIATIONS (lines 505-509 in Prisma) ============
-  ChronicCondition.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  ChronicCondition.belongsTo(Student, { foreignKey: 'studentId', as: 'studentWithCondition' });
   ChronicCondition.belongsTo(HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' });
 
   // ============ VACCINATION ASSOCIATIONS (lines 554-558 in Prisma) ============
-  Vaccination.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  Vaccination.belongsTo(Student, { foreignKey: 'studentId', as: 'vaccinatedStudent' });
   Vaccination.belongsTo(HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' });
 
   // ============ SCREENING ASSOCIATIONS (lines 595-599 in Prisma) ============
-  Screening.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  Screening.belongsTo(Student, { foreignKey: 'studentId', as: 'screenedStudent' });
   Screening.belongsTo(HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' });
 
   // ============ GROWTH MEASUREMENT ASSOCIATIONS (lines 631-635 in Prisma) ============
-  GrowthMeasurement.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  GrowthMeasurement.belongsTo(Student, { foreignKey: 'studentId', as: 'measuredStudent' });
   GrowthMeasurement.belongsTo(HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' });
 
   // ============ VITAL SIGNS ASSOCIATIONS (lines 669-675 in Prisma) ============
-  VitalSigns.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  VitalSigns.belongsTo(Student, { foreignKey: 'studentId', as: 'patientStudent' });
   VitalSigns.belongsTo(HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' });
   VitalSigns.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
 
   // ============ APPOINTMENT ASSOCIATIONS (lines 694-700 in Prisma) ============
-  Appointment.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
-  Appointment.belongsTo(User, { foreignKey: 'nurseId', as: 'nurse' });
+  Appointment.belongsTo(Student, { foreignKey: 'studentId', as: 'appointmentStudent' });
+  Appointment.belongsTo(User, { foreignKey: 'nurseId', as: 'scheduledNurse' });
   Appointment.hasMany(AppointmentReminder, { foreignKey: 'appointmentId', as: 'reminders', onDelete: 'CASCADE' });
   Appointment.hasMany(VitalSigns, { foreignKey: 'appointmentId', as: 'vitalSigns' });
 
   // ============ NURSE AVAILABILITY ASSOCIATIONS (lines 717-719 in Prisma) ============
-  NurseAvailability.belongsTo(User, { foreignKey: 'nurseId', as: 'nurse' });
+  NurseAvailability.belongsTo(User, { foreignKey: 'nurseId', as: 'availableNurse' });
 
   // ============ APPOINTMENT WAITLIST ASSOCIATIONS (lines 738-742 in Prisma) ============
-  AppointmentWaitlist.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
-  AppointmentWaitlist.belongsTo(User, { foreignKey: 'nurseId', as: 'nurse' });
+  AppointmentWaitlist.belongsTo(Student, { foreignKey: 'studentId', as: 'waitlistedStudent' });
+  AppointmentWaitlist.belongsTo(User, { foreignKey: 'nurseId', as: 'requestedNurse' });
 
   // ============ APPOINTMENT REMINDER ASSOCIATIONS (lines 758-760 in Prisma) ============
   AppointmentReminder.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
 
   // ============ INCIDENT REPORT ASSOCIATIONS (lines 789-795 in Prisma) ============
-  IncidentReport.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  IncidentReport.belongsTo(Student, { foreignKey: 'studentId', as: 'involvedStudent' });
   IncidentReport.belongsTo(User, { foreignKey: 'reportedById', as: 'reportedBy' });
 
   IncidentReport.hasMany(WitnessStatement, { foreignKey: 'incidentReportId', as: 'witnessStatements', onDelete: 'CASCADE' });

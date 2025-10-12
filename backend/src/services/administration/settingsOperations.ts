@@ -1,0 +1,63 @@
+/**
+ * Settings Operations Module
+ *
+ * Handles system settings management
+ *
+ * @module services/administration/settingsOperations
+ */
+
+import { logger } from '../../utils/logger';
+import { ConfigurationData } from './types';
+import { getAllConfigurations, setConfiguration } from './configurationOperations';
+
+/**
+ * Get all system settings grouped by category
+ */
+export async function getSystemSettings() {
+  try {
+    const configs = await getAllConfigurations();
+
+    // Group configurations by category for easier consumption
+    const groupedSettings: Record<string, any[]> = {};
+    configs.forEach(config => {
+      if (!groupedSettings[config.category]) {
+        groupedSettings[config.category] = [];
+      }
+      groupedSettings[config.category].push({
+        key: config.key,
+        value: config.value,
+        valueType: config.valueType,
+        description: config.description,
+        isPublic: config.isPublic,
+        isEditable: config.isEditable,
+        requiresRestart: config.requiresRestart,
+        category: config.category,
+        subCategory: config.subCategory,
+        scope: config.scope,
+        tags: config.tags
+      });
+    });
+
+    return groupedSettings;
+  } catch (error) {
+    logger.error('Error fetching system settings:', error);
+    throw new Error('Failed to fetch system settings');
+  }
+}
+
+/**
+ * Update multiple system settings
+ */
+export async function updateSystemSettings(settings: ConfigurationData[], changedBy?: string) {
+  try {
+    const results = await Promise.all(
+      settings.map(setting => setConfiguration(setting, changedBy))
+    );
+
+    logger.info(`Updated ${results.length} system settings`);
+    return results;
+  } catch (error) {
+    logger.error('Error updating system settings:', error);
+    throw error;
+  }
+}

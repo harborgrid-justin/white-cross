@@ -51,13 +51,13 @@ export class HealthRecordRepository
       const where: any = { studentId };
 
       if (filters.type) {
-        where.type = filters.type;
+        where.recordType = filters.type;
       }
 
       if (filters.dateFrom || filters.dateTo) {
-        where.date = {};
-        if (filters.dateFrom) where.date[Op.gte] = filters.dateFrom;
-        if (filters.dateTo) where.date[Op.lte] = filters.dateTo;
+        where.recordDate = {};
+        if (filters.dateFrom) where.recordDate[Op.gte] = filters.dateFrom;
+        if (filters.dateTo) where.recordDate[Op.lte] = filters.dateTo;
       }
 
       if (filters.provider) {
@@ -66,7 +66,7 @@ export class HealthRecordRepository
 
       const records = await this.model.findAll({
         where,
-        order: [['date', 'DESC']],
+        order: [['recordDate', 'DESC']],
         limit: options?.take || 50
       });
 
@@ -136,25 +136,25 @@ export class HealthRecordRepository
       const records = await this.model.findAll({
         where: {
           studentId,
-          vital: { [Op.ne]: null }
+          recordType: 'PHYSICAL_EXAM'
         },
-        order: [['date', 'DESC']],
+        order: [['recordDate', 'DESC']],
         limit
       });
 
       interface HealthRecordDataForVitals {
-        date: Date;
-        vital: unknown;
-        type: HealthRecordType;
+        recordDate: Date;
+        metadata: unknown;
+        recordType: HealthRecordType;
         provider: string | null;
       }
 
       return records.map<VitalSignsHistory>((r: HealthRecord): VitalSignsHistory => {
         const data: HealthRecordDataForVitals = r.toJSON() as unknown as HealthRecordDataForVitals;
         return {
-          date: data.date,
-          vitals: data.vital,
-          recordType: data.type,
+          date: data.recordDate,
+          vitals: data.metadata,
+          recordType: data.recordType,
           provider: data.provider
         } as VitalSignsHistory;
       });
@@ -188,7 +188,7 @@ export class HealthRecordRepository
       }
 
       if (query.type) {
-        where.type = query.type;
+        where.recordType = query.type;
       }
 
       if (query.studentIds && query.studentIds.length > 0) {
@@ -197,7 +197,7 @@ export class HealthRecordRepository
 
       const records = await this.model.findAll({
         where,
-        order: [['date', 'DESC']],
+        order: [['recordDate', 'DESC']],
         limit: options?.take || 100
       });
 
@@ -251,15 +251,15 @@ export class HealthRecordRepository
       const results = await this.model.findAll({
         where: { studentId },
         attributes: [
-          'type',
+          'recordType',
           [this.model.sequelize!.fn('COUNT', 'id'), 'count']
         ],
-        group: ['type'],
+        group: ['recordType'],
         raw: true
       });
 
       results.forEach((result: any) => {
-        counts[result.type] = parseInt(result.count, 10);
+        counts[result.recordType] = parseInt(result.count, 10);
       });
 
       return counts as Record<HealthRecordType, number>;
@@ -323,9 +323,9 @@ export class HealthRecordRepository
       const records = await this.model.findAll({
         where: {
           studentId,
-          type: 'VACCINATION'
+          recordType: 'VACCINATION'
         },
-        order: [['date', 'DESC']]
+        order: [['recordDate', 'DESC']]
       });
 
       type MappedVaccinationRecord = ReturnType<typeof this.mapToEntity>;

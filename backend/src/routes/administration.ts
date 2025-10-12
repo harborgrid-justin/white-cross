@@ -1,6 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { AdministrationService } from '../services/administrationService';
+import { AdministrationService } from '../services/administration';
 import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 
 // Admin middleware

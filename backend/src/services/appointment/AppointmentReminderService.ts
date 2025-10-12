@@ -1,6 +1,28 @@
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { Appointment, AppointmentReminder, Student, EmergencyContact, User } from '../../database/models';
+import { MessageType, ReminderStatus } from '../../database/types/enums';
+
+// Type augmentations for associations
+declare module '../../database/models/healthcare/Appointment' {
+  interface Appointment {
+    student?: Student & {
+      emergencyContacts?: EmergencyContact[];
+    };
+    nurse?: User;
+  }
+}
+
+declare module '../../database/models/healthcare/AppointmentReminder' {
+  interface AppointmentReminder {
+    appointment?: Appointment & {
+      student?: Student & {
+        emergencyContacts?: EmergencyContact[];
+      };
+      nurse?: User;
+    };
+  }
+}
 
 export class AppointmentReminderService {
   /**
@@ -39,9 +61,9 @@ export class AppointmentReminderService {
       });
 
       const reminderIntervals = [
-        { hours: 24, type: 'EMAIL' as const, label: '24-hour' },
-        { hours: 2, type: 'SMS' as const, label: '2-hour' },
-        { hours: 0.5, type: 'SMS' as const, label: '30-minute' }
+        { hours: 24, type: MessageType.EMAIL, label: '24-hour' },
+        { hours: 2, type: MessageType.SMS, label: '2-hour' },
+        { hours: 0.5, type: MessageType.SMS, label: '30-minute' }
       ];
 
       const reminders = [];
@@ -57,7 +79,7 @@ export class AppointmentReminderService {
             type: interval.type,
             scheduledFor: reminderTime,
             message,
-            status: 'SCHEDULED'
+            status: ReminderStatus.SCHEDULED
           });
 
           reminders.push(reminder);
@@ -122,7 +144,7 @@ export class AppointmentReminderService {
       if (!contact) {
         logger.warn(`No emergency contact found for student ${appointment.student?.firstName}`);
         await AppointmentReminder.update(
-          { status: 'FAILED', failureReason: 'No emergency contact available' },
+          { status: ReminderStatus.FAILED, failureReason: 'No emergency contact available' },
           { where: { id: reminderId } }
         );
         return;
@@ -147,7 +169,7 @@ export class AppointmentReminderService {
       }
 
       await AppointmentReminder.update(
-        { status: 'SENT', sentAt: new Date() },
+        { status: ReminderStatus.SENT, sentAt: new Date() },
         { where: { id: reminderId } }
       );
 
@@ -157,7 +179,7 @@ export class AppointmentReminderService {
 
       try {
         await AppointmentReminder.update(
-          { status: 'FAILED', failureReason: (error as Error).message },
+          { status: ReminderStatus.FAILED, failureReason: (error as Error).message },
           { where: { id: reminderId } }
         );
       } catch (updateError) {
@@ -175,7 +197,7 @@ export class AppointmentReminderService {
     try {
       const now = new Date();
       const pendingReminders = await AppointmentReminder.findAll({
-        where: { status: 'SCHEDULED', scheduledFor: { [Op.lte]: now } },
+        where: { status: ReminderStatus.SCHEDULED, scheduledFor: { [Op.lte]: now } },
         limit: 50
       });
 

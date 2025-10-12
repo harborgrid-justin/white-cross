@@ -9,6 +9,42 @@ import {
   sequelize
 } from '../database/models';
 import { HealthRecordType, AllergySeverity, ConditionStatus, ConditionSeverity } from '../database/types/enums';
+
+// Type augmentations for model associations
+declare module '../database/models' {
+  interface HealthRecord {
+    student?: Student;
+    vital?: any;
+    type: any;
+    date: Date;
+  }
+  
+  interface Allergy {
+    student?: Student;
+    allergen: string;
+  }
+  
+  interface ChronicCondition {
+    student?: Student;
+    condition: string;
+  }
+  
+  interface Vaccination {
+    student?: Student;
+    vaccineName: string;
+    administrationDate: Date;
+    expirationDate?: Date;
+    doseNumber?: number;
+    totalDoses?: number;
+  }
+  
+  interface Student {
+    id: string;
+    firstName: string;
+    lastName: string;
+    studentNumber: string;
+  }
+}
 import {
   validateHealthRecordData,
   validateVitalSigns,
@@ -367,8 +403,8 @@ export class HealthRecordService {
 
       const allergy = await Allergy.create({
         ...data,
-        verifiedAt: data.verified ? new Date() : null
-      });
+        verified: data.verified ? new Date() : null
+      } as any);
 
       // Reload with associations
       await allergy.reload({
@@ -487,8 +523,8 @@ export class HealthRecordService {
       const records = await HealthRecord.findAll({
         where: {
           studentId,
-          type: 'VACCINATION'
-        },
+          type: 'VACCINATION' as any
+        } as any,
         include: [
           {
             model: Student,
@@ -515,7 +551,7 @@ export class HealthRecordService {
         where: {
           studentId,
           'vital.height': { [Op.ne]: null }
-        },
+        } as any,
         attributes: ['id', 'date', 'vital', 'type'],
         order: [['date', 'ASC']]
       });
@@ -550,7 +586,7 @@ export class HealthRecordService {
         where: {
           studentId,
           vital: { [Op.ne]: null }
-        },
+        } as any,
         attributes: ['id', 'date', 'vital', 'type', 'provider'],
         order: [['date', 'DESC']],
         limit
@@ -1195,11 +1231,11 @@ export class HealthRecordService {
         }),
         HealthRecord.count({
           where: {
-            type: 'VACCINATION',
+            type: 'VACCINATION' as any,
             createdAt: {
               [Op.gte]: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days
             }
-          }
+          } as any
         }),
         HealthRecord.count({
           where: {

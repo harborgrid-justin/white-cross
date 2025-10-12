@@ -1,6 +1,8 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { AppointmentType, WaitlistPriority, WaitlistStatus } from '../../types/enums';
+import { Student } from '../core/Student';
+import { User } from '../core/User';
 
 /**
  * AppointmentWaitlist Model
@@ -130,3 +132,14 @@ AppointmentWaitlist.init(
     ],
   }
 );
+
+// Associations
+AppointmentWaitlist.belongsTo(Student, {
+  foreignKey: 'studentId',
+  as: 'student',
+});
+
+AppointmentWaitlist.belongsTo(User, {
+  foreignKey: 'nurseId',
+  as: 'nurse',
+});
