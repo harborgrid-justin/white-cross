@@ -14,11 +14,10 @@
  */
 
 import cron from 'cron';
-import { PrismaClient } from '@prisma/client';
+import { QueryTypes } from 'sequelize';
 import { logger } from '../utils/logger';
 import { cacheDelete } from '../config/redis';
-
-const prisma = new PrismaClient();
+import { sequelize } from '../database/models';
 
 interface InventoryAlert {
   type: 'EXPIRED' | 'NEAR_EXPIRY' | 'LOW_STOCK' | 'OUT_OF_STOCK';
@@ -99,7 +98,9 @@ export class InventoryMaintenanceJob {
   private static async refreshMaterializedView() {
     try {
       // Refresh concurrently to avoid locking
-      await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY medication_inventory_alerts`;
+      await sequelize.query('REFRESH MATERIALIZED VIEW CONCURRENTLY medication_inventory_alerts', {
+        type: QueryTypes.RAW
+      });
       logger.debug('Inventory alerts materialized view refreshed');
     } catch (error) {
       logger.error('Failed to refresh materialized view', error);
@@ -114,7 +115,7 @@ export class InventoryMaintenanceJob {
     const alerts: InventoryAlert[] = [];
 
     // Query materialized view for critical issues
-    const criticalItems = await prisma.$queryRaw<Array<{
+    const criticalItems = await sequelize.query<{
       id: string;
       medication_id: string;
       medication_name: string;
@@ -125,7 +126,7 @@ export class InventoryMaintenanceJob {
       expiry_status: string;
       stock_status: string;
       days_until_expiry: number;
-    }>>`
+    }>(`
       SELECT *
       FROM medication_inventory_alerts
       WHERE expiry_status = 'EXPIRED'
@@ -135,7 +136,9 @@ export class InventoryMaintenanceJob {
       ORDER BY
         CASE expiry_status WHEN 'EXPIRED' THEN 1 WHEN 'NEAR_EXPIRY' THEN 2 ELSE 3 END,
         CASE stock_status WHEN 'LOW_STOCK' THEN 1 WHEN 'WARNING' THEN 2 ELSE 3 END
-    `;
+    `, {
+      type: QueryTypes.SELECT
+    });
 
     for (const item of criticalItems) {
       // Expired items
@@ -226,13 +229,13 @@ export class InventoryMaintenanceJob {
    * Get current inventory status
    */
   static async getInventoryStatus() {
-    const status = await prisma.$queryRaw<Array<{
+    const status = await sequelize.query<{
       total_items: number;
       expired_items: number;
       near_expiry_items: number;
       low_stock_items: number;
       ok_items: number;
-    }>>`
+    }>(`
       SELECT
         COUNT(*) as total_items,
         SUM(CASE WHEN expiry_status = 'EXPIRED' THEN 1 ELSE 0 END) as expired_items,
@@ -240,7 +243,9 @@ export class InventoryMaintenanceJob {
         SUM(CASE WHEN stock_status = 'LOW_STOCK' THEN 1 ELSE 0 END) as low_stock_items,
         SUM(CASE WHEN expiry_status = 'OK' AND stock_status = 'OK' THEN 1 ELSE 0 END) as ok_items
       FROM medication_inventory_alerts
-    `;
+    `, {
+      type: QueryTypes.SELECT
+    });
 
     return status[0];
   }
@@ -249,10 +254,12 @@ export class InventoryMaintenanceJob {
    * Clean up expired inventory (mark for disposal)
    */
   static async markExpiredForDisposal() {
-    const expiredItems = await prisma.$queryRaw<Array<{ id: string }>>`
+    const expiredItems = await sequelize.query<{ id: string }>(`
       SELECT id FROM medication_inventory_alerts
       WHERE expiry_status = 'EXPIRED'
-    `;
+    `, {
+      type: QueryTypes.SELECT
+    });
 
     logger.info(`Found ${expiredItems.length} expired inventory items to mark for disposal`);
 

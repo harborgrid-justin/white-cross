@@ -1,8 +1,7 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { AvailabilitySlot } from '../../types/appointment';
-
-const prisma = new PrismaClient();
+import { Appointment, Student } from '../../database/models';
 
 export class AppointmentAvailabilityService {
   /**
@@ -17,26 +16,30 @@ export class AppointmentAvailabilityService {
     try {
       const endTime = new Date(startTime.getTime() + duration * 60000);
 
-      const whereClause: Prisma.AppointmentWhereInput = {
+      const whereClause: any = {
         nurseId,
-        status: { in: ['SCHEDULED', 'IN_PROGRESS'] },
-        OR: [
-          {
-            scheduledAt: { lt: endTime },
-            AND: { scheduledAt: { gte: new Date(startTime.getTime() - 30 * 60000) } }
-          }
-        ]
+        status: { [Op.in]: ['SCHEDULED', 'IN_PROGRESS'] },
+        scheduledAt: {
+          [Op.and]: [
+            { [Op.lt]: endTime },
+            { [Op.gte]: new Date(startTime.getTime() - 30 * 60000) }
+          ]
+        }
       };
 
       if (excludeAppointmentId) {
-        whereClause.id = { not: excludeAppointmentId };
+        whereClause.id = { [Op.ne]: excludeAppointmentId };
       }
 
-      const conflicts = await prisma.appointment.findMany({
+      const conflicts = await Appointment.findAll({
         where: whereClause,
-        include: {
-          student: { select: { firstName: true, lastName: true } }
-        }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
+          }
+        ]
       });
 
       return conflicts;
@@ -64,16 +67,20 @@ export class AppointmentAvailabilityService {
       const endDate = new Date(date);
       endDate.setHours(endHour, 0, 0, 0);
 
-      const appointments = await prisma.appointment.findMany({
+      const appointments = await Appointment.findAll({
         where: {
           nurseId,
-          scheduledAt: { gte: startDate, lt: endDate },
-          status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
+          scheduledAt: { [Op.gte]: startDate, [Op.lt]: endDate },
+          status: { [Op.in]: ['SCHEDULED', 'IN_PROGRESS'] }
         },
-        include: {
-          student: { select: { firstName: true, lastName: true } }
-        },
-        orderBy: { scheduledAt: 'asc' }
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
+          }
+        ],
+        order: [['scheduledAt', 'ASC']]
       });
 
       const slots: AvailabilitySlot[] = [];
