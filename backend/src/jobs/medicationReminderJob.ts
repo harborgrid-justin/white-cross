@@ -180,7 +180,7 @@ export class MedicationReminderJob {
     // Transform to reminder objects
     const now = new Date();
 
-    return reminders.map(r => {
+    return reminders.map((r: any) => {
       const scheduledTime = new Date(date);
       scheduledTime.setHours(r.scheduled_hour, r.scheduled_minute, 0, 0);
 
@@ -279,7 +279,7 @@ export class MedicationReminderJob {
 
     const now = new Date();
 
-    return reminders.map(r => {
+    return reminders.map((r: any) => {
       const scheduledTime = new Date(date);
       scheduledTime.setHours(r.scheduled_hour, r.scheduled_minute, 0, 0);
 
