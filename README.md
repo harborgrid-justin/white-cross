@@ -188,6 +188,8 @@ An enterprise-grade platform designed specifically for school nurses to manage s
 
 ## 🚀 Quick Start
 
+> **⚠️ Having issues with a blank page?** See [BLANK_PAGE_FIX.md](./BLANK_PAGE_FIX.md) for quick solutions!
+
 ### Prerequisites
 - Node.js 18 or higher
 - Docker and Docker Compose
@@ -203,8 +205,12 @@ An enterprise-grade platform designed specifically for school nurses to manage s
 
 2. **Environment Setup**
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   # Copy environment templates
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   
+   # Edit backend/.env with your database configuration
+   # For local development, use Docker PostgreSQL (see step 4)
    ```
 
 3. **Install Dependencies**
@@ -214,24 +220,37 @@ An enterprise-grade platform designed specifically for school nurses to manage s
 
 4. **Database Setup**
    ```bash
+   # Start PostgreSQL with Docker
+   docker-compose up -d postgres redis
+   
+   # Test database connection
    cd backend
+   npm run db:test
+   
+   # Run migrations (if needed)
    npx sequelize-cli db:migrate
    npm run seed
    ```
 
 5. **Start Development**
    ```bash
-   # Start all services with Docker
-   docker-compose up -d
+   # Terminal 1 - Backend
+   cd backend && npm run dev
 
-   # Or start locally
-   npm run dev
+   # Terminal 2 - Frontend
+   cd frontend && npm run dev
    ```
 
 ### Access the Application
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3001
-- **API Documentation**: http://localhost:3001/api-docs (Swagger UI)
+- **API Documentation**: http://localhost:3001/docs (Swagger UI)
+
+### 🔧 Troubleshooting
+
+- **Blank page?** → [BLANK_PAGE_FIX.md](./BLANK_PAGE_FIX.md)
+- **Database connection issues?** → [DATABASE_CONNECTION_GUIDE.md](./DATABASE_CONNECTION_GUIDE.md)
+- **Test database connection:** `cd backend && npm run db:test`
 
 ## 📋 Development Commands
 
