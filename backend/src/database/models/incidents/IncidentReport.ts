@@ -236,7 +236,8 @@ IncidentReport.init(
           msg: 'Incident occurrence time is required'
         },
         isDate: {
-          msg: 'Invalid incident date/time'
+          msg: 'Invalid incident date/time',
+          args: true
         },
         isNotFuture(value: Date) {
           if (new Date(value) > new Date()) {
@@ -279,7 +280,7 @@ IncidentReport.init(
         }
       },
       // Model-level validation: Medication errors require detailed description
-      medicationErrorDetailRequired() {
+      medicationErrorDetailRequired(this: IncidentReport) {
         if (this.type === IncidentType.MEDICATION_ERROR && this.description.length < 50) {
           throw new Error('Medication error incidents require detailed description (minimum 50 characters)');
         }

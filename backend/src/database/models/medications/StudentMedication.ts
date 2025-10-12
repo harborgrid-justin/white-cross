@@ -1,6 +1,9 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { AuditableModel } from '../base/AuditableModel';
+import type { Student } from '../core/Student';
+import type { Medication } from '../core/Medication';
+import type { MedicationLog } from './MedicationLog';
 
 /**
  * StudentMedication Model
@@ -58,6 +61,11 @@ export class StudentMedication extends Model<StudentMedicationAttributes, Studen
   // Audit Fields
   public createdBy?: string;
   public updatedBy?: string;
+
+  // Association declarations
+  declare logs?: MedicationLog[];
+  declare student?: Student;
+  declare medication?: Medication;
 
   /**
    * Check if medication is currently active based on dates

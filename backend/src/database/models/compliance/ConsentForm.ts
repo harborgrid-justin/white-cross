@@ -150,7 +150,8 @@ ConsentForm.init(
       comment: 'When the form expires',
       validate: {
         isDate: {
-          msg: 'Expiration date must be a valid date'
+          msg: 'Expiration date must be a valid date',
+          args: true,
         },
         isAfterCreation(value: Date | null) {
           if (value && this.createdAt && value < this.createdAt) {

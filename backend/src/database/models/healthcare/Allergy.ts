@@ -2,12 +2,6 @@ import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { AllergyType, AllergySeverity } from '../../types/enums';
 import { AuditableModel } from '../base/AuditableModel';
-import { AllergySeverity } from '@/services/allergyService';
-import { Student } from '../core/Student';
-import { HealthRecord } from './HealthRecord';
-import { Student } from '../core/Student';
-import { HealthRecord } from './HealthRecord';
-import { Student } from '../core/Student';
 
 interface AllergyAttributes {
   id: string;
@@ -65,24 +59,6 @@ interface AllergyCreationAttributes
   > {}
 
 export class Allergy extends Model<AllergyAttributes, AllergyCreationAttributes> implements AllergyAttributes {
-  static create(arg0: { verifiedAt: Date | undefined; studentId: string; allergen: string; allergenType?: string; severity: AllergySeverity; reaction?: string; treatment?: string; verified: boolean; verifiedBy?: string; notes?: string; healthRecordId?: string; }, arg1: { transaction: any; }) {
-    throw new Error('Method not implemented.');
-  }
-  static findByPk(id: string, arg1: { include: ({ model: Student; as: string; attributes: string[]; } | { model: HealthRecord; as: string; required: boolean; })[]; transaction: any; }) {
-    throw new Error('Method not implemented.');
-  }
-  static findAll(arg0: { where: any; include: ({ model: Student; as: string; attributes: string[]; } | { model: HealthRecord; as: string; required: boolean; })[]; order: string[][]; transaction: any; }) {
-    throw new Error('Method not implemented.');
-  }
-  static findAndCountAll(arg0: { where: any; include: { model: Student; as: string; attributes: string[]; }[]; offset: number; limit: number; order: string[][]; distinct: boolean; transaction: any; }): { rows: any; count: any; } | PromiseLike<{ rows: any; count: any; }> {
-    throw new Error('Method not implemented.');
-  }
-  static count(arg0: { where: any; }): any {
-    throw new Error('Method not implemented.');
-  }
-  static bulkCreate(arg0: any[], arg1: { transaction: any; validate: boolean; }) {
-    throw new Error('Method not implemented.');
-  }
   public id!: string;
   public studentId!: string;
   public allergen!: string;

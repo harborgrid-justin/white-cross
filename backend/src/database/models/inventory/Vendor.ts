@@ -8,7 +8,7 @@ import { sequelize } from '../../config/sequelize';
  * Supports vendor performance evaluation and procurement workflow.
  */
 
-interface VendorAttributes {
+export interface VendorAttributes {
   id: string;
   name: string;
   contactName?: string;

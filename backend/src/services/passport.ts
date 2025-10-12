@@ -4,7 +4,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as GoogleStrategy, Profile as GoogleProfile, VerifyCallback } from 'passport-google-oauth20';
 import { Strategy as MicrosoftStrategy } from 'passport-microsoft';
 import { User } from '../database/models';
-import { UserRole } from '../types';
+import { UserRole } from '../database/types/enums';
 import bcrypt from 'bcryptjs';
 import { ENVIRONMENT, TOKEN_CONFIG, USER_ROLES } from '../constants';
 

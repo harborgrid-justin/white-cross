@@ -152,7 +152,7 @@ export class ReportService {
           [fn('COUNT', col('id')), 'count']
         ],
         group: ['allergen', 'severity'],
-        order: [[literal('count'), 'DESC']],
+        order: [[literal('"count"'), 'DESC']],
         limit: 10,
         raw: true
       });
@@ -768,10 +768,14 @@ export class ReportService {
       });
 
       // Get active allergies
-      const activeAllergies = await Allergy.count();
+      const activeAllergies = await Allergy.count({
+        where: {}
+      });
 
       // Get chronic conditions
-      const chronicConditions = await ChronicCondition.count();
+      const chronicConditions = await ChronicCondition.count({
+        where: {}
+      });
 
       return {
         activeStudents,

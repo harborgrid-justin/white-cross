@@ -55,12 +55,6 @@ interface HealthRecordCreationAttributes
   > {}
 
 export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCreationAttributes> implements HealthRecordAttributes {
-  toJSON(): unknown {
-    throw new Error('Method not implemented.');
-  }
-  get() {
-    throw new Error('Method not implemented.');
-  }
   public id!: string;
   public studentId!: string;
   public recordType!: HealthRecordType;

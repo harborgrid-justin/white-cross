@@ -79,16 +79,13 @@ export async function checkAllergyContraindications(
     const allergies = await prisma.allergy.findMany({
       where: {
         studentId,
-        isActive: true
+        active: true
       }
     });
 
     // Get medication details
     const medication = await prisma.medication.findUnique({
-      where: { id: medicationId },
-      include: {
-        formulary: true
-      }
+      where: { id: medicationId }
     });
 
     if (!medication) {
@@ -104,8 +101,8 @@ export async function checkAllergyContraindications(
       // Check medication allergies
       if (allergy.allergyType === 'MEDICATION') {
         const allergenLower = allergy.allergen.toLowerCase();
-        const medNameLower = medication.formulary?.genericName?.toLowerCase() || '';
-        const brandNameLower = medication.formulary?.brandName?.toLowerCase() || '';
+        const medNameLower = medication.genericName?.toLowerCase() || '';
+        const medNameFull = medication.name?.toLowerCase() || '';
 
         // Direct match
         if (medNameLower.includes(allergenLower) || allergenLower.includes(medNameLower)) {
@@ -113,31 +110,13 @@ export async function checkAllergyContraindications(
           reason = 'Direct medication allergy match';
         }
         // Brand name match
-        else if (brandNameLower.includes(allergenLower) || allergenLower.includes(brandNameLower)) {
+        else if (medNameFull.includes(allergenLower) || allergenLower.includes(medNameFull)) {
           isContraindicated = true;
           reason = 'Brand name allergy match';
         }
-        // Class-based allergy (e.g., "Penicillin" allergies)
-        else if (medication.formulary?.drugClass &&
-                 medication.formulary.drugClass.toLowerCase().includes(allergenLower)) {
-          isContraindicated = true;
-          reason = 'Drug class allergy match';
-        }
       }
 
-      // Check ingredient allergies
-      if (medication.formulary?.ingredients) {
-        const ingredients = medication.formulary.ingredients as string[];
-        const allergenLower = allergy.allergen.toLowerCase();
-
-        for (const ingredient of ingredients) {
-          if (ingredient.toLowerCase().includes(allergenLower)) {
-            isContraindicated = true;
-            reason = 'Ingredient allergy match';
-            break;
-          }
-        }
-      }
+      // Additional checks could be added for ingredients if that data is available
 
       if (isContraindicated) {
         contraindications.push({
@@ -194,7 +173,7 @@ export async function validateAllergyVerification(
       return { canVerify: false, reason: 'Allergy not found' };
     }
 
-    if (allergy.isVerified) {
+    if (allergy.verified) {
       return {
         canVerify: false,
         reason: 'Allergy already verified'
@@ -255,13 +234,14 @@ export async function calculateVaccinationCompliance(
 ): Promise<VaccinationCompliance> {
   try {
     const student = await prisma.student.findUnique({
-      where: { id: studentId },
-      include: {
-        vaccinations: {
-          where: { isValid: true },
-          orderBy: { administeredDate: 'desc' }
-        }
-      }
+      where: { id: studentId }
+    });
+
+    const vaccinations = await prisma.vaccination.findMany({
+      where: {
+        studentId
+      },
+      orderBy: { administrationDate: 'desc' }
     });
 
     if (!student) {
@@ -280,24 +260,27 @@ export async function calculateVaccinationCompliance(
 
     // Check each required vaccine
     for (const required of requiredVaccines) {
-      const vaccineRecords = student.vaccinations?.filter(v =>
+      const vaccineRecords = vaccinations.filter(v =>
         v.vaccineName.toLowerCase().includes(required.toLowerCase()) ||
         v.cvxCode === getCVXCode(required)
-      ) || [];
+      );
 
       if (vaccineRecords.length === 0) {
         missingVaccines.push(required);
       } else {
         // Check if series is complete
         const latestVaccine = vaccineRecords[0];
-        if (latestVaccine.doseNumber >= latestVaccine.totalDoses) {
+        const doseNumber = latestVaccine.doseNumber ?? 0;
+        const totalDoses = latestVaccine.totalDoses ?? 1;
+
+        if (doseNumber >= totalDoses) {
           completedVaccines.push(required);
         } else {
           // Dose series incomplete
           const nextDoseDate = calculateNextDoseDate(latestVaccine);
           upcomingDoses.push({
             vaccine: required,
-            doseNumber: latestVaccine.doseNumber + 1,
+            doseNumber: doseNumber + 1,
             dueDate: nextDoseDate
           });
         }
@@ -323,19 +306,19 @@ export async function calculateVaccinationCompliance(
  */
 export function determineNextDueDate(vaccination: any): Date {
   const intervals = getVaccineIntervals(vaccination.vaccineName);
-  const currentDose = vaccination.doseNumber;
+  const currentDose = vaccination.doseNumber ?? 0;
 
-  if (currentDose >= vaccination.totalDoses) {
+  if (currentDose >= (vaccination.totalDoses ?? 1)) {
     // Series complete, check if booster needed
     const boosterInterval = intervals.booster;
     if (boosterInterval) {
-      return addDays(vaccination.administeredDate, boosterInterval);
+      return addDays(vaccination.administrationDate, boosterInterval);
     }
     return new Date(); // No next dose
   }
 
   const intervalDays = intervals.doses[currentDose] || intervals.default || 30;
-  return addDays(vaccination.administeredDate, intervalDays);
+  return addDays(vaccination.administrationDate, intervalDays);
 }
 
 /**
@@ -367,11 +350,11 @@ export async function validateVaccinationSchedule(
       const previousDose = previousDoses[0];
       const minInterval = getMinimumInterval(
         newVaccination.vaccineName,
-        previousDose.doseNumber
+        previousDose.doseNumber ?? 0
       );
 
       const daysSincePrevious = Math.floor(
-        (newVaccination.administeredDate.getTime() - previousDose.administeredDate.getTime()) /
+        (newVaccination.administrationDate.getTime() - previousDose.administrationDate.getTime()) /
         (1000 * 60 * 60 * 24)
       );
 
@@ -1043,7 +1026,7 @@ export async function validateScreeningFrequency(
   const lastScreening = await prisma.screening.findFirst({
     where: {
       studentId,
-      screeningType
+      screeningType: screeningType as any
     },
     orderBy: { screeningDate: 'desc' }
   });

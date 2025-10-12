@@ -3,7 +3,7 @@ import { sequelize } from '../../config/sequelize';
 import { Gender } from '../../types/enums';
 import { AuditableModel } from '../base/AuditableModel';
 
-interface StudentAttributes {
+export interface StudentAttributes {
   id: string;
   studentNumber: string;
   firstName: string;

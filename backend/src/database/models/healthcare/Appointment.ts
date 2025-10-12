@@ -73,7 +73,8 @@ Appointment.init(
       allowNull: false,
       validate: {
         isDate: {
-          msg: 'Scheduled time must be a valid date'
+          msg: 'Scheduled time must be a valid date',
+          args: true,
         },
         isValidDateTime(value: Date) {
           if (!(value instanceof Date) || isNaN(value.getTime())) {
@@ -150,7 +151,7 @@ Appointment.init(
     ],
     validate: {
       // Model-level validation
-      scheduledAtInFuture() {
+      scheduledAtInFuture(this: Appointment) {
         if (this.scheduledAt && new Date(this.scheduledAt) <= new Date()) {
           // Only validate for new records
           if (this.isNewRecord) {
@@ -158,7 +159,7 @@ Appointment.init(
           }
         }
       },
-      validBusinessHours() {
+      validBusinessHours(this: Appointment) {
         if (this.scheduledAt) {
           const hour = new Date(this.scheduledAt).getHours();
           if (hour < 8 || hour >= 17) {
@@ -166,7 +167,7 @@ Appointment.init(
           }
         }
       },
-      notOnWeekend() {
+      notOnWeekend(this: Appointment) {
         if (this.scheduledAt) {
           const dayOfWeek = new Date(this.scheduledAt).getDay();
           if (dayOfWeek === 0 || dayOfWeek === 6) {

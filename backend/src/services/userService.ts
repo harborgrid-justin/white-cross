@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { logger } from '../utils/logger';
 import {
@@ -10,20 +10,21 @@ import {
   InventoryTransaction,
   sequelize
 } from '../database/models';
+import { UserRole } from '../database/types/enums';
 
 export interface CreateUserData {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN';
+  role: UserRole;
 }
 
 export interface UpdateUserData {
   email?: string;
   firstName?: string;
   lastName?: string;
-  role?: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN';
+  role?: UserRole;
   isActive?: boolean;
 }
 
@@ -34,7 +35,7 @@ export interface ChangePasswordData {
 
 export interface UserFilters {
   search?: string;
-  role?: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN';
+  role?: UserRole;
   isActive?: boolean;
 }
 
@@ -137,13 +138,16 @@ export class UserService {
         })
       );
 
+      // When using group, count can be an array of objects, so we need to handle it
+      const totalCount = Array.isArray(total) ? total.length : (typeof total === 'number' ? total : 0);
+
       return {
         users: usersWithCounts,
         pagination: {
-          total,
+          total: totalCount,
           page,
           limit,
-          pages: Math.ceil(total / limit)
+          pages: Math.ceil(totalCount / limit)
         }
       };
     } catch (error) {
@@ -389,7 +393,7 @@ export class UserService {
         sequelize.query(
           'SELECT role, COUNT(*) as count FROM "Users" GROUP BY role',
           {
-            type: sequelize.QueryTypes.SELECT as any
+            type: QueryTypes.SELECT
           }
         ),
         User.count({
@@ -422,7 +426,7 @@ export class UserService {
   /**
    * Get users by role
    */
-  static async getUsersByRole(role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN') {
+  static async getUsersByRole(role: UserRole) {
     try {
       const users = await User.findAll({
         where: {
@@ -473,7 +477,7 @@ export class UserService {
     try {
       const nurses = await User.findAll({
         where: {
-          role: 'NURSE',
+          role: UserRole.NURSE,
           isActive: true
         },
         attributes: ['id', 'firstName', 'lastName', 'email'],

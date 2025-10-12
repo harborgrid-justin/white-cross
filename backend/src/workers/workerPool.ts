@@ -178,13 +178,13 @@ export class WorkerPool extends EventEmitter {
 
     if (!task) return;
 
-    this.executeTask(worker, task);
+    this.executeTaskOnWorker(worker, task);
   }
 
   /**
-   * Execute task on worker
+   * Execute task on worker (internal implementation)
    */
-  private executeTask(workerInfo: WorkerInfo, task: WorkerTask): void {
+  private executeTaskOnWorker(workerInfo: WorkerInfo, task: WorkerTask): void {
     workerInfo.busy = true;
 
     // Set timeout
@@ -214,7 +214,7 @@ export class WorkerPool extends EventEmitter {
   }
 
   /**
-   * Execute task with worker pool
+   * Execute task with worker pool (public API)
    */
   public async executeTask<T>(
     type: string,
@@ -239,7 +239,7 @@ export class WorkerPool extends EventEmitter {
 
       if (worker) {
         // Execute immediately
-        this.executeTask(worker, task);
+        this.executeTaskOnWorker(worker, task);
       } else {
         // Queue for later
         this.taskQueue.push(task);
@@ -318,7 +318,7 @@ export async function calculateBMIAsync(
   weight: number
 ): Promise<number> {
   const pool = getHealthCalculationPool();
-  return await pool.executeTask<number>('bmi', { height, weight });
+  return pool.executeTask<number>('bmi', { height, weight });
 }
 
 /**
@@ -328,7 +328,7 @@ export async function batchCalculateBMIAsync(
   records: Array<{ height: number; weight: number }>
 ): Promise<number[]> {
   const pool = getHealthCalculationPool();
-  return await pool.executeTask<number[]>('bmi', records);
+  return pool.executeTask<number[]>('bmi_batch', records);
 }
 
 /**
@@ -338,7 +338,7 @@ export async function analyzeVitalTrendsAsync(
   vitals: Array<{ date: Date; value: number }>
 ): Promise<any> {
   const pool = getHealthCalculationPool();
-  return await pool.executeTask('vital_trends', vitals);
+  return pool.executeTask<any>('vital_trends', vitals);
 }
 
 /**
@@ -346,7 +346,7 @@ export async function analyzeVitalTrendsAsync(
  */
 export async function calculateAggregationsAsync(values: number[]): Promise<any> {
   const pool = getHealthCalculationPool();
-  return await pool.executeTask('aggregations', values);
+  return pool.executeTask<any>('aggregations', values);
 }
 
 /**

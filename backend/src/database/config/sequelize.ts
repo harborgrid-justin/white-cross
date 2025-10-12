@@ -9,7 +9,7 @@
  * - HIPAA-compliant audit logging
  */
 
-import { Sequelize, Options } from 'sequelize';
+import { Sequelize, Options, QueryTypes, Transaction } from 'sequelize';
 import { logger } from '../../utils/logger';
 
 // Environment-based configuration
@@ -178,7 +178,7 @@ export async function getPoolStats(): Promise<
   }>
 > {
   try {
-    const [results] = await sequelize.query<{ state: string; count: number }>(
+    const results = await sequelize.query<{ state: string; count: number }>(
       `
       SELECT
         state,
@@ -187,10 +187,13 @@ export async function getPoolStats(): Promise<
       WHERE datname = current_database()
       GROUP BY state
     `,
-      { raw: true }
+      {
+        type: QueryTypes.SELECT,
+        raw: true
+      }
     );
 
-    return results;
+    return results || [];
   } catch (error) {
     logger.error('Failed to get pool stats', error);
     return [];
@@ -250,9 +253,7 @@ export async function executeTransaction<T>(
 
   return await sequelize.transaction(
     {
-      isolationLevel: 'READ COMMITTED',
-      // @ts-ignore - Sequelize typing issue
-      lock: undefined,
+      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
     },
     async (transaction) => {
       // Set statement timeout for this transaction
