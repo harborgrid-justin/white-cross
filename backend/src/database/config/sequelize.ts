@@ -151,7 +151,24 @@ export async function initializeDatabase(): Promise<void> {
     const health = await checkDatabaseHealth();
 
     if (!health.healthy) {
-      throw new Error(`Database health check failed: ${health.error}`);
+      const errorMsg = `Database health check failed: ${health.error}`;
+      logger.error(errorMsg);
+      
+      // Provide helpful troubleshooting tips
+      if (health.error?.includes('password authentication failed')) {
+        logger.error('❌ Database authentication failed. Please check:');
+        logger.error('   1. Verify DATABASE_URL credentials are correct');
+        logger.error('   2. For Neon database: Get fresh connection string from dashboard');
+        logger.error('   3. For local development: Use Docker PostgreSQL (see DATABASE_CONNECTION_GUIDE.md)');
+        logger.error('   4. Run "node test-db-connection.js" to diagnose the issue');
+      } else if (health.error?.includes('ECONNREFUSED') || health.error?.includes('ENOTFOUND')) {
+        logger.error('❌ Cannot reach database server. Please check:');
+        logger.error('   1. Database server is running (docker-compose up -d postgres)');
+        logger.error('   2. Host and port are correct in DATABASE_URL');
+        logger.error('   3. Network/firewall allows the connection');
+      }
+      
+      throw new Error(errorMsg);
     }
 
     logger.info('Sequelize database connection established', {
