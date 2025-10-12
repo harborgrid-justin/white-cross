@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Students (500 Students)
@@ -65,10 +65,10 @@ module.exports = {
     const now = new Date();
 
     // Get nurses for assignment
-    const nurses = await queryInterface.sequelize.query(
+    const [nurses] = await queryInterface.sequelize.query(
       `SELECT id FROM "Users" WHERE role = 'NURSE'`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number }>, unknown];
 
     if (nurses.length === 0) {
       throw new Error('No nurses found. Please run user seeder first.');
