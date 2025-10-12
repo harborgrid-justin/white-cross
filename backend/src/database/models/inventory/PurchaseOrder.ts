@@ -1,6 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { PurchaseOrderStatus } from '../../types/enums';
+import type { PurchaseOrderItem } from './PurchaseOrderItem';
 
 /**
  * PurchaseOrder Model
@@ -52,6 +53,10 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes, PurchaseOrderC
 
   // Foreign Keys
   public vendorId!: string;
+
+  // Associations
+  declare items?: PurchaseOrderItem[];
+  declare vendor?: any;
 }
 
 PurchaseOrder.init(
