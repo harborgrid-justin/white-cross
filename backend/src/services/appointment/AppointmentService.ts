@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import {
   CreateAppointmentData,
@@ -8,8 +8,7 @@ import {
 import { AppointmentAvailabilityService } from './AppointmentAvailabilityService';
 import { AppointmentReminderService } from './AppointmentReminderService';
 import { AppointmentWaitlistService } from './AppointmentWaitlistService';
-
-const prisma = new PrismaClient();
+import { Appointment, Student, User } from '../../database/models';
 
 export class AppointmentService {
   /**
@@ -17,8 +16,8 @@ export class AppointmentService {
    */
   static async getAppointments(page: number = 1, limit: number = 20, filters: AppointmentFilters = {}) {
     try {
-      const skip = (page - 1) * limit;
-      const whereClause: Prisma.AppointmentWhereInput = {};
+      const offset = (page - 1) * limit;
+      const whereClause: any = {};
 
       if (filters.nurseId) whereClause.nurseId = filters.nurseId;
       if (filters.studentId) whereClause.studentId = filters.studentId;
@@ -27,23 +26,28 @@ export class AppointmentService {
 
       if (filters.dateFrom || filters.dateTo) {
         whereClause.scheduledAt = {};
-        if (filters.dateFrom) whereClause.scheduledAt.gte = filters.dateFrom;
-        if (filters.dateTo) whereClause.scheduledAt.lte = filters.dateTo;
+        if (filters.dateFrom) whereClause.scheduledAt[Op.gte] = filters.dateFrom;
+        if (filters.dateTo) whereClause.scheduledAt[Op.lte] = filters.dateTo;
       }
 
-      const [appointments, total] = await Promise.all([
-        prisma.appointment.findMany({
-          where: whereClause,
-          skip,
-          take: limit,
-          include: {
-            student: { select: { id: true, firstName: true, lastName: true, studentNumber: true, grade: true } },
-            nurse: { select: { id: true, firstName: true, lastName: true, email: true } }
+      const { rows: appointments, count: total } = await Appointment.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
           },
-          orderBy: { scheduledAt: 'asc' }
-        }),
-        prisma.appointment.count({ where: whereClause })
-      ]);
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ],
+        order: [['scheduledAt', 'ASC']]
+      });
 
       return { appointments, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
     } catch (error) {
@@ -57,10 +61,10 @@ export class AppointmentService {
    */
   static async createAppointment(data: CreateAppointmentData) {
     try {
-      const student = await prisma.student.findUnique({ where: { id: data.studentId } });
+      const student = await Student.findByPk(data.studentId);
       if (!student) throw new Error('Student not found');
 
-      const nurse = await prisma.user.findUnique({ where: { id: data.nurseId } });
+      const nurse = await User.findByPk(data.nurseId);
       if (!nurse) throw new Error('Nurse not found');
 
       const conflicts = await AppointmentAvailabilityService.checkAvailability(
@@ -71,12 +75,24 @@ export class AppointmentService {
 
       if (conflicts.length > 0) throw new Error('Nurse is not available at the requested time');
 
-      const appointment = await prisma.appointment.create({
-        data: { ...data, duration: data.duration || 30 },
-        include: {
-          student: { select: { id: true, firstName: true, lastName: true, studentNumber: true, grade: true } },
-          nurse: { select: { id: true, firstName: true, lastName: true, email: true } }
-        }
+      const appointment = await Appointment.create(
+        { ...data, duration: data.duration || 30 }
+      );
+
+      // Reload with associations
+      await appointment.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ]
       });
 
       logger.info(`Appointment created: ${appointment.type} for ${student.firstName} ${student.lastName}`);
@@ -94,9 +110,11 @@ export class AppointmentService {
    */
   static async updateAppointment(id: string, data: UpdateAppointmentData) {
     try {
-      const existing = await prisma.appointment.findUnique({
-        where: { id },
-        include: { student: true, nurse: true }
+      const existing = await Appointment.findByPk(id, {
+        include: [
+          { model: Student, as: 'student' },
+          { model: User, as: 'nurse' }
+        ]
       });
 
       if (!existing) throw new Error('Appointment not found');
@@ -112,14 +130,25 @@ export class AppointmentService {
         if (conflicts.length > 0) throw new Error('Nurse is not available at the requested time');
       }
 
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data,
-        include: {
-          student: { select: { id: true, firstName: true, lastName: true, studentNumber: true, grade: true } },
-          nurse: { select: { id: true, firstName: true, lastName: true, email: true } }
-        }
+      await existing.update(data);
+      
+      // Reload with associations
+      await existing.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ]
       });
+
+      const appointment = existing;
 
       logger.info(`Appointment updated: ${appointment.id}`);
       return appointment;
@@ -134,13 +163,28 @@ export class AppointmentService {
    */
   static async cancelAppointment(id: string, reason?: string) {
     try {
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data: { status: 'CANCELLED', notes: reason ? `Cancelled: ${reason}` : 'Cancelled' },
-        include: {
-          student: { select: { firstName: true, lastName: true } },
-          nurse: { select: { firstName: true, lastName: true } }
-        }
+      const appointment = await Appointment.findByPk(id);
+      if (!appointment) throw new Error('Appointment not found');
+      
+      await appointment.update({
+        status: 'CANCELLED',
+        notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
+      });
+
+      // Reload with associations
+      await appointment.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
+          },
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['firstName', 'lastName']
+          }
+        ]
       });
 
       logger.info(`Appointment cancelled: ${appointment.type} for ${appointment.student.firstName}`);
@@ -168,10 +212,20 @@ export class AppointmentService {
    */
   static async markNoShow(id: string) {
     try {
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data: { status: 'NO_SHOW' },
-        include: { student: { select: { firstName: true, lastName: true } } }
+      const appointment = await Appointment.findByPk(id);
+      if (!appointment) throw new Error('Appointment not found');
+      
+      await appointment.update({ status: 'NO_SHOW' });
+
+      // Reload with associations
+      await appointment.reload({
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['firstName', 'lastName']
+          }
+        ]
       });
 
       logger.info(`Appointment marked as no-show: ${appointment.type}`);
@@ -187,17 +241,21 @@ export class AppointmentService {
    */
   static async getUpcomingAppointments(nurseId: string, limit: number = 10) {
     try {
-      const appointments = await prisma.appointment.findMany({
+      const appointments = await Appointment.findAll({
         where: {
           nurseId,
-          scheduledAt: { gte: new Date() },
-          status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
+          scheduledAt: { [Op.gte]: new Date() },
+          status: { [Op.in]: ['SCHEDULED', 'IN_PROGRESS'] }
         },
-        include: {
-          student: { select: { id: true, firstName: true, lastName: true, studentNumber: true, grade: true } }
-        },
-        orderBy: { scheduledAt: 'asc' },
-        take: limit
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
+          }
+        ],
+        order: [['scheduledAt', 'ASC']],
+        limit
       });
 
       return appointments;
