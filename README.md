@@ -2,6 +2,14 @@
 
 An enterprise-grade platform designed specifically for school nurses to manage student health records, medications, and emergency communications. Built with modern web technologies and designed to meet healthcare compliance standards.
 
+---
+
+## 🚨 Seeing a Blank Page? → [START HERE](./START_HERE.md)
+
+If the app shows a blank page, it's a database connection issue. **[Click here for a 5-minute fix](./START_HERE.md)** ⚡
+
+---
+
 ## 🚀 Features
 
 ### Core Platform Features (15 Primary Modules)
