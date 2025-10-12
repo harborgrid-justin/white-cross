@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
-
-const prisma = new PrismaClient();
+import { Appointment, AppointmentReminder, Student, EmergencyContact, User } from '../../database/models';
 
 export class AppointmentReminderService {
   /**
@@ -9,19 +8,35 @@ export class AppointmentReminderService {
    */
   static async scheduleReminders(appointmentId: string) {
     try {
-      const appointment = await prisma.appointment.findUnique({
-        where: { id: appointmentId },
-        include: {
-          student: {
-            include: {
-              emergencyContacts: { where: { isActive: true }, orderBy: { priority: 'asc' } }
-            }
+      const appointment = await Appointment.findByPk(appointmentId, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            include: [
+              {
+                model: EmergencyContact,
+                as: 'emergencyContacts',
+                where: { isActive: true },
+                required: false,
+              }
+            ]
           },
-          nurse: { select: { firstName: true, lastName: true } }
-        }
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['firstName', 'lastName']
+          }
+        ]
       });
 
-      if (!appointment || !appointment.student.emergencyContacts.length) return [];
+      if (!appointment || !appointment.student || !appointment.student.emergencyContacts || !appointment.student.emergencyContacts.length) return [];
+
+      // Sort emergency contacts by priority
+      appointment.student.emergencyContacts.sort((a: any, b: any) => {
+        const priorityOrder: Record<string, number> = { 'PRIMARY': 1, 'SECONDARY': 2, 'EMERGENCY_ONLY': 3 };
+        return (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999);
+      });
 
       const reminderIntervals = [
         { hours: 24, type: 'EMAIL' as const, label: '24-hour' },
@@ -37,14 +52,12 @@ export class AppointmentReminderService {
         if (reminderTime > new Date()) {
           const message = `Appointment reminder: ${appointment.student.firstName} ${appointment.student.lastName} has a ${appointment.type.toLowerCase().replace(/_/g, ' ')} appointment with ${appointment.nurse.firstName} ${appointment.nurse.lastName} on ${appointment.scheduledAt.toLocaleString()}`;
 
-          const reminder = await prisma.appointmentReminder.create({
-            data: {
-              appointmentId,
-              type: interval.type,
-              scheduledFor: reminderTime,
-              message,
-              status: 'SCHEDULED'
-            }
+          const reminder = await AppointmentReminder.create({
+            appointmentId,
+            type: interval.type,
+            scheduledFor: reminderTime,
+            message,
+            status: 'SCHEDULED'
           });
 
           reminders.push(reminder);
@@ -64,33 +77,54 @@ export class AppointmentReminderService {
    */
   static async sendReminder(reminderId: string) {
     try {
-      const reminder = await prisma.appointmentReminder.findUnique({
-        where: { id: reminderId },
-        include: {
-          appointment: {
-            include: {
-              student: {
-                include: {
-                  emergencyContacts: { where: { isActive: true }, orderBy: { priority: 'asc' } }
-                }
+      const reminder = await AppointmentReminder.findByPk(reminderId, {
+        include: [
+          {
+            model: Appointment,
+            as: 'appointment',
+            include: [
+              {
+                model: Student,
+                as: 'student',
+                include: [
+                  {
+                    model: EmergencyContact,
+                    as: 'emergencyContacts',
+                    where: { isActive: true },
+                    required: false,
+                  }
+                ]
               },
-              nurse: { select: { firstName: true, lastName: true } }
-            }
+              {
+                model: User,
+                as: 'nurse',
+                attributes: ['firstName', 'lastName']
+              }
+            ]
           }
-        }
+        ]
       });
 
       if (!reminder || !reminder.appointment) throw new Error('Reminder or appointment not found');
 
       const { appointment } = reminder;
-      const contact = appointment.student.emergencyContacts[0];
+      
+      // Sort emergency contacts by priority
+      if (appointment.student && appointment.student.emergencyContacts) {
+        appointment.student.emergencyContacts.sort((a: any, b: any) => {
+          const priorityOrder: Record<string, number> = { 'PRIMARY': 1, 'SECONDARY': 2, 'EMERGENCY_ONLY': 3 };
+          return (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999);
+        });
+      }
+      
+      const contact = appointment.student?.emergencyContacts?.[0];
 
       if (!contact) {
-        logger.warn(`No emergency contact found for student ${appointment.student.firstName}`);
-        await prisma.appointmentReminder.update({
-          where: { id: reminderId },
-          data: { status: 'FAILED', failureReason: 'No emergency contact available' }
-        });
+        logger.warn(`No emergency contact found for student ${appointment.student?.firstName}`);
+        await AppointmentReminder.update(
+          { status: 'FAILED', failureReason: 'No emergency contact available' },
+          { where: { id: reminderId } }
+        );
         return;
       }
 
@@ -112,20 +146,20 @@ export class AppointmentReminderService {
           break;
       }
 
-      await prisma.appointmentReminder.update({
-        where: { id: reminderId },
-        data: { status: 'SENT', sentAt: new Date() }
-      });
+      await AppointmentReminder.update(
+        { status: 'SENT', sentAt: new Date() },
+        { where: { id: reminderId } }
+      );
 
       logger.info(`Reminder ${reminderId} sent successfully`);
     } catch (error) {
       logger.error('Error sending reminder:', error);
 
       try {
-        await prisma.appointmentReminder.update({
-          where: { id: reminderId },
-          data: { status: 'FAILED', failureReason: (error as Error).message }
-        });
+        await AppointmentReminder.update(
+          { status: 'FAILED', failureReason: (error as Error).message },
+          { where: { id: reminderId } }
+        );
       } catch (updateError) {
         logger.error('Error updating reminder status:', updateError);
       }
@@ -140,9 +174,9 @@ export class AppointmentReminderService {
   static async processPendingReminders() {
     try {
       const now = new Date();
-      const pendingReminders = await prisma.appointmentReminder.findMany({
-        where: { status: 'SCHEDULED', scheduledFor: { lte: now } },
-        take: 50
+      const pendingReminders = await AppointmentReminder.findAll({
+        where: { status: 'SCHEDULED', scheduledFor: { [Op.lte]: now } },
+        limit: 50
       });
 
       let successCount = 0;

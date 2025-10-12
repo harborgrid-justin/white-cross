@@ -11,11 +11,10 @@
  */
 
 import cron from 'cron';
-import { PrismaClient } from '@prisma/client';
+import { QueryTypes } from 'sequelize';
 import { logger } from '../utils/logger';
 import { cacheSet } from '../config/redis';
-
-const prisma = new PrismaClient();
+import { sequelize } from '../database/models';
 
 interface MedicationReminder {
   id: string;
@@ -113,7 +112,7 @@ export class MedicationReminderJob {
     endOfDay.setHours(23, 59, 59, 999);
 
     // Use raw SQL for maximum performance
-    const reminders = await prisma.$queryRaw<Array<{
+    const reminders = await sequelize.query<{
       student_medication_id: string;
       student_id: string;
       student_name: string;
@@ -123,7 +122,7 @@ export class MedicationReminderJob {
       scheduled_hour: number;
       scheduled_minute: number;
       was_administered: boolean;
-    }>>`
+    }>(`
       WITH scheduled_times AS (
         SELECT
           sm.id as student_medication_id,
@@ -147,8 +146,8 @@ export class MedicationReminderJob {
         JOIN students s ON sm.student_id = s.id
         JOIN medications m ON sm.medication_id = m.id
         WHERE sm.is_active = true
-          AND sm.start_date <= ${endOfDay}
-          AND (sm.end_date IS NULL OR sm.end_date >= ${startOfDay})
+          AND sm.start_date <= :endOfDay
+          AND (sm.end_date IS NULL OR sm.end_date >= :startOfDay)
       ),
       expanded_times AS (
         SELECT
@@ -167,18 +166,21 @@ export class MedicationReminderJob {
         EXISTS(
           SELECT 1 FROM medication_logs ml
           WHERE ml.student_medication_id = et.student_medication_id
-            AND ml.time_given >= ${startOfDay}
-            AND ml.time_given <= ${endOfDay}
+            AND ml.time_given >= :startOfDay
+            AND ml.time_given <= :endOfDay
             AND EXTRACT(HOUR FROM ml.time_given) BETWEEN et.scheduled_hour - 1 AND et.scheduled_hour + 1
         ) as was_administered
       FROM expanded_times et
       ORDER BY scheduled_hour, student_name
-    `;
+    `, {
+      replacements: { startOfDay, endOfDay },
+      type: QueryTypes.SELECT
+    });
 
     // Transform to reminder objects
     const now = new Date();
 
-    return reminders.map(r => {
+    return reminders.map((r: any) => {
       const scheduledTime = new Date(date);
       scheduledTime.setHours(r.scheduled_hour, r.scheduled_minute, 0, 0);
 
@@ -213,7 +215,7 @@ export class MedicationReminderJob {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const reminders = await prisma.$queryRaw<Array<{
+    const reminders = await sequelize.query<{
       student_medication_id: string;
       student_id: string;
       student_name: string;
@@ -223,7 +225,7 @@ export class MedicationReminderJob {
       scheduled_hour: number;
       scheduled_minute: number;
       was_administered: boolean;
-    }>>`
+    }>(`
       WITH scheduled_times AS (
         SELECT
           sm.id as student_medication_id,
@@ -243,9 +245,9 @@ export class MedicationReminderJob {
         JOIN students s ON sm.student_id = s.id
         JOIN medications m ON sm.medication_id = m.id
         WHERE sm.is_active = true
-          AND s.id = ${studentId}
-          AND sm.start_date <= ${endOfDay}
-          AND (sm.end_date IS NULL OR sm.end_date >= ${startOfDay})
+          AND s.id = :studentId
+          AND sm.start_date <= :endOfDay
+          AND (sm.end_date IS NULL OR sm.end_date >= :startOfDay)
       ),
       expanded_times AS (
         SELECT
@@ -264,17 +266,20 @@ export class MedicationReminderJob {
         EXISTS(
           SELECT 1 FROM medication_logs ml
           WHERE ml.student_medication_id = et.student_medication_id
-            AND ml.time_given >= ${startOfDay}
-            AND ml.time_given <= ${endOfDay}
+            AND ml.time_given >= :startOfDay
+            AND ml.time_given <= :endOfDay
             AND EXTRACT(HOUR FROM ml.time_given) BETWEEN et.scheduled_hour - 1 AND et.scheduled_hour + 1
         ) as was_administered
       FROM expanded_times et
       ORDER BY scheduled_hour
-    `;
+    `, {
+      replacements: { studentId, startOfDay, endOfDay },
+      type: QueryTypes.SELECT
+    });
 
     const now = new Date();
 
-    return reminders.map(r => {
+    return reminders.map((r: any) => {
       const scheduledTime = new Date(date);
       scheduledTime.setHours(r.scheduled_hour, r.scheduled_minute, 0, 0);
 
