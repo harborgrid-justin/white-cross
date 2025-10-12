@@ -89,7 +89,8 @@
       "Bash(for file in middleware/auditLogging.ts utils/healthRecords/businessLogic.ts jobs/*.ts services/appointment/*.ts)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(head:*)",
-      "Bash(for:*)"
+      "Bash(for:*)",
+      "Bash(do echo \"\")"
     ],
     "deny": [],
     "ask": []

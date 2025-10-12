@@ -52,7 +52,7 @@ import EmergencyContacts from '../pages/EmergencyContacts';
 import Communication from '../pages/Communication';
 import Inventory from '../pages/Inventory';
 import Reports from '../pages/Reports';
-import Settings from '../pages/Settings';
+import Settings from '../services/Settings';
 import Documents from '../pages/Documents';
 import AccessDenied from '../pages/AccessDenied';
 
