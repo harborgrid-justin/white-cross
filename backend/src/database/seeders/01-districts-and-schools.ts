@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Districts and Schools
@@ -17,7 +17,7 @@ module.exports = {
     const now = new Date();
 
     // Create District
-    const districts = await queryInterface.bulkInsert(
+    await queryInterface.bulkInsert(
       'Districts',
       [
         {
@@ -38,12 +38,11 @@ module.exports = {
           createdAt: now,
           updatedAt: now,
         },
-      ],
-      { returning: true }
+      ]
     );
 
     // Get the district ID for foreign key relationships
-    const districtId = districts?.[0]?.id || 1;
+    const districtId = 1;
 
     // Create Schools
     await queryInterface.bulkInsert(

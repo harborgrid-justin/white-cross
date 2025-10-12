@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Permissions and Roles
@@ -54,10 +54,10 @@ module.exports = {
     await queryInterface.bulkInsert('Permissions', permissions, {});
 
     // Get inserted permissions for role mappings
-    const insertedPermissions = await queryInterface.sequelize.query(
+    const [insertedPermissions] = await queryInterface.sequelize.query(
       'SELECT id, resource, action FROM "Permissions"',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; resource: string; action: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; resource: string; action: string }>, unknown];
 
     // Create Roles
     const rolesData = [
@@ -94,10 +94,10 @@ module.exports = {
     await queryInterface.bulkInsert('Roles', rolesData, {});
 
     // Get inserted roles
-    const insertedRoles = await queryInterface.sequelize.query(
+    const [insertedRoles] = await queryInterface.sequelize.query(
       'SELECT id, name FROM "Roles"',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; name: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; name: string }>, unknown];
 
     const adminRole = insertedRoles.find((r) => r.name === 'Administrator');
     const nurseRole = insertedRoles.find((r) => r.name === 'School Nurse');

@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Health Records, Allergies, and Chronic Conditions
@@ -68,10 +68,10 @@ module.exports = {
     const now = new Date();
 
     // Get all students with their enrollment dates
-    const students = await queryInterface.sequelize.query(
+    const [students] = await queryInterface.sequelize.query(
       `SELECT id, "enrollmentDate", "dateOfBirth" FROM "Students" ORDER BY id`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; enrollmentDate: Date; dateOfBirth: Date }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; enrollmentDate: Date; dateOfBirth: Date }>, unknown];
 
     console.log('Creating health records...');
 
@@ -120,10 +120,10 @@ module.exports = {
     const allergies = [];
 
     // Get nurses for verification
-    const nurses = await queryInterface.sequelize.query(
+    const [nurses] = await queryInterface.sequelize.query(
       `SELECT id, "firstName", "lastName" FROM "Users" WHERE role = 'NURSE' LIMIT 1`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; firstName: string; lastName: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; firstName: string; lastName: string }>, unknown];
 
     const nurse = nurses[0];
 
