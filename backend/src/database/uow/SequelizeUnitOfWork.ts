@@ -11,11 +11,11 @@ import { IAllergyRepository } from '../repositories/interfaces/IAllergyRepositor
 import { IChronicConditionRepository } from '../repositories/interfaces/IChronicConditionRepository';
 import { IStudentRepository } from '../repositories/interfaces/IStudentRepository';
 import { IAuditLogRepository } from '../repositories/interfaces/IAuditLogRepository';
-import { HealthRecordRepository } from '../repositories/implementations/HealthRecordRepository';
-import { AllergyRepository } from '../repositories/implementations/AllergyRepository';
-import { ChronicConditionRepository } from '../repositories/implementations/ChronicConditionRepository';
-import { StudentRepository } from '../repositories/implementations/StudentRepository';
-import { AuditLogRepository } from '../repositories/implementations/AuditLogRepository';
+import { HealthRecordRepository } from '../repositories/impl/HealthRecordRepository';
+import { AllergyRepository } from '../repositories/impl/AllergyRepository';
+import { ChronicConditionRepository } from '../repositories/impl/ChronicConditionRepository';
+import { StudentRepository } from '../repositories/impl/StudentRepository';
+import { AuditLogRepository } from '../repositories/impl/AuditLogRepository';
 import { IAuditLogger } from '../audit/IAuditLogger';
 import { ICacheManager } from '../cache/ICacheManager';
 import { ExecutionContext } from '../types/ExecutionContext';

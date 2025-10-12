@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Nurse Availability and System Configurations
@@ -19,10 +19,10 @@ module.exports = {
     // ========== NURSE AVAILABILITY ==========
     console.log('Creating nurse availability schedules...');
 
-    const nurses = await queryInterface.sequelize.query(
+    const [nurses] = await queryInterface.sequelize.query(
       `SELECT id FROM "Users" WHERE role = 'NURSE'`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number }>, unknown];
 
     const daysOfWeek = [1, 2, 3, 4, 5]; // Monday to Friday
     const availabilityRecords = [];

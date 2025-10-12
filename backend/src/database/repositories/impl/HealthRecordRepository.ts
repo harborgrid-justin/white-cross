@@ -102,12 +102,12 @@ export class HealthRecordRepository
     try {
       const records = await this.model.findAll({
         where: {
-          type,
-          date: {
+          recordType: type,
+          recordDate: {
             [Op.between]: [filters.startDate, filters.endDate]
           }
         },
-        order: [['date', 'DESC']]
+        order: [['recordDate', 'DESC']]
       });
 
       type MappedHealthRecord = ReturnType<typeof this.mapToEntity>;
