@@ -105,7 +105,7 @@ router.get('/performance-metrics', async (req, res) => {
     const end = endDate ? new Date(endDate as string) : undefined;
     
     const data = await ReportService.getPerformanceMetrics(
-      metricType as string,
+      metricType as any,
       start,
       end
     );

@@ -2,6 +2,17 @@ import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { AppointmentWaitlist, Student, User, EmergencyContact } from '../../database/models';
 import { WaitlistEntry } from '../../types/appointment';
+import { AppointmentType, WaitlistPriority, WaitlistStatus } from '../../database/types/enums';
+
+// Type augmentations for associations
+declare module '../../database/models/healthcare/AppointmentWaitlist' {
+  interface AppointmentWaitlist {
+    student?: Student & {
+      emergencyContacts?: EmergencyContact[];
+    };
+    nurse?: User;
+  }
+}
 
 export class AppointmentWaitlistService {
   /**
@@ -18,10 +29,10 @@ export class AppointmentWaitlistService {
       const waitlistEntry = await AppointmentWaitlist.create({
         studentId: data.studentId,
         nurseId: data.nurseId,
-        type: data.type,
+        type: data.type as any,
         preferredDate: data.preferredDate,
         duration: data.duration || 30,
-        priority: data.priority || 'NORMAL',
+        priority: (data.priority || WaitlistPriority.NORMAL) as any,
         reason: data.reason,
         notes: data.notes,
         expiresAt
@@ -96,7 +107,7 @@ export class AppointmentWaitlistService {
       }
 
       await entry.update({
-        status: 'CANCELLED',
+        status: WaitlistStatus.CANCELLED,
         notes: reason ? `Cancelled: ${reason}` : entry.notes
       });
 
@@ -120,8 +131,8 @@ export class AppointmentWaitlistService {
     try {
       const waitlistEntries = await AppointmentWaitlist.findAll({
         where: {
-          status: 'WAITING',
-          type: cancelledAppointment.type,
+          status: WaitlistStatus.WAITING,
+          type: cancelledAppointment.type as AppointmentType,
           [Op.or]: [
             { nurseId: cancelledAppointment.nurseId },
             { nurseId: null }
@@ -131,6 +142,7 @@ export class AppointmentWaitlistService {
           {
             model: Student,
             as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber'],
             include: [
               {
                 model: EmergencyContact,
@@ -166,7 +178,7 @@ export class AppointmentWaitlistService {
           });
 
           await entry.update({
-            status: 'SCHEDULED',
+            status: WaitlistStatus.SCHEDULED,
             notifiedAt: new Date()
           });
 

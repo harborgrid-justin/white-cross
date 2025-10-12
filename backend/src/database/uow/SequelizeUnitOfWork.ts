@@ -21,6 +21,7 @@ import { ICacheManager } from '../cache/ICacheManager';
 import { ExecutionContext } from '../types/ExecutionContext';
 import { logger } from '../../utils/logger';
 
+
 export class SequelizeUnitOfWork implements IUnitOfWork {
   private transaction: Transaction | null = null;
   private readonly auditLogger: IAuditLogger;
@@ -54,7 +55,6 @@ export class SequelizeUnitOfWork implements IUnitOfWork {
   get healthRecords(): IHealthRecordRepository {
     if (!this._healthRecords) {
       this._healthRecords = new HealthRecordRepository(
-        this.transaction,
         this.auditLogger,
         this.cacheManager
       );
@@ -68,7 +68,6 @@ export class SequelizeUnitOfWork implements IUnitOfWork {
   get allergies(): IAllergyRepository {
     if (!this._allergies) {
       this._allergies = new AllergyRepository(
-        this.transaction,
         this.auditLogger,
         this.cacheManager
       );
@@ -82,10 +81,9 @@ export class SequelizeUnitOfWork implements IUnitOfWork {
   get chronicConditions(): IChronicConditionRepository {
     if (!this._chronicConditions) {
       this._chronicConditions = new ChronicConditionRepository(
-        this.transaction,
         this.auditLogger,
         this.cacheManager
-      );
+      ) as any;
     }
     return this._chronicConditions;
   }
@@ -96,7 +94,6 @@ export class SequelizeUnitOfWork implements IUnitOfWork {
   get students(): IStudentRepository {
     if (!this._students) {
       this._students = new StudentRepository(
-        this.transaction,
         this.auditLogger,
         this.cacheManager
       );
@@ -109,7 +106,10 @@ export class SequelizeUnitOfWork implements IUnitOfWork {
    */
   get auditLogs(): IAuditLogRepository {
     if (!this._auditLogs) {
-      this._auditLogs = new AuditLogRepository(this.transaction);
+      this._auditLogs = new AuditLogRepository(
+        this.auditLogger,
+        this.cacheManager
+      );
     }
     return this._auditLogs;
   }

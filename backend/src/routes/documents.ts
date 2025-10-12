@@ -23,8 +23,8 @@ router.get('/', auth, [
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const filters = {
-      category: req.query.category as string,
-      status: req.query.status as string,
+      category: req.query.category as any,
+      status: req.query.status as any,
       studentId: req.query.studentId as string,
       uploadedBy: req.query.uploadedBy as string,
       searchTerm: req.query.searchTerm as string,
@@ -179,7 +179,7 @@ router.get('/templates/list', auth, [
   query('category').optional().isString(),
 ], async (req: Request, res: Response) => {
   try {
-    const category = req.query.category as string;
+    const category = req.query.category as any;
     const templates = await DocumentService.getTemplates(category);
     res.json({ success: true, data: { templates } });
   } catch (error) {

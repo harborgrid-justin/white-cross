@@ -29,6 +29,16 @@ import {
   RETENTION_YEARS,
 } from '../utils/documentValidation';
 
+// Type augmentation for Document model associations
+declare module '../database/models' {
+  interface Document {
+    versions?: Document[];
+    parent?: Document;
+    signatures?: DocumentSignature[];
+    auditTrail?: DocumentAuditTrail[];
+  }
+}
+
 /**
  * Interface for creating a new document
  */
@@ -773,7 +783,7 @@ export class DocumentService {
       const whereClause: any = { isTemplate: true };
 
       if (category) {
-        whereClause.category = category;
+        whereClause.category = category as any;
       }
 
       const templates = await Document.findAll({

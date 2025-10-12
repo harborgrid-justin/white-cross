@@ -10,9 +10,9 @@ import { Request, ResponseToolkit } from '@hapi/hapi';
 import { AuditLog, User } from '../database/models';
 import { logger } from '../utils/logger';
 import { Op } from 'sequelize';
+import { AuditAction } from '../database/types/enums';
 
-// Define audit action and entity type enums
-export type AuditAction = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'EXPORT';
+// Define entity type enum to match the expected interface
 export type EntityType = 'Student' | 'HealthRecord' | 'Medication' | 'Appointment' |
   'IncidentReport' | 'Document' | 'User' | 'EmergencyContact' | 'Other';
 
@@ -39,11 +39,11 @@ const PHI_ROUTES = [
  * Map HTTP methods to audit actions
  */
 const METHOD_TO_ACTION: Record<string, AuditAction> = {
-  GET: 'READ',
-  POST: 'CREATE',
-  PUT: 'UPDATE',
-  PATCH: 'UPDATE',
-  DELETE: 'DELETE'
+  GET: AuditAction.READ,
+  POST: AuditAction.CREATE,
+  PUT: AuditAction.UPDATE,
+  PATCH: AuditAction.UPDATE,
+  DELETE: AuditAction.DELETE
 };
 
 /**
@@ -131,7 +131,7 @@ export const auditLoggingMiddleware = {
 
       try {
         const userId = (request.auth.credentials as any)?.userId;
-        const action = METHOD_TO_ACTION[request.method.toUpperCase()] || 'READ';
+        const action = METHOD_TO_ACTION[request.method.toUpperCase()] || AuditAction.READ;
         const entityType = extractEntityType(request.path);
         const entityId = extractEntityId(request);
         const duration = Date.now() - ((request as any).auditStartTime || Date.now());
@@ -149,8 +149,7 @@ export const auditLoggingMiddleware = {
             path: request.path,
             query: request.query,
             duration
-          }),
-          reason: (request.headers['x-audit-reason'] as string) || undefined
+          })
         });
 
         logger.debug('PHI access logged', {
@@ -187,7 +186,6 @@ export async function createAuditLog(params: {
   ipAddress?: string;
   userAgent?: string;
   changes?: Record<string, any>;
-  reason?: string;
 }): Promise<void> {
   try {
     await AuditLog.create({
@@ -197,8 +195,7 @@ export async function createAuditLog(params: {
       userId: params.userId,
       ipAddress: params.ipAddress || 'System',
       userAgent: params.userAgent || 'System',
-      changes: params.changes ? JSON.stringify(params.changes) : undefined,
-      reason: params.reason
+      changes: params.changes ? JSON.stringify(params.changes) : undefined
     });
 
     logger.info('Manual audit log created', {
@@ -231,7 +228,7 @@ export async function auditPHIExport(params: {
 }): Promise<string> {
   try {
     const auditLog = await AuditLog.create({
-      action: 'EXPORT',
+      action: AuditAction.EXPORT,
       entityType: params.entityType,
       entityId: params.entityIds.join(','), // Store multiple IDs
       userId: params.userId,
@@ -240,9 +237,9 @@ export async function auditPHIExport(params: {
       changes: JSON.stringify({
         exportFormat: params.exportFormat,
         recordCount: params.entityIds.length,
-        timestamp: new Date().toISOString()
-      }),
-      reason: params.reason
+        timestamp: new Date().toISOString(),
+        reason: params.reason
+      })
     });
 
     logger.warn('PHI EXPORT performed', {

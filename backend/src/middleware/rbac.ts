@@ -119,7 +119,8 @@ export function hasPermission(userRole: UserRole, resource: string, action: stri
  */
 export function requirePermission(resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'manage') {
   return (request: Request, h: ResponseToolkit) => {
-    const user = request.auth.credentials?.user;
+    const credentials = request.auth.credentials as any;
+    const user = credentials?.user || credentials;
 
     if (!user) {
       throw Boom.unauthorized('Authentication required');
@@ -192,7 +193,8 @@ export async function canAccessStudent(
  */
 export function requireStudentAccess() {
   return async (request: Request, h: ResponseToolkit) => {
-    const user = request.auth.credentials?.user;
+    const credentials = request.auth.credentials as any;
+    const user = credentials?.user || credentials;
     const studentId = request.params.studentId || (request.payload as any)?.studentId;
 
     if (!user) {

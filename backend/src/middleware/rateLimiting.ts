@@ -149,8 +149,10 @@ async function checkRateLimitRedis(
     multi.expire(key, Math.ceil(config.windowMs / 1000));
 
     const results = await multi.exec();
-    const countReply = results ? (Array.isArray(results) ? results[1] : undefined) : undefined;
-    const count = typeof countReply === 'number' ? countReply : 0;
+    const countResult = results && Array.isArray(results) ? results[1] : null;
+    const count = (countResult && typeof countResult === 'object' && 'reply' in countResult) 
+      ? (typeof countResult.reply === 'number' ? countResult.reply : 0) 
+      : 0;
 
     const remaining = Math.max(0, config.maxRequests - count);
     const resetAt = now + config.windowMs;
@@ -353,20 +355,20 @@ export async function getRateLimitStatus(
       const count = await redisClient.zCard(key);
       const ttl = await redisClient.ttl(key);
 
-      const config = RATE_LIMIT_CONFIGS[identifier as keyof typeof RATE_LIMIT_CONFIGS] ||
-                     RATE_LIMIT_CONFIGS.api;
+      const config = (RATE_LIMIT_CONFIGS as any)[identifier] || RATE_LIMIT_CONFIGS.api;
+      const ttlMs = typeof ttl === 'number' ? ttl * 1000 : 0;
+      const countNumber = typeof count === 'number' ? count : 0;
 
       return {
-        count,
-        remaining: Math.max(0, config.maxRequests - count),
-        resetAt: new Date(Date.now() + ttl * 1000)
+        count: countNumber,
+        remaining: Math.max(0, config.maxRequests - countNumber),
+        resetAt: new Date(Date.now() + ttlMs)
       };
     } else {
       const record = inMemoryStore.get(key);
       if (!record) return null;
 
-      const config = RATE_LIMIT_CONFIGS[identifier as keyof typeof RATE_LIMIT_CONFIGS] ||
-                     RATE_LIMIT_CONFIGS.api;
+      const config = (RATE_LIMIT_CONFIGS as any)[identifier] || RATE_LIMIT_CONFIGS.api;
 
       return {
         count: record.count,

@@ -619,7 +619,7 @@ export class ComplianceService {
         withdrawnBy: withdrawnBy.trim()
       });
 
-      const student = signature.student as any;
+      const student = (signature as any).student;
       logger.warn(
         `CONSENT WITHDRAWN: Signature ${signatureId} for student ` +
         `${student ? `${student.firstName} ${student.lastName}` : signature.studentId} ` +

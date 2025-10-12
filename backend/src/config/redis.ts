@@ -104,7 +104,7 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 
   try {
     const value = await redisClient!.get(key);
-    if (!value) {
+    if (!value || typeof value !== 'string') {
       return null;
     }
 

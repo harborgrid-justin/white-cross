@@ -25,9 +25,9 @@ router.get('/', auth, [
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const filters = {
-      reportType: req.query.reportType as string,
-      status: req.query.status as string,
-      period: req.query.period as string,
+      reportType: req.query.reportType as any,
+      status: req.query.status as any,
+      period: req.query.period as any,
     };
 
     const result = await ComplianceService.getComplianceReports(page, limit, filters);
@@ -411,8 +411,8 @@ router.get('/policies', auth, [
     }
 
     const filters = {
-      category: req.query.category as string,
-      status: req.query.status as string,
+      category: req.query.category as any,
+      status: req.query.status as any,
     };
 
     const policies = await ComplianceService.getPolicies(filters);
@@ -585,7 +585,7 @@ router.get('/audit-logs', auth, [
     const filters = {
       userId: req.query.userId as string,
       entityType: req.query.entityType as string,
-      action: req.query.action as string,
+      action: req.query.action as any,
       startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
       endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
     };

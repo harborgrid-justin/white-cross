@@ -90,7 +90,10 @@
       "Bash(do echo \"=== $file ===\")",
       "Bash(head:*)",
       "Bash(for:*)",
-      "Bash(do echo \"\")"
+      "Bash(do echo \"\")",
+      "Bash(do if [ -d \"C:/temp/white-cross/backend/src/services/$dir\" ])",
+      "Bash(then echo \"✓ $dir/\")",
+      "Bash(else echo \"✗ $dir\")"
     ],
     "deny": [],
     "ask": []

@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { AccessControlService } from '../services/accessControlService';
+import { AccessControlService } from '../services/accessControl';
 import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
 
 const router = Router();
