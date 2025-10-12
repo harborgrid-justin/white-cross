@@ -111,7 +111,7 @@ PurchaseOrderItem.init(
           args: [0],
           msg: 'Received quantity must be non-negative'
         },
-        notExceedOrdered(value: number) {
+        notExceedOrdered(this: PurchaseOrderItem, value: number) {
           if (value > this.quantity) {
             throw new Error('Received quantity cannot exceed ordered quantity');
           }

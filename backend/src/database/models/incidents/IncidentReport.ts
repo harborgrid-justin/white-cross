@@ -82,6 +82,8 @@ export class IncidentReport
   // Associations
   declare student?: Student;
   declare reportedBy?: User;
+  declare followUpActions?: any[];
+  declare witnessStatements?: any[];
 }
 
 IncidentReport.init(

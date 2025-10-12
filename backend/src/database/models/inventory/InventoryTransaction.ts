@@ -116,8 +116,7 @@ InventoryTransaction.init(
           msg: 'Batch number cannot exceed 100 characters'
         },
         isAlphanumeric: {
-          msg: 'Batch number must contain only alphanumeric characters, hyphens, and underscores',
-          args: true
+          msg: 'Batch number must contain only alphanumeric characters, hyphens, and underscores'
         }
       }
     },
@@ -126,6 +125,7 @@ InventoryTransaction.init(
       allowNull: true,
       validate: {
         isDate: {
+          args: true,
           msg: 'Expiration date must be a valid date'
         },
         isNotTooOld(value: Date | null) {
@@ -186,13 +186,13 @@ InventoryTransaction.init(
       { fields: ['expirationDate'] },
     ],
     validate: {
-      batchAndExpirationForPurchase() {
+      batchAndExpirationForPurchase(this: InventoryTransaction) {
         if (this.type === InventoryTransactionType.PURCHASE && this.quantity > 0) {
           // Warn if batch number or expiration missing for controlled substances
           // This would need to be enhanced based on item type
         }
       },
-      expirationDateInFuture() {
+      expirationDateInFuture(this: InventoryTransaction) {
         if (this.expirationDate && this.type === InventoryTransactionType.PURCHASE) {
           const now = new Date();
           now.setHours(0, 0, 0, 0);

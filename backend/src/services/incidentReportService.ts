@@ -36,6 +36,7 @@ export interface CreateIncidentReportData {
   evidencePhotos?: string[];
   evidenceVideos?: string[];
   insuranceClaimNumber?: string;
+  legalComplianceStatus?: ComplianceStatus;
 }
 
 export interface UpdateIncidentReportData {
@@ -991,7 +992,7 @@ export class IncidentReportService {
   static async updateInsuranceClaim(
     incidentReportId: string,
     claimNumber: string,
-    status: 'NOT_FILED' | 'FILED' | 'PENDING' | 'APPROVED' | 'DENIED' | 'CLOSED'
+    status: InsuranceClaimStatus
   ) {
     try {
       const report = await IncidentReport.findByPk(incidentReportId);
@@ -1018,7 +1019,7 @@ export class IncidentReportService {
    */
   static async updateComplianceStatus(
     incidentReportId: string,
-    status: 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW'
+    status: ComplianceStatus
   ) {
     try {
       const report = await IncidentReport.findByPk(incidentReportId);

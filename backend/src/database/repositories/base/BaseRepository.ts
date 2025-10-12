@@ -59,8 +59,8 @@ export class RepositoryError extends Error {
  * Implements common CRUD operations with enterprise patterns
  */
 export abstract class BaseRepository<
-  TModel extends Model,
-  TAttributes = Attributes<TModel>,
+  TModel extends Model & { id: string },
+  TAttributes extends { id: string } = Attributes<TModel>,
   TCreationAttributes = CreationAttributes<TModel>
 > implements IRepository<TAttributes, TCreationAttributes, Partial<TAttributes>> {
 
@@ -431,8 +431,7 @@ export abstract class BaseRepository<
   async exists(criteria: Partial<TAttributes>): Promise<boolean> {
     try {
       const count = await this.model.count({
-        where: criteria as WhereOptions,
-        limit: 1
+        where: criteria as WhereOptions
       });
       return count > 0;
     } catch (error) {

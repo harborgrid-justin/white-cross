@@ -153,11 +153,15 @@ Permission.init(
           compliance: ['read', 'manage', 'audit', 'export'],
         };
 
-        if (restrictedCombinations[this.resource]) {
-          if (!restrictedCombinations[this.resource].includes(this.action)) {
+        // Type guard to ensure resource and action are strings
+        const resource = this.resource as string;
+        const action = this.action as string;
+
+        if (restrictedCombinations[resource]) {
+          if (!restrictedCombinations[resource].includes(action)) {
             throw new Error(
-              `Invalid action '${this.action}' for resource '${this.resource}'. ` +
-              `Allowed actions: ${restrictedCombinations[this.resource].join(', ')}`
+              `Invalid action '${action}' for resource '${resource}'. ` +
+              `Allowed actions: ${restrictedCombinations[resource].join(', ')}`
             );
           }
         }

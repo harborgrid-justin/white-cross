@@ -467,7 +467,7 @@ export class MedicationService {
         isActive: true,
         startDate: { [Op.lte]: endDate },
         [Op.or]: [
-          { endDate: null },
+          { endDate: { [Op.is]: null } },
           { endDate: { [Op.gte]: startDate } }
         ]
       };
@@ -603,7 +603,7 @@ export class MedicationService {
           isActive: true,
           startDate: { [Op.lte]: endOfDay },
           [Op.or]: [
-            { endDate: null },
+            { endDate: { [Op.is]: null } },
             { endDate: { [Op.gte]: startOfDay } }
           ]
         },

@@ -94,6 +94,7 @@ MaintenanceLog.init(
       allowNull: true,
       validate: {
         isDate: {
+          args: true,
           msg: 'Next maintenance date must be a valid date'
         },
         isInFuture(value: Date | null) {

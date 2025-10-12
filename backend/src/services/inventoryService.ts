@@ -1468,7 +1468,7 @@ export class InventoryService {
       } else {
         await purchaseOrder.update({
           status,
-          receivedDate: status === PurchaseOrderStatus.RECEIVED ? (receivedDate || new Date()) : null
+          receivedDate: (status === PurchaseOrderStatus.RECEIVED ? (receivedDate || new Date()) : null) as Date | null
         }, { transaction });
       }
 

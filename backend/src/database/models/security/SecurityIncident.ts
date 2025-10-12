@@ -155,7 +155,8 @@ SecurityIncident.init(
       validate: {
         requiredForResolution(value: string | undefined) {
           const resolvedStatuses = [SecurityIncidentStatus.RESOLVED, SecurityIncidentStatus.CLOSED];
-          if (resolvedStatuses.includes(this.status) && !value) {
+          const status = this.status as SecurityIncidentStatus;
+          if (resolvedStatuses.includes(status) && !value) {
             throw new Error('Resolved by is required when incident is resolved or closed');
           }
         },
@@ -172,7 +173,8 @@ SecurityIncident.init(
         },
         requiredForResolution(value: string | undefined) {
           const resolvedStatuses = [SecurityIncidentStatus.RESOLVED, SecurityIncidentStatus.CLOSED];
-          if (resolvedStatuses.includes(this.status) && !value) {
+          const status = this.status as SecurityIncidentStatus;
+          if (resolvedStatuses.includes(status) && !value) {
             throw new Error('Resolution details are required when incident is resolved or closed');
           }
         },
@@ -194,7 +196,8 @@ SecurityIncident.init(
     validate: {
       resolutionConsistency() {
         const resolvedStatuses = [SecurityIncidentStatus.RESOLVED, SecurityIncidentStatus.CLOSED];
-        const requiresResolution = resolvedStatuses.includes(this.status);
+        const status = this.status as SecurityIncidentStatus;
+        const requiresResolution = resolvedStatuses.includes(status);
 
         if (requiresResolution) {
           if (!this.resolution) {
