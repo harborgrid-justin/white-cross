@@ -200,12 +200,12 @@ InventoryItem.init(
       { fields: ['isActive'] },
     ],
     validate: {
-      reorderQuantityGreaterThanZero() {
+      reorderQuantityGreaterThanZero(this: InventoryItem) {
         if (this.reorderQuantity <= 0) {
           throw new Error('Reorder quantity must be greater than zero');
         }
       },
-      reorderLevelValid() {
+      reorderLevelValid(this: InventoryItem) {
         if (this.reorderLevel < 0) {
           throw new Error('Reorder level cannot be negative');
         }

@@ -90,7 +90,7 @@ export class IntegrationService {
   /**
    * Get integration by ID
    */
-  static async getIntegrationById(id: string, includeSensitive: boolean = false) {
+  static async getIntegrationById(id: string, includeSensitive: boolean = false): Promise<any> {
     try {
       const integration = await IntegrationConfig.findByPk(id, {
         include: [
@@ -107,7 +107,7 @@ export class IntegrationService {
         throw new Error('Integration not found');
       }
 
-      const integrationData = integration.get({ plain: true });
+      const integrationData = integration.get({ plain: true }) as any;
 
       // Mask sensitive data unless explicitly requested
       if (!includeSensitive) {

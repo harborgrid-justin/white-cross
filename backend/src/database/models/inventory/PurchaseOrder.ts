@@ -99,6 +99,7 @@ PurchaseOrder.init(
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: {
+          args: true,
           msg: 'Order date must be a valid date'
         },
         notTooOld(value: Date) {
@@ -113,6 +114,7 @@ PurchaseOrder.init(
       allowNull: true,
       validate: {
         isDate: {
+          args: true,
           msg: 'Expected date must be a valid date'
         },
         isAfterOrderDate(value: Date | null) {
@@ -127,6 +129,7 @@ PurchaseOrder.init(
       allowNull: true,
       validate: {
         isDate: {
+          args: true,
           msg: 'Received date must be a valid date'
         },
         isAfterOrderDate(value: Date | null) {
@@ -231,6 +234,7 @@ PurchaseOrder.init(
       allowNull: true,
       validate: {
         isDate: {
+          args: true,
           msg: 'Approved date must be a valid date'
         }
       }

@@ -60,6 +60,10 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     }
     return age;
   }
+
+  // Associations
+  declare emergencyContacts?: any[];
+  declare medications?: any[];
 }
 
 Student.init(

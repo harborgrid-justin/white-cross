@@ -85,6 +85,7 @@ BudgetTransaction.init(
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: {
+          args: true,
           msg: 'Transaction date must be a valid date'
         },
         notTooOld(value: Date) {

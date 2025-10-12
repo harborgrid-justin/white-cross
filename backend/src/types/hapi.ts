@@ -26,12 +26,14 @@ export interface AuthCredentials {
  * Base authenticated request
  * All protected routes extend this
  */
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Omit<Request, 'auth'> {
   auth: {
     isAuthenticated: true;
     credentials: AuthCredentials;
     artifacts?: any;
     strategy: string;
+    mode?: string;
+    error?: Error;
   };
 }
 

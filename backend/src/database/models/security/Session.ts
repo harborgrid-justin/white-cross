@@ -107,9 +107,7 @@ Session.init(
       allowNull: false,
       comment: 'When the session expires',
       validate: {
-        isDate: {
-          msg: 'Expiration date must be a valid date'
-        },
+        isDate: true,
         isFutureDate(value: Date) {
           if (new Date(value) <= new Date()) {
             throw new Error('Session expiration must be in the future');
@@ -131,9 +129,7 @@ Session.init(
       defaultValue: DataTypes.NOW,
       comment: 'Last activity timestamp for idle timeout',
       validate: {
-        isDate: {
-          msg: 'Last activity must be a valid date'
-        },
+        isDate: true,
       },
     },
     createdAt: {
