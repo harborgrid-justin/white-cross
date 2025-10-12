@@ -394,15 +394,16 @@ IntegrationConfig.init(
     ],
     validate: {
       // Model-level validation to ensure authentication is configured
-      hasAuthenticationMethod() {
+      hasAuthenticationMethod(this: IntegrationConfig) {
         // Skip validation for GOVERNMENT_REPORTING which may not need external auth
         if (this.type === IntegrationType.GOVERNMENT_REPORTING) {
           return;
         }
 
         // At least one authentication method should be provided
+        const settings = this.settings as any;
         if (!this.apiKey && !this.username && !this.password &&
-            (!this.settings || !this.settings.oauth2Config)) {
+            (!settings || !settings.oauth2Config)) {
           throw new Error('At least one authentication method (apiKey, username/password, or OAuth2) must be configured');
         }
 
@@ -413,7 +414,7 @@ IntegrationConfig.init(
       },
 
       // Ensure endpoint is provided for external integrations
-      hasEndpointForExternalIntegration() {
+      hasEndpointForExternalIntegration(this: IntegrationConfig) {
         const typesRequiringEndpoint = [
           IntegrationType.SIS,
           IntegrationType.EHR,
@@ -424,7 +425,7 @@ IntegrationConfig.init(
           IntegrationType.HEALTH_APP
         ];
 
-        if (typesRequiringEndpoint.includes(this.type) && !this.endpoint) {
+        if (typesRequiringEndpoint.includes(this.type as IntegrationType) && !this.endpoint) {
           throw new Error(`Endpoint URL is required for ${this.type} integration type`);
         }
       }

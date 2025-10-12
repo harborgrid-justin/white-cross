@@ -2,6 +2,8 @@ import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { IncidentType, IncidentSeverity, InsuranceClaimStatus, ComplianceStatus } from '../../types/enums';
 import { AuditableModel } from '../base/AuditableModel';
+import type { Student } from '../core/Student';
+import type { User } from '../core/User';
 
 interface IncidentReportAttributes {
   id: string;
@@ -76,6 +78,10 @@ export class IncidentReport
   public occurredAt!: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  // Associations
+  declare student?: Student;
+  declare reportedBy?: User;
 }
 
 IncidentReport.init(

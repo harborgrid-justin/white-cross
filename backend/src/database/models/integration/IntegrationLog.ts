@@ -173,7 +173,8 @@ IntegrationLog.init(
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: {
-          msg: 'Started at must be a valid date'
+          msg: 'Started at must be a valid date',
+          args: true
         },
         isNotFuture(value: Date) {
           const now = new Date();
@@ -188,7 +189,8 @@ IntegrationLog.init(
       allowNull: true,
       validate: {
         isDate: {
-          msg: 'Completed at must be a valid date'
+          msg: 'Completed at must be a valid date',
+          args: true
         },
         isNotFuture(value: Date | null) {
           if (value) {
@@ -280,7 +282,8 @@ IntegrationLog.init(
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: {
-          msg: 'Created at must be a valid date'
+          msg: 'Created at must be a valid date',
+          args: true
         }
       }
     },
@@ -299,7 +302,7 @@ IntegrationLog.init(
     ],
     validate: {
       // Model-level validation to ensure data consistency
-      recordCountsAreConsistent() {
+      recordCountsAreConsistent(this: IntegrationLog) {
         if (this.recordsProcessed !== null && this.recordsProcessed !== undefined) {
           const succeeded = this.recordsSucceeded || 0;
           const failed = this.recordsFailed || 0;
@@ -312,7 +315,7 @@ IntegrationLog.init(
       },
 
       // Validate that completed operations have completedAt timestamp
-      completedOperationsHaveTimestamp() {
+      completedOperationsHaveTimestamp(this: IntegrationLog) {
         if (this.status === 'success' || this.status === 'failed') {
           if (!this.completedAt) {
             throw new Error('Completed operations must have a completedAt timestamp');
@@ -321,7 +324,7 @@ IntegrationLog.init(
       },
 
       // Validate that completedAt is after startedAt
-      completedAtIsAfterStartedAt() {
+      completedAtIsAfterStartedAt(this: IntegrationLog) {
         if (this.completedAt && this.startedAt) {
           const started = new Date(this.startedAt).getTime();
           const completed = new Date(this.completedAt).getTime();
@@ -342,8 +345,9 @@ IntegrationLog.init(
       },
 
       // Validate that failed operations have error messages
-      failedOperationsHaveErrorMessage() {
-        if (this.status === 'failed' && !this.errorMessage && (!this.details || !this.details.errors)) {
+      failedOperationsHaveErrorMessage(this: IntegrationLog) {
+        const details = this.details as any;
+        if (this.status === 'failed' && !this.errorMessage && (!details || !details.errors)) {
           throw new Error('Failed operations must have an error message or error details');
         }
       }
