@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Op } from 'sequelize';
+import { Allergy, Medication, User, Student, Vaccination, Screening } from '../../database/models';
 
 /**
  * Health Records Business Logic
@@ -76,7 +75,7 @@ export async function checkAllergyContraindications(
 ): Promise<AllergyContraindication[]> {
   try {
     // Get student's active allergies
-    const allergies = await prisma.allergy.findMany({
+    const allergies = await Allergy.findAll({
       where: {
         studentId,
         active: true
@@ -84,9 +83,7 @@ export async function checkAllergyContraindications(
     });
 
     // Get medication details
-    const medication = await prisma.medication.findUnique({
-      where: { id: medicationId }
-    });
+    const medication = await Medication.findByPk(medicationId);
 
     if (!medication) {
       throw new Error('Medication not found');
@@ -147,9 +144,7 @@ export async function validateAllergyVerification(
   userId: string
 ): Promise<{ canVerify: boolean; reason?: string }> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await User.findByPk(userId);
 
     if (!user) {
       return { canVerify: false, reason: 'User not found' };
@@ -165,9 +160,7 @@ export async function validateAllergyVerification(
       };
     }
 
-    const allergy = await prisma.allergy.findUnique({
-      where: { id: allergyId }
-    });
+    const allergy = await Allergy.findByPk(allergyId);
 
     if (!allergy) {
       return { canVerify: false, reason: 'Allergy not found' };
@@ -233,15 +226,13 @@ export async function calculateVaccinationCompliance(
   jurisdiction: string = 'US'
 ): Promise<VaccinationCompliance> {
   try {
-    const student = await prisma.student.findUnique({
-      where: { id: studentId }
-    });
+    const student = await Student.findByPk(studentId);
 
-    const vaccinations = await prisma.vaccination.findMany({
+    const vaccinations = await Vaccination.findAll({
       where: {
         studentId
       },
-      orderBy: { administrationDate: 'desc' }
+      order: [['administrationDate', 'DESC']]
     });
 
     if (!student) {
@@ -329,14 +320,14 @@ export async function validateVaccinationSchedule(
   newVaccination: any
 ): Promise<{ isValid: boolean; reason?: string }> {
   try {
-    const previousDoses = await prisma.vaccination.findMany({
+    const previousDoses = await Vaccination.findAll({
       where: {
         studentId,
         vaccineName: newVaccination.vaccineName,
-        doseNumber: { lt: newVaccination.doseNumber }
+        doseNumber: { [Op.lt]: newVaccination.doseNumber }
       },
-      orderBy: { doseNumber: 'desc' },
-      take: 1
+      order: [['doseNumber', 'DESC']],
+      limit: 1
     });
 
     if (previousDoses.length === 0 && newVaccination.doseNumber > 1) {
@@ -1023,12 +1014,12 @@ export async function validateScreeningFrequency(
 
   const minimumInterval = intervals[screeningType] || 30;
 
-  const lastScreening = await prisma.screening.findFirst({
+  const lastScreening = await Screening.findOne({
     where: {
       studentId,
       screeningType: screeningType as any
     },
-    orderBy: { screeningDate: 'desc' }
+    order: [['screeningDate', 'DESC']]
   });
 
   if (!lastScreening) {
