@@ -1,6 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { AuditableModel } from '../base/AuditableModel';
+import type { Medication } from '../core/Medication';
 
 /**
  * MedicationInventory Model
@@ -48,6 +49,9 @@ export class MedicationInventory extends Model<MedicationInventoryAttributes, Me
   // Audit Fields
   public createdBy?: string;
   public updatedBy?: string;
+
+  // Association declarations
+  declare medication?: Medication;
 
   /**
    * Check if inventory is below reorder level

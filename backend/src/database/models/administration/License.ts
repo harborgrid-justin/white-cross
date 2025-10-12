@@ -222,10 +222,10 @@ License.init(
       validateLimitsForType() {
         switch (this.type) {
           case LicenseType.TRIAL:
-            if (!this.maxUsers || this.maxUsers > 10) {
+            if (typeof this.maxUsers !== 'number' || this.maxUsers > 10) {
               throw new Error('Trial license cannot have more than 10 users');
             }
-            if (!this.maxSchools || this.maxSchools > 2) {
+            if (typeof this.maxSchools !== 'number' || this.maxSchools > 2) {
               throw new Error('Trial license cannot have more than 2 schools');
             }
             if (!this.expiresAt) {
@@ -233,18 +233,18 @@ License.init(
             }
             break;
           case LicenseType.BASIC:
-            if (this.maxUsers && this.maxUsers > 50) {
+            if (typeof this.maxUsers === 'number' && this.maxUsers > 50) {
               throw new Error('Basic license cannot have more than 50 users');
             }
-            if (this.maxSchools && this.maxSchools > 5) {
+            if (typeof this.maxSchools === 'number' && this.maxSchools > 5) {
               throw new Error('Basic license cannot have more than 5 schools');
             }
             break;
           case LicenseType.PROFESSIONAL:
-            if (this.maxUsers && this.maxUsers > 500) {
+            if (typeof this.maxUsers === 'number' && this.maxUsers > 500) {
               throw new Error('Professional license cannot have more than 500 users');
             }
-            if (this.maxSchools && this.maxSchools > 50) {
+            if (typeof this.maxSchools === 'number' && this.maxSchools > 50) {
               throw new Error('Professional license cannot have more than 50 schools');
             }
             break;

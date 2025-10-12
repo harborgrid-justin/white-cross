@@ -146,8 +146,14 @@ export async function cacheDelete(key: string | string[]): Promise<boolean> {
   }
 
   try {
-    const keys = Array.isArray(key) ? key : [key];
-    await redisClient!.del(keys);
+    if (Array.isArray(key)) {
+      if (key.length === 0) {
+        return true;
+      }
+      await redisClient!.del(key as [string, ...string[]]);
+    } else {
+      await redisClient!.del(key);
+    }
     return true;
   } catch (error) {
     logger.error(`Cache DELETE error`, error);
@@ -171,11 +177,14 @@ export async function cacheInvalidatePattern(pattern: string): Promise<number> {
     });
 
     for await (const key of scanIterator) {
-      keys.push(key);
+      // Ensure key is a string
+      keys.push(typeof key === 'string' ? key : String(key));
     }
 
     if (keys.length > 0) {
-      await redisClient!.del(keys);
+      // Redis del() requires at least one key, so we ensure type safety
+      const [firstKey, ...restKeys] = keys;
+      await redisClient!.del([firstKey, ...restKeys] as [string, ...string[]]);
       logger.info(`Invalidated ${keys.length} keys matching pattern: ${pattern}`);
     }
 

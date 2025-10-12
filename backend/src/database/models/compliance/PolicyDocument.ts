@@ -136,7 +136,8 @@ PolicyDocument.init(
           msg: 'Effective date is required for policy compliance'
         },
         isDate: {
-          msg: 'Effective date must be a valid date'
+          msg: 'Effective date must be a valid date',
+          args: true,
         }
       }
     },
@@ -146,7 +147,8 @@ PolicyDocument.init(
       comment: 'Next scheduled review date',
       validate: {
         isDate: {
-          msg: 'Review date must be a valid date'
+          msg: 'Review date must be a valid date',
+          args: true,
         },
         isAfterEffective(value: Date | null) {
           if (value && this.effectiveDate && value < this.effectiveDate) {
@@ -186,7 +188,8 @@ PolicyDocument.init(
       comment: 'When the policy was approved',
       validate: {
         isDate: {
-          msg: 'Approval date must be a valid date'
+          msg: 'Approval date must be a valid date',
+          args: true,
         },
         requiresApprover(value: Date | null) {
           if (value && !this.approvedBy) {

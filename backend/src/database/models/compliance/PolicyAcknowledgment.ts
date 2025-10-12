@@ -87,7 +87,8 @@ PolicyAcknowledgment.init(
           msg: 'Acknowledgment timestamp is required for compliance'
         },
         isDate: {
-          msg: 'Acknowledgment timestamp must be a valid date'
+          msg: 'Acknowledgment timestamp must be a valid date',
+          args: true,
         },
         notInFuture(value: Date) {
           if (value && value > new Date()) {

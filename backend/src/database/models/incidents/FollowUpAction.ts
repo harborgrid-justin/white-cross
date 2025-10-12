@@ -95,7 +95,8 @@ FollowUpAction.init(
           msg: 'Due date is required for follow-up actions'
         },
         isDate: {
-          msg: 'Invalid due date'
+          msg: 'Invalid due date',
+          args: true
         },
         isNotPast(value: Date) {
           // Only validate for new records (not updates of completed items)
@@ -178,7 +179,7 @@ FollowUpAction.init(
         }
       },
       // Model-level validation: Completed actions should have notes
-      completedShouldHaveNotes() {
+      completedShouldHaveNotes(this: FollowUpAction) {
         if (this.status === ActionStatus.COMPLETED && (!this.notes || this.notes.trim().length === 0)) {
           // This is a soft warning - we'll allow it but log it
           console.warn(`Follow-up action ${this.id} completed without notes`);
@@ -197,7 +198,7 @@ FollowUpAction.beforeUpdate((instance) => {
 
   // Clear completion data if status changes away from COMPLETED
   if (instance.status !== ActionStatus.COMPLETED && instance.changed('status')) {
-    instance.completedAt = null;
-    instance.completedBy = null;
+    instance.completedAt = undefined;
+    instance.completedBy = undefined;
   }
 });

@@ -246,15 +246,14 @@ export const HTTP_STATUS = {
 } as const;
 
 // ===== USER ROLES =====
+// These should match the UserRole enum in database/types/enums.ts
 export const USER_ROLES = {
   ADMIN: 'ADMIN',
-  DISTRICT_ADMIN: 'DISTRICT_ADMIN',
-  SCHOOL_ADMIN: 'SCHOOL_ADMIN',
   NURSE: 'NURSE',
-  STAFF: 'STAFF',
-  DOCTOR: 'DOCTOR',
+  SCHOOL_ADMIN: 'SCHOOL_ADMIN',
+  DISTRICT_ADMIN: 'DISTRICT_ADMIN',
+  VIEWER: 'VIEWER',
   COUNSELOR: 'COUNSELOR',
-  READ_ONLY: 'READ_ONLY',
 } as const;
 
 // ===== PERMISSIONS =====

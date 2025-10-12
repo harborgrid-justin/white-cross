@@ -154,8 +154,9 @@ MessageDelivery.init(
       validate: {
         isDate: {
           msg: 'Sent time must be a valid date',
+          args: true,
         },
-        sentBeforeDelivered(value: Date) {
+        sentBeforeDelivered(this: MessageDelivery, value: Date) {
           if (value && this.deliveredAt && new Date(value) > new Date(this.deliveredAt)) {
             throw new Error('Sent time cannot be after delivered time');
           }
@@ -168,8 +169,9 @@ MessageDelivery.init(
       validate: {
         isDate: {
           msg: 'Delivered time must be a valid date',
+          args: true,
         },
-        deliveredAfterSent(value: Date) {
+        deliveredAfterSent(this: MessageDelivery, value: Date) {
           if (value && this.sentAt && new Date(value) < new Date(this.sentAt)) {
             throw new Error('Delivered time cannot be before sent time');
           }

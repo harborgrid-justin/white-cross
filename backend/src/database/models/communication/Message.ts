@@ -141,6 +141,7 @@ Message.init(
       validate: {
         isDate: {
           msg: 'Scheduled time must be a valid date',
+          args: true,
         },
         isFuture(value: Date) {
           if (value && new Date(value) <= new Date()) {
@@ -154,7 +155,7 @@ Message.init(
       allowNull: false,
       defaultValue: [],
       validate: {
-        isArray(value: string[]) {
+        validateAttachmentsArray(value: string[]) {
           if (!Array.isArray(value)) {
             throw new Error('Attachments must be an array');
           }

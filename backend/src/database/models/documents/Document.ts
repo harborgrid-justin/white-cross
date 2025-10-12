@@ -349,6 +349,7 @@ Document.init(
       validate: {
         isDate: {
           msg: 'Retention date must be a valid date',
+          args: true,
         },
         isInFuture(value: Date) {
           if (value && new Date(value) < new Date()) {
@@ -464,7 +465,7 @@ Document.init(
     ],
     validate: {
       // Cross-field validation
-      retentionDateMatchesCategory() {
+      retentionDateMatchesCategory(this: Document) {
         if (this.retentionDate && this.category) {
           const retentionYears: Record<string, number> = {
             MEDICAL_RECORD: 7,
@@ -478,7 +479,7 @@ Document.init(
             OTHER: 3,
           };
 
-          const expectedYears = retentionYears[this.category] || 3;
+          const expectedYears = retentionYears[this.category as string] || 3;
           const maxRetentionDate = new Date();
           maxRetentionDate.setFullYear(maxRetentionDate.getFullYear() + expectedYears + 1);
 
@@ -489,7 +490,7 @@ Document.init(
           }
         }
       },
-      fileExtensionMatchesMimeType() {
+      fileExtensionMatchesMimeType(this: Document) {
         if (this.fileName && this.fileType) {
           const extension = this.fileName.substring(this.fileName.lastIndexOf('.')).toLowerCase();
           const extensionMap: Record<string, string[]> = {
@@ -515,14 +516,14 @@ Document.init(
           }
         }
       },
-      templateDataRequiredForTemplates() {
+      templateDataRequiredForTemplates(this: Document) {
         if (this.isTemplate && !this.templateData) {
           throw new Error('Template data is required for template documents');
         }
       },
-      phiCategoriesRequireStaffAccess() {
+      phiCategoriesRequireStaffAccess(this: Document) {
         // Documents containing PHI must have staff-only or higher access
-        const phiCategories = [
+        const phiCategories: DocumentCategory[] = [
           DocumentCategory.MEDICAL_RECORD,
           DocumentCategory.INCIDENT_REPORT,
           DocumentCategory.CONSENT_FORM,
@@ -539,9 +540,9 @@ Document.init(
           }
         }
       },
-      signatureRequiredForCriticalCategories() {
+      signatureRequiredForCriticalCategories(this: Document) {
         // Certain categories require signature approval
-        const signatureCategories = [
+        const signatureCategories: DocumentCategory[] = [
           DocumentCategory.MEDICAL_RECORD,
           DocumentCategory.CONSENT_FORM,
           DocumentCategory.INCIDENT_REPORT,

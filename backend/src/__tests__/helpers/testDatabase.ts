@@ -8,7 +8,7 @@
  */
 
 import sequelize from '../../database/services/sequelize.service';
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Clears all data from the database while preserving table structure
@@ -126,7 +126,7 @@ export async function createTestTransaction() {
 export async function countRecords(tableName: string): Promise<number> {
   const result = await sequelize.query(
     `SELECT COUNT(*) as count FROM "${tableName}"`,
-    { type: sequelize.QueryTypes.SELECT }
+    { type: QueryTypes.SELECT }
   );
   return parseInt((result[0] as any).count, 10);
 }
@@ -142,7 +142,7 @@ export async function getRecordById(
     `SELECT * FROM "${tableName}" WHERE id = :id LIMIT 1`,
     {
       replacements: { id },
-      type: sequelize.QueryTypes.SELECT,
+      type: QueryTypes.SELECT,
     }
   );
   return result[0];
@@ -175,9 +175,13 @@ export async function createTestUser(overrides: any = {}) {
     RETURNING id`,
     {
       replacements: userData,
-      type: sequelize.QueryTypes.INSERT,
+      type: QueryTypes.INSERT,
     }
   );
+
+  if (!userId || !Array.isArray(userId) || userId.length === 0) {
+    throw new Error('Failed to create test user: No ID returned');
+  }
 
   return { ...userData, id: (userId[0] as any).id };
 }
@@ -189,7 +193,7 @@ export async function createTestStudent(overrides: any = {}) {
   // First, ensure there's a nurse to assign
   const nurses = await sequelize.query(
     `SELECT id FROM "Users" WHERE role = 'NURSE' LIMIT 1`,
-    { type: sequelize.QueryTypes.SELECT }
+    { type: QueryTypes.SELECT }
   );
 
   let nurseId = (nurses[0] as any)?.id;
@@ -224,9 +228,13 @@ export async function createTestStudent(overrides: any = {}) {
     RETURNING id`,
     {
       replacements: studentData,
-      type: sequelize.QueryTypes.INSERT,
+      type: QueryTypes.INSERT,
     }
   );
+
+  if (!studentId || !Array.isArray(studentId) || studentId.length === 0) {
+    throw new Error('Failed to create test student: No ID returned');
+  }
 
   return { ...studentData, id: (studentId[0] as any).id };
 }

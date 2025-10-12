@@ -11,6 +11,14 @@ import { EventEmitter } from 'events';
 import { logger } from '../logger';
 import crypto from 'crypto';
 
+// Browser API type declarations for environments where they exist
+declare const indexedDB: any;
+declare const window: any;
+interface Navigator {
+  onLine: boolean;
+}
+declare const navigator: Navigator;
+
 export interface QueueRecord {
   id: string;
   idempotencyKey: string;
@@ -59,12 +67,16 @@ export interface QueueStorage {
  * IndexedDB storage implementation (for web/Electron)
  */
 export class IndexedDBStorage implements QueueStorage {
-  private db?: IDBDatabase;
+  private db?: any; // IDBDatabase
   private readonly DB_NAME = 'medication_queue';
   private readonly STORE_NAME = 'pending_administrations';
   private readonly DB_VERSION = 1;
 
   async initialize(): Promise<void> {
+    if (typeof indexedDB === 'undefined') {
+      throw new Error('IndexedDB is not available in this environment');
+    }
+
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
 
@@ -74,8 +86,8 @@ export class IndexedDBStorage implements QueueStorage {
         resolve();
       };
 
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
+      request.onupgradeneeded = (event: any) => {
+        const db = (event.target as any).result;
 
         if (!db.objectStoreNames.contains(this.STORE_NAME)) {
           const store = db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
@@ -141,11 +153,12 @@ export class IndexedDBStorage implements QueueStorage {
       const transaction = this.db!.transaction([this.STORE_NAME], 'readonly');
       const store = transaction.objectStore(this.STORE_NAME);
       const index = store.index('status');
+      const IDBKeyRange = (globalThis as any).IDBKeyRange;
       const request = index.openCursor(IDBKeyRange.only(status));
       const results: QueueRecord[] = [];
 
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
+      request.onsuccess = (event: Event) => {
+        const cursor = (event.target as any).result;
         if (cursor && results.length < limit) {
           results.push(cursor.value);
           cursor.continue();
@@ -228,8 +241,8 @@ export class MedicationQueue extends EventEmitter {
     // Start periodic sync
     this.startPeriodicSync();
 
-    // Listen for network status
-    if (typeof window !== 'undefined') {
+    // Listen for network status (only in browser environments)
+    if (typeof window !== 'undefined' && window.addEventListener) {
       window.addEventListener('online', () => this.onNetworkRestored());
       window.addEventListener('offline', () => this.onNetworkLost());
     }
@@ -265,7 +278,7 @@ export class MedicationQueue extends EventEmitter {
       errorLog: [],
       nurseId: data.nurseId,
       deviceId: data.deviceId,
-      offlineMode: !navigator.onLine,
+      offlineMode: typeof navigator !== 'undefined' ? !navigator.onLine : false,
     };
 
     await this.storage.add(record);
@@ -279,7 +292,7 @@ export class MedicationQueue extends EventEmitter {
     this.emit('enqueued', record);
 
     // Trigger immediate sync if online
-    if (navigator.onLine) {
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
       setImmediate(() => this.syncQueue());
     }
 
@@ -296,7 +309,7 @@ export class MedicationQueue extends EventEmitter {
     }
 
     // Check network
-    if (!navigator.onLine) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
       return { status: 'OFFLINE', synced: 0, failed: 0 };
     }
 
@@ -408,15 +421,17 @@ export class MedicationQueue extends EventEmitter {
         retryable: this.isRetryable(error),
       };
 
-      const updatedRecord = {
-        status: 'PENDING' as const,
+      // Check if should move to DLQ
+      const shouldMoveToDLQ = record.attempts + 1 >= this.config.dlqThreshold;
+      const updatedStatus: QueueRecord['status'] = shouldMoveToDLQ ? 'DLQ' : 'PENDING';
+
+      const updatedRecord: Partial<QueueRecord> = {
+        status: updatedStatus,
         attempts: record.attempts + 1,
         errorLog: [...record.errorLog, errorLog],
       };
 
-      // Check if should move to DLQ
-      if (record.attempts + 1 >= this.config.dlqThreshold) {
-        updatedRecord.status = 'DLQ';
+      if (shouldMoveToDLQ) {
         await this.moveToDLQ(record);
       }
 

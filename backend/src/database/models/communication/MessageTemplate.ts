@@ -134,7 +134,7 @@ MessageTemplate.init(
           args: [Object.values(MessageType)],
           msg: 'Invalid message type',
         },
-        smsLengthCheck(value: MessageType) {
+        smsLengthCheck(this: MessageTemplate, value: MessageType) {
           if (value === MessageType.SMS && this.content) {
             const contentLength = this.content.length;
             if (contentLength > 1600) {
@@ -145,7 +145,7 @@ MessageTemplate.init(
             }
           }
         },
-        emailSubjectCheck(value: MessageType) {
+        emailSubjectCheck(this: MessageTemplate, value: MessageType) {
           if (value === MessageType.EMAIL && this.subject && this.subject.length > 78) {
             console.warn(`Email subject exceeds recommended 78 characters (current: ${this.subject.length}) and may be truncated`);
           }
@@ -172,7 +172,7 @@ MessageTemplate.init(
       allowNull: false,
       defaultValue: [],
       validate: {
-        isArray(value: string[]) {
+        validateVariablesArray(value: string[]) {
           if (!Array.isArray(value)) {
             throw new Error('Variables must be an array');
           }

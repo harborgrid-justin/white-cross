@@ -238,13 +238,13 @@ SystemConfiguration.init(
     validate: {
       // Validate min/max value consistency
       minMaxConsistency() {
-        if (this.minValue !== null && this.maxValue !== null && this.minValue > this.maxValue) {
+        if (typeof this.minValue === 'number' && typeof this.maxValue === 'number' && this.minValue > this.maxValue) {
           throw new Error('Minimum value cannot be greater than maximum value');
         }
       },
       // Validate value against valueType
       valueTypeConsistency() {
-        const value = this.value;
+        const value = this.value as string;
         const valueType = this.valueType;
 
         switch (valueType) {
@@ -253,10 +253,10 @@ SystemConfiguration.init(
               throw new Error('Value must be a valid number for NUMBER type');
             }
             const numValue = Number(value);
-            if (this.minValue !== null && numValue < this.minValue) {
+            if (typeof this.minValue === 'number' && numValue < this.minValue) {
               throw new Error(`Value ${numValue} is below minimum allowed value ${this.minValue}`);
             }
-            if (this.maxValue !== null && numValue > this.maxValue) {
+            if (typeof this.maxValue === 'number' && numValue > this.maxValue) {
               throw new Error(`Value ${numValue} exceeds maximum allowed value ${this.maxValue}`);
             }
             break;
@@ -269,14 +269,14 @@ SystemConfiguration.init(
 
           case ConfigValueType.EMAIL:
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) {
+            if (!emailRegex.test(value as string)) {
               throw new Error('Value must be a valid email address for EMAIL type');
             }
             break;
 
           case ConfigValueType.URL:
             try {
-              new URL(value);
+              new URL(value as string);
             } catch {
               throw new Error('Value must be a valid URL for URL type');
             }
@@ -284,7 +284,7 @@ SystemConfiguration.init(
 
           case ConfigValueType.JSON:
             try {
-              JSON.parse(value);
+              JSON.parse(value as string);
             } catch {
               throw new Error('Value must be valid JSON for JSON type');
             }
@@ -292,7 +292,7 @@ SystemConfiguration.init(
 
           case ConfigValueType.ARRAY:
             try {
-              const parsed = JSON.parse(value);
+              const parsed = JSON.parse(value as string);
               if (!Array.isArray(parsed)) {
                 throw new Error('Value must be a JSON array for ARRAY type');
               }
@@ -303,14 +303,15 @@ SystemConfiguration.init(
 
           case ConfigValueType.COLOR:
             const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-            if (!colorRegex.test(value)) {
+            if (!colorRegex.test(value as string)) {
               throw new Error('Value must be a valid hex color code (e.g., #FF0000) for COLOR type');
             }
             break;
 
           case ConfigValueType.ENUM:
-            if (this.validValues.length > 0 && !this.validValues.includes(value)) {
-              throw new Error(`Value must be one of: ${this.validValues.join(', ')}`);
+            const validValues = this.validValues as string[];
+            if (validValues.length > 0 && !validValues.includes(value)) {
+              throw new Error(`Value must be one of: ${validValues.join(', ')}`);
             }
             break;
         }
@@ -326,7 +327,8 @@ SystemConfiguration.init(
       },
       // Validate validValues for ENUM type
       enumValidValues() {
-        if (this.valueType === ConfigValueType.ENUM && this.validValues.length === 0) {
+        const validValues = this.validValues as string[];
+        if (this.valueType === ConfigValueType.ENUM && validValues.length === 0) {
           throw new Error('Valid values must be provided for ENUM type');
         }
       }

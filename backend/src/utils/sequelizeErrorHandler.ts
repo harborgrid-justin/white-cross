@@ -142,9 +142,12 @@ function handleUniqueConstraintError(error: UniqueConstraintError): ErrorRespons
   const fields = error.fields ? Object.keys(error.fields) : [];
   const fieldNames = fields.map(sanitizeFieldName).join(', ');
 
+  // Extract table name from parent error if available
+  const tableName = (error as any).table || ((error as any).parent?.table) || 'table';
+
   logger.warn('Unique constraint violation:', {
     fields,
-    table: error.table,
+    table: tableName,
     originalError: error.message
   });
 
@@ -174,22 +177,48 @@ function handleUniqueConstraintError(error: UniqueConstraintError): ErrorRespons
  * Maps foreign key violations to user-friendly messages
  */
 function handleForeignKeyConstraintError(error: ForeignKeyConstraintError): ErrorResponse {
-  const field = error.fields ? sanitizeFieldName(error.fields[0]) : 'reference';
+  // Handle fields which can be string or string[]
+  let field: string;
+  if (error.fields) {
+    if (Array.isArray(error.fields)) {
+      field = error.fields.length > 0 ? sanitizeFieldName(error.fields[0]) : 'reference';
+    } else if (typeof error.fields === 'string') {
+      field = sanitizeFieldName(error.fields);
+    } else {
+      field = 'reference';
+    }
+  } else {
+    field = 'reference';
+  }
+
+  // Extract table name from parent error if available
+  const tableName = (error as any).table || ((error as any).parent?.table) || 'table';
 
   logger.warn('Foreign key constraint violation:', {
     field,
-    table: error.table,
+    table: tableName,
     originalError: error.message
   });
 
   let message = 'The referenced record does not exist or cannot be used.';
 
   // Provide specific messages for common relationships
-  if (error.fields?.includes('studentId')) {
+  const fieldsArray: string[] = [];
+  if (error.fields) {
+    if (Array.isArray(error.fields)) {
+      fieldsArray.push(...error.fields);
+    } else if (typeof error.fields === 'string') {
+      fieldsArray.push(error.fields);
+    } else if (typeof error.fields === 'object') {
+      fieldsArray.push(...Object.keys(error.fields));
+    }
+  }
+
+  if (fieldsArray.includes('studentId')) {
     message = 'The specified student does not exist.';
-  } else if (error.fields?.includes('userId') || error.fields?.includes('nurseId')) {
+  } else if (fieldsArray.includes('userId') || fieldsArray.includes('nurseId')) {
     message = 'The specified user does not exist.';
-  } else if (error.fields?.includes('medicationId')) {
+  } else if (fieldsArray.includes('medicationId')) {
     message = 'The specified medication does not exist.';
   }
 
@@ -500,14 +529,15 @@ export function auditLogError(error: Error, context: Record<string, any> = {}) {
     timestamp: new Date().toISOString()
   };
 
-  // Remove any potential PHI from context
-  delete sanitizedContext.email;
-  delete sanitizedContext.phone;
-  delete sanitizedContext.ssn;
-  delete sanitizedContext.medicalRecordNum;
+  // Remove any potential PHI from context (use type-safe delete)
+  const contextWithoutPHI = { ...sanitizedContext };
+  if ('email' in contextWithoutPHI) delete contextWithoutPHI.email;
+  if ('phone' in contextWithoutPHI) delete contextWithoutPHI.phone;
+  if ('ssn' in contextWithoutPHI) delete contextWithoutPHI.ssn;
+  if ('medicalRecordNum' in contextWithoutPHI) delete contextWithoutPHI.medicalRecordNum;
 
   logger.error('Error occurred:', {
     message: sanitizeErrorMessage(error.message),
-    context: sanitizedContext
+    context: contextWithoutPHI
   });
 }

@@ -1,12 +1,6 @@
-// User Role Enum
-export enum UserRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
-  NURSE = 'NURSE',
-  COUNSELOR = 'COUNSELOR',
-  TEACHER = 'TEACHER',
-  READ_ONLY = 'READ_ONLY'
-}
+// Re-export UserRole from canonical source
+export { UserRole } from '../database/types/enums';
+import { UserRole } from '../database/types/enums';
 
 // Configuration Enums
 export enum ConfigCategory {

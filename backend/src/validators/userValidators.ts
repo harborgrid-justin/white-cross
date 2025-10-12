@@ -185,10 +185,10 @@ export const registerUserSchema = Joi.object({
     }),
 
   role: Joi.string()
-    .valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR')
+    .valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'VIEWER', 'COUNSELOR')
     .required()
     .messages({
-      'any.only': 'Role must be one of: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, READ_ONLY, COUNSELOR',
+      'any.only': 'Role must be one of: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, VIEWER, COUNSELOR',
       'any.required': 'Role is required'
     }),
 
@@ -398,9 +398,9 @@ export const updateUserSchema = Joi.object({
   phone: phoneValidator.allow('', null),
 
   role: Joi.string()
-    .valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR')
+    .valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'VIEWER', 'COUNSELOR')
     .messages({
-      'any.only': 'Role must be one of: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, READ_ONLY, COUNSELOR'
+      'any.only': 'Role must be one of: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, VIEWER, COUNSELOR'
     }),
 
   isActive: Joi.boolean(),
@@ -614,10 +614,10 @@ export const userFilterSchema = Joi.object({
     }),
 
   role: Joi.string()
-    .valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR')
+    .valid('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'VIEWER', 'COUNSELOR')
     .allow('')
     .messages({
-      'any.only': 'Role must be one of: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, READ_ONLY, COUNSELOR'
+      'any.only': 'Role must be one of: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, VIEWER, COUNSELOR'
     }),
 
   isActive: Joi.boolean(),

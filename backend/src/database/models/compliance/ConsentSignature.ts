@@ -149,7 +149,8 @@ ConsentSignature.init(
           msg: 'Signature timestamp is required for legal validity'
         },
         isDate: {
-          msg: 'Signature timestamp must be a valid date'
+          msg: 'Signature timestamp must be a valid date',
+          args: true,
         },
         notInFuture(value: Date) {
           if (value && value > new Date()) {
@@ -180,7 +181,8 @@ ConsentSignature.init(
       comment: 'When consent was withdrawn',
       validate: {
         isDate: {
-          msg: 'Withdrawal timestamp must be a valid date'
+          msg: 'Withdrawal timestamp must be a valid date',
+          args: true,
         },
         isAfterSigning(value: Date | null) {
           if (value && this.signedAt && value < this.signedAt) {

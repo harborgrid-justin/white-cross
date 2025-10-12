@@ -391,8 +391,13 @@ export class PurchaseOrderService {
       }
 
       // Update received quantities and create inventory transactions
+      if (!order.items || order.items.length === 0) {
+        await transaction.rollback();
+        throw new Error('Purchase order has no items');
+      }
+
       for (const receivedItem of data.items) {
-        const poItem = order.items?.find((item: any) => item.id === receivedItem.purchaseOrderItemId);
+        const poItem = order.items.find((item: any) => item.id === receivedItem.purchaseOrderItemId);
 
         if (!poItem) {
           await transaction.rollback();
@@ -442,10 +447,15 @@ export class PurchaseOrderService {
         transaction
       });
 
-      const allReceived = updatedOrder!.items!.every((item: any) => item.receivedQty >= item.quantity);
-      const partiallyReceived = updatedOrder!.items!.some((item: any) => item.receivedQty > 0);
+      if (!updatedOrder || !updatedOrder.items || updatedOrder.items.length === 0) {
+        await transaction.rollback();
+        throw new Error('Updated order has no items');
+      }
 
-      let newStatus = order.status;
+      const allReceived = updatedOrder.items.every((item: any) => item.receivedQty >= item.quantity);
+      const partiallyReceived = updatedOrder.items.some((item: any) => item.receivedQty > 0);
+
+      let newStatus: PurchaseOrderStatus = order.status;
       if (allReceived) {
         newStatus = PurchaseOrderStatus.RECEIVED;
       } else if (partiallyReceived) {

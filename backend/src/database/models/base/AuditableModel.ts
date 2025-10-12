@@ -3,7 +3,7 @@
  * Provides automatic audit trail for all PHI (Protected Health Information)
  */
 
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, ModelStatic } from 'sequelize';
 import { logger } from '../../../utils/logger';
 import { AuditAction } from '../../types/enums';
 
@@ -11,10 +11,10 @@ export class AuditableModel extends Model {
   /**
    * Setup audit hooks for a model
    */
-  static setupAuditHooks(model: typeof Model, entityType: string) {
-    model.addHook('afterCreate', async (instance: any, options: any) => {
+  static setupAuditHooks(model: ModelStatic<any>, entityType: string) {
+    (model as any).addHook('afterCreate', async (instance: any, options: any) => {
       try {
-        await this.logAuditEvent({
+        await AuditableModel.logAuditEvent({
           action: AuditAction.CREATE,
           entityType,
           entityId: instance.id,
@@ -27,13 +27,13 @@ export class AuditableModel extends Model {
       }
     });
 
-    model.addHook('afterUpdate', async (instance: any, options: any) => {
+    (model as any).addHook('afterUpdate', async (instance: any, options: any) => {
       try {
         const changes = instance._previousDataValues
           ? { old: instance._previousDataValues, new: instance.dataValues }
           : null;
 
-        await this.logAuditEvent({
+        await AuditableModel.logAuditEvent({
           action: AuditAction.UPDATE,
           entityType,
           entityId: instance.id,
@@ -46,9 +46,9 @@ export class AuditableModel extends Model {
       }
     });
 
-    model.addHook('afterDestroy', async (instance: any, options: any) => {
+    (model as any).addHook('afterDestroy', async (instance: any, options: any) => {
       try {
-        await this.logAuditEvent({
+        await AuditableModel.logAuditEvent({
           action: AuditAction.DELETE,
           entityType,
           entityId: instance.id,
@@ -61,13 +61,13 @@ export class AuditableModel extends Model {
       }
     });
 
-    model.addHook('beforeUpdate', (instance: any, options: any) => {
+    (model as any).addHook('beforeUpdate', (instance: any, options: any) => {
       if (options.userId) {
         instance.updatedBy = options.userId;
       }
     });
 
-    model.addHook('beforeCreate', (instance: any, options: any) => {
+    (model as any).addHook('beforeCreate', (instance: any, options: any) => {
       if (options.userId) {
         instance.createdBy = options.userId;
       }
