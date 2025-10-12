@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Medications and Inventory
@@ -155,10 +155,10 @@ module.exports = {
     await queryInterface.bulkInsert('Medications', medications, {});
 
     // Get inserted medications for inventory
-    const insertedMedications = await queryInterface.sequelize.query(
+    const [insertedMedications] = await queryInterface.sequelize.query(
       'SELECT id, name, ndc FROM "Medications"',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; name: string; ndc: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; name: string; ndc: string }>, unknown];
 
     // Generate random helper
     const randomInt = (min: number, max: number): number =>

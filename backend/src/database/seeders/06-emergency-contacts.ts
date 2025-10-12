@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 
 /**
  * Seeder: Emergency Contacts
@@ -63,10 +63,10 @@ module.exports = {
     const now = new Date();
 
     // Get all students
-    const students = await queryInterface.sequelize.query(
+    const [students] = await queryInterface.sequelize.query(
       `SELECT id, "lastName" FROM "Students" ORDER BY id`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; lastName: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; lastName: string }>, unknown];
 
     console.log(`Creating emergency contacts for ${students.length} students...`);
 

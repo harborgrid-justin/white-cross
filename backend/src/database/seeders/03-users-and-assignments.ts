@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, QueryTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
 
 /**
@@ -29,15 +29,15 @@ module.exports = {
     const testCounselorPassword = await bcrypt.hash('CounselorPassword123!', 10);
 
     // Get district and schools for foreign key references
-    const [district] = await queryInterface.sequelize.query(
+    const [[district]] = await queryInterface.sequelize.query(
       `SELECT id FROM "Districts" WHERE code = 'UNIFIED_DISTRICT' LIMIT 1`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number }>;
+      { type: QueryTypes.SELECT }
+    ) as [[{ id: number }], unknown];
 
-    const schools = await queryInterface.sequelize.query(
+    const [schools] = await queryInterface.sequelize.query(
       `SELECT id, code FROM "Schools" ORDER BY id`,
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; code: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; code: string }>, unknown];
 
     const centralHigh = schools.find((s) => s.code === 'CENTRAL_HIGH');
     const westElem = schools.find((s) => s.code === 'WEST_ELEM');
@@ -251,15 +251,15 @@ module.exports = {
     await queryInterface.bulkInsert('Users', users, {});
 
     // Get inserted users and roles for role assignments
-    const insertedUsers = await queryInterface.sequelize.query(
+    const [insertedUsers] = await queryInterface.sequelize.query(
       'SELECT id, email FROM "Users"',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; email: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; email: string }>, unknown];
 
-    const insertedRoles = await queryInterface.sequelize.query(
+    const [insertedRoles] = await queryInterface.sequelize.query(
       'SELECT id, name FROM "Roles"',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    ) as Array<{ id: number; name: string }>;
+      { type: QueryTypes.SELECT }
+    ) as [Array<{ id: number; name: string }>, unknown];
 
     const adminRole = insertedRoles.find((r) => r.name === 'Administrator');
     const nurseRole = insertedRoles.find((r) => r.name === 'School Nurse');
