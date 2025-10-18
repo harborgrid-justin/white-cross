@@ -1,4 +1,15 @@
 /**
+ * LOC: DD7027552D
+ * WC-RTE-INV-039 | inventory.ts - Medical Supply Inventory Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - inventoryService.ts (services/inventoryService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-INV-039 | inventory.ts - Medical Supply Inventory Management API Routes
  * Purpose: Hapi.js routes for comprehensive healthcare inventory management including stock control, maintenance tracking, and purchase automation
  * Upstream: ../services/inventoryService/InventoryService | Dependencies: @hapi/hapi, joi

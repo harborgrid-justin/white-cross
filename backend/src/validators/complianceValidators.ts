@@ -1,4 +1,15 @@
 /**
+ * LOC: 153F4D6759
+ * WC-VAL-CPL-058 | complianceValidators.ts - HIPAA/FERPA Compliance Validation Schemas
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-VAL-CPL-058 | complianceValidators.ts - HIPAA/FERPA Compliance Validation Schemas
  * Purpose: Joi validation schemas for regulatory compliance, consent management, policy enforcement
  * Upstream: ../database/types/enums, joi | Dependencies: joi, compliance enums, audit types

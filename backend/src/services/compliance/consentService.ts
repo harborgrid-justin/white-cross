@@ -1,4 +1,15 @@
 /**
+ * LOC: 60EC8F5626
+ * WC-GEN-238 | consentService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/compliance/index.ts)
+ */
+
+/**
  * WC-GEN-238 | consentService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models

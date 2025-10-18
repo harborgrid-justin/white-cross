@@ -1,4 +1,20 @@
 /**
+ * LOC: A039EDA3B9
+ * WC-GEN-127 | UserService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *   - BaseService.ts (database/services/BaseService.ts)
+ *   - User.ts (database/models/core/User.ts)
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - Appointment.ts (database/models/healthcare/Appointment.ts)
+ *   - ... and 3 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-127 | UserService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../shared, ./BaseService, ../models/core/User | Dependencies: sequelize, ../../shared, ./BaseService

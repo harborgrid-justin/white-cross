@@ -1,4 +1,17 @@
 /**
+ * LOC: A21BA2DEF3
+ * WC-GEN-265 | notificationService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - coreService.ts (services/incidentReport/coreService.ts)
+ *   - index.ts (services/incidentReport/index.ts)
+ */
+
+/**
  * WC-GEN-265 | notificationService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models | Dependencies: ../../utils/logger, ../../database/models

@@ -1,4 +1,16 @@
 /**
+ * LOC: 3835B8CB7D
+ * WC-MID-ERR-045 | HIPAA-Compliant Error Handler & Sequelize Error Management
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-MID-ERR-045 | HIPAA-Compliant Error Handler & Sequelize Error Management
  * Purpose: Centralized error handling, PHI protection, Sequelize error mapping
  * Upstream: utils/logger, @hapi/boom, sequelize validation errors

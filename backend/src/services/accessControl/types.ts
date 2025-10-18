@@ -1,4 +1,16 @@
 /**
+ * LOC: 200354A2A0
+ * WC-GEN-181 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - permissionOperations.ts (services/accessControl/permissionOperations.ts)
+ *   - rbacOperations.ts (services/accessControl/rbacOperations.ts)
+ */
+
+/**
  * WC-GEN-181 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/models, ../../database/types/enums | Dependencies: ../../database/models, ../../database/types/enums

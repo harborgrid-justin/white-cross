@@ -1,4 +1,15 @@
 /**
+ * LOC: 24D0284614
+ * File: /backend/src/shared/utils/responseHelpers.ts
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * File: /backend/src/shared/utils/responseHelpers.ts
  * Locator: WC-UTL-RSP-077
  * Purpose: Healthcare API Response Standardization - HIPAA-compliant response formatting

@@ -1,4 +1,20 @@
 /**
+ * LOC: 0578E06D5B
+ * WC-IDX-222 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - auditLogService.ts (services/audit/auditLogService.ts)
+ *   - phiAccessService.ts (services/audit/phiAccessService.ts)
+ *   - auditQueryService.ts (services/audit/auditQueryService.ts)
+ *   - complianceReportingService.ts (services/audit/complianceReportingService.ts)
+ *   - auditStatisticsService.ts (services/audit/auditStatisticsService.ts)
+ *   - ... and 2 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - auditService.ts (services/auditService.ts)
+ */
+
+/**
  * WC-IDX-222 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: ./auditLogService, ./phiAccessService, ./auditQueryService | Dependencies: ./auditLogService, ./phiAccessService, ./auditQueryService

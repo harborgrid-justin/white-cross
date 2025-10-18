@@ -1,4 +1,17 @@
 /**
+ * LOC: C7FDC9BE2F
+ * WC-GEN-206 | AppointmentRecurringService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - appointment.ts (types/appointment.ts)
+ *   - AppointmentService.ts (services/appointment/AppointmentService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
  * WC-GEN-206 | AppointmentRecurringService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../types/appointment, ./AppointmentService | Dependencies: ../../utils/logger, ../../types/appointment, ./AppointmentService

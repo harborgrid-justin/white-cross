@@ -1,4 +1,17 @@
 /**
+ * LOC: F4C7DD5E28
+ * Advanced Enterprise Features Service Bundle - Part 3
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
+/**
  * Advanced Enterprise Features Service Bundle - Part 3
  * Final 15 production-ready features completing the 45-feature set
  */

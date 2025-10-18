@@ -1,4 +1,18 @@
 /**
+ * LOC: 6965D820C1
+ * WC-CFG-RDS-052 | Redis Cache Configuration & Healthcare Data Caching Strategy
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - inventoryMaintenanceJob.ts (jobs/inventoryMaintenanceJob.ts)
+ *   - medicationReminderJob.ts (jobs/medicationReminderJob.ts)
+ *   - performanceMonitor.ts (middleware/performanceMonitor.ts)
+ */
+
+/**
  * WC-CFG-RDS-052 | Redis Cache Configuration & Healthcare Data Caching Strategy
  * Purpose: Redis connection management, student health cache, performance optimization
  * Upstream: utils/logger, constants/CACHE_KEYS, environment variables

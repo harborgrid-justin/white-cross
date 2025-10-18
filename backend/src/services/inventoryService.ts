@@ -1,4 +1,20 @@
 /**
+ * LOC: 333D84BEB6
+ * WC-SVC-INV-019 | inventoryService.ts - Inventory Management Service Orchestrator
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - inventoryRepository.ts (services/inventory/inventoryRepository.ts)
+ *   - stockService.ts (services/inventory/stockService.ts)
+ *   - transactionService.ts (services/inventory/transactionService.ts)
+ *   - ... and 6 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - inventory.ts (routes/inventory.ts)
+ */
+
+/**
  * WC-SVC-INV-019 | inventoryService.ts - Inventory Management Service Orchestrator
  * Purpose: Comprehensive inventory system with stock tracking, purchase orders, vendor management, maintenance scheduling, and analytics
  * Upstream: ./inventory/* modules, ../database/types/enums | Dependencies: Modular inventory services, stock operations

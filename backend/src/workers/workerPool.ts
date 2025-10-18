@@ -1,4 +1,15 @@
 /**
+ * LOC: 6606C9D55F
+ * WC-GEN-366 | workerPool.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-366 | workerPool.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../shared | Dependencies: worker_threads, os, path

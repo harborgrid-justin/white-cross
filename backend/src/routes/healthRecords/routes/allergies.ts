@@ -1,4 +1,16 @@
 /**
+ * LOC: F10BA31215
+ * Allergies Routes
+ *
+ * UPSTREAM (imports from):
+ *   - allergies.ts (routes/healthRecords/handlers/allergies.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Allergies Routes
  * Purpose: Route definitions for allergy management endpoints
  * Note: Critical PHI data - all routes require JWT auth and comprehensive audit logging

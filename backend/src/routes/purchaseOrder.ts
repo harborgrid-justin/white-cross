@@ -1,4 +1,15 @@
 /**
+ * LOC: 038975FCA1
+ * WC-RTE-PUR-040 | purchaseOrder.ts - Purchase Order Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - purchaseOrderService.ts (services/purchaseOrderService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-PUR-040 | purchaseOrder.ts - Purchase Order Management API Routes
  * Purpose: Hapi.js routes for comprehensive purchase order lifecycle management including vendor integration, approval workflows, and inventory receiving
  * Upstream: ../services/purchaseOrderService/PurchaseOrderService | Dependencies: @hapi/hapi, joi

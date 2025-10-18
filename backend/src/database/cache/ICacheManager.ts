@@ -1,4 +1,20 @@
 /**
+ * LOC: BC0CC377F7
+ * WC-GEN-014 | ICacheManager.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - AllergyRepository.ts (database/repositories/impl/AllergyRepository.ts)
+ *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
+ *   - AuditLogRepository.ts (database/repositories/impl/AuditLogRepository.ts)
+ *   - ChronicConditionRepository.ts (database/repositories/impl/ChronicConditionRepository.ts)
+ *   - ... and 8 more
+ */
+
+/**
  * WC-GEN-014 | ICacheManager.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

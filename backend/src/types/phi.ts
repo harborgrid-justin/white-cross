@@ -1,4 +1,15 @@
 /**
+ * LOC: A2DBEC1FAF
+ * WC-TYP-PHI-066 | phi.ts - HIPAA Protected Health Information Type System
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-TYP-PHI-066 | phi.ts - HIPAA Protected Health Information Type System
  * Purpose: Branded types and type guards for HIPAA-compliant PHI/PII data handling with medical codes
  * Upstream: None | Dependencies: TypeScript branded types, HIPAA compliance standards

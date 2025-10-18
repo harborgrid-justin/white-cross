@@ -1,4 +1,20 @@
 /**
+ * LOC: 30017D67E5
+ * Health Records Module - Joi Validation Schemas
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - allergies.ts (routes/healthRecords/routes/allergies.ts)
+ *   - chronicConditions.ts (routes/healthRecords/routes/chronicConditions.ts)
+ *   - growthMeasurements.ts (routes/healthRecords/routes/growthMeasurements.ts)
+ *   - mainHealthRecords.ts (routes/healthRecords/routes/mainHealthRecords.ts)
+ *   - screenings.ts (routes/healthRecords/routes/screenings.ts)
+ *   - ... and 3 more
+ */
+
+/**
  * Health Records Module - Joi Validation Schemas
  * Purpose: Centralized validation schemas for all health records API endpoints
  * Note: All schemas enforce HIPAA compliance and data integrity requirements

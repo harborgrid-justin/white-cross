@@ -1,4 +1,15 @@
 /**
+ * LOC: E945A8D71C
+ * WC-GEN-305 | helpers.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-305 | helpers.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: crypto

@@ -1,4 +1,16 @@
 /**
+ * LOC: 36F22F30FA
+ * Screenings Routes
+ *
+ * UPSTREAM (imports from):
+ *   - screenings.ts (routes/healthRecords/handlers/screenings.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Screenings Routes
  * Purpose: Route definitions for health screenings (vision, hearing, dental, scoliosis, BMI, mental health)
  * Note: PHI-protected endpoints with follow-up tracking and referral management

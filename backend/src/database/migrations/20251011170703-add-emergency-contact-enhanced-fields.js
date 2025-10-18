@@ -1,4 +1,15 @@
 /**
+ * LOC: 3F16336DFB
+ * WC-GEN-030 | 20251011170703-add-emergency-contact-enhanced-fields.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-030 | 20251011170703-add-emergency-contact-enhanced-fields.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

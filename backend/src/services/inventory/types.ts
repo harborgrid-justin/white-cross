@@ -1,4 +1,20 @@
 /**
+ * LOC: 376759C594
+ * WC-GEN-285 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - alertsService.ts (services/inventory/alertsService.ts)
+ *   - inventoryQueriesService.ts (services/inventory/inventoryQueriesService.ts)
+ *   - inventoryRepository.ts (services/inventory/inventoryRepository.ts)
+ *   - maintenanceService.ts (services/inventory/maintenanceService.ts)
+ *   - purchaseOrderService.ts (services/inventory/purchaseOrderService.ts)
+ *   - ... and 4 more
+ */
+
+/**
  * WC-GEN-285 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

@@ -1,4 +1,17 @@
 /**
+ * LOC: F9739572E7
+ * WC-GEN-266 | searchService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/incidentReport/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/incidentReport/index.ts)
+ */
+
+/**
  * WC-GEN-266 | searchService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models

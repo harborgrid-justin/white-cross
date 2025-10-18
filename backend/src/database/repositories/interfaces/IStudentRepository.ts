@@ -1,4 +1,17 @@
 /**
+ * LOC: 4258B8BFD8
+ * WC-GEN-113 | IStudentRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - IUnitOfWork.ts (database/uow/IUnitOfWork.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
  * WC-GEN-113 | IStudentRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./IRepository | Dependencies: ./IRepository

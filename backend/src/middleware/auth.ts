@@ -1,4 +1,20 @@
 /**
+ * LOC: FFA8084CE0
+ * WC-MID-AUTH-011 | Authentication Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ *   - accessControl.ts (routes/accessControl.ts)
+ *   - administration.ts (routes/administration.ts)
+ *   - audit.ts (routes/audit.ts)
+ *   - compliance.ts (routes/compliance.ts)
+ *   - ... and 4 more
+ */
+
+/**
  * WC-MID-AUTH-011 | Authentication Middleware
  * Purpose: JWT token validation, user authentication, and session management
  * Upstream: shared/auth/jwt, database/models/User | Dependencies: @hapi/hapi, jsonwebtoken

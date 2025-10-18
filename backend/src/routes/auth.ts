@@ -1,4 +1,18 @@
 /**
+ * LOC: 415BD5A60F
+ * WC-RTE-AUTH-029 | Enhanced Authentication API Routes with Shared Utilities
+ *
+ * UPSTREAM (imports from):
+ *   - User.ts (database/models/core/User.ts)
+ *   - index.ts (constants/index.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-AUTH-029 | Enhanced Authentication API Routes with Shared Utilities
  * Purpose: Advanced authentication system with comprehensive JWT management, token refresh, user verification, and Swagger documentation using shared utility functions
  * Upstream: ../database/models/core/User, ../shared auth utilities, Sequelize error handler | Dependencies: @hapi/hapi, Sequelize User model, joi, shared utilities

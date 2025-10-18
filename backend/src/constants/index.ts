@@ -1,4 +1,20 @@
 /**
+ * LOC: E35EF1673A
+ * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - redis.ts (config/redis.ts)
+ *   - swagger.ts (config/swagger.ts)
+ *   - index-sequelize.ts (index-sequelize.ts)
+ *   - index.ts (index.ts)
+ *   - auth-sequelize.ts (middleware/auth-sequelize.ts)
+ *   - ... and 3 more
+ */
+
+/**
  * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
  * Purpose: Global constants, API routes, validation patterns, error messages, config
  * Upstream: process.env variables, .env file | Called by: All application modules

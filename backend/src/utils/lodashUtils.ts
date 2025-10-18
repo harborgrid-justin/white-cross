@@ -1,4 +1,19 @@
 /**
+ * LOC: EAEAB433E0
+ * WC-UTL-LDS-055 | Lodash Healthcare Utilities & Legacy Compatibility Layer
+ *
+ * UPSTREAM (imports from):
+ *   - array.ts (shared/utils/array.ts)
+ *   - object.ts (shared/utils/object.ts)
+ *   - string.ts (shared/utils/string.ts)
+ *   - date.ts (shared/utils/date.ts)
+ *   - validation.ts (shared/utils/validation.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-UTL-LDS-055 | Lodash Healthcare Utilities & Legacy Compatibility Layer
  * Purpose: Healthcare-specific utility functions, mathematical operations, student data
  * Upstream: shared/utils/*, lodash library | Dependencies: lodash, shared/utils/*

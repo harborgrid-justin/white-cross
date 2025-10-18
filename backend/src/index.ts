@@ -1,4 +1,20 @@
 /**
+ * LOC: DCDC3E0B33
+ * WC-IDX-MAIN-001 | Main Application Entry Point & Server Configuration
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (constants/index.ts)
+ *   - auth.ts (routes/auth.ts)
+ *   - students.ts (routes/students.ts)
+ *   - ... and 24 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-MAIN-001 | Main Application Entry Point & Server Configuration
  * Purpose: Hapi.js server initialization, route registration, middleware setup
  * Upstream: config/*, routes/*, middleware/*, database/models, utils/logger, constants

@@ -1,4 +1,17 @@
 /**
+ * LOC: 78694CDF59
+ * WC-GEN-295 | userService-sequelize.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - User.ts (database/models/core/User.ts)
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - BaseService.ts (database/services/BaseService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-295 | userService-sequelize.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../database/models/core/User, ../database/models/core/Student, ../database/services/BaseService | Dependencies: ../database/models/core/User, ../database/models/core/Student, ../database/services/BaseService

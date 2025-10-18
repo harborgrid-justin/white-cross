@@ -1,4 +1,18 @@
 /**
+ * LOC: 1E034453A1
+ * WC-GEN-125 | BaseService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - UserService.ts (database/services/UserService.ts)
+ *   - studentService-sequelize.ts (services/studentService-sequelize.ts)
+ *   - userService-sequelize.ts (services/userService-sequelize.ts)
+ */
+
+/**
  * WC-GEN-125 | BaseService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../models, ../../utils/logger | Dependencies: sequelize, ../models, ../../utils/logger

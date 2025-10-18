@@ -1,4 +1,17 @@
 /**
+ * LOC: 2E1FDCB220
+ * WC-RTE-CFG-033 | configuration.ts - System Configuration Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (types/index.ts)
+ *   - configurationService.ts (services/configurationService.ts)
+ *   - auth.ts (middleware/auth.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-CFG-033 | configuration.ts - System Configuration Management API Routes
  * Purpose: Hapi.js routes for comprehensive system configuration management, settings control, and admin configuration
  * Upstream: ../types/ConfigCategory,ConfigValueType,ConfigScope, ../services/configurationService, ../middleware/auth/AuthRequest | Dependencies: @hapi/hapi, joi

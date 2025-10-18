@@ -1,4 +1,15 @@
 /**
+ * LOC: 70BDB3C415
+ * WC-GEN-026 | 20250111000000-add-medication-enhanced-fields.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-026 | 20250111000000-add-medication-enhanced-fields.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

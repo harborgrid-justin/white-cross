@@ -1,4 +1,16 @@
 /**
+ * LOC: 6FCE2F76CB
+ * WC-GEN-083 | PurchaseOrderItem.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - PurchaseOrder.ts (database/models/inventory/PurchaseOrder.ts)
+ */
+
+/**
  * WC-GEN-083 | PurchaseOrderItem.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize

@@ -1,4 +1,15 @@
 /**
+ * LOC: 574B40010B
+ * WC-GEN-149 | 20251011221125-create-complete-healthcare-schema.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-149 | 20251011221125-create-complete-healthcare-schema.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

@@ -1,4 +1,17 @@
 /**
+ * LOC: 39D12C6A2C
+ * WC-GEN-255 | immunizationsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - healthRecordService.ts (services/health/healthRecordService.ts)
+ *   - importExportService.ts (services/health/importExportService.ts)
+ */
+
+/**
  * WC-GEN-255 | immunizationsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: ../../utils/logger, ../../database/models, ./types

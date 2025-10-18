@@ -1,4 +1,18 @@
 /**
+ * LOC: 51983FF5BD
+ * WC-GEN-111 | IHealthRecordRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ *   - QueryTypes.ts (database/types/QueryTypes.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - IUnitOfWork.ts (database/uow/IUnitOfWork.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
  * WC-GEN-111 | IHealthRecordRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./IRepository, ../../types/QueryTypes | Dependencies: ./IRepository, ../../types/QueryTypes

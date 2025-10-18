@@ -1,4 +1,20 @@
 /**
+ * LOC: 411F8BF03A
+ * WC-SVC-INC-IDX-006 | Incident Report Services Module Index & Exports
+ *
+ * UPSTREAM (imports from):
+ *   - coreService.ts (services/incidentReport/coreService.ts)
+ *   - notificationService.ts (services/incidentReport/notificationService.ts)
+ *   - witnessService.ts (services/incidentReport/witnessService.ts)
+ *   - statisticsService.ts (services/incidentReport/statisticsService.ts)
+ *   - searchService.ts (services/incidentReport/searchService.ts)
+ *   - ... and 1 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-SVC-INC-IDX-006 | Incident Report Services Module Index & Exports
  * Purpose: Centralized exports for all incident-related services and types
  * Upstream: ./coreService, ./notificationService, ./witnessService, ./types, etc.

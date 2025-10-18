@@ -1,4 +1,16 @@
 /**
+ * LOC: 6819AEE9E4
+ * Chronic Conditions Routes
+ *
+ * UPSTREAM (imports from):
+ *   - chronicConditions.ts (routes/healthRecords/handlers/chronicConditions.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Chronic Conditions Routes
  * Purpose: Route definitions for chronic condition management with care plans
  * Note: PHI-protected endpoints with care management and review scheduling

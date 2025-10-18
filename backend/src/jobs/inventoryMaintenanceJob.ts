@@ -1,4 +1,17 @@
 /**
+ * LOC: F737034B34
+ * File: /backend/src/jobs/inventoryMaintenanceJob.ts
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - redis.ts (config/redis.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (jobs/index.ts)
+ */
+
+/**
  * File: /backend/src/jobs/inventoryMaintenanceJob.ts
  * Locator: WC-JOB-INV-071
  * Purpose: Healthcare Inventory Management Automation - Critical medication supply monitoring

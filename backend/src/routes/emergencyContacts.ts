@@ -1,4 +1,15 @@
 /**
+ * LOC: 4C011FD33A
+ * WC-RTE-EMG-036 | emergencyContacts.ts - Emergency Contact Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - emergencyContactService.ts (services/emergencyContactService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-EMG-036 | emergencyContacts.ts - Emergency Contact Management API Routes
  * Purpose: Hapi.js routes for comprehensive emergency contact lifecycle, multi-channel notifications, and crisis communication for student safety
  * Upstream: ../services/emergencyContactService/EmergencyContactService | Dependencies: @hapi/hapi, joi

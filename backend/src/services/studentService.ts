@@ -1,4 +1,16 @@
 /**
+ * LOC: C41E6D37EC
+ * WC-SVC-STU-006 | Student Management Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - students.ts (routes/students.ts)
+ */
+
+/**
  * WC-SVC-STU-006 | Student Management Service
  * Purpose: Core student operations including enrollment, health records, and CRUD
  * Upstream: database/models/Student, validators/studentValidators | Dependencies: Sequelize, validators

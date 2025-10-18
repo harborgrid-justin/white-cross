@@ -1,4 +1,15 @@
 /**
+ * LOC: 1C3AB3EEBA
+ * WC-MID-RBC-049 | Role-Based Access Control Re-export & Legacy Compatibility
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-MID-RBC-049 | Role-Based Access Control Re-export & Legacy Compatibility
  * Purpose: RBAC middleware re-export, maintains backward compatibility
  * Upstream: shared/security/permissionUtils | Dependencies: None (re-export only)

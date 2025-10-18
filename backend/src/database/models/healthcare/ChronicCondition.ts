@@ -1,4 +1,18 @@
 /**
+ * LOC: 9451AE7C18
+ * WC-GEN-064 | ChronicCondition.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - ChronicConditionRepository.ts (database/repositories/impl/ChronicConditionRepository.ts)
+ */
+
+/**
  * WC-GEN-064 | ChronicCondition.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../../types/enums, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../../types/enums

@@ -1,4 +1,17 @@
 /**
+ * LOC: CC70917451
+ * WC-GEN-279 | purchaseOrderService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/inventory/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - inventoryService.ts (services/inventoryService.ts)
+ */
+
+/**
  * WC-GEN-279 | purchaseOrderService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

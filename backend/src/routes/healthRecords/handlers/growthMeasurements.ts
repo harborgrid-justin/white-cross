@@ -1,4 +1,16 @@
 /**
+ * LOC: 5000380D2C
+ * Growth Measurements Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - growthMeasurements.ts (routes/healthRecords/routes/growthMeasurements.ts)
+ */
+
+/**
  * Growth Measurements Handlers
  * Purpose: Track student growth metrics (height, weight, BMI, head circumference) with percentile analysis
  * Note: PHI-protected endpoints with growth trend analysis and concern detection

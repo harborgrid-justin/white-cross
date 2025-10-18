@@ -1,4 +1,15 @@
 /**
+ * LOC: 88F20C704B
+ * WC-GEN-115 | 01-districts-and-schools.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-115 | 01-districts-and-schools.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

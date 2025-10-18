@@ -1,4 +1,15 @@
 /**
+ * LOC: C6BF3D5EA9
+ * WC-SVC-COM-017 | communicationService.ts - Multi-Channel Communication Management Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - communication.ts (routes/communication.ts)
+ */
+
+/**
  * WC-SVC-COM-017 | communicationService.ts - Multi-Channel Communication Management Service
  * Purpose: Comprehensive messaging system with templates, delivery tracking, HIPAA compliance, emergency alerts, and broadcast messaging
  * Upstream: ../database/models, ../utils/communicationValidation, ../shared/communication/* | Dependencies: sequelize, validators

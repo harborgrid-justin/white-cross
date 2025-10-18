@@ -1,4 +1,20 @@
 /**
+ * LOC: 3ADB25290A
+ * WC-GEN-208 | AppointmentService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - AppointmentAvailabilityService.ts (services/appointment/AppointmentAvailabilityService.ts)
+ *   - AppointmentReminderService.ts (services/appointment/AppointmentReminderService.ts)
+ *   - AppointmentWaitlistService.ts (services/appointment/AppointmentWaitlistService.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - ... and 1 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - AppointmentRecurringService.ts (services/appointment/AppointmentRecurringService.ts)
+ */
+
+/**
  * WC-GEN-208 | AppointmentService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../types/appointment, ./AppointmentAvailabilityService | Dependencies: sequelize, ../../utils/logger, ../../types/appointment

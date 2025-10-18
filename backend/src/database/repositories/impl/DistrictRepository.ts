@@ -1,4 +1,19 @@
 /**
+ * LOC: E3AEBD9148
+ * WC-GEN-101 | DistrictRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - District.ts (database/models/administration/District.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ */
+
+/**
  * WC-GEN-101 | DistrictRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../base/BaseRepository, ../../models/administration/District, ../../audit/IAuditLogger | Dependencies: sequelize, ../base/BaseRepository, ../../models/administration/District

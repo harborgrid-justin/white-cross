@@ -1,4 +1,15 @@
 /**
+ * LOC: B5147CE9EF
+ * WC-VAL-USR-061 | userValidators.ts - User Authentication Validation Re-exports
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-VAL-USR-061 | userValidators.ts - User Authentication Validation Re-exports
  * Purpose: Legacy compatibility layer for user validation schemas with deprecation notice
  * Upstream: ../shared/validation/schemas, ../shared/validation/middleware | Dependencies: shared validation utilities

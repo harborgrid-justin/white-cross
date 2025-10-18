@@ -1,4 +1,20 @@
 /**
+ * LOC: AEDD537A37
+ * WC-GEN-013 | IAuditLogger.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - AllergyRepository.ts (database/repositories/impl/AllergyRepository.ts)
+ *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
+ *   - AuditLogRepository.ts (database/repositories/impl/AuditLogRepository.ts)
+ *   - ChronicConditionRepository.ts (database/repositories/impl/ChronicConditionRepository.ts)
+ *   - ... and 9 more
+ */
+
+/**
  * WC-GEN-013 | IAuditLogger.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../types/ExecutionContext | Dependencies: ../types/ExecutionContext

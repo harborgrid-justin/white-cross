@@ -1,4 +1,15 @@
 /**
+ * LOC: 17D8C29D4A
+ * WC-VAL-HLT-059 | healthRecordValidators.ts - Healthcare Data Validation Schemas
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-VAL-HLT-059 | healthRecordValidators.ts - Healthcare Data Validation Schemas
  * Purpose: Comprehensive Joi validation for health records, allergies, conditions, vaccinations, screenings
  * Upstream: ../shared/healthcare/validators, joi | Dependencies: joi, healthcare validators, ICD codes

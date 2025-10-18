@@ -1,4 +1,15 @@
 /**
+ * LOC: 9DF81EFF88
+ * File: /backend/src/shared/utils/object.ts
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - lodashUtils.ts (utils/lodashUtils.ts)
+ */
+
+/**
  * File: /backend/src/shared/utils/object.ts
  * Locator: WC-UTL-OBJ-076
  * Purpose: Healthcare Object Utilities - Medical data manipulation and HIPAA-safe operations

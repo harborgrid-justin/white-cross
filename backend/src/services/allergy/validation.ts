@@ -1,4 +1,17 @@
 /**
+ * LOC: 09B098FD74
+ * WC-GEN-203 | validation.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/allergy/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - bulkOperations.ts (services/allergy/bulkOperations.ts)
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ */
+
+/**
  * WC-GEN-203 | validation.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/models, ./types | Dependencies: sequelize, ../../database/models, ./types

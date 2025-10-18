@@ -1,4 +1,16 @@
 /**
+ * LOC: 82C5104259
+ * WC-RTE-DOC-035 | documents.ts - Document Management System API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - documentService.ts (services/documentService.ts)
+ *   - auth.ts (middleware/auth.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-DOC-035 | documents.ts - Document Management System API Routes  
  * Purpose: Express.js routes for comprehensive document lifecycle management, file operations, digital signatures, and HIPAA-compliant storage
  * Upstream: ../services/documentService/DocumentService, ../middleware/auth/ExpressAuthRequest, ../shared/validation | Dependencies: express, express-validator

@@ -1,4 +1,16 @@
 /**
+ * LOC: 2AE6F37774
+ * Main Health Records Routes
+ *
+ * UPSTREAM (imports from):
+ *   - mainHealthRecords.ts (routes/healthRecords/handlers/mainHealthRecords.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Main Health Records Routes
  * Purpose: Route definitions for core health records CRUD operations
  * Note: All routes are JWT-protected and PHI-compliant with Swagger documentation

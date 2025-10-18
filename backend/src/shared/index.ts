@@ -1,4 +1,20 @@
 /**
+ * LOC: 55D129475C
+ * WC-IDX-SHR-068 | index.ts - Shared Utilities Barrel Export
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - User.ts (database/models/core/User.ts)
+ *   - 03-users-and-assignments.ts (database/seeders/03-users-and-assignments.ts)
+ *   - UserService.ts (database/services/UserService.ts)
+ *   - administration.ts (routes/administration.ts)
+ *   - audit.ts (routes/audit.ts)
+ *   - ... and 4 more
+ */
+
+/**
  * WC-IDX-SHR-068 | index.ts - Shared Utilities Barrel Export
  * Purpose: Central export point for all shared utilities, security, auth, validation, healthcare functions
  * Upstream: ./utils, ./security, ./auth, ./validation, ./database, ./healthcare | Dependencies: shared module exports

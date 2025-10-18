@@ -1,4 +1,15 @@
 /**
+ * LOC: CF294515BA
+ * WC-GEN-174 | 20251011221342-demo-data.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-174 | 20251011221342-demo-data.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

@@ -1,4 +1,15 @@
 /**
+ * LOC: 0C6F7A7925
+ * WC-GEN-122 | 08-appointments-and-incidents.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-122 | 08-appointments-and-incidents.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

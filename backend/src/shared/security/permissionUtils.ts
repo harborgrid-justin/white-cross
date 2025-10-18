@@ -1,4 +1,15 @@
 /**
+ * LOC: A1AF2802A2
+ * WC-GEN-321 | permissionUtils.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-321 | permissionUtils.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: @hapi/hapi, @hapi/boom, ../../database/types/enums

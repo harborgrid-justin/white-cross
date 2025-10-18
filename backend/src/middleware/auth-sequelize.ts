@@ -1,4 +1,16 @@
 /**
+ * LOC: 9E6DB275FA
+ * WC-MID-AUS-044 | Sequelize-Based Authentication Middleware & JWT Token Management
+ *
+ * UPSTREAM (imports from):
+ *   - User.ts (database/models/core/User.ts)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ */
+
+/**
  * WC-MID-AUS-044 | Sequelize-Based Authentication Middleware & JWT Token Management
  * Purpose: JWT authentication for Hapi.js and Express, Sequelize user validation
  * Upstream: database/models/core/User, constants/JWT_CONFIG, constants/ENVIRONMENT

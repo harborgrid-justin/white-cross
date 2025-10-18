@@ -1,4 +1,15 @@
 /**
+ * LOC: F4E8180A28
+ * WC-CFG-DB-012 | Database Configuration
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-CFG-DB-012 | Database Configuration
  * Purpose: Sequelize configuration for PostgreSQL connections and environments
  * Upstream: Environment variables, .env files | Dependencies: sequelize, pg

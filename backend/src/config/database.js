@@ -1,4 +1,15 @@
 /**
+ * LOC: 5F5982B191
+ * WC-CFG-DJS-054 | Sequelize CLI Configuration & Multi-Environment Database Setup
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-CFG-DJS-054 | Sequelize CLI Configuration & Multi-Environment Database Setup
  * Purpose: Database connection config for Sequelize CLI, migrations, seeders
  * Upstream: Environment variables, .env files | Dependencies: dotenv, sequelize

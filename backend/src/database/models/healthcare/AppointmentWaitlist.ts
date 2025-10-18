@@ -1,4 +1,18 @@
 /**
+ * LOC: 0595B3338A
+ * WC-GEN-063 | AppointmentWaitlist.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - User.ts (database/models/core/User.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ */
+
+/**
  * WC-GEN-063 | AppointmentWaitlist.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../../types/enums, ../core/Student | Dependencies: sequelize, ../../config/sequelize, ../../types/enums

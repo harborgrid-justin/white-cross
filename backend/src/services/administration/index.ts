@@ -1,4 +1,20 @@
 /**
+ * LOC: D6E227BB7C
+ * WC-IDX-186 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - settingsOperations.ts (services/administration/settingsOperations.ts)
+ *   - districtOperations.ts (services/administration/districtOperations.ts)
+ *   - schoolOperations.ts (services/administration/schoolOperations.ts)
+ *   - configurationOperations.ts (services/administration/configurationOperations.ts)
+ *   - backupOperations.ts (services/administration/backupOperations.ts)
+ *   - ... and 6 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - administration.ts (routes/administration.ts)
+ */
+
+/**
  * WC-IDX-186 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: Independent module | Dependencies: None

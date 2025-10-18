@@ -1,4 +1,17 @@
 /**
+ * LOC: 52E9541FB8
+ * WC-GEN-261 | documentService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/incidentReport/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/incidentReport/index.ts)
+ */
+
+/**
  * WC-GEN-261 | documentService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: ../../utils/logger, ../../database/models, ./types

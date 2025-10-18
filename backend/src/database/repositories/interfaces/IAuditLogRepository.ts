@@ -1,4 +1,18 @@
 /**
+ * LOC: 7A400E814A
+ * WC-GEN-109 | IAuditLogRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - IUnitOfWork.ts (database/uow/IUnitOfWork.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
  * WC-GEN-109 | IAuditLogRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./IRepository, ../../audit/IAuditLogger | Dependencies: ./IRepository, ../../audit/IAuditLogger

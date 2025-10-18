@@ -1,4 +1,15 @@
 /**
+ * LOC: 25AA0E84BA
+ * WC-GEN-117 | 03-users-and-assignments.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-117 | 03-users-and-assignments.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../shared | Dependencies: sequelize, ../../shared

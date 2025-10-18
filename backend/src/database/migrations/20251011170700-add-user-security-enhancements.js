@@ -1,4 +1,15 @@
 /**
+ * LOC: B5E0AC5DC4
+ * WC-GEN-027 | 20251011170700-add-user-security-enhancements.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-027 | 20251011170700-add-user-security-enhancements.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

@@ -1,3 +1,17 @@
+/**
+ * LOC: F4FAF22C25
+ * Automated Grade Transition Workflow Service
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
 import { Student } from '../database/models';
 import { logger } from '../utils/logger';
 import { sequelize } from '../database/config/sequelize';

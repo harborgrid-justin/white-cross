@@ -1,4 +1,20 @@
 /**
+ * LOC: 7CA75C16EF
+ * Enhanced Features Test Suite
+ *
+ * UPSTREAM (imports from):
+ *   - studentPhotoService.ts (services/studentPhotoService.ts)
+ *   - academicTranscriptService.ts (services/academicTranscriptService.ts)
+ *   - gradeTransitionService.ts (services/gradeTransitionService.ts)
+ *   - healthRiskAssessmentService.ts (services/healthRiskAssessmentService.ts)
+ *   - multiLanguageService.ts (services/multiLanguageService.ts)
+ *   - ... and 4 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * Enhanced Features Test Suite
  * Tests for the 45 production-grade features
  */

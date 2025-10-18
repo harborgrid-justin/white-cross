@@ -1,4 +1,15 @@
 /**
+ * LOC: DF391D8FC2
+ * WC-GEN-023 | 00008-create-inventory.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-023 | 00008-create-inventory.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

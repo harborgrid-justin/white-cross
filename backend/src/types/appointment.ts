@@ -1,4 +1,18 @@
 /**
+ * LOC: BEFED7007B
+ * WC-TYP-APT-063 | appointment.ts - Appointment System Type Definitions
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - AppointmentAvailabilityService.ts (services/appointment/AppointmentAvailabilityService.ts)
+ *   - AppointmentRecurringService.ts (services/appointment/AppointmentRecurringService.ts)
+ *   - AppointmentWaitlistService.ts (services/appointment/AppointmentWaitlistService.ts)
+ *   - NurseAvailabilityService.ts (services/appointment/NurseAvailabilityService.ts)
+ */
+
+/**
  * WC-TYP-APT-063 | appointment.ts - Appointment System Type Definitions
  * Purpose: TypeScript interfaces and types for healthcare appointment scheduling, nurse availability, waitlist management
  * Upstream: None | Dependencies: TypeScript core types, Date objects

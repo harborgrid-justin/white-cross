@@ -1,4 +1,15 @@
 /**
+ * LOC: 3BA34FF1EB
+ * WC-GEN-244 | utils.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-244 | utils.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

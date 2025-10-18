@@ -1,4 +1,18 @@
 /**
+ * LOC: 80CA916D7C
+ * WC-GEN-054 | Medication.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - MedicationInventory.ts (database/models/medications/MedicationInventory.ts)
+ *   - StudentMedication.ts (database/models/medications/StudentMedication.ts)
+ *   - MedicationRepository.ts (database/repositories/impl/MedicationRepository.ts)
+ */
+
+/**
  * WC-GEN-054 | Medication.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize

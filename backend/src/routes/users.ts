@@ -1,4 +1,15 @@
 /**
+ * LOC: BDD14AD94C
+ * WC-RTE-USR-024 | User Management API Routes with Role-Based Access Control
+ *
+ * UPSTREAM (imports from):
+ *   - userService.ts (services/userService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-USR-024 | User Management API Routes with Role-Based Access Control
  * Purpose: Complete user lifecycle management API with role-based permissions, password management, and user statistics
  * Upstream: ../services/userService, JWT auth middleware | Dependencies: @hapi/hapi, joi validation, JWT authentication

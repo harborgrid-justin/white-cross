@@ -1,4 +1,19 @@
 /**
+ * LOC: 1BEF4E3EE5
+ * WC-SVC-INC-CORE-005 | Incident Report Core Business Logic Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/incidentReport/types.ts)
+ *   - validationService.ts (services/incidentReport/validationService.ts)
+ *   - notificationService.ts (services/incidentReport/notificationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/incidentReport/index.ts)
+ */
+
+/**
  * WC-SVC-INC-CORE-005 | Incident Report Core Business Logic Service
  * Purpose: CRUD operations, incident lifecycle management, student safety tracking
  * Upstream: database/models, utils/logger, ./types, ./validationService, ./notificationService

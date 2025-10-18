@@ -1,4 +1,17 @@
 /**
+ * LOC: A2D3373EE8
+ * WC-GEN-085 | MedicationInventory.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
+ *   - Medication.ts (database/models/core/Medication.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ */
+
+/**
  * WC-GEN-085 | MedicationInventory.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../base/AuditableModel

@@ -1,4 +1,16 @@
 /**
+ * LOC: BA8BBEB3BA
+ * WC-GEN-231 | queryOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/chronicCondition/index.ts)
+ */
+
+/**
  * WC-GEN-231 | queryOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../utils/sequelizeErrorHandler, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../utils/sequelizeErrorHandler

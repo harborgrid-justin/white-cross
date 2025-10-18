@@ -1,4 +1,15 @@
 /**
+ * LOC: 2B0BD1838A
+ * WC-GEN-355 | sqlSanitizer.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-355 | sqlSanitizer.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../logger | Dependencies: ../logger

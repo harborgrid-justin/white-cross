@@ -1,4 +1,19 @@
 /**
+ * LOC: 0F2B68D86D
+ * WC-SVC-AUD-015 | auditService.ts - Audit Service Legacy Re-export Module (DEPRECATED)
+ *
+ * UPSTREAM (imports from):
+ *   - auditService.ts (services/auditService.ts)
+ *   - index.ts (services/audit/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - permissionOperations.ts (services/accessControl/permissionOperations.ts)
+ *   - rbacOperations.ts (services/accessControl/rbacOperations.ts)
+ *   - roleOperations.ts (services/accessControl/roleOperations.ts)
+ *   - auditService.ts (services/auditService.ts)
+ */
+
+/**
  * WC-SVC-AUD-015 | auditService.ts - Audit Service Legacy Re-export Module (DEPRECATED)
  * Purpose: Backward compatibility re-exports for deprecated monolithic audit service, redirects to modular audit/*
  * Upstream: ./audit/index.ts, ./audit/* modules | Dependencies: Modular audit services from ./audit directory

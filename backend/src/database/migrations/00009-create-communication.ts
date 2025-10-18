@@ -1,4 +1,15 @@
 /**
+ * LOC: A0CB1597C8
+ * WC-GEN-024 | 00009-create-communication.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-024 | 00009-create-communication.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

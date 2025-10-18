@@ -1,4 +1,16 @@
 /**
+ * LOC: 3315E3BD39
+ * WC-RTE-AUTH-028 | Authentication API Routes with Sequelize Integration
+ *
+ * UPSTREAM (imports from):
+ *   - User.ts (database/models/core/User.ts)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ */
+
+/**
  * WC-RTE-AUTH-028 | Authentication API Routes with Sequelize Integration
  * Purpose: Core authentication system with user registration, login, JWT token management, and role-based access control using Sequelize ORM
  * Upstream: ../database/models/core/User, ../constants, JWT configuration | Dependencies: @hapi/hapi, Sequelize User model, bcryptjs, jsonwebtoken, joi

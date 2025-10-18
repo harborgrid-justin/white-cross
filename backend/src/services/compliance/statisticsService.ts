@@ -1,4 +1,16 @@
 /**
+ * LOC: A159BCB2D6
+ * WC-GEN-242 | statisticsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - types.ts (services/compliance/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/compliance/index.ts)
+ */
+
+/**
  * WC-GEN-242 | statisticsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

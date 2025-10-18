@@ -1,4 +1,15 @@
 /**
+ * LOC: C26FE36899
+ * WC-GEN-345 | businessLogic.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-345 | businessLogic.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/models | Dependencies: sequelize, ../../database/models

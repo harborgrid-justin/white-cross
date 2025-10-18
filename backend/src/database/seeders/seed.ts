@@ -1,4 +1,15 @@
 /**
+ * LOC: D7F6D66F96
+ * WC-GEN-124 | seed.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.service.ts (database/services/sequelize.service.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-124 | seed.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../services/sequelize.service | Dependencies: ../services/sequelize.service, sequelize, dotenv

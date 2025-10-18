@@ -1,4 +1,20 @@
 /**
+ * LOC: DD55825F1E
+ * WC-GEN-132 | SequelizeUnitOfWork.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - IUnitOfWork.ts (database/uow/IUnitOfWork.ts)
+ *   - IHealthRecordRepository.ts (database/repositories/interfaces/IHealthRecordRepository.ts)
+ *   - IAllergyRepository.ts (database/repositories/interfaces/IAllergyRepository.ts)
+ *   - IChronicConditionRepository.ts (database/repositories/interfaces/IChronicConditionRepository.ts)
+ *   - ... and 11 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-132 | SequelizeUnitOfWork.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../config/sequelize, ./IUnitOfWork, ../repositories/interfaces/IHealthRecordRepository | Dependencies: sequelize, ../config/sequelize, ./IUnitOfWork

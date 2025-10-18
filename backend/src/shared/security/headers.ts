@@ -1,4 +1,15 @@
 /**
+ * LOC: F33379BB22
+ * WC-GEN-319 | headers.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-319 | headers.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../logging/logger | Dependencies: ../logging/logger

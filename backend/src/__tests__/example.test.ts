@@ -1,4 +1,15 @@
 /**
+ * LOC: ED3EFEF99A
+ * WC-GEN-367 | example.test.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.service.ts (database/services/sequelize.service.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-367 | example.test.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./helpers/testDatabase, ../database/services/sequelize.service | Dependencies: ./helpers/testDatabase, ../database/services/sequelize.service

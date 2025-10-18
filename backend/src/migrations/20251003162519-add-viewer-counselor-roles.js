@@ -1,4 +1,15 @@
 /**
+ * LOC: 88865F97C9
+ * WC-GEN-147 | 20251003162519-add-viewer-counselor-roles.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-147 | 20251003162519-add-viewer-counselor-roles.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

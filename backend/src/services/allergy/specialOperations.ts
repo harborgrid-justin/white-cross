@@ -1,4 +1,18 @@
 /**
+ * LOC: 9BBF7F5E4C
+ * WC-GEN-200 | specialOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/allergy/index.ts)
+ */
+
+/**
  * WC-GEN-200 | specialOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../utils/sequelizeErrorHandler, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../utils/sequelizeErrorHandler

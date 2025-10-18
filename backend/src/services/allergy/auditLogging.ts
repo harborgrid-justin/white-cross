@@ -1,4 +1,19 @@
 /**
+ * LOC: 3E34DA2D42
+ * WC-GEN-195 | auditLogging.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/allergy/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - bulkOperations.ts (services/allergy/bulkOperations.ts)
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ *   - queryOperations.ts (services/allergy/queryOperations.ts)
+ */
+
+/**
  * WC-GEN-195 | auditLogging.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: ../../utils/logger, ../../database/models, ./types

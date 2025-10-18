@@ -1,4 +1,16 @@
 /**
+ * LOC: AD34A8F353
+ * Search and Utility Routes
+ *
+ * UPSTREAM (imports from):
+ *   - searchAndUtility.ts (routes/healthRecords/handlers/searchAndUtility.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Search and Utility Routes
  * Purpose: Route definitions for cross-record search, bulk operations, and data import/export
  * Note: Enhanced security for bulk operations with comprehensive audit logging

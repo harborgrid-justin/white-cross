@@ -1,4 +1,17 @@
 /**
+ * LOC: 97740ACDE5
+ * WC-GEN-179 | rbacOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - auditService.ts (services/auditService.ts)
+ *   - types.ts (services/accessControl/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/accessControl/index.ts)
+ */
+
+/**
  * WC-GEN-179 | rbacOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

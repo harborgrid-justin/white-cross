@@ -1,4 +1,17 @@
 /**
+ * LOC: C94B779741
+ * WC-GEN-180 | roleOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - auditService.ts (services/auditService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/accessControl/index.ts)
+ */
+
+/**
  * WC-GEN-180 | roleOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

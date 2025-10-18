@@ -1,4 +1,15 @@
 /**
+ * LOC: B7B8EC186C
+ * WC-RTE-COM-031 | Multi-Channel Communication & Notification API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - communicationService.ts (services/communicationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-COM-031 | Multi-Channel Communication & Notification API Routes
  * Purpose: Comprehensive communication system with message templates, multi-channel delivery (SMS/Email/Voice/Push), emergency alerts, scheduling, translation, and delivery tracking
  * Upstream: ../services/communicationService, JWT authentication | Dependencies: @hapi/hapi, communication service, joi validation

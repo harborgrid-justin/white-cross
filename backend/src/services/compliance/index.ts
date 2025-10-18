@@ -1,4 +1,20 @@
 /**
+ * LOC: 8C5AF60B9B
+ * WC-IDX-239 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - complianceReportService.ts (services/compliance/complianceReportService.ts)
+ *   - checklistService.ts (services/compliance/checklistService.ts)
+ *   - consentService.ts (services/compliance/consentService.ts)
+ *   - policyService.ts (services/compliance/policyService.ts)
+ *   - auditService.ts (services/compliance/auditService.ts)
+ *   - ... and 2 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - complianceService.ts (services/complianceService.ts)
+ */
+
+/**
  * WC-IDX-239 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: ./complianceReportService, ./checklistService, ./consentService | Dependencies: ./complianceReportService, ./checklistService, ./consentService

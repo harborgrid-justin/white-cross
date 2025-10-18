@@ -1,4 +1,17 @@
 /**
+ * LOC: F43D4788FA
+ * WC-MID-PRF-047 | Performance Monitoring & APM Integration Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - redis.ts (config/redis.ts)
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-MID-PRF-047 | Performance Monitoring & APM Integration Middleware
  * Purpose: Request timing, memory tracking, database monitoring, APM integration
  * Upstream: utils/logger, config/redis, database/config/sequelize

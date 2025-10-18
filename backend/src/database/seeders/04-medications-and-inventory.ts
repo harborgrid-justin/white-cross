@@ -1,4 +1,15 @@
 /**
+ * LOC: 92AE5B28E9
+ * WC-GEN-118 | 04-medications-and-inventory.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-118 | 04-medications-and-inventory.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

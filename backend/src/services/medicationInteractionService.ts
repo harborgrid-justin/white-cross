@@ -1,3 +1,16 @@
+/**
+ * LOC: 161334FAAD
+ * Medication Interaction Checker Service
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
 import { Medication, StudentMedication } from '../database/models';
 import { logger } from '../utils/logger';
 

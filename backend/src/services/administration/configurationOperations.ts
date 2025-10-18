@@ -1,4 +1,19 @@
 /**
+ * LOC: 17C3E9D263
+ * WC-GEN-184 | configurationOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/administration/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/administration/index.ts)
+ *   - settingsOperations.ts (services/administration/settingsOperations.ts)
+ */
+
+/**
  * WC-GEN-184 | configurationOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

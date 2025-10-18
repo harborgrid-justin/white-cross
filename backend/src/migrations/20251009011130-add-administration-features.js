@@ -1,4 +1,15 @@
 /**
+ * LOC: EC9B2B1795
+ * WC-GEN-148 | 20251009011130-add-administration-features.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-148 | 20251009011130-add-administration-features.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

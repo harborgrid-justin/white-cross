@@ -1,4 +1,17 @@
 /**
+ * LOC: 29032E7A42
+ * WC-MID-AUD-043 | HIPAA-Compliant Audit Logging Middleware & PHI Access Tracking
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-MID-AUD-043 | HIPAA-Compliant Audit Logging Middleware & PHI Access Tracking
  * Purpose: Comprehensive audit trail for PHI access, HIPAA compliance monitoring
  * Upstream: database/models/AuditLog, utils/logger, database/types/enums, auth middleware

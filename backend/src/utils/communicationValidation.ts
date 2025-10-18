@@ -1,4 +1,15 @@
 /**
+ * LOC: 571F2F3666
+ * WC-UTL-CMV-057 | HIPAA-Compliant Communication Validation & Message Processing
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-UTL-CMV-057 | HIPAA-Compliant Communication Validation & Message Processing
  * Purpose: Healthcare message validation, PHI protection, emergency alert compliance
  * Upstream: database/types/enums, Joi validation library | Dependencies: joi, enums

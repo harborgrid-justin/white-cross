@@ -1,4 +1,15 @@
 /**
+ * LOC: F45BFDA49B
+ * WC-RTE-MED-007 | Medication Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - medicationService.ts (services/medicationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-MED-007 | Medication Management API Routes
  * Purpose: HTTP endpoints for medication CRUD, administration logging, and inventory
  * Upstream: services/medicationService, middleware/auth, validators | Dependencies: Hapi.js, Joi

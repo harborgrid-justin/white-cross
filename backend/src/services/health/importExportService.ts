@@ -1,4 +1,18 @@
 /**
+ * LOC: 555040BDA5
+ * WC-GEN-256 | importExportService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordRepository.ts (services/health/healthRecordRepository.ts)
+ *   - allergiesService.ts (services/health/allergiesService.ts)
+ *   - immunizationsService.ts (services/health/immunizationsService.ts)
+ *   - chronicConditionsService.ts (services/health/chronicConditionsService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - healthRecordService.ts (services/health/healthRecordService.ts)
+ */
+
+/**
  * WC-GEN-256 | importExportService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../models, ./types, ./healthRecordRepository | Dependencies: sequelize, ../../models, ./types

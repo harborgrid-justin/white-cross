@@ -1,4 +1,20 @@
 /**
+ * LOC: 65508D02C5
+ * WC-GEN-128 | enums.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BackupLog.ts (database/models/administration/BackupLog.ts)
+ *   - License.ts (database/models/administration/License.ts)
+ *   - PerformanceMetric.ts (database/models/administration/PerformanceMetric.ts)
+ *   - SystemConfiguration.ts (database/models/administration/SystemConfiguration.ts)
+ *   - TrainingModule.ts (database/models/administration/TrainingModule.ts)
+ *   - ... and 87 more
+ */
+
+/**
  * WC-GEN-128 | enums.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

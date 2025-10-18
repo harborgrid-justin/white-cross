@@ -1,4 +1,16 @@
 /**
+ * LOC: 3BCF8B9CC4
+ * Allergies Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - allergies.ts (routes/healthRecords/routes/allergies.ts)
+ */
+
+/**
  * Allergies Handlers
  * Purpose: Manage student allergy records with severity tracking and contraindication checking
  * Note: Critical PHI data - all operations are audited for HIPAA compliance

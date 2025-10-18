@@ -1,4 +1,16 @@
 /**
+ * LOC: 91A8A03CD4
+ * WC-GEN-257 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - analyticsService.ts (services/health/analyticsService.ts)
+ *   - vitalSignsService.ts (services/health/vitalSignsService.ts)
+ */
+
+/**
  * WC-GEN-257 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

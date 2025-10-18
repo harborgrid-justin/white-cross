@@ -1,4 +1,20 @@
 /**
+ * LOC: D79D503133
+ * WC-GEN-316 | logger.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - auditLogService.ts (services/audit/auditLogService.ts)
+ *   - auditQueryService.ts (services/audit/auditQueryService.ts)
+ *   - auditStatisticsService.ts (services/audit/auditStatisticsService.ts)
+ *   - auditUtilsService.ts (services/audit/auditUtilsService.ts)
+ *   - complianceReportingService.ts (services/audit/complianceReportingService.ts)
+ *   - ... and 12 more
+ */
+
+/**
  * WC-GEN-316 | logger.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: winston

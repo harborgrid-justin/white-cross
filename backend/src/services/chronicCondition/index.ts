@@ -1,4 +1,17 @@
 /**
+ * LOC: EB979020E7
+ * WC-IDX-230 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - crudOperations.ts (services/chronicCondition/crudOperations.ts)
+ *   - queryOperations.ts (services/chronicCondition/queryOperations.ts)
+ *   - businessLogic.ts (services/chronicCondition/businessLogic.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-230 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: ../../database/models, ./crudOperations, ./queryOperations | Dependencies: sequelize, ../../database/models, ./crudOperations

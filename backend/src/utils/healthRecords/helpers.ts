@@ -1,4 +1,15 @@
 /**
+ * LOC: 8102259F4B
+ * WC-GEN-347 | helpers.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (utils/healthRecords/index.ts)
+ */
+
+/**
  * WC-GEN-347 | helpers.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: crypto

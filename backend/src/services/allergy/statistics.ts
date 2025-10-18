@@ -1,4 +1,18 @@
 /**
+ * LOC: D2A55DD383
+ * WC-GEN-201 | statistics.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/allergy/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/allergy/index.ts)
+ */
+
+/**
  * WC-GEN-201 | statistics.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../utils/sequelizeErrorHandler, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../utils/sequelizeErrorHandler

@@ -1,4 +1,15 @@
 /**
+ * LOC: C1955C1077
+ * WC-GEN-232 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - businessLogic.ts (services/chronicCondition/businessLogic.ts)
+ */
+
+/**
  * WC-GEN-232 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

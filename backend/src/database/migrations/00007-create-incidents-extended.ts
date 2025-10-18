@@ -1,4 +1,15 @@
 /**
+ * LOC: 47385DDAE5
+ * WC-GEN-022 | 00007-create-incidents-extended.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-022 | 00007-create-incidents-extended.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

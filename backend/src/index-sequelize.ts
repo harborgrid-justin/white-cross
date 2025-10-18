@@ -1,4 +1,20 @@
 /**
+ * LOC: 036226009B
+ * WC-IDX-SEQ-002 | Sequelize Database Entry Point & Alternative Server Configuration
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (constants/index.ts)
+ *   - auth-sequelize.ts (routes/auth-sequelize.ts)
+ *   - auth-sequelize.ts (middleware/auth-sequelize.ts)
+ *   - ... and 3 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-SEQ-002 | Sequelize Database Entry Point & Alternative Server Configuration
  * Purpose: Alternative Hapi.js server with Sequelize-specific initialization
  * Upstream: database/config/sequelize, routes/auth-sequelize, middleware/*, constants

@@ -1,4 +1,16 @@
 /**
+ * LOC: 99DD84467C
+ * WC-RTE-ACL-025 | Access Control & Security Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (services/accessControl/index.ts)
+ *   - auth.ts (middleware/auth.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-ACL-025 | Access Control & Security Management API Routes
  * Purpose: Comprehensive RBAC system with role/permission management, session control, security incident tracking, and IP restrictions
  * Upstream: ../services/accessControl, ../middleware/auth, express validation | Dependencies: express, express-validator, auth middleware

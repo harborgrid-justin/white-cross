@@ -1,4 +1,17 @@
 /**
+ * LOC: 4A90C0744B
+ * WC-GEN-213 | NurseAvailabilityService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - appointment.ts (types/appointment.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
  * WC-GEN-213 | NurseAvailabilityService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../types/appointment | Dependencies: sequelize, ../../utils/logger, ../../database/models

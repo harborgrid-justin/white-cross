@@ -1,4 +1,20 @@
 /**
+ * LOC: 1A882E668E
+ * WC-GEN-072 | IncidentReport.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - User.ts (database/models/core/User.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - UserService.ts (database/services/UserService.ts)
+ */
+
+/**
  * WC-GEN-072 | IncidentReport.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../../types/enums, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../../types/enums

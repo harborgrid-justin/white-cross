@@ -1,4 +1,16 @@
 /**
+ * LOC: BA2E757889
+ * WC-GEN-110 | IChronicConditionRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - IUnitOfWork.ts (database/uow/IUnitOfWork.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
  * WC-GEN-110 | IChronicConditionRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./IRepository | Dependencies: ./IRepository

@@ -1,4 +1,16 @@
 /**
+ * LOC: 7C2B963143
+ * WC-SVC-DSH-018 | dashboardService.ts - Dashboard Analytics and Statistics Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - dashboard.ts (routes/dashboard.ts)
+ */
+
+/**
  * WC-SVC-DSH-018 | dashboardService.ts - Dashboard Analytics and Statistics Service
  * Purpose: Real-time dashboard data aggregation with performance caching, trend analysis, and multi-module statistics
  * Upstream: ../database/models, studentService, medicationService, appointmentService, incidentService | Dependencies: sequelize aggregation

@@ -1,4 +1,16 @@
 /**
+ * LOC: 6BE10E91B6
+ * WC-GEN-249 | emergencyContactService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - emergencyContacts.ts (routes/emergencyContacts.ts)
+ */
+
+/**
  * WC-GEN-249 | emergencyContactService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../utils/logger, ../database/models, ../database/types/enums | Dependencies: sequelize, ../utils/logger, ../database/models

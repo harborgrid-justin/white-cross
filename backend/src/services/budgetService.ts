@@ -1,4 +1,15 @@
 /**
+ * LOC: 1BCA97F23A
+ * WC-GEN-227 | budgetService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - budget.ts (routes/budget.ts)
+ */
+
+/**
  * WC-GEN-227 | budgetService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../utils/logger, ../database/models | Dependencies: sequelize, ../utils/logger, ../database/models

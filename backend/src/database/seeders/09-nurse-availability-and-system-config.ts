@@ -1,4 +1,15 @@
 /**
+ * LOC: 4E316B1264
+ * WC-GEN-123 | 09-nurse-availability-and-system-config.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-123 | 09-nurse-availability-and-system-config.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

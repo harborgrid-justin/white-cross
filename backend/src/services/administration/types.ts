@@ -1,4 +1,20 @@
 /**
+ * LOC: 27E66906B7
+ * WC-GEN-193 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - auditOperations.ts (services/administration/auditOperations.ts)
+ *   - backupOperations.ts (services/administration/backupOperations.ts)
+ *   - configurationOperations.ts (services/administration/configurationOperations.ts)
+ *   - districtOperations.ts (services/administration/districtOperations.ts)
+ *   - licenseOperations.ts (services/administration/licenseOperations.ts)
+ *   - ... and 5 more
+ */
+
+/**
  * WC-GEN-193 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

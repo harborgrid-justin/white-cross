@@ -1,4 +1,15 @@
 /**
+ * LOC: ED34E1FC61
+ * WC-RTE-INC-023 | incidentReports.ts - Comprehensive Incident Management API Routes with Evidence Tracking
+ *
+ * UPSTREAM (imports from):
+ *   - incidentReportService.ts (services/incidentReportService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-INC-023 | incidentReports.ts - Comprehensive Incident Management API Routes with Evidence Tracking
  * Purpose: Complete incident reporting system API with witness statements, follow-up actions, evidence handling, compliance tracking
  * Upstream: ../services/incidentReportService | Dependencies: @hapi/hapi, joi, JWT auth middleware

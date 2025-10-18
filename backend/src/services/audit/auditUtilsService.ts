@@ -1,4 +1,17 @@
 /**
+ * LOC: 1935BD161A
+ * WC-GEN-220 | auditUtilsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/audit/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/audit/index.ts)
+ */
+
+/**
  * WC-GEN-220 | auditUtilsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../shared/logging/logger, ../../database/types/enums, ./types | Dependencies: ../../shared/logging/logger, ../../database/types/enums, ./types

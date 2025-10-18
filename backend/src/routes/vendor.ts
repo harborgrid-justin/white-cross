@@ -1,4 +1,15 @@
 /**
+ * LOC: 2A439AECEA
+ * WC-RTE-VEN-042 | vendor.ts - Medical Supply Vendor Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - vendorService.ts (services/vendorService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-VEN-042 | vendor.ts - Medical Supply Vendor Management API Routes
  * Purpose: Hapi.js routes for comprehensive vendor relationship management including supplier evaluation, price comparison, and procurement integration
  * Upstream: ../services/vendorService/VendorService,CreateVendorData,UpdateVendorData | Dependencies: @hapi/hapi, joi

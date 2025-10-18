@@ -1,4 +1,16 @@
 /**
+ * LOC: 49DE6BD246
+ * WC-MID-SEC-050 | Hapi.js Security Configuration & Headers Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-MID-SEC-050 | Hapi.js Security Configuration & Headers Middleware
  * Purpose: Security plugin registration, OWASP headers, HTTPS enforcement
  * Upstream: OWASP security guidelines, @hapi/boom | Dependencies: @hapi/hapi, @hapi/boom

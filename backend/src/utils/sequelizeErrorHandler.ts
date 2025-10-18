@@ -1,4 +1,20 @@
 /**
+ * LOC: 9202B0D88C
+ * WC-UTL-SEH-056 | Sequelize Error Handler Re-export & Legacy Compatibility
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - auth.ts (routes/auth.ts)
+ *   - bulkOperations.ts (services/allergy/bulkOperations.ts)
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ *   - queryOperations.ts (services/allergy/queryOperations.ts)
+ *   - specialOperations.ts (services/allergy/specialOperations.ts)
+ *   - ... and 4 more
+ */
+
+/**
  * WC-UTL-SEH-056 | Sequelize Error Handler Re-export & Legacy Compatibility
  * Purpose: Database error handling re-export, maintains backward compatibility
  * Upstream: shared/database/errorHandler | Dependencies: None (re-export only)

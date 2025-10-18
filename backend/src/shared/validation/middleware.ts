@@ -1,4 +1,15 @@
 /**
+ * LOC: 1BD5C63D7E
+ * WC-GEN-335 | middleware.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-335 | middleware.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../logging/logger | Dependencies: express, express-validator, joi

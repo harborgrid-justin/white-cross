@@ -1,4 +1,16 @@
 /**
+ * LOC: 4F8B6128F9
+ * WC-GEN-069 | Vaccination.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ */
+
+/**
  * WC-GEN-069 | Vaccination.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../../types/enums, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../../types/enums

@@ -1,4 +1,18 @@
 /**
+ * LOC: D3632073F7
+ * WC-GEN-188 | performanceOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/administration/index.ts)
+ *   - systemHealthOperations.ts (services/administration/systemHealthOperations.ts)
+ */
+
+/**
  * WC-GEN-188 | performanceOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

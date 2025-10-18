@@ -1,4 +1,16 @@
 /**
+ * LOC: 7359200817
+ * WC-SVC-MED-005 | Medication Management Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - validators.ts (shared/healthcare/validators.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - medications.ts (routes/medications.ts)
+ */
+
+/**
  * WC-SVC-MED-005 | Medication Management Service
  * Purpose: Core medication operations including CRUD, validation, and safety checks
  * Upstream: database/models/Medication, validators/medicationValidators | Dependencies: Sequelize, validators

@@ -1,4 +1,17 @@
 /**
+ * LOC: 062EC27F4E
+ * WC-GEN-190 | settingsOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - types.ts (services/administration/types.ts)
+ *   - configurationOperations.ts (services/administration/configurationOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/administration/index.ts)
+ */
+
+/**
  * WC-GEN-190 | settingsOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ./types, ./configurationOperations | Dependencies: ../../utils/logger, ./types, ./configurationOperations

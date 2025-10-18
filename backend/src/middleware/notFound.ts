@@ -1,4 +1,15 @@
 /**
+ * LOC: CA4E722103
+ * WC-MID-404-046 | Express 404 Not Found Handler & Route Fallback Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-MID-404-046 | Express 404 Not Found Handler & Route Fallback Middleware
  * Purpose: Handles unmatched routes with standardized 404 responses
  * Upstream: None (fallback middleware) | Dependencies: express

@@ -1,4 +1,15 @@
 /**
+ * LOC: 38F4E7BD98
+ * WC-IDX-107 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/repositories/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/repositories/index.ts)
+ */
+
+/**
  * WC-IDX-107 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: Independent module | Dependencies: @/database/repositories

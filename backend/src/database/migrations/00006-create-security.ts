@@ -1,4 +1,15 @@
 /**
+ * LOC: 5E4613AF60
+ * WC-GEN-021 | 00006-create-security.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-021 | 00006-create-security.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

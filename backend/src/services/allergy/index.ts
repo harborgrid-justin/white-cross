@@ -1,4 +1,19 @@
 /**
+ * LOC: A6E43C3C24
+ * WC-IDX-198 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ *   - queryOperations.ts (services/allergy/queryOperations.ts)
+ *   - specialOperations.ts (services/allergy/specialOperations.ts)
+ *   - statistics.ts (services/allergy/statistics.ts)
+ *   - bulkOperations.ts (services/allergy/bulkOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-198 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: Independent module | Dependencies: None

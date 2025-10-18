@@ -1,4 +1,16 @@
 /**
+ * LOC: BD2E2442B0
+ * Growth Measurements Routes
+ *
+ * UPSTREAM (imports from):
+ *   - growthMeasurements.ts (routes/healthRecords/handlers/growthMeasurements.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Growth Measurements Routes
  * Purpose: Route definitions for growth tracking (height, weight, BMI, head circumference)
  * Note: PHI-protected endpoints with growth trend analysis and concern detection

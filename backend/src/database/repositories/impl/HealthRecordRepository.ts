@@ -1,4 +1,21 @@
 /**
+ * LOC: 0F9A4EE093
+ * WC-GEN-102 | HealthRecordRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - HealthRecord.ts (database/models/healthcare/HealthRecord.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - ... and 2 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
  * WC-GEN-102 | HealthRecordRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../base/BaseRepository, ../../models/healthcare/HealthRecord, ../interfaces/IHealthRecordRepository | Dependencies: sequelize, ../base/BaseRepository, ../../models/healthcare/HealthRecord

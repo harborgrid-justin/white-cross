@@ -1,4 +1,15 @@
 /**
+ * LOC: 634FFC1ED7
+ * WC-MID-SHD-051 | OWASP Security Headers & CSP Implementation Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-MID-SHD-051 | OWASP Security Headers & CSP Implementation Middleware
  * Purpose: Comprehensive HTTP security headers, CSP, HSTS, HIPAA PHI protection
  * Upstream: utils/logger, OWASP security guidelines, crypto API

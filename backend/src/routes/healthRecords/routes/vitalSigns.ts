@@ -1,4 +1,16 @@
 /**
+ * LOC: 7CDF1FF8F0
+ * Vital Signs Routes
+ *
+ * UPSTREAM (imports from):
+ *   - vitalSigns.ts (routes/healthRecords/handlers/vitalSigns.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Vital Signs Routes
  * Purpose: Route definitions for vital signs recording and trend analysis
  * Note: PHI-protected endpoints with anomaly detection for concerning patterns

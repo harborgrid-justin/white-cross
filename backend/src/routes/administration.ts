@@ -1,4 +1,17 @@
 /**
+ * LOC: 599E4527A2
+ * WC-RTE-ADM-026 | System Administration & Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *   - index.ts (services/administration/index.ts)
+ *   - auth.ts (middleware/auth.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-ADM-026 | System Administration & Management API Routes
  * Purpose: Comprehensive administration API for system settings, user management, district/school management, configuration, backups, performance monitoring, licensing, training modules, and audit logging
  * Upstream: ../services/administration, ../middleware/auth, express validation | Dependencies: express, express-validator, auth middleware

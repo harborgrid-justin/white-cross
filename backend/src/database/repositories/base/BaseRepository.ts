@@ -1,4 +1,24 @@
 /**
+ * LOC: 4E2EDCC3E2
+ * WC-GEN-096 | BaseRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - AllergyRepository.ts (database/repositories/impl/AllergyRepository.ts)
+ *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
+ *   - AuditLogRepository.ts (database/repositories/impl/AuditLogRepository.ts)
+ *   - ChronicConditionRepository.ts (database/repositories/impl/ChronicConditionRepository.ts)
+ *   - DistrictRepository.ts (database/repositories/impl/DistrictRepository.ts)
+ *   - ... and 5 more
+ */
+
+/**
  * WC-GEN-096 | BaseRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../interfaces/IRepository, ../../types/ExecutionContext, ../../types/QueryTypes | Dependencies: sequelize, ../interfaces/IRepository, ../../types/ExecutionContext

@@ -1,4 +1,15 @@
 /**
+ * LOC: E7ADCB7204
+ * WC-MID-RTL-048 | Redis-Based Rate Limiting & API Abuse Prevention Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-MID-RTL-048 | Redis-Based Rate Limiting & API Abuse Prevention Middleware
  * Purpose: OWASP API security, brute force protection, PHI harvesting prevention
  * Upstream: utils/logger, Redis client, OWASP security guidelines

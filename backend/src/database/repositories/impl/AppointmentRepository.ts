@@ -1,4 +1,19 @@
 /**
+ * LOC: 1B1E91BBDA
+ * WC-GEN-098 | AppointmentRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - Appointment.ts (database/models/healthcare/Appointment.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ */
+
+/**
  * WC-GEN-098 | AppointmentRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../base/BaseRepository, ../../models/healthcare/Appointment, ../../audit/IAuditLogger | Dependencies: sequelize, ../base/BaseRepository, ../../models/healthcare/Appointment

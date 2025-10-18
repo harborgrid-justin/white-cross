@@ -1,4 +1,15 @@
 /**
+ * LOC: 63286DA2D6
+ * WC-RTE-BUD-030 | Budget Management & Financial Tracking API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - budgetService.ts (services/budgetService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-BUD-030 | Budget Management & Financial Tracking API Routes
  * Purpose: Comprehensive budget management system with category management, transaction tracking, spending analysis, and fiscal year reporting
  * Upstream: ../services/budgetService, JWT authentication | Dependencies: @hapi/hapi, budget service, joi validation

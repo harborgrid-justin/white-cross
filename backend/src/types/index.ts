@@ -1,4 +1,15 @@
 /**
+ * LOC: B5C5B3D032
+ * WC-IDX-TYP-067 | index.ts - Types Module Barrel Export
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - configuration.ts (routes/configuration.ts)
+ */
+
+/**
  * WC-IDX-TYP-067 | index.ts - Types Module Barrel Export
  * Purpose: Central export point for all TypeScript types, enums, and interfaces across the healthcare platform
  * Upstream: ../database/types/enums, ./appointment.ts, ./hapi.ts, ./phi.ts | Dependencies: type modules, database enums

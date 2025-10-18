@@ -1,4 +1,19 @@
 /**
+ * LOC: A5B1D551BD
+ * WC-GEN-187 | licenseOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/administration/types.ts)
+ *   - auditOperations.ts (services/administration/auditOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/administration/index.ts)
+ */
+
+/**
  * WC-GEN-187 | licenseOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

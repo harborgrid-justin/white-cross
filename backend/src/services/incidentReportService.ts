@@ -1,4 +1,15 @@
 /**
+ * LOC: 398AEBA870
+ * WC-SVC-INC-004 | Legacy Incident Report Service (DEPRECATED)
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - incidentReports.ts (routes/incidentReports.ts)
+ */
+
+/**
  * WC-SVC-INC-004 | Legacy Incident Report Service (DEPRECATED)
  * Purpose: Backward compatibility re-exports for refactored incident services
  * Upstream: services/incidentReport/* (modular services) | Imports from incident/index

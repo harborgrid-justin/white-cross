@@ -1,4 +1,18 @@
 /**
+ * LOC: CD2D9BA58B
+ * Advanced Features Service Bundle
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
+/**
  * Advanced Features Service Bundle
  * Contains multiple production-ready features for the White Cross platform
  */

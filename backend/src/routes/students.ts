@@ -1,4 +1,15 @@
 /**
+ * LOC: 0553FEE047
+ * WC-RTE-STU-022 | students.ts - Student Management API Routes with Health Records Integration
+ *
+ * UPSTREAM (imports from):
+ *   - studentService.ts (services/studentService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-STU-022 | students.ts - Student Management API Routes with Health Records Integration
  * Purpose: Complete student lifecycle management API including PHI-protected health data access with role-based permissions
  * Upstream: ../services/studentService | Dependencies: @hapi/hapi, joi, JWT auth middleware

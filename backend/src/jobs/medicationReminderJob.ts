@@ -1,4 +1,17 @@
 /**
+ * LOC: 8099F0CDF3
+ * File: /backend/src/jobs/medicationReminderJob.ts
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - redis.ts (config/redis.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (jobs/index.ts)
+ */
+
+/**
  * File: /backend/src/jobs/medicationReminderJob.ts
  * Locator: WC-JOB-MED-070
  * Purpose: HIPAA-Compliant Medication Reminder Automation - Patient safety critical system

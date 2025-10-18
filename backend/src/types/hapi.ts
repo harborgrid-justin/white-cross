@@ -1,4 +1,15 @@
 /**
+ * LOC: DC2E46DD40
+ * WC-TYP-HAP-065 | hapi.ts - Hapi.js Framework Type Definitions
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-TYP-HAP-065 | hapi.ts - Hapi.js Framework Type Definitions
  * Purpose: Comprehensive TypeScript types for HIPAA-compliant Hapi.js API with authentication, healthcare routes
  * Upstream: @hapi/hapi, @hapi/boom | Dependencies: Hapi framework types, Boom error handling

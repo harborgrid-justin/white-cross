@@ -1,4 +1,16 @@
 /**
+ * LOC: 2C2F43E7CC
+ * Search and Utility Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - searchAndUtility.ts (routes/healthRecords/routes/searchAndUtility.ts)
+ */
+
+/**
  * Search and Utility Handlers
  * Purpose: Cross-record search, bulk operations, and data import/export functionality
  * Note: PHI-protected endpoints with enhanced security for bulk operations

@@ -1,4 +1,21 @@
 /**
+ * LOC: C39CBBF599
+ * WC-GEN-225 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - auditLogService.ts (services/audit/auditLogService.ts)
+ *   - auditQueryService.ts (services/audit/auditQueryService.ts)
+ *   - auditStatisticsService.ts (services/audit/auditStatisticsService.ts)
+ *   - auditUtilsService.ts (services/audit/auditUtilsService.ts)
+ *   - complianceReportingService.ts (services/audit/complianceReportingService.ts)
+ *   - ... and 1 more
+ */
+
+/**
  * WC-GEN-225 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums, ../../database/models | Dependencies: ../../database/types/enums, ../../database/models

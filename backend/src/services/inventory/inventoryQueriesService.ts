@@ -1,4 +1,17 @@
 /**
+ * LOC: 8F94C72060
+ * WC-GEN-274 | inventoryQueriesService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - types.ts (services/inventory/types.ts)
+ *   - stockService.ts (services/inventory/stockService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - inventoryService.ts (services/inventoryService.ts)
+ */
+
+/**
  * WC-GEN-274 | inventoryQueriesService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models

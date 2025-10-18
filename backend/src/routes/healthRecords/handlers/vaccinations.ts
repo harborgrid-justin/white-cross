@@ -1,4 +1,16 @@
 /**
+ * LOC: C95355215A
+ * Vaccinations Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - vaccinations.ts (routes/healthRecords/routes/vaccinations.ts)
+ */
+
+/**
  * Vaccinations Handlers
  * Purpose: Manage vaccination records with compliance tracking and scheduling
  * Note: PHI-protected endpoints with immunization history and school compliance requirements

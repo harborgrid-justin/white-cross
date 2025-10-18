@@ -1,4 +1,17 @@
 /**
+ * LOC: 0957A4833F
+ * WC-GEN-289 | passport.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-289 | passport.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../database/models, ../database/types/enums, ../constants | Dependencies: passport, passport-local, passport-jwt

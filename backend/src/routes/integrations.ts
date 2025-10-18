@@ -1,4 +1,15 @@
 /**
+ * LOC: 6032E52E4C
+ * WC-RTE-IGT-038 | integrations.ts - Healthcare Integration Hub API Routes (Hapi.js)
+ *
+ * UPSTREAM (imports from):
+ *   - integrationService.ts (services/integrationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-IGT-038 | integrations.ts - Healthcare Integration Hub API Routes (Hapi.js)
  * Purpose: Hapi.js routes for comprehensive external healthcare system integrations with SIS/EHR/pharmacy/lab/government reporting
  * Upstream: ../services/integrationService/IntegrationService | Dependencies: @hapi/hapi, joi

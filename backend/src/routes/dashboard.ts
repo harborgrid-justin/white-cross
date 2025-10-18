@@ -1,4 +1,15 @@
 /**
+ * LOC: 7334715B2E
+ * WC-RTE-DSH-034 | dashboard.ts - Healthcare Dashboard Analytics API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - dashboardService.ts (services/dashboardService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-DSH-034 | dashboard.ts - Healthcare Dashboard Analytics API Routes
  * Purpose: Hapi.js routes for comprehensive dashboard statistics, visualization data, and activity monitoring for White Cross system
  * Upstream: ../services/dashboardService/DashboardService | Dependencies: @hapi/hapi, joi, hapi-swagger

@@ -1,3 +1,19 @@
+/**
+ * LOC: 9DC87D28AA
+ * enhancedFeatures - routes component
+ *
+ * UPSTREAM (imports from):
+ *   - auth.ts (middleware/auth.ts)
+ *   - logger.ts (utils/logger.ts)
+ *   - studentPhotoService.ts (services/studentPhotoService.ts)
+ *   - academicTranscriptService.ts (services/academicTranscriptService.ts)
+ *   - gradeTransitionService.ts (services/gradeTransitionService.ts)
+ *   - ... and 6 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
 import { Router, Request, Response } from 'express';
 import { authenticate } from '../middleware/auth';
 import { logger } from '../utils/logger';

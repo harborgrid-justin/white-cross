@@ -1,4 +1,15 @@
 /**
+ * LOC: CE383C9818
+ * WC-VAL-INC-060 | incidentReportValidator.ts - Incident Reporting Validation Schemas
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-VAL-INC-060 | incidentReportValidator.ts - Incident Reporting Validation Schemas
  * Purpose: Enterprise-grade validation for incident reports, witness statements, follow-up actions with safety compliance
  * Upstream: ../database/types/enums, joi | Dependencies: joi, incident enums, compliance types

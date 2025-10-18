@@ -1,4 +1,15 @@
 /**
+ * LOC: F98979CDC2
+ * WC-GEN-120 | 06-emergency-contacts.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-120 | 06-emergency-contacts.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

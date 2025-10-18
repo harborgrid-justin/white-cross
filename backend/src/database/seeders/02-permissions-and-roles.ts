@@ -1,4 +1,15 @@
 /**
+ * LOC: 33CC070480
+ * WC-GEN-116 | 02-permissions-and-roles.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-116 | 02-permissions-and-roles.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

@@ -1,4 +1,15 @@
 /**
+ * LOC: 88BD6EE115
+ * WC-GEN-059 | DocumentSignature.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ */
+
+/**
  * WC-GEN-059 | DocumentSignature.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize

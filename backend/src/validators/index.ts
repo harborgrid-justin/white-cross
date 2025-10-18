@@ -1,4 +1,15 @@
 /**
+ * LOC: C10F1961FD
+ * WC-IDX-VAL-062 | index.ts - Validators Module Barrel Export
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-VAL-062 | index.ts - Validators Module Barrel Export
  * Purpose: Central export point for all validation schemas, incident reports, compliance, health records
  * Upstream: ./incidentReportValidator, ./complianceValidators, ./healthRecordValidators, ./medicationValidators | Dependencies: validator modules

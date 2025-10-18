@@ -1,4 +1,16 @@
 /**
+ * LOC: 02F5912759
+ * WC-RTE-AUD-027 | Audit Trail & Security Logging API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *   - auth.ts (middleware/auth.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-AUD-027 | Audit Trail & Security Logging API Routes
  * Purpose: Audit trail logging endpoints for compliance tracking, security event logging, and access monitoring for HIPAA compliance
  * Upstream: ../middleware/auth, express validation | Dependencies: express, express-validator, auth middleware

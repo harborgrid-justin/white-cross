@@ -1,4 +1,16 @@
 /**
+ * LOC: F5F1FE71D8
+ * Vaccinations Routes
+ *
+ * UPSTREAM (imports from):
+ *   - vaccinations.ts (routes/healthRecords/handlers/vaccinations.ts)
+ *   - validationSchemas.ts (routes/healthRecords/validationSchemas.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (routes/healthRecords/index.ts)
+ */
+
+/**
  * Vaccinations Routes
  * Purpose: Route definitions for vaccination records and compliance tracking
  * Note: PHI-protected endpoints with immunization compliance and school requirements

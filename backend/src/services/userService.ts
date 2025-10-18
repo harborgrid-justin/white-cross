@@ -1,4 +1,17 @@
 /**
+ * LOC: 8B3066B717
+ * WC-GEN-296 | userService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (shared/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - users.ts (routes/users.ts)
+ */
+
+/**
  * WC-GEN-296 | userService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../utils/logger, ../shared, ../database/models | Dependencies: sequelize, ../utils/logger, ../shared

@@ -1,4 +1,16 @@
 /**
+ * LOC: 4BD9FB1B65
+ * WC-RTE-CMP-032 | HIPAA Compliance & Regulatory Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - complianceService.ts (services/complianceService.ts)
+ *   - auth.ts (middleware/auth.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-CMP-032 | HIPAA Compliance & Regulatory Management API Routes
  * Purpose: Comprehensive compliance management system with reporting, consent forms, policy management, audit logging, and regulatory compliance tracking
  * Upstream: ../services/complianceService, ../middleware/auth, express validation | Dependencies: express, express-validator, compliance service

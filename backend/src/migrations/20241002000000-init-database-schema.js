@@ -1,4 +1,15 @@
 /**
+ * LOC: AF779D63B8
+ * WC-GEN-146 | 20241002000000-init-database-schema.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-146 | 20241002000000-init-database-schema.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

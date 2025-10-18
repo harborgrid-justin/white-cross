@@ -1,4 +1,15 @@
 /**
+ * LOC: CF951F3388
+ * WC-GEN-353 | CircuitBreaker.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - resilientMedicationService.ts (services/resilientMedicationService.ts)
+ */
+
+/**
  * WC-GEN-353 | CircuitBreaker.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../logger | Dependencies: events, ../logger

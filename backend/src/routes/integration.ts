@@ -1,4 +1,16 @@
 /**
+ * LOC: FD5A79F578
+ * WC-RTE-INT-037 | integration.ts - Third-Party Integration Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - auth.ts (middleware/auth.ts)
+ *   - integrationService.ts (services/integrationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-RTE-INT-037 | integration.ts - Third-Party Integration Management API Routes
  * Purpose: Express.js routes for comprehensive external system integrations including SIS, EHR, pharmacy, laboratory, and government reporting
  * Upstream: ../services/integrationService/IntegrationService, ../middleware/auth/ExpressAuthRequest | Dependencies: express, express-validator

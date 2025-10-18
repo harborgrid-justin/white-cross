@@ -1,4 +1,20 @@
 /**
+ * LOC: 977316651F
+ * WC-RTE-HLT-000 | Health Records Module - Main Export
+ *
+ * UPSTREAM (imports from):
+ *   - mainHealthRecords.ts (routes/healthRecords/routes/mainHealthRecords.ts)
+ *   - allergies.ts (routes/healthRecords/routes/allergies.ts)
+ *   - chronicConditions.ts (routes/healthRecords/routes/chronicConditions.ts)
+ *   - vaccinations.ts (routes/healthRecords/routes/vaccinations.ts)
+ *   - screenings.ts (routes/healthRecords/routes/screenings.ts)
+ *   - ... and 3 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-HLT-000 | Health Records Module - Main Export
  * Purpose: Aggregates all health records route modules into a single export for the main server
  * Upstream: All route modules (mainHealthRecords, allergies, chronicConditions, etc.) | Dependencies: @hapi/hapi

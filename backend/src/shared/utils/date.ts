@@ -1,4 +1,15 @@
 /**
+ * LOC: DF38C6FE72
+ * File: /backend/src/shared/utils/date.ts
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - lodashUtils.ts (utils/lodashUtils.ts)
+ */
+
+/**
  * File: /backend/src/shared/utils/date.ts
  * Locator: WC-UTL-DAT-073
  * Purpose: Healthcare Date Utilities - Medical timeline and age calculations

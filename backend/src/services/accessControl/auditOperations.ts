@@ -1,4 +1,15 @@
 /**
+ * LOC: 0DAE2BB44A
+ * WC-GEN-175 | auditOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/accessControl/index.ts)
+ */
+
+/**
  * WC-GEN-175 | auditOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

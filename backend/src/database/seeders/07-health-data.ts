@@ -1,4 +1,15 @@
 /**
+ * LOC: 412C29CA7A
+ * WC-GEN-121 | 07-health-data.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-121 | 07-health-data.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: sequelize

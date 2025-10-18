@@ -1,4 +1,15 @@
 /**
+ * LOC: B18C509A58
+ * WC-GEN-307 | errorHandler.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-307 | errorHandler.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../logging/logger | Dependencies: sequelize, ../logging/logger

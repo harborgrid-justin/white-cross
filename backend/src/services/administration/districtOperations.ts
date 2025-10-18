@@ -1,4 +1,19 @@
 /**
+ * LOC: 672A7A9BB2
+ * WC-GEN-185 | districtOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/administration/types.ts)
+ *   - auditOperations.ts (services/administration/auditOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/administration/index.ts)
+ */
+
+/**
  * WC-GEN-185 | districtOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

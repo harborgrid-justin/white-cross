@@ -1,4 +1,15 @@
 /**
+ * LOC: 1EB0403DE8
+ * WC-GEN-291 | reportService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - reports.ts (routes/reports.ts)
+ */
+
+/**
  * WC-GEN-291 | reportService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../utils/logger, ../database/models, ../database/types/enums | Dependencies: sequelize, ../utils/logger, ../database/models

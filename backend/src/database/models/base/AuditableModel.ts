@@ -1,4 +1,21 @@
 /**
+ * LOC: 9344915592
+ * WC-GEN-042 | AuditableModel.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - Allergy.ts (database/models/healthcare/Allergy.ts)
+ *   - ChronicCondition.ts (database/models/healthcare/ChronicCondition.ts)
+ *   - GrowthMeasurement.ts (database/models/healthcare/GrowthMeasurement.ts)
+ *   - HealthRecord.ts (database/models/healthcare/HealthRecord.ts)
+ *   - ... and 7 more
+ */
+
+/**
  * WC-GEN-042 | AuditableModel.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../../utils/logger, ../../types/enums | Dependencies: sequelize, ../../../utils/logger, ../../types/enums

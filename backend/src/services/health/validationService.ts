@@ -1,4 +1,15 @@
 /**
+ * LOC: 93FE3B3C64
+ * WC-GEN-258 | validationService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-258 | validationService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums, ./types | Dependencies: ../../database/types/enums, ./types

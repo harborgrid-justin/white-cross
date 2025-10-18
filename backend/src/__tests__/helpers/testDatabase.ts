@@ -1,4 +1,16 @@
 /**
+ * LOC: 4481C85A69
+ * WC-GEN-368 | testDatabase.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.service.ts (database/services/sequelize.service.ts)
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-368 | testDatabase.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/services/sequelize.service, ../../shared | Dependencies: ../../database/services/sequelize.service, sequelize, ../../shared

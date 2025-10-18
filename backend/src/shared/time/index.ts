@@ -1,4 +1,15 @@
 /**
+ * LOC: 0713C729CE
+ * WC-IDX-325 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-325 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: Independent module | Dependencies: None

@@ -1,4 +1,18 @@
 /**
+ * LOC: 19045E968D
+ * WC-GEN-277 | maintenanceService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/inventory/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - inventoryService.ts (services/inventoryService.ts)
+ */
+
+/**
  * WC-GEN-277 | maintenanceService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

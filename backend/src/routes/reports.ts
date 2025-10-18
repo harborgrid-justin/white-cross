@@ -1,4 +1,16 @@
 /**
+ * LOC: 4FE91D5957
+ * WC-RTE-RPT-041 | reports.ts - Healthcare Analytics and Reporting API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - reportService.ts (services/reportService.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-RPT-041 | reports.ts - Healthcare Analytics and Reporting API Routes
  * Purpose: Express.js routes for comprehensive healthcare reporting including health trends, compliance, performance metrics, and custom report generation
  * Upstream: ../services/reportService/ReportService, ../utils/logger | Dependencies: express

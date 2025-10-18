@@ -1,4 +1,15 @@
 /**
+ * LOC: 61C2BBD27B
+ * WC-VAL-MED-010 | Medication Validation Schemas
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-VAL-MED-010 | Medication Validation Schemas
  * Purpose: Joi validation schemas for medication operations, Five Rights compliance
  * Upstream: External joi package | Dependencies: joi, moment

@@ -1,4 +1,16 @@
 /**
+ * LOC: FAD12F86D8
+ * WC-GEN-251 | analyticsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - types.ts (services/health/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - healthRecordService.ts (services/health/healthRecordService.ts)
+ */
+
+/**
  * WC-GEN-251 | analyticsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models

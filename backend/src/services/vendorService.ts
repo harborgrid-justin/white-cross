@@ -1,4 +1,16 @@
 /**
+ * LOC: 389ED42DE9
+ * WC-GEN-297 | vendorService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - vendor.ts (routes/vendor.ts)
+ */
+
+/**
  * WC-GEN-297 | vendorService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../utils/logger, ../database/models | Dependencies: sequelize, ../utils/logger, ../database/models

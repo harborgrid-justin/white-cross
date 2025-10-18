@@ -1,4 +1,16 @@
 /**
+ * LOC: 5FC8CA4F62
+ * WC-GEN-214 | statusTransitions.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
  * WC-GEN-214 | statusTransitions.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

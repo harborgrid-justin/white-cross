@@ -1,4 +1,19 @@
 /**
+ * LOC: 4D4DFA43B8
+ * WC-GEN-207 | AppointmentReminderService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - AppointmentService.ts (services/appointment/AppointmentService.ts)
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
  * WC-GEN-207 | AppointmentReminderService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

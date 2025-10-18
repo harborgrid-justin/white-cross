@@ -1,4 +1,16 @@
 /**
+ * LOC: 081E4F93E5
+ * WC-GEN-038 | School.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - SchoolRepository.ts (database/repositories/impl/SchoolRepository.ts)
+ */
+
+/**
  * WC-GEN-038 | School.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize

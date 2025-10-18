@@ -1,4 +1,15 @@
 /**
+ * LOC: 6A0A563B29
+ * File: /backend/src/shared/utils/array.ts
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - lodashUtils.ts (utils/lodashUtils.ts)
+ */
+
+/**
  * File: /backend/src/shared/utils/array.ts
  * Locator: WC-UTL-ARR-072
  * Purpose: Healthcare-Focused Array Utilities - Medical data manipulation and grouping

@@ -1,4 +1,16 @@
 /**
+ * LOC: 269A33ACDE
+ * WC-IDX-348 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - helpers.ts (utils/healthRecords/helpers.ts)
+ *   - integrations.ts (utils/healthRecords/integrations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-348 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: ./helpers, ./integrations | Dependencies: ./helpers, ./integrations

@@ -1,4 +1,18 @@
 /**
+ * LOC: AB63D4393C
+ * WC-GEN-223 | phiAccessService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/audit/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/audit/index.ts)
+ */
+
+/**
  * WC-GEN-223 | phiAccessService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../shared/logging/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../shared/logging/logger, ../../database/models

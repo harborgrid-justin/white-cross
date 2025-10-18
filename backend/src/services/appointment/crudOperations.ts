@@ -1,4 +1,20 @@
 /**
+ * LOC: 454766BAB0
+ * WC-GEN-211 | crudOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - validation.ts (services/appointment/validation.ts)
+ *   - statusTransitions.ts (services/appointment/statusTransitions.ts)
+ *   - ... and 3 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
  * WC-GEN-211 | crudOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

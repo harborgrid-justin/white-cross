@@ -1,4 +1,15 @@
 /**
+ * LOC: 8CA5A80035
+ * WC-IDX-308 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-IDX-308 | index.ts - Module exports and entry point
  * Purpose: module exports and entry point
  * Upstream: Independent module | Dependencies: None

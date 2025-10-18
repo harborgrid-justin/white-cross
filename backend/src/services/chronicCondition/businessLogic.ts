@@ -1,4 +1,18 @@
 /**
+ * LOC: 08A8246F60
+ * WC-GEN-228 | businessLogic.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *   - types.ts (services/chronicCondition/types.ts)
+ *   - crudOperations.ts (services/chronicCondition/crudOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/chronicCondition/index.ts)
+ */
+
+/**
  * WC-GEN-228 | businessLogic.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../utils/sequelizeErrorHandler, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../utils/sequelizeErrorHandler

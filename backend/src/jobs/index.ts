@@ -1,4 +1,17 @@
 /**
+ * LOC: 05A9927C71
+ * File: /backend/src/jobs/index.ts
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - medicationReminderJob.ts (jobs/medicationReminderJob.ts)
+ *   - inventoryMaintenanceJob.ts (jobs/inventoryMaintenanceJob.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * File: /backend/src/jobs/index.ts
  * Locator: WC-IDX-JOB-069
  * Purpose: Background Jobs Management Hub - Healthcare system job orchestration

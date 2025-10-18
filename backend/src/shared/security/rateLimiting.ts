@@ -1,4 +1,15 @@
 /**
+ * LOC: EF7C0862D0
+ * WC-GEN-322 | rateLimiting.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (shared/logging/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-322 | rateLimiting.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../logging/logger | Dependencies: @hapi/hapi, redis, ../logging/logger

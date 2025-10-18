@@ -1,4 +1,17 @@
 /**
+ * LOC: 790BFA0623
+ * WC-GEN-245 | complianceService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - complianceService.ts (services/complianceService.ts)
+ *   - index.ts (services/compliance/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - compliance.ts (routes/compliance.ts)
+ *   - complianceService.ts (services/complianceService.ts)
+ */
+
+/**
  * WC-GEN-245 | complianceService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./complianceService, ./compliance, ./compliance | Dependencies: ./complianceService, ./compliance, ./compliance

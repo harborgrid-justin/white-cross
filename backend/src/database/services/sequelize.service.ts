@@ -1,4 +1,18 @@
 /**
+ * LOC: 228842F6B8
+ * WC-GEN-126 | sequelize.service.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - seed.ts (database/seeders/seed.ts)
+ *   - example.test.ts (__tests__/example.test.ts)
+ *   - testDatabase.ts (__tests__/helpers/testDatabase.ts)
+ *   - setup.ts (__tests__/setup.ts)
+ */
+
+/**
  * WC-GEN-126 | sequelize.service.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

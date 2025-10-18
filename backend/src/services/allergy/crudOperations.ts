@@ -1,4 +1,20 @@
 /**
+ * LOC: 71DFD03220
+ * WC-GEN-197 | crudOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *   - types.ts (services/allergy/types.ts)
+ *   - validation.ts (services/allergy/validation.ts)
+ *   - auditLogging.ts (services/allergy/auditLogging.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/allergy/index.ts)
+ *   - specialOperations.ts (services/allergy/specialOperations.ts)
+ */
+
+/**
  * WC-GEN-197 | crudOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../utils/sequelizeErrorHandler, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../utils/sequelizeErrorHandler

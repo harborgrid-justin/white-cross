@@ -1,4 +1,20 @@
 /**
+ * LOC: F01C1D74B1
+ * WC-GEN-268 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - coreService.ts (services/incidentReport/coreService.ts)
+ *   - documentService.ts (services/incidentReport/documentService.ts)
+ *   - followUpService.ts (services/incidentReport/followUpService.ts)
+ *   - searchService.ts (services/incidentReport/searchService.ts)
+ *   - statisticsService.ts (services/incidentReport/statisticsService.ts)
+ *   - ... and 2 more
+ */
+
+/**
  * WC-GEN-268 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

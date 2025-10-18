@@ -1,4 +1,16 @@
 /**
+ * LOC: C2BEE9BA90
+ * Main Health Records Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - mainHealthRecords.ts (routes/healthRecords/routes/mainHealthRecords.ts)
+ */
+
+/**
  * Main Health Records Handlers
  * Purpose: Core CRUD operations for student health records
  * Note: All handlers are PHI-protected and HIPAA-compliant with full audit logging

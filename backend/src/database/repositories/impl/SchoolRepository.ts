@@ -1,4 +1,19 @@
 /**
+ * LOC: 533B42D631
+ * WC-GEN-104 | SchoolRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - School.ts (database/models/administration/School.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ */
+
+/**
  * WC-GEN-104 | SchoolRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../base/BaseRepository, ../../models/administration/School, ../../audit/IAuditLogger | Dependencies: sequelize, ../base/BaseRepository, ../../models/administration/School

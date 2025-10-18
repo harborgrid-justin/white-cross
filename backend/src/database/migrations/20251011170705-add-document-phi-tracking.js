@@ -1,4 +1,15 @@
 /**
+ * LOC: A6F26F3E3A
+ * WC-GEN-032 | 20251011170705-add-document-phi-tracking.js - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-032 | 20251011170705-add-document-phi-tracking.js - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

@@ -1,4 +1,18 @@
 /**
+ * LOC: CB1041810C
+ * WC-GEN-270 | witnessService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/incidentReport/types.ts)
+ *   - validationService.ts (services/incidentReport/validationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/incidentReport/index.ts)
+ */
+
+/**
  * WC-GEN-270 | witnessService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: ../../utils/logger, ../../database/models, ./types

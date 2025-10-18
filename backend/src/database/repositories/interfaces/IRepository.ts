@@ -1,4 +1,21 @@
 /**
+ * LOC: AA3FF826A4
+ * WC-GEN-112 | IRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - QueryTypes.ts (database/types/QueryTypes.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - IAllergyRepository.ts (database/repositories/interfaces/IAllergyRepository.ts)
+ *   - IAuditLogRepository.ts (database/repositories/interfaces/IAuditLogRepository.ts)
+ *   - IChronicConditionRepository.ts (database/repositories/interfaces/IChronicConditionRepository.ts)
+ *   - IHealthRecordRepository.ts (database/repositories/interfaces/IHealthRecordRepository.ts)
+ *   - ... and 1 more
+ */
+
+/**
  * WC-GEN-112 | IRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../types/ExecutionContext, ../../types/QueryTypes | Dependencies: ../../types/ExecutionContext, ../../types/QueryTypes

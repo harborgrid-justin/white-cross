@@ -1,4 +1,20 @@
 /**
+ * LOC: 7B66A8600C
+ * WC-GEN-202 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - auditLogging.ts (services/allergy/auditLogging.ts)
+ *   - bulkOperations.ts (services/allergy/bulkOperations.ts)
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ *   - queryOperations.ts (services/allergy/queryOperations.ts)
+ *   - statistics.ts (services/allergy/statistics.ts)
+ *   - ... and 1 more
+ */
+
+/**
  * WC-GEN-202 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

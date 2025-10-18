@@ -1,4 +1,15 @@
 /**
+ * LOC: B2A0B351E1
+ * WC-GEN-236 | checklistService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/compliance/index.ts)
+ */
+
+/**
  * WC-GEN-236 | checklistService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

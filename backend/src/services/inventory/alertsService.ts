@@ -1,4 +1,17 @@
 /**
+ * LOC: 414A4DDD72
+ * WC-GEN-272 | alertsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/inventory/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - inventoryService.ts (services/inventoryService.ts)
+ */
+
+/**
  * WC-GEN-272 | alertsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models

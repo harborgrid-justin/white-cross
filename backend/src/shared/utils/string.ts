@@ -1,4 +1,15 @@
 /**
+ * LOC: B6B2149730
+ * File: /backend/src/shared/utils/string.ts
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - lodashUtils.ts (utils/lodashUtils.ts)
+ */
+
+/**
  * File: /backend/src/shared/utils/string.ts
  * Locator: WC-UTL-STR-074
  * Purpose: Healthcare String Utilities - Medical data formatting and sanitization

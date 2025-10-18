@@ -1,4 +1,16 @@
 /**
+ * LOC: BA51465DE6
+ * WC-GEN-343 | transactionWrapper.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-343 | transactionWrapper.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/config/sequelize, ../logger | Dependencies: sequelize, ../../database/config/sequelize, ../logger

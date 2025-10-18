@@ -1,4 +1,18 @@
 /**
+ * LOC: 21BBA16F70
+ * WC-GEN-259 | vitalSignsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/health/types.ts)
+ *   - healthRecordValidators.ts (utils/healthRecordValidators.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - healthRecordService.ts (services/health/healthRecordService.ts)
+ */
+
+/**
  * WC-GEN-259 | vitalSignsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models

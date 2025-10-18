@@ -1,4 +1,17 @@
 /**
+ * LOC: 66F90127D8
+ * WC-GEN-086 | MedicationLog.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - StudentMedication.ts (database/models/medications/StudentMedication.ts)
+ */
+
+/**
  * WC-GEN-086 | MedicationLog.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../base/AuditableModel

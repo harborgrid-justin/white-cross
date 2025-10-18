@@ -1,4 +1,20 @@
 /**
+ * LOC: C781387CD6
+ * WC-GEN-254 | healthRecordService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordRepository.ts (services/health/healthRecordRepository.ts)
+ *   - vitalSignsService.ts (services/health/vitalSignsService.ts)
+ *   - allergiesService.ts (services/health/allergiesService.ts)
+ *   - immunizationsService.ts (services/health/immunizationsService.ts)
+ *   - chronicConditionsService.ts (services/health/chronicConditionsService.ts)
+ *   - ... and 2 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-254 | healthRecordService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ./types, ./healthRecordRepository, ./vitalSignsService | Dependencies: sequelize, ./types, ./healthRecordRepository

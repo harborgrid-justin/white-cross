@@ -1,4 +1,15 @@
 /**
+ * LOC: BBDEEED297
+ * WC-RTE-APT-020 | appointments.ts - Appointment Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - appointmentService.ts (services/appointmentService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-RTE-APT-020 | appointments.ts - Appointment Management API Routes
  * Purpose: HTTP endpoints for appointment scheduling, availability management, waitlists, reminders, and nurse scheduling
  * Upstream: ../services/appointmentService | Dependencies: @hapi/hapi, joi validation, JWT authentication

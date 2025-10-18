@@ -1,3 +1,16 @@
+/**
+ * LOC: 496851C598
+ * Student Photo Service with Facial Recognition Support
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
 import { Student } from '../database/models';
 import { logger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';

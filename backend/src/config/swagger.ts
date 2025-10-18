@@ -1,4 +1,17 @@
 /**
+ * LOC: D2CD3BF009
+ * WC-CFG-SWG-053 | Swagger API Documentation Configuration & Healthcare API Specs
+ *
+ * UPSTREAM (imports from):
+ *   - package.json (../package.json)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ *   - index.ts (index.ts)
+ */
+
+/**
  * WC-CFG-SWG-053 | Swagger API Documentation Configuration & Healthcare API Specs
  * Purpose: Hapi-Swagger setup, API documentation, HIPAA-compliant endpoint specs
  * Upstream: package.json, constants/SWAGGER_CONFIG, constants/ENVIRONMENT

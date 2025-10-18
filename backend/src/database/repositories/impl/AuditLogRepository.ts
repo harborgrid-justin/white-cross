@@ -1,4 +1,21 @@
 /**
+ * LOC: 54697BF2E4
+ * WC-GEN-099 | AuditLogRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - AuditLog.ts (database/models/compliance/AuditLog.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - ... and 1 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
  * WC-GEN-099 | AuditLogRepository.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../base/BaseRepository, ../../models/compliance/AuditLog, ../interfaces/IAuditLogRepository | Dependencies: sequelize, ../base/BaseRepository, ../../models/compliance/AuditLog

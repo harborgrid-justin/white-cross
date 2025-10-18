@@ -1,4 +1,16 @@
 /**
+ * LOC: 0556F4D4EE
+ * Screenings Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - screenings.ts (routes/healthRecords/routes/screenings.ts)
+ */
+
+/**
  * Screenings Handlers
  * Purpose: Manage health screenings (vision, hearing, dental, scoliosis, BMI, mental health)
  * Note: PHI-protected endpoints with follow-up tracking and referral management

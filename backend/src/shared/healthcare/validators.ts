@@ -1,4 +1,15 @@
 /**
+ * LOC: 3AFD648F9C
+ * WC-GEN-313 | validators.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - medicationService.ts (services/medicationService.ts)
+ */
+
+/**
  * WC-GEN-313 | validators.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

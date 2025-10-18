@@ -1,4 +1,20 @@
 /**
+ * LOC: F5307C9F15
+ * WC-GEN-129 | ExecutionContext.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - AuditLogRepository.ts (database/repositories/impl/AuditLogRepository.ts)
+ *   - HealthRecordRepository.ts (database/repositories/impl/HealthRecordRepository.ts)
+ *   - StudentRepository.ts (database/repositories/impl/StudentRepository.ts)
+ *   - ... and 4 more
+ */
+
+/**
  * WC-GEN-129 | ExecutionContext.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: Independent module | Dependencies: None

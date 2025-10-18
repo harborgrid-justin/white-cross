@@ -1,4 +1,16 @@
 /**
+ * LOC: 7AC8150F70
+ * WC-GEN-350 | healthRecordValidators.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - allergiesService.ts (services/health/allergiesService.ts)
+ *   - vitalSignsService.ts (services/health/vitalSignsService.ts)
+ */
+
+/**
  * WC-GEN-350 | healthRecordValidators.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../database/types/enums | Dependencies: ../database/types/enums

@@ -1,4 +1,20 @@
 /**
+ * LOC: 15965E64EA
+ * WC-GEN-015 | sequelize.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BackupLog.ts (database/models/administration/BackupLog.ts)
+ *   - ConfigurationHistory.ts (database/models/administration/ConfigurationHistory.ts)
+ *   - District.ts (database/models/administration/District.ts)
+ *   - License.ts (database/models/administration/License.ts)
+ *   - PerformanceMetric.ts (database/models/administration/PerformanceMetric.ts)
+ *   - ... and 65 more
+ */
+
+/**
  * WC-GEN-015 | sequelize.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger | Dependencies: sequelize, ../../utils/logger

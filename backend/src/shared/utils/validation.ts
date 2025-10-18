@@ -1,4 +1,15 @@
 /**
+ * LOC: 59C64CA415
+ * File: /backend/src/shared/utils/validation.ts
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - lodashUtils.ts (utils/lodashUtils.ts)
+ */
+
+/**
  * File: /backend/src/shared/utils/validation.ts
  * Locator: WC-UTL-VAL-075
  * Purpose: Healthcare Data Validation - HIPAA-compliant input validation and security

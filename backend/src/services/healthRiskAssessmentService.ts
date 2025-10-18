@@ -1,3 +1,16 @@
+/**
+ * LOC: 926D42788E
+ * Student Health Risk Assessment Service
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
 import { Student, Allergy, ChronicCondition, StudentMedication, IncidentReport } from '../database/models';
 import { logger } from '../utils/logger';
 import { Op } from 'sequelize';

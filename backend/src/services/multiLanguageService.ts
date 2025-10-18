@@ -1,3 +1,15 @@
+/**
+ * LOC: 43BD04B00E
+ * Multi-Language Support Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
 import { logger } from '../utils/logger';
 
 /**

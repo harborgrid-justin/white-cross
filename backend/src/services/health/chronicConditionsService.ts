@@ -1,4 +1,18 @@
 /**
+ * LOC: F677BFBFCF
+ * WC-GEN-252 | chronicConditionsService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - healthRecordService.ts (services/health/healthRecordService.ts)
+ *   - importExportService.ts (services/health/importExportService.ts)
+ */
+
+/**
  * WC-GEN-252 | chronicConditionsService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums

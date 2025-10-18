@@ -1,4 +1,20 @@
 /**
+ * LOC: 6601A30146
+ * WC-GEN-114 | RepositoryFactory.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - StudentRepository.ts (database/repositories/impl/StudentRepository.ts)
+ *   - UserRepository.ts (database/repositories/impl/UserRepository.ts)
+ *   - HealthRecordRepository.ts (database/repositories/impl/HealthRecordRepository.ts)
+ *   - ... and 10 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
  * WC-GEN-114 | RepositoryFactory.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../audit/IAuditLogger, ../cache/ICacheManager, ./impl/StudentRepository | Dependencies: ../audit/IAuditLogger, ../cache/ICacheManager, ./impl/StudentRepository

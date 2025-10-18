@@ -1,4 +1,22 @@
 /**
+ * LOC: 1EB58B57C1
+ * WC-GEN-056 | User.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - AppointmentWaitlist.ts (database/models/healthcare/AppointmentWaitlist.ts)
+ *   - IncidentReport.ts (database/models/incidents/IncidentReport.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - UserRepository.ts (database/repositories/impl/UserRepository.ts)
+ *   - UserService.ts (database/services/UserService.ts)
+ *   - ... and 5 more
+ */
+
+/**
  * WC-GEN-056 | User.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../config/sequelize, ../../types/enums, ../../../shared | Dependencies: sequelize, ../../config/sequelize, ../../types/enums

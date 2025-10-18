@@ -1,4 +1,16 @@
 /**
+ * LOC: 52D38F8727
+ * Vital Signs Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - vitalSigns.ts (routes/healthRecords/routes/vitalSigns.ts)
+ */
+
+/**
  * Vital Signs Handlers
  * Purpose: Record and monitor vital signs (BP, heart rate, temperature, respiratory rate, O2 saturation)
  * Note: PHI-protected endpoints with trend analysis for identifying concerning patterns

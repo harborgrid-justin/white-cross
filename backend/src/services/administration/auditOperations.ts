@@ -1,4 +1,22 @@
 /**
+ * LOC: 0D9E65C35E
+ * WC-GEN-182 | auditOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - types.ts (services/administration/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - districtOperations.ts (services/administration/districtOperations.ts)
+ *   - index.ts (services/administration/index.ts)
+ *   - licenseOperations.ts (services/administration/licenseOperations.ts)
+ *   - schoolOperations.ts (services/administration/schoolOperations.ts)
+ *   - userManagementOperations.ts (services/administration/userManagementOperations.ts)
+ */
+
+/**
  * WC-GEN-182 | auditOperations.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models

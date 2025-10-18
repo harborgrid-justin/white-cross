@@ -1,4 +1,18 @@
 /**
+ * LOC: DC961D3362
+ * Enterprise Features Service Bundle - Part 2
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - enhancedFeatures.ts (routes/enhancedFeatures.ts)
+ *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
+ */
+
+/**
  * Enterprise Features Service Bundle - Part 2
  * Additional 20+ production-ready features for White Cross platform
  */

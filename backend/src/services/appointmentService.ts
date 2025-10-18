@@ -1,4 +1,20 @@
 /**
+ * LOC: 49AC6FBA67
+ * WC-SVC-APT-016 | appointmentService.ts - Appointment Management Service Facade
+ *
+ * UPSTREAM (imports from):
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - AppointmentAvailabilityService.ts (services/appointment/AppointmentAvailabilityService.ts)
+ *   - AppointmentReminderService.ts (services/appointment/AppointmentReminderService.ts)
+ *   - AppointmentWaitlistService.ts (services/appointment/AppointmentWaitlistService.ts)
+ *   - AppointmentRecurringService.ts (services/appointment/AppointmentRecurringService.ts)
+ *   - ... and 5 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - appointments.ts (routes/appointments.ts)
+ */
+
+/**
  * WC-SVC-APT-016 | appointmentService.ts - Appointment Management Service Facade
  * Purpose: Unified appointment management interface with scheduling, availability, reminders, waitlist, and recurring patterns
  * Upstream: ./appointment/* modules, ../types/appointment, ../shared/time/businessHours | Dependencies: Modular appointment services

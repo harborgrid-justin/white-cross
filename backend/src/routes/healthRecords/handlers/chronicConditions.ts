@@ -1,4 +1,16 @@
 /**
+ * LOC: 44EC8B64D9
+ * Chronic Conditions Handlers
+ *
+ * UPSTREAM (imports from):
+ *   - healthRecordService.ts (services/healthRecordService.ts)
+ *   - types.ts (routes/healthRecords/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - chronicConditions.ts (routes/healthRecords/routes/chronicConditions.ts)
+ */
+
+/**
  * Chronic Conditions Handlers
  * Purpose: Manage long-term health conditions with care plans and review scheduling
  * Note: PHI-protected endpoints with comprehensive care management tracking

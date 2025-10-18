@@ -1,4 +1,15 @@
 /**
+ * LOC: 4FE7284D02
+ * WC-GEN-243 | types.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - statisticsService.ts (services/compliance/statisticsService.ts)
+ */
+
+/**
  * WC-GEN-243 | types.ts - General utility functions and operations
  * Purpose: general utility functions and operations
  * Upstream: ../../database/types/enums | Dependencies: ../../database/types/enums

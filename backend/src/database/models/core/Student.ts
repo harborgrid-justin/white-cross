@@ -1,4 +1,22 @@
 /**
+ * LOC: FB6CFF0220
+ * WC-MDL-STU-009 | Student Database Model
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - AppointmentWaitlist.ts (database/models/healthcare/AppointmentWaitlist.ts)
+ *   - IncidentReport.ts (database/models/incidents/IncidentReport.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - StudentMedication.ts (database/models/medications/StudentMedication.ts)
+ *   - StudentRepository.ts (database/repositories/impl/StudentRepository.ts)
+ *   - ... and 3 more
+ */
+
+/**
  * WC-MDL-STU-009 | Student Database Model
  * Purpose: Sequelize model for student records with associations and validation
  * Upstream: Sequelize ORM, database/config | Dependencies: sequelize, joi validation
