@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-129 | useEmergencyContacts.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../services/modules/emergencyContactsApi | Dependencies: @tanstack/react-query, react-hot-toast, ../services/modules/emergencyContactsApi
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Custom React Query Hooks for Emergency Contacts
  *
  * Enterprise-grade hooks with:

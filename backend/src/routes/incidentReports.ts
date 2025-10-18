@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-INC-023 | incidentReports.ts - Comprehensive Incident Management API Routes with Evidence Tracking
+ * Purpose: Complete incident reporting system API with witness statements, follow-up actions, evidence handling, compliance tracking
+ * Upstream: ../services/incidentReportService | Dependencies: @hapi/hapi, joi, JWT auth middleware
+ * Downstream: Incident dashboard, compliance reports, parent notifications | Called by: Staff reporting interfaces, admin panels
+ * Related: students.ts, healthRecords.ts, notifications.ts | Integrates: Parent notification system, evidence management, insurance claims
+ * Exports: incidentReportRoutes (20 route handlers) | Key Services: CRUD operations, witness management, follow-up tracking, compliance
+ * Last Updated: 2025-10-18 | File Type: .ts - Incident PHI and Legal Documentation Protected
+ * Critical Path: JWT auth → Input validation → Incident service calls → Parent notification triggers → Audit logging
+ * LLM Context: School incident management API with legal compliance, evidence tracking, witness statements, parent notifications, insurance integration
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { IncidentReportService } from '../services/incidentReportService';
 import Joi from 'joi';

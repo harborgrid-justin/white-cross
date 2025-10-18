@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-131 | useHealthRecords.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../services/modules/healthRecordsApi | Dependencies: @tanstack/react-query, react, react-hot-toast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions | Key Features: useEffect, useCallback, useRef
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enterprise-Grade Health Records Hooks
  *
  * Comprehensive React Query hooks for all health records sub-modules with:

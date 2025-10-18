@@ -1,4 +1,16 @@
 /**
+ * WC-TYP-PHI-066 | phi.ts - HIPAA Protected Health Information Type System
+ * Purpose: Branded types and type guards for HIPAA-compliant PHI/PII data handling with medical codes
+ * Upstream: None | Dependencies: TypeScript branded types, HIPAA compliance standards
+ * Downstream: All healthcare services, ../routes/*.ts, ../database/models/*.ts | Called by: PHI-handling components
+ * Related: ../middleware/auditLogging.ts, ../services/encryptionService.ts, ../utils/phiRedaction.ts
+ * Exports: PHI<T>, PII<T>, medical code types, deIdentifyPHI, markAsPHI, validatePHIAccessContext | Key Services: HIPAA type safety
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Type Safety System
+ * Critical Path: PHI identification → Type branding → Access validation → Audit logging → De-identification
+ * LLM Context: Healthcare PHI protection with HIPAA Safe Harbor compliance, medical code validation (ICD-10, CPT, NDC), branded types for data security
+ */
+
+/**
  * Protected Health Information (PHI) Type System
  * Branded types and type guards for HIPAA-compliant data handling
  *

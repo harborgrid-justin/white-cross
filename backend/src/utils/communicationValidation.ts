@@ -1,4 +1,16 @@
 /**
+ * WC-UTL-CMV-057 | HIPAA-Compliant Communication Validation & Message Processing
+ * Purpose: Healthcare message validation, PHI protection, emergency alert compliance
+ * Upstream: database/types/enums, Joi validation library | Dependencies: joi, enums
+ * Downstream: routes/communication.ts, services/messageService | Called by: Message APIs
+ * Related: routes/communication.ts, middleware/auditLogging.ts, HIPAA compliance
+ * Exports: Joi schemas, validation functions, HIPAA compliance checkers
+ * Last Updated: 2025-10-18 | Dependencies: joi, database/types/enums
+ * Critical Path: Message input → HIPAA validation → Content validation → Send approval
+ * LLM Context: Healthcare messaging compliance, PHI detection, emergency protocols
+ */
+
+/**
  * Communication Validation Utilities
  * Comprehensive validation for messages, templates, and delivery tracking
  * Implements healthcare compliance standards for communication

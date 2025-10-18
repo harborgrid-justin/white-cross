@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-014 | ErrorBoundary.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../constants/errors | Dependencies: ../constants/errors
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, functions, classes | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ERROR_CODES, getUserMessage } from '../constants/errors';
 

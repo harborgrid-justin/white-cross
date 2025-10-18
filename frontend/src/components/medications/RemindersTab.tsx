@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-053 | RemindersTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../shared, ../../hooks/useMedicationsData, ../../hooks/useReminderManagement | Dependencies: lucide-react, ../shared, ../../hooks/useMedicationsData
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import { LoadingSpinner, EmptyState } from '../shared'
 import { useMedicationsData } from '../../hooks/useMedicationsData'

@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-027 | 20251011170700-add-user-security-enhancements.js - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: Independent module | Dependencies: None
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .js
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Migration: Add User Security Enhancements
  *
  * Adds comprehensive security fields to the users table for:

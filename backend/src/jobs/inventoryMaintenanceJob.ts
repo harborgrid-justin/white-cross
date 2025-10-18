@@ -1,4 +1,19 @@
 /**
+ * File: /backend/src/jobs/inventoryMaintenanceJob.ts
+ * Locator: WC-JOB-INV-071
+ * Purpose: Healthcare Inventory Management Automation - Critical medication supply monitoring
+ * 
+ * Upstream: ../utils/logger, ../config/redis, ../database/models, cron scheduler
+ * Downstream: notification services, pharmacy alerts, inventory dashboard, compliance reports
+ * Dependencies: node-cron, sequelize, materialized views, PostgreSQL, inventory alerts system
+ * Exports: InventoryMaintenanceJob, inventory status functions, alert management
+ * 
+ * LLM Context: Mission-critical inventory safety system running every 15 minutes.
+ * Monitors medication expiration, low stock levels, out-of-stock alerts. Uses materialized
+ * views for 200ms query performance. Ensures medication availability for patient safety.
+ */
+
+/**
  * Inventory Maintenance Background Job
  *
  * Responsibilities:

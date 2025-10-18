@@ -1,3 +1,15 @@
+/**
+ * WC-TYP-APT-063 | appointment.ts - Appointment System Type Definitions
+ * Purpose: TypeScript interfaces and types for healthcare appointment scheduling, nurse availability, waitlist management
+ * Upstream: None | Dependencies: TypeScript core types, Date objects
+ * Downstream: ../routes/appointments.ts, ../services/appointmentService.ts, ../database/models/Appointment.ts | Called by: appointment system
+ * Related: ../services/availabilityService.ts, ../services/reminderService.ts, ../types/index.ts
+ * Exports: AppointmentType, AppointmentStatus, CreateAppointmentData, AvailabilitySlot, WaitlistEntry | Key Services: Appointment type safety
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Type Definitions
+ * Critical Path: Type import → Interface validation → Service layer → Database operations
+ * LLM Context: Healthcare appointment scheduling types with nurse availability, student scheduling, waitlist prioritization, reminder systems, recurrence patterns
+ */
+
 export type AppointmentType =
   | 'ROUTINE_CHECKUP'
   | 'MEDICATION_ADMINISTRATION'

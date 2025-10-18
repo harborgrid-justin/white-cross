@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-AUTH-028 | Authentication API Routes with Sequelize Integration
+ * Purpose: Core authentication system with user registration, login, JWT token management, and role-based access control using Sequelize ORM
+ * Upstream: ../database/models/core/User, ../constants, JWT configuration | Dependencies: @hapi/hapi, Sequelize User model, bcryptjs, jsonwebtoken, joi
+ * Downstream: All authenticated routes, frontend login/registration, session management | Called by: Login forms, registration components, token verification
+ * Related: User management routes, access control, audit logging, session management
+ * Exports: authRoutes (3 Hapi route handlers) | Key Services: User registration, authentication, JWT token verification
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: Password hashing with bcrypt, JWT tokens, role validation, account status checks
+ * Critical Path: Credential validation → Password verification → JWT generation → User session establishment → Role-based authorization
+ * LLM Context: Healthcare system authentication with role hierarchy (ADMIN > DISTRICT_ADMIN > SCHOOL_ADMIN > NURSE/COUNSELOR > VIEWER), secure password handling, JWT-based sessions, and account activation status for protecting access to sensitive medical data
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { User } from '../database/models/core/User';
 import bcrypt from 'bcryptjs';

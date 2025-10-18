@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-185 | index.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./hooks/useEmergencyContactsData, ./hooks/useContactFilters, ./components/EmergencyContactsHeader | Dependencies: react-hot-toast, @/hooks/useRouteState, @/hooks/useStudents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useState, useEffect, component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Emergency Contacts Page - Enterprise Implementation
  *
  * Complete emergency contact management system with:

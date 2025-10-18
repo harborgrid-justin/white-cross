@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-312 | verifyIntegration.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./index, ./index, ./index | Dependencies: ./index, ./index, ./index
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Redux Integration Verification Script
  *
  * This file verifies that all Redux store components are properly integrated

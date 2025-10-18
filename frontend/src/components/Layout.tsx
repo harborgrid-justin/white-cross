@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-044 | Layout.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../contexts/AuthContext, ../constants/routes, ../types/navigation | Dependencies: react-router-dom, lucide-react, ../contexts/AuthContext
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useState, useMemo, component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React, { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {

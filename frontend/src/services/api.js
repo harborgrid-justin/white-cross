@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-251 | api.js - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./index.ts | Dependencies: ./index.ts
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, named exports | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .js
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 // Backward compatibility API exports
 // This file provides the old API structure for components that haven't been updated yet
 

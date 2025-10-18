@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-120 | WitnessStatementContext.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../services/modules/incidentReportsApi, ../utils/toast | Dependencies: @tanstack/react-query, ../services/modules/incidentReportsApi, ../utils/toast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, types | Key Features: useState, useContext, useMemo
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Witness Statement Context
  *
  * Production-grade React Context for managing witness statements within incident reports.

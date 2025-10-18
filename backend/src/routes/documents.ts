@@ -1,42 +1,56 @@
+/**
+ * WC-RTE-DOC-035 | documents.ts - Document Management System API Routes  
+ * Purpose: Express.js routes for comprehensive document lifecycle management, file operations, digital signatures, and HIPAA-compliant storage
+ * Upstream: ../services/documentService/DocumentService, ../middleware/auth/ExpressAuthRequest, ../shared/validation | Dependencies: express, express-validator
+ * Downstream: Frontend document UI, file upload systems, signature workflows, student records, compliance reporting | Called by: Document management interfaces, medical records
+ * Related: ../services/documentService.ts, ../middleware/auth.ts, students.ts, healthRecords.ts, compliance.ts
+ * Exports: router | Key Services: CRUD operations, versioning, digital signatures, templates, search, audit trails, bulk operations
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~300
+ * Critical Path: Authentication → File validation → Document processing → Storage/retrieval → Audit logging → Response
+ * LLM Context: Medical document management with 20+ endpoints for file operations, signatures, templates, search, archiving, and HIPAA compliance tracking
+ */
+
 import { Router, Response } from 'express';
 import { body, query, param, validationResult } from 'express-validator';
-import { DocumentService } from '../services/documentService';
+import { DocumentService } from '../services/documentService';  
 import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
+import {
+  createValidationChain,
+  successResponse,
+  createdResponse,
+  asyncHandler,
+  paginatedResponse
+} from '../shared';
 
 const router = Router();
 
 // Get all documents
-router.get('/', auth, [
+router.get('/', auth, createValidationChain([
   query('page').optional().isInt({ min: 1 }).toInt(),
   query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
   query('category').optional().isString(),
   query('status').optional().isString(),
   query('studentId').optional().isString(),
   query('searchTerm').optional().isString(),
-], async (req: Request, res: Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
-    }
+]), asyncHandler(async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+  const filters = {
+    category: req.query.category as any,
+    status: req.query.status as any,
+    studentId: req.query.studentId as string,
+    uploadedBy: req.query.uploadedBy as string,
+    searchTerm: req.query.searchTerm as string,
+    tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
+  };
 
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const filters = {
-      category: req.query.category as any,
-      status: req.query.status as any,
-      studentId: req.query.studentId as string,
-      uploadedBy: req.query.uploadedBy as string,
-      searchTerm: req.query.searchTerm as string,
-      tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
-    };
-
-    const result = await DocumentService.getDocuments(page, limit, filters);
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(400).json({ success: false, error: { message: (error as Error).message } });
-  }
-});
+  const result = await DocumentService.getDocuments(page, limit, filters);
+  return paginatedResponse(res, result.documents, {
+    page,
+    limit,
+    total: result.pagination.total
+  });
+}));
 
 // Get document by ID
 router.get('/:id', auth, async (req: Request, res: Response) => {

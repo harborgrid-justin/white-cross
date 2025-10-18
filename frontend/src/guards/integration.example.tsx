@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-122 | integration.example.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./navigationGuards, ../services, ../components/Layout | Dependencies: react, react-router-dom, ./navigationGuards
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions | Key Features: useState, useEffect, functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Integration Examples
  *
  * Shows how to integrate the new navigation guard system with existing

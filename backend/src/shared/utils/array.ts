@@ -1,3 +1,18 @@
+/**
+ * File: /backend/src/shared/utils/array.ts
+ * Locator: WC-UTL-ARR-072
+ * Purpose: Healthcare-Focused Array Utilities - Medical data manipulation and grouping
+ * 
+ * Upstream: lodash library, independent utility module
+ * Downstream: ../services/*, healthcare data processing, student/medication grouping
+ * Dependencies: lodash, TypeScript generics, healthcare data types
+ * Exports: groupBy, uniqBy, chunk, healthcare-specific grouping functions
+ * 
+ * LLM Context: Type-safe array utilities for White Cross healthcare system.
+ * Provides lodash wrappers plus healthcare-specific functions for medication grouping,
+ * student sorting, appointment management. Critical for data processing performance.
+ */
+
 import _ from 'lodash';
 
 /**

@@ -1,3 +1,18 @@
+/**
+ * File: /backend/src/shared/utils/string.ts
+ * Locator: WC-UTL-STR-074
+ * Purpose: Healthcare String Utilities - Medical data formatting and sanitization
+ * 
+ * Upstream: lodash library, independent utility module
+ * Downstream: ../services/*, data validation, name formatting, medical record processing
+ * Dependencies: lodash, string manipulation functions
+ * Exports: capitalize, camelCase, kebabCase, snakeCase, truncate, padStart, trim, toNumber
+ * 
+ * LLM Context: String manipulation utilities for White Cross healthcare system.
+ * Handles patient name formatting, medical code processing, data sanitization.
+ * Essential for HIPAA-compliant data handling and consistent text formatting.
+ */
+
 import _ from 'lodash';
 
 /**

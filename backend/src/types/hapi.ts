@@ -1,4 +1,16 @@
 /**
+ * WC-TYP-HAP-065 | hapi.ts - Hapi.js Framework Type Definitions
+ * Purpose: Comprehensive TypeScript types for HIPAA-compliant Hapi.js API with authentication, healthcare routes
+ * Upstream: @hapi/hapi, @hapi/boom | Dependencies: Hapi framework types, Boom error handling
+ * Downstream: All ../routes/*.ts files, ../middleware/*.ts | Called by: route handlers, middleware, services
+ * Related: ../types/express.d.ts, ../middleware/auth-sequelize.ts, ../services/*.ts
+ * Exports: AuthenticatedRequest, RouteHandler, ApiResponse, healthcare route types | Key Services: Type safety for healthcare API
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Type Definitions
+ * Critical Path: Request type → Authentication → Route validation → Response formatting
+ * LLM Context: Healthcare API types with HIPAA compliance, student records, medications, appointments, incident reports, inventory management
+ */
+
+/**
  * Hapi.js Type Definitions
  * Strongly-typed request/response handlers for HIPAA-compliant API
  *

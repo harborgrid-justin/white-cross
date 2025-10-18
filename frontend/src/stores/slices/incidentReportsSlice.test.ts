@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-310 | incidentReportsSlice.test.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @reduxjs/toolkit
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Incident Reports Redux Slice - Unit Tests
  *
  * Demonstrates testing patterns for the incident reports slice

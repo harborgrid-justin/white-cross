@@ -1,3 +1,15 @@
+/**
+ * WC-IDX-TYP-067 | index.ts - Types Module Barrel Export
+ * Purpose: Central export point for all TypeScript types, enums, and interfaces across the healthcare platform
+ * Upstream: ../database/types/enums, ./appointment.ts, ./hapi.ts, ./phi.ts | Dependencies: type modules, database enums
+ * Downstream: All ../routes/*.ts, ../services/*.ts, ../middleware/*.ts | Called by: application components
+ * Related: ./express.d.ts, ../shared/types/*.ts, ../database/models/*.ts
+ * Exports: User, AuthUser, ConfigCategory, UserRole re-exports | Key Services: Type aggregation and re-export
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Barrel Export
+ * Critical Path: Type import → Interface validation → Application logic → Type safety
+ * LLM Context: Healthcare platform types aggregation with user management, configuration enums, authentication interfaces, Express global extensions
+ */
+
 // Re-export UserRole from canonical source
 export { UserRole } from '../database/types/enums';
 import { UserRole } from '../database/types/enums';

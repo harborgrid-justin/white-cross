@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-338 | documentValidation.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/documents | Dependencies: ../types/documents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Document Validation Utilities - Frontend
  * Client-side validation for document management operations
  * Mirrors backend validation logic for immediate user feedback

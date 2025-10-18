@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-278 | healthRecordsApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../types | Dependencies: ../config/apiConfig, zod, ../types
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, types, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enterprise-Grade Health Records API Client
  *
  * Purpose: Comprehensive management of student health records with all sub-modules

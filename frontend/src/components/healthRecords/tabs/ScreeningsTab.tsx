@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-034 | ScreeningsTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, lucide-react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import { Plus, Eye, Ear } from 'lucide-react'
 import type { Screening } from '@/types/healthRecords'

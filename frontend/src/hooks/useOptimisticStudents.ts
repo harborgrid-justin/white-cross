@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-141 | useOptimisticStudents.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @tanstack/react-query, @/services/modules/studentsApi, @/utils/optimisticHelpers
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Optimistic Student Management Hooks
  *
  * Custom TanStack Query mutation hooks with optimistic updates for

@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-287 | useMedicationFormulary.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../api | Dependencies: @tanstack/react-query, ../api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Medication Formulary Hook
  *
  * Purpose: React Query integration for medication formulary operations

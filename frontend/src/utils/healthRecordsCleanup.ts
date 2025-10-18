@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-342 | healthRecordsCleanup.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../hooks/useHealthRecords | Dependencies: @tanstack/react-query, ../hooks/useHealthRecords
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces, classes | Key Features: useEffect, component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * HIPAA-Compliant Data Cleanup Utilities
  *
  * Utilities for secure handling and cleanup of Protected Health Information (PHI)

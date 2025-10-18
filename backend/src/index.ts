@@ -1,3 +1,15 @@
+/**
+ * WC-IDX-MAIN-001 | Main Application Entry Point & Server Configuration
+ * Purpose: Hapi.js server initialization, route registration, middleware setup
+ * Upstream: config/*, routes/*, middleware/*, database/models, utils/logger, constants
+ * Downstream: None (entry point) | Called by: npm start, docker container
+ * Related: docker-compose.yml, package.json, .env.example
+ * Exports: server (default) | Key Services: Hapi server, Sequelize ORM, Swagger docs
+ * Last Updated: 2025-10-17 | Dependencies: @hapi/hapi, sequelize, dotenv
+ * Critical Path: Database connection → Auth setup → Route registration → Server start
+ * LLM Context: Main server orchestration, handles all HTTP requests, graceful shutdown
+ */
+
 // Load environment variables FIRST before any other imports
 import dotenv from 'dotenv';
 dotenv.config();

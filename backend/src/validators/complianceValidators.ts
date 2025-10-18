@@ -1,3 +1,15 @@
+/**
+ * WC-VAL-CPL-058 | complianceValidators.ts - HIPAA/FERPA Compliance Validation Schemas
+ * Purpose: Joi validation schemas for regulatory compliance, consent management, policy enforcement
+ * Upstream: ../database/types/enums, joi | Dependencies: joi, compliance enums, audit types
+ * Downstream: ../routes/compliance.ts, ../services/complianceService.ts | Called by: compliance endpoints
+ * Related: ../middleware/auditLogging.ts, ../routes/audit.ts, ../services/auditService.ts
+ * Exports: createConsentFormSchema, signConsentFormSchema, createPolicySchema, auditLogFiltersSchema | Key Services: HIPAA compliance validation
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Validation Layer
+ * Critical Path: Request validation → Compliance check → Data sanitization → Audit logging
+ * LLM Context: Healthcare compliance validators with HIPAA/FERPA requirements, digital signatures, consent management, policy enforcement, audit trail validation
+ */
+
 import Joi from 'joi';
 import {
   ComplianceReportType,

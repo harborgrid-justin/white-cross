@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-135 | useMedicationAdministration.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../services/api, ./useMedicationToast | Dependencies: @tanstack/react-query, ../services/api, ./useMedicationToast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { medicationsApi } from '../services/api';
 import { useMedicationToast } from './useMedicationToast';

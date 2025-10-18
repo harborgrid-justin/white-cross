@@ -1,3 +1,15 @@
+/**
+ * WC-SVC-COM-017 | communicationService.ts - Multi-Channel Communication Management Service
+ * Purpose: Comprehensive messaging system with templates, delivery tracking, HIPAA compliance, emergency alerts, and broadcast messaging
+ * Upstream: ../database/models, ../utils/communicationValidation, ../shared/communication/* | Dependencies: sequelize, validators
+ * Downstream: routes/messages.ts, appointmentService, emergencyService, auditService | Called by: Message routes, alert systems
+ * Related: userService, studentService, emergencyContactService, auditService, templateService
+ * Exports: CommunicationService class, message interfaces | Key Services: Email, SMS, push notifications, voice, translations
+ * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Contains PHI in messages - compliance validation required
+ * Critical Path: Message creation → HIPAA validation → Multi-channel delivery → Status tracking → Audit logging
+ * LLM Context: Core communication hub for school health management - handles all messaging with comprehensive validation and delivery tracking
+ */
+
 import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
 import {
@@ -16,15 +28,24 @@ import {
   RecipientType,
   DeliveryStatus
 } from '../database/types/enums';
+// Import shared communication utilities
+import { 
+  validateEmailAddress, 
+  validatePhoneNumber as validatePhone
+} from '../shared/communication/validators';
+import { 
+  buildMessageTemplate, 
+  calculateMessageCost, 
+  extractTemplateVariables
+} from '../shared/communication/templates';
+
+// Legacy imports for compatibility - gradually migrate these
 import {
-  validateEmail,
-  validatePhoneNumber,
   validateMessageContent,
+  validateTemplateVariables,
   validateRecipientForChannel,
   validateScheduledTime,
   validateEmergencyAlert,
-  validateTemplateVariables,
-  extractTemplateVariables,
   validateHIPAACompliance,
   COMMUNICATION_LIMITS,
   createMessageTemplateSchema,

@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-228 | index.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./hooks/useMedicationsData, ./components/MedicationsHeader, ./components/MedicationsTabs | Dependencies: react-hot-toast, @/hooks/useRouteState, ./hooks/useMedicationsData
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useState, useEffect, useCallback
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Medications Page - Enterprise Implementation
  *
  * Complete medication management system with:

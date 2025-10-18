@@ -1,5 +1,18 @@
+/**
+ * WC-RTE-AUD-027 | Audit Trail & Security Logging API Routes
+ * Purpose: Audit trail logging endpoints for compliance tracking, security event logging, and access monitoring for HIPAA compliance
+ * Upstream: ../middleware/auth, express validation | Dependencies: express, express-validator, auth middleware
+ * Downstream: Compliance dashboard, security monitoring, audit reports | Called by: Frontend audit logging, security monitoring systems
+ * Related: Administration routes, access control, security incident tracking
+ * Exports: Express router (3 endpoints) | Key Services: Audit logging, access logging, security event logging
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: Requires authentication, logs all access attempts for compliance
+ * Critical Path: Auth validation → Audit data collection → Silent logging → Compliance tracking
+ * LLM Context: HIPAA compliance audit system for healthcare data access tracking, security event monitoring, and regulatory compliance with silent logging for all protected health information access attempts
+ */
+
 import { Router, Response } from 'express';
 import { body, validationResult } from 'express-validator';
+import { handleValidationErrors, createValidationChain } from '../shared';
 import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 
 const router = Router();

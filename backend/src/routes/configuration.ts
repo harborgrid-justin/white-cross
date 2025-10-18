@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-CFG-033 | configuration.ts - System Configuration Management API Routes
+ * Purpose: Hapi.js routes for comprehensive system configuration management, settings control, and admin configuration
+ * Upstream: ../types/ConfigCategory,ConfigValueType,ConfigScope, ../services/configurationService, ../middleware/auth/AuthRequest | Dependencies: @hapi/hapi, joi
+ * Downstream: Frontend admin panels, configuration UI, system initialization, service configurations | Called by: Admin interfaces, system startup
+ * Related: ../services/configurationService.ts, ../middleware/auth.ts, administration.ts, audit.ts
+ * Exports: configurationRoutes | Key Services: CRUD operations, bulk updates, import/export, change history, scope management
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~600
+ * Critical Path: Authentication → Admin role validation → Configuration operations → Audit logging → Response
+ * LLM Context: System configuration management with 15+ endpoints for settings, categories, scopes, history tracking, bulk operations, import/export functionality
+ */
+
 import { Server } from '@hapi/hapi';
 import Joi from 'joi';
 import { ConfigCategory, ConfigValueType, ConfigScope } from '../types';

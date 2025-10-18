@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-DSH-034 | dashboard.ts - Healthcare Dashboard Analytics API Routes
+ * Purpose: Hapi.js routes for comprehensive dashboard statistics, visualization data, and activity monitoring for White Cross system
+ * Upstream: ../services/dashboardService/DashboardService | Dependencies: @hapi/hapi, joi, hapi-swagger
+ * Downstream: Frontend dashboard components, admin panels, analytics widgets, real-time monitoring | Called by: Dashboard UI, reporting tools
+ * Related: ../services/dashboardService.ts, appointments.ts, healthRecords.ts, incidentReports.ts, students.ts
+ * Exports: dashboardRoutes | Key Services: Statistics aggregation, activity feeds, appointment summaries, chart data generation
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~150
+ * Critical Path: Authentication → Service data aggregation → Statistics calculation → JSON response formatting
+ * LLM Context: Healthcare dashboard with 4 endpoints for stats, activities, appointments, and chart data visualization for medical facility management
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { DashboardService } from '../services/dashboardService';
 import Joi from 'joi';

@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-112 | IRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../types/ExecutionContext, ../../types/QueryTypes | Dependencies: ../../types/ExecutionContext, ../../types/QueryTypes
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Base Repository Interface
  * Defines standard CRUD operations for all repositories
  */

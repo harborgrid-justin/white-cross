@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-104 | SchoolRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../base/BaseRepository, ../../models/administration/School, ../../audit/IAuditLogger | Dependencies: sequelize, ../base/BaseRepository, ../../models/administration/School
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * School Repository Implementation
  * School management within districts
  */

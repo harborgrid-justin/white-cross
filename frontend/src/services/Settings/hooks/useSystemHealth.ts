@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-298 | useSystemHealth.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../api | Dependencies: react, ../../api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: useState, useEffect
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * System Health Hook
  *
  * Manages system health data fetching

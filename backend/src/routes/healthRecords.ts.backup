@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-HLT-021 | healthRecords.ts - Comprehensive Health Records Management API Routes
+ * Purpose: Complete HTTP API for health records, allergies, chronic conditions, vaccinations, screenings, growth, vital signs
+ * Upstream: ../services/healthRecordService | Dependencies: @hapi/hapi, joi, JWT auth middleware
+ * Downstream: Student dashboard, health reports, compliance tracking | Called by: Frontend health modules, mobile app
+ * Related: appointments.ts, students.ts, medications.ts | Integrates: HIPAA audit logging, PHI protection
+ * Exports: healthRecordRoutes (48 route handlers) | Key Services: CRUD operations, search, import/export, statistics
+ * Last Updated: 2025-10-18 | File Type: .ts - HIPAA Protected PHI Endpoints
+ * Critical Path: JWT auth → Input validation → Health service calls → PHI-compliant responses → Audit logging
+ * LLM Context: Central health data API with comprehensive sub-modules (allergies, conditions, vaccinations, screenings, growth, vitals), all PHI protected
+ */
+
 import { ServerRoute, Request, ResponseToolkit } from '@hapi/hapi';
 import { HealthRecordService } from '../services/healthRecordService';
 import Joi from 'joi';

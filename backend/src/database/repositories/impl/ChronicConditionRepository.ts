@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-100 | ChronicConditionRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../base/BaseRepository, ../../models/healthcare/ChronicCondition, ../../types/enums | Dependencies: sequelize, ../base/BaseRepository, ../../models/healthcare/ChronicCondition
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Chronic Condition Repository Implementation
  * PHI-compliant chronic condition data access
  */

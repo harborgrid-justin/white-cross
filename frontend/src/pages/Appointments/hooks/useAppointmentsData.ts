@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-158 | useAppointmentsData.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../../services/api, ../../../types/api, ../../../services/types | Dependencies: react, ../../../services/api, ../../../types/api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: useState, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { useState, useCallback } from 'react'
 import { appointmentsApi } from '../../../services/api'
 import { Appointment } from '../../../types/api'

@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-303 | authStore.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../constants/config, ../constants/api | Dependencies: zustand, zustand/middleware, ../constants/config
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { API_CONFIG } from '../constants/config';

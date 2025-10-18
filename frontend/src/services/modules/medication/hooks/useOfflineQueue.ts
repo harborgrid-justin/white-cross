@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-288 | useOfflineQueue.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../api | Dependencies: react, @tanstack/react-query, ../api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, interfaces | Key Features: useState, useEffect, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Offline Queue Hook
  *
  * Purpose: Manages offline medication administration queue using IndexedDB

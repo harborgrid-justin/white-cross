@@ -1,3 +1,15 @@
+/**
+ * WC-SVC-MED-005 | Medication Management Service
+ * Purpose: Core medication operations including CRUD, validation, and safety checks
+ * Upstream: database/models/Medication, validators/medicationValidators | Dependencies: Sequelize, validators
+ * Downstream: routes/medications.ts, studentService | Called by: Medication API routes
+ * Related: medicationValidators.ts, resilientMedicationService.ts, MedicationInventory.ts
+ * Exports: MedicationService class | Key Services: CRUD, validation, safety protocols
+ * Last Updated: 2025-10-17 | Dependencies: sequelize, joi, lodash
+ * Critical Path: Validation → Database operation → Safety check → Response
+ * LLM Context: HIPAA-compliant medication management, student safety protocols
+ */
+
 import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
 import {
@@ -10,6 +22,15 @@ import {
   IncidentReport,
   sequelize
 } from '../database/models';
+
+// Import shared healthcare utilities
+import { 
+  calculateDosageSchedule, 
+  validateDosageAmount, 
+  calculateMedicationExpiry, 
+  formatMedicationName
+} from '../shared/healthcare/medicationUtils';
+import { validateAllergySeverity } from '../shared/healthcare/validators';
 
 // Type augmentations for model associations
 declare module '../database/models' {

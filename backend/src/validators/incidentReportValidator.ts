@@ -1,4 +1,16 @@
 /**
+ * WC-VAL-INC-060 | incidentReportValidator.ts - Incident Reporting Validation Schemas
+ * Purpose: Enterprise-grade validation for incident reports, witness statements, follow-up actions with safety compliance
+ * Upstream: ../database/types/enums, joi | Dependencies: joi, incident enums, compliance types
+ * Downstream: ../routes/incidentReports.ts, ../services/incidentReportService.ts | Called by: incident reporting endpoints
+ * Related: ../middleware/auditLogging.ts, ../validators/complianceValidators.ts, ../services/notificationService.ts
+ * Exports: createIncidentReportSchema, createWitnessStatementSchema, createFollowUpActionSchema, validateIncidentData | Key Services: Safety incident validation
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Validation Layer
+ * Critical Path: Incident validation → Safety compliance → Witness documentation → Follow-up tracking
+ * LLM Context: Safety incident validators with healthcare compliance, witness management, follow-up actions, insurance claims, parent notification, evidence handling
+ */
+
+/**
  * Incident Report Validation Schemas
  * Enterprise-grade validation with healthcare compliance and safety rules
  *

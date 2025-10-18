@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-INT-037 | integration.ts - Third-Party Integration Management API Routes
+ * Purpose: Express.js routes for comprehensive external system integrations including SIS, EHR, pharmacy, laboratory, and government reporting
+ * Upstream: ../services/integrationService/IntegrationService, ../middleware/auth/ExpressAuthRequest | Dependencies: express, express-validator
+ * Downstream: External health systems, student information systems, pharmacy networks, lab systems, government reporting | Called by: Admin interfaces, automated sync processes
+ * Related: ../services/integrationService.ts, ../middleware/auth.ts, healthRecords.ts, students.ts, medications.ts, reports.ts
+ * Exports: router | Key Services: Integration CRUD, connection testing, data synchronization, logging, statistics, admin-only access controls
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~200
+ * Critical Path: Admin authentication → Integration validation → External API communication → Data sync → Audit logging → Response
+ * LLM Context: Healthcare integration hub with 12+ endpoints for managing SIS/EHR/pharmacy/lab/government systems, connection testing, sync operations, and audit trails
+ */
+
 import { Router, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';

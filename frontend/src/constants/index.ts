@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-108 | index.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./config, ./errors, ./validation | Dependencies: ./config, ./errors, ./validation
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, named exports | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Centralized constants index for the healthcare platform
  * Provides a single entry point for all constants and configurations
  */

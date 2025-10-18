@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-COM-031 | Multi-Channel Communication & Notification API Routes
+ * Purpose: Comprehensive communication system with message templates, multi-channel delivery (SMS/Email/Voice/Push), emergency alerts, scheduling, translation, and delivery tracking
+ * Upstream: ../services/communicationService, JWT authentication | Dependencies: @hapi/hapi, communication service, joi validation
+ * Downstream: Notification interface, emergency alert system, message dashboard | Called by: Notification components, emergency management, communication admin
+ * Related: Emergency contact routes, incident reporting, user management, audit logging
+ * Exports: communicationRoutes (13 route handlers) | Key Services: Template management, message delivery, emergency alerts, scheduling, statistics, translation
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: JWT authentication, role-based message sending permissions
+ * Critical Path: Auth validation → Message composition → Channel selection → Delivery processing → Status tracking → Audit logging
+ * LLM Context: Healthcare communication platform with HIPAA-compliant messaging, emergency notification system, multi-language support, scheduled delivery, delivery confirmation tracking, and comprehensive audit trails for all patient/family communications
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { CommunicationService } from '../services/communicationService';
 import Joi from 'joi';

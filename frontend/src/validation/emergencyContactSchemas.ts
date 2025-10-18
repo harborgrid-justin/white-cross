@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-359 | emergencyContactSchemas.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/student.types | Dependencies: zod, ../types/student.types
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, types | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { z } from 'zod'
 import { ContactPriority, PreferredContactMethod, VerificationStatus } from '../types/student.types'
 

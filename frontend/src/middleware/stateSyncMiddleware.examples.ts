@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-150 | stateSyncMiddleware.examples.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./stateSyncMiddleware, ./reducers, ./reducers | Dependencies: ./stateSyncMiddleware, @reduxjs/toolkit, @/middleware/stateSyncMiddleware
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, functions | Key Features: useEffect
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * State Synchronization Middleware - Configuration Examples
  *
  * This file provides comprehensive examples of how to configure and use

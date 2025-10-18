@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-INV-039 | inventory.ts - Medical Supply Inventory Management API Routes
+ * Purpose: Hapi.js routes for comprehensive healthcare inventory management including stock control, maintenance tracking, and purchase automation
+ * Upstream: ../services/inventoryService/InventoryService | Dependencies: @hapi/hapi, joi
+ * Downstream: Frontend inventory UI, stock management systems, purchase order automation, maintenance scheduling | Called by: Inventory management interfaces, automated reorder systems
+ * Related: ../services/inventoryService.ts, medications.ts, purchaseOrder.ts, vendor.ts, budget.ts
+ * Exports: inventoryRoutes | Key Services: Item CRUD, stock transactions, maintenance logs, alerts, analytics, purchase order generation, supplier performance
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~400
+ * Critical Path: Authentication → Inventory validation → Stock operations → Transaction logging → Alert generation → Response
+ * LLM Context: Medical supply inventory system with 18 endpoints for managing stock levels, transactions, maintenance, analytics, and automated reordering for healthcare facilities
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { InventoryService } from '../services/inventoryService';
 import Joi from 'joi';

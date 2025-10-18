@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-355 | sqlSanitizer.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../logger | Dependencies: ../logger
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces, types, constants, functions, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * SQL Input Sanitizer and Query Builder
  * Prevents SQL injection attacks in raw queries
  *

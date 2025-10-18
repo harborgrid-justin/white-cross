@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-197 | crudOperations.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../utils/logger, ../../utils/sequelizeErrorHandler, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../utils/sequelizeErrorHandler
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Allergy CRUD Operations Module
  *
  * Handles basic Create, Read, Update, Delete operations for allergies

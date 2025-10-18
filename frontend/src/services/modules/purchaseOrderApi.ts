@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-290 | purchaseOrderApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/purchaseOrders | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Purchase Order API Client
  * Handles all purchase order operations including creation, approval workflow,
  * receiving, fulfillment, and order management

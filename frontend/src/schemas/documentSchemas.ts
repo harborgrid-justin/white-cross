@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-250 | documentSchemas.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/documents | Dependencies: zod, ../types/documents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, types | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Document Validation Schemas
  * Zod schemas for document management operations
  * Matches backend Sequelize validations exactly

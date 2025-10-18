@@ -1,3 +1,15 @@
+/**
+ * WC-GEN-023 | 00008-create-inventory.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: Independent module | Dependencies: sequelize
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { QueryInterface, DataTypes } from 'sequelize';
 
 export async function up(queryInterface: QueryInterface): Promise<void> {

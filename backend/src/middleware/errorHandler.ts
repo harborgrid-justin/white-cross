@@ -1,3 +1,15 @@
+/**
+ * WC-MID-ERR-045 | HIPAA-Compliant Error Handler & Sequelize Error Management
+ * Purpose: Centralized error handling, PHI protection, Sequelize error mapping
+ * Upstream: utils/logger, @hapi/boom, sequelize validation errors
+ * Downstream: All routes and services | Called by: Hapi server error extension
+ * Related: utils/logger.ts, middleware/auditLogging.ts, database/models/*
+ * Exports: errorHandler (default) | Key Services: Error sanitization, logging
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, @hapi/boom, sequelize
+ * Critical Path: Error detection → Classification → Sanitization → Response
+ * LLM Context: HIPAA compliance, prevents PHI leakage, detailed audit logging
+ */
+
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import * as Boom from '@hapi/boom';
 import {

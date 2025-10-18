@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-367 | example.test.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ./helpers/testDatabase, ../database/services/sequelize.service | Dependencies: ./helpers/testDatabase, ../database/services/sequelize.service
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Example Test File
  *
  * Demonstrates how to write tests using Sequelize with the test helpers.

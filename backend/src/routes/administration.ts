@@ -1,5 +1,18 @@
+/**
+ * WC-RTE-ADM-026 | System Administration & Management API Routes
+ * Purpose: Comprehensive administration API for system settings, user management, district/school management, configuration, backups, performance monitoring, licensing, training modules, and audit logging
+ * Upstream: ../services/administration, ../middleware/auth, express validation | Dependencies: express, express-validator, auth middleware
+ * Downstream: Admin dashboard, system configuration UI, training portal, audit interface | Called by: Admin management components, monitoring systems
+ * Related: User management routes, access control, audit services, backup systems
+ * Exports: Express router (40+ endpoints) | Key Services: System administration, organizational management, configuration, monitoring, training
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: Admin/District Admin privileges required for most operations
+ * Critical Path: Auth validation → Admin permission check → Administration service operations → Audit logging → Response
+ * LLM Context: Enterprise administration system for healthcare management platform with multi-tenant district/school hierarchy, comprehensive system configuration, backup management, performance monitoring, license management, training modules, and detailed audit logging for compliance
+ */
+
 import { Router, Response, NextFunction } from 'express';
 import { body, query, validationResult } from 'express-validator';
+import { handleValidationErrors, createValidationChain } from '../shared';
 import { AdministrationService } from '../services/administration';
 import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
 

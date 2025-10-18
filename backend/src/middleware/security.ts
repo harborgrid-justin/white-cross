@@ -1,3 +1,15 @@
+/**
+ * WC-MID-SEC-050 | Hapi.js Security Configuration & Headers Middleware
+ * Purpose: Security plugin registration, OWASP headers, HTTPS enforcement
+ * Upstream: OWASP security guidelines, @hapi/boom | Dependencies: @hapi/hapi, @hapi/boom
+ * Downstream: All routes | Called by: Hapi server initialization (index.ts)
+ * Related: middleware/securityHeaders.ts, middleware/rateLimiting.ts, HIPAA compliance
+ * Exports: configureSecurity (default) | Key Services: Security headers, plugin setup
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, @hapi/boom
+ * Critical Path: Server init → Security plugin registration → Header configuration
+ * LLM Context: HIPAA security requirements, OWASP Top 10 protection, healthcare compliance
+ */
+
 import { Server } from '@hapi/hapi';
 import * as Boom from '@hapi/boom';
 

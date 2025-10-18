@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-119 | WitnessStatementContext.test.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./WitnessStatementContext, ../services/modules/incidentReportsApi, ../types/incidents | Dependencies: vitest, @testing-library/react, @tanstack/react-query
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Witness Statement Context Tests
  *
  * Comprehensive test suite for WitnessStatementContext

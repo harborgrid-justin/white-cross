@@ -1,3 +1,15 @@
+/**
+ * WC-GEN-125 | BaseService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../models, ../../utils/logger | Dependencies: sequelize, ../models, ../../utils/logger
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Model, ModelStatic, Transaction, Op, WhereOptions, FindOptions, Attributes, CreationAttributes } from 'sequelize';
 import sequelize from '../models';
 import { logger } from '../../utils/logger';

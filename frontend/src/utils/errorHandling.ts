@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-339 | errorHandling.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/common, ../constants/errors | Dependencies: ../types/common, ../constants/errors
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, interfaces, types | Key Features: component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Unified error handling utilities for the healthcare platform
  * Provides consistent error reporting, logging, and user messaging
  */

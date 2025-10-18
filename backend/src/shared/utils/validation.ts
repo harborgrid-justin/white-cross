@@ -1,3 +1,18 @@
+/**
+ * File: /backend/src/shared/utils/validation.ts
+ * Locator: WC-UTL-VAL-075
+ * Purpose: Healthcare Data Validation - HIPAA-compliant input validation and security
+ * 
+ * Upstream: lodash library, independent validation module
+ * Downstream: ../services/*, ../validators/*, API endpoints, data sanitization
+ * Dependencies: lodash, regex patterns, healthcare validation rules
+ * Exports: isEmpty, isValidEmail, isValidPhoneNumber, isValidUuid, isStrongPassword
+ * 
+ * LLM Context: Critical validation utilities for White Cross healthcare system.
+ * Ensures data integrity, HIPAA compliance, security validation. Handles email,
+ * phone, UUID, password strength validation. Essential for patient data protection.
+ */
+
 import _ from 'lodash';
 
 /**

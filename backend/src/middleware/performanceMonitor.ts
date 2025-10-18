@@ -1,4 +1,16 @@
 /**
+ * WC-MID-PRF-047 | Performance Monitoring & APM Integration Middleware
+ * Purpose: Request timing, memory tracking, database monitoring, APM integration
+ * Upstream: utils/logger, config/redis, database/config/sequelize
+ * Downstream: All routes | Called by: Hapi/Express server extensions
+ * Related: utils/logger.ts, config/redis.ts, routes/dashboard.ts (metrics display)
+ * Exports: registerPerformanceMonitoring, expressPerformanceMonitoring, getPerformanceStats
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, express, redis, sequelize
+ * Critical Path: Request start → Execution tracking → Response metrics → APM reporting
+ * LLM Context: Healthcare platform performance monitoring, SLA tracking, bottleneck detection
+ */
+
+/**
  * Performance Monitoring Middleware for White Cross Healthcare Platform
  *
  * Features:

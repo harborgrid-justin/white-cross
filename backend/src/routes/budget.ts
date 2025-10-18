@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-BUD-030 | Budget Management & Financial Tracking API Routes
+ * Purpose: Comprehensive budget management system with category management, transaction tracking, spending analysis, and fiscal year reporting
+ * Upstream: ../services/budgetService, JWT authentication | Dependencies: @hapi/hapi, budget service, joi validation
+ * Downstream: Financial dashboard, budget reporting, administrative interface | Called by: Budget management components, financial reporting systems
+ * Related: Administration routes, purchase order management, vendor management
+ * Exports: budgetRoutes (8 route handlers) | Key Services: Budget categories, transactions, spending trends, fiscal year summaries
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: JWT authentication required for all endpoints
+ * Critical Path: Auth validation → Budget service operations → Financial data processing → Response formatting
+ * LLM Context: Healthcare organization budget management system with fiscal year tracking, spending category organization, transaction logging, and comprehensive financial reporting for school district and healthcare facility budget oversight
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { BudgetService } from '../services/budgetService';
 import Joi from 'joi';

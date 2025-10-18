@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-259 | QueryHooksFactory.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./BaseApiService, ./ApiClient | Dependencies: @tanstack/react-query, react, ./BaseApiService
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, interfaces, types, classes | Key Features: useMemo, useCallback, component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * TanStack Query Hooks Factory
  * Provides type-safe, reusable query and mutation hooks for API operations
  * 

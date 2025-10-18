@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-281 | inventoryApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../types | Dependencies: ../config/apiConfig, ../types, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Inventory Management API
  * Enterprise-grade API client for inventory tracking, stock management, and purchase orders
  */

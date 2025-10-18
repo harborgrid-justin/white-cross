@@ -1,4 +1,16 @@
 /**
+ * WC-IDX-198 | index.ts - Module exports and entry point
+ * Purpose: module exports and entry point
+ * Upstream: Independent module | Dependencies: None
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: module exports and entry point, part of backend architecture
+ */
+
+/**
  * Allergy Service - Modular Implementation
  *
  * Enterprise-grade service for managing student allergies with full PHI compliance.

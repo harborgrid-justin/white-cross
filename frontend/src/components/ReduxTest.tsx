@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-064 | ReduxTest.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../stores/hooks/reduxHooks | Dependencies: react, ../stores/hooks/reduxHooks
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react';
 import { useCurrentUser, useIsAuthenticated, useAuthLoading, useAuthError, useAuthActions } from '../stores/hooks/reduxHooks';
 

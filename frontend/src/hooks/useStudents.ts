@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-147 | useStudents.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @tanstack/react-query, @/services, react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, named exports | Key Features: useState, useMemo, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enterprise Student Domain Hooks
  *
  * Comprehensive TanStack Query hooks for student management following enterprise patterns.

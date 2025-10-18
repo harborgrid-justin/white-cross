@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-111 | ui.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./config | Dependencies: ./config
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * UI and form constants for the healthcare platform
  * Provides consistent styling, layout, and form configuration
  */

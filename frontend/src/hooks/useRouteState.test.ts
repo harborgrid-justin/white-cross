@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-144 | useRouteState.test.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./useRouteState | Dependencies: vitest, @testing-library/react, react-router-dom
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Tests for Route-Level State Persistence Hooks
  *
  * Comprehensive test suite covering all hooks and edge cases.

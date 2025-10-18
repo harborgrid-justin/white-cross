@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-282 | AdministrationApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./PrescriptionApi, ./MedicationFormularyApi | Dependencies: @/services/config/apiConfig, @/constants/api, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Administration API Client
  *
  * Purpose: Medication administration and logging

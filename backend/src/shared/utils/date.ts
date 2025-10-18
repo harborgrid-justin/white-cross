@@ -1,3 +1,18 @@
+/**
+ * File: /backend/src/shared/utils/date.ts
+ * Locator: WC-UTL-DAT-073
+ * Purpose: Healthcare Date Utilities - Medical timeline and age calculations
+ * 
+ * Upstream: lodash library, independent utility module
+ * Downstream: ../services/*, appointment scheduling, medication timing, age validation
+ * Dependencies: lodash, Date API, healthcare business logic
+ * Exports: isToday, isWithinLastDays, groupByPeriod, calculateAge
+ * 
+ * LLM Context: Date manipulation utilities for White Cross healthcare system.
+ * Handles age calculations, appointment grouping, medication schedules, timeline analysis.
+ * Critical for HIPAA compliance date tracking and healthcare business rules.
+ */
+
 import _ from 'lodash';
 
 /**

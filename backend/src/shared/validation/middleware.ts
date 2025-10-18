@@ -1,3 +1,17 @@
+/**
+ * WC-GEN-335 | middleware.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../logging/logger | Dependencies: express, express-validator, joi
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: constants, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+import { Request, Response, NextFunction } from 'express';
+import { validationResult, ValidationChain } from 'express-validator';
 import Joi from 'joi';
 import { logger } from '../logging/logger';
 
@@ -111,8 +125,57 @@ export const validateParams = (schema: Joi.ObjectSchema) => {
   };
 };
 
+/**
+ * Express-validator error handling middleware
+ * Standardizes validation error responses across all routes
+ */
+export const handleValidationErrors = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const errors = validationResult(req);
+  
+  if (!errors.isEmpty()) {
+    const formattedErrors = errors.array().map(error => ({
+      field: 'path' in error ? error.path : ('param' in error ? error.param : 'unknown'),
+      message: error.msg,
+      value: 'value' in error ? error.value : undefined,
+      location: 'location' in error ? error.location : undefined
+    }));
+
+    logger.warn('Validation errors:', {
+      path: req.path,
+      method: req.method,
+      errors: formattedErrors,
+      ip: req.ip
+    });
+
+    return res.status(400).json({
+      success: false,
+      error: {
+        message: 'Validation failed',
+        details: formattedErrors
+      }
+    });
+  }
+
+  next();
+};
+
+/**
+ * Create validation middleware chain with error handling
+ * @param validations - Array of express-validator validation chains
+ * @returns Array of middleware functions
+ */
+export const createValidationChain = (validations: ValidationChain[]) => {
+  return [...validations, handleValidationErrors];
+};
+
 export default {
   validateRequest,
   validateQuery,
-  validateParams
+  validateParams,
+  handleValidationErrors,
+  createValidationChain
 };

@@ -1,63 +1,58 @@
+/**
+ * WC-RTE-ACL-025 | Access Control & Security Management API Routes
+ * Purpose: Comprehensive RBAC system with role/permission management, session control, security incident tracking, and IP restrictions
+ * Upstream: ../services/accessControl, ../middleware/auth, express validation | Dependencies: express, express-validator, auth middleware
+ * Downstream: Admin security dashboard, user management interface, security monitoring | Called by: Security admin components, audit systems
+ * Related: Authentication routes, user management, audit logging, security monitoring
+ * Exports: Express router (20+ endpoints) | Key Services: RBAC management, session control, security incident handling, IP filtering
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: Admin-level access control for security configuration
+ * Critical Path: Auth validation → Permission check → Security service operations → Audit logging → Response
+ * LLM Context: Enterprise security management system with role-based access control, real-time session management, security incident tracking, IP-based access restrictions, and comprehensive security statistics for healthcare data protection compliance
+ */
+
 import { Router, Response } from 'express';
-import { body, query, validationResult } from 'express-validator';
+import { body, query } from 'express-validator';
 import { AccessControlService } from '../services/accessControl';
 import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
+import { 
+  handleValidationErrors, 
+  createValidationChain,
+  successResponse,
+  errorResponse,
+  createdResponse,
+  asyncHandler
+} from '../shared';
 
 const router = Router();
 
 // Roles management
-router.get('/roles', auth, async (req: Request, res: Response) => {
-  try {
-    const roles = await AccessControlService.getRoles();
-    res.json({ success: true, data: { roles } });
-  } catch (error) {
-    res.status(400).json({ success: false, error: { message: (error as Error).message } });
-  }
-});
+router.get('/roles', auth, asyncHandler(async (req: Request, res: Response) => {
+  const roles = await AccessControlService.getRoles();
+  return successResponse(res, { roles });
+}));
 
-router.get('/roles/:id', auth, async (req: Request, res: Response) => {
-  try {
-    const role = await AccessControlService.getRoleById(req.params.id);
-    res.json({ success: true, data: { role } });
-  } catch (error) {
-    res.status(400).json({ success: false, error: { message: (error as Error).message } });
-  }
-});
+router.get('/roles/:id', auth, asyncHandler(async (req: Request, res: Response) => {
+  const role = await AccessControlService.getRoleById(req.params.id);
+  return successResponse(res, { role });
+}));
 
-router.post('/roles', auth, [
+router.post('/roles', auth, createValidationChain([
   body('name').isString().notEmpty(),
   body('description').optional().isString(),
-], async (req: Request, res: Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
-    }
+]), asyncHandler(async (req: Request, res: Response) => {
+  const role = await AccessControlService.createRole(req.body);
+  return createdResponse(res, { role });
+}));
 
-    const role = await AccessControlService.createRole(req.body);
-    res.status(201).json({ success: true, data: { role } });
-  } catch (error) {
-    res.status(400).json({ success: false, error: { message: (error as Error).message } });
-  }
-});
+router.put('/roles/:id', auth, asyncHandler(async (req: Request, res: Response) => {
+  const role = await AccessControlService.updateRole(req.params.id, req.body);
+  return successResponse(res, { role });
+}));
 
-router.put('/roles/:id', auth, async (req: Request, res: Response) => {
-  try {
-    const role = await AccessControlService.updateRole(req.params.id, req.body);
-    res.json({ success: true, data: { role } });
-  } catch (error) {
-    res.status(400).json({ success: false, error: { message: (error as Error).message } });
-  }
-});
-
-router.delete('/roles/:id', auth, async (req: Request, res: Response) => {
-  try {
-    await AccessControlService.deleteRole(req.params.id);
-    res.json({ success: true, data: { message: 'Role deleted successfully' } });
-  } catch (error) {
-    res.status(400).json({ success: false, error: { message: (error as Error).message } });
-  }
-});
+router.delete('/roles/:id', auth, asyncHandler(async (req: Request, res: Response) => {
+  await AccessControlService.deleteRole(req.params.id);
+  return successResponse(res, { message: 'Role deleted successfully' });
+}));
 
 // Permissions management
 router.get('/permissions', auth, async (req: Request, res: Response) => {
@@ -69,17 +64,12 @@ router.get('/permissions', auth, async (req: Request, res: Response) => {
   }
 });
 
-router.post('/permissions', auth, [
+router.post('/permissions', auth, createValidationChain([
   body('resource').isString().notEmpty(),
   body('action').isString().notEmpty(),
   body('description').optional().isString(),
-], async (req: Request, res: Response) => {
+]), async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
-    }
-
     const permission = await AccessControlService.createPermission(req.body);
     res.status(201).json({ success: true, data: { permission } });
   } catch (error) {
@@ -204,17 +194,12 @@ router.get('/security-incidents', auth, [
   }
 });
 
-router.post('/security-incidents', auth, [
+router.post('/security-incidents', auth, createValidationChain([
   body('type').isString().notEmpty(),
   body('severity').isString().notEmpty(),
   body('description').isString().notEmpty(),
-], async (req: Request, res: Response) => {
+]), async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
-    }
-
     const detectedBy = (req).user?.userId;
     const incident = await AccessControlService.createSecurityIncident({
       ...req.body,
@@ -245,17 +230,12 @@ router.get('/ip-restrictions', auth, async (req: Request, res: Response) => {
   }
 });
 
-router.post('/ip-restrictions', auth, [
+router.post('/ip-restrictions', auth, createValidationChain([
   body('ipAddress').isString().notEmpty(),
   body('type').isString().notEmpty(),
   body('reason').optional().isString(),
-], async (req: Request, res: Response) => {
+]), async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
-    }
-
     const createdBy = (req).user?.userId;
     const restriction = await AccessControlService.addIpRestriction({
       ...req.body,

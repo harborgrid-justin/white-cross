@@ -1,3 +1,15 @@
+/**
+ * WF-APP-002 | App.tsx - Main application component and routing
+ * Purpose: main application component and routing
+ * Upstream: ./stores/reduxStore, ./contexts/AuthContext, ./routes | Dependencies: react, react-router-dom, @tanstack/react-query
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: main application component and routing, part of React frontend architecture
+ */
+
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

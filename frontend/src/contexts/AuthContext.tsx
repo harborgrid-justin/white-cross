@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-113 | AuthContext.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../services/api, ../types, ../components/SessionExpiredModal | Dependencies: ../services/api, ../types, ../components/SessionExpiredModal
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useState, useEffect, useContext
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authApi } from '../services/api'
 import { User } from '../types'

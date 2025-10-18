@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-152 | stateSyncMiddleware.test.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./stateSyncMiddleware | Dependencies: vitest, @reduxjs/toolkit, ./stateSyncMiddleware
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * State Synchronization Middleware - Unit Tests
  *
  * Comprehensive test suite for state sync middleware functionality

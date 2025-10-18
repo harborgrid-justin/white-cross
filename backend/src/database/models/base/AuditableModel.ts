@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-042 | AuditableModel.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../../utils/logger, ../../types/enums | Dependencies: sequelize, ../../../utils/logger, ../../types/enums
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Auditable Base Model for HIPAA Compliance
  * Provides automatic audit trail for all PHI (Protected Health Information)
  */

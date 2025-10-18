@@ -1,3 +1,18 @@
+/**
+ * File: /backend/src/shared/utils/object.ts
+ * Locator: WC-UTL-OBJ-076
+ * Purpose: Healthcare Object Utilities - Medical data manipulation and HIPAA-safe operations
+ * 
+ * Upstream: lodash library, independent utility module
+ * Downstream: ../services/*, data transformation, API response formatting, PHI handling
+ * Dependencies: lodash, TypeScript generics, object manipulation functions
+ * Exports: cloneDeep, merge, pick, omit, get, set, healthcare data transformation
+ * 
+ * LLM Context: Object manipulation utilities for White Cross healthcare system.
+ * Handles PHI-safe object operations, medical record merging, data sanitization.
+ * Critical for HIPAA compliance when manipulating patient data objects.
+ */
+
 import _ from 'lodash';
 
 /**

@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-350 | routeValidation.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/incidents | Dependencies: zod, react-router-dom, react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces, types, classes | Key Features: useState, useEffect, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Production-Grade Route Parameter Validation System
  *
  * Enterprise-level validation for route parameters and query strings in React Router v6.

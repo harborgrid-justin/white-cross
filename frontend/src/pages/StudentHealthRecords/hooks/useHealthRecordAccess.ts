@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-237 | useHealthRecordAccess.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, @/contexts/AuthContext, @/services/api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useState, useEffect
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * useHealthRecordAccess Hook
  *
  * Manages access control and data fetching for student health records

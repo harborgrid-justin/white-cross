@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-127 | UserService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../shared, ./BaseService, ../models/core/User | Dependencies: sequelize, ../../shared, ./BaseService
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * UserService - User management with authentication helpers
  * Sequelize-based service for White Cross Healthcare Platform
  *
@@ -7,7 +19,7 @@
  */
 
 import { Op, FindOptions, Attributes } from 'sequelize';
-import bcrypt from 'bcryptjs';
+import { hashPassword, comparePassword } from '../../shared';
 import { BaseService } from './BaseService';
 import { User } from '../models/core/User';
 import { Student } from '../models/core/Student';
@@ -303,7 +315,7 @@ export class UserService extends BaseService<User> {
 
       // Hash password - Note: User model has beforeCreate hook for this
       // But we'll do it explicitly for clarity
-      const hashedPassword = await bcrypt.hash(data.password, 12);
+      const hashedPassword = await hashPassword(data.password);
 
       // Create user
       const user = await User.create({
@@ -387,7 +399,7 @@ export class UserService extends BaseService<User> {
       }
 
       // Hash new password
-      const hashedPassword = await bcrypt.hash(data.newPassword, 12);
+      const hashedPassword = await hashPassword(data.newPassword);
 
       // Update password
       await user.update({ password: hashedPassword });
@@ -530,7 +542,7 @@ export class UserService extends BaseService<User> {
       }
 
       // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      const hashedPassword = await hashPassword(newPassword);
 
       await user.update({ password: hashedPassword });
 

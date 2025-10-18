@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-115 | FollowUpActionContext.example.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./FollowUpActionContext, ../types/incidents | Dependencies: ./FollowUpActionContext, ../types/incidents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, named exports | Key Features: useState, useEffect, component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Follow-Up Action Context Usage Examples
  * Demonstrates proper implementation patterns for using FollowUpActionContext
  *

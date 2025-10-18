@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-USR-024 | User Management API Routes with Role-Based Access Control
+ * Purpose: Complete user lifecycle management API with role-based permissions, password management, and user statistics
+ * Upstream: ../services/userService, JWT auth middleware | Dependencies: @hapi/hapi, joi validation, JWT authentication
+ * Downstream: Admin dashboard, user management interface, role assignment system | Called by: Frontend user management components
+ * Related: Authentication routes, permission middleware, audit logging
+ * Exports: userRoutes (12 route handlers) | Key Services: CRUD operations, password management, role management, user statistics
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: Role-based access control (ADMIN/DISTRICT_ADMIN required for most operations)
+ * Critical Path: JWT validation → Role permission check → User service operations → Response formatting
+ * LLM Context: User management API with hierarchical permissions (ADMIN > DISTRICT_ADMIN > SCHOOL_ADMIN > NURSE/COUNSELOR > VIEWER), supports user creation, updates, password management, activation/deactivation, statistics, and role-based filtering
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { UserService } from '../services/userService';
 import Joi from 'joi';

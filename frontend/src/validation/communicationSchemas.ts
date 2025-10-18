@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-358 | communicationSchemas.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/communication | Dependencies: zod, ../types/communication
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, types | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Communication Module Validation Schemas
  * Comprehensive Zod schemas for frontend validation
  * Aligns with backend validation requirements

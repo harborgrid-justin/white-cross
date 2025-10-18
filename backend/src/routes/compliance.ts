@@ -1,7 +1,25 @@
+/**
+ * WC-RTE-CMP-032 | HIPAA Compliance & Regulatory Management API Routes
+ * Purpose: Comprehensive compliance management system with reporting, consent forms, policy management, audit logging, and regulatory compliance tracking
+ * Upstream: ../services/complianceService, ../middleware/auth, express validation | Dependencies: express, express-validator, compliance service
+ * Downstream: Compliance dashboard, audit interface, policy management, consent tracking | Called by: Compliance management components, audit systems
+ * Related: Audit routes, administration routes, policy management, consent tracking
+ * Exports: Express router (20+ endpoints) | Key Services: Compliance reporting, consent management, policy tracking, audit logging, statistics
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: HIPAA compliance tracking, audit trails, consent management, policy acknowledgments
+ * Critical Path: Auth validation → Compliance service operations → Regulatory tracking → Audit logging → Response
+ * LLM Context: Healthcare regulatory compliance system with comprehensive HIPAA compliance reporting, digital consent management, policy tracking with acknowledgments, detailed audit logging, and automated compliance report generation for healthcare data protection regulations
+ */
+
 import { Router, Response } from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 import { ComplianceService } from '../services/complianceService';
 import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
+import {
+  createValidationChain,
+  successResponse,
+  paginatedResponse,
+  asyncHandler
+} from '../shared';
 
 const router = Router();
 

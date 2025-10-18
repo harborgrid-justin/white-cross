@@ -1,4 +1,16 @@
 /**
+ * WC-UTL-LDS-055 | Lodash Healthcare Utilities & Legacy Compatibility Layer
+ * Purpose: Healthcare-specific utility functions, mathematical operations, student data
+ * Upstream: shared/utils/*, lodash library | Dependencies: lodash, shared/utils/*
+ * Downstream: Services, routes, data processing | Called by: Business logic components
+ * Related: shared/utils/*, services/*, healthcare data processing
+ * Exports: healthcareUtils, mathUtils, functionUtils, legacy re-exports
+ * Last Updated: 2025-10-18 | Dependencies: lodash, shared/utils modules
+ * Critical Path: Data input → Utility processing → Business logic execution
+ * LLM Context: Healthcare calculations, student grouping, medication tracking, age calculation
+ */
+
+/**
  * Backend utility functions using lodash for common operations
  * 
  * @deprecated This file is being migrated to shared utilities.

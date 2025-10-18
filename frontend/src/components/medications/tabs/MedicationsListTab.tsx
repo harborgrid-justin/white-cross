@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-056 | MedicationsListTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../../hooks/useMedicationAdministration, ../../../hooks/useStudents | Dependencies: lucide-react, ../../../hooks/useMedicationAdministration, ../../../hooks/useStudents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useState, component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React, { useState } from 'react'
 import { Search, Pill, Filter, Plus, Edit, Trash2, Activity } from 'lucide-react'
 import { useMedicationAdministration } from '../../../hooks/useMedicationAdministration'

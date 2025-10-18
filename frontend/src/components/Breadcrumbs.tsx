@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-007 | Breadcrumbs.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../contexts/AuthContext, ../routes/routeUtils | Dependencies: react, react-router-dom, lucide-react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, functions, types | Key Features: useMemo, component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Breadcrumbs Component
  *
  * Enterprise-grade breadcrumb navigation with permission checking,

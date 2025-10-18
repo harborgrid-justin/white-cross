@@ -1,5 +1,17 @@
-import { QueryInterface, QueryTypes } from 'sequelize';
-import bcrypt from 'bcryptjs';
+/**
+ * WC-GEN-117 | 03-users-and-assignments.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../shared | Dependencies: sequelize, ../../shared
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+import { QueryInterface, DataTypes, QueryTypes } from 'sequelize';
+import { hashPassword } from '../../shared';
 
 /**
  * Seeder: Users and Role Assignments
@@ -22,11 +34,11 @@ module.exports = {
     const now = new Date();
 
     // Hash passwords
-    const defaultPassword = await bcrypt.hash('admin123', 10);
-    const testNursePassword = await bcrypt.hash('testNursePassword', 10);
-    const testAdminPassword = await bcrypt.hash('AdminPassword123!', 10);
-    const testReadOnlyPassword = await bcrypt.hash('ReadOnlyPassword123!', 10);
-    const testCounselorPassword = await bcrypt.hash('CounselorPassword123!', 10);
+    const defaultPassword = await hashPassword('AdminPassword123!'); // Using secure default
+    const testNursePassword = await hashPassword('NursePassword123!'); // Updated to meet complexity requirements
+    const testAdminPassword = await hashPassword('AdminPassword123!');
+    const testReadOnlyPassword = await hashPassword('ReadOnlyPassword123!');
+    const testCounselorPassword = await hashPassword('CounselorPassword123!');
 
     // Get district and schools for foreign key references
     const [[district]] = await queryInterface.sequelize.query(

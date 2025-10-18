@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-125 | navigationGuards.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../contexts/AuthContext, ../types, ../components/LoadingSpinner | Dependencies: react-router-dom, ../contexts/AuthContext, ../types
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, functions, interfaces, types, named exports | Key Features: useState, useEffect, useMemo
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Navigation Guards & Permission System
  *
  * Comprehensive navigation guard system with HOCs, permission checking,

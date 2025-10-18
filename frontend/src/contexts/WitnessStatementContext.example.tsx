@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-118 | WitnessStatementContext.example.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./WitnessStatementContext, ../types/incidents | Dependencies: react-hook-form, ./WitnessStatementContext, ../types/incidents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: named exports | Key Features: useState, component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Witness Statement Context Usage Examples
  *
  * This file demonstrates various patterns for using the WitnessStatementContext

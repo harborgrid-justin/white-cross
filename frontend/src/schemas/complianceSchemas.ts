@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-249 | complianceSchemas.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/compliance | Dependencies: zod, ../types/compliance
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, types | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Compliance Module Validation Schemas
  *
  * Zod schemas for compliance, consent, policy, and audit operations

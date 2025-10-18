@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-307 | errorHandler.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../logging/logger | Dependencies: sequelize, ../logging/logger
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: interfaces, constants, functions, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Sequelize Error Handling Utility
  *
  * Provides comprehensive error mapping from Sequelize errors to application-friendly

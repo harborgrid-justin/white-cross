@@ -1,7 +1,19 @@
+/**
+ * WC-GEN-056 | User.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../config/sequelize, ../../types/enums, ../../../shared | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { UserRole } from '../../types/enums';
-import bcrypt from 'bcryptjs';
+import { hashPassword, comparePassword } from '../../../shared';
 
 interface UserAttributes {
   id: string;
@@ -63,13 +75,12 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 
   async hashPassword() {
     if (this.changed('password')) {
-      const rounds = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
-      this.password = await bcrypt.hash(this.password, rounds);
+      this.password = await hashPassword(this.password);
     }
   }
 
   async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
+    return comparePassword(candidatePassword, this.password);
   }
 
   get fullName(): string {

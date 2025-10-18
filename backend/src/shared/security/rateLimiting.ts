@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-322 | rateLimiting.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../logging/logger | Dependencies: @hapi/hapi, redis, ../logging/logger
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: types, constants, functions, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Rate Limiting Utilities
  * Prevents brute force attacks and API abuse
  *

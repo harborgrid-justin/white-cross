@@ -1,4 +1,19 @@
 /**
+ * File: /backend/src/jobs/index.ts
+ * Locator: WC-IDX-JOB-069
+ * Purpose: Background Jobs Management Hub - Healthcare system job orchestration
+ * 
+ * Upstream: ../utils/logger, ./medicationReminderJob, ./inventoryMaintenanceJob
+ * Downstream: server.ts, ../services/*, healthcare application lifecycle
+ * Dependencies: logger, cron scheduler, medication reminder system, inventory management
+ * Exports: initializeJobs, stopJobs, getJobsHealth, MedicationReminderJob, InventoryMaintenanceJob
+ * 
+ * LLM Context: Central job management for White Cross healthcare system. Coordinates
+ * HIPAA-compliant background tasks including medication reminders (midnight/6am) and
+ * inventory maintenance (15min intervals). Critical for healthcare operations continuity.
+ */
+
+/**
  * Background Jobs Initialization
  *
  * Centralizes all background job management for the application

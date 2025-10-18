@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-APT-020 | appointments.ts - Appointment Management API Routes
+ * Purpose: HTTP endpoints for appointment scheduling, availability management, waitlists, reminders, and nurse scheduling
+ * Upstream: ../services/appointmentService | Dependencies: @hapi/hapi, joi validation, JWT authentication
+ * Downstream: Frontend appointment modules, nurse dashboard, calendar integrations | Called by: Web app, mobile app
+ * Related: nurseService, studentService, communicationService, dashboardService, calendarService
+ * Exports: appointmentRoutes array | Key Services: CRUD operations, scheduling, availability, waitlist, calendar export
+ * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Contains student appointment data - secure endpoints required
+ * Critical Path: HTTP request → JWT validation → Joi validation → Service delegation → Response formatting
+ * LLM Context: Comprehensive appointment API with scheduling, availability checking, waitlist management, and calendar integration
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { AppointmentService } from '../services/appointmentService';
 import Joi from 'joi';

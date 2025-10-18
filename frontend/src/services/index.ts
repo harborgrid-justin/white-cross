@@ -1,3 +1,15 @@
+/**
+ * WF-IDX-267 | index.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./config/apiConfig, ./modules/authApi, ./modules/studentsApi | Dependencies: ./config/apiConfig, ./modules/authApi, ./modules/studentsApi
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, types, named exports | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 // Main API exports - provides both new modular API and backward compatibility
 
 // Configuration and utilities

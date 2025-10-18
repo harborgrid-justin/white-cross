@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-116 | FollowUpActionContext.test.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./FollowUpActionContext, ../types/incidents, ../services | Dependencies: vitest, @testing-library/react, @tanstack/react-query
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Follow-Up Action Context Tests
  * Comprehensive test suite for FollowUpActionContext functionality
  *

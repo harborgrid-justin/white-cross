@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-368 | testDatabase.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../database/services/sequelize.service, ../../shared | Dependencies: ../../database/services/sequelize.service, sequelize, ../../shared
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: functions | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Test Database Helper Utilities
  *
  * Provides utilities for test database setup, teardown, and data management.
@@ -9,6 +21,7 @@
 
 import sequelize from '../../database/services/sequelize.service';
 import { QueryInterface, QueryTypes } from 'sequelize';
+import { hashPassword } from '../../shared';
 
 /**
  * Clears all data from the database while preserving table structure
@@ -153,7 +166,7 @@ export async function getRecordById(
  */
 export async function createTestUser(overrides: any = {}) {
   const bcrypt = require('bcryptjs');
-  const defaultPassword = await bcrypt.hash('testPassword123', 10);
+  const defaultPassword = await hashPassword('TestPassword123!');
 
   const userData = {
     email: `test-${Date.now()}@test.com`,

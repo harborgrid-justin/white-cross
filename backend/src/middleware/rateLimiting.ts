@@ -1,4 +1,16 @@
 /**
+ * WC-MID-RTL-048 | Redis-Based Rate Limiting & API Abuse Prevention Middleware
+ * Purpose: OWASP API security, brute force protection, PHI harvesting prevention
+ * Upstream: utils/logger, Redis client, OWASP security guidelines
+ * Downstream: Auth routes, communication, exports | Called by: Hapi pre-handlers
+ * Related: middleware/security.ts, config/redis.ts, routes/auth.ts protection
+ * Exports: rateLimitingPlugin, createRateLimiter, RATE_LIMIT_CONFIGS, clearRateLimit
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, redis, @hapi/boom
+ * Critical Path: Request → User identification → Rate check → Block/Allow decision
+ * LLM Context: HIPAA compliance, prevents data harvesting, sliding window algorithm
+ */
+
+/**
  * Rate Limiting Middleware
  * Prevents brute force attacks and API abuse
  *

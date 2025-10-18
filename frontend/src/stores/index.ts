@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-305 | index.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @/stores, @/stores
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: interfaces, types, named exports | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Redux Store - Central Export Module
  *
  * This module provides a clean, centralized export interface for the Redux store,

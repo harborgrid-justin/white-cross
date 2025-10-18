@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-354 | MedicationQueue.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../logger | Dependencies: events, ../logger, crypto
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Medication Administration Offline Queue
  *
  * Provides zero-loss persistence for medication administration when database is unavailable.

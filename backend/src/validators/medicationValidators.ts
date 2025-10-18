@@ -1,3 +1,15 @@
+/**
+ * WC-VAL-MED-010 | Medication Validation Schemas
+ * Purpose: Joi validation schemas for medication operations, Five Rights compliance
+ * Upstream: External joi package | Dependencies: joi, moment
+ * Downstream: routes/medications.ts, medicationService | Called by: Medication API endpoints
+ * Related: medicationService.ts, routes/medications.ts, MedicationInventory.ts
+ * Exports: Joi schemas for validation | Key Services: Input validation, safety checks
+ * Last Updated: 2025-10-17 | Dependencies: joi, moment-timezone
+ * Critical Path: Request → Schema validation → Type safety → Service call
+ * LLM Context: Medication safety validation, prevents dosing errors, HIPAA compliance
+ */
+
 import Joi from 'joi';
 
 /**

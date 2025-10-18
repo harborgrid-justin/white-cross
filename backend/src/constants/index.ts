@@ -1,6 +1,13 @@
 /**
- * Centralized constants for White Cross Healthcare Platform Backend
- * All static values, routes, URLs, and configuration should be defined here
+ * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
+ * Purpose: Global constants, API routes, validation patterns, error messages, config
+ * Upstream: process.env variables, .env file | Called by: All application modules
+ * Downstream: index.ts, middleware/*, routes/*, services/*, validators/*
+ * Related: .env.example, config/*, types/*, swagger.ts
+ * Exports: API_ROUTES, HTTP_STATUS, USER_ROLES, PERMISSIONS, CONSTANTS (default)
+ * Last Updated: 2025-10-17 | Dependencies: None (pure constants)
+ * Critical Path: Environment variables → Constants → Application configuration
+ * LLM Context: Central source of truth for all app constants, validation, messaging
  */
 
 // ===== API ROUTES =====

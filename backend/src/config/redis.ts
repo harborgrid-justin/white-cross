@@ -1,4 +1,16 @@
 /**
+ * WC-CFG-RDS-052 | Redis Cache Configuration & Healthcare Data Caching Strategy
+ * Purpose: Redis connection management, student health cache, performance optimization
+ * Upstream: utils/logger, constants/CACHE_KEYS, environment variables
+ * Downstream: All services, middleware/rateLimiting.ts | Called by: Service layer caching
+ * Related: middleware/performanceMonitor.ts, services/*, constants/index.ts
+ * Exports: cacheGet, cacheSet, invalidateStudentCache, getCacheStats, initializeRedis
+ * Last Updated: 2025-10-18 | Dependencies: redis, utils/logger, constants
+ * Critical Path: Redis connection → Cache operations → Student data retrieval
+ * LLM Context: Healthcare performance optimization, student records caching, HIPAA considerations
+ */
+
+/**
  * Redis Cache Configuration for White Cross Healthcare Platform
  *
  * Features:

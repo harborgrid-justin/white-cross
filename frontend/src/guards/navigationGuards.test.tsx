@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-124 | navigationGuards.test.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./navigationGuards, ../contexts/AuthContext, ../types | Dependencies: react, @testing-library/react, react-router-dom
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Navigation Guards - Test Suite
  *
  * Comprehensive tests for navigation guard system

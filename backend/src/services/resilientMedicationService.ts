@@ -1,4 +1,16 @@
 /**
+ * WC-GEN-292 | resilientMedicationService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../utils/logger, ../utils/resilience/CircuitBreaker, ../database/models | Dependencies: sequelize, ../utils/logger, ../utils/resilience/CircuitBreaker
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Resilient Medication Service
  *
  * Enhanced medication service with comprehensive resilience patterns:

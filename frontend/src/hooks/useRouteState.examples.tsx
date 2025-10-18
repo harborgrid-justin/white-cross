@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-143 | useRouteState.examples.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./useRouteState | Dependencies: @tanstack/react-query, ./useRouteState
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useMemo, component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Usage Examples for Route-Level State Persistence Hooks
  *
  * Comprehensive examples demonstrating real-world usage patterns

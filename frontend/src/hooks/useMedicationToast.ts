@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-138 | useMedicationToast.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react-hot-toast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import toast from 'react-hot-toast'
 import type { UseToastReturn } from '../types/medications'
 

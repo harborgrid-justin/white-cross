@@ -1,4 +1,16 @@
 /**
+ * WC-MID-AUD-043 | HIPAA-Compliant Audit Logging Middleware & PHI Access Tracking
+ * Purpose: Comprehensive audit trail for PHI access, HIPAA compliance monitoring
+ * Upstream: database/models/AuditLog, utils/logger, database/types/enums, auth middleware
+ * Downstream: routes/*, services/*, background jobs | Called by: Hapi server extensions
+ * Related: middleware/auth.ts, routes/audit.ts, models/AuditLog.ts, HIPAA compliance
+ * Exports: auditLoggingMiddleware, createAuditLog, auditPHIExport, getAuditLogs
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, sequelize, database models
+ * Critical Path: Request → PHI route check → Auth validation → Audit log creation
+ * LLM Context: HIPAA Security Rule §164.312(b) compliance, 6-year retention, PHI access tracking
+ */
+
+/**
  * HIPAA-Compliant Audit Logging Middleware
  * Tracks all access to Protected Health Information (PHI)
  *

@@ -1,3 +1,15 @@
+/**
+ * WC-RTE-MED-007 | Medication Management API Routes
+ * Purpose: HTTP endpoints for medication CRUD, administration logging, and inventory
+ * Upstream: services/medicationService, middleware/auth, validators | Dependencies: Hapi.js, Joi
+ * Downstream: Frontend medication module, mobile app | Called by: Medication UI components
+ * Related: medicationService.ts, medicationValidators.ts, inventoryRoutes.ts
+ * Exports: medicationRoutes array | Key Services: CRUD, logging, inventory, safety
+ * Last Updated: 2025-10-17 | Dependencies: @hapi/hapi, joi, boom
+ * Critical Path: Auth → Validation → Service call → Response formatting
+ * LLM Context: HIPAA-compliant medication API, nurse workflow integration
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { MedicationService } from '../services/medicationService';
 import Joi from 'joi';

@@ -1,3 +1,15 @@
+/**
+ * WC-GEN-289 | passport.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../database/models, ../database/types/enums, ../constants | Dependencies: passport, passport-local, passport-jwt
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';

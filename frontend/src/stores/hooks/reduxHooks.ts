@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-304 | reduxHooks.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../slices/authSlice, ../slices/incidentReportsSlice | Dependencies: react-redux, ../slices/authSlice, ../slices/incidentReportsSlice
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import type { RootState, AppDispatch } from '../reduxStore';
 import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../slices/authSlice';
