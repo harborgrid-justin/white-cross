@@ -8,7 +8,7 @@
 const { Command } = require('commander');
 const chalk = require('chalk');
 const Table = require('cli-table3');
-const ora = require('ora');
+const { default: ora } = require('ora');
 const { Client } = require('pg');
 
 class RelationshipAnalyzer {
