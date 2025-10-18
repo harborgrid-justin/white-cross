@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.17.20",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "pg": "^8.16.3"
   }
 }

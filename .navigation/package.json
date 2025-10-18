@@ -1,0 +1,65 @@
+{
+  "name": "@white-cross/intelligent-navigation",
+  "version": "1.0.0",
+  "description": "Enterprise-grade intelligent code navigation and analysis system for White Cross healthcare platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node gui/server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon gui/server.js",
+    "client": "cd gui/client && npm run dev",
+    "build": "cd gui/client && npm run build",
+    "setup": "node cli/setup.js",
+    "search": "node cli/search.js",
+    "navigate": "node cli/navigate.js",
+    "analyze": "node cli/analyze.js",
+    "relationships": "node cli/relationships.js",
+    "test": "node test_enhanced_navigation.js",
+    "cli:navigator": "node cli/navigator.js",
+    "cli:patterns": "node cli/pattern-finder.js",
+    "cli:export": "node cli/exporter.js",
+    "cli:analyze": "node cli/analyzer.js",
+    "build-embeddings": "node enhanced_embedding_populator.js",
+    "build-relationships": "node simple_relationship_builder.js",
+    "populate": "npm run build-embeddings && npm run build-relationships"
+  },
+  "keywords": [
+    "code-navigation",
+    "ai-analysis",
+    "semantic-search",
+    "healthcare",
+    "enterprise",
+    "vector-embeddings",
+    "pattern-matching"
+  ],
+  "author": "White Cross Development Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ws": "^8.14.2",
+    "pg": "^8.11.3",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "cli-table3": "^0.6.3",
+    "table": "^6.8.1",
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0",
+    "d3": "^7.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "bin": {
+    "navigator": "./cli/navigator.js",
+    "pattern-finder": "./cli/pattern-finder.js",
+    "analyzer": "./cli/analyzer.js",
+    "exporter": "./cli/exporter.js"
+  }
+}
