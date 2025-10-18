@@ -1,5 +1,5 @@
 import { Op, literal } from 'sequelize';
-import { logger } from '../utils/logger';
+import { logger } from '../shared/logging/logger';
 import { AuditLog, User, Student, sequelize } from '../database/models';
 import { AuditAction } from '../database/types/enums';
 
