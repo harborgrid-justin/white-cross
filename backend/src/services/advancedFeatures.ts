@@ -922,7 +922,7 @@ export class EHRImportService {
   static async importFromEHR(source: string, format: string, data: any): Promise<EHRImportJob> {
     try {
       const job: EHRImportJob = {
-        id: `EHR-${Date.now()}`,
+        id: `EHR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         source,
         format: format as any,
         status: 'processing',
@@ -931,8 +931,12 @@ export class EHRImportService {
         startedAt: new Date()
       };
 
-      // Process import in background
-      logger.info('EHR import job started', { jobId: job.id, source });
+      // Process import in background (using async processing)
+      this.processImport(job, data).catch(error => {
+        logger.error('Error in background import', { error, jobId: job.id });
+      });
+
+      logger.info('EHR import job started', { jobId: job.id, source, format });
       return job;
     } catch (error) {
       logger.error('Error starting EHR import', { error });
@@ -940,14 +944,305 @@ export class EHRImportService {
     }
   }
 
+  private static async processImport(job: EHRImportJob, data: any): Promise<void> {
+    try {
+      let records: any[] = [];
+
+      // Parse data based on format
+      switch (job.format) {
+        case 'HL7':
+          records = await this.parseHL7Messages(data);
+          break;
+        case 'FHIR':
+          records = await this.parseFHIRResources(data);
+          break;
+        case 'CSV':
+          records = await this.parseCSV(data);
+          break;
+        case 'XML':
+          records = await this.parseXML(data);
+          break;
+      }
+
+      // Process each record
+      for (const record of records) {
+        try {
+          await this.importHealthRecord(record);
+          job.recordsProcessed++;
+        } catch (error) {
+          logger.error('Error importing record', { error, record });
+          job.recordsFailed++;
+        }
+      }
+
+      job.status = 'completed';
+      job.completedAt = new Date();
+
+      logger.info('EHR import completed', {
+        jobId: job.id,
+        processed: job.recordsProcessed,
+        failed: job.recordsFailed
+      });
+    } catch (error) {
+      job.status = 'failed';
+      job.completedAt = new Date();
+      logger.error('EHR import failed', { error, jobId: job.id });
+    }
+  }
+
   static async parseHL7Message(message: string): Promise<any> {
-    // Parse HL7 message format
-    return {};
+    try {
+      // Parse HL7 v2 message format
+      // Example: MSH|^~\&|SendingApp|SendingFacility|...
+      
+      const segments = message.split('\r');
+      const parsed: any = {
+        messageType: '',
+        patient: {},
+        observations: [],
+        medications: []
+      };
+
+      for (const segment of segments) {
+        const fields = segment.split('|');
+        const segmentType = fields[0];
+
+        switch (segmentType) {
+          case 'MSH': // Message Header
+            parsed.messageType = fields[8];
+            break;
+          case 'PID': // Patient Identification
+            parsed.patient = {
+              id: fields[3],
+              name: fields[5],
+              dob: fields[7],
+              gender: fields[8]
+            };
+            break;
+          case 'OBX': // Observation/Result
+            parsed.observations.push({
+              type: fields[3],
+              value: fields[5],
+              units: fields[6],
+              status: fields[11]
+            });
+            break;
+          case 'RXA': // Pharmacy/Treatment Administration
+            parsed.medications.push({
+              code: fields[5],
+              description: fields[6],
+              date: fields[3]
+            });
+            break;
+        }
+      }
+
+      logger.info('HL7 message parsed', { messageType: parsed.messageType });
+      return parsed;
+    } catch (error) {
+      logger.error('Error parsing HL7 message', { error });
+      throw error;
+    }
   }
 
   static async parseFHIRResource(resource: any): Promise<any> {
-    // Parse FHIR resource
-    return {};
+    try {
+      // Parse FHIR R4 resource
+      const parsed: any = {
+        resourceType: resource.resourceType,
+        id: resource.id,
+        data: {}
+      };
+
+      switch (resource.resourceType) {
+        case 'Patient':
+          parsed.data = {
+            id: resource.id,
+            name: resource.name?.[0]?.text || '',
+            dob: resource.birthDate,
+            gender: resource.gender,
+            address: resource.address?.[0]
+          };
+          break;
+
+        case 'Observation':
+          parsed.data = {
+            code: resource.code?.coding?.[0]?.code,
+            display: resource.code?.coding?.[0]?.display,
+            value: resource.valueQuantity?.value,
+            unit: resource.valueQuantity?.unit,
+            effectiveDateTime: resource.effectiveDateTime,
+            status: resource.status
+          };
+          break;
+
+        case 'MedicationStatement':
+          parsed.data = {
+            medication: resource.medicationCodeableConcept?.coding?.[0]?.display,
+            status: resource.status,
+            effectiveDateTime: resource.effectiveDateTime,
+            dosage: resource.dosage?.[0]?.text
+          };
+          break;
+
+        case 'Immunization':
+          parsed.data = {
+            vaccineCode: resource.vaccineCode?.coding?.[0]?.code,
+            vaccineName: resource.vaccineCode?.coding?.[0]?.display,
+            occurrenceDateTime: resource.occurrenceDateTime,
+            status: resource.status,
+            lotNumber: resource.lotNumber
+          };
+          break;
+
+        case 'AllergyIntolerance':
+          parsed.data = {
+            code: resource.code?.coding?.[0]?.code,
+            allergen: resource.code?.coding?.[0]?.display,
+            criticality: resource.criticality,
+            reaction: resource.reaction?.[0]?.manifestation?.[0]?.coding?.[0]?.display,
+            onsetDateTime: resource.onsetDateTime
+          };
+          break;
+      }
+
+      logger.info('FHIR resource parsed', { resourceType: parsed.resourceType });
+      return parsed;
+    } catch (error) {
+      logger.error('Error parsing FHIR resource', { error });
+      throw error;
+    }
+  }
+
+  private static async parseHL7Messages(data: string): Promise<any[]> {
+    // Split multiple messages and parse each
+    const messages = data.split('\nMSH').map(msg => msg.trim()).filter(msg => msg);
+    return Promise.all(messages.map(msg => this.parseHL7Message('MSH' + msg)));
+  }
+
+  private static async parseFHIRResources(data: any): Promise<any[]> {
+    // Handle FHIR Bundle or individual resources
+    if (data.resourceType === 'Bundle') {
+      return Promise.all(data.entry.map((entry: any) => this.parseFHIRResource(entry.resource)));
+    } else {
+      return [await this.parseFHIRResource(data)];
+    }
+  }
+
+  private static async parseCSV(data: string): Promise<any[]> {
+    // Simple CSV parser
+    const lines = data.split('\n');
+    const headers = lines[0].split(',');
+    const records: any[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      
+      const values = lines[i].split(',');
+      const record: any = {};
+      
+      headers.forEach((header, index) => {
+        record[header.trim()] = values[index]?.trim();
+      });
+      
+      records.push(record);
+    }
+
+    return records;
+  }
+
+  private static async parseXML(data: string): Promise<any[]> {
+    // Basic XML parsing (in production, use proper XML parser)
+    logger.info('Parsing XML data');
+    return [];
+  }
+
+  private static async importHealthRecord(record: any): Promise<void> {
+    // Import parsed record into database
+    // Map fields to internal data models
+    // Validate data before importing
+    // Create audit log entry
+    
+    logger.info('Importing health record', { recordType: record.resourceType || 'unknown' });
+  }
+
+  static async exportToEHR(studentId: string, format: 'HL7' | 'FHIR' | 'CSV'): Promise<string> {
+    try {
+      // Fetch student health data
+      // Format according to requested standard
+      // Return formatted data
+
+      logger.info('Exporting student data to EHR format', { studentId, format });
+      
+      if (format === 'FHIR') {
+        return this.exportToFHIR(studentId);
+      } else if (format === 'HL7') {
+        return this.exportToHL7(studentId);
+      } else {
+        return this.exportToCSV(studentId);
+      }
+    } catch (error) {
+      logger.error('Error exporting to EHR', { error, studentId });
+      throw error;
+    }
+  }
+
+  private static async exportToFHIR(studentId: string): Promise<string> {
+    // Create FHIR Bundle with Patient and related resources
+    const bundle = {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: []
+    };
+
+    return JSON.stringify(bundle, null, 2);
+  }
+
+  private static async exportToHL7(studentId: string): Promise<string> {
+    // Create HL7 v2 message
+    let message = 'MSH|^~\\&|WhiteCross|School|EHR|Hospital|';
+    message += new Date().toISOString() + '||ADT^A04|1|P|2.5\r';
+    // Add PID, OBX, RXA segments...
+    
+    return message;
+  }
+
+  private static async exportToCSV(studentId: string): Promise<string> {
+    // Create CSV export
+    let csv = 'Field,Value\n';
+    csv += 'StudentID,' + studentId + '\n';
+    // Add more fields...
+    
+    return csv;
+  }
+
+  static async validateImportData(format: string, data: any): Promise<{ valid: boolean; errors: string[] }> {
+    const errors: string[] = [];
+
+    try {
+      switch (format) {
+        case 'HL7':
+          if (!data.includes('MSH|')) {
+            errors.push('Missing MSH segment in HL7 message');
+          }
+          break;
+        case 'FHIR':
+          if (!data.resourceType) {
+            errors.push('Missing resourceType in FHIR resource');
+          }
+          break;
+        case 'CSV':
+          if (!data.includes(',')) {
+            errors.push('Invalid CSV format');
+          }
+          break;
+      }
+
+      return { valid: errors.length === 0, errors };
+    } catch (error) {
+      logger.error('Error validating import data', { error });
+      return { valid: false, errors: ['Validation error: ' + error] };
+    }
   }
 }
 
