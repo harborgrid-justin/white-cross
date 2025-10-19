@@ -36,7 +36,7 @@ export interface WaitlistEntry {
   status: 'waiting' | 'contacted' | 'scheduled' | 'cancelled';
 }
 
-export class WaitlistManagementService {
+class WaitlistManagementService {
   static async addToWaitlist(studentId: string, appointmentType: string, priority: 'routine' | 'urgent' = 'routine'): Promise<WaitlistEntry> {
     try {
       const entry: WaitlistEntry = {
@@ -91,7 +91,7 @@ export interface RecurringTemplate {
   createdBy: string;
 }
 
-export class RecurringAppointmentService {
+class RecurringAppointmentService {
   static async createRecurringTemplate(data: Omit<RecurringTemplate, 'id'>): Promise<RecurringTemplate> {
     try {
       const template: RecurringTemplate = {
@@ -135,7 +135,7 @@ export interface ReminderSchedule {
   }>;
 }
 
-export class AppointmentReminderService {
+class AppointmentReminderService {
   static async scheduleReminders(appointmentId: string): Promise<ReminderSchedule> {
     try {
       const schedule: ReminderSchedule = {
@@ -188,7 +188,7 @@ export interface EvidenceFile {
   securityLevel: 'restricted' | 'confidential';
 }
 
-export class EvidenceManagementService {
+class EvidenceManagementService {
   static async uploadEvidence(
     incidentId: string,
     fileData: string,
@@ -247,7 +247,7 @@ export interface WitnessStatement {
   verified: boolean;
 }
 
-export class WitnessStatementService {
+class WitnessStatementService {
   static async captureStatement(data: Omit<WitnessStatement, 'id' | 'timestamp' | 'verified'>): Promise<WitnessStatement> {
     try {
       const statement: WitnessStatement = {
@@ -293,7 +293,7 @@ export interface InsuranceClaim {
   documents: string[];
 }
 
-export class InsuranceClaimService {
+class InsuranceClaimService {
   static async generateClaim(incidentId: string, studentId: string): Promise<InsuranceClaim> {
     try {
       const claim: InsuranceClaim = {
@@ -339,7 +339,7 @@ export interface HIPAAComplianceCheck {
   checkedAt: Date;
 }
 
-export class HIPAAComplianceService {
+class HIPAAComplianceService {
   static async performComplianceAudit(): Promise<HIPAAComplianceCheck[]> {
     try {
       const checks: HIPAAComplianceCheck[] = [
@@ -394,7 +394,7 @@ export interface RegulationUpdate {
   status: 'pending-review' | 'implementing' | 'implemented';
 }
 
-export class RegulationTrackingService {
+class RegulationTrackingService {
   static async trackRegulationChanges(state: string): Promise<RegulationUpdate[]> {
     try {
       // Monitor state regulation databases
@@ -431,7 +431,7 @@ export interface ConsentForm {
   metadata?: Record<string, any>;
 }
 
-export class ConsentFormService {
+class ConsentFormService {
   static async createConsentForm(studentId: string, formType: string, content: string, expiresAt?: Date): Promise<ConsentForm> {
     try {
       const crypto = require('crypto');
@@ -662,7 +662,7 @@ export interface MessageTemplate {
   createdAt: Date;
 }
 
-export class MessageTemplateService {
+class MessageTemplateService {
   static async createTemplate(data: Omit<MessageTemplate, 'id' | 'createdAt'>): Promise<MessageTemplate> {
     try {
       const template: MessageTemplate = {
@@ -710,7 +710,7 @@ export interface BulkMessage {
   sentAt?: Date;
 }
 
-export class BulkMessagingService {
+class BulkMessagingService {
   static async sendBulkMessage(data: Omit<BulkMessage, 'id' | 'status' | 'deliveryStats'>): Promise<BulkMessage> {
     try {
       const message: BulkMessage = {
@@ -745,7 +745,7 @@ export interface TranslationService {
   text: string;
 }
 
-export class CommunicationTranslationService {
+class CommunicationTranslationService {
   static async translateMessage(text: string, targetLanguage: string): Promise<string> {
     try {
       // Use translation API (Google Translate, AWS Translate, etc.)
@@ -786,7 +786,7 @@ export interface ReportDefinition {
   };
 }
 
-export class CustomReportService {
+class CustomReportService {
   static async createReportDefinition(data: Omit<ReportDefinition, 'id'>): Promise<ReportDefinition> {
     try {
       const report: ReportDefinition = {
@@ -825,7 +825,7 @@ export interface DashboardMetric {
   unit: string;
 }
 
-export class AnalyticsDashboardService {
+class AnalyticsDashboardService {
   static async getRealtimeMetrics(): Promise<DashboardMetric[]> {
     try {
       const metrics: DashboardMetric[] = [

@@ -574,8 +574,8 @@ export class ChronicConditionsService {
       const [updatedCount] = await ChronicCondition.update(
         {
           status,
-          lastReviewDate: new Date(),
-          reviewedBy: updatedBy
+          lastReviewDate: new Date()
+          // reviewedBy field not available in model
         },
         {
           where: {

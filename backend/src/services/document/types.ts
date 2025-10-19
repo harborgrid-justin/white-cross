@@ -152,6 +152,34 @@ export interface DocumentCategoryMetadata {
 }
 
 /**
+ * Interface for document signature metadata
+ */
+export interface DocumentSignature {
+  id: string;
+  documentId: string;
+  signerId: string;
+  signerName: string;
+  signedAt: Date;
+  signatureType: 'DIGITAL' | 'ELECTRONIC' | 'WET';
+  ipAddress?: string;
+  verified: boolean;
+}
+
+/**
+ * Interface for document audit trail
+ */
+export interface DocumentAuditTrail {
+  id: string;
+  documentId: string;
+  action: string;
+  userId: string;
+  userName: string;
+  timestamp: Date;
+  details?: Record<string, any>;
+  ipAddress?: string;
+}
+
+/**
  * Type augmentation for Document model associations
  */
 declare module '../../database/models' {

@@ -221,7 +221,9 @@ export class OfflineDataSync {
             result.conflicts++;
             
             if (options?.conflictStrategy && options.conflictStrategy !== 'MANUAL') {
-              await this.resolveConflict(conflict.id, options.conflictStrategy, 'AUTO');
+              // Map NEWEST_WINS to CLIENT_WINS as a fallback
+              const strategy = options.conflictStrategy === 'NEWEST_WINS' ? 'CLIENT_WINS' : options.conflictStrategy;
+              await this.resolveConflict(conflict.id, strategy, 'AUTO');
               await this.applySyncAction(item);
               item.synced = true;
               item.syncedAt = new Date();
@@ -333,9 +335,9 @@ export class OfflineDataSync {
     await AuditService.logAction({
       userId: item.userId,
       action: `SYNC_${item.actionType}_${item.entityType}`,
-      resourceType: item.entityType,
-      resourceId: item.entityId,
-      details: { deviceId: item.deviceId, queueId: item.id, timestamp: item.timestamp }
+      entityType: item.entityType,
+      entityId: item.entityId,
+      changes: { deviceId: item.deviceId, queueId: item.id, timestamp: item.timestamp }
     });
   }
   

@@ -15,7 +15,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { authenticate } from '../middleware/auth';
+import { auth } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 // Import all feature services
@@ -35,7 +35,7 @@ const router = Router();
 // Student Photo Management Routes
 // ============================================
 
-router.post('/students/:studentId/photo', authenticate, async (req: Request, res: Response) => {
+router.post('/students/:studentId/photo', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const { imageData, metadata } = req.body;
@@ -55,7 +55,7 @@ router.post('/students/:studentId/photo', authenticate, async (req: Request, res
   }
 });
 
-router.post('/students/photo-search', authenticate, async (req: Request, res: Response) => {
+router.post('/students/photo-search', auth, async (req: Request, res: Response) => {
   try {
     const { imageData, threshold } = req.body;
     const matches = await StudentPhotoService.searchByPhoto(imageData, threshold);
@@ -70,7 +70,7 @@ router.post('/students/photo-search', authenticate, async (req: Request, res: Re
 // Academic Transcript Routes
 // ============================================
 
-router.post('/students/:studentId/transcript/import', authenticate, async (req: Request, res: Response) => {
+router.post('/students/:studentId/transcript/import', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const transcriptData = {
@@ -87,7 +87,7 @@ router.post('/students/:studentId/transcript/import', authenticate, async (req: 
   }
 });
 
-router.get('/students/:studentId/transcript/history', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/transcript/history', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const history = await AcademicTranscriptService.getAcademicHistory(studentId);
@@ -98,7 +98,7 @@ router.get('/students/:studentId/transcript/history', authenticate, async (req: 
   }
 });
 
-router.get('/students/:studentId/transcript/trends', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/transcript/trends', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const trends = await AcademicTranscriptService.analyzePerformanceTrends(studentId);
@@ -113,7 +113,7 @@ router.get('/students/:studentId/transcript/trends', authenticate, async (req: R
 // Grade Transition Routes
 // ============================================
 
-router.post('/admin/grade-transition/bulk', authenticate, async (req: Request, res: Response) => {
+router.post('/admin/grade-transition/bulk', auth, async (req: Request, res: Response) => {
   try {
     const { effectiveDate, dryRun } = req.body;
     const result = await GradeTransitionService.performBulkTransition(effectiveDate, dryRun);
@@ -124,7 +124,7 @@ router.post('/admin/grade-transition/bulk', authenticate, async (req: Request, r
   }
 });
 
-router.get('/admin/graduating-students', authenticate, async (req: Request, res: Response) => {
+router.get('/admin/graduating-students', auth, async (req: Request, res: Response) => {
   try {
     const students = await GradeTransitionService.getGraduatingStudents();
     res.json({ success: true, data: students });
@@ -138,7 +138,7 @@ router.get('/admin/graduating-students', authenticate, async (req: Request, res:
 // Health Risk Assessment Routes
 // ============================================
 
-router.get('/students/:studentId/health-risk', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/health-risk', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const assessment = await HealthRiskAssessmentService.calculateRiskScore(studentId);
@@ -149,7 +149,7 @@ router.get('/students/:studentId/health-risk', authenticate, async (req: Request
   }
 });
 
-router.get('/admin/high-risk-students', authenticate, async (req: Request, res: Response) => {
+router.get('/admin/high-risk-students', auth, async (req: Request, res: Response) => {
   try {
     const { minScore } = req.query;
     const students = await HealthRiskAssessmentService.getHighRiskStudents(Number(minScore) || 50);
@@ -164,7 +164,7 @@ router.get('/admin/high-risk-students', authenticate, async (req: Request, res: 
 // Medication Interaction Routes
 // ============================================
 
-router.get('/students/:studentId/medication-interactions', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/medication-interactions', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const result = await MedicationInteractionService.checkStudentMedications(studentId);
@@ -175,7 +175,7 @@ router.get('/students/:studentId/medication-interactions', authenticate, async (
   }
 });
 
-router.post('/students/:studentId/medication-interactions/check-new', authenticate, async (req: Request, res: Response) => {
+router.post('/students/:studentId/medication-interactions/check-new', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const { medicationName } = req.body;
@@ -187,7 +187,7 @@ router.post('/students/:studentId/medication-interactions/check-new', authentica
   }
 });
 
-router.get('/students/:studentId/medication-interactions/recommendations', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/medication-interactions/recommendations', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const recommendations = await MedicationInteractionService.getInteractionRecommendations(studentId);
@@ -202,7 +202,7 @@ router.get('/students/:studentId/medication-interactions/recommendations', authe
 // Medication Refill Routes
 // ============================================
 
-router.post('/medications/refill-request', authenticate, async (req: Request, res: Response) => {
+router.post('/medications/refill-request', auth, async (req: Request, res: Response) => {
   try {
     const requestData = {
       ...req.body,
@@ -220,7 +220,7 @@ router.post('/medications/refill-request', authenticate, async (req: Request, re
 // Barcode Scanning Routes
 // ============================================
 
-router.post('/barcode/scan', authenticate, async (req: Request, res: Response) => {
+router.post('/barcode/scan', auth, async (req: Request, res: Response) => {
   try {
     const { barcodeString } = req.body;
     const result = await AdvancedFeatures.BarcodeScanningService.scanBarcode(barcodeString);
@@ -231,7 +231,7 @@ router.post('/barcode/scan', authenticate, async (req: Request, res: Response) =
   }
 });
 
-router.post('/barcode/verify-medication', authenticate, async (req: Request, res: Response) => {
+router.post('/barcode/verify-medication', auth, async (req: Request, res: Response) => {
   try {
     const { studentBarcode, medicationBarcode, nurseBarcode } = req.body;
     const result = await AdvancedFeatures.BarcodeScanningService.verifyMedicationAdministration(
@@ -250,7 +250,7 @@ router.post('/barcode/verify-medication', authenticate, async (req: Request, res
 // Immunization Forecast Routes
 // ============================================
 
-router.get('/students/:studentId/immunization-forecast', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/immunization-forecast', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const forecast = await AdvancedFeatures.ImmunizationForecastService.getForecast(studentId);
@@ -265,7 +265,7 @@ router.get('/students/:studentId/immunization-forecast', authenticate, async (re
 // Growth Chart Routes
 // ============================================
 
-router.post('/students/:studentId/growth-measurement', authenticate, async (req: Request, res: Response) => {
+router.post('/students/:studentId/growth-measurement', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const measurementData = {
@@ -281,7 +281,7 @@ router.post('/students/:studentId/growth-measurement', authenticate, async (req:
   }
 });
 
-router.get('/students/:studentId/growth-analysis', authenticate, async (req: Request, res: Response) => {
+router.get('/students/:studentId/growth-analysis', auth, async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const analysis = await AdvancedFeatures.GrowthChartService.analyzeGrowthTrend(studentId);
@@ -296,7 +296,7 @@ router.get('/students/:studentId/growth-analysis', authenticate, async (req: Req
 // Screening Routes
 // ============================================
 
-router.post('/screenings/record', authenticate, async (req: Request, res: Response) => {
+router.post('/screenings/record', auth, async (req: Request, res: Response) => {
   try {
     const screeningData = {
       ...req.body,
@@ -314,7 +314,7 @@ router.post('/screenings/record', authenticate, async (req: Request, res: Respon
 // Emergency Notification Routes
 // ============================================
 
-router.post('/emergency/notify', authenticate, async (req: Request, res: Response) => {
+router.post('/emergency/notify', auth, async (req: Request, res: Response) => {
   try {
     const notificationData = {
       ...req.body,
@@ -332,7 +332,7 @@ router.post('/emergency/notify', authenticate, async (req: Request, res: Respons
 // Waitlist Management Routes
 // ============================================
 
-router.post('/appointments/waitlist/add', authenticate, async (req: Request, res: Response) => {
+router.post('/appointments/waitlist/add', auth, async (req: Request, res: Response) => {
   try {
     const { studentId, appointmentType, priority } = req.body;
     const result = await EnterpriseFeatures.WaitlistManagementService.addToWaitlist(studentId, appointmentType, priority);
@@ -347,7 +347,7 @@ router.post('/appointments/waitlist/add', authenticate, async (req: Request, res
 // Bulk Messaging Routes
 // ============================================
 
-router.post('/communication/bulk-message', authenticate, async (req: Request, res: Response) => {
+router.post('/communication/bulk-message', auth, async (req: Request, res: Response) => {
   try {
     const messageData = {
       ...req.body,
@@ -365,7 +365,7 @@ router.post('/communication/bulk-message', authenticate, async (req: Request, re
 // Custom Report Routes
 // ============================================
 
-router.post('/reports/custom/create', authenticate, async (req: Request, res: Response) => {
+router.post('/reports/custom/create', auth, async (req: Request, res: Response) => {
   try {
     const reportDef = await EnterpriseFeatures.CustomReportService.createReportDefinition(req.body);
     res.json({ success: true, data: reportDef });
@@ -375,7 +375,7 @@ router.post('/reports/custom/create', authenticate, async (req: Request, res: Re
   }
 });
 
-router.get('/reports/custom/:reportId/execute', authenticate, async (req: Request, res: Response) => {
+router.get('/reports/custom/:reportId/execute', auth, async (req: Request, res: Response) => {
   try {
     const { reportId } = req.params;
     const result = await EnterpriseFeatures.CustomReportService.executeReport(reportId);
@@ -390,7 +390,7 @@ router.get('/reports/custom/:reportId/execute', authenticate, async (req: Reques
 // Analytics Dashboard Routes
 // ============================================
 
-router.get('/analytics/real-time', authenticate, async (req: Request, res: Response) => {
+router.get('/analytics/real-time', auth, async (req: Request, res: Response) => {
   try {
     const metrics = await EnterpriseFeatures.AnalyticsDashboardService.getRealtimeMetrics();
     res.json({ success: true, data: metrics });
@@ -404,7 +404,7 @@ router.get('/analytics/real-time', authenticate, async (req: Request, res: Respo
 // MFA Routes
 // ============================================
 
-router.post('/auth/mfa/setup', authenticate, async (req: Request, res: Response) => {
+router.post('/auth/mfa/setup', auth, async (req: Request, res: Response) => {
   try {
     const { method } = req.body;
     const userId = (req as any).user.id;
@@ -416,11 +416,11 @@ router.post('/auth/mfa/setup', authenticate, async (req: Request, res: Response)
   }
 });
 
-router.post('/auth/mfa/verify', authenticate, async (req: Request, res: Response) => {
+router.post('/auth/mfa/verify', auth, async (req: Request, res: Response) => {
   try {
-    const { code } = req.body;
+    const { code, secret } = req.body;
     const userId = (req as any).user.id;
-    const verified = await AdvancedEnterpriseFeatures.MFAService.verifyMFACode(userId, code);
+    const verified = await AdvancedEnterpriseFeatures.MFAService.verifyMFACode(userId, code, secret, 'totp');
     res.json({ success: true, data: { verified } });
   } catch (error) {
     logger.error('Error verifying MFA code', { error });
@@ -432,7 +432,7 @@ router.post('/auth/mfa/verify', authenticate, async (req: Request, res: Response
 // System Monitoring Routes
 // ============================================
 
-router.get('/admin/system/health', authenticate, async (req: Request, res: Response) => {
+router.get('/admin/system/health', auth, async (req: Request, res: Response) => {
   try {
     const health = await AdvancedEnterpriseFeatures.SystemMonitoringService.getSystemHealth();
     res.json({ success: true, data: health });
@@ -446,7 +446,7 @@ router.get('/admin/system/health', authenticate, async (req: Request, res: Respo
 // Feature Integration Status
 // ============================================
 
-router.get('/admin/features/status', authenticate, async (req: Request, res: Response) => {
+router.get('/admin/features/status', auth, async (req: Request, res: Response) => {
   try {
     const status = await AdvancedEnterpriseFeatures.FeatureIntegrationService.getAllFeatureStatus();
     res.json({ success: true, data: status });
@@ -456,7 +456,7 @@ router.get('/admin/features/status', authenticate, async (req: Request, res: Res
   }
 });
 
-router.get('/admin/features/report', authenticate, async (req: Request, res: Response) => {
+router.get('/admin/features/report', auth, async (req: Request, res: Response) => {
   try {
     const report = await AdvancedEnterpriseFeatures.FeatureIntegrationService.generateFeatureReport();
     res.json({ success: true, data: report });

@@ -25,7 +25,7 @@
  */
 
 import { Transaction } from 'sequelize';
-import { HealthRecord, Allergy, Vaccination, ChronicCondition } from '../../models';
+import { HealthRecord, Allergy, Vaccination, ChronicCondition } from '../../database/models';
 import { 
   HealthDataExport,
   HealthDataImport,
@@ -63,7 +63,7 @@ class ImportExportService {
       };
 
       // Build where clause for date filtering
-      const whereClause: any = { patientId };
+      const whereClause: any = { studentId: patientId };
       if (dateRange) {
         whereClause.createdAt = {
           $gte: dateRange.startDate,
@@ -93,7 +93,7 @@ class ImportExportService {
       if (includeVaccinations) {
         const vaccinations = await Vaccination.findAll({
           where: whereClause,
-          order: [['administeredDate', 'DESC']]
+          order: [['administrationDate', 'DESC']]
         });
         exportData.data.vaccinations = vaccinations.map(vaccination => vaccination.toJSON());
       }
@@ -334,9 +334,9 @@ class ImportExportService {
         if (options.skipDuplicates) {
           const existing = await HealthRecord.findOne({
             where: {
-              patientId,
-              type: recordData.type,
-              date: recordData.date
+              studentId: patientId,
+              recordType: recordData.type,
+              createdAt: recordData.date
             },
             transaction
           });
@@ -354,7 +354,7 @@ class ImportExportService {
 
         await HealthRecord.create({
           ...recordData,
-          patientId
+          studentId: patientId
         }, { transaction });
         
         importedCount++;
@@ -383,7 +383,7 @@ class ImportExportService {
         if (options.skipDuplicates) {
           const existing = await Allergy.findOne({
             where: {
-              patientId,
+              studentId: patientId,
               allergen: allergyData.allergen
             },
             transaction
@@ -402,7 +402,7 @@ class ImportExportService {
 
         await Allergy.create({
           ...allergyData,
-          patientId
+          studentId: patientId
         }, { transaction });
         
         importedCount++;
@@ -430,9 +430,9 @@ class ImportExportService {
         if (options.skipDuplicates) {
           const existing = await Vaccination.findOne({
             where: {
-              patientId,
-              vaccine: vaccinationData.vaccine,
-              administeredDate: vaccinationData.administeredDate
+              studentId: patientId,
+              vaccineName: vaccinationData.vaccineName,
+              administrationDate: vaccinationData.administrationDate
             },
             transaction
           });
@@ -450,7 +450,7 @@ class ImportExportService {
 
         await Vaccination.create({
           ...vaccinationData,
-          patientId
+          studentId: patientId
         }, { transaction });
         
         importedCount++;
@@ -478,7 +478,7 @@ class ImportExportService {
         if (options.skipDuplicates) {
           const existing = await ChronicCondition.findOne({
             where: {
-              patientId,
+              studentId: patientId,
               condition: conditionData.condition,
               icdCode: conditionData.icdCode
             },
@@ -498,7 +498,7 @@ class ImportExportService {
 
         await ChronicCondition.create({
           ...conditionData,
-          patientId
+          studentId: patientId
         }, { transaction });
         
         importedCount++;

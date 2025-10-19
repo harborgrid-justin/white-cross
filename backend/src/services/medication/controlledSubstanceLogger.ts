@@ -184,9 +184,9 @@ export class ControlledSubstanceLogger {
       await AuditService.logAction({
         userId: entry.createdBy,
         action: 'CREATE_CONTROLLED_SUBSTANCE_LOG',
-        resourceType: 'ControlledSubstance',
-        resourceId: logEntry.id,
-        details: {
+        entityType: 'ControlledSubstance',
+        entityId: logEntry.id,
+        changes: {
           medicationName: entry.medicationName,
           transactionType: entry.transactionType,
           quantity: entry.quantity,

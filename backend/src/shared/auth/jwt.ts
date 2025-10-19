@@ -157,9 +157,24 @@ export const generateToken = (
       iss: options.issuer || JWT_CONFIG.ISSUER
     };
 
-    const tokenOptions: SignOptions = {
-      expiresIn: options.expiresIn || '24h'
-    };
+    const tokenOptions: SignOptions = {};
+    
+    if (options.expiresIn) {
+      // Convert string formats like '24h', '1d' etc to seconds
+      const expiresIn = options.expiresIn;
+      if (expiresIn.endsWith('h')) {
+        tokenOptions.expiresIn = parseInt(expiresIn) * 60 * 60;
+      } else if (expiresIn.endsWith('d')) {
+        tokenOptions.expiresIn = parseInt(expiresIn) * 24 * 60 * 60;
+      } else if (expiresIn.endsWith('m')) {
+        tokenOptions.expiresIn = parseInt(expiresIn) * 60;
+      } else {
+        // Assume it's already in seconds if no suffix
+        tokenOptions.expiresIn = parseInt(expiresIn) || 24 * 60 * 60;
+      }
+    } else {
+      tokenOptions.expiresIn = 24 * 60 * 60; // 24 hours in seconds
+    }
 
     const token = jsonwebtoken.sign(tokenPayload, secret, tokenOptions);
     return token;

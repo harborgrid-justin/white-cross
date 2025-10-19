@@ -223,17 +223,17 @@ export class StatisticsModule {
 
       const trend = await HealthRecord.findAll({
         attributes: [
-          [sequelize.fn('DATE_FORMAT', sequelize.col('date'), dateFormat), 'period'],
+          [sequelize.fn('DATE_FORMAT', sequelize.col('createdAt'), dateFormat), 'period'],
           [sequelize.fn('COUNT', sequelize.col('id')), 'count']
         ],
         where: {
-          date: {
+          createdAt: {
             [Op.gte]: startDate,
             [Op.lte]: endDate
           }
         },
-        group: [sequelize.fn('DATE_FORMAT', sequelize.col('date'), dateFormat)],
-        order: [[sequelize.fn('DATE_FORMAT', sequelize.col('date'), dateFormat), 'ASC']],
+        group: [sequelize.fn('DATE_FORMAT', sequelize.col('createdAt'), dateFormat)],
+        order: [[sequelize.fn('DATE_FORMAT', sequelize.col('createdAt'), dateFormat), 'ASC']],
         raw: true
       });
 

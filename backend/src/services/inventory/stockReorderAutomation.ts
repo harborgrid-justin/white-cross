@@ -378,9 +378,9 @@ export class StockReorderAutomation {
     await AuditService.logAction({
       userId: createdBy,
       action: 'CREATE_AUTOMATED_PURCHASE_ORDER',
-      resourceType: 'PurchaseOrder',
-      resourceId: order.id,
-      details: {
+      entityType: 'PurchaseOrder',
+      entityId: order.id,
+      changes: {
         orderNumber: order.orderNumber,
         vendorId,
         itemCount: items.length,

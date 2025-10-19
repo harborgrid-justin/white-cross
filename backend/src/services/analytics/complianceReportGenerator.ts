@@ -317,9 +317,9 @@ export class ComplianceReportGenerator {
       await AuditService.logAction({
         userId: params.generatedBy,
         action: 'GENERATE_COMPLIANCE_REPORT',
-        resourceType: 'ComplianceReport',
-        resourceId: report.id,
-        details: {
+        entityType: 'ComplianceReport',
+        entityId: report.id,
+        changes: {
           reportType: report.reportType,
           complianceRate,
           status: report.summary.status
@@ -406,7 +406,7 @@ export class ComplianceReportGenerator {
                   ['Methylphenidate', 450, 200, 394, 6, 250],
                   ['Amphetamine/Dextroamphetamine', 320, 150, 287, 3, 180]
                 ],
-                footer: ['Totals', 770, 350, 681, 9, 430]
+                footer: ['Totals', '770', '350', '681', '9', '430']
               }
             ]
           },

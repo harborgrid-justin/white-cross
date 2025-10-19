@@ -294,9 +294,9 @@ export class ParentPortalMessaging {
       await AuditService.logAction({
         userId: params.senderId,
         action: 'SEND_MESSAGE',
-        resourceType: 'Message',
-        resourceId: message.id,
-        details: {
+        entityType: 'Message',
+        entityId: message.id,
+        changes: {
           recipientCount: params.recipientIds.length,
           category: params.category,
           priority: message.priority,

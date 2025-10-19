@@ -35,7 +35,7 @@ export interface HealthTrendPrediction {
   confidence: number;
 }
 
-export class PredictiveAnalyticsService {
+class PredictiveAnalyticsService {
   static async predictHealthTrends(studentId: string): Promise<HealthTrendPrediction> {
     try {
       // Use ML models to predict health trends
@@ -83,7 +83,7 @@ export interface InventoryReorderPoint {
   safetyStock: number;
 }
 
-export class InventoryOptimizationService {
+class InventoryOptimizationService {
   static async calculateReorderPoints(): Promise<InventoryReorderPoint[]> {
     try {
       // Calculate optimal reorder points based on usage patterns
@@ -125,7 +125,7 @@ export interface VendorRating {
   onTimeDeliveryRate: number;
 }
 
-export class VendorManagementService {
+class VendorManagementService {
   static async rateVendor(vendorId: string, rating: Partial<VendorRating['ratings']>, review: string): Promise<boolean> {
     try {
       logger.info('Vendor rated', { vendorId });
@@ -163,7 +163,7 @@ export interface MaintenanceSchedule {
   status: 'scheduled' | 'overdue' | 'completed';
 }
 
-export class EquipmentMaintenanceService {
+class EquipmentMaintenanceService {
   static async scheduleMaintenanceprogram(equipmentId: string, frequency: string): Promise<MaintenanceSchedule> {
     try {
       const schedule: MaintenanceSchedule = {
@@ -207,7 +207,7 @@ export interface MFASetup {
   enabled: boolean;
 }
 
-export class MFAService {
+class MFAService {
   static async setupMFA(userId: string, method: 'totp' | 'sms' | 'email'): Promise<MFASetup> {
     try {
       const secret = this.generateSecret();
@@ -404,7 +404,7 @@ export interface SessionData {
   expiresAt: Date;
 }
 
-export class SessionSecurityService {
+class SessionSecurityService {
   private static readonly SESSION_TIMEOUT = 3600; // 1 hour in seconds
   private static readonly MAX_SESSIONS_PER_USER = 5;
 
@@ -598,7 +598,7 @@ export interface DocumentVersion {
   checksum: string;
 }
 
-export class DocumentVersionControlService {
+class DocumentVersionControlService {
   static async createVersion(documentId: string, content: string, changes: string, createdBy: string): Promise<DocumentVersion> {
     try {
       const version: DocumentVersion = {
@@ -649,7 +649,7 @@ export interface OCRResult {
   };
 }
 
-export class OCRService {
+class OCRService {
   static async processDocument(imageData: string): Promise<OCRResult> {
     try {
       // Use OCR service (Tesseract, AWS Textract, Google Vision API)
@@ -695,7 +695,7 @@ export interface SISIntegration {
   lastSync?: Date;
 }
 
-export class SISConnectorService {
+class SISConnectorService {
   static async connectToSIS(config: SISIntegration): Promise<boolean> {
     try {
       // Establish connection to external SIS
@@ -729,7 +729,7 @@ export interface PharmacyIntegration {
   features: ('prescription-submit' | 'refill-request' | 'stock-check')[];
 }
 
-export class PharmacyIntegrationService {
+class PharmacyIntegrationService {
   static async submitPrescription(pharmacyId: string, prescriptionData: any): Promise<string> {
     try {
       logger.info('Submitting prescription to pharmacy', { pharmacyId });
@@ -764,7 +764,7 @@ export interface SyncQueue {
   synced: boolean;
 }
 
-export class OfflineSyncService {
+class OfflineSyncService {
   static async queueAction(action: string, entity: string, data: any): Promise<SyncQueue> {
     try {
       const queueItem: SyncQueue = {
@@ -819,7 +819,7 @@ export interface EmergencyProtocol {
   }>;
 }
 
-export class EmergencyProtocolService {
+class EmergencyProtocolService {
   static async getProtocol(protocolId: string): Promise<EmergencyProtocol> {
     try {
       const protocol: EmergencyProtocol = {
@@ -885,7 +885,7 @@ export interface School {
   nurseCount: number;
 }
 
-export class DistrictManagementService {
+class DistrictManagementService {
   static async createDistrict(name: string, settings: any): Promise<District> {
     try {
       const district: District = {
@@ -947,7 +947,7 @@ export interface SystemHealth {
   };
 }
 
-export class SystemMonitoringService {
+class SystemMonitoringService {
   static async getSystemHealth(): Promise<SystemHealth> {
     try {
       const health: SystemHealth = {
@@ -995,7 +995,7 @@ export class SystemMonitoringService {
  * Feature Integration Service
  * Provides unified access to all 45 features
  */
-export class FeatureIntegrationService {
+class FeatureIntegrationService {
   static async getAllFeatureStatus(): Promise<any> {
     return {
       totalFeatures: 45,

@@ -545,7 +545,7 @@ export class AISearchService {
     }
     
     sql += ` ORDER BY similarity LIMIT $${queryParams.length + 1}`;
-    queryParams.push(params.limit || 10);
+    queryParams.push(String(params.limit || 10));
     
     return { sql, params: queryParams };
   }

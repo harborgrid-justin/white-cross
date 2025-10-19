@@ -220,9 +220,9 @@ export class SideEffectMonitor {
       await AuditService.logAction({
         userId: report.reportedBy,
         action: 'CREATE_SIDE_EFFECT_REPORT',
-        resourceType: 'SideEffectReport',
-        resourceId: sideEffectReport.id,
-        details: {
+        entityType: 'SideEffectReport',
+        entityId: sideEffectReport.id,
+        changes: {
           studentId: report.studentId,
           medicationName: report.medicationName,
           sideEffect: report.sideEffect,

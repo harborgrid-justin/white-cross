@@ -40,7 +40,7 @@ import {
   sequelize
 } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { auditService } from '../auditService';
+import { auditService, AuditService } from '../auditService';
 import {
   CreateRoleData,
   UpdateRoleData
@@ -168,7 +168,7 @@ export async function createRole(data: CreateRoleData, auditUserId?: string): Pr
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'Role',
@@ -187,7 +187,7 @@ export async function createRole(data: CreateRoleData, auditUserId?: string): Pr
     logger.error('Error creating role:', error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'Role',
@@ -276,7 +276,7 @@ export async function updateRole(id: string, data: UpdateRoleData, auditUserId?:
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.UPDATE,
       entityType: 'Role',
@@ -297,7 +297,7 @@ export async function updateRole(id: string, data: UpdateRoleData, auditUserId?:
     logger.error(`Error updating role ${id}:`, error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.UPDATE,
       entityType: 'Role',
@@ -359,7 +359,7 @@ export async function deleteRole(id: string, auditUserId?: string): Promise<{ su
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.DELETE,
       entityType: 'Role',
@@ -374,7 +374,7 @@ export async function deleteRole(id: string, auditUserId?: string): Promise<{ su
     logger.error(`Error deleting role ${id}:`, error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.DELETE,
       entityType: 'Role',

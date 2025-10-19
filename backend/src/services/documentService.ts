@@ -52,16 +52,6 @@ import {
   RETENTION_YEARS,
 } from '../utils/documentValidation';
 
-// Type augmentation for Document model associations
-declare module '../database/models' {
-  interface Document {
-    versions?: Document[];
-    parent?: Document;
-    signatures?: DocumentSignature[];
-    auditTrail?: DocumentAuditTrail[];
-  }
-}
-
 /**
  * Interface for creating a new document
  */

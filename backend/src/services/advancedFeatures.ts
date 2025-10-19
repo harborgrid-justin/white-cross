@@ -38,7 +38,7 @@ export interface RefillRequest {
   createdAt: Date;
 }
 
-export class MedicationRefillService {
+class MedicationRefillService {
   static async createRefillRequest(data: Omit<RefillRequest, 'id' | 'createdAt' | 'status'>): Promise<RefillRequest> {
     try {
       const request: RefillRequest = {
@@ -77,7 +77,7 @@ export interface BarcodeData {
   metadata?: any;
 }
 
-export class BarcodeScanningService {
+class BarcodeScanningService {
   static async scanBarcode(barcodeString: string): Promise<BarcodeData> {
     try {
       // Parse barcode format
@@ -143,7 +143,7 @@ export interface AdverseDrugReaction {
   reportedAt: Date;
 }
 
-export class AdverseDrugReactionService {
+class AdverseDrugReactionService {
   static async reportReaction(data: Omit<AdverseDrugReaction, 'id' | 'reportedAt'>): Promise<AdverseDrugReaction> {
     try {
       const reaction: AdverseDrugReaction = {
@@ -196,7 +196,7 @@ export interface ControlledSubstanceLog {
   notes?: string;
 }
 
-export class ControlledSubstanceService {
+class ControlledSubstanceService {
   static async logControlledSubstance(data: Omit<ControlledSubstanceLog, 'id' | 'timestamp'>): Promise<ControlledSubstanceLog> {
     try {
       const log: ControlledSubstanceLog = {
@@ -254,7 +254,7 @@ export interface ImmunizationForecast {
   complianceStatus: 'compliant' | 'pending' | 'overdue';
 }
 
-export class ImmunizationForecastService {
+class ImmunizationForecastService {
   static async getForecast(studentId: string): Promise<ImmunizationForecast> {
     try {
       // Get student's immunization history
@@ -309,7 +309,7 @@ export interface GrowthAnalysis {
   comparisonToPeers: string;
 }
 
-export class GrowthChartService {
+class GrowthChartService {
   static async recordMeasurement(data: Omit<GrowthMeasurement, 'id' | 'bmi' | 'heightPercentile' | 'weightPercentile' | 'bmiPercentile'>): Promise<GrowthMeasurement> {
     try {
       const bmi = this.calculateBMI(data.weight, data.height);
@@ -429,7 +429,7 @@ export interface HearingResults {
   notes?: string;
 }
 
-export class ScreeningService {
+class ScreeningService {
   static async recordScreening(data: Omit<ScreeningResult, 'id'>): Promise<ScreeningResult> {
     try {
       const screening: ScreeningResult = {
@@ -696,7 +696,7 @@ export interface DiseaseManagementPlan {
   createdAt: Date;
 }
 
-export class DiseaseManagementService {
+class DiseaseManagementService {
   static async createPlan(data: Omit<DiseaseManagementPlan, 'id' | 'createdAt'>): Promise<DiseaseManagementPlan> {
     try {
       const plan: DiseaseManagementPlan = {
@@ -918,7 +918,7 @@ export interface EHRImportJob {
   completedAt?: Date;
 }
 
-export class EHRImportService {
+class EHRImportService {
   static async importFromEHR(source: string, format: string, data: any): Promise<EHRImportJob> {
     try {
       const job: EHRImportJob = {
@@ -1260,7 +1260,7 @@ export interface VerificationRequest {
   attempts: number;
 }
 
-export class ContactVerificationService {
+class ContactVerificationService {
   static async sendVerificationCode(contactId: string, method: 'sms' | 'email' | 'phone'): Promise<VerificationRequest> {
     try {
       const code = this.generateVerificationCode();
@@ -1315,7 +1315,7 @@ export interface EmergencyNotification {
   deliveryStatus: { [recipient: string]: boolean };
 }
 
-export class EmergencyNotificationService {
+class EmergencyNotificationService {
   static async sendEmergencyNotification(data: Omit<EmergencyNotification, 'id' | 'status' | 'deliveryStatus'>): Promise<EmergencyNotification> {
     try {
       const notification: EmergencyNotification = {

@@ -6,7 +6,7 @@
  * Compliance: State health department regulations, school enrollment requirements
  */
 
-import { logger } from '../logger';
+import { logger } from './logger';
 
 /**
  * Exemption types recognized across US states

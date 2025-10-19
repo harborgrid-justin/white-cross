@@ -85,7 +85,8 @@ export class StudentService {
    * Deactivate student
    */
   static async deactivateStudent(id: string, reason?: string) {
-    return MonolithicStudentService.deactivateStudent(id, reason);
+    // MonolithicStudentService.deactivateStudent only takes id parameter
+    return MonolithicStudentService.deactivateStudent(id);
   }
 
   /**
@@ -99,7 +100,8 @@ export class StudentService {
    * Search students across all fields
    */
   static async searchStudents(query: string, page?: number, limit?: number) {
-    return MonolithicStudentService.searchStudents(query, page, limit);
+    // MonolithicStudentService.searchStudents only takes query and limit
+    return MonolithicStudentService.searchStudents(query, limit || 20);
   }
 
   /**
@@ -134,21 +136,28 @@ export class StudentService {
    * Bulk update students
    */
   static async bulkUpdateStudents(updates: any[]) {
-    return MonolithicStudentService.bulkUpdateStudents(updates);
+    // MonolithicStudentService.bulkUpdateStudents expects (studentIds, updateData)
+    // This signature doesn't match - would need restructuring
+    throw new Error('Method signature mismatch - needs implementation');
   }
 
   /**
    * Get student statistics
    */
   static async getStudentStatistics() {
-    return MonolithicStudentService.getStudentStatistics();
+    // MonolithicStudentService.getStudentStatistics requires studentId parameter
+    throw new Error('Method signature mismatch - requires studentId parameter');
   }
 
   /**
    * Export student data
    */
   static async exportStudentData(studentIds?: string[]) {
-    return MonolithicStudentService.exportStudentData(studentIds);
+    // MonolithicStudentService.exportStudentData expects single studentId
+    if (studentIds && studentIds.length === 1) {
+      return MonolithicStudentService.exportStudentData(studentIds[0]);
+    }
+    throw new Error('Method signature mismatch - supports single studentId only');
   }
 }
 

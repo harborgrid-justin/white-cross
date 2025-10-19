@@ -47,7 +47,7 @@ import {
   IncidentSeverity,
   SecurityIncidentStatus
 } from '../../database/types/enums';
-import { auditService } from '../auditService';
+import { auditService, AuditService } from '../auditService';
 import { UserPermissionsResult } from './types';
 
 // Type augmentations for model associations
@@ -179,7 +179,7 @@ export async function assignRoleToUser(
     await transaction.commit();
 
     // Audit logging - Security-critical operation
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'UserRoleAssignment',
@@ -219,7 +219,7 @@ export async function assignRoleToUser(
     logger.error('Error assigning role to user:', error);
 
     // Audit failed attempt - Security-critical
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'UserRoleAssignment',

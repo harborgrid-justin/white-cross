@@ -226,7 +226,7 @@ export class StatisticsService {
           [sequelize.fn('COUNT', sequelize.col('location')), 'count']
         ],
         group: ['location'],
-        order: [[sequelize.literal('count'), 'DESC']],
+        order: [[sequelize.col('count'), 'DESC']],
         limit,
         raw: true
       });
@@ -260,7 +260,7 @@ export class StatisticsService {
           'severity',
           [sequelize.fn('COUNT', sequelize.col('id')), 'count']
         ],
-        group: [sequelize.literal('DATE(occurredAt)'), 'severity'],
+        group: [sequelize.literal('DATE(occurredAt)') as any, 'severity'],
         order: [['date', 'ASC']],
         raw: true
       });

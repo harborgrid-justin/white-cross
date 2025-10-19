@@ -252,9 +252,9 @@ export class ScheduledMessageQueue {
       await AuditService.logAction({
         userId: params.createdBy,
         action: 'SCHEDULE_MESSAGE',
-        resourceType: 'ScheduledMessage',
-        resourceId: message.id,
-        details: {
+        entityType: 'ScheduledMessage',
+        entityId: message.id,
+        changes: {
           scheduledFor: params.scheduledFor,
           recipientType: params.recipientType,
           channels: params.channels,

@@ -350,7 +350,7 @@ export class SISConnector {
       
       // Update last sync time
       config.lastSyncAt = new Date();
-      if (config.syncSchedule !== 'MANUAL') {
+      if (config.syncSchedule !== 'MANUAL' && config.syncSchedule !== 'REALTIME') {
         config.nextSyncAt = this.calculateNextSync(config.syncSchedule);
       }
       
@@ -401,9 +401,9 @@ export class SISConnector {
       await AuditService.logAction({
         userId: 'SYSTEM',
         action: 'PUSH_HEALTH_DATA_TO_SIS',
-        resourceType: 'SISSync',
-        resourceId: configId,
-        details: {
+        entityType: 'SISSync',
+        entityId: configId,
+        changes: {
           studentId,
           dataTypes: Object.keys(healthData)
         }

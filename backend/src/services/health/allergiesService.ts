@@ -400,7 +400,7 @@ export class AllergiesService {
       await allergy.update({
         verified: true,
         verifiedBy,
-        verifiedAt: new Date(),
+        // verifiedAt field not available in model
         notes: notes || allergy.notes
       });
 
@@ -478,8 +478,8 @@ export class AllergiesService {
       const [updatedCount] = await Allergy.update(
         {
           verified: true,
-          verifiedBy,
-          verifiedAt: new Date()
+          verifiedBy
+          // verifiedAt field not available in model
         },
         {
           where: {

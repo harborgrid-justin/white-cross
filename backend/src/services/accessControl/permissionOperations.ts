@@ -39,7 +39,7 @@ import {
   sequelize
 } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { auditService } from '../auditService';
+import { auditService, AuditService } from '../auditService';
 import { CreatePermissionData } from './types';
 
 /**
@@ -147,7 +147,7 @@ export async function assignPermissionToRole(
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'RolePermission',
@@ -168,7 +168,7 @@ export async function assignPermissionToRole(
     logger.error('Error assigning permission to role:', error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'RolePermission',
