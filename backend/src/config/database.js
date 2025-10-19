@@ -28,7 +28,10 @@ module.exports = {
     url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
-      ssl: false
+      ssl: process.env.DATABASE_URL.includes('sslmode=require') ? {
+        require: true,
+        rejectUnauthorized: false
+      } : false
     },
     logging: console.log,
     pool: {

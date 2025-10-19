@@ -39,6 +39,13 @@
 
 import { Sequelize, Options, QueryTypes, Transaction } from 'sequelize';
 import { logger } from '../../utils/logger';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables if not already loaded
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.join(__dirname, '../../../.env') });
+}
 
 // Environment-based configuration
 const NODE_ENV = process.env.NODE_ENV || 'development';

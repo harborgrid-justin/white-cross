@@ -56,7 +56,9 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
               }
             })}
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             className="input-field"
             placeholder="Enter your email"
             data-cy="email-input"
@@ -82,7 +84,9 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
               }
             })}
             id="password"
+            name="password"
             type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
             className="input-field pr-10"
             placeholder="Enter your password"
             data-cy="password-input"

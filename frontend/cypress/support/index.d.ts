@@ -1,14 +1,15 @@
 /// <reference types="cypress" />
 
-// Type definitions for custom Cypress commands
+// Enterprise-grade type definitions for custom Cypress commands
 declare namespace Cypress {
   interface Chainable<Subject = any> {
     /**
-     * Custom command to login as a specific user type
-     * @param userType - The type of user (nurse, admin, doctor)
-     * @example cy.login('nurse')
+     * Enterprise login command with session management and audit logging
+     * @param userType - The type of user (nurse, admin, doctor, counselor, viewer)
+     * @param options - Additional login options
+     * @example cy.login('nurse', { validateRole: true, timeout: 30000 })
      */
-    login(userType: string): Chainable<void>
+    login(userType: string, options?: LoginOptions): Chainable<void>
 
     /**
      * Custom command to login with custom email and password
@@ -260,10 +261,43 @@ declare namespace Cypress {
      * @example cy.filterAdminTable('role', 'ADMIN')
      */
     filterAdminTable(filterType: string, filterValue: string): Chainable<void>
+
+    // Enhanced Health Records Commands
+    createHealthRecord(recordData: Partial<HealthRecordData>): Chainable<any>
+    createAllergy(allergyData: Partial<AllergyData>): Chainable<any>
+    createChronicCondition(conditionData: Partial<ChronicConditionData>): Chainable<any>
+    setupHealthRecordsMocks(options?: HealthRecordsMockOptions): Chainable<void>
+    verifyApiResponseStructure(alias: string, expectedFields: string[]): Chainable<void>
+    verifyHipaaAuditLog(expectedAction: string, expectedResourceType: string): Chainable<void>
+    verifyCircuitBreaker(endpoint: string, maxRetries?: number): Chainable<void>
+    measureApiResponseTime(alias: string, maxDuration?: number): Chainable<void>
+    cleanupHealthRecords(studentId: string): Chainable<void>
+
+    // Medication Safety Commands
+    setupMedicationIntercepts(options?: MedicationInterceptOptions): Chainable<void>
+    verifyFiveRights(administrationData: FiveRightsData): Chainable<void>
+    scanBarcode(barcodeData: string, barcodeType: 'medication' | 'patient'): Chainable<void>
+    administerMedication(medicationData: MedicationAdministrationData): Chainable<void>
+    checkDrugAllergies(studentId: string, medicationId: string): Chainable<void>
+    verifyDuplicatePrevention(studentMedicationId: string, timeWindow?: number): Chainable<void>
+    verifyControlledSubstanceTracking(medicationData: ControlledSubstanceData): Chainable<void>
+    simulateOffline(): Chainable<void>
+    simulateOnline(): Chainable<void>
+    verifyOfflineQueue(): Chainable<void>
+    createPrescription(prescriptionData: PrescriptionData): Chainable<void>
+    reportAdverseReaction(reactionData: AdverseReactionData): Chainable<void>
+    verifyMedicationAuditTrail(action: string): Chainable<void>
+    verifyInventoryAlerts(): Chainable<void>
   }
 }
 
-// Additional type definitions
+// Enhanced type definitions for healthcare application
+interface LoginOptions {
+  skipSession?: boolean
+  validateRole?: boolean
+  timeout?: number
+}
+
 interface StudentFormData {
   studentNumber: string
   firstName: string
@@ -275,14 +309,95 @@ interface StudentFormData {
   enrollmentDate?: string
 }
 
-// Type definitions for test data
-interface UserData {
-  email: string
-  password: string
-  name: string
-  role: string
+interface HealthRecordData {
+  studentId: string
+  type: string
+  date: string
+  description: string
+  provider?: string
+  notes?: string
+  vital?: any
 }
 
+interface AllergyData {
+  studentId: string
+  allergen: string
+  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING'
+  reaction?: string
+  treatment?: string
+  verified?: boolean
+}
+
+interface ChronicConditionData {
+  studentId: string
+  condition: string
+  diagnosedDate: string
+  status?: string
+  severity?: string
+  notes?: string
+  carePlan?: string
+}
+
+interface HealthRecordsMockOptions {
+  shouldFail?: boolean
+  networkDelay?: number
+  healthRecords?: any[]
+  allergies?: any[]
+  chronicConditions?: any[]
+  vaccinations?: any[]
+  vitals?: any[]
+}
+
+interface MedicationInterceptOptions {
+  shouldFail?: boolean
+  networkDelay?: number
+}
+
+interface FiveRightsData {
+  patientName: string
+  patientId: string
+  medicationName: string
+  dose: string
+  route: string
+}
+
+interface MedicationAdministrationData {
+  studentId?: string
+  patientBarcode?: string
+  medicationBarcode?: string
+  dosage: string
+  route?: string
+  notes?: string
+  witnessRequired?: boolean
+  witnessSignature?: string
+}
+
+interface ControlledSubstanceData {
+  isControlled: boolean
+  deaNumber?: string
+  witnessName?: string
+}
+
+interface PrescriptionData {
+  studentId: string
+  medicationId: string
+  dosage: string
+  frequency: string
+  route: string
+  prescribedBy: string
+  startDate: string
+  endDate?: string
+  instructions?: string
+}
+
+interface AdverseReactionData {
+  severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING'
+  description: string
+  actionTaken: string
+  symptoms?: string[]
+}
+
+// Legacy interfaces for backward compatibility
 interface StudentData {
   firstName: string
   lastName: string
@@ -290,11 +405,6 @@ interface StudentData {
   phone: string
   dateOfBirth: string
   grade?: string
-  emergencyContact?: {
-    name: string
-    phone: string
-    relationship: string
-  }
 }
 
 interface AppointmentData {
@@ -303,90 +413,22 @@ interface AppointmentData {
   time: string
   type: string
   notes: string
-  duration?: number
 }
 
 interface MedicationData {
   name: string
-  genericName?: string
-  dosageForm?: string
-  strength?: string
-  manufacturer?: string
-  ndc?: string
-  isControlled?: boolean
   dosage: string
   frequency: string
-  studentName?: string
+  studentName: string
   prescribedBy?: string
   startDate?: string
   instructions?: string
 }
 
-interface MedicationInventoryData {
-  medicationId: string
-  batchNumber: string
-  expirationDate: string
-  quantity: number
-  reorderLevel: number
-  costPerUnit: number
-  supplier: string
-}
-
-interface MedicationAdministrationData {
-  studentId: string
-  medicationId: string
-  dosage: string
-  administeredBy: string
-  administeredAt: string
-  notes?: string
-}
-
 interface TestUsers {
-  nurse: UserData
-  admin: UserData
-  doctor: UserData
-  readonly?: UserData
-  counselor?: UserData
-}
-
-interface TestStudents {
-  [key: string]: StudentData
-}
-
-interface TestAppointments {
-  [key: string]: AppointmentData
-}
-
-interface TestMedications {
-  testMedications: {
-    [key: string]: MedicationData
-  }
-  studentMedicationAssignments: {
-    [studentId: string]: string[]
-  }
-  medicationCategories: string[]
-  administrationTimes: string[]
-  medicationStatuses: string[]
-}
-
-interface SeedDataMedication {
-  name: string
-  genericName: string
-  dosageForm: string
-  strength: string
-  manufacturer: string
-  ndc: string
-  isControlled: boolean
-}
-
-interface SeedDataStudent {
-  studentNumber: string
-  firstName: string
-  lastName: string
-  dateOfBirth: Date
-  grade: string
-  gender: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY'
-  medicalRecordNum: string
-  nurseId: string
-  enrollmentDate: Date
+  nurse: { email: string; password: string; name: string; firstName: string; lastName: string; role: string }
+  admin: { email: string; password: string; name: string; firstName: string; lastName: string; role: string }
+  doctor: { email: string; password: string; name: string; firstName: string; lastName: string; role: string }
+  counselor: { email: string; password: string; name: string; firstName: string; lastName: string; role: string }
+  viewer: { email: string; password: string; name: string; firstName: string; lastName: string; role: string }
 }

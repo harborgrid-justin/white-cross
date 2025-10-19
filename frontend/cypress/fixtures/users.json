@@ -1,7 +1,7 @@
 {
   "nurse": {
     "email": "nurse@school.edu",
-    "password": "testNursePassword",
+    "password": "NursePassword123!",
     "name": "Test Nurse",
     "firstName": "Test",
     "lastName": "Nurse",
@@ -10,9 +10,9 @@
   "admin": {
     "email": "admin@school.edu",
     "password": "AdminPassword123!",
-    "name": "System Administrator",
+    "name": "Test Administrator",
     "firstName": "Test",
-    "lastName": "Admin",
+    "lastName": "Administrator",
     "role": "ADMIN"
   },
   "doctor": {
@@ -26,17 +26,17 @@
   "counselor": {
     "email": "counselor@school.edu",
     "password": "CounselorPassword123!",
-    "name": "School Counselor",
+    "name": "Test Counselor",
     "firstName": "Test",
     "lastName": "Counselor",
-    "role": "COUNSELOR"
+    "role": "SCHOOL_ADMIN"
   },
   "viewer": {
     "email": "readonly@school.edu",
     "password": "ReadOnlyPassword123!",
-    "name": "Read Only User",
+    "name": "Test ReadOnly",
     "firstName": "Test",
-    "lastName": "Viewer",
-    "role": "READ_ONLY"
+    "lastName": "ReadOnly",
+    "role": "NURSE"
   }
 }

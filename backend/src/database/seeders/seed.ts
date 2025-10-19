@@ -43,9 +43,10 @@
 import sequelize from '../services/sequelize.service';
 import { QueryInterface, QueryTypes } from 'sequelize';
 import dotenv from 'dotenv';
+import path from 'path';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from backend directory
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
 
 // Seeder configuration
 const SEEDERS = [
