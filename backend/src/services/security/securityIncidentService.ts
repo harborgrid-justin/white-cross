@@ -72,7 +72,7 @@ export interface SecurityIncident {
 
 export interface IncidentResponse {
   incident: SecurityIncident;
-  actionsT aken: string[];
+  actionsTaken: string[];
   notificationsSent: string[];
   systemChanges: string[];
 }
@@ -289,7 +289,7 @@ export class SecurityIncidentService {
    * Auto-respond to incidents based on severity
    */
   private static async autoRespond(incident: SecurityIncident): Promise<IncidentResponse> {
-    const actionsT aken: string[] = [];
+    const actionsTaken: string[] = [];
     const notificationsSent: string[] = [];
     const systemChanges: string[] = [];
 
@@ -299,13 +299,13 @@ export class SecurityIncidentService {
           // Immediate actions for critical incidents
           if (incident.userId) {
             // Lock account temporarily
-            actionsT aken.push('Account temporarily locked');
+            actionsTaken.push('Account temporarily locked');
             systemChanges.push('User account status changed to locked');
           }
           
           if (incident.ipAddress) {
             // Add IP to temporary blacklist
-            actionsT aken.push('IP address added to blacklist');
+            actionsTaken.push('IP address added to blacklist');
             systemChanges.push('IP restriction added');
           }
           
@@ -318,7 +318,7 @@ export class SecurityIncidentService {
           // Actions for high severity incidents
           if (incident.userId) {
             // Require MFA on next login
-            actionsT aken.push('MFA required on next login');
+            actionsTaken.push('MFA required on next login');
             systemChanges.push('User security settings updated');
           }
           
@@ -329,7 +329,7 @@ export class SecurityIncidentService {
 
         case IncidentSeverity.MEDIUM:
           // Log and monitor
-          actionsT aken.push('Incident logged for monitoring');
+          actionsTaken.push('Incident logged for monitoring');
           
           // Notify if pattern detected
           const patternDetected = await this.checkIncidentPattern(incident);
@@ -341,20 +341,20 @@ export class SecurityIncidentService {
 
         case IncidentSeverity.LOW:
           // Log only
-          actionsT aken.push('Incident logged');
+          actionsTaken.push('Incident logged');
           break;
       }
 
       logger.info('Auto-response executed', {
         incidentId: incident.id,
-        actionsT aken,
+        actionsTaken,
         notificationsSent,
         systemChanges
       });
 
       return {
         incident,
-        actionsT aken,
+        actionsTaken,
         notificationsSent,
         systemChanges
       };
@@ -362,7 +362,7 @@ export class SecurityIncidentService {
       logger.error('Error in auto-response', { error, incidentId: incident.id });
       return {
         incident,
-        actionsT aken: ['Error during auto-response'],
+        actionsTaken: ['Error during auto-response'],
         notificationsSent: [],
         systemChanges: []
       };
