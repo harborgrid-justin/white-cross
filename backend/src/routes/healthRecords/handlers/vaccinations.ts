@@ -19,6 +19,8 @@
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import { HealthRecordService } from '../../../services/healthRecord';
 import { PayloadData } from '../types';
+import { PDFGenerator, VaccinationRecordPDFData } from '../../../utils/pdfGenerator';
+import { logger } from '../../../utils/logger';
 
 /**
  * Get vaccination records for student
@@ -220,22 +222,72 @@ export const getVaccinationReportHandler = async (request: Request, h: ResponseT
   try {
     const { studentId } = request.params;
     const format = request.query.format || 'json';
-    // For now, export health history which includes vaccinations
-    const report = await HealthRecordService.exportHealthHistory(studentId);
+    
+    // Get vaccination records and health history
+    const vaccinations = await HealthRecordService.getVaccinationRecords(studentId);
+    const healthHistory = await HealthRecordService.exportHealthHistory(studentId);
 
     if (format === 'pdf') {
-      // TODO: Implement PDF generation
-      return h.response({
-        success: false,
-        error: { message: 'PDF report generation not yet implemented' }
-      }).code(501);
+      // Generate PDF using PDFGenerator
+      const pdfData: VaccinationRecordPDFData = {
+        student: {
+          name: healthHistory.student.name || 'Unknown Student',
+          dateOfBirth: new Date(healthHistory.student.dateOfBirth),
+          studentId: healthHistory.student.studentId,
+          grade: healthHistory.student.grade,
+          school: healthHistory.student.school
+        },
+        vaccinations: vaccinations.map((vax: any) => ({
+          date: new Date(vax.date || vax.dateAdministered),
+          vaccine: vax.vaccine || vax.vaccineName,
+          dose: vax.dose || vax.doseNumber,
+          lotNumber: vax.lotNumber,
+          manufacturer: vax.manufacturer,
+          provider: vax.provider || vax.administeredBy,
+          site: vax.site || vax.administrationSite,
+          notes: vax.notes || vax.reaction
+        })),
+        complianceStatus: {
+          isCompliant: vaccinations.length > 0, // Basic check, enhance with actual compliance rules
+          missingVaccines: [], // TODO: Implement compliance checking
+          upcomingDoses: [] // TODO: Implement dose scheduling
+        },
+        generatedAt: new Date(),
+        generatedBy: (request as any).auth?.credentials?.user?.name || 'System'
+      };
+
+      const pdfBuffer = await PDFGenerator.generateVaccinationRecordPDF(pdfData, {
+        title: `Vaccination Record - ${healthHistory.student.name}`,
+        author: 'White Cross Healthcare Platform',
+        subject: 'Student Vaccination Record',
+        keywords: ['vaccination', 'immunization', 'student', 'compliance']
+      });
+
+      logger.info('Vaccination record PDF generated', {
+        studentId,
+        vaccinationCount: vaccinations.length,
+        size: pdfBuffer.length,
+        user: (request as any).auth?.credentials?.user?.id
+      });
+
+      // Return PDF with proper headers
+      return h.response(pdfBuffer)
+        .type('application/pdf')
+        .header('Content-Disposition', `attachment; filename="vaccination-record-${studentId}.pdf"`)
+        .header('X-Content-Type-Options', 'nosniff')
+        .header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
     return h.response({
       success: true,
-      data: report
+      data: {
+        student: healthHistory.student,
+        vaccinations,
+        generatedAt: new Date()
+      }
     });
   } catch (error) {
+    logger.error('Failed to generate vaccination report', error);
     return h.response({
       success: false,
       error: { message: (error as Error).message }

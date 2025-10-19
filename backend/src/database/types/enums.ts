@@ -173,6 +173,9 @@ export enum AuditAction {
   IMPORT = 'IMPORT',
   BACKUP = 'BACKUP',
   RESTORE = 'RESTORE',
+  SECURITY_EVENT = 'SECURITY_EVENT',
+  ACCESS = 'ACCESS',
+  VIEW = 'VIEW',
 }
 
 export enum ComplianceReportType {
