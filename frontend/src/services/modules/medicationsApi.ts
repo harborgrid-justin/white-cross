@@ -229,11 +229,11 @@ const assignMedicationSchema = z.object({
 
   frequency: z.string()
     .min(1, 'Frequency is required')
+    .trim()
     .refine(
       frequencyValidator,
       'Frequency must be valid (e.g., "twice daily", "every 6 hours", "as needed", "BID")'
-    )
-    .trim(),
+    ),
 
   route: z.enum(administrationRoutes, {
     errorMap: () => ({ message: 'Route is required (Right Route)' })
