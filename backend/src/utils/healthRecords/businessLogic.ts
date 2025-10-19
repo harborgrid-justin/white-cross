@@ -24,6 +24,7 @@
 import { Op } from 'sequelize';
 import { Allergy, Medication, User, Student, Vaccination, Screening } from '../../database/models';
 import { CDCGrowthCharts, GrowthChartGender, GrowthMeasurement } from '../cdcGrowthCharts';
+import { VaccinationExemptionService } from '../vaccinationExemptions';
 
 /**
  * Health Records Business Logic
@@ -302,13 +303,17 @@ export async function calculateVaccinationCompliance(
       }
     }
 
+    // Get active exemptions for the student
+    const exemptionSummary = await VaccinationExemptionService.getExemptionSummary(studentId);
+    const exemptions = exemptionSummary.exemptedVaccines;
+    
     return {
       isCompliant: missingVaccines.length === 0 && upcomingDoses.length === 0,
       requiredVaccines,
       completedVaccines,
       missingVaccines,
       upcomingDoses,
-      exemptions: [] // TODO: Implement exemption tracking
+      exemptions
     };
   } catch (error) {
     console.error('Error calculating vaccination compliance:', error);

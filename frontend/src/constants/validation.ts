@@ -342,19 +342,72 @@ export const CUSTOM_VALIDATORS = {
 
   // Business logic validators
   hasUniqueEmail: async (email: string, excludeId?: string): Promise<boolean> => {
-    // This would typically make an API call to check uniqueness
-    // For now, return true (implement actual logic as needed)
-    // TODO: Implement actual API call to check email uniqueness
-    console.log(`Checking uniqueness for email: ${email}, excludeId: ${excludeId}`);
-    return true;
+    try {
+      // Make API call to check email uniqueness
+      const queryParams = new URLSearchParams();
+      queryParams.append('email', email);
+      if (excludeId) {
+        queryParams.append('excludeId', excludeId);
+      }
+
+      const response = await fetch(`/api/users/check-email?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add auth token if needed
+          ...(localStorage.getItem('token') && {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        console.error('Failed to check email uniqueness:', response.statusText);
+        // Return true to not block on API error
+        return true;
+      }
+
+      const data = await response.json();
+      return data.isUnique !== false; // Assume unique if not explicitly false
+    } catch (error) {
+      console.error('Error checking email uniqueness:', error);
+      // Return true to not block on error
+      return true;
+    }
   },
 
   hasUniqueStudentId: async (studentId: string, excludeId?: string): Promise<boolean> => {
-    // This would typically make an API call to check uniqueness
-    // For now, return true (implement actual logic as needed)
-    // TODO: Implement actual API call to check student ID uniqueness
-    console.log(`Checking uniqueness for studentId: ${studentId}, excludeId: ${excludeId}`);
-    return true;
+    try {
+      // Make API call to check student ID uniqueness
+      const queryParams = new URLSearchParams();
+      queryParams.append('studentId', studentId);
+      if (excludeId) {
+        queryParams.append('excludeId', excludeId);
+      }
+
+      const response = await fetch(`/api/students/check-id?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') && {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        console.error('Failed to check student ID uniqueness:', response.statusText);
+        // Return true to not block on API error
+        return true;
+      }
+
+      const data = await response.json();
+      return data.isUnique !== false; // Assume unique if not explicitly false
+    } catch (error) {
+      console.error('Error checking student ID uniqueness:', error);
+      // Return true to not block on error
+      return true;
+    }
   },
 } as const;
 
