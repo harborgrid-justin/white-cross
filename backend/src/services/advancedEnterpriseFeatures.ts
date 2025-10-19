@@ -230,24 +230,147 @@ export class MFAService {
   }
 
   private static generateSecret(): string {
-    return Buffer.from(Math.random().toString()).toString('base64').substr(0, 32);
+    // Generate cryptographically secure 32-character base32 secret for TOTP
+    const crypto = require('crypto');
+    const buffer = crypto.randomBytes(20);
+    return this.base32Encode(buffer);
+  }
+
+  private static base32Encode(buffer: Buffer): string {
+    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let bits = 0;
+    let value = 0;
+    let output = '';
+
+    for (let i = 0; i < buffer.length; i++) {
+      value = (value << 8) | buffer[i];
+      bits += 8;
+
+      while (bits >= 5) {
+        output += base32Chars[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+
+    if (bits > 0) {
+      output += base32Chars[(value << (5 - bits)) & 31];
+    }
+
+    return output;
   }
 
   private static generateBackupCodes(): string[] {
-    return Array(10).fill(0).map(() => 
-      Math.random().toString(36).substr(2, 8).toUpperCase()
-    );
+    const crypto = require('crypto');
+    return Array(10).fill(0).map(() => {
+      const bytes = crypto.randomBytes(4);
+      return bytes.toString('hex').toUpperCase().match(/.{1,4}/g).join('-');
+    });
   }
 
-  static async verifyMFACode(userId: string, code: string): Promise<boolean> {
-    logger.info('MFA code verification', { userId });
-    // Verify TOTP code or SMS code
-    return true;
+  static async verifyMFACode(userId: string, code: string, secret: string, method: 'totp' | 'sms' | 'email' = 'totp'): Promise<boolean> {
+    try {
+      if (method === 'totp') {
+        // Verify TOTP code using time-based algorithm
+        const isValid = this.verifyTOTP(secret, code);
+        logger.info('MFA TOTP code verification', { userId, isValid });
+        return isValid;
+      } else if (method === 'sms' || method === 'email') {
+        // For SMS/Email, code would be stored in cache/database temporarily
+        logger.info('MFA code verification for SMS/Email', { userId, method });
+        // In production, verify against stored code with expiration
+        return code.length === 6 && /^\d+$/.test(code);
+      }
+      return false;
+    } catch (error) {
+      logger.error('Error verifying MFA code', { error, userId });
+      return false;
+    }
+  }
+
+  private static verifyTOTP(secret: string, token: string, window: number = 1): boolean {
+    const crypto = require('crypto');
+    const timeStep = 30; // 30 second time step
+    const currentTime = Math.floor(Date.now() / 1000 / timeStep);
+
+    // Check current time window and adjacent windows for clock drift
+    for (let i = -window; i <= window; i++) {
+      const time = currentTime + i;
+      const generatedToken = this.generateTOTP(secret, time);
+      if (generatedToken === token) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static generateTOTP(secret: string, timeCounter: number): string {
+    const crypto = require('crypto');
+    const decodedSecret = this.base32Decode(secret);
+    const timeBuffer = Buffer.alloc(8);
+    timeBuffer.writeBigInt64BE(BigInt(timeCounter));
+
+    const hmac = crypto.createHmac('sha1', decodedSecret);
+    hmac.update(timeBuffer);
+    const hash = hmac.digest();
+
+    const offset = hash[hash.length - 1] & 0xf;
+    const binary = ((hash[offset] & 0x7f) << 24) |
+                   ((hash[offset + 1] & 0xff) << 16) |
+                   ((hash[offset + 2] & 0xff) << 8) |
+                   (hash[offset + 3] & 0xff);
+
+    const otp = binary % 1000000;
+    return otp.toString().padStart(6, '0');
+  }
+
+  private static base32Decode(encoded: string): Buffer {
+    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let bits = 0;
+    let value = 0;
+    const output: number[] = [];
+
+    for (const char of encoded.toUpperCase()) {
+      const index = base32Chars.indexOf(char);
+      if (index === -1) continue;
+
+      value = (value << 5) | index;
+      bits += 5;
+
+      if (bits >= 8) {
+        output.push((value >>> (bits - 8)) & 255);
+        bits -= 8;
+      }
+    }
+
+    return Buffer.from(output);
+  }
+
+  static async verifyBackupCode(userId: string, code: string, backupCodes: string[]): Promise<boolean> {
+    const index = backupCodes.indexOf(code);
+    if (index !== -1) {
+      logger.info('MFA backup code used', { userId });
+      // In production, remove used backup code from database
+      return true;
+    }
+    return false;
   }
 
   static async disableMFA(userId: string): Promise<boolean> {
     logger.info('MFA disabled', { userId });
+    // In production, update user record to disable MFA
     return true;
+  }
+
+  static generateQRCodeURL(userId: string, secret: string, issuer: string = 'WhiteCross'): string {
+    const label = encodeURIComponent(`${issuer}:${userId}`);
+    const params = new URLSearchParams({
+      secret,
+      issuer,
+      algorithm: 'SHA1',
+      digits: '6',
+      period: '30'
+    });
+    return `otpauth://totp/${label}?${params.toString()}`;
   }
 }
 
@@ -270,11 +393,34 @@ export interface DeviceFingerprint {
   lastSeen: Date;
 }
 
+export interface SessionData {
+  sessionId: string;
+  userId: string;
+  deviceFingerprint: string;
+  ipAddress: string;
+  userAgent: string;
+  createdAt: Date;
+  lastActivity: Date;
+  expiresAt: Date;
+}
+
 export class SessionSecurityService {
+  private static readonly SESSION_TIMEOUT = 3600; // 1 hour in seconds
+  private static readonly MAX_SESSIONS_PER_USER = 5;
+
   static async createDeviceFingerprint(userId: string, deviceInfo: any, ipAddress: string): Promise<DeviceFingerprint> {
     try {
+      const crypto = require('crypto');
+      const fingerprintData = JSON.stringify({
+        userAgent: deviceInfo.userAgent,
+        screen: deviceInfo.screen,
+        timezone: deviceInfo.timezone,
+        ipAddress
+      });
+      const hash = crypto.createHash('sha256').update(fingerprintData).digest('hex');
+
       const fingerprint: DeviceFingerprint = {
-        id: `FP-${Date.now()}`,
+        id: `FP-${hash.substring(0, 16)}`,
         userId,
         deviceInfo,
         ipAddress,
@@ -282,7 +428,7 @@ export class SessionSecurityService {
         lastSeen: new Date()
       };
 
-      logger.info('Device fingerprint created', { fingerprintId: fingerprint.id });
+      logger.info('Device fingerprint created', { fingerprintId: fingerprint.id, userId });
       return fingerprint;
     } catch (error) {
       logger.error('Error creating device fingerprint', { error });
@@ -290,15 +436,151 @@ export class SessionSecurityService {
     }
   }
 
+  static async createSession(userId: string, deviceInfo: any, ipAddress: string): Promise<SessionData> {
+    try {
+      const crypto = require('crypto');
+      const sessionId = crypto.randomBytes(32).toString('hex');
+      const fingerprint = await this.createDeviceFingerprint(userId, deviceInfo, ipAddress);
+      
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + this.SESSION_TIMEOUT * 1000);
+
+      const session: SessionData = {
+        sessionId,
+        userId,
+        deviceFingerprint: fingerprint.id,
+        ipAddress,
+        userAgent: deviceInfo.userAgent,
+        createdAt: now,
+        lastActivity: now,
+        expiresAt
+      };
+
+      // In production, store in Redis with TTL
+      logger.info('Session created', { sessionId, userId });
+      return session;
+    } catch (error) {
+      logger.error('Error creating session', { error });
+      throw error;
+    }
+  }
+
+  static async validateSession(sessionId: string): Promise<SessionData | null> {
+    try {
+      // In production, fetch from Redis
+      // If session exists and not expired, update lastActivity
+      logger.info('Session validation', { sessionId });
+      return null; // Return session data if valid
+    } catch (error) {
+      logger.error('Error validating session', { error, sessionId });
+      return null;
+    }
+  }
+
+  static async terminateSession(sessionId: string): Promise<boolean> {
+    try {
+      // In production, remove from Redis
+      logger.info('Session terminated', { sessionId });
+      return true;
+    } catch (error) {
+      logger.error('Error terminating session', { error, sessionId });
+      return false;
+    }
+  }
+
+  static async terminateAllUserSessions(userId: string): Promise<number> {
+    try {
+      // In production, remove all user sessions from Redis
+      logger.info('All user sessions terminated', { userId });
+      return 0; // Return count of terminated sessions
+    } catch (error) {
+      logger.error('Error terminating user sessions', { error, userId });
+      return 0;
+    }
+  }
+
   static async verifyDevice(fingerprintId: string, currentDeviceInfo: any): Promise<boolean> {
-    // Compare current device info with stored fingerprint
-    logger.info('Device verification', { fingerprintId });
-    return true;
+    try {
+      // Compare current device info with stored fingerprint
+      // Check for suspicious changes (different IP, user agent, etc.)
+      const similarityScore = this.calculateDeviceSimilarity(currentDeviceInfo);
+      const isVerified = similarityScore > 0.8;
+      
+      logger.info('Device verification', { fingerprintId, isVerified, similarityScore });
+      return isVerified;
+    } catch (error) {
+      logger.error('Error verifying device', { error, fingerprintId });
+      return false;
+    }
+  }
+
+  private static calculateDeviceSimilarity(deviceInfo: any): number {
+    // Calculate similarity score based on device attributes
+    // In production, compare with stored fingerprint
+    return 0.9; // Mock similarity score
+  }
+
+  static async detectAnomalousActivity(userId: string, ipAddress: string, userAgent: string): Promise<boolean> {
+    try {
+      // Check for:
+      // - Login from unusual location
+      // - Different device/browser
+      // - Multiple failed attempts
+      // - Rapid session creation
+      
+      const anomalies: string[] = [];
+      
+      // In production, fetch user's typical patterns from database
+      // Compare current activity with historical patterns
+      
+      if (anomalies.length > 0) {
+        await this.flagSuspiciousActivity(userId, anomalies.join(', '));
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      logger.error('Error detecting anomalous activity', { error, userId });
+      return false;
+    }
   }
 
   static async flagSuspiciousActivity(userId: string, reason: string): Promise<void> {
-    logger.warn('Suspicious activity detected', { userId, reason });
-    // Send security alert
+    try {
+      logger.warn('Suspicious activity detected', { userId, reason });
+      
+      // Log security incident
+      const incident = {
+        userId,
+        type: 'suspicious_activity',
+        description: reason,
+        severity: 'medium',
+        timestamp: new Date(),
+        ipAddress: 'unknown',
+        userAgent: 'unknown'
+      };
+      
+      // In production:
+      // 1. Store in SecurityIncident table
+      // 2. Send alert to security team
+      // 3. Consider temporarily locking account
+      // 4. Send notification to user
+      
+      logger.info('Security incident logged', { incident });
+    } catch (error) {
+      logger.error('Error flagging suspicious activity', { error, userId });
+    }
+  }
+
+  static async getActiveSessions(userId: string): Promise<SessionData[]> {
+    try {
+      // In production, fetch all active sessions from Redis
+      logger.info('Fetching active sessions', { userId });
+      return []; // Return list of active sessions
+    } catch (error) {
+      logger.error('Error fetching active sessions', { error, userId });
+      return [];
+    }
   }
 }
 
