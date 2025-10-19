@@ -21,20 +21,47 @@ import { useAuthContext } from '../../contexts/AuthContext'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { LoginFormFields } from './components/LoginForm'
+import { authApi } from '../../services/modules/authApi'
 import type { LoginForm } from './types'
+
+interface DevUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  password: string;
+  displayName: string;
+}
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
   const [authError, setAuthError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [devUsers, setDevUsers] = useState<DevUser[]>([])
+  const [selectedUser, setSelectedUser] = useState<string>('')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { login } = useAuthContext()
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<LoginForm>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<LoginForm>({
     mode: 'onSubmit'
   })
 
   const redirectPath = searchParams.get('redirect')
+
+  // Fetch development users
+  useEffect(() => {
+    const fetchDevUsers = async () => {
+      try {
+        const users = await authApi.getDevUsers()
+        setDevUsers(users)
+      } catch (error) {
+        // Silently fail if dev endpoint is not available or we're in production
+        console.debug('Dev users endpoint not available')
+      }
+    }
+    fetchDevUsers()
+  }, [])
 
   useEffect(() => {
     document.title = 'Login - White Cross - School Nurse Platform'
@@ -61,6 +88,22 @@ export default function Login() {
       setAuthError('')
     }
   }, [watchedEmail, watchedPassword])
+
+  // Handle user selection from dropdown
+  const handleUserSelect = (userId: string) => {
+    setSelectedUser(userId)
+    if (userId) {
+      const user = devUsers.find(u => u.id === userId)
+      if (user) {
+        setValue('email', user.email)
+        setValue('password', user.password)
+        setAuthError('')
+      }
+    } else {
+      setValue('email', '')
+      setValue('password', '')
+    }
+  }
 
   const onSubmit = async (data: LoginForm) => {
     setLoading(true)
@@ -117,6 +160,30 @@ export default function Login() {
         </div>
 
         <div className="card p-8" id="main">
+          {devUsers.length > 0 && (
+            <div className="mb-6">
+              <label htmlFor="user-select" className="block text-sm font-medium text-gray-700 mb-2">
+                Quick Login (Development Only)
+              </label>
+              <select
+                id="user-select"
+                value={selectedUser}
+                onChange={(e) => handleUserSelect(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                data-cy="user-select"
+              >
+                <option value="">Select a user to auto-fill credentials</option>
+                {devUsers.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.displayName}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Selecting a user will auto-fill the email and password fields below
+              </p>
+            </div>
+          )}
           <LoginFormFields
             register={register}
             errors={errors}
