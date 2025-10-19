@@ -54,7 +54,7 @@ export const formularyKeys = {
 export interface UseMedicationFormularyReturn {
   // Query results
   searchFormulary: ReturnType<typeof useQuery<any>>;
-  getMedicationById: (id: string) => ReturnType<typeof useQuery<Medication>>;
+  // getMedicationById: (id: string) => ReturnType<typeof useQuery<Medication>>; // Commented out - violates Rules of Hooks
 
   // Mutations
   scanBarcode: ReturnType<typeof useMutation<BarcodeResult, Error, string>>;
@@ -86,14 +86,16 @@ export function useMedicationFormulary(options?: {
   });
 
   // Get medication by ID (factory function)
-  const getMedicationById = (id: string) => {
-    return useQuery({
-      queryKey: formularyKeys.detail(id),
-      queryFn: () => medicationFormularyApi.getMedicationById(id),
-      enabled: !!id,
-      staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    });
-  };
+  // Note: This factory function pattern violates Rules of Hooks
+  // TODO: Refactor to use a separate custom hook like `useMedicationById(id)`
+  // const getMedicationById = (id: string) => {
+  //   return useQuery({
+  //     queryKey: formularyKeys.detail(id),
+  //     queryFn: () => medicationFormularyApi.getMedicationById(id),
+  //     enabled: !!id,
+  //     staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  //   });
+  // };
 
   // Scan barcode (mutation - no cache)
   const scanBarcode = useMutation({
@@ -175,7 +177,7 @@ export function useMedicationFormulary(options?: {
 
   return {
     searchFormulary,
-    getMedicationById,
+    // getMedicationById, // Commented out - violates Rules of Hooks
     scanBarcode,
     checkInteractions,
     createMedication,
