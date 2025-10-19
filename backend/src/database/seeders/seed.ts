@@ -1,3 +1,5 @@
+#!/usr/bin/env ts-node
+
 /**
  * LOC: D7F6D66F96
  * WC-GEN-124 | seed.ts - General utility functions and operations
@@ -20,8 +22,6 @@
  * Critical Path: Module loading → Function execution → Response handling
  * LLM Context: general utility functions and operations, part of backend architecture
  */
-
-#!/usr/bin/env ts-node
 
 /**
  * Master Seeder Runner for Sequelize

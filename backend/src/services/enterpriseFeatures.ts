@@ -330,7 +330,7 @@ export class InsuranceClaimService {
 // Feature 23: HIPAA Compliance Auditing
 // ============================================
 
-export interface HIPAACompliance Check {
+export interface HIPAAComplianceCheck {
   id: string;
   area: string;
   status: 'compliant' | 'non-compliant' | 'needs-attention';
