@@ -22,7 +22,7 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { StudentService } from '../services/studentService';
+import { StudentService } from '../services/student';
 import Joi from 'joi';
 
 // Get all students

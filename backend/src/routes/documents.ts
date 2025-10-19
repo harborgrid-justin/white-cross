@@ -24,7 +24,7 @@
 
 import { Router, Response } from 'express';
 import { body, query, param, validationResult } from 'express-validator';
-import { DocumentService } from '../services/documentService';  
+import { DocumentService } from '../services/document';  
 import { auth, ExpressAuthRequest as Request } from '../middleware/auth';
 import {
   createValidationChain,

@@ -3,7 +3,7 @@
  * WC-RTE-COM-031 | Multi-Channel Communication & Notification API Routes
  *
  * UPSTREAM (imports from):
- *   - communicationService.ts (services/communicationService.ts)
+ *   - communication/index.ts (services/communication/index.ts)
  *
  * DOWNSTREAM (imported by):
  *   - index.ts (index.ts)
@@ -12,7 +12,7 @@
 /**
  * WC-RTE-COM-031 | Multi-Channel Communication & Notification API Routes
  * Purpose: Comprehensive communication system with message templates, multi-channel delivery (SMS/Email/Voice/Push), emergency alerts, scheduling, translation, and delivery tracking
- * Upstream: ../services/communicationService, JWT authentication | Dependencies: @hapi/hapi, communication service, joi validation
+ * Upstream: ../services/communication, JWT authentication | Dependencies: @hapi/hapi, communication service, joi validation
  * Downstream: Notification interface, emergency alert system, message dashboard | Called by: Notification components, emergency management, communication admin
  * Related: Emergency contact routes, incident reporting, user management, audit logging
  * Exports: communicationRoutes (13 route handlers) | Key Services: Template management, message delivery, emergency alerts, scheduling, statistics, translation
@@ -22,7 +22,7 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { CommunicationService } from '../services/communicationService';
+import { CommunicationService } from '../services/communication';
 import Joi from 'joi';
 
 // Get message templates

@@ -3,7 +3,7 @@
  * WC-RTE-MED-007 | Medication Management API Routes
  *
  * UPSTREAM (imports from):
- *   - medicationService.ts (services/medicationService.ts)
+ *   - medication/index.ts (services/medication/index.ts)
  *
  * DOWNSTREAM (imported by):
  *   - index.ts (index.ts)
@@ -22,7 +22,7 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { MedicationService } from '../services/medicationService';
+import { MedicationService } from '../services/medication';
 import Joi from 'joi';
 import {
   createMedicationSchema,

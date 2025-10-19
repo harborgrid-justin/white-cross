@@ -17,7 +17,7 @@
  */
 
 import { Request, ResponseToolkit } from '@hapi/hapi';
-import { HealthRecordService } from '../../../services/healthRecordService';
+import { HealthRecordService } from '../../../services/healthRecord';
 import { PayloadData } from '../types';
 
 /**

@@ -25,7 +25,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { auth, ExpressAuthRequest as AuthRequest } from '../middleware/auth';
-import { IntegrationService } from '../services/integrationService';
+import { IntegrationService } from '../services/integration';
 
 const router = Router();
 

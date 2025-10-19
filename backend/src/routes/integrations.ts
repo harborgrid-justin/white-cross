@@ -37,7 +37,7 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { IntegrationService } from '../services/integrationService';
+import { IntegrationService } from '../services/integration';
 import Joi from 'joi';
 
 // Middleware to check if user is admin

@@ -23,7 +23,7 @@
  */
 
 import express from 'express';
-import { ReportService } from '../services/reportService';
+import { ReportService } from '../services/report';
 import { logger } from '../utils/logger';
 
 const router = express.Router();
