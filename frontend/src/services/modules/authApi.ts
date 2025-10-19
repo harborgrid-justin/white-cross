@@ -268,6 +268,45 @@ export class AuthApi {
       return true;
     }
   }
+
+  /**
+   * Get all users for development/testing (includes passwords)
+   * Only works in development environment
+   */
+  async getDevUsers(): Promise<Array<{
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    password: string;
+    displayName: string;
+  }>> {
+    try {
+      const response = await apiInstance.get<{
+        success: boolean;
+        data: {
+          users: Array<{
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            role: string;
+            password: string;
+            displayName: string;
+          }>;
+        };
+      }>(API_ENDPOINTS.DEV.USERS);
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error('Failed to fetch development users');
+      }
+
+      return response.data.data.users;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error?.message || 'Failed to fetch development users');
+    }
+  }
 }
 
 // Export singleton instance

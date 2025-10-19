@@ -55,6 +55,7 @@ import { communicationRoutes } from './routes/communication';
 import { configurationRoutes } from './routes/configuration';
 import { dashboardRoutes } from './routes/dashboard';
 import { integrationRoutes } from './routes/integrations';
+import { devRoutes } from './routes/dev';
 
 // TODO: Convert remaining routes from Express to Hapi
 // import administrationRoutes from './routes/administration';
@@ -189,7 +190,10 @@ const init = async () => {
       ...dashboardRoutes,
 
       // Integration Hub routes
-      ...integrationRoutes
+      ...integrationRoutes,
+
+      // Development routes (only active in development)
+      ...devRoutes
 
       // TODO: Convert remaining routes from Express to Hapi
       // ...administrationRoutes,

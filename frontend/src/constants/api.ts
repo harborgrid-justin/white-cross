@@ -80,6 +80,9 @@ export const API_ENDPOINTS = {
     PROFILE: '/auth/profile',
     PERMISSIONS: '/auth/permissions',
   },
+  DEV: {
+    USERS: '/dev/users',
+  },
   STUDENTS: {
     BASE: '/students',
     BY_ID: (id: string) => `/students/${id}`,
