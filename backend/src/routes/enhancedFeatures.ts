@@ -187,6 +187,17 @@ router.post('/students/:studentId/medication-interactions/check-new', authentica
   }
 });
 
+router.get('/students/:studentId/medication-interactions/recommendations', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { studentId } = req.params;
+    const recommendations = await MedicationInteractionService.getInteractionRecommendations(studentId);
+    res.json({ success: true, data: recommendations });
+  } catch (error) {
+    logger.error('Error getting interaction recommendations', { error });
+    res.status(500).json({ success: false, error: 'Failed to get interaction recommendations' });
+  }
+});
+
 // ============================================
 // Medication Refill Routes
 // ============================================
