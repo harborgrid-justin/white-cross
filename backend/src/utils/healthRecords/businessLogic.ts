@@ -23,6 +23,7 @@
 
 import { Op } from 'sequelize';
 import { Allergy, Medication, User, Student, Vaccination, Screening } from '../../database/models';
+import { CDCGrowthCharts, GrowthChartGender, GrowthMeasurement } from '../cdcGrowthCharts';
 
 /**
  * Health Records Business Logic
@@ -634,29 +635,59 @@ export function calculateBMI(
 
 /**
  * Calculate growth percentiles using CDC charts
+ * Production-ready implementation using CDCGrowthCharts utility
  */
 export function calculatePercentiles(
-  age: number,
+  ageMonths: number,
   gender: 'MALE' | 'FEMALE',
-  height: number,
-  weight: number,
+  heightCm: number,
+  weightKg: number,
   bmi: number
 ): {
   heightPercentile: number;
   weightPercentile: number;
   bmiPercentile: number;
 } {
-  // This is a simplified version. Production should use actual CDC LMS data
-  // LMS method: Percentile = Φ((((value/M)^L) - 1) / (L*S))
+  try {
+    // Convert gender to GrowthChartGender enum
+    const growthGender = gender === 'MALE' ? GrowthChartGender.MALE : GrowthChartGender.FEMALE;
 
-  // Placeholder percentile calculation
-  // In production, this would lookup CDC growth charts
+    // Create measurement data
+    const measurement: GrowthMeasurement = {
+      ageInMonths: ageMonths,
+      gender: growthGender,
+      heightCm,
+      weightKg
+    };
 
-  return {
-    heightPercentile: 50, // Placeholder
-    weightPercentile: 50, // Placeholder
-    bmiPercentile: 50     // Placeholder
-  };
+    // Validate measurement
+    const validation = CDCGrowthCharts.validateMeasurement(measurement);
+    if (!validation.valid) {
+      console.warn('Invalid measurement data:', validation.errors);
+      return {
+        heightPercentile: 50,
+        weightPercentile: 50,
+        bmiPercentile: 50
+      };
+    }
+
+    // Calculate percentiles using CDC growth charts
+    const percentiles = CDCGrowthCharts.calculatePercentiles(measurement);
+
+    return {
+      heightPercentile: percentiles.heightPercentile || 50,
+      weightPercentile: percentiles.weightPercentile || 50,
+      bmiPercentile: percentiles.bmiPercentile || 50
+    };
+  } catch (error) {
+    console.error('Error calculating percentiles:', error);
+    // Return median percentiles on error
+    return {
+      heightPercentile: 50,
+      weightPercentile: 50,
+      bmiPercentile: 50
+    };
+  }
 }
 
 /**

@@ -19,6 +19,8 @@
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import { HealthRecordService } from '../../../services/healthRecord';
 import { PayloadData } from '../types';
+import { PDFGenerator, HealthRecordPDFData } from '../../../utils/pdfGenerator';
+import { logger } from '../../../utils/logger';
 
 /**
  * Get health records for a student with pagination and filtering
@@ -223,11 +225,46 @@ export const exportHealthRecordsHandler = async (request: Request, h: ResponseTo
     const exportData = await HealthRecordService.exportHealthHistory(studentId);
 
     if (format === 'pdf') {
-      // TODO: Implement PDF generation
-      return h.response({
-        success: false,
-        error: { message: 'PDF export not yet implemented' }
-      }).code(501);
+      // Generate PDF using PDFGenerator
+      const pdfData: HealthRecordPDFData = {
+        student: {
+          name: exportData.student.name || 'Unknown Student',
+          dateOfBirth: new Date(exportData.student.dateOfBirth),
+          studentId: exportData.student.studentId,
+          grade: exportData.student.grade,
+          school: exportData.student.school
+        },
+        records: exportData.healthRecords.map((record: any) => ({
+          date: new Date(record.date),
+          type: record.type,
+          description: record.description,
+          provider: record.provider,
+          notes: record.notes,
+          vitals: record.vital
+        })),
+        generatedAt: new Date(),
+        generatedBy: (request as any).auth?.credentials?.user?.name || 'System'
+      };
+
+      const pdfBuffer = await PDFGenerator.generateHealthRecordPDF(pdfData, {
+        title: `Health Record - ${exportData.student.name}`,
+        author: 'White Cross Healthcare Platform',
+        subject: 'Student Health Record Export',
+        keywords: ['health', 'medical', 'student', 'record']
+      });
+
+      logger.info('Health record PDF generated', {
+        studentId,
+        size: pdfBuffer.length,
+        user: (request as any).auth?.credentials?.user?.id
+      });
+
+      // Return PDF with proper headers
+      return h.response(pdfBuffer)
+        .type('application/pdf')
+        .header('Content-Disposition', `attachment; filename="health-record-${studentId}.pdf"`)
+        .header('X-Content-Type-Options', 'nosniff')
+        .header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
     return h.response({
@@ -235,6 +272,7 @@ export const exportHealthRecordsHandler = async (request: Request, h: ResponseTo
       data: exportData
     });
   } catch (error) {
+    logger.error('Failed to export health records', error);
     return h.response({
       success: false,
       error: { message: (error as Error).message }
