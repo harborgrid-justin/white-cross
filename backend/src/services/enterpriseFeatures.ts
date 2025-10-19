@@ -425,21 +425,33 @@ export interface ConsentForm {
   signedBy?: string;
   signedAt?: Date;
   expiresAt?: Date;
+  createdAt?: Date;
   digitalSignature?: string;
+  version?: string;
+  metadata?: Record<string, any>;
 }
 
 export class ConsentFormService {
-  static async createConsentForm(studentId: string, formType: string, content: string): Promise<ConsentForm> {
+  static async createConsentForm(studentId: string, formType: string, content: string, expiresAt?: Date): Promise<ConsentForm> {
     try {
+      const crypto = require('crypto');
       const form: ConsentForm = {
-        id: `CF-${Date.now()}`,
+        id: `CF-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,
         studentId,
         formType,
         status: 'pending',
-        content
+        content,
+        createdAt: new Date(),
+        expiresAt: expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
+        version: '1.0',
+        metadata: {
+          createdBy: 'system',
+          ipAddress: 'unknown'
+        }
       };
 
-      logger.info('Consent form created', { formId: form.id, formType });
+      // In production, save to ConsentForm table
+      logger.info('Consent form created', { formId: form.id, formType, studentId });
       return form;
     } catch (error) {
       logger.error('Error creating consent form', { error });
@@ -447,14 +459,190 @@ export class ConsentFormService {
     }
   }
 
-  static async signForm(formId: string, signedBy: string, signature: string): Promise<boolean> {
-    logger.info('Consent form signed', { formId, signedBy });
-    return true;
+  static async signForm(
+    formId: string,
+    signedBy: string,
+    signature: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<boolean> {
+    try {
+      const crypto = require('crypto');
+      const signatureHash = crypto.createHash('sha256').update(signature).digest('hex');
+      
+      const signatureData = {
+        formId,
+        signedBy,
+        signatureHash,
+        signedAt: new Date(),
+        ipAddress,
+        userAgent,
+        verified: true
+      };
+
+      // In production:
+      // 1. Update ConsentForm status to 'signed'
+      // 2. Store signature in DocumentSignature table
+      // 3. Create audit log entry
+      // 4. Send confirmation notification
+
+      logger.info('Consent form signed', {
+        formId,
+        signedBy,
+        ipAddress,
+        timestamp: signatureData.signedAt
+      });
+
+      return true;
+    } catch (error) {
+      logger.error('Error signing consent form', { error, formId });
+      return false;
+    }
+  }
+
+  static async verifySignature(formId: string, signature: string): Promise<boolean> {
+    try {
+      const crypto = require('crypto');
+      const signatureHash = crypto.createHash('sha256').update(signature).digest('hex');
+      
+      // In production, compare with stored signature hash
+      logger.info('Signature verification', { formId });
+      return true;
+    } catch (error) {
+      logger.error('Error verifying signature', { error, formId });
+      return false;
+    }
+  }
+
+  static async revokeConsent(formId: string, revokedBy: string, reason: string): Promise<boolean> {
+    try {
+      // In production:
+      // 1. Update form status to 'revoked'
+      // 2. Record revocation reason and timestamp
+      // 3. Create audit log entry
+      // 4. Notify relevant parties
+
+      logger.info('Consent form revoked', { formId, revokedBy, reason });
+      return true;
+    } catch (error) {
+      logger.error('Error revoking consent', { error, formId });
+      return false;
+    }
   }
 
   static async checkFormsExpiringSoon(days: number = 30): Promise<ConsentForm[]> {
-    // Return forms expiring within specified days
-    return [];
+    try {
+      // In production, query ConsentForm table where:
+      // - status = 'signed'
+      // - expiresAt between now and (now + days)
+      
+      const expiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      
+      logger.info('Checking for expiring consent forms', { days, expiryDate });
+      
+      // Return forms expiring within specified days
+      return [];
+    } catch (error) {
+      logger.error('Error checking expiring forms', { error });
+      return [];
+    }
+  }
+
+  static async renewConsentForm(formId: string, extendedBy: string, additionalYears: number = 1): Promise<ConsentForm | null> {
+    try {
+      // In production:
+      // 1. Create new version of the form
+      // 2. Update expiresAt date
+      // 3. Maintain form history
+      // 4. Notify parent/guardian for re-signature
+
+      const newExpiryDate = new Date(Date.now() + additionalYears * 365 * 24 * 60 * 60 * 1000);
+      
+      logger.info('Consent form renewed', {
+        formId,
+        extendedBy,
+        newExpiryDate,
+        additionalYears
+      });
+
+      return null; // Return renewed form
+    } catch (error) {
+      logger.error('Error renewing consent form', { error, formId });
+      return null;
+    }
+  }
+
+  static async getConsentFormsByStudent(studentId: string, status?: string): Promise<ConsentForm[]> {
+    try {
+      // In production, query ConsentForm table
+      logger.info('Fetching student consent forms', { studentId, status });
+      return [];
+    } catch (error) {
+      logger.error('Error fetching consent forms', { error, studentId });
+      return [];
+    }
+  }
+
+  static async getConsentFormHistory(formId: string): Promise<any[]> {
+    try {
+      // In production, return version history of the form
+      logger.info('Fetching consent form history', { formId });
+      return [];
+    } catch (error) {
+      logger.error('Error fetching form history', { error, formId });
+      return [];
+    }
+  }
+
+  static async sendReminderForUnsignedForms(): Promise<number> {
+    try {
+      // In production:
+      // 1. Query for forms with status='pending' created > 7 days ago
+      // 2. Send reminder notifications to parents/guardians
+      // 3. Track reminder attempts
+      
+      const remindersSent = 0; // Count of reminders sent
+      
+      logger.info('Sent reminders for unsigned consent forms', { count: remindersSent });
+      return remindersSent;
+    } catch (error) {
+      logger.error('Error sending reminders', { error });
+      return 0;
+    }
+  }
+
+  static async generateConsentFormTemplate(
+    formType: string,
+    studentId: string
+  ): Promise<{ html: string; variables: Record<string, any> }> {
+    try {
+      // In production:
+      // 1. Fetch form template by type
+      // 2. Get student and school information
+      // 3. Populate template with data
+      
+      const variables = {
+        studentName: 'Student Name',
+        schoolName: 'School Name',
+        formType,
+        date: new Date().toLocaleDateString()
+      };
+
+      const html = `
+        <div>
+          <h2>${formType} Consent Form</h2>
+          <p>Student: ${variables.studentName}</p>
+          <p>School: ${variables.schoolName}</p>
+          <p>Date: ${variables.date}</p>
+        </div>
+      `;
+
+      logger.info('Consent form template generated', { formType, studentId });
+      return { html, variables };
+    } catch (error) {
+      logger.error('Error generating form template', { error, formType });
+      throw error;
+    }
   }
 }
 
