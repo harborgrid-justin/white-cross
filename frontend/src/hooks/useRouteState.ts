@@ -832,6 +832,9 @@ export function usePageState(config: PaginationConfig = {}) {
 
   // Per-route page memory
   const pageMemoryRef = useRef<Map<string, PaginationState>>(new Map());
+  
+  // Ref to track last filter state for resetOnFilterChange
+  const lastFiltersRef = useRef<string>('');
 
   // Initialize from URL or memory
   const [state, setState] = useState<PaginationState>(() => {
@@ -930,7 +933,6 @@ export function usePageState(config: PaginationConfig = {}) {
 
       // Store filter string to detect changes
       const filterString = filterParams.toString();
-      const lastFiltersRef = useRef<string>(filterString);
 
       if (lastFiltersRef.current !== filterString && state.page !== defaultPage) {
         resetPage();
