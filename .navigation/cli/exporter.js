@@ -6,17 +6,68 @@
  */
 
 const { Command } = require('commander');
-const chalk = require('chalk');
 const fs = require('fs').promises;
 const path = require('path');
-const ora = require('ora');
 const { Client } = require('pg');
+
+// Simple chalk replacement for color output
+const chalk = {
+  red: (text) => `[31m${text}[0m`,
+  green: (text) => `[32m${text}[0m`,
+  yellow: (text) => `[33m${text}[0m`,
+  blue: (text) => `[34m${text}[0m`,
+  magenta: (text) => `[35m${text}[0m`,
+  cyan: (text) => `[36m${text}[0m`,
+  bold: {
+    blue: (text) => `[1m[34m${text}[0m`,
+    red: (text) => `[1m[31m${text}[0m`,
+    green: (text) => `[1m[32m${text}[0m`,
+  }
+};
+
+// Simple spinner implementation to replace ora
+class SimpleSpinner {
+  constructor(text) {
+    this.text = text;
+    this.isSpinning = false;
+  }
+  
+  start() {
+    console.log(`⏳ ${this.text}`);
+    this.isSpinning = true;
+    return this;
+  }
+  
+  succeed(text) {
+    console.log(`✅ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+  
+  fail(text) {
+    console.log(`❌ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+  
+  warn(text) {
+    console.log(`⚠️ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+}
+
+function ora(text) {
+  return new SimpleSpinner(text);
+}
 
 class DataExporter {
   constructor() {
-    this.client = new Client({
-      connectionString: process.env.DATABASE_URL
-    });
+    // Use the database connection from .env file
+    const connectionString = process.env.DATABASE_URL || 
+      'postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae.c-2.us-east-1.aws.neon.tech/code_vectors?sslmode=require&channel_binding=require';
+    
+    this.client = new Client({ connectionString });
     this.program = new Command();
     this.setupCommands();
   }
@@ -131,14 +182,22 @@ class DataExporter {
       let data = {};
 
       if (table === 'all' || table === 'embeddings') {
-        data.embeddings = await this.getTableData('embeddings', options);
+        data.embeddings = await this.getTableData('code_embeddings', options);
       }
 
       if (table === 'all' || table === 'relationships') {
-        data.relationships = await this.getTableData('relationships', options);
+        data.relationships = await this.getTableData('code_relationships', options);
+      }
+      
+      if (table === 'all' || table === 'headers') {
+        data.headers = await this.getTableData('code_headers', options);
+      }
+      
+      if (table === 'all' || table === 'files') {
+        data.files = await this.getTableData('code_files', options);
       }
 
-      if (table !== 'all' && table !== 'embeddings' && table !== 'relationships') {
+      if (!['all', 'embeddings', 'relationships', 'headers', 'files'].includes(table)) {
         data[table] = await this.getTableData(table, options);
       }
 
@@ -270,12 +329,15 @@ class DataExporter {
       };
 
       // Always include relationships
-      backup.data.relationships = await this.getTableData('relationships');
+      backup.data.relationships = await this.getTableData('code_relationships');
+      backup.data.files = await this.getTableData('code_files');
+      backup.data.headers = await this.getTableData('code_headers');
+      backup.metadata.tables.push('code_files', 'code_headers');
 
       // Include embeddings if requested
       if (options.includeEmbeddings) {
-        backup.data.embeddings = await this.getTableData('embeddings');
-        backup.metadata.tables.push('embeddings');
+        backup.data.embeddings = await this.getTableData('code_embeddings');
+        backup.metadata.tables.push('code_embeddings');
       }
 
       // Get schema information
@@ -283,7 +345,7 @@ class DataExporter {
         SELECT table_name, column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_schema = 'public'
-          AND table_name IN ('embeddings', 'relationships')
+          AND table_name IN ('code_embeddings', 'code_relationships', 'code_files', 'code_headers')
         ORDER BY table_name, ordinal_position
       `;
 
@@ -334,21 +396,25 @@ class DataExporter {
 
       // Embeddings stats
       const embeddingsStats = await this.client.query(`
-        SELECT 
-          COUNT(*) as total,
-          AVG(LENGTH(content_snippet)) as avg_length
-        FROM embeddings
+        SELECT COUNT(*) as total FROM code_embeddings
       `);
       stats.embeddings.total = parseInt(embeddingsStats.rows[0].total);
-      stats.embeddings.avgSnippetLength = parseFloat(embeddingsStats.rows[0].avg_length || 0);
+
+      // Headers stats for content analysis
+      const headersStats = await this.client.query(`
+        SELECT AVG(LENGTH(header_content)) as avg_length
+        FROM code_headers 
+        WHERE header_content IS NOT NULL
+      `);
+      stats.embeddings.avgSnippetLength = parseFloat(headersStats.rows[0].avg_length || 0);
 
       // File types
       const fileTypes = await this.client.query(`
         SELECT 
-          SUBSTRING(file_path FROM '\\.([^.]+)$') as extension,
+          file_type as extension,
           COUNT(*) as count
-        FROM embeddings 
-        GROUP BY extension 
+        FROM code_files 
+        GROUP BY file_type 
         ORDER BY count DESC 
         LIMIT 10
       `);
@@ -358,8 +424,8 @@ class DataExporter {
       const relationshipsStats = await this.client.query(`
         SELECT 
           COUNT(*) as total,
-          AVG(confidence) as avg_confidence
-        FROM relationships
+          AVG(confidence_score) as avg_confidence
+        FROM code_relationships
       `);
       stats.relationships.total = parseInt(relationshipsStats.rows[0].total);
       stats.relationships.avgConfidence = parseFloat(relationshipsStats.rows[0].avg_confidence || 0);
@@ -369,7 +435,7 @@ class DataExporter {
         SELECT 
           relationship_type,
           COUNT(*) as count
-        FROM relationships 
+        FROM code_relationships 
         GROUP BY relationship_type 
         ORDER BY count DESC
       `);
@@ -377,7 +443,7 @@ class DataExporter {
 
       // File analysis
       const filesAnalyzed = await this.client.query(`
-        SELECT COUNT(DISTINCT file_path) as total FROM embeddings
+        SELECT COUNT(*) as total FROM code_files
       `);
       stats.files.totalAnalyzed = parseInt(filesAnalyzed.rows[0].total);
 
@@ -407,15 +473,26 @@ class DataExporter {
     }
 
     try {
-      let query = 'SELECT * FROM relationships';
+      let query = `
+        SELECT 
+          cf1.file_path as source_file,
+          cf2.file_path as target_file,
+          cr.relationship_type,
+          cr.confidence_score as confidence
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+      `;
       const params = [];
 
       if (options.type) {
-        query += ' WHERE relationship_type = $1';
+        query += ' WHERE cr.relationship_type = $1';
         params.push(options.type);
       }
 
-      query += ' ORDER BY confidence DESC';
+      query += ' ORDER BY cr.confidence_score DESC';
 
       const result = await this.client.query(query, params);
 
@@ -457,18 +534,32 @@ class DataExporter {
     }
 
     try {
-      let query = 'SELECT file_path, content_snippet, chunk_index';
+      let query = `
+        SELECT 
+          cf.file_path,
+          ch.header_content as content_snippet,
+          ch.line_number as chunk_index
+      `;
       
       if (options.includeVectors) {
-        query += ', simple_embedding, openai_embedding';
+        query += ', ce.embedding';
       }
       
-      query += ' FROM embeddings ORDER BY file_path, chunk_index';
+      query += `
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+      `;
+      
+      if (options.includeVectors) {
+        query += ' LEFT JOIN code_embeddings ce ON ch.id = ce.header_id';
+      }
+      
+      query += ' ORDER BY cf.file_path, ch.line_number';
 
       const result = await this.client.query(query);
 
       if (options.format === 'csv') {
-        await this.handleCSV('embeddings', { ...options, filter: null, limit: null });
+        await this.handleCSV('code_embeddings', { ...options, filter: null, limit: null });
       } else {
         // JSON format
         const embeddingsData = {
@@ -629,9 +720,10 @@ class DataExporter {
     // Implementation for collecting comprehensive report data
     return {
       summary: {
-        embeddings: await this.client.query('SELECT COUNT(*) as count FROM embeddings'),
-        relationships: await this.client.query('SELECT COUNT(*) as count FROM relationships'),
-        files: await this.client.query('SELECT COUNT(DISTINCT file_path) as count FROM embeddings')
+        embeddings: await this.client.query('SELECT COUNT(*) as count FROM code_embeddings'),
+        relationships: await this.client.query('SELECT COUNT(*) as count FROM code_relationships'),
+        files: await this.client.query('SELECT COUNT(*) as count FROM code_files'),
+        headers: await this.client.query('SELECT COUNT(*) as count FROM code_headers')
       }
     };
   }

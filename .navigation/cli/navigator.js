@@ -6,18 +6,66 @@
  */
 
 const { Command } = require('commander');
-const chalk = require('chalk');
 const inquirer = require('inquirer');
 const Table = require('cli-table3');
-const ora = require('ora');
 const path = require('path');
 const { Client } = require('pg');
 
+// Simple chalk replacement for color output
+const chalk = {
+  red: (text) => `[31m${text}[0m`,
+  green: (text) => `[32m${text}[0m`,
+  yellow: (text) => `[33m${text}[0m`,
+  blue: (text) => `[34m${text}[0m`,
+  magenta: (text) => `[35m${text}[0m`,
+  cyan: (text) => `[36m${text}[0m`,
+  bold: {
+    blue: (text) => `[1m[34m${text}[0m`,
+    green: (text) => `[1m[32m${text}[0m`,
+  }
+};
+
+// Add nested bold properties to base colors
+chalk.blue.bold = chalk.bold.blue;
+chalk.green.bold = chalk.bold.green;
+
+// Simple spinner implementation to replace ora
+class SimpleSpinner {
+  constructor(text) {
+    this.text = text;
+    this.isSpinning = false;
+  }
+  
+  start() {
+    console.log(`⏳ ${this.text}`);
+    this.isSpinning = true;
+    return this;
+  }
+  
+  succeed(text) {
+    console.log(`✅ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+  
+  fail(text) {
+    console.log(`❌ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+}
+
+function ora(text) {
+  return new SimpleSpinner(text);
+}
+
 class NavigationCLI {
   constructor() {
-    this.client = new Client({
-      connectionString: process.env.DATABASE_URL
-    });
+    // Use the database connection from .env file
+    const connectionString = process.env.DATABASE_URL || 
+      'postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae.c-2.us-east-1.aws.neon.tech/code_vectors?sslmode=require&channel_binding=require';
+    
+    this.client = new Client({ connectionString });
     this.program = new Command();
     this.setupCommands();
   }
@@ -115,22 +163,29 @@ class NavigationCLI {
       const limit = parseInt(options.limit);
       const threshold = parseFloat(options.threshold);
 
-      // Simple text search for now (can be enhanced with embeddings)
+      // Search using the actual database schema
       const searchQuery = `
-        SELECT file_path, content_snippet, 
-               CASE 
-                 WHEN content_snippet ILIKE $1 THEN 1.0
-                 WHEN content_snippet ILIKE $2 THEN 0.8
-                 ELSE 0.6
-               END as similarity
-        FROM embeddings 
-        WHERE content_snippet ILIKE $2
-        ORDER BY similarity DESC 
-        LIMIT $3
+        SELECT 
+          cf.file_path,
+          ch.header_name,
+          ch.header_type,
+          ch.header_content as content_snippet,
+          ch.line_number,
+          CASE 
+            WHEN ch.header_name ILIKE $1 THEN 1.0
+            WHEN ch.header_content ILIKE $1 THEN 0.8
+            ELSE 0.6
+          END as similarity
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE ch.header_name ILIKE $1 
+           OR ch.header_content ILIKE $1
+           OR cf.file_path ILIKE $1
+        ORDER BY similarity DESC, cf.file_path, ch.line_number
+        LIMIT $2
       `;
 
       const result = await this.client.query(searchQuery, [
-        `%${query}%`,
         `%${query}%`,
         limit
       ]);
@@ -165,9 +220,16 @@ class NavigationCLI {
       const types = options.types ? options.types.split(',') : null;
 
       let relationshipQuery = `
-        SELECT DISTINCT r.target_file, r.relationship_type, r.confidence
-        FROM relationships r
-        WHERE r.source_file LIKE $1
+        SELECT DISTINCT 
+          cf2.file_path as target_file, 
+          cr.relationship_type, 
+          cr.confidence_score as confidence
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cf1.file_path LIKE $1
       `;
 
       const params = [`%${file}%`];
@@ -216,19 +278,20 @@ class NavigationCLI {
           array_agg(DISTINCT file_path) as files
         FROM (
           SELECT 
-            file_path,
+            cf.file_path,
             CASE 
-              WHEN content_snippet LIKE '%function%' THEN 'function'
-              WHEN content_snippet LIKE '%class%' THEN 'class'
-              WHEN content_snippet LIKE '%import%' THEN 'import'
-              WHEN content_snippet LIKE '%export%' THEN 'export'
-              WHEN content_snippet LIKE '%const%' THEN 'constant'
-              WHEN content_snippet LIKE '%useState%' THEN 'react_hook'
-              WHEN content_snippet LIKE '%useEffect%' THEN 'react_effect'
-              ELSE 'other'
+              WHEN ch.header_type = 'function' THEN 'function'
+              WHEN ch.header_type = 'class' THEN 'class'
+              WHEN ch.header_type = 'import' THEN 'import'
+              WHEN ch.header_type = 'export' THEN 'export'
+              WHEN ch.header_content LIKE '%const%' THEN 'constant'
+              WHEN ch.header_content LIKE '%useState%' THEN 'react_hook'
+              WHEN ch.header_content LIKE '%useEffect%' THEN 'react_effect'
+              ELSE ch.header_type
             END as pattern_type
-          FROM embeddings
-          WHERE file_path LIKE $1
+          FROM code_headers ch
+          JOIN code_files cf ON ch.file_id = cf.id
+          WHERE cf.file_path LIKE $1
         ) patterns
         GROUP BY pattern_type
         HAVING COUNT(*) >= $2
@@ -265,13 +328,18 @@ class NavigationCLI {
           relationship_type,
           COUNT(*) as count,
           AVG(confidence) as avg_confidence
-        FROM relationships
+        FROM code_relationships
       `;
 
       const params = [];
 
       if (options.file) {
-        query += ` WHERE source_file LIKE $1`;
+        query += ` WHERE EXISTS (
+          SELECT 1 FROM code_headers ch 
+          JOIN code_files cf ON ch.file_id = cf.id 
+          WHERE ch.id = code_relationships.source_header_id 
+          AND cf.file_path LIKE $1
+        )`;
         params.push(`%${options.file}%`);
       }
 
@@ -306,14 +374,16 @@ class NavigationCLI {
 
     try {
       const statsQueries = {
-        totalEmbeddings: 'SELECT COUNT(*) as count FROM embeddings',
-        totalRelationships: 'SELECT COUNT(*) as count FROM relationships',
+        totalEmbeddings: 'SELECT COUNT(*) as count FROM code_embeddings',
+        totalRelationships: 'SELECT COUNT(*) as count FROM code_relationships',
+        totalHeaders: 'SELECT COUNT(*) as count FROM code_headers',
+        totalFiles: 'SELECT COUNT(*) as count FROM code_files',
         fileTypes: `
           SELECT 
-            SUBSTRING(file_path FROM '\\.([^.]+)$') as extension,
+            file_type as extension,
             COUNT(*) as count
-          FROM embeddings 
-          GROUP BY extension 
+          FROM code_files 
+          GROUP BY file_type 
           ORDER BY count DESC 
           LIMIT 10
         `,
@@ -321,7 +391,7 @@ class NavigationCLI {
           SELECT 
             relationship_type,
             COUNT(*) as count
-          FROM relationships 
+          FROM code_relationships 
           GROUP BY relationship_type 
           ORDER BY count DESC
         `
@@ -444,24 +514,28 @@ class NavigationCLI {
     }
 
     if (format === 'simple') {
-      results.forEach(row => {
-        console.log(`${chalk.cyan(row.file_path)} (${row.similarity})`);
-        console.log(`  ${row.content_snippet.substring(0, 100)}...`);
+      results.forEach((row, index) => {
+        console.log(`${index + 1}. ${chalk.cyan(row.file_path)}:${row.line_number || 'N/A'} (${row.similarity})`);
+        console.log(`   ${chalk.yellow(row.header_type)}: ${chalk.blue(row.header_name)}`);
+        console.log(`   ${row.content_snippet ? row.content_snippet.substring(0, 100) + '...' : 'No content'}`);
+        console.log('');
       });
       return;
     }
 
     // Table format (default)
     const table = new Table({
-      head: ['File', 'Similarity', 'Content'],
-      colWidths: [40, 12, 60]
+      head: ['File:Line', 'Type', 'Name', 'Similarity', 'Content'],
+      colWidths: [35, 12, 20, 10, 40]
     });
 
     results.forEach(row => {
       table.push([
-        chalk.cyan(row.file_path),
+        chalk.cyan(`${row.file_path}:${row.line_number || 'N/A'}`),
+        chalk.yellow(row.header_type || 'N/A'),
+        chalk.blue(row.header_name || 'N/A'),
         chalk.green(row.similarity.toFixed(2)),
-        row.content_snippet.substring(0, 50) + '...'
+        (row.content_snippet || 'No content').substring(0, 35) + '...'
       ]);
     });
 
@@ -523,6 +597,8 @@ class NavigationCLI {
   displayStats(results) {
     console.log(chalk.blue.bold('\n📊 Navigation System Statistics\n'));
 
+    console.log(chalk.green(`Total Files: ${results.totalFiles.rows[0].count}`));
+    console.log(chalk.green(`Total Headers: ${results.totalHeaders.rows[0].count}`));
     console.log(chalk.green(`Total Embeddings: ${results.totalEmbeddings.rows[0].count}`));
     console.log(chalk.green(`Total Relationships: ${results.totalRelationships.rows[0].count}\n`));
 

@@ -6,18 +6,62 @@
  */
 
 const { Command } = require('commander');
-const chalk = require('chalk');
 const fs = require('fs').promises;
 const path = require('path');
 const Table = require('cli-table3');
-const ora = require('ora');
 const { Client } = require('pg');
+
+// Simple chalk replacement for color output
+const chalk = {
+  red: (text) => `[31m${text}[0m`,
+  green: (text) => `[32m${text}[0m`,
+  yellow: (text) => `[33m${text}[0m`,
+  blue: (text) => `[34m${text}[0m`,
+  magenta: (text) => `[35m${text}[0m`,
+  cyan: (text) => `[36m${text}[0m`,
+  bold: {
+    blue: (text) => `[1m[34m${text}[0m`,
+    green: (text) => `[1m[32m${text}[0m`,
+  }
+};
+
+// Simple spinner implementation to replace ora
+class SimpleSpinner {
+  constructor(text) {
+    this.text = text;
+    this.isSpinning = false;
+  }
+  
+  start() {
+    console.log(`⏳ ${this.text}`);
+    this.isSpinning = true;
+    return this;
+  }
+  
+  succeed(text) {
+    console.log(`✅ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+  
+  fail(text) {
+    console.log(`❌ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+}
+
+function ora(text) {
+  return new SimpleSpinner(text);
+}
 
 class PatternFinder {
   constructor() {
-    this.client = new Client({
-      connectionString: process.env.DATABASE_URL
-    });
+    // Use the database connection from .env file
+    const connectionString = process.env.DATABASE_URL || 
+      'postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae.c-2.us-east-1.aws.neon.tech/code_vectors?sslmode=require&channel_binding=require';
+    
+    this.client = new Client({ connectionString });
     this.program = new Command();
     this.setupCommands();
   }
@@ -122,40 +166,47 @@ class PatternFinder {
     }
 
     try {
-      const functionQuery = `
+      let functionQuery = `
         SELECT 
-          file_path,
-          content_snippet,
+          cf.file_path,
+          ch.header_content as content_snippet,
+          ch.header_type,
           CASE 
-            WHEN content_snippet ~* 'function\\s+\\w+\\s*\\(' THEN 'regular'
-            WHEN content_snippet ~* '\\w+\\s*=\\s*\\([^)]*\\)\\s*=>' THEN 'arrow'
-            WHEN content_snippet ~* 'async\\s+(function|\\w+)' THEN 'async'
-            WHEN content_snippet ~* 'export\\s+(function|const\\s+\\w+\\s*=)' THEN 'export'
+            WHEN ch.header_content ~* 'function\\s+\\w+\\s*\\(' THEN 'regular'
+            WHEN ch.header_content ~* '\\w+\\s*=\\s*\\([^)]*\\)\\s*=>' THEN 'arrow'
+            WHEN ch.header_content ~* 'async\\s+(function|\\w+)' THEN 'async'
+            WHEN ch.header_content ~* 'export\\s+(function|const\\s+\\w+\\s*=)' THEN 'export'
             ELSE 'unknown'
           END as function_type,
-          LENGTH(REGEXP_REPLACE(content_snippet, '[^,]', '', 'g')) + 1 as param_count
-        FROM embeddings
-        WHERE file_path LIKE $1
-          AND (content_snippet ~* 'function|=>' OR content_snippet ~* '\\w+\\s*\\([^)]*\\)\\s*{')
+          (LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, ',', ''))) + 1 as param_count
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
+          AND ch.header_type = 'function'
       `;
 
       let params = [`%${directory}%`];
-      let query = functionQuery;
 
       if (options.type !== 'all') {
-        query += ` AND function_type = $2`;
+        functionQuery += ` AND (CASE 
+          WHEN ch.header_content ~* 'function\\s+\\w+\\s*\\(' THEN 'regular'
+          WHEN ch.header_content ~* '\\w+\\s*=\\s*\\([^)]*\\)\\s*=>' THEN 'arrow'
+          WHEN ch.header_content ~* 'async\\s+(function|\\w+)' THEN 'async'
+          WHEN ch.header_content ~* 'export\\s+(function|const\\s+\\w+\\s*=)' THEN 'export'
+          ELSE 'unknown'
+        END) = $2`;
         params.push(options.type);
       }
 
       const minParams = parseInt(options.minParams);
       const maxParams = parseInt(options.maxParams);
       
-      query += ` AND param_count BETWEEN $${params.length + 1} AND $${params.length + 2}`;
+      functionQuery += ` AND ((LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, ',', ''))) + 1) BETWEEN $${params.length + 1} AND $${params.length + 2}`;
       params.push(minParams, maxParams);
 
-      query += ` ORDER BY function_type, param_count`;
+      functionQuery += ` ORDER BY function_type, param_count`;
 
-      const result = await this.client.query(query, params);
+      const result = await this.client.query(functionQuery, params);
 
       spinner.succeed(`Found ${result.rows.length} function patterns`);
       this.displayFunctionPatterns(result.rows);
@@ -179,18 +230,19 @@ class PatternFinder {
     try {
       let importQuery = `
         SELECT 
-          file_path,
-          content_snippet,
+          cf.file_path,
+          ch.header_content as content_snippet,
           CASE 
-            WHEN content_snippet ~* 'import\\s+\\w+\\s+from' THEN 'default'
-            WHEN content_snippet ~* 'import\\s*{[^}]+}\\s*from' THEN 'named'
-            WHEN content_snippet ~* 'import\\s*\\*\\s*as\\s*\\w+' THEN 'namespace'
+            WHEN ch.header_content ~* 'import\\s+\\w+\\s+from' THEN 'default'
+            WHEN ch.header_content ~* 'import\\s*{[^}]+}\\s*from' THEN 'named'
+            WHEN ch.header_content ~* 'import\\s*\\*\\s*as\\s*\\w+' THEN 'namespace'
             ELSE 'other'
           END as import_type,
-          REGEXP_REPLACE(content_snippet, '.*from\\s+[''"]([^''"]+)[''"].*', '\\1') as source
-        FROM embeddings
-        WHERE file_path LIKE $1
-          AND content_snippet ~* '^\\s*import'
+          REGEXP_REPLACE(ch.header_content, '.*from\\s+[''"]([^''"]+)[''"].*', '\\1') as source
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
+          AND ch.header_type = 'import'
       `;
 
       let params = [`%${directory}%`];
@@ -231,28 +283,29 @@ class PatternFinder {
     try {
       let reactQuery = `
         SELECT 
-          file_path,
-          content_snippet,
+          cf.file_path,
+          ch.header_content as content_snippet,
           CASE 
-            WHEN content_snippet ~* 'class\\s+\\w+\\s+extends\\s+React\\.Component' THEN 'class'
-            WHEN content_snippet ~* 'function\\s+\\w+\\s*\\([^)]*\\).*return.*<' THEN 'functional'
-            WHEN content_snippet ~* '\\w+\\s*=\\s*\\([^)]*\\)\\s*=>.*<' THEN 'functional'
+            WHEN ch.header_content ~* 'class\\s+\\w+\\s+extends\\s+React\\.Component' THEN 'class'
+            WHEN ch.header_content ~* 'function\\s+\\w+\\s*\\([^)]*\\).*return.*<' THEN 'functional'
+            WHEN ch.header_content ~* '\\w+\\s*=\\s*\\([^)]*\\)\\s*=>.*<' THEN 'functional'
             ELSE 'unknown'
           END as component_type,
           array_agg(DISTINCT 
             CASE 
-              WHEN content_snippet ~* 'useState' THEN 'useState'
-              WHEN content_snippet ~* 'useEffect' THEN 'useEffect'
-              WHEN content_snippet ~* 'useContext' THEN 'useContext'
-              WHEN content_snippet ~* 'useReducer' THEN 'useReducer'
-              WHEN content_snippet ~* 'useMemo' THEN 'useMemo'
-              WHEN content_snippet ~* 'useCallback' THEN 'useCallback'
+              WHEN ch.header_content ~* 'useState' THEN 'useState'
+              WHEN ch.header_content ~* 'useEffect' THEN 'useEffect'
+              WHEN ch.header_content ~* 'useContext' THEN 'useContext'
+              WHEN ch.header_content ~* 'useReducer' THEN 'useReducer'
+              WHEN ch.header_content ~* 'useMemo' THEN 'useMemo'
+              WHEN ch.header_content ~* 'useCallback' THEN 'useCallback'
             END
-          ) FILTER (WHERE content_snippet ~* 'use[A-Z]') as hooks_used
-        FROM embeddings
-        WHERE file_path LIKE $1
-          AND (content_snippet ~* 'React|useState|useEffect|Component|JSX\\.Element')
-        GROUP BY file_path, content_snippet, component_type
+          ) FILTER (WHERE ch.header_content ~* 'use[A-Z]') as hooks_used
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
+          AND (ch.header_content ~* 'React|useState|useEffect|Component|JSX\\.Element' OR ch.header_type = 'component')
+        GROUP BY cf.file_path, ch.header_content, component_type
       `;
 
       let params = [`%${directory}%`];
@@ -286,22 +339,23 @@ class PatternFinder {
     try {
       let apiQuery = `
         SELECT 
-          file_path,
-          content_snippet,
+          cf.file_path,
+          ch.header_content as content_snippet,
           CASE 
-            WHEN content_snippet ~* '\\.get\\s*\\(' THEN 'GET'
-            WHEN content_snippet ~* '\\.post\\s*\\(' THEN 'POST'
-            WHEN content_snippet ~* '\\.put\\s*\\(' THEN 'PUT'
-            WHEN content_snippet ~* '\\.delete\\s*\\(' THEN 'DELETE'
-            WHEN content_snippet ~* '\\.patch\\s*\\(' THEN 'PATCH'
+            WHEN ch.header_content ~* '\\.get\\s*\\(' THEN 'GET'
+            WHEN ch.header_content ~* '\\.post\\s*\\(' THEN 'POST'
+            WHEN ch.header_content ~* '\\.put\\s*\\(' THEN 'PUT'
+            WHEN ch.header_content ~* '\\.delete\\s*\\(' THEN 'DELETE'
+            WHEN ch.header_content ~* '\\.patch\\s*\\(' THEN 'PATCH'
             ELSE 'UNKNOWN'
           END as http_method,
-          REGEXP_REPLACE(content_snippet, '.*[''"]([^''"]*api[^''"]*)[''"].*', '\\1') as endpoint
-        FROM embeddings
-        WHERE file_path LIKE $1
-          AND (content_snippet ~* '\\.(get|post|put|delete|patch)\\s*\\(' 
-               OR content_snippet ~* 'fetch\\s*\\(' 
-               OR content_snippet ~* 'axios\\.')
+          REGEXP_REPLACE(ch.header_content, '.*[''"]([^''"]*api[^''"]*)[''"].*', '\\1') as endpoint
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
+          AND (ch.header_content ~* '\\.(get|post|put|delete|patch)\\s*\\(' 
+               OR ch.header_content ~* 'fetch\\s*\\(' 
+               OR ch.header_content ~* 'axios\\.')
       `;
 
       let params = [`%${directory}%`];
@@ -342,27 +396,28 @@ class PatternFinder {
     try {
       const securityQuery = `
         SELECT 
-          file_path,
-          content_snippet,
+          cf.file_path,
+          ch.header_content as content_snippet,
           CASE 
-            WHEN content_snippet ~* 'eval\\s*\\(|innerHTML\\s*=' THEN 'high'
-            WHEN content_snippet ~* 'document\\.write|setTimeout\\s*\\(\\s*[''"]' THEN 'high'
-            WHEN content_snippet ~* 'localStorage|sessionStorage' THEN 'medium'
-            WHEN content_snippet ~* 'window\\.|global\\.' THEN 'medium'
-            WHEN content_snippet ~* 'console\\.log|alert\\s*\\(' THEN 'low'
+            WHEN ch.header_content ~* 'eval\\s*\\(|innerHTML\\s*=' THEN 'high'
+            WHEN ch.header_content ~* 'document\\.write|setTimeout\\s*\\(\\s*[''"]' THEN 'high'
+            WHEN ch.header_content ~* 'localStorage|sessionStorage' THEN 'medium'
+            WHEN ch.header_content ~* 'window\\.|global\\.' THEN 'medium'
+            WHEN ch.header_content ~* 'console\\.log|alert\\s*\\(' THEN 'low'
             ELSE 'info'
           END as risk_level,
           CASE 
-            WHEN content_snippet ~* 'eval\\s*\\(' THEN 'Code Injection Risk'
-            WHEN content_snippet ~* 'innerHTML\\s*=' THEN 'XSS Risk'
-            WHEN content_snippet ~* 'document\\.write' THEN 'DOM Manipulation Risk'
-            WHEN content_snippet ~* 'localStorage|sessionStorage' THEN 'Data Storage'
-            WHEN content_snippet ~* 'console\\.log' THEN 'Information Disclosure'
+            WHEN ch.header_content ~* 'eval\\s*\\(' THEN 'Code Injection Risk'
+            WHEN ch.header_content ~* 'innerHTML\\s*=' THEN 'XSS Risk'
+            WHEN ch.header_content ~* 'document\\.write' THEN 'DOM Manipulation Risk'
+            WHEN ch.header_content ~* 'localStorage|sessionStorage' THEN 'Data Storage'
+            WHEN ch.header_content ~* 'console\\.log' THEN 'Information Disclosure'
             ELSE 'Security Pattern'
           END as security_issue
-        FROM embeddings
-        WHERE file_path LIKE $1
-          AND (content_snippet ~* 'eval|innerHTML|document\\.write|localStorage|sessionStorage|console\\.log|alert|window\\.|global\\.')
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
+          AND (ch.header_content ~* 'eval|innerHTML|document\\.write|localStorage|sessionStorage|console\\.log|alert|window\\.|global\\.')
       `;
 
       let params = [`%${directory}%`];
@@ -403,13 +458,14 @@ class PatternFinder {
       const duplicateQuery = `
         WITH code_blocks AS (
           SELECT 
-            file_path,
-            content_snippet,
-            LENGTH(content_snippet) as snippet_length,
-            MD5(REGEXP_REPLACE(content_snippet, '\\s+', ' ', 'g')) as content_hash
-          FROM embeddings
-          WHERE file_path LIKE $1
-            AND LENGTH(content_snippet) >= $2
+            cf.file_path,
+            ch.header_content as content_snippet,
+            LENGTH(ch.header_content) as snippet_length,
+            MD5(REGEXP_REPLACE(ch.header_content, '\\s+', ' ', 'g')) as content_hash
+          FROM code_headers ch
+          JOIN code_files cf ON ch.file_id = cf.id
+          WHERE cf.file_path LIKE $1
+            AND LENGTH(ch.header_content) >= $2
         )
         SELECT 
           content_hash,
@@ -448,15 +504,16 @@ class PatternFinder {
 
       const complexityQuery = `
         SELECT 
-          file_path,
-          content_snippet,
-          (LENGTH(content_snippet) - LENGTH(REPLACE(content_snippet, 'if', ''))) / 2 +
-          (LENGTH(content_snippet) - LENGTH(REPLACE(content_snippet, 'for', ''))) / 3 +
-          (LENGTH(content_snippet) - LENGTH(REPLACE(content_snippet, 'while', ''))) / 5 +
-          (LENGTH(content_snippet) - LENGTH(REPLACE(content_snippet, 'switch', ''))) / 6 +
-          (LENGTH(content_snippet) - LENGTH(REPLACE(content_snippet, 'catch', ''))) / 5 as complexity_score
-        FROM embeddings
-        WHERE file_path LIKE $1
+          cf.file_path,
+          ch.header_content as content_snippet,
+          (LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, 'if', ''))) / 2 +
+          (LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, 'for', ''))) / 3 +
+          (LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, 'while', ''))) / 5 +
+          (LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, 'switch', ''))) / 6 +
+          (LENGTH(ch.header_content) - LENGTH(REPLACE(ch.header_content, 'catch', ''))) / 5 as complexity_score
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
         HAVING complexity_score >= $2
         ORDER BY complexity_score DESC
       `;
@@ -485,29 +542,30 @@ class PatternFinder {
     try {
       const antiPatternQuery = `
         SELECT 
-          file_path,
-          content_snippet,
+          cf.file_path,
+          ch.header_content as content_snippet,
           CASE 
-            WHEN content_snippet ~* 'var\\s+' THEN 'Legacy var usage'
-            WHEN content_snippet ~* '==\\s*' AND content_snippet !~* '===\\s*' THEN 'Loose equality'
-            WHEN content_snippet ~* 'document\\.getElementById' THEN 'Direct DOM manipulation'
-            WHEN content_snippet ~* 'setTimeout\\s*\\([^,]+,\\s*0\\s*\\)' THEN 'setTimeout zero'
-            WHEN content_snippet ~* 'for\\s*\\(.*\\.length.*\\)' THEN 'Inefficient loop'
-            WHEN content_snippet ~* 'try\\s*{[^}]*}\\s*catch\\s*\\([^)]*\\)\\s*{\\s*}' THEN 'Empty catch block'
+            WHEN ch.header_content ~* 'var\\s+' THEN 'Legacy var usage'
+            WHEN ch.header_content ~* '==\\s*' AND ch.header_content !~* '===\\s*' THEN 'Loose equality'
+            WHEN ch.header_content ~* 'document\\.getElementById' THEN 'Direct DOM manipulation'
+            WHEN ch.header_content ~* 'setTimeout\\s*\\([^,]+,\\s*0\\s*\\)' THEN 'setTimeout zero'
+            WHEN ch.header_content ~* 'for\\s*\\(.*\\.length.*\\)' THEN 'Inefficient loop'
+            WHEN ch.header_content ~* 'try\\s*{[^}]*}\\s*catch\\s*\\([^)]*\\)\\s*{\\s*}' THEN 'Empty catch block'
             ELSE 'Other anti-pattern'
           END as anti_pattern_type,
           CASE 
-            WHEN content_snippet ~* 'var\\s+' THEN 'Use const/let instead of var'
-            WHEN content_snippet ~* '==\\s*' THEN 'Use strict equality (===)'
-            WHEN content_snippet ~* 'document\\.getElementById' THEN 'Use modern query selectors'
-            WHEN content_snippet ~* 'setTimeout\\s*\\([^,]+,\\s*0\\s*\\)' THEN 'Use Promise or async/await'
-            WHEN content_snippet ~* 'for\\s*\\(.*\\.length.*\\)' THEN 'Cache array length or use forEach'
-            WHEN content_snippet ~* 'try\\s*{[^}]*}\\s*catch\\s*\\([^)]*\\)\\s*{\\s*}' THEN 'Handle exceptions properly'
+            WHEN ch.header_content ~* 'var\\s+' THEN 'Use const/let instead of var'
+            WHEN ch.header_content ~* '==\\s*' THEN 'Use strict equality (===)'
+            WHEN ch.header_content ~* 'document\\.getElementById' THEN 'Use modern query selectors'
+            WHEN ch.header_content ~* 'setTimeout\\s*\\([^,]+,\\s*0\\s*\\)' THEN 'Use Promise or async/await'
+            WHEN ch.header_content ~* 'for\\s*\\(.*\\.length.*\\)' THEN 'Cache array length or use forEach'
+            WHEN ch.header_content ~* 'try\\s*{[^}]*}\\s*catch\\s*\\([^)]*\\)\\s*{\\s*}' THEN 'Handle exceptions properly'
             ELSE 'Review code pattern'
           END as recommendation
-        FROM embeddings
-        WHERE file_path LIKE $1
-          AND (content_snippet ~* 'var\\s+|==\\s*[^=]|document\\.getElementById|setTimeout\\s*\\([^,]+,\\s*0\\s*\\)|for\\s*\\(.*\\.length.*\\)|try\\s*{[^}]*}\\s*catch\\s*\\([^)]*\\)\\s*{\\s*}')
+        FROM code_headers ch
+        JOIN code_files cf ON ch.file_id = cf.id
+        WHERE cf.file_path LIKE $1
+          AND (ch.header_content ~* 'var\\s+|==\\s*[^=]|document\\.getElementById|setTimeout\\s*\\([^,]+,\\s*0\\s*\\)|for\\s*\\(.*\\.length.*\\)|try\\s*{[^}]*}\\s*catch\\s*\\([^)]*\\)\\s*{\\s*}')
       `;
 
       let params = [`%${directory}%`];

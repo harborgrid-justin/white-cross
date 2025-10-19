@@ -6,16 +6,61 @@
  */
 
 const { Command } = require('commander');
-const chalk = require('chalk');
 const Table = require('cli-table3');
-const { default: ora } = require('ora');
 const { Client } = require('pg');
+
+// Simple chalk replacement for color output
+const chalk = {
+  red: (text) => `[31m${text}[0m`,
+  green: (text) => `[32m${text}[0m`,
+  yellow: (text) => `[33m${text}[0m`,
+  blue: (text) => `[34m${text}[0m`,
+  magenta: (text) => `[35m${text}[0m`,
+  cyan: (text) => `[36m${text}[0m`,
+  bold: {
+    blue: (text) => `[1m[34m${text}[0m`,
+    red: (text) => `[1m[31m${text}[0m`,
+    green: (text) => `[1m[32m${text}[0m`,
+  }
+};
+
+// Simple spinner implementation to replace ora
+class SimpleSpinner {
+  constructor(text) {
+    this.text = text;
+    this.isSpinning = false;
+  }
+  
+  start() {
+    console.log(`⏳ ${this.text}`);
+    this.isSpinning = true;
+    return this;
+  }
+  
+  succeed(text) {
+    console.log(`✅ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+  
+  fail(text) {
+    console.log(`❌ ${text || this.text}`);
+    this.isSpinning = false;
+    return this;
+  }
+}
+
+function ora(text) {
+  return new SimpleSpinner(text);
+}
 
 class RelationshipAnalyzer {
   constructor() {
-    this.client = new Client({
-      connectionString: process.env.DATABASE_URL
-    });
+    // Use the database connection from .env file
+    const connectionString = process.env.DATABASE_URL || 
+      'postgresql://neondb_owner:npg_CqE9oPepJl8t@ep-young-queen-ad5sfxae.c-2.us-east-1.aws.neon.tech/code_vectors?sslmode=require&channel_binding=require';
+    
+    this.client = new Client({ connectionString });
     this.program = new Command();
     this.setupCommands();
   }
@@ -361,10 +406,14 @@ class RelationshipAnalyzer {
     
     let query = `
       WITH RECURSIVE dependency_tree AS (
-        SELECT ${otherDirection} as file, ${direction} as depends_on, 
-               relationship_type, confidence, 1 as level
-        FROM relationships 
-        WHERE ${direction} LIKE $1
+        SELECT cf2.file_path as file, cf1.file_path as depends_on, 
+               cr.relationship_type, cr.confidence_score as confidence, 1 as level
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE ${direction === 'source_file' ? 'cf1.file_path' : 'cf2.file_path'} LIKE $1
     `;
 
     const params = [`%${file}%`];
@@ -376,16 +425,20 @@ class RelationshipAnalyzer {
 
     query += `
         UNION ALL
-        SELECT r.${otherDirection}, r.${direction}, r.relationship_type, r.confidence, dt.level + 1
-        FROM relationships r
-        JOIN dependency_tree dt ON r.${direction} = dt.file
+        SELECT cf2.file_path, cf1.file_path, cr.relationship_type, cr.confidence_score, dt.level + 1
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        JOIN dependency_tree dt ON ${direction === 'source_file' ? 'cf1.file_path' : 'cf2.file_path'} = dt.file
         WHERE dt.level < $${params.length + 1}
     `;
 
     params.push(depth);
 
     if (type) {
-      query += ` AND r.relationship_type = $${params.length + 1}`;
+      query += ` AND cr.relationship_type = $${params.length + 1}`;
       params.push(type);
     }
 
@@ -402,33 +455,41 @@ class RelationshipAnalyzer {
   async findCircularDependencies(maxDepth, type) {
     let query = `
       WITH RECURSIVE circular_check AS (
-        SELECT source_file, target_file, relationship_type, 
-               ARRAY[source_file] as path, 1 as depth
-        FROM relationships
+        SELECT cf1.file_path as source_file, cf2.file_path as target_file, cr.relationship_type, 
+               ARRAY[cf1.file_path] as path, 1 as depth
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
         WHERE 1=1
     `;
 
     const params = [];
     
     if (type) {
-      query += ` AND relationship_type = $1`;
+      query += ` AND cr.relationship_type = $1`;
       params.push(type);
     }
 
     query += `
         UNION ALL
-        SELECT r.source_file, r.target_file, r.relationship_type,
-               cc.path || r.source_file, cc.depth + 1
-        FROM relationships r
-        JOIN circular_check cc ON r.source_file = cc.target_file
+        SELECT cf1.file_path, cf2.file_path, cr.relationship_type,
+               cc.path || cf1.file_path, cc.depth + 1
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        JOIN circular_check cc ON cf1.file_path = cc.target_file
         WHERE cc.depth < $${params.length + 1}
-          AND NOT (r.source_file = ANY(cc.path))
+          AND NOT (cf1.file_path = ANY(cc.path))
     `;
 
     params.push(maxDepth);
 
     if (type) {
-      query += ` AND r.relationship_type = $${params.length + 1}`;
+      query += ` AND cr.relationship_type = $${params.length + 1}`;
       params.push(type);
     }
 
@@ -447,13 +508,21 @@ class RelationshipAnalyzer {
   async findClusters(minSize, confidence) {
     const query = `
       WITH file_connections AS (
-        SELECT source_file as file1, target_file as file2, confidence
-        FROM relationships 
-        WHERE confidence >= $1
+        SELECT cf1.file_path as file1, cf2.file_path as file2, cr.confidence_score as confidence
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cr.confidence_score >= $1
         UNION ALL
-        SELECT target_file as file1, source_file as file2, confidence
-        FROM relationships 
-        WHERE confidence >= $1
+        SELECT cf2.file_path as file1, cf1.file_path as file2, cr.confidence_score as confidence
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cr.confidence_score >= $1
       ),
       cluster_candidates AS (
         SELECT file1, array_agg(DISTINCT file2) as connected_files,
@@ -477,20 +546,24 @@ class RelationshipAnalyzer {
     switch (metric) {
       case 'in-degree':
         query = `
-          SELECT target_file as file, COUNT(*) as degree, 
-                 AVG(confidence) as avg_confidence
-          FROM relationships 
-          GROUP BY target_file 
+          SELECT cf2.file_path as file, COUNT(*) as degree, 
+                 AVG(cr.confidence_score) as avg_confidence
+          FROM code_relationships cr
+          JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+          JOIN code_files cf2 ON ch2.file_id = cf2.id
+          GROUP BY cf2.file_path 
           ORDER BY degree DESC 
           LIMIT $1
         `;
         break;
       case 'out-degree':
         query = `
-          SELECT source_file as file, COUNT(*) as degree,
-                 AVG(confidence) as avg_confidence
-          FROM relationships 
-          GROUP BY source_file 
+          SELECT cf1.file_path as file, COUNT(*) as degree,
+                 AVG(cr.confidence_score) as avg_confidence
+          FROM code_relationships cr
+          JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+          JOIN code_files cf1 ON ch1.file_id = cf1.id
+          GROUP BY cf1.file_path 
           ORDER BY degree DESC 
           LIMIT $1
         `;
@@ -498,9 +571,15 @@ class RelationshipAnalyzer {
       default: // total
         query = `
           WITH all_connections AS (
-            SELECT source_file as file, confidence FROM relationships
+            SELECT cf1.file_path as file, cr.confidence_score as confidence
+            FROM code_relationships cr
+            JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+            JOIN code_files cf1 ON ch1.file_id = cf1.id
             UNION ALL
-            SELECT target_file as file, confidence FROM relationships
+            SELECT cf2.file_path as file, cr.confidence_score as confidence
+            FROM code_relationships cr
+            JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+            JOIN code_files cf2 ON ch2.file_id = cf2.id
           )
           SELECT file, COUNT(*) as degree, AVG(confidence) as avg_confidence
           FROM all_connections
@@ -517,19 +596,28 @@ class RelationshipAnalyzer {
   async findPaths(source, target, maxPaths, maxDepth) {
     const query = `
       WITH RECURSIVE path_finder AS (
-        SELECT source_file, target_file, relationship_type, confidence,
-               ARRAY[source_file, target_file] as path, 1 as depth
-        FROM relationships
-        WHERE source_file LIKE $1
+        SELECT cf1.file_path as source_file, cf2.file_path as target_file, 
+               cr.relationship_type, cr.confidence_score as confidence,
+               ARRAY[cf1.file_path, cf2.file_path] as path, 1 as depth
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cf1.file_path LIKE $1
         
         UNION ALL
         
-        SELECT r.source_file, r.target_file, r.relationship_type, r.confidence,
-               pf.path || r.target_file, pf.depth + 1
-        FROM relationships r
-        JOIN path_finder pf ON r.source_file = pf.target_file
+        SELECT cf1.file_path, cf2.file_path, cr.relationship_type, cr.confidence_score,
+               pf.path || cf2.file_path, pf.depth + 1
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        JOIN path_finder pf ON cf1.file_path = pf.target_file
         WHERE pf.depth < $3
-          AND NOT (r.target_file = ANY(pf.path))
+          AND NOT (cf2.file_path = ANY(pf.path))
       )
       SELECT DISTINCT path, depth, 
              array_agg(relationship_type) as relationship_types,
@@ -549,23 +637,27 @@ class RelationshipAnalyzer {
 
   async findOrphans(type) {
     let query = `
-      SELECT DISTINCT file_path
-      FROM embeddings e
+      SELECT DISTINCT cf.file_path
+      FROM code_files cf
       WHERE NOT EXISTS (
-        SELECT 1 FROM relationships r 
-        WHERE r.source_file = e.file_path OR r.target_file = e.file_path
+        SELECT 1 FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cf1.file_path = cf.file_path OR cf2.file_path = cf.file_path
     `;
 
     const params = [];
     
     if (type) {
-      query += ` AND r.relationship_type = $1`;
+      query += ` AND cr.relationship_type = $1`;
       params.push(type);
     }
 
     query += `
       )
-      ORDER BY file_path
+      ORDER BY cf.file_path
     `;
 
     const result = await this.client.query(query, params);
@@ -574,26 +666,53 @@ class RelationshipAnalyzer {
 
   async calculateMetrics(file, detailed) {
     const baseQuery = file ? 
-      `WHERE source_file LIKE '%${file}%' OR target_file LIKE '%${file}%'` : '';
+      `WHERE cf1.file_path LIKE '%${file}%' OR cf2.file_path LIKE '%${file}%'` : '';
 
     const queries = {
-      totalRelationships: `SELECT COUNT(*) as count FROM relationships ${baseQuery}`,
-      avgConfidence: `SELECT AVG(confidence) as avg FROM relationships ${baseQuery}`,
+      totalRelationships: `
+        SELECT COUNT(*) as count 
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        ${baseQuery}
+      `,
+      avgConfidence: `
+        SELECT AVG(cr.confidence_score) as avg 
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        ${baseQuery}
+      `,
       relationshipTypes: `
-        SELECT relationship_type, COUNT(*) as count 
-        FROM relationships ${baseQuery}
-        GROUP BY relationship_type ORDER BY count DESC
+        SELECT cr.relationship_type, COUNT(*) as count 
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        ${baseQuery}
+        GROUP BY cr.relationship_type ORDER BY count DESC
       `
     };
 
     if (file) {
       queries.inDegree = `
-        SELECT COUNT(*) as count FROM relationships 
-        WHERE target_file LIKE '%${file}%'
+        SELECT COUNT(*) as count 
+        FROM code_relationships cr
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cf2.file_path LIKE '%${file}%'
       `;
       queries.outDegree = `
-        SELECT COUNT(*) as count FROM relationships 
-        WHERE source_file LIKE '%${file}%'
+        SELECT COUNT(*) as count 
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        WHERE cf1.file_path LIKE '%${file}%'
       `;
     }
 
@@ -607,21 +726,33 @@ class RelationshipAnalyzer {
 
   async analyzeImpact(file, depth, directOnly) {
     const query = directOnly ? `
-      SELECT DISTINCT target_file as affected_file, relationship_type, confidence
-      FROM relationships
-      WHERE source_file LIKE $1
-      ORDER BY confidence DESC
+      SELECT DISTINCT cf2.file_path as affected_file, cr.relationship_type, cr.confidence_score as confidence
+      FROM code_relationships cr
+      JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+      JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+      JOIN code_files cf1 ON ch1.file_id = cf1.id
+      JOIN code_files cf2 ON ch2.file_id = cf2.id
+      WHERE cf1.file_path LIKE $1
+      ORDER BY cr.confidence_score DESC
     ` : `
       WITH RECURSIVE impact_analysis AS (
-        SELECT target_file as affected_file, relationship_type, confidence, 1 as level
-        FROM relationships
-        WHERE source_file LIKE $1
+        SELECT cf2.file_path as affected_file, cr.relationship_type, cr.confidence_score as confidence, 1 as level
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        WHERE cf1.file_path LIKE $1
         
         UNION ALL
         
-        SELECT r.target_file, r.relationship_type, r.confidence, ia.level + 1
-        FROM relationships r
-        JOIN impact_analysis ia ON r.source_file = ia.affected_file
+        SELECT cf2.file_path, cr.relationship_type, cr.confidence_score, ia.level + 1
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_headers ch2 ON cr.target_header_id = ch2.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        JOIN code_files cf2 ON ch2.file_id = cf2.id
+        JOIN impact_analysis ia ON cf1.file_path = ia.affected_file
         WHERE ia.level < $2
       )
       SELECT DISTINCT affected_file, 
@@ -645,14 +776,16 @@ class RelationshipAnalyzer {
     
     // Find files with low relationship counts
     const lowConnectionQuery = `
-      SELECT file_path, 
+      SELECT cf.file_path, 
              COALESCE(connection_count, 0) as connections
-      FROM embeddings e
+      FROM code_files cf
       LEFT JOIN (
-        SELECT source_file as file, COUNT(*) as connection_count
-        FROM relationships
-        GROUP BY source_file
-      ) r ON e.file_path = r.file
+        SELECT cf1.file_path as file, COUNT(*) as connection_count
+        FROM code_relationships cr
+        JOIN code_headers ch1 ON cr.source_header_id = ch1.id
+        JOIN code_files cf1 ON ch1.file_id = cf1.id
+        GROUP BY cf1.file_path
+      ) r ON cf.file_path = r.file
       WHERE COALESCE(connection_count, 0) < 2
       ORDER BY connections
       LIMIT 10
