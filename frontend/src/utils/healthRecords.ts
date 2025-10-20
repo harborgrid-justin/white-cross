@@ -10,7 +10,8 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import type { SeverityLevel, ConditionStatus, Vaccination } from '@/types/healthRecords'
+import type { ConditionStatus, Vaccination } from '@/types/healthRecords'
+import type { AllergySeverity } from '@/services/modules/healthRecordsApi'
 
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
@@ -30,7 +31,7 @@ export const formatShortDate = (dateString: string): string => {
   })
 }
 
-export const getSeverityColor = (severity: SeverityLevel): string => {
+export const getSeverityColor = (severity: AllergySeverity): string => {
   switch (severity) {
     case 'LIFE_THREATENING':
       return 'text-red-600 bg-red-100'
@@ -91,16 +92,16 @@ export const sortVaccinations = (
   return [...vaccinations].sort((a, b) => {
     switch (sortType) {
       case 'date-desc':
-        return new Date(b.dateAdministered || '1900-01-01').getTime() - 
-               new Date(a.dateAdministered || '1900-01-01').getTime()
+        return new Date(b.administeredDate || '1900-01-01').getTime() - 
+               new Date(a.administeredDate || '1900-01-01').getTime()
       case 'date-asc':
-        return new Date(a.dateAdministered || '1900-01-01').getTime() - 
-               new Date(b.dateAdministered || '1900-01-01').getTime()
+        return new Date(a.administeredDate || '1900-01-01').getTime() - 
+               new Date(b.administeredDate || '1900-01-01').getTime()
       case 'name':
         return a.vaccineName.localeCompare(b.vaccineName)
       case 'status':
-        return (a.compliant ? 'Completed' : 'Overdue').localeCompare(
-               b.compliant ? 'Completed' : 'Overdue')
+        return (a.isCompliant ? 'Completed' : 'Overdue').localeCompare(
+               b.isCompliant ? 'Completed' : 'Overdue')
       default:
         return 0
     }
@@ -119,7 +120,7 @@ export const filterVaccinations = (
     }
     // Status filter
     if (statusFilter) {
-      const status = vax.compliant ? 'Completed' : 'Overdue'
+      const status = vax.isCompliant ? 'Completed' : 'Overdue'
       if (status !== statusFilter) {
         return false
       }

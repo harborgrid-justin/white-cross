@@ -57,11 +57,11 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
   // These are vaccinations that are overdue or scheduled for the future
   const upcomingVaccinations = React.useMemo(() => {
     return vaccinations
-      .filter(vax => !vax.compliant && vax.dueDate) // Not compliant and has a due date
+      .filter(vax => !vax.isCompliant && vax.nextDueDate) // Not compliant and has a due date
       .sort((a, b) => {
         // Sort by due date (earliest first)
-        const dateA = new Date(a.dueDate || '').getTime()
-        const dateB = new Date(b.dueDate || '').getTime()
+        const dateA = new Date(a.nextDueDate || '').getTime()
+        const dateB = new Date(b.nextDueDate || '').getTime()
         return dateA - dateB
       })
       .slice(0, 5) // Show only the top 5 upcoming
@@ -132,29 +132,31 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
             <div className="flex justify-between items-start">
               <div className="flex items-start gap-3">
                 <Shield className={`h-5 w-5 mt-1 ${
-                  vax.compliant ? 'text-green-600' : 'text-orange-600'
+                  vax.isCompliant ? 'text-green-600' : 'text-orange-600'
                 }`} />
                 <div>
                   <h4 className="font-semibold" data-testid="vaccine-name">{vax.vaccineName}</h4>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-1 rounded ${getVaccinationStatusColor(vax.compliant)}`} data-testid="compliance-badge">
-                      {vax.compliant ? 'Compliant' : 'Overdue'}
+                    <span className={`text-xs px-2 py-1 rounded ${getVaccinationStatusColor(vax.isCompliant)}`} data-testid="compliance-badge">
+                      {vax.isCompliant ? 'Compliant' : 'Overdue'}
                     </span>
-                    {vax.dateAdministered && (
+                    {vax.administeredDate && (
                       <span className="text-sm text-gray-600" data-testid="administered-date">
-                        Administered: {vax.dateAdministered}
+                        Administered: {vax.administeredDate}
                       </span>
                     )}
-                    {vax.dueDate && !vax.compliant && (
+                    {vax.nextDueDate && !vax.isCompliant && (
                       <span className="text-sm text-gray-600" data-testid="due-date">
-                        Due: {vax.dueDate}
+                        Due: {vax.nextDueDate}
                       </span>
                     )}
+                    {/* Priority badge disabled - priority property not in Vaccination type
                     {vax.priority && (
                       <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(vax.priority)}`} data-testid="priority-badge">
                         {vax.priority}
                       </span>
                     )}
+                    */}
                   </div>
                 </div>
               </div>
@@ -194,12 +196,14 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
                 <div className="flex justify-between items-start">
                   <div>
                     <h5 className="font-semibold" data-testid="vaccination-name">{upcoming.vaccineName}</h5>
-                    <p className="text-sm text-gray-600" data-testid="due-date">Due: {upcoming.dueDate}</p>
+                    <p className="text-sm text-gray-600" data-testid="due-date">Due: {upcoming.nextDueDate}</p>
+                    {/* Priority badge disabled - priority property not in Vaccination type
                     {upcoming.priority && (
                       <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(upcoming.priority)}`} data-testid="vaccination-priority">
                         {upcoming.priority} Priority
                       </span>
                     )}
+                    */}
                   </div>
                   <button
                     className="btn-primary"
@@ -222,20 +226,20 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-green-700" data-testid="compliance-percentage">
               {vaccinations.length > 0
-                ? Math.round((vaccinations.filter(v => v.compliant).length / vaccinations.length) * 100)
+                ? Math.round((vaccinations.filter(v => v.isCompliant).length / vaccinations.length) * 100)
                 : 0}%
             </div>
             <div className="text-sm text-green-600">Overall Compliance</div>
           </div>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-yellow-700" data-testid="missing-vaccinations">
-              {vaccinations.filter(v => !v.compliant && !v.dateAdministered).length}
+              {vaccinations.filter(v => !v.isCompliant && !v.administeredDate).length}
             </div>
             <div className="text-sm text-yellow-600">Missing Vaccinations</div>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-red-700" data-testid="overdue-vaccinations">
-              {vaccinations.filter(v => !v.compliant && v.dueDate && new Date(v.dueDate) < new Date()).length}
+              {vaccinations.filter(v => !v.isCompliant && v.nextDueDate && new Date(v.nextDueDate) < new Date()).length}
             </div>
             <div className="text-sm text-red-600">Overdue Vaccinations</div>
           </div>

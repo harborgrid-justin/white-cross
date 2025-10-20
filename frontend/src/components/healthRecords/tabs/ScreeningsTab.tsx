@@ -32,7 +32,7 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
   // No mock data - this is CRITICAL for HIPAA compliance
   const displayScreenings = (screenings || []).map(screening => ({
     ...screening,
-    icon: screening.type === 'Vision' ? Eye : Ear
+    icon: screening.screeningType === 'Vision' ? Eye : Ear
   }))
 
   return (
@@ -64,18 +64,18 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
               <div className="flex justify-between items-start">
                 <div className="flex items-start gap-3">
                   <Icon className={`h-5 w-5 mt-1 ${
-                    screening.result === 'Pass' ? 'text-green-600' : 'text-orange-600'
+                    screening.results === 'Pass' ? 'text-green-600' : 'text-orange-600'
                   }`} />
                   <div>
-                    <h4 className="font-semibold">{screening.type}</h4>
+                    <h4 className="font-semibold">{screening.screeningType}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`text-xs px-2 py-1 rounded ${
-                        screening.result === 'Pass' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                        screening.results === 'Pass' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                       }`} data-testid="screening-result">
-                        {screening.result}
+                        {screening.results}
                       </span>
                       <span className="text-sm text-gray-600" data-testid="screening-date">
-                        {screening.date}
+                        {screening.screeningDate}
                       </span>
                     </div>
                   </div>

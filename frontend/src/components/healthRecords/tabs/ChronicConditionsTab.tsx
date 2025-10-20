@@ -72,9 +72,9 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
                       {condition.severity}
                     </span>
                   </div>
-                  {condition.diagnosedDate && (
+                  {condition.diagnosisDate && (
                     <p className="text-sm text-gray-600 mt-1" data-testid="diagnosed-date">
-                      Diagnosed: {condition.diagnosedDate}
+                      Diagnosed: {condition.diagnosisDate}
                     </p>
                   )}
                   {condition.nextReviewDate && (

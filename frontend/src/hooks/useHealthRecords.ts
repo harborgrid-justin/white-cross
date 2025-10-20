@@ -49,7 +49,6 @@ import {
   HealthRecordsApiError,
   CircuitBreakerError,
   PaginatedResponse,
-  HealthAlert,
 } from '../services/modules/healthRecordsApi';
 
 // ============================================================================
