@@ -29,13 +29,14 @@ Cypress.on('uncaught:exception', (err: Error) => {
   return true
 })
 
-// Configure request/response logging for debugging and suppress console noise
+// Configure request/response logging for debugging
 Cypress.on('window:before:load', (win: any) => {
-  // Suppress console noise in test environment
-  if (win.console) {
-    cy.stub(win.console, 'warn').as('consoleWarn')
-    cy.stub(win.console, 'error').as('consoleError')
-  }
+  // Note: Console stubs are commented out to allow error detection in tests
+  // Uncomment if you need to suppress console noise during development
+  // if (win.console) {
+  //   cy.stub(win.console, 'warn').as('consoleWarn')
+  //   cy.stub(win.console, 'error').as('consoleError')
+  // }
 })
 
 // Add custom assertions for healthcare-specific testing
@@ -91,43 +92,51 @@ Cypress.Commands.add('waitForHealthcareData', () => {
 
   // Mock authentication endpoints with proper responses
   cy.intercept('POST', '**/api/auth/login', (req) => {
-    // Simulate successful login for any credentials in fixtures
-    const { email } = req.body
-    let role = 'NURSE'
-    let firstName = 'Test'
-    let lastName = 'User'
+    const { email, password } = req.body
     
-    if (email?.includes('admin')) {
-      role = 'ADMIN'
-      lastName = 'Administrator'
-    } else if (email?.includes('counselor')) {
-      role = 'SCHOOL_ADMIN'
-      lastName = 'Counselor'
-    } else if (email?.includes('doctor')) {
-      role = 'DOCTOR'
-      lastName = 'Doctor'
-    } else if (email?.includes('readonly')) {
-      role = 'NURSE'
-      lastName = 'ReadOnly'
+    // Define valid test credentials from fixtures
+    const validCredentials = {
+      'admin@school.edu': { password: 'AdminPassword123!', role: 'ADMIN', firstName: 'Test', lastName: 'Administrator' },
+      'nurse@school.edu': { password: 'NursePassword123!', role: 'NURSE', firstName: 'Test', lastName: 'Nurse' },
+      'counselor@school.edu': { password: 'CounselorPassword123!', role: 'SCHOOL_ADMIN', firstName: 'Test', lastName: 'Counselor' },
+      'doctor@school.edu': { password: 'DoctorPassword123!', role: 'DOCTOR', firstName: 'Test', lastName: 'Doctor' },
+      'readonly@school.edu': { password: 'ReadOnlyPassword123!', role: 'NURSE', firstName: 'Test', lastName: 'ReadOnly' }
     }
     
-    req.reply({
-      statusCode: 200,
-      body: {
-        success: true,
-        data: {
-          token: 'mock-jwt-token-' + Date.now(),
-          user: {
-            id: 'user-' + Date.now(),
-            email: email,
-            firstName: firstName,
-            lastName: lastName,
-            role: role,
-            displayName: `${firstName} ${lastName}`
+    // Check if credentials are valid
+    const user = validCredentials[email?.toLowerCase()]
+    if (user && password === user.password) {
+      // Valid credentials - return success
+      req.reply({
+        statusCode: 200,
+        body: {
+          success: true,
+          data: {
+            token: 'mock-jwt-token-' + Date.now(),
+            user: {
+              id: 'user-' + Date.now(),
+              email: email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              role: user.role,
+              displayName: `${user.firstName} ${user.lastName}`
+            }
           }
         }
-      }
-    })
+      })
+    } else {
+      // Invalid credentials - return error
+      req.reply({
+        statusCode: 401,
+        body: {
+          success: false,
+          error: {
+            message: 'Invalid credentials',
+            code: 'INVALID_CREDENTIALS'
+          }
+        }
+      })
+    }
   }).as('login')
   
   cy.intercept('GET', '**/api/auth/verify', {
@@ -160,6 +169,52 @@ Cypress.Commands.add('waitForHealthcareData', () => {
       }
     }
   }).as('refreshToken')
+  
+  // Mock other common API endpoints
+  cy.intercept('POST', '**/api/auth/logout', {
+    statusCode: 200,
+    body: { success: true }
+  }).as('logout')
+  
+  cy.intercept('GET', '**/api/dashboard/**', {
+    statusCode: 200,
+    body: { success: true, data: {} }
+  }).as('dashboard')
+  
+  cy.intercept('POST', '**/api/students', {
+    statusCode: 201,
+    body: { success: true, data: { student: { id: 'student-' + Date.now() } } }
+  }).as('createStudent')
+  
+  cy.intercept('PUT', '**/api/students/**', {
+    statusCode: 200,
+    body: { success: true, data: { student: {} } }
+  }).as('updateStudent')
+  
+  cy.intercept('DELETE', '**/api/students/**', {
+    statusCode: 200,
+    body: { success: true }
+  }).as('deleteStudent')
+  
+  cy.intercept('GET', '**/api/health-records/**', {
+    statusCode: 200,
+    body: { success: true, data: { records: [] } }
+  }).as('healthRecords')
+  
+  cy.intercept('POST', '**/api/health-records/**', {
+    statusCode: 201,
+    body: { success: true, data: {} }
+  }).as('createHealthRecord')
+  
+  cy.intercept('GET', '**/api/audit-log*', {
+    statusCode: 200,
+    body: { success: true, data: { logs: [] } }
+  }).as('auditLogs')
+  
+  cy.intercept('POST', '**/api/audit*', {
+    statusCode: 201,
+    body: { success: true }
+  }).as('createAudit')
 })
 
 // Global test configuration
