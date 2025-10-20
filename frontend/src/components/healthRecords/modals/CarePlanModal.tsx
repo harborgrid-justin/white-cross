@@ -34,7 +34,7 @@ export const CarePlanModal: React.FC<CarePlanModalProps> = ({
     medications: '',
     monitoringSchedule: '',
     emergencyProcedures: '',
-    reviewDate: condition?.nextReview || '',
+    reviewDate: condition?.nextReviewDate || '',
     assignedStaff: '',
     notes: condition?.carePlan || ''
   })

@@ -84,7 +84,7 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
               type="date" 
               name="dateAdministered"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={vaccination?.dateAdministered || ''}
+              defaultValue={vaccination?.administeredDate || ''}
               data-testid="vaccination-date-input"
             />
             {errors.dateAdministered && (
@@ -114,7 +114,7 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
               name="dose"
               className="w-full border border-gray-300 rounded px-3 py-2" 
               placeholder="e.g., 1st dose, 0.5ml"
-              defaultValue={vaccination?.dose || ''}
+              defaultValue={vaccination?.doseNumber || ''}
               data-testid="vaccination-dose-input"
             />
             {errors.dose && (

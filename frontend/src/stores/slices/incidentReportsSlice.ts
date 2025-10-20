@@ -55,7 +55,7 @@ const log = debug('whitecross:incident-reports-slice');
 /**
  * Sort configuration for incident reports list
  */
-interface SortConfig {
+export interface SortConfig {
   column: 'occurredAt' | 'severity' | 'type' | 'status' | 'reportedAt';
   order: 'asc' | 'desc';
 }
@@ -63,7 +63,7 @@ interface SortConfig {
 /**
  * View mode for incident reports display
  */
-type ViewMode = 'list' | 'grid' | 'detail';
+export type ViewMode = 'list' | 'grid' | 'detail';
 
 /**
  * Pagination metadata

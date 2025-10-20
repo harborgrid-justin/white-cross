@@ -763,6 +763,8 @@ export function useNavigationState() {
     previousPath: prevState?.previousPath || null,
     /** Previous route state */
     previousState: prevState?.previousState || null,
+    /** Whether there is a previous path to navigate back to */
+    canGoBack: !!prevState?.previousPath,
     /** Navigate with state preservation */
     navigateWithState,
     /** Navigate back with state restoration */

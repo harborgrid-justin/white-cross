@@ -29,7 +29,7 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
   onViewCarePlan,
   user
 }) => {
-  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
+  const canModify = user?.role !== 'READ_ONLY'
 
   // Use the conditions prop passed from parent component (real API data)
   // No mock data - this is CRITICAL for HIPAA compliance
@@ -77,9 +77,9 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
                       Diagnosed: {condition.diagnosedDate}
                     </p>
                   )}
-                  {condition.nextReview && (
+                  {condition.nextReviewDate && (
                     <p className="text-sm text-gray-600 mt-1" data-testid="next-review">
-                      Next review: {condition.nextReview}
+                      Next review: {condition.nextReviewDate}
                     </p>
                   )}
                 </div>

@@ -26,7 +26,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Shield, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { healthRecordsKeys } from '../../hooks/useHealthRecords';
+import { healthRecordKeys } from '../../hooks/useHealthRecords';
 import {
   HealthRecordsApiError,
   CircuitBreakerError,

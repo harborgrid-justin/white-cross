@@ -124,9 +124,9 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
                           LIFE-THREATENING
                         </span>
                         {allergy.verified ? (
-                          <CheckCircle className="h-5 w-5 text-green-600" title="Verified" />
+                          <CheckCircle className="h-5 w-5 text-green-600" aria-label="Verified" />
                         ) : (
-                          <AlertTriangle className="h-5 w-5 text-yellow-600" title="Unverified" />
+                          <AlertTriangle className="h-5 w-5 text-yellow-600" aria-label="Unverified" />
                         )}
                       </div>
 
@@ -144,10 +144,10 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
                         </div>
                       )}
 
-                      {allergy.epiPenLocation && (
+                      {allergy.notes && allergy.notes.toLowerCase().includes('epipen') && (
                         <div className="flex items-center gap-2 text-sm text-gray-700 bg-blue-50 p-2 rounded">
                           <MapPin className="h-4 w-4" />
-                          <span><strong>EpiPen Location:</strong> {allergy.epiPenLocation}</span>
+                          <span><strong>Notes:</strong> {allergy.notes}</span>
                         </div>
                       )}
                     </div>
@@ -223,9 +223,9 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
                         </div>
                       )}
 
-                      {allergy.providerName && user?.role !== 'COUNSELOR' && (
+                      {allergy.diagnosedBy && user?.role !== 'COUNSELOR' && (
                         <div className="mt-1 text-sm text-gray-500" data-testid="provider-name">
-                          Provider: {allergy.providerName}
+                          Provider: {allergy.diagnosedBy}
                         </div>
                       )}
                     </div>
