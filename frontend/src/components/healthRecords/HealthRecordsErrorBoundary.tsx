@@ -357,7 +357,7 @@ export function HealthRecordsErrorBoundaryWrapper({
 
   const handleError = (error: Error, errorInfo: ErrorInfo) => {
     // Cleanup health records data from React Query cache
-    queryClient.removeQueries({ queryKey: healthRecordsKeys.all });
+    queryClient.removeQueries({ queryKey: healthRecordKeys.all });
 
     // Call custom error handler if provided
     if (onError) {
