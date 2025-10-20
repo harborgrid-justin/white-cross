@@ -125,7 +125,7 @@ export const StudentContextProvider: React.FC<{
   });
   
   const dispatch = useDispatch<AppDispatch>();
-  const reduxStudents = useSelector((state: RootState) => state.students);
+  const reduxStudents = useSelector((state: RootState) => state.students as any);
   
   // Sync context with Redux based on migration phase
   useEffect(() => {
@@ -233,7 +233,7 @@ export const MedicationContextProvider: React.FC<{
   });
   
   const dispatch = useDispatch<AppDispatch>();
-  const reduxMedications = useSelector((state: RootState) => state.medications);
+  const reduxMedications = useSelector((state: RootState) => state.medications as any);
   
   // Sync context with Redux
   useEffect(() => {
@@ -312,11 +312,11 @@ export const migrationUtils = {
   /**
    * Create a migration-aware hook that works with both context and Redux
    */
-  createMigrationHook: <T>(
+  createMigrationHook: function<T>(
     contextHook: () => T,
     reduxSelector: (state: RootState) => T,
     migrationPhase: MigrationPhase
-  ) => {
+  ) {
     return () => {
       const contextValue = contextHook();
       const reduxValue = useSelector(reduxSelector);
@@ -365,7 +365,7 @@ export const migrationUtils = {
   /**
    * Create a wrapper component that provides migration context
    */
-  createMigrationWrapper: <T>(
+  createMigrationWrapper: (
     ContextProvider: React.ComponentType<{ children: React.ReactNode; migrationPhase?: MigrationPhase }>,
     defaultPhase: MigrationPhase = MigrationPhase.CONTEXT_ONLY
   ) => {

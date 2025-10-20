@@ -5,7 +5,7 @@
  */
 
 import { createSelector } from '@reduxjs/toolkit';
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { useAppSelector } from '../hooks';
 import type { RootState } from '../reduxStore';
 
@@ -96,7 +96,7 @@ export function useThrottledSelector<T>(
   delay: number
 ): T {
   const value = useAppSelector(selector);
-  const [throttledValue, setThrottledValue] = React.useState(value);
+  const [throttledValue, setThrottledValue] = useState(value);
   const lastRan = useRef(Date.now());
 
   useEffect(() => {

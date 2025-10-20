@@ -30,7 +30,7 @@ import {
   type SliceSyncConfig,
   type StateSerializer,
   type ConflictResolver,
-} from './stateSyncMiddleware';
+} from '../middleware/stateSyncMiddleware';
 import type { RootState } from '@/stores/reduxStore';
 
 /* ============================================================================

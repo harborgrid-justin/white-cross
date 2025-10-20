@@ -30,7 +30,7 @@ import {
   ConflictStrategy,
   type StateSyncConfig,
   type StateSerializer,
-} from './stateSyncMiddleware';
+} from '../middleware/stateSyncMiddleware';
 
 /* ============================================================================
  * TEST SETUP

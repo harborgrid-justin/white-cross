@@ -18,7 +18,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { FollowUpActionProvider, useFollowUpActions } from './FollowUpActionContext';
+import { FollowUpActionProvider, useFollowUpActions } from '../contexts/FollowUpActionContext';
 import { ActionStatus, ActionPriority } from '../types/incidents';
 
 // =====================

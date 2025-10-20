@@ -24,7 +24,7 @@ import React from 'react';
 import {
   WitnessStatementProvider,
   useWitnessStatements
-} from './WitnessStatementContext';
+} from '../contexts/WitnessStatementContext';
 import { incidentReportsApi } from '../services/modules/incidentReportsApi';
 import { WitnessType } from '../types/incidents';
 import type { WitnessStatement } from '../types/incidents';

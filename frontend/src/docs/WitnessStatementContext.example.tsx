@@ -31,7 +31,7 @@ import { useForm } from 'react-hook-form';
 import {
   WitnessStatementProvider,
   useWitnessStatements
-} from './WitnessStatementContext';
+} from '../contexts/WitnessStatementContext';
 import type { WitnessStatementFormData } from '../types/incidents';
 import { WitnessType } from '../types/incidents';
 

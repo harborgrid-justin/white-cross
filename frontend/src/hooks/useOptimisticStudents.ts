@@ -35,12 +35,13 @@ import {
   confirmCreate,
   confirmUpdate,
   rollbackUpdate,
-  generateTempId,
 } from '@/utils/optimisticHelpers';
 import {
   RollbackStrategy,
   ConflictResolutionStrategy,
 } from '@/utils/optimisticUpdates';
+import { useAppDispatch, useAppSelector } from '@/stores/hooks';
+import { studentsActions, studentsSelectors } from '@/stores/slices/studentsSlice';
 
 // =====================
 // QUERY KEYS
@@ -63,7 +64,7 @@ export const studentKeys = {
 // =====================
 
 /**
- * Hook for creating students with optimistic updates
+ * Hook for creating students with optimistic updates and Redux integration
  *
  * @example
  * ```typescript
@@ -86,6 +87,7 @@ export function useOptimisticStudentCreate(
   options?: UseMutationOptions<Student, Error, CreateStudentData>
 ) {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
     mutationFn: (data: CreateStudentData) => studentsApi.create(data),
@@ -110,6 +112,11 @@ export function useOptimisticStudentCreate(
         }
       );
 
+      // Optimistically add to Redux store
+      if (tempEntity) {
+        dispatch(studentsActions.addOne(tempEntity));
+      }
+
       return { updateId, tempId, tempEntity };
     },
 
@@ -123,6 +130,12 @@ export function useOptimisticStudentCreate(
           context.tempId,
           response
         );
+
+        // Update Redux store with real data
+        if (context.tempEntity) {
+          dispatch(studentsActions.removeOne(context.tempEntity.id));
+        }
+        dispatch(studentsActions.addOne(response));
       }
 
       // Invalidate and refetch related queries
@@ -134,7 +147,7 @@ export function useOptimisticStudentCreate(
         queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
       }
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, undefined);
     },
 
     onError: (error, variables, context) => {
@@ -144,9 +157,14 @@ export function useOptimisticStudentCreate(
           message: error.message,
           statusCode: (error as any).statusCode,
         });
+
+        // Remove from Redux store
+        if (context.tempEntity) {
+          dispatch(studentsActions.removeOne(context.tempEntity.id));
+        }
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, undefined);
     },
   });
 }
@@ -156,7 +174,7 @@ export function useOptimisticStudentCreate(
 // =====================
 
 /**
- * Hook for updating students with optimistic updates
+ * Hook for updating students with optimistic updates and Redux integration
  *
  * @example
  * ```typescript
@@ -178,11 +196,13 @@ export function useOptimisticStudentUpdate(
   >
 ) {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: ({ id, data }) => studentsApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateStudentData }) => 
+      studentsApi.update(id, data),
 
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data }: { id: string; data: UpdateStudentData }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: studentKeys.detail(id) });
 
@@ -202,6 +222,9 @@ export function useOptimisticStudentUpdate(
         }
       );
 
+      // Optimistically update Redux store
+      dispatch(studentsActions.updateOne({ id, changes: data }));
+
       return { updateId, previousStudent };
     },
 
@@ -210,6 +233,9 @@ export function useOptimisticStudentUpdate(
         // Confirm with server data
         confirmUpdate(context.updateId, response, queryClient);
       }
+
+      // Update Redux store with server response
+      dispatch(studentsActions.updateOne({ id: variables.id, changes: response }));
 
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
@@ -230,7 +256,7 @@ export function useOptimisticStudentUpdate(
         queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
       }
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, undefined);
     },
 
     onError: (error, variables, context) => {
@@ -240,9 +266,17 @@ export function useOptimisticStudentUpdate(
           message: error.message,
           statusCode: (error as any).statusCode,
         });
+
+        // Rollback Redux store
+        if (context.previousStudent) {
+          dispatch(studentsActions.updateOne({ 
+            id: variables.id, 
+            changes: context.previousStudent 
+          }));
+        }
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, undefined);
     },
   });
 }
@@ -268,6 +302,7 @@ export function useOptimisticStudentDeactivate(
   >
 ) {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
     mutationFn: (id: string) => studentsApi.deactivate(id),
@@ -290,6 +325,9 @@ export function useOptimisticStudentDeactivate(
         }
       );
 
+      // Optimistically update Redux store
+      dispatch(studentsActions.updateOne({ id, changes: { isActive: false } }));
+
       return { updateId, previousStudent };
     },
 
@@ -306,12 +344,13 @@ export function useOptimisticStudentDeactivate(
       const student = queryClient.getQueryData<Student>(studentKeys.detail(id));
       if (student) {
         queryClient.setQueryData(studentKeys.detail(id), { ...student, isActive: false });
+        dispatch(studentsActions.updateOne({ id, changes: { isActive: false } }));
       }
 
       // Invalidate assigned students
       queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
 
-      options?.onSuccess?.(response, id, context);
+      options?.onSuccess?.(response, id, context, undefined);
     },
 
     onError: (error, id, context) => {
@@ -321,9 +360,14 @@ export function useOptimisticStudentDeactivate(
           message: error.message,
           statusCode: (error as any).statusCode,
         });
+
+        // Rollback Redux store
+        if (context.previousStudent) {
+          dispatch(studentsActions.updateOne({ id, changes: context.previousStudent }));
+        }
       }
 
-      options?.onError?.(error, id, context);
+      options?.onError?.(error, id, context, undefined);
     },
   });
 }
@@ -345,6 +389,7 @@ export function useOptimisticStudentReactivate(
   options?: UseMutationOptions<Student, Error, string>
 ) {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
     mutationFn: (id: string) => studentsApi.reactivate(id),
@@ -364,6 +409,9 @@ export function useOptimisticStudentReactivate(
         }
       );
 
+      // Optimistically update Redux store
+      dispatch(studentsActions.updateOne({ id, changes: { isActive: true } }));
+
       return { updateId };
     },
 
@@ -373,12 +421,15 @@ export function useOptimisticStudentReactivate(
         confirmUpdate(context.updateId, response, queryClient);
       }
 
+      // Update Redux store
+      dispatch(studentsActions.updateOne({ id, changes: response }));
+
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
       queryClient.setQueryData(studentKeys.detail(id), response);
       queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
 
-      options?.onSuccess?.(response, id, context);
+      options?.onSuccess?.(response, id, context, undefined);
     },
 
     onError: (error, id, context) => {
@@ -388,9 +439,12 @@ export function useOptimisticStudentReactivate(
           message: error.message,
           statusCode: (error as any).statusCode,
         });
+
+        // Rollback Redux store
+        dispatch(studentsActions.updateOne({ id, changes: { isActive: false } }));
       }
 
-      options?.onError?.(error, id, context);
+      options?.onError?.(error, id, context, undefined);
     },
   });
 }
@@ -419,11 +473,13 @@ export function useOptimisticStudentTransfer(
   >
 ) {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: ({ id, data }) => studentsApi.transfer(id, data),
+    mutationFn: ({ id, data }: { id: string; data: TransferStudentRequest }) => 
+      studentsApi.transfer(id, data),
 
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data }: { id: string; data: TransferStudentRequest }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: studentKeys.detail(id) });
 
@@ -441,6 +497,9 @@ export function useOptimisticStudentTransfer(
         }
       );
 
+      // Optimistically update Redux store
+      dispatch(studentsActions.updateOne({ id, changes: { nurseId: data.nurseId } }));
+
       return { updateId, previousStudent };
     },
 
@@ -450,6 +509,9 @@ export function useOptimisticStudentTransfer(
         confirmUpdate(context.updateId, response, queryClient);
       }
 
+      // Update Redux store
+      dispatch(studentsActions.updateOne({ id: variables.id, changes: response }));
+
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
       queryClient.setQueryData(studentKeys.detail(variables.id), response);
@@ -457,7 +519,7 @@ export function useOptimisticStudentTransfer(
       // Invalidate assigned students for both old and new nurses
       queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, undefined);
     },
 
     onError: (error, variables, context) => {
@@ -467,9 +529,17 @@ export function useOptimisticStudentTransfer(
           message: error.message,
           statusCode: (error as any).statusCode,
         });
+
+        // Rollback Redux store
+        if (context.previousStudent) {
+          dispatch(studentsActions.updateOne({ 
+            id: variables.id, 
+            changes: context.previousStudent 
+          }));
+        }
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, undefined);
     },
   });
 }
@@ -496,9 +566,10 @@ export function useOptimisticStudentPermanentDelete(
   >
 ) {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (id: string) => studentsApi.permanentDelete(id),
+    mutationFn: (id: string) => studentsApi.delete(id),
 
     onMutate: async (id) => {
       // Cancel outgoing refetches
@@ -516,6 +587,9 @@ export function useOptimisticStudentPermanentDelete(
           rollbackStrategy: RollbackStrategy.RESTORE_PREVIOUS,
         }
       );
+
+      // Optimistically remove from Redux store
+      dispatch(studentsActions.removeOne(id));
 
       return { updateId, previousStudent };
     },
@@ -538,7 +612,7 @@ export function useOptimisticStudentPermanentDelete(
         });
       }
 
-      options?.onSuccess?.(response, id, context);
+      options?.onSuccess?.(response, id, context, undefined);
     },
 
     onError: (error, id, context) => {
@@ -548,9 +622,14 @@ export function useOptimisticStudentPermanentDelete(
           message: error.message,
           statusCode: (error as any).statusCode,
         });
+
+        // Restore to Redux store
+        if (context.previousStudent) {
+          dispatch(studentsActions.addOne(context.previousStudent));
+        }
       }
 
-      options?.onError?.(error, id, context);
+      options?.onError?.(error, id, context, undefined);
     },
   });
 }

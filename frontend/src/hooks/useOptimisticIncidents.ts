@@ -40,7 +40,6 @@ import {
   confirmCreate,
   confirmUpdate,
   rollbackUpdate,
-  generateTempId,
 } from '@/utils/optimisticHelpers';
 import {
   RollbackStrategy,

@@ -21,7 +21,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { FollowUpActionProvider, useFollowUpActions } from './FollowUpActionContext';
+import { FollowUpActionProvider, useFollowUpActions } from '../contexts/FollowUpActionContext';
 import { ActionStatus, ActionPriority, type FollowUpAction } from '../types/incidents';
 import * as services from '../services';
 
