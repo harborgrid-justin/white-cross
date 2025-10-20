@@ -1,5 +1,5 @@
 import { defineConfig } from 'cypress'
-import viteConfig from './vite.config'
+import viteConfig from '../frontend/vite.config'
 
 export default defineConfig({
   e2e: {
@@ -149,8 +149,8 @@ export default defineConfig({
   watchForFileChanges: true,
   
   // Reporter configuration for enterprise environments
-  reporter: 'cypress-multi-reporters',
-  reporterOptions: {
-    configFile: 'cypress/config/reporter.json'
-  }
+  // reporter: 'cypress-multi-reporters',
+  // reporterOptions: {
+  //   configFile: 'cypress/config/reporter.json'
+  // }
 })

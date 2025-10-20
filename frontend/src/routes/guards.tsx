@@ -60,7 +60,7 @@ export interface FeatureFlag {
  * Route parameter validation schema
  */
 export interface ParamValidationSchema {
-  [key: string]: 'uuid' | 'number' | 'enum' | RegExp | ((value: string) => boolean);
+  [key: string]: 'uuid' | 'number' | string[] | RegExp | ((value: string) => boolean);
 }
 
 /**
