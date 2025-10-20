@@ -138,7 +138,7 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
               ) : (
                 displayMeasurements.map((measurement) => (
                 <tr key={measurement.id} className="border-t" data-testid="measurement-row">
-                  <td className="px-4 py-2" data-testid="measurement-date">{measurement.date}</td>
+                  <td className="px-4 py-2" data-testid="measurement-date">{measurement.measurementDate}</td>
                   <td className="px-4 py-2" data-testid="height-value">{measurement.height}</td>
                   <td className="px-4 py-2" data-testid="weight-value">{measurement.weight}</td>
                   <td className="px-4 py-2" data-testid="bmi-value">{measurement.bmi}</td>

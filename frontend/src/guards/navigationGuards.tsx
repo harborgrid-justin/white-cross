@@ -25,7 +25,7 @@ import { useNavigate, useLocation, Location, NavigateFunction } from 'react-rout
 import { useAuthContext } from '../contexts/AuthContext';
 import { User, UserRole, Permission, PermissionAction, PermissionResource } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
-import AccessDenied from '../pages/AccessDenied';
+import { AccessDenied } from '../components/AccessDenied';
 
 // ============================================================================
 // TYPE DEFINITIONS

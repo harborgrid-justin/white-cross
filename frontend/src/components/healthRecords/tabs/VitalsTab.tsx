@@ -58,10 +58,10 @@ const NORMAL_RANGES = {
 }
 
 export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
-  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
+  const canModify = user?.role !== 'READ_ONLY'
 
   // API hooks
-  const { data: vitalsData, isLoading, refetch } = useRecentVitals(studentId, 20)
+  const { data: vitalsData, isLoading, refetch } = useRecentVitals(studentId, { limit: 20 })
   const recordVitalsMutation = useRecordVitals()
 
   // State
@@ -333,12 +333,14 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
               </div>
             )}
 
-            {latestVitals.bloodPressure && (
+            {(latestVitals.bloodPressureSystolic || latestVitals.bloodPressureDiastolic) && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Activity className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold">{latestVitals.bloodPressure}</div>
+                <div className="text-2xl font-bold">
+                  {latestVitals.bloodPressureSystolic}/{latestVitals.bloodPressureDiastolic}
+                </div>
                 <div className="text-sm text-gray-600">Blood Pressure</div>
                 <div className="text-xs text-gray-500 mt-1">
                   Normal: {NORMAL_RANGES.bloodPressureSystolic.min}/{NORMAL_RANGES.bloodPressureDiastolic.min} -
@@ -365,7 +367,7 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            Recorded: {new Date(latestVitals.timestamp).toLocaleString()}
+            Recorded: {new Date(latestVitals.recordDate).toLocaleString()}
           </div>
         </div>
       )}
@@ -403,7 +405,7 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
                 {vitalsData.map((vital, index) => (
                   <tr key={index} className="border-t hover:bg-gray-50" data-testid="vital-row">
                     <td className="px-4 py-2 text-sm">
-                      {new Date(vital.timestamp).toLocaleString()}
+                      {new Date(vital.recordDate).toLocaleString()}
                     </td>
                     <td className={`px-4 py-2 text-sm ${vital.temperature ? getStatusColor(vital.temperature, 'temperature') : ''}`}>
                       {vital.temperature || '-'}
@@ -411,7 +413,11 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
                         <AlertTriangle className="inline h-3 w-3 ml-1" />
                       )}
                     </td>
-                    <td className="px-4 py-2 text-sm">{vital.bloodPressure || '-'}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {vital.bloodPressureSystolic && vital.bloodPressureDiastolic 
+                        ? `${vital.bloodPressureSystolic}/${vital.bloodPressureDiastolic}` 
+                        : '-'}
+                    </td>
                     <td className={`px-4 py-2 text-sm ${vital.heartRate ? getStatusColor(vital.heartRate, 'heartRate') : ''}`}>
                       {vital.heartRate || '-'}
                       {vital.heartRate && !isNormal(vital.heartRate, 'heartRate') && (

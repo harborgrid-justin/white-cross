@@ -64,7 +64,7 @@ export default function IntegrationsTab() {
     if (!confirm('Are you sure you want to delete this integration?')) return
 
     try {
-      await integrationApi.delete()
+      await integrationApi.delete(id)
       toast.success('Integration deleted successfully')
       loadIntegrations()
       loadStatistics()
@@ -76,7 +76,7 @@ export default function IntegrationsTab() {
   const handleTestConnection = async (id: string) => {
     try {
       setTestingId(id)
-      const response = await integrationApi.testConnection()
+      const response = await integrationApi.testConnection(id)
       const result = response.data?.result
       if (result?.success) {
         toast.success(result.message || 'Connection test successful')
@@ -94,7 +94,7 @@ export default function IntegrationsTab() {
   const handleSync = async (id: string) => {
     try {
       setSyncingId(id)
-      const response = await integrationApi.sync()
+      const response = await integrationApi.sync(id)
       const result = response.data?.result
       if (result?.success) {
         toast.success(`Synced ${result.recordsSucceeded || 0} of ${result.recordsProcessed || 0} records`)
