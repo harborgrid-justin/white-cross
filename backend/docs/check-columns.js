@@ -1,34 +1,20 @@
 require('dotenv').config();
-const { Sequelize } = require('sequelize');
+const { Client } = require('pg');
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  },
-  logging: false
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes('sslmode') ? { rejectUnauthorized: false } : false
 });
 
-async function checkColumns() {
-  try {
-    const [results] = await sequelize.query(`
-      SELECT column_name, data_type, is_nullable
-      FROM information_schema.columns
-      WHERE table_name = 'users'
-      ORDER BY column_name
-    `);
-
-    console.log('Users table columns:');
-    console.log(JSON.stringify(results, null, 2));
-
-    await sequelize.close();
-  } catch (error) {
-    console.error('Error:', error.message);
+client.connect()
+  .then(() => client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='users' ORDER BY ordinal_position`))
+  .then(r => {
+    console.log('Columns in users table:');
+    r.rows.forEach(row => console.log(`  - ${row.column_name}`));
+    client.end();
+  })
+  .catch(e => {
+    console.error('Error:', e.message);
+    client.end();
     process.exit(1);
-  }
-}
-
-checkColumns();
+  });

@@ -1,4 +1,4 @@
-const { sequelize } = require('./src/database/config/sequelize.ts');
+const { sequelize } = require('../src/database/config/sequelize.ts');
 
 (async () => {
   try {

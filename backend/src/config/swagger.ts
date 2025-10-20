@@ -155,7 +155,6 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
     schemes: ['http', 'https'],
     host: process.env.SWAGGER_HOST || `localhost:${ENVIRONMENT.PORT}`,
     expanded: 'list',
-    lang: 'en',
     // Custom branding
     customCss: `
       .swagger-ui .topbar {

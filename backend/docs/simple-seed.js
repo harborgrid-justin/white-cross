@@ -28,8 +28,8 @@ async function runSimpleSeed() {
     console.log('Connected to database');
     console.log('');
 
-    const districts = require('./src/database/seeders/01-districts-and-schools.ts');
-    const users = require('./src/database/seeders/03-users-and-assignments.ts');
+    const districts = require('../src/database/seeders/01-districts-and-schools.ts');
+    const users = require('../src/database/seeders/03-users-and-assignments.ts');
 
     // Districts and Schools
     console.log('[1/2] Districts and Schools');
