@@ -54,19 +54,112 @@ Cypress.Commands.add('preserveSession', () => {
   })
 })
 
-// Healthcare-specific test utilities - removed mocking to allow real API calls
+// Healthcare-specific test utilities - Mock ALL API calls for testing without backend
 Cypress.Commands.add('waitForHealthcareData', () => {
-  // Set up intercepts for monitoring (not mocking) common healthcare data endpoints
-  cy.intercept('GET', '**/api/students*').as('loadStudents')
-  cy.intercept('GET', '**/api/appointments*').as('loadAppointments')
-  cy.intercept('GET', '**/api/medications*').as('loadMedications')
-  cy.intercept('GET', '**/api/users*').as('loadUsers')
+  // Mock health check endpoint
+  cy.intercept('GET', '**/health', {
+    statusCode: 200,
+    body: { status: 'OK', timestamp: new Date().toISOString() }
+  }).as('health')
 
-  // Allow real API calls for authentication to test against actual backend
-  cy.intercept('POST', '**/api/auth/login').as('login')
-  cy.intercept('GET', '**/api/auth/verify').as('verifyToken')
-  cy.intercept('GET', '**/api/auth/me').as('getMe')
-  cy.intercept('POST', '**/api/auth/refresh').as('refreshToken')
+  // Mock dev users endpoint
+  cy.intercept('GET', '**/api/auth/dev-users', {
+    statusCode: 200,
+    body: []
+  }).as('devUsers')
+
+  // Set up intercepts for monitoring (not mocking) common healthcare data endpoints
+  cy.intercept('GET', '**/api/students*', {
+    statusCode: 200,
+    body: { success: true, data: { students: [], pagination: { page: 1, total: 0 } } }
+  }).as('loadStudents')
+  
+  cy.intercept('GET', '**/api/appointments*', {
+    statusCode: 200,
+    body: { success: true, data: { appointments: [], pagination: { page: 1, total: 0 } } }
+  }).as('loadAppointments')
+  
+  cy.intercept('GET', '**/api/medications*', {
+    statusCode: 200,
+    body: { success: true, data: { medications: [], pagination: { page: 1, total: 0 } } }
+  }).as('loadMedications')
+  
+  cy.intercept('GET', '**/api/users*', {
+    statusCode: 200,
+    body: { success: true, data: { users: [], pagination: { page: 1, total: 0 } } }
+  }).as('loadUsers')
+
+  // Mock authentication endpoints with proper responses
+  cy.intercept('POST', '**/api/auth/login', (req) => {
+    // Simulate successful login for any credentials in fixtures
+    const { email } = req.body
+    let role = 'NURSE'
+    let firstName = 'Test'
+    let lastName = 'User'
+    
+    if (email?.includes('admin')) {
+      role = 'ADMIN'
+      lastName = 'Administrator'
+    } else if (email?.includes('counselor')) {
+      role = 'SCHOOL_ADMIN'
+      lastName = 'Counselor'
+    } else if (email?.includes('doctor')) {
+      role = 'DOCTOR'
+      lastName = 'Doctor'
+    } else if (email?.includes('readonly')) {
+      role = 'NURSE'
+      lastName = 'ReadOnly'
+    }
+    
+    req.reply({
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          token: 'mock-jwt-token-' + Date.now(),
+          user: {
+            id: 'user-' + Date.now(),
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            role: role,
+            displayName: `${firstName} ${lastName}`
+          }
+        }
+      }
+    })
+  }).as('login')
+  
+  cy.intercept('GET', '**/api/auth/verify', {
+    statusCode: 200,
+    body: { success: true, data: { valid: true } }
+  }).as('verifyToken')
+  
+  cy.intercept('GET', '**/api/auth/me', {
+    statusCode: 200,
+    body: {
+      success: true,
+      data: {
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          role: 'NURSE'
+        }
+      }
+    }
+  }).as('getMe')
+  
+  cy.intercept('POST', '**/api/auth/refresh', {
+    statusCode: 200,
+    body: {
+      success: true,
+      data: {
+        token: 'refreshed-mock-jwt-token-' + Date.now()
+      }
+    }
+  }).as('refreshToken')
 })
 
 // Global test configuration

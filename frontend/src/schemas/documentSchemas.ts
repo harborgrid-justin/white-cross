@@ -331,7 +331,7 @@ export const signDocumentSchema = z.object({
     .max(100, 'Signer role must not exceed 100 characters')
     .transform((val) => val.trim()),
   signatureData: z.string().max(10000, 'Signature data must not exceed 10000 characters').optional(),
-  ipAddress: z.string().ip().optional(),
+  ipAddress: z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/, 'Must be a valid IP address').optional(),
 });
 
 /**
