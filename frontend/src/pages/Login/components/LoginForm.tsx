@@ -35,9 +35,9 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
   authError
 }) => {
   return (
-    <form className="space-y-6" onSubmit={onSubmit} data-cy="login-form" role="form">
+    <form className="space-y-6" onSubmit={onSubmit} data-cy="login-form" data-testid="login-form" role="form">
       {authError && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message" role="alert">
+        <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message" data-testid="error-message" role="alert">
           <p className="text-sm text-red-600">{authError}</p>
         </div>
       )}
@@ -62,10 +62,11 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
             className="input-field"
             placeholder="Enter your email"
             data-cy="email-input"
+            data-testid="email-input"
             aria-label="Email address"
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-600" data-cy="email-error" role="alert">{errors.email.message}</p>
+            <p className="mt-1 text-sm text-red-600" data-cy="email-error" data-testid="email-error" role="alert">{errors.email.message}</p>
           )}
         </div>
       </div>
@@ -90,6 +91,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
             className="input-field pr-10"
             placeholder="Enter your password"
             data-cy="password-input"
+            data-testid="password-input"
             aria-label="Password"
           />
           <button
@@ -97,12 +99,13 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
             onClick={onTogglePassword}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
             data-cy="password-toggle"
+            data-testid="password-toggle"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
           {errors.password && (
-            <p className="mt-1 text-sm text-red-600" data-cy="password-error" role="alert">{errors.password.message}</p>
+            <p className="mt-1 text-sm text-red-600" data-cy="password-error" data-testid="password-error" role="alert">{errors.password.message}</p>
           )}
         </div>
       </div>
@@ -115,6 +118,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
             type="checkbox"
             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
             data-cy="remember-me-checkbox"
+            data-testid="remember-me-checkbox"
           />
           <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
             Remember me
@@ -126,6 +130,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
             href="/forgot-password"
             className="font-medium text-primary-600 hover:text-primary-500"
             data-cy="forgot-password-link"
+            data-testid="forgot-password-link"
           >
             Forgot your password?
           </a>
@@ -138,6 +143,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
           disabled={loading}
           className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           data-cy="login-button"
+          data-testid="login-button"
           aria-busy={loading}
         >
           {loading ? (
@@ -148,6 +154,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
                 fill="none"
                 viewBox="0 0 24 24"
                 data-cy="loading-spinner"
+                data-testid="loading-spinner"
               >
                 <circle
                   className="opacity-25"

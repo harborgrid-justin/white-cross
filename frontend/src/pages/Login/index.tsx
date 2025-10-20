@@ -133,6 +133,7 @@ export default function Login() {
       <a
         href="#main"
         data-cy="skip-to-main"
+        data-testid="skip-to-main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50"
       >
         Skip to main content
@@ -144,6 +145,7 @@ export default function Login() {
               src="/white-cross-logo.svg"
               alt="White Cross Logo"
               data-cy="logo"
+              data-testid="logo"
               className="h-16 w-16"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
@@ -171,6 +173,7 @@ export default function Login() {
                 onChange={(e) => handleUserSelect(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 data-cy="user-select"
+                data-testid="user-select"
               >
                 <option value="">Select a user to auto-fill credentials</option>
                 {devUsers.map((user) => (
@@ -195,7 +198,7 @@ export default function Login() {
           />
         </div>
 
-        <div className="text-center text-sm text-gray-600" data-cy="hipaa-notice">
+        <div className="text-center text-sm text-gray-600" data-cy="hipaa-notice" data-testid="hipaa-notice">
           <p>Enterprise healthcare platform for school nurses</p>
           <p className="mt-1">Secure • HIPAA Compliant • Comprehensive</p>
           <p className="mt-2 text-xs text-gray-500">
