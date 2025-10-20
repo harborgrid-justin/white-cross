@@ -881,6 +881,26 @@ export class HealthRecordsApi {
   }
 
   /**
+   * Get student health records (alias for getRecords for compatibility)
+   */
+  async getStudentHealthRecords(studentId: string, filters?: HealthRecordFilters): Promise<PaginatedResponse<HealthRecord>> {
+    return this.getRecords(studentId, filters);
+  }
+
+  /**
+   * Log access to health records
+   */
+  async logAccess(params: {
+    action: string;
+    studentId: string;
+    resourceType: string;
+    resourceId: string;
+    details?: any;
+  }): Promise<void> {
+    await this.logPHIAccess(params.action, params.studentId, params.resourceType, params.resourceId);
+  }
+
+  /**
    * Get a single health record by ID
    */
   async getRecordById(id: string): Promise<HealthRecord> {

@@ -65,7 +65,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
               type="date" 
               name="date"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={measurement?.date || ''}
+              defaultValue={measurement?.measurementDate || ''}
               data-testid="measurement-date-input"
             />
             {errors.date && (
@@ -81,7 +81,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
               step="0.1"
               className="w-full border border-gray-300 rounded px-3 py-2" 
               placeholder="Height in inches"
-              defaultValue={measurement?.height?.replace(' in', '') || ''}
+              defaultValue={measurement?.height || ''}
               data-testid="height-input"
             />
             {errors.height && (
@@ -97,7 +97,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
               step="0.1"
               className="w-full border border-gray-300 rounded px-3 py-2" 
               placeholder="Weight in pounds"
-              defaultValue={measurement?.weight?.replace(' lbs', '') || ''}
+              defaultValue={measurement?.weight || ''}
               data-testid="weight-input"
             />
             {errors.weight && (

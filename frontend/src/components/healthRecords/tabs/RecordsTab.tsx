@@ -14,7 +14,7 @@ import React from 'react'
 import { FileText, Stethoscope, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
 import { useAuthContext } from '../../../contexts/AuthContext'
-import type { HealthRecord } from '@/types/healthRecords'
+import type { HealthRecord } from '@/services/modules/healthRecordsApi'
 
 interface RecordsTabProps {
   searchQuery: string
@@ -49,7 +49,6 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
 
     const lowerQuery = searchQuery.toLowerCase()
     return healthRecords.filter(record =>
-      record.title?.toLowerCase().includes(lowerQuery) ||
       record.type?.toLowerCase().includes(lowerQuery) ||
       record.provider?.toLowerCase().includes(lowerQuery) ||
       record.description?.toLowerCase().includes(lowerQuery)
@@ -80,16 +79,16 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
             <div key={record.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50" data-testid="health-record-item">
               <div className="flex justify-between items-start">
                 <div className="flex items-start gap-3">
-                  {record.isRestricted ? (
+                  {record.isConfidential ? (
                     <Shield className="h-5 w-5 text-red-600 mt-1" data-testid="record-type-icon" />
                   ) : (
                     <Stethoscope className="h-5 w-5 text-blue-600 mt-1" data-testid="record-type-icon" />
                   )}
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold" data-testid="record-title">{record.title}</h4>
+                      <h4 className="font-semibold" data-testid="record-title">{record.type}</h4>
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded" data-testid="record-type">
-                        {record.type}
+                        {new Date(record.date).toLocaleDateString()}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600" data-testid="record-provider">

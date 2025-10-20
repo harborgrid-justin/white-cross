@@ -26,7 +26,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Shield, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { healthRecordsKeys } from '../../hooks/useHealthRecords';
+import { healthRecordKeys } from '../../hooks/useHealthRecords';
 import {
   HealthRecordsApiError,
   CircuitBreakerError,
@@ -357,7 +357,7 @@ export function HealthRecordsErrorBoundaryWrapper({
 
   const handleError = (error: Error, errorInfo: ErrorInfo) => {
     // Cleanup health records data from React Query cache
-    queryClient.removeQueries({ queryKey: healthRecordsKeys.all });
+    queryClient.removeQueries({ queryKey: healthRecordKeys.all });
 
     // Call custom error handler if provided
     if (onError) {

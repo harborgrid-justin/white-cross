@@ -271,7 +271,7 @@ export function showCustomToast(
       | 'bottom-right';
   }
 ): void {
-  toast.custom(component, options);
+  toast.custom((t) => <>{component}</>, options);
 }
 
 /**
