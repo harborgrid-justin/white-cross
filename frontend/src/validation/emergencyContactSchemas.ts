@@ -136,21 +136,21 @@ const relationshipSchema = z
  * Contact priority validation
  */
 const prioritySchema = z.nativeEnum(ContactPriority, {
-  errorMap: () => ({ message: 'Priority must be PRIMARY, SECONDARY, or EMERGENCY_ONLY' })
+  error: () => ({ message: 'Priority must be PRIMARY, SECONDARY, or EMERGENCY_ONLY' })
 })
 
 /**
  * Preferred contact method validation
  */
 const preferredContactMethodSchema = z.nativeEnum(PreferredContactMethod, {
-  errorMap: () => ({ message: 'Preferred contact method must be SMS, EMAIL, VOICE, or ANY' })
+  error: () => ({ message: 'Preferred contact method must be SMS, EMAIL, VOICE, or ANY' })
 })
 
 /**
  * Verification status validation
  */
 const verificationStatusSchema = z.nativeEnum(VerificationStatus, {
-  errorMap: () => ({ message: 'Verification status must be UNVERIFIED, PENDING, VERIFIED, or FAILED' })
+  error: () => ({ message: 'Verification status must be UNVERIFIED, PENDING, VERIFIED, or FAILED' })
 })
 
 /**
@@ -274,7 +274,7 @@ export const emergencyContactFormSchema = z
 export const contactVerificationSchema = z.object({
   contactId: z.string().uuid('Contact ID must be a valid UUID'),
   method: z.enum(['sms', 'email', 'voice'], {
-    errorMap: () => ({ message: 'Verification method must be sms, email, or voice' })
+    error: () => ({ message: 'Verification method must be sms, email, or voice' })
   })
 })
 
@@ -284,10 +284,10 @@ export const contactVerificationSchema = z.object({
 export const emergencyNotificationSchema = z.object({
   message: z.string().min(1, 'Message is required').max(1000, 'Message cannot exceed 1000 characters'),
   type: z.enum(['emergency', 'health', 'medication', 'general'], {
-    errorMap: () => ({ message: 'Type must be emergency, health, medication, or general' })
+    error: () => ({ message: 'Type must be emergency, health, medication, or general' })
   }),
   priority: z.enum(['low', 'medium', 'high', 'critical'], {
-    errorMap: () => ({ message: 'Priority must be low, medium, high, or critical' })
+    error: () => ({ message: 'Priority must be low, medium, high, or critical' })
   }),
   channels: z
     .array(z.enum(['sms', 'email', 'voice']))

@@ -173,7 +173,7 @@ const createStudentSchema = z.object({
  */
 const updateStudentSchema = createStudentSchema.partial().extend({
   isActive: z.boolean({
-    invalid_type_error: 'Active status must be a boolean'
+    error: 'Active status must be a boolean'
   }).optional(),
 
   updatedBy: z
@@ -198,7 +198,7 @@ const studentFiltersSchema = z.object({
 
   isActive: z
     .boolean({
-      invalid_type_error: 'Active filter must be a boolean'
+      error: 'Active filter must be a boolean'
     })
     .optional(),
 
@@ -209,13 +209,13 @@ const studentFiltersSchema = z.object({
 
   hasAllergies: z
     .boolean({
-      invalid_type_error: 'Has allergies filter must be a boolean'
+      error: 'Has allergies filter must be a boolean'
     })
     .optional(),
 
   hasMedications: z
     .boolean({
-      invalid_type_error: 'Has medications filter must be a boolean'
+      error: 'Has medications filter must be a boolean'
     })
     .optional(),
 
@@ -227,7 +227,7 @@ const studentFiltersSchema = z.object({
 
   page: z
     .number({
-      invalid_type_error: 'Page must be a number'
+      error: 'Page must be a number'
     })
     .int('Page must be an integer')
     .min(1, 'Page must be at least 1')
@@ -235,7 +235,7 @@ const studentFiltersSchema = z.object({
 
   limit: z
     .number({
-      invalid_type_error: 'Limit must be a number'
+      error: 'Limit must be a number'
     })
     .int('Limit must be an integer')
     .min(1, 'Limit must be at least 1')

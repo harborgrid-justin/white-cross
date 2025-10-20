@@ -98,7 +98,7 @@ const ipAddressSchema = z
  * Relationship validation for consent signatures
  */
 const relationshipSchema = z.enum(VALID_RELATIONSHIPS, {
-  errorMap: () => ({
+  error: () => ({
     message: 'Relationship must be a valid authorized relationship type',
   }),
 });
@@ -113,7 +113,7 @@ const relationshipSchema = z.enum(VALID_RELATIONSHIPS, {
  */
 export const createConsentFormSchema = z.object({
   type: z.nativeEnum(ConsentType, {
-    errorMap: () => ({ message: 'Consent type is required for legal classification' }),
+    error: () => ({ message: 'Consent type is required for legal classification' }),
   }),
 
   title: z
@@ -209,7 +209,7 @@ export const createPolicySchema = z.object({
     .transform((val) => val.trim()),
 
   category: z.nativeEnum(PolicyCategory, {
-    errorMap: () => ({ message: 'Policy category is required for compliance classification' }),
+    error: () => ({ message: 'Policy category is required for compliance classification' }),
   }),
 
   content: z
@@ -267,7 +267,7 @@ export const acknowledgePolicySchema = z.object({
  */
 export const createComplianceReportSchema = z.object({
   reportType: z.nativeEnum(ComplianceReportType, {
-    errorMap: () => ({ message: 'Report type is required for compliance tracking' }),
+    error: () => ({ message: 'Report type is required for compliance tracking' }),
   }),
 
   title: z
@@ -310,7 +310,7 @@ export const updateComplianceReportSchema = z.object({
  */
 export const generateComplianceReportSchema = z.object({
   reportType: z.nativeEnum(ComplianceReportType, {
-    errorMap: () => ({ message: 'Report type is required' }),
+    error: () => ({ message: 'Report type is required' }),
   }),
 
   period: periodSchema,
@@ -340,7 +340,7 @@ export const createChecklistItemSchema = z.object({
     .nullable(),
 
   category: z.nativeEnum(ComplianceCategory, {
-    errorMap: () => ({ message: 'Compliance category is required' }),
+    error: () => ({ message: 'Compliance category is required' }),
   }),
 
   dueDate: z.string().datetime().optional().nullable(),
@@ -383,7 +383,7 @@ export const createAuditLogSchema = z.object({
   userId: uuidSchema.optional().nullable(),
 
   action: z.nativeEnum(AuditAction, {
-    errorMap: () => ({ message: 'Action is required for audit trail' }),
+    error: () => ({ message: 'Action is required for audit trail' }),
   }),
 
   entityType: z

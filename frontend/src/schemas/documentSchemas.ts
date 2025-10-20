@@ -79,7 +79,7 @@ const descriptionSchema = z
  * Document category validation
  */
 const categorySchema = z.nativeEnum(DocumentCategory, {
-  errorMap: () => ({
+  error: () => ({
     message: `Category must be one of: ${Object.values(DocumentCategory).join(', ')}`,
   }),
 });
@@ -88,7 +88,7 @@ const categorySchema = z.nativeEnum(DocumentCategory, {
  * Document status validation
  */
 const statusSchema = z.nativeEnum(DocumentStatus, {
-  errorMap: () => ({
+  error: () => ({
     message: `Status must be one of: ${Object.values(DocumentStatus).join(', ')}`,
   }),
 });
@@ -97,7 +97,7 @@ const statusSchema = z.nativeEnum(DocumentStatus, {
  * Document access level validation
  */
 const accessLevelSchema = z.nativeEnum(DocumentAccessLevel, {
-  errorMap: () => ({
+  error: () => ({
     message: `Access level must be one of: ${Object.values(DocumentAccessLevel).join(', ')}`,
   }),
 });

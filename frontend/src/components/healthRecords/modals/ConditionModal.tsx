@@ -66,13 +66,13 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosed Date</label>
             <input 
               type="date" 
-              name="diagnosedDate"
+              name="diagnosisDate"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={condition?.diagnosedDate || ''}
+              defaultValue={condition?.diagnosisDate || ''}
               data-testid="diagnosed-date-input"
             />
-            {errors.diagnosedDate && (
-              <p className="text-red-600 text-sm mt-1" data-testid="diagnosed-date-error">{errors.diagnosedDate}</p>
+            {errors.diagnosisDate && (
+              <p className="text-red-600 text-sm mt-1" data-testid="diagnosed-date-error">{errors.diagnosisDate}</p>
             )}
           </div>
           
