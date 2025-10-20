@@ -21,17 +21,17 @@ import {
   Ear, 
   Activity 
 } from 'lucide-react'
-import type { TabType, RecordType } from '@/types/healthRecords'
+import type { TabType, HealthRecordType } from '@/types/healthRecords'
 
 export const RECORD_TYPES = [
-  { value: 'CHECKUP' as RecordType, label: 'Regular Checkup', icon: Stethoscope },
-  { value: 'VACCINATION' as RecordType, label: 'Vaccination', icon: Shield },
-  { value: 'ILLNESS' as RecordType, label: 'Illness', icon: AlertCircle },
-  { value: 'INJURY' as RecordType, label: 'Injury', icon: Activity },
-  { value: 'SCREENING' as RecordType, label: 'Screening', icon: Eye },
-  { value: 'VISION' as RecordType, label: 'Vision Test', icon: Eye },
-  { value: 'HEARING' as RecordType, label: 'Hearing Test', icon: Ear },
-  { value: 'PHYSICAL_EXAM' as RecordType, label: 'Physical Exam', icon: Stethoscope },
+  { value: 'CHECKUP' as HealthRecordType, label: 'Regular Checkup', icon: Stethoscope },
+  { value: 'VACCINATION' as HealthRecordType, label: 'Vaccination', icon: Shield },
+  { value: 'ILLNESS' as HealthRecordType, label: 'Illness', icon: AlertCircle },
+  { value: 'INJURY' as HealthRecordType, label: 'Injury', icon: Activity },
+  { value: 'SCREENING' as HealthRecordType, label: 'Screening', icon: Eye },
+  { value: 'VISION' as HealthRecordType, label: 'Vision Test', icon: Eye },
+  { value: 'HEARING' as HealthRecordType, label: 'Hearing Test', icon: Ear },
+  { value: 'PHYSICAL_EXAM' as HealthRecordType, label: 'Physical Exam', icon: Stethoscope },
 ]
 
 export const HEALTH_TABS = [
