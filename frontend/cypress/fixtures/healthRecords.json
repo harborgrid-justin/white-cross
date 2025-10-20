@@ -1,0 +1,275 @@
+{
+  "testHealthRecord1": {
+    "id": "hr-001",
+    "studentId": "1",
+    "type": "CHECKUP",
+    "date": "2025-01-15T10:00:00Z",
+    "description": "Annual physical examination",
+    "provider": "Dr. Smith",
+    "notes": "Student is in good health. All vitals within normal range.",
+    "vital": {
+      "temperature": 98.6,
+      "bloodPressureSystolic": 110,
+      "bloodPressureDiastolic": 70,
+      "heartRate": 72,
+      "respiratoryRate": 16,
+      "oxygenSaturation": 98,
+      "height": 150,
+      "weight": 45,
+      "bmi": 20.0
+    }
+  },
+  "testHealthRecord2": {
+    "id": "hr-002",
+    "studentId": "2",
+    "type": "VACCINATION",
+    "date": "2025-02-01T14:30:00Z",
+    "description": "COVID-19 booster vaccination",
+    "provider": "Nurse Johnson",
+    "notes": "No adverse reactions observed. Student tolerated well.",
+    "vaccineType": "COVID-19",
+    "manufacturer": "Pfizer",
+    "lotNumber": "LOT123456",
+    "administered": true,
+    "nextDueDate": "2026-02-01"
+  },
+  "testAllergy1": {
+    "id": "allergy-001",
+    "studentId": "1",
+    "allergen": "Peanuts",
+    "severity": "LIFE_THREATENING",
+    "reaction": "Anaphylaxis",
+    "treatment": "EpiPen auto-injector prescribed",
+    "verified": true,
+    "verifiedBy": "Dr. Smith",
+    "verifiedAt": "2025-01-10T08:00:00Z"
+  },
+  "testAllergy2": {
+    "id": "allergy-002",
+    "studentId": "1",
+    "allergen": "Penicillin",
+    "severity": "MODERATE",
+    "reaction": "Skin rash and hives",
+    "treatment": "Avoid penicillin-based antibiotics",
+    "verified": true,
+    "verifiedBy": "Dr. Smith",
+    "verifiedAt": "2025-01-10T08:00:00Z"
+  },
+  "testChronicCondition1": {
+    "id": "chronic-001",
+    "studentId": "1",
+    "condition": "Type 1 Diabetes",
+    "diagnosedDate": "2020-05-15",
+    "status": "ACTIVE",
+    "severity": "MODERATE",
+    "notes": "Managed with insulin therapy",
+    "carePlan": "Check blood sugar 4x daily, insulin as prescribed",
+    "medications": ["Insulin - Humalog", "Insulin - Lantus"],
+    "restrictions": ["No unsupervised outdoor activities", "Access to snacks required"],
+    "triggers": ["Stress", "Missed meals", "Illness"],
+    "diagnosedBy": "Dr. Endocrinologist",
+    "lastReviewDate": "2024-12-01",
+    "nextReviewDate": "2025-06-01"
+  },
+  "testChronicCondition2": {
+    "id": "chronic-002",
+    "studentId": "2",
+    "condition": "Asthma",
+    "diagnosedDate": "2018-09-10",
+    "status": "ACTIVE",
+    "severity": "MILD",
+    "notes": "Exercise-induced asthma",
+    "carePlan": "Use rescue inhaler before physical activity",
+    "medications": ["Albuterol inhaler"],
+    "restrictions": ["Monitor during strenuous activities"],
+    "triggers": ["Exercise", "Cold air", "Allergens"],
+    "diagnosedBy": "Dr. Pulmonologist",
+    "lastReviewDate": "2024-10-15",
+    "nextReviewDate": "2025-10-15"
+  },
+  "testGrowthData": [
+    {
+      "date": "2024-01-15",
+      "height": 140,
+      "weight": 38,
+      "bmi": 19.4,
+      "recordType": "CHECKUP"
+    },
+    {
+      "date": "2024-06-15",
+      "height": 145,
+      "weight": 42,
+      "bmi": 20.0,
+      "recordType": "CHECKUP"
+    },
+    {
+      "date": "2025-01-15",
+      "height": 150,
+      "weight": 45,
+      "bmi": 20.0,
+      "recordType": "CHECKUP"
+    }
+  ],
+  "testVitals": [
+    {
+      "id": "vital-001",
+      "studentId": "1",
+      "date": "2025-01-15T10:00:00Z",
+      "vital": {
+        "temperature": 98.6,
+        "bloodPressureSystolic": 110,
+        "bloodPressureDiastolic": 70,
+        "heartRate": 72,
+        "respiratoryRate": 16,
+        "oxygenSaturation": 98
+      },
+      "type": "CHECKUP",
+      "provider": "Dr. Smith"
+    },
+    {
+      "id": "vital-002",
+      "studentId": "1",
+      "date": "2025-02-20T14:30:00Z",
+      "vital": {
+        "temperature": 98.4,
+        "bloodPressureSystolic": 112,
+        "bloodPressureDiastolic": 72,
+        "heartRate": 70,
+        "respiratoryRate": 15,
+        "oxygenSaturation": 99
+      },
+      "type": "SCREENING",
+      "provider": "Nurse Johnson"
+    }
+  ],
+  "testVaccinations": [
+    {
+      "id": "vacc-001",
+      "studentId": "1",
+      "type": "VACCINATION",
+      "date": "2024-09-01T09:00:00Z",
+      "description": "Tdap booster",
+      "provider": "Nurse Johnson",
+      "vaccineType": "Tdap",
+      "manufacturer": "GlaxoSmithKline",
+      "lotNumber": "TDAP789",
+      "administered": true,
+      "nextDueDate": "2034-09-01"
+    },
+    {
+      "id": "vacc-002",
+      "studentId": "1",
+      "type": "VACCINATION",
+      "date": "2025-02-01T14:30:00Z",
+      "description": "COVID-19 booster",
+      "provider": "Nurse Johnson",
+      "vaccineType": "COVID-19",
+      "manufacturer": "Pfizer",
+      "lotNumber": "LOT123456",
+      "administered": true,
+      "nextDueDate": "2026-02-01"
+    }
+  ],
+  "testHealthSummary": {
+    "student": {
+      "id": "1",
+      "firstName": "John",
+      "lastName": "Doe",
+      "studentNumber": "STU001"
+    },
+    "allergies": [
+      {
+        "id": "allergy-001",
+        "allergen": "Peanuts",
+        "severity": "LIFE_THREATENING",
+        "verified": true
+      },
+      {
+        "id": "allergy-002",
+        "allergen": "Penicillin",
+        "severity": "MODERATE",
+        "verified": true
+      }
+    ],
+    "chronicConditions": [
+      {
+        "id": "chronic-001",
+        "condition": "Type 1 Diabetes",
+        "status": "ACTIVE",
+        "severity": "MODERATE"
+      }
+    ],
+    "recentVitals": {
+      "temperature": 98.6,
+      "bloodPressureSystolic": 110,
+      "bloodPressureDiastolic": 70,
+      "heartRate": 72
+    },
+    "vaccinations": [
+      {
+        "vaccineType": "COVID-19",
+        "administered": true,
+        "nextDueDate": "2026-02-01"
+      }
+    ],
+    "lastPhysical": "2025-01-15",
+    "alerts": [
+      "Life-threatening peanut allergy - EpiPen required",
+      "Type 1 Diabetes - monitor blood sugar regularly"
+    ]
+  },
+  "bulkHealthRecords": [
+    {
+      "id": "hr-bulk-001",
+      "studentId": "1",
+      "type": "ILLNESS",
+      "date": "2025-03-01",
+      "description": "Common cold",
+      "provider": "Nurse Johnson"
+    },
+    {
+      "id": "hr-bulk-002",
+      "studentId": "1",
+      "type": "INJURY",
+      "date": "2025-03-05",
+      "description": "Minor scrape on knee from playground",
+      "provider": "Nurse Johnson"
+    },
+    {
+      "id": "hr-bulk-003",
+      "studentId": "1",
+      "type": "SCREENING",
+      "date": "2025-03-10",
+      "description": "Vision screening",
+      "provider": "School Nurse"
+    }
+  ],
+  "invalidHealthRecord": {
+    "studentId": "",
+    "type": "INVALID_TYPE",
+    "date": "invalid-date",
+    "description": ""
+  },
+  "importData": {
+    "healthRecords": [
+      {
+        "type": "CHECKUP",
+        "date": "2024-06-15",
+        "description": "Mid-year health check",
+        "provider": "Dr. Wilson",
+        "vital": {
+          "temperature": 98.5,
+          "heartRate": 70
+        }
+      },
+      {
+        "type": "VACCINATION",
+        "date": "2024-07-20",
+        "description": "Flu shot",
+        "provider": "Nurse Anderson",
+        "vaccineType": "Influenza",
+        "administered": true
+      }
+    ]
+  }
+}
