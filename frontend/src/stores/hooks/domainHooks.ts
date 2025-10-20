@@ -1,13 +1,10 @@
 /**
- * WF-COMP-304 | reduxHooks.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../slices/authSlice, ../slices/incidentReportsSlice | Dependencies: react-redux, ../slices/authSlice, ../slices/incidentReportsSlice
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Domain-Specific Redux Hooks
+ *
+ * Specialized hooks for authentication and incident reports domain logic.
+ * These hooks provide convenient access to domain-specific state and actions.
+ *
+ * @module domainHooks
  */
 
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
@@ -46,21 +43,9 @@ import type {
   IncidentReport,
 } from '../../types/incidents';
 
-// =====================
-// BASE TYPED HOOKS
-// =====================
-
-/**
- * Typed dispatch hook
- * Use throughout your app instead of plain `useDispatch`
- */
-export const useAppDispatch = () => useDispatch<AppDispatch>();
-
-/**
- * Typed selector hook
- * Use throughout your app instead of plain `useSelector`
- */
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+// Core hooks - these are also exported from index.ts for convenience
+const useAppDispatch = () => useDispatch<AppDispatch>();
+const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 // =====================
 // AUTH-SPECIFIC HOOKS

@@ -26,6 +26,22 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authSlice from './slices/authSlice';
 import incidentReportsSlice from './slices/incidentReportsSlice';
+import { usersReducer } from './slices/usersSlice';
+import { districtsReducer } from './slices/districtsSlice';
+import { schoolsReducer } from './slices/schoolsSlice';
+import { settingsReducer } from './slices/settingsSlice';
+import { studentsReducer } from './slices/studentsSlice';
+import { healthRecordsReducer } from './slices/healthRecordsSlice';
+import { medicationsReducer } from './slices/medicationsSlice';
+import { appointmentsReducer } from './slices/appointmentsSlice';
+import { emergencyContactsReducer } from './slices/emergencyContactsSlice';
+import { documentsReducer } from './slices/documentsSlice';
+import { communicationReducer } from './slices/communicationSlice';
+import { inventoryReducer } from './slices/inventorySlice';
+import { reportsReducer } from './slices/reportsSlice';
+// Phase 3: Advanced enterprise features
+import enterpriseReducer from './enterprise/enterpriseFeatures';
+import orchestrationReducer from './orchestration/crossDomainOrchestration';
 import {
   createStateSyncMiddleware,
   loadInitialState,
@@ -37,10 +53,63 @@ import {
 
 /**
  * Root reducer configuration
+ * Combines all domain slices into a single root reducer
  */
 const rootReducer = combineReducers({
+  // ============================================================
+  // AUTHENTICATION & AUTHORIZATION
+  // ============================================================
   auth: authSlice,
-  incidentReports: incidentReportsSlice,
+
+  // ============================================================
+  // IMPLEMENTED CORE DOMAINS
+  // ============================================================
+  incidentReports: incidentReportsSlice,      // Incident reporting and tracking
+  
+  // ============================================================
+  // PHASE 2: ADMINISTRATION & CONFIGURATION
+  // ============================================================
+  users: usersReducer,                        // User management and access control
+  districts: districtsReducer,                // District management
+  schools: schoolsReducer,                    // School management
+  settings: settingsReducer,                  // System configuration and settings
+  
+  // ============================================================
+  // PHASE 2: STUDENT & HEALTH MANAGEMENT
+  // ============================================================
+  students: studentsReducer,                  // Student management and profiles
+  healthRecords: healthRecordsReducer,        // Student health records and medical history
+  medications: medicationsReducer,            // Medication management and administration
+  appointments: appointmentsReducer,          // Appointment scheduling and management
+  
+  // ============================================================
+  // PHASE 2: COMMUNICATION & DOCUMENTATION
+  // ============================================================
+  communication: communicationReducer,        // Messages, notifications, and templates
+  documents: documentsReducer,                // Document management and storage
+  emergencyContacts: emergencyContactsReducer, // Emergency contact management
+  
+  // ============================================================
+  // PHASE 2: OPERATIONS & INVENTORY
+  // ============================================================
+  inventory: inventoryReducer,                // Medical supplies and equipment
+  reports: reportsReducer,                    // Analytics and reporting
+  
+  // ============================================================
+  // PHASE 3: ADVANCED ENTERPRISE FEATURES
+  // ============================================================
+  enterprise: enterpriseReducer,              // Bulk operations, audit trails, and data sync
+  orchestration: orchestrationReducer,        // Cross-domain workflow orchestration
+  
+  // ============================================================
+  // TODO: COMPLIANCE & AUDIT (FUTURE PHASE)
+  // ============================================================
+  // compliance: complianceSlice,                // HIPAA compliance and audit tracking
+  
+  // ============================================================
+  // TODO: UI & APPLICATION STATE (FUTURE PHASE)
+  // ============================================================
+  // ui: uiSlice,                               // Global UI state and preferences
 });
 
 /**
@@ -171,11 +240,47 @@ export const store = configureStore({
           'STATE_UPDATE',
           'STATE_REQUEST',
           'STATE_RESPONSE',
+          // Phase 3 async thunk actions
+          'analytics/generateTrendAnalysis/pending',
+          'analytics/generateTrendAnalysis/fulfilled',
+          'analytics/generateTrendAnalysis/rejected',
+          'analytics/assessStudentRisks/pending',
+          'analytics/assessStudentRisks/fulfilled',
+          'analytics/assessStudentRisks/rejected',
+          'analytics/generateComplianceReport/pending',
+          'analytics/generateComplianceReport/fulfilled',
+          'analytics/generateComplianceReport/rejected',
+          'enterprise/executeBulkOperation/pending',
+          'enterprise/executeBulkOperation/fulfilled',
+          'enterprise/executeBulkOperation/rejected',
+          'enterprise/rollbackBulkOperation/pending',
+          'enterprise/rollbackBulkOperation/fulfilled',
+          'enterprise/rollbackBulkOperation/rejected',
+          'enterprise/createAuditEntry/pending',
+          'enterprise/createAuditEntry/fulfilled',
+          'enterprise/createAuditEntry/rejected',
+          'enterprise/syncEntityData/pending',
+          'enterprise/syncEntityData/fulfilled',
+          'enterprise/syncEntityData/rejected',
+          'enterprise/executeWorkflow/pending',
+          'enterprise/executeWorkflow/fulfilled',
+          'enterprise/executeWorkflow/rejected',
+          'orchestration/executeStudentEnrollment/pending',
+          'orchestration/executeStudentEnrollment/fulfilled',
+          'orchestration/executeStudentEnrollment/rejected',
+          'orchestration/executeMedicationManagement/pending',
+          'orchestration/executeMedicationManagement/fulfilled',
+          'orchestration/executeMedicationManagement/rejected',
         ],
         // Ignore these paths in the state for serialization checks
         ignoredPaths: [
           'incidentReports.filters.startDate',
           'incidentReports.filters.endDate',
+          // Phase 3 complex state paths
+          'enterprise.auditTrail',
+          'enterprise.bulkOperations',
+          'orchestration.executions',
+          'orchestration.workflows',
         ],
       },
       // Improve performance by disabling immutability checks in production

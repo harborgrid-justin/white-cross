@@ -619,7 +619,7 @@ export function exampleMultipleStrategies() {
 export function exampleReactComponent() {
   /*
   import React, { useEffect } from 'react';
-  import { useAppSelector, useAppDispatch } from '@/stores/hooks/reduxHooks';
+  import { useAppSelector, useAppDispatch } from '@/stores';
   import { manualSync } from '@/middleware/stateSyncMiddleware';
   import { hipaaCompliantConfig } from '@/middleware/stateSyncMiddleware.examples';
 

@@ -243,7 +243,7 @@ export default store;
 
 /*
 import React from 'react';
-import { useAppDispatch } from '@/stores/hooks/reduxHooks';
+import { useAppDispatch } from '@/stores';
 import { clearSyncedState } from '@/middleware/stateSyncMiddleware';
 import { stateSyncConfig } from '@/stores/syncConfig';
 import { logout } from '@/stores/slices/authSlice';
@@ -281,7 +281,7 @@ export function LogoutButton() {
 
 /*
 import React from 'react';
-import { useAppSelector } from '@/stores/hooks/reduxHooks';
+import { useAppSelector } from '@/stores';
 import { manualSync } from '@/middleware/stateSyncMiddleware';
 import { stateSyncConfig } from '@/stores/syncConfig';
 
@@ -317,7 +317,7 @@ export function SaveIncidentButton() {
 
 /*
 import React, { useEffect } from 'react';
-import { useAppSelector } from '@/stores/hooks/reduxHooks';
+import { useAppSelector } from '@/stores';
 import { manualSync } from '@/middleware/stateSyncMiddleware';
 import { stateSyncConfig } from '@/stores/syncConfig';
 

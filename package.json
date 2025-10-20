@@ -12,7 +12,7 @@
     "dev:frontend-only": "npm run dev:frontend",
 
     "// Production": "========================================",
-    "start": "npm run start:backend",
+    "start": "npm run start:backend && npm run start:frontend",
     "start:backend": "cd backend && npm start",
     "start:frontend": "cd frontend && npm run preview",
 

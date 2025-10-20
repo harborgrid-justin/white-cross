@@ -19,8 +19,9 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '../../../stores/hooks/reduxHooks';
 import {
+  useAppDispatch,
+  useAppSelector,
   fetchIncidentReports,
   searchIncidentReports,
   setFilters,
@@ -31,7 +32,7 @@ import {
   selectIsLoading,
   selectError,
   selectReportStatistics,
-} from '../../../stores/slices/incidentReportsSlice';
+} from '../../../stores';
 import type {
   IncidentReportFilters,
   IncidentType,
