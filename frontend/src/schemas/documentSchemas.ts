@@ -53,7 +53,7 @@ const uuidSchema = z.string().uuid({ message: 'Must be a valid UUID' });
  * Document title validation
  */
 const titleSchema = z
-  .string({ required_error: 'Document title is required' })
+  .string({ message: 'Document title is required' })
   .min(MIN_TITLE_LENGTH, `Title must be at least ${MIN_TITLE_LENGTH} characters`)
   .max(MAX_TITLE_LENGTH, `Title must not exceed ${MAX_TITLE_LENGTH} characters`)
   .refine(
@@ -106,7 +106,7 @@ const accessLevelSchema = z.nativeEnum(DocumentAccessLevel, {
  * File type (MIME type) validation
  */
 const fileTypeSchema = z
-  .string({ required_error: 'File type is required' })
+  .string({ message: 'File type is required' })
   .min(1, 'File type cannot be empty')
   .refine(
     (val) => ALLOWED_FILE_TYPES.all.includes(val.toLowerCase().trim()),
@@ -120,7 +120,7 @@ const fileTypeSchema = z
  * File name validation
  */
 const fileNameSchema = z
-  .string({ required_error: 'File name is required' })
+  .string({ message: 'File name is required' })
   .min(1, 'File name cannot be empty')
   .max(255, 'File name must not exceed 255 characters')
   .refine(
@@ -133,7 +133,7 @@ const fileNameSchema = z
  * File size validation
  */
 const fileSizeSchema = z
-  .number({ required_error: 'File size is required' })
+  .number({ message: 'File size is required' })
   .int('File size must be an integer')
   .min(MIN_FILE_SIZE_BYTES, `File size must be at least ${MIN_FILE_SIZE_BYTES / 1024}KB`)
   .max(MAX_FILE_SIZE_BYTES, `File size must not exceed ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB`);
@@ -142,7 +142,7 @@ const fileSizeSchema = z
  * File URL validation
  */
 const fileUrlSchema = z
-  .string({ required_error: 'File URL is required' })
+  .string({ message: 'File URL is required' })
   .url('File URL must be a valid URL')
   .max(500, 'File URL must not exceed 500 characters');
 
@@ -326,7 +326,7 @@ export const signDocumentSchema = z.object({
   documentId: uuidSchema,
   signedBy: uuidSchema.describe('Signer user ID'),
   signedByRole: z
-    .string({ required_error: 'Signer role is required' })
+    .string({ message: 'Signer role is required' })
     .min(1, 'Signer role cannot be empty')
     .max(100, 'Signer role must not exceed 100 characters')
     .transform((val) => val.trim()),
