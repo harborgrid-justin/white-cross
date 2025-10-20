@@ -117,19 +117,19 @@ export const createConsentFormSchema = z.object({
   }),
 
   title: z
-    .string({ required_error: 'Consent form title is required' })
+    .string({ message: 'Consent form title is required' })
     .min(3, 'Consent form title must be at least 3 characters')
     .max(200, 'Consent form title cannot exceed 200 characters')
     .transform((val) => val.trim()),
 
   description: z
-    .string({ required_error: 'Description is required for clarity' })
+    .string({ message: 'Description is required for clarity' })
     .min(10, 'Description must be at least 10 characters')
     .max(5000, 'Description cannot exceed 5000 characters')
     .transform((val) => val.trim()),
 
   content: z
-    .string({ required_error: 'Consent form content is required for legal validity' })
+    .string({ message: 'Consent form content is required for legal validity' })
     .min(50, 'Consent form content must be at least 50 characters for legal validity')
     .max(50000, 'Consent form content cannot exceed 50000 characters')
     .transform((val) => val.trim()),
@@ -166,7 +166,7 @@ export const signConsentFormSchema = z.object({
   studentId: uuidSchema,
 
   signedBy: z
-    .string({ required_error: 'Signatory name is required for legal validity' })
+    .string({ message: 'Signatory name is required for legal validity' })
     .min(2, 'Signatory name must be at least 2 characters')
     .max(200, 'Signatory name cannot exceed 200 characters')
     .transform((val) => val.trim()),
@@ -188,7 +188,7 @@ export const signConsentFormSchema = z.object({
  */
 export const withdrawConsentSchema = z.object({
   withdrawnBy: z
-    .string({ required_error: 'Withdrawn by is required for audit trail' })
+    .string({ message: 'Withdrawn by is required for audit trail' })
     .min(2, 'Withdrawn by name must be at least 2 characters')
     .max(200, 'Withdrawn by name cannot exceed 200 characters')
     .transform((val) => val.trim()),
@@ -203,7 +203,7 @@ export const withdrawConsentSchema = z.object({
  */
 export const createPolicySchema = z.object({
   title: z
-    .string({ required_error: 'Policy title is required' })
+    .string({ message: 'Policy title is required' })
     .min(5, 'Policy title must be at least 5 characters')
     .max(200, 'Policy title cannot exceed 200 characters')
     .transform((val) => val.trim()),
@@ -213,7 +213,7 @@ export const createPolicySchema = z.object({
   }),
 
   content: z
-    .string({ required_error: 'Policy content is required' })
+    .string({ message: 'Policy content is required' })
     .min(100, 'Policy content must be at least 100 characters')
     .max(100000, 'Policy content cannot exceed 100000 characters')
     .transform((val) => val.trim()),
@@ -221,7 +221,7 @@ export const createPolicySchema = z.object({
   version: versionSchema.optional(),
 
   effectiveDate: z
-    .string({ required_error: 'Effective date is required for policy compliance' })
+    .string({ message: 'Effective date is required for policy compliance' })
     .datetime(),
 
   reviewDate: z
@@ -271,7 +271,7 @@ export const createComplianceReportSchema = z.object({
   }),
 
   title: z
-    .string({ required_error: 'Report title is required' })
+    .string({ message: 'Report title is required' })
     .min(5, 'Report title must be at least 5 characters')
     .max(200, 'Report title cannot exceed 200 characters')
     .transform((val) => val.trim()),
@@ -327,7 +327,7 @@ export const generateComplianceReportSchema = z.object({
  */
 export const createChecklistItemSchema = z.object({
   requirement: z
-    .string({ required_error: 'Requirement description is required' })
+    .string({ message: 'Requirement description is required' })
     .min(5, 'Requirement must be at least 5 characters')
     .max(500, 'Requirement cannot exceed 500 characters')
     .transform((val) => val.trim()),
@@ -387,7 +387,7 @@ export const createAuditLogSchema = z.object({
   }),
 
   entityType: z
-    .string({ required_error: 'Entity type is required for audit trail' })
+    .string({ message: 'Entity type is required for audit trail' })
     .min(2, 'Entity type must be at least 2 characters')
     .max(100, 'Entity type cannot exceed 100 characters')
     .transform((val) => val.trim()),
