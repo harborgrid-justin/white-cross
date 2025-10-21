@@ -19,13 +19,21 @@ import { useCallback } from 'react';
 import { studentQueryKeys } from './queryKeys';
 import { cacheConfig, CACHE_INVALIDATION_STRATEGIES } from './cacheConfig';
 import { studentsApi } from '@/services/modules/studentsApi';
-import type { 
-  Student, 
-  CreateStudentData, 
+import type {
+  Student,
+  CreateStudentData,
   UpdateStudentData,
   TransferStudentRequest,
   BulkUpdateStudentsRequest
 } from '@/types/student.types';
+import {
+  getInvalidationStrategy,
+  createStudentUpdateOperation
+} from '@/services/cache/InvalidationStrategy';
+import {
+  getOptimisticUpdateManager
+} from '@/services/cache/OptimisticUpdateManager';
+import { QueryKeyFactory } from '@/services/cache/QueryKeyFactory';
 
 /**
  * Enhanced API error type with healthcare-specific context
@@ -63,69 +71,37 @@ export interface BulkMutationResult {
 }
 
 /**
- * Cache invalidation utility with healthcare considerations
+ * Granular cache invalidation utility with surgical precision
+ *
+ * Replaces over-aggressive invalidation with operation-specific invalidation
+ * Target: 60% reduction in cache invalidations
  */
-const invalidateStudentCache = (
+const invalidateStudentCache = async (
   queryClient: ReturnType<typeof useQueryClient>,
+  operationType: string,
   studentId?: string,
-  changes?: Partial<Student>,
-  strategy: keyof typeof CACHE_INVALIDATION_STRATEGIES = 'immediate'
+  previousValues?: Partial<Student>,
+  newValues?: Partial<Student>
 ) => {
-  const invalidationStrategy = CACHE_INVALIDATION_STRATEGIES[strategy];
-  
-  // Always invalidate base lists
-  queryClient.invalidateQueries({ 
-    queryKey: studentQueryKeys.lists.all(),
-    ...invalidationStrategy
-  });
-  
-  // Invalidate statistics
-  queryClient.invalidateQueries({ 
-    queryKey: studentQueryKeys.statistics.all(),
-    ...invalidationStrategy
-  });
+  const invalidationStrategy = getInvalidationStrategy(queryClient);
 
-  if (studentId) {
-    // Invalidate specific student queries
-    queryClient.invalidateQueries({ 
-      queryKey: studentQueryKeys.details.byId(studentId),
-      ...invalidationStrategy
-    });
-    
-    // Invalidate related data
-    queryClient.invalidateQueries({ 
-      queryKey: studentQueryKeys.relationships.emergencyContacts(studentId),
-      ...invalidationStrategy
-    });
-  }
+  // Determine changed fields
+  const changedFields = previousValues && newValues
+    ? Object.keys(newValues).filter(
+        (key) => previousValues[key as keyof Student] !== newValues[key as keyof Student]
+      )
+    : undefined;
 
-  // Handle specific field changes
-  if (changes) {
-    if (changes.grade) {
-      queryClient.invalidateQueries({ 
-        queryKey: studentQueryKeys.lists.byGrade(changes.grade),
-        ...invalidationStrategy
-      });
-    }
-    
-    if (changes.nurseId) {
-      queryClient.invalidateQueries({ 
-        queryKey: studentQueryKeys.assignments.all(),
-        ...invalidationStrategy
-      });
-    }
-    
-    if (changes.isActive !== undefined) {
-      queryClient.invalidateQueries({ 
-        queryKey: studentQueryKeys.lists.active(),
-        ...invalidationStrategy
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: studentQueryKeys.lists.inactive(),
-        ...invalidationStrategy
-      });
-    }
-  }
+  // Create invalidation operation
+  const operation = createStudentUpdateOperation(
+    operationType,
+    studentId || '',
+    previousValues || {},
+    newValues || {}
+  );
+
+  // Execute granular invalidation
+  await invalidationStrategy.invalidate(operation);
 };
 
 /**
@@ -208,10 +184,16 @@ export const useCreateStudent = (
       }
     },
 
-    onSuccess: (result, variables, context) => {
-      // Invalidate cache with immediate strategy for critical healthcare data
-      invalidateStudentCache(queryClient, result.student?.id, variables, 'immediate');
-      
+    onSuccess: async (result, variables, context) => {
+      // Granular cache invalidation for CREATE operation
+      await invalidateStudentCache(
+        queryClient,
+        'create',
+        result.student?.id,
+        undefined,
+        result.student
+      );
+
       // Pre-populate the detail cache with the new student
       if (result.student) {
         queryClient.setQueryData(
@@ -275,8 +257,8 @@ export const useCreateStudent = (
  */
 export const useUpdateStudent = (
   options?: UseMutationOptions<
-    StudentMutationResult, 
-    ApiError, 
+    StudentMutationResult,
+    ApiError,
     { id: string; data: UpdateStudentData }
   >
 ) => {
@@ -286,19 +268,7 @@ export const useUpdateStudent = (
   return useMutation({
     mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
       try {
-        // Get existing student for change tracking
-        const existingStudent = queryClient.getQueryData<Student>(
-          studentQueryKeys.details.byId(id)
-        );
-
         const updatedStudent = await studentsApi.update(id, data);
-        
-        // Track changes for audit
-        const changes = existingStudent ? {
-          before: existingStudent,
-          after: updatedStudent,
-          modifiedFields: Object.keys(data),
-        } : null;
 
         return {
           success: true,
@@ -314,14 +284,70 @@ export const useUpdateStudent = (
       }
     },
 
-    onSuccess: (result, { id, data }, context) => {
-      // Update cache with new data
-      if (result.student) {
-        queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
+    // Optimistic update
+    onMutate: async ({ id, data }) => {
+      const optimisticUpdateManager = getOptimisticUpdateManager(queryClient);
+      const queryKey = QueryKeyFactory.toString(studentQueryKeys.details.byId(id));
+
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: studentQueryKeys.details.byId(id) });
+
+      // Get previous student data
+      const previousStudent = queryClient.getQueryData<Student>(
+        studentQueryKeys.details.byId(id)
+      );
+
+      if (previousStudent) {
+        // Create optimistic data
+        const optimisticStudent = {
+          ...previousStudent,
+          ...data,
+          version: (previousStudent.version || 0) + 1
+        };
+
+        // Create optimistic update with conflict detection
+        const updateId = optimisticUpdateManager.createUpdate({
+          queryKey,
+          previousData: previousStudent,
+          optimisticData: optimisticStudent,
+          version: previousStudent.version || 0,
+          mutationId: `update-${id}-${Date.now()}`
+        });
+
+        return { previousStudent, updateId };
       }
 
-      // Invalidate related caches based on what changed
-      invalidateStudentCache(queryClient, id, data, 'immediate');
+      return { previousStudent: undefined, updateId: undefined };
+    },
+
+    onSuccess: async (result, { id, data }, context) => {
+      const optimisticUpdateManager = getOptimisticUpdateManager(queryClient);
+
+      // Commit optimistic update if exists
+      if (context?.updateId) {
+        await optimisticUpdateManager.commitUpdate(context.updateId, result.student);
+      } else {
+        // No optimistic update, set data directly
+        if (result.student) {
+          queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
+        }
+      }
+
+      // Determine operation type based on changed fields
+      let operationType = 'update';
+      if (data.grade !== undefined) operationType = 'update-grade';
+      else if (data.schoolId !== undefined) operationType = 'update-school';
+      else if (data.isActive !== undefined) operationType = 'update-status';
+      else if (data.firstName || data.lastName) operationType = 'update-personal-info';
+
+      // Granular cache invalidation
+      await invalidateStudentCache(
+        queryClient,
+        operationType,
+        id,
+        context?.previousStudent,
+        result.student
+      );
 
       // Healthcare audit logging
       console.info('Student updated:', {
@@ -336,6 +362,13 @@ export const useUpdateStudent = (
     },
 
     onError: (error, { id, data }, context) => {
+      const optimisticUpdateManager = getOptimisticUpdateManager(queryClient);
+
+      // Rollback optimistic update if exists
+      if (context?.updateId) {
+        optimisticUpdateManager.rollbackUpdate(context.updateId);
+      }
+
       console.error('Student update failed:', {
         error: error.message,
         studentId: id,
@@ -385,14 +418,20 @@ export const useDeactivateStudent = (
       }
     },
 
-    onSuccess: (result, studentId, context) => {
+    onSuccess: async (result, studentId, context) => {
       // Update cache to reflect deactivation
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
       }
 
-      // Invalidate active/inactive lists
-      invalidateStudentCache(queryClient, studentId, { isActive: false }, 'immediate');
+      // Granular invalidation for status change
+      await invalidateStudentCache(
+        queryClient,
+        'update-status',
+        studentId,
+        { isActive: true },
+        { isActive: false }
+      );
 
       console.info('Student deactivated:', {
         studentId,
@@ -451,12 +490,19 @@ export const useReactivateStudent = (
       }
     },
 
-    onSuccess: (result, studentId, context) => {
+    onSuccess: async (result, studentId, context) => {
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
       }
 
-      invalidateStudentCache(queryClient, studentId, { isActive: true }, 'immediate');
+      // Granular invalidation for status change
+      await invalidateStudentCache(
+        queryClient,
+        'update-status',
+        studentId,
+        { isActive: false },
+        { isActive: true }
+      );
 
       console.info('Student reactivated:', {
         studentId,
@@ -519,13 +565,19 @@ export const useTransferStudent = (
       }
     },
 
-    onSuccess: (result, { id, data }, context) => {
+    onSuccess: async (result, { id, data }, context) => {
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
       }
 
-      // Invalidate assignment-related caches
-      invalidateStudentCache(queryClient, id, { nurseId: data.nurseId }, 'immediate');
+      // Granular invalidation for nurse assignment change
+      await invalidateStudentCache(
+        queryClient,
+        'update',
+        id,
+        context?.previousStudent,
+        { nurseId: data.nurseId }
+      );
 
       console.info('Student transferred:', {
         studentId: id,
@@ -624,9 +676,16 @@ export const useBulkUpdateStudents = (
       }
     },
 
-    onSuccess: (result, request, context) => {
-      // Invalidate all caches after bulk operation
-      invalidateStudentCache(queryClient, undefined, request.updateData, 'conservative');
+    onSuccess: async (result, request, context) => {
+      // For bulk updates, invalidate conservatively
+      // This could be optimized further by tracking which specific lists are affected
+      await invalidateStudentCache(
+        queryClient,
+        'update',
+        undefined,
+        undefined,
+        request.updateData
+      );
 
       console.info('Bulk student update completed:', {
         totalRequested: request.studentIds.length,
@@ -701,10 +760,18 @@ export const usePermanentDeleteStudent = (
       }
     },
 
-    onSuccess: (result, { id, reason, authorization }, context) => {
+    onSuccess: async (result, { id, reason, authorization }, context) => {
       // Remove from all caches
       queryClient.removeQueries({ queryKey: studentQueryKeys.details.byId(id) });
-      invalidateStudentCache(queryClient, undefined, undefined, 'immediate');
+
+      // Use DELETE operation for cache invalidation
+      await invalidateStudentCache(
+        queryClient,
+        'delete',
+        id,
+        undefined,
+        undefined
+      );
 
       // Critical audit log for permanent deletion
       console.warn('PERMANENT STUDENT DELETION:', {

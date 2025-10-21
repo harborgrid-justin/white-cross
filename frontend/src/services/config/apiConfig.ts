@@ -12,13 +12,15 @@
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_CONFIG } from '../../constants/config';
-import { 
-  API_ENDPOINTS, 
-  HTTP_STATUS, 
-  CONTENT_TYPES, 
-  REQUEST_CONFIG, 
-  API_CONSTANTS 
+import {
+  API_ENDPOINTS,
+  HTTP_STATUS,
+  CONTENT_TYPES,
+  REQUEST_CONFIG,
+  API_CONSTANTS
 } from '../../constants/api';
+import { secureTokenManager } from '../security/SecureTokenManager';
+import { setupCsrfProtection } from '../security/CsrfProtection';
 
 // Create axios instance
 export const apiInstance: AxiosInstance = axios.create({
@@ -33,27 +35,21 @@ export const apiInstance: AxiosInstance = axios.create({
 // Request interceptor for auth tokens
 apiInstance.interceptors.request.use(
   (config) => {
-    // Retrieve token from Zustand persist storage
-    const authStorage = localStorage.getItem('auth-storage');
-    let token = null;
+    // Retrieve token from SecureTokenManager (sessionStorage-based)
+    const token = secureTokenManager.getToken();
 
-    if (authStorage) {
-      try {
-        const parsed = JSON.parse(authStorage);
-        token = parsed.state?.token;
-      } catch (e) {
-        console.error('Failed to parse auth storage:', e);
+    if (token) {
+      // Validate token before using it
+      if (secureTokenManager.isTokenValid()) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        // Token expired, clear it
+        console.warn('[apiConfig] Token expired, clearing tokens');
+        secureTokenManager.clearTokens();
+        // Don't add Authorization header for expired token
       }
     }
 
-    // Fallback to direct auth_token for backward compatibility
-    if (!token) {
-      token = localStorage.getItem('auth_token');
-    }
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
   },
   (error) => {
@@ -74,28 +70,16 @@ apiInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refresh_token');
+        const refreshToken = secureTokenManager.getRefreshToken();
         if (refreshToken) {
           const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, {
             refreshToken,
           });
 
-          const { token } = response.data;
+          const { token, refreshToken: newRefreshToken, expiresIn } = response.data;
 
-          // Update token in Zustand persist storage
-          const authStorage = localStorage.getItem('auth-storage');
-          if (authStorage) {
-            try {
-              const parsed = JSON.parse(authStorage);
-              parsed.state.token = token;
-              localStorage.setItem('auth-storage', JSON.stringify(parsed));
-            } catch (e) {
-              console.error('Failed to update auth storage:', e);
-            }
-          }
-
-          // Also set direct token for backward compatibility
-          localStorage.setItem('auth_token', token);
+          // Update token in SecureTokenManager
+          secureTokenManager.setToken(token, newRefreshToken || refreshToken, expiresIn);
 
           // Retry original request
           originalRequest.headers.Authorization = `Bearer ${token}`;
@@ -103,10 +87,13 @@ apiInstance.interceptors.response.use(
         }
       } catch (refreshError) {
         // Refresh failed, clear auth and redirect to login
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('auth-storage');
-        window.location.href = '/login';
+        console.error('[apiConfig] Token refresh failed:', refreshError);
+        secureTokenManager.clearTokens();
+
+        // Only redirect if not already on login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }
@@ -115,23 +102,27 @@ apiInstance.interceptors.response.use(
   }
 );
 
-// Session expire handler - available for future use
-// export const setSessionExpireHandler = (handler: () => void) => {
-//   sessionExpireHandler = handler;
-// };
+// Setup CSRF protection for apiInstance
+setupCsrfProtection(apiInstance);
 
-// Utility functions
+// Utility functions - migrated to use SecureTokenManager
 export const tokenUtils = {
-  getToken: () => localStorage.getItem('auth_token'),
-  setToken: (token: string) => localStorage.setItem('auth_token', token),
-  removeToken: () => localStorage.removeItem('auth_token'),
-  getRefreshToken: () => localStorage.getItem('refresh_token'),
-  setRefreshToken: (token: string) => localStorage.setItem('refresh_token', token),
-  removeRefreshToken: () => localStorage.removeItem('refresh_token'),
-  clearAll: () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
+  getToken: () => secureTokenManager.getToken(),
+  setToken: (token: string, refreshToken?: string, expiresIn?: number) =>
+    secureTokenManager.setToken(token, refreshToken, expiresIn),
+  removeToken: () => secureTokenManager.clearTokens(),
+  getRefreshToken: () => secureTokenManager.getRefreshToken(),
+  setRefreshToken: (token: string) => {
+    // Get current token and re-set with new refresh token
+    const currentToken = secureTokenManager.getToken();
+    if (currentToken) {
+      secureTokenManager.setToken(currentToken, token);
+    }
   },
+  removeRefreshToken: () => secureTokenManager.clearTokens(),
+  clearAll: () => secureTokenManager.clearTokens(),
+  isTokenValid: () => secureTokenManager.isTokenValid(),
+  updateActivity: () => secureTokenManager.updateActivity(),
 };
 
 // Export API constants for use in other modules

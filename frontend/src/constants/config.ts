@@ -15,9 +15,41 @@
  * Consolidates all configuration values for consistency and maintainability
  */
 
+/**
+ * Validate and enforce HTTPS in production environments
+ * Security requirement: All healthcare data must be transmitted over HTTPS
+ *
+ * @param url - API base URL to validate
+ * @returns Validated URL
+ * @throws {Error} If HTTP is used in production environment
+ */
+function validateApiUrl(url: string): string {
+  const isProduction = import.meta.env.PROD;
+  const isDevelopment = import.meta.env.DEV;
+  const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
+
+  // Allow HTTP only for localhost in development
+  if (url.startsWith('http://') && !isLocalhost && isProduction) {
+    throw new Error(
+      '[SECURITY ERROR] HTTP is not allowed in production. HIPAA compliance requires HTTPS for all PHI transmission. ' +
+      'Please configure VITE_API_BASE_URL with https:// protocol.'
+    );
+  }
+
+  // Warn if using HTTP in development (but allow it for localhost)
+  if (url.startsWith('http://') && !isLocalhost && isDevelopment) {
+    console.warn(
+      '[SECURITY WARNING] Using HTTP in development environment. ' +
+      'Ensure HTTPS is configured before deploying to production.'
+    );
+  }
+
+  return url;
+}
+
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
+  BASE_URL: validateApiUrl(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'),
   TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second

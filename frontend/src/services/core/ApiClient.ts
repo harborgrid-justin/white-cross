@@ -18,6 +18,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { API_CONFIG } from '../../constants/config';
 import { API_ENDPOINTS, HTTP_STATUS } from '../../constants/api';
+import { secureTokenManager } from '../security/SecureTokenManager';
+import { setupCsrfProtection } from '../security/CsrfProtection';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -99,6 +101,16 @@ export interface ResponseInterceptor {
 // API CLIENT CONFIGURATION
 // ==========================================
 
+/**
+ * Resilience Hook for API Client
+ * Allows integration with resilience patterns (circuit breaker, bulkhead, etc.)
+ */
+export interface ResilienceHook {
+  beforeRequest?: (config: { method: string; url: string; data?: unknown }) => Promise<void>;
+  afterSuccess?: (result: { method: string; url: string; duration: number }) => void;
+  afterFailure?: (error: { method: string; url: string; duration: number; error: unknown }) => void;
+}
+
 export interface ApiClientConfig {
   baseURL?: string;
   timeout?: number;
@@ -109,6 +121,7 @@ export interface ApiClientConfig {
   retryDelay?: number;
   requestInterceptors?: RequestInterceptor[];
   responseInterceptors?: ResponseInterceptor[];
+  resilienceHook?: ResilienceHook;
 }
 
 // ==========================================
@@ -123,25 +136,34 @@ export class ApiClient {
   private retryDelay: number;
   private requestInterceptorIds: number[] = [];
   private responseInterceptorIds: number[] = [];
+  private resilienceHook?: ResilienceHook;
 
   constructor(config: ApiClientConfig = {}) {
+    this.resilienceHook = config.resilienceHook;
     this.enableLogging = config.enableLogging ?? true;
     this.enableRetry = config.enableRetry ?? true;
     this.maxRetries = config.maxRetries ?? API_CONFIG.RETRY_ATTEMPTS;
     this.retryDelay = config.retryDelay ?? API_CONFIG.RETRY_DELAY;
 
-    // Create axios instance
+    // Create axios instance with security headers
     this.instance = axios.create({
       baseURL: config.baseURL ?? API_CONFIG.BASE_URL,
       timeout: config.timeout ?? API_CONFIG.TIMEOUT,
       withCredentials: config.withCredentials ?? true,
       headers: {
         'Content-Type': 'application/json',
+        // Security headers for HIPAA compliance
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
       },
     });
 
     // Setup default interceptors
     this.setupDefaultInterceptors();
+
+    // Setup CSRF protection
+    setupCsrfProtection(this.instance);
 
     // Add custom interceptors
     if (config.requestInterceptors) {
@@ -157,18 +179,33 @@ export class ApiClient {
   // ==========================================
 
   private setupDefaultInterceptors(): void {
-    // Request interceptor: Add auth token
+    // Request interceptor: Add auth token and security headers
     const authRequestId = this.instance.interceptors.request.use(
       (config) => {
+        // Get token from SecureTokenManager
         const token = this.getAuthToken();
         if (token) {
-          config.headers = config.headers || {};
-          config.headers.Authorization = `Bearer ${token}`;
+          // Validate token before using it
+          if (secureTokenManager.isTokenValid()) {
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${token}`;
+            // Update activity on token use
+            secureTokenManager.updateActivity();
+          } else {
+            // Token expired, clear it
+            console.warn('[ApiClient] Token expired, clearing tokens');
+            secureTokenManager.clearTokens();
+          }
         }
 
         // Add request ID for tracing
         config.headers = config.headers || {};
         config.headers['X-Request-ID'] = this.generateRequestId();
+
+        // Ensure security headers are always present
+        config.headers['X-Content-Type-Options'] = 'nosniff';
+        config.headers['X-Frame-Options'] = 'DENY';
+        config.headers['X-XSS-Protection'] = '1; mode=block';
 
         // Log request in development
         if (this.enableLogging && import.meta.env.DEV) {
@@ -296,8 +333,34 @@ export class ApiClient {
     url: string,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.instance.get<ApiResponse<T>>(url, config);
-    return response.data;
+    const startTime = performance.now();
+    try {
+      if (this.resilienceHook?.beforeRequest) {
+        await this.resilienceHook.beforeRequest({ method: 'GET', url });
+      }
+
+      const response = await this.instance.get<ApiResponse<T>>(url, config);
+
+      if (this.resilienceHook?.afterSuccess) {
+        this.resilienceHook.afterSuccess({
+          method: 'GET',
+          url,
+          duration: performance.now() - startTime
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      if (this.resilienceHook?.afterFailure) {
+        this.resilienceHook.afterFailure({
+          method: 'GET',
+          url,
+          duration: performance.now() - startTime,
+          error
+        });
+      }
+      throw error;
+    }
   }
 
   public async post<T = unknown>(
@@ -305,8 +368,34 @@ export class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.instance.post<ApiResponse<T>>(url, data, config);
-    return response.data;
+    const startTime = performance.now();
+    try {
+      if (this.resilienceHook?.beforeRequest) {
+        await this.resilienceHook.beforeRequest({ method: 'POST', url, data });
+      }
+
+      const response = await this.instance.post<ApiResponse<T>>(url, data, config);
+
+      if (this.resilienceHook?.afterSuccess) {
+        this.resilienceHook.afterSuccess({
+          method: 'POST',
+          url,
+          duration: performance.now() - startTime
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      if (this.resilienceHook?.afterFailure) {
+        this.resilienceHook.afterFailure({
+          method: 'POST',
+          url,
+          duration: performance.now() - startTime,
+          error
+        });
+      }
+      throw error;
+    }
   }
 
   public async put<T = unknown>(
@@ -314,8 +403,34 @@ export class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.instance.put<ApiResponse<T>>(url, data, config);
-    return response.data;
+    const startTime = performance.now();
+    try {
+      if (this.resilienceHook?.beforeRequest) {
+        await this.resilienceHook.beforeRequest({ method: 'PUT', url, data });
+      }
+
+      const response = await this.instance.put<ApiResponse<T>>(url, data, config);
+
+      if (this.resilienceHook?.afterSuccess) {
+        this.resilienceHook.afterSuccess({
+          method: 'PUT',
+          url,
+          duration: performance.now() - startTime
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      if (this.resilienceHook?.afterFailure) {
+        this.resilienceHook.afterFailure({
+          method: 'PUT',
+          url,
+          duration: performance.now() - startTime,
+          error
+        });
+      }
+      throw error;
+    }
   }
 
   public async patch<T = unknown>(
@@ -323,16 +438,68 @@ export class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.instance.patch<ApiResponse<T>>(url, data, config);
-    return response.data;
+    const startTime = performance.now();
+    try {
+      if (this.resilienceHook?.beforeRequest) {
+        await this.resilienceHook.beforeRequest({ method: 'PATCH', url, data });
+      }
+
+      const response = await this.instance.patch<ApiResponse<T>>(url, data, config);
+
+      if (this.resilienceHook?.afterSuccess) {
+        this.resilienceHook.afterSuccess({
+          method: 'PATCH',
+          url,
+          duration: performance.now() - startTime
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      if (this.resilienceHook?.afterFailure) {
+        this.resilienceHook.afterFailure({
+          method: 'PATCH',
+          url,
+          duration: performance.now() - startTime,
+          error
+        });
+      }
+      throw error;
+    }
   }
 
   public async delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.instance.delete<ApiResponse<T>>(url, config);
-    return response.data;
+    const startTime = performance.now();
+    try {
+      if (this.resilienceHook?.beforeRequest) {
+        await this.resilienceHook.beforeRequest({ method: 'DELETE', url });
+      }
+
+      const response = await this.instance.delete<ApiResponse<T>>(url, config);
+
+      if (this.resilienceHook?.afterSuccess) {
+        this.resilienceHook.afterSuccess({
+          method: 'DELETE',
+          url,
+          duration: performance.now() - startTime
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      if (this.resilienceHook?.afterFailure) {
+        this.resilienceHook.afterFailure({
+          method: 'DELETE',
+          url,
+          duration: performance.now() - startTime,
+          error
+        });
+      }
+      throw error;
+    }
   }
 
   // ==========================================
@@ -340,47 +507,26 @@ export class ApiClient {
   // ==========================================
 
   private getAuthToken(): string | null {
-    // Try Zustand persist storage first
-    const authStorage = localStorage.getItem('auth-storage');
-    if (authStorage) {
-      try {
-        const parsed = JSON.parse(authStorage);
-        return parsed.state?.token || null;
-      } catch {
-        // Ignore parse errors
-      }
-    }
-
-    // Fallback to direct token
-    return localStorage.getItem('auth_token');
+    // Use SecureTokenManager (sessionStorage-based)
+    return secureTokenManager.getToken();
   }
 
   private async refreshAuthToken(): Promise<string | null> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = secureTokenManager.getRefreshToken();
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
 
     try {
-      const response = await axios.post<{ token: string }>(
+      const response = await axios.post<{ token: string; refreshToken?: string; expiresIn?: number }>(
         `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
         { refreshToken }
       );
 
-      const { token } = response.data;
+      const { token, refreshToken: newRefreshToken, expiresIn } = response.data;
 
-      // Update token in storage
-      const authStorage = localStorage.getItem('auth-storage');
-      if (authStorage) {
-        try {
-          const parsed = JSON.parse(authStorage);
-          parsed.state.token = token;
-          localStorage.setItem('auth-storage', JSON.stringify(parsed));
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      localStorage.setItem('auth_token', token);
+      // Update token in SecureTokenManager
+      secureTokenManager.setToken(token, newRefreshToken || refreshToken, expiresIn);
 
       return token;
     } catch (error) {
@@ -390,9 +536,8 @@ export class ApiClient {
   }
 
   private handleAuthFailure(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('auth-storage');
+    // Clear all tokens using SecureTokenManager
+    secureTokenManager.clearTokens();
 
     // Redirect to login if not already there
     if (window.location.pathname !== '/login') {
@@ -474,6 +619,20 @@ export class ApiClient {
 
   public setRetry(enabled: boolean): void {
     this.enableRetry = enabled;
+  }
+
+  /**
+   * Set resilience hook for integration with resilience patterns
+   */
+  public setResilienceHook(hook: ResilienceHook | undefined): void {
+    this.resilienceHook = hook;
+  }
+
+  /**
+   * Get current resilience hook
+   */
+  public getResilienceHook(): ResilienceHook | undefined {
+    return this.resilienceHook;
   }
 }
 

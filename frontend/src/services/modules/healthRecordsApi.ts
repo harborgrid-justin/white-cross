@@ -46,6 +46,7 @@ import {
   PaginatedResponse,
   Student
 } from '../types';
+import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -816,26 +817,20 @@ export class HealthRecordsApi {
   private readonly baseEndpoint = API_ENDPOINTS.HEALTH_RECORDS.BASE;
 
   /**
-   * Log PHI access for HIPAA compliance
-   * Automatically called after successful data retrieval
+   * Log PHI access for HIPAA compliance using centralized audit service
+   * Never fails the main operation
    */
   private async logPHIAccess(
-    action: string,
+    action: AuditAction,
     studentId: string,
-    resourceType: string = 'HEALTH_RECORD',
+    resourceType: AuditResourceType,
     resourceId?: string
   ): Promise<void> {
     try {
-      await apiInstance.post('/audit/phi-access', {
-        action,
-        studentId,
-        resourceType,
-        resourceId,
-        timestamp: new Date().toISOString(),
-      });
+      await auditService.logPHIAccess(action, studentId, resourceType, resourceId);
     } catch (error) {
-      // Log error but don't fail the main operation
-      console.error('Failed to log PHI access:', error);
+      // Audit service handles errors internally, this is just a safety catch
+      // Never fail the main operation due to audit logging
     }
   }
 
@@ -872,7 +867,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}?${params.toString()}`
       );
 
-      await this.logPHIAccess('VIEW_HEALTH_RECORDS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_HEALTH_RECORDS, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
     } catch (error: any) {
@@ -889,6 +884,7 @@ export class HealthRecordsApi {
 
   /**
    * Log access to health records
+   * @deprecated Use auditService directly for better type safety
    */
   async logAccess(params: {
     action: string;
@@ -897,7 +893,10 @@ export class HealthRecordsApi {
     resourceId: string;
     details?: any;
   }): Promise<void> {
-    await this.logPHIAccess(params.action, params.studentId, params.resourceType, params.resourceId);
+    // Legacy method - map string actions to AuditAction enum
+    const action = params.action as unknown as AuditAction;
+    const resourceType = params.resourceType as unknown as AuditResourceType;
+    await this.logPHIAccess(action, params.studentId, resourceType, params.resourceId);
   }
 
   /**
@@ -910,7 +909,7 @@ export class HealthRecordsApi {
       );
 
       const record = response.data.data!;
-      await this.logPHIAccess('VIEW_HEALTH_RECORD', record.studentId, 'HEALTH_RECORD', id);
+      await this.logPHIAccess(AuditAction.VIEW_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
 
       return record;
     } catch (error: any) {
@@ -932,7 +931,7 @@ export class HealthRecordsApi {
       );
 
       const record = response.data.data!;
-      await this.logPHIAccess('CREATE_HEALTH_RECORD', data.studentId, 'HEALTH_RECORD', record.id);
+      await this.logPHIAccess(AuditAction.CREATE_HEALTH_RECORD, data.studentId, AuditResourceType.HEALTH_RECORD, record.id);
 
       return record;
     } catch (error: any) {

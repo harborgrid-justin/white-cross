@@ -43,16 +43,82 @@ export interface RefreshTokenResponse {
   expiresIn: number;
 }
 
+/**
+ * Strong password validation regex
+ * Requirements:
+ * - Minimum 12 characters
+ * - At least one uppercase letter
+ * - At least one lowercase letter
+ * - At least one number
+ * - At least one special character (@$!%*?&)
+ */
+const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+
+/**
+ * Custom password validator with detailed error messages
+ */
+const validateStrongPassword = (password: string): boolean => {
+  if (password.length < 12) {
+    throw new z.ZodError([{
+      code: 'custom',
+      path: ['password'],
+      message: 'Password must be at least 12 characters long',
+    }]);
+  }
+
+  if (!/[a-z]/.test(password)) {
+    throw new z.ZodError([{
+      code: 'custom',
+      path: ['password'],
+      message: 'Password must contain at least one lowercase letter',
+    }]);
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    throw new z.ZodError([{
+      code: 'custom',
+      path: ['password'],
+      message: 'Password must contain at least one uppercase letter',
+    }]);
+  }
+
+  if (!/\d/.test(password)) {
+    throw new z.ZodError([{
+      code: 'custom',
+      path: ['password'],
+      message: 'Password must contain at least one number',
+    }]);
+  }
+
+  if (!/[@$!%*?&]/.test(password)) {
+    throw new z.ZodError([{
+      code: 'custom',
+      path: ['password'],
+      message: 'Password must contain at least one special character (@$!%*?&)',
+    }]);
+  }
+
+  return true;
+};
+
 // Validation schemas
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(12, 'Password must be at least 12 characters'),
   rememberMe: z.boolean().optional(),
 });
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(
+      STRONG_PASSWORD_REGEX,
+      'Password must contain uppercase, lowercase, number, and special character (@$!%*?&)'
+    )
+    .refine(validateStrongPassword, {
+      message: 'Password does not meet security requirements',
+    }),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   role: z.enum(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR']),
