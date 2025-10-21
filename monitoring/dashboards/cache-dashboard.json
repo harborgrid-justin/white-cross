@@ -1,0 +1,339 @@
+{
+  "title": "White Cross - Cache Performance Dashboard",
+  "description": "Cache hit rates, memory usage, and optimization metrics",
+  "tags": ["cache", "performance", "optimization", "memory"],
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Cache Hit Rate",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "metric": "cache.hit_rate",
+          "aggregation": "avg",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 30, "color": "red" },
+        { "value": 50, "color": "yellow" },
+        { "value": 70, "color": "green" }
+      ],
+      "unit": "%",
+      "alert": {
+        "enabled": true,
+        "condition": "< 50 AND requestCount > 100",
+        "severity": "warning",
+        "message": "Cache hit rate below acceptable threshold"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Cache Hits vs Misses",
+      "type": "graph",
+      "gridPos": { "x": 8, "y": 0, "w": 16, "h": 8 },
+      "targets": [
+        {
+          "metric": "cache.hit",
+          "aggregation": "sum",
+          "groupBy": ["cacheType"],
+          "timeRange": "1h",
+          "alias": "Hits"
+        },
+        {
+          "metric": "cache.miss",
+          "aggregation": "sum",
+          "groupBy": ["cacheType"],
+          "timeRange": "1h",
+          "alias": "Misses"
+        }
+      ],
+      "legend": {
+        "show": true,
+        "position": "bottom"
+      },
+      "yAxes": [
+        { "label": "Count", "position": "left", "logScale": false }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Cache Memory Usage",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.memory.usage",
+          "aggregation": "current",
+          "timeRange": "1h"
+        }
+      ],
+      "unit": "MB",
+      "thresholds": [
+        { "value": 100, "color": "yellow" },
+        { "value": 500, "color": "red" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Cache Size",
+      "type": "singlestat",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.memory.usage",
+          "aggregation": "current",
+          "timeRange": "now"
+        }
+      ],
+      "unit": "MB",
+      "sparkline": {
+        "show": true,
+        "lineColor": "blue"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Cache Operations Rate",
+      "type": "singlestat",
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "metrics": ["cache.hit", "cache.miss"],
+          "aggregation": "rate",
+          "timeRange": "1m"
+        }
+      ],
+      "unit": "ops/sec",
+      "sparkline": {
+        "show": true,
+        "lineColor": "green"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Cache Invalidations",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.invalidation",
+          "aggregation": "sum",
+          "groupBy": ["cacheType", "reason"],
+          "timeRange": "1h"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Invalidation Reasons",
+      "type": "pie",
+      "gridPos": { "x": 12, "y": 14, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.invalidation",
+          "aggregation": "count",
+          "groupBy": ["reason"],
+          "timeRange": "1h"
+        }
+      ],
+      "legend": {
+        "show": true,
+        "position": "right"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Cache Evictions",
+      "type": "singlestat",
+      "gridPos": { "x": 18, "y": 14, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.eviction",
+          "aggregation": "sum",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 100, "color": "yellow" },
+        { "value": 500, "color": "red" }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "> 500/hour",
+        "severity": "warning",
+        "message": "High cache eviction rate - consider increasing cache size"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Cache Hit Rate by Type",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.hit_rate",
+          "aggregation": "avg",
+          "groupBy": ["cacheType"],
+          "timeRange": "1h"
+        }
+      ],
+      "columns": [
+        "Cache Type",
+        "Hit Rate %",
+        "Total Hits",
+        "Total Misses",
+        "Memory (MB)"
+      ],
+      "sortBy": "Hit Rate %",
+      "sortOrder": "desc"
+    },
+    {
+      "id": 10,
+      "title": "Top Cached Items",
+      "type": "table",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.hit",
+          "aggregation": "count",
+          "groupBy": ["key"],
+          "timeRange": "1h"
+        }
+      ],
+      "columns": ["Cache Key (Anonymized)", "Hit Count", "Last Access", "Size"],
+      "sortBy": "Hit Count",
+      "sortOrder": "desc",
+      "limit": 20
+    },
+    {
+      "id": 11,
+      "title": "Cache Latency",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 26, "w": 16, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.latency",
+          "aggregation": "percentile",
+          "percentiles": [50, 90, 95, 99],
+          "timeRange": "1h"
+        }
+      ],
+      "legend": {
+        "show": true,
+        "position": "bottom"
+      },
+      "yAxes": [
+        { "label": "Latency (ms)", "position": "left" }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Avg Cache Latency",
+      "type": "singlestat",
+      "gridPos": { "x": 16, "y": 26, "w": 8, "h": 6 },
+      "targets": [
+        {
+          "metric": "cache.latency",
+          "aggregation": "avg",
+          "timeRange": "1h"
+        }
+      ],
+      "unit": "ms",
+      "thresholds": [
+        { "value": 10, "color": "green" },
+        { "value": 50, "color": "yellow" },
+        { "value": 100, "color": "red" }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Cache Efficiency Score",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 32, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "formula": "(hitRate * 0.5) + ((1 - evictionRate) * 0.3) + ((1 - invalidationRate) * 0.2)",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 50, "color": "red" },
+        { "value": 70, "color": "yellow" },
+        { "value": 85, "color": "green" }
+      ],
+      "unit": "/100"
+    },
+    {
+      "id": 14,
+      "title": "Cache Health",
+      "type": "status",
+      "gridPos": { "x": 8, "y": 32, "w": 16, "h": 4 },
+      "targets": [
+        {
+          "checks": [
+            {
+              "name": "Acceptable Hit Rate",
+              "query": "cache.hit_rate",
+              "condition": ">= 50"
+            },
+            {
+              "name": "Memory Under Limit",
+              "query": "cache.memory.usage",
+              "condition": "< 500MB"
+            },
+            {
+              "name": "Low Eviction Rate",
+              "query": "cache.eviction",
+              "condition": "< 100/hour"
+            },
+            {
+              "name": "Fast Response",
+              "query": "cache.latency{p95}",
+              "condition": "< 50ms"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "name": "Cache Clears",
+      "datasource": "metrics",
+      "query": "cache.clear",
+      "iconColor": "orange"
+    },
+    {
+      "name": "Deployments",
+      "datasource": "deployments",
+      "query": "environment:production",
+      "iconColor": "blue"
+    }
+  ],
+  "variables": [
+    {
+      "name": "cacheType",
+      "type": "multi-select",
+      "datasource": "metrics",
+      "query": "cache.hit{cacheType:*}",
+      "options": ["all", "api", "query", "session", "static"],
+      "default": "all"
+    },
+    {
+      "name": "timeRange",
+      "type": "interval",
+      "options": ["5m", "15m", "1h", "6h", "24h"],
+      "default": "1h"
+    }
+  ],
+  "alerts": {
+    "channels": ["email", "slack"],
+    "recipients": {
+      "email": ["ops@whitecross.com"],
+      "slack": ["#ops-alerts"]
+    }
+  }
+}

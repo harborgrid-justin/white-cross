@@ -1,0 +1,170 @@
+version: '3.9'
+
+# White Cross Healthcare Platform - Docker Compose Configuration
+# Enhanced configuration for local development and testing
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: white-cross-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-white_cross_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d/migrations:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-white_cross_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - white-cross-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: white-cross-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-} --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - white-cross-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        NODE_ENV: development
+    container_name: white-cross-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3001}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-white_cross_dev}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_SSL: false
+      DB_LOGGING: true
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      SESSION_SECRET: ${SESSION_SECRET:-dev_session_secret_change_in_production}
+      CORS_ORIGIN: http://localhost:5173
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    ports:
+      - "${PORT:-3001}:3001"
+      - "9229:9229" # Debug port
+    volumes:
+      - ./backend:/app:delegated
+      - /app/node_modules
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - white-cross-network
+
+  # Frontend (Development Server)
+  frontend:
+    image: node:18-alpine
+    container_name: white-cross-frontend
+    restart: unless-stopped
+    working_dir: /app
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:3001
+      VITE_ENV: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app:delegated
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host"
+    networks:
+      - white-cross-network
+
+  # Adminer - Database Management UI
+  adminer:
+    image: adminer:latest
+    container_name: white-cross-adminer
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha
+    ports:
+      - "8080:8080"
+    networks:
+      - white-cross-network
+
+  # Redis Commander - Redis Management UI
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: white-cross-redis-commander
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    ports:
+      - "8081:8081"
+    networks:
+      - white-cross-network
+
+  # Mailhog - Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: white-cross-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - white-cross-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_logs:
+    driver: local
+
+networks:
+  white-cross-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

@@ -1,0 +1,103 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+cypress/
+__tests__/
+test/
+tests/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+.env.*.enc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Documentation
+*.md
+docs/
+CHANGELOG.md
+README.md
+LICENSE
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts (will be generated during build)
+dist/
+build/
+.next/
+out/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Frontend specific
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/cypress/
+frontend/public/
+
+# Backend specific
+backend/node_modules/
+backend/dist/
+backend/coverage/
+
+# Database
+*.sql
+*.sqlite
+*.db
+
+# Secrets and credentials
+*.pem
+*.key
+*.cert
+secrets/
+credentials/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Misc
+.husky/
+scripts/

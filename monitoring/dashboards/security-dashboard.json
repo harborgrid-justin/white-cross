@@ -1,0 +1,225 @@
+{
+  "title": "White Cross - Security Monitoring Dashboard",
+  "description": "Real-time security metrics and threat detection for healthcare platform",
+  "tags": ["security", "hipaa", "authentication", "authorization"],
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Login Attempts",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "metric": "security.login.attempts",
+          "aggregation": "sum",
+          "groupBy": ["success"],
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 100, "color": "yellow", "label": "High Activity" },
+        { "value": 200, "color": "red", "label": "Critical Activity" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Failed Login Rate",
+      "type": "singlestat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.login.failures",
+          "aggregation": "rate",
+          "timeRange": "5m"
+        }
+      ],
+      "thresholds": [
+        { "value": 5, "color": "yellow" },
+        { "value": 10, "color": "red" }
+      ],
+      "unit": "failures/min",
+      "alert": {
+        "enabled": true,
+        "condition": "> 5",
+        "severity": "warning"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Token Expirations",
+      "type": "graph",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.token.expirations",
+          "aggregation": "sum",
+          "groupBy": ["reason"],
+          "timeRange": "1h"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "CSRF Failures",
+      "type": "singlestat",
+      "gridPos": { "x": 12, "y": 4, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.csrf.failures",
+          "aggregation": "sum",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 1, "color": "yellow" },
+        { "value": 5, "color": "red" }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "> 1",
+        "severity": "critical"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Authorization Denials",
+      "type": "table",
+      "gridPos": { "x": 18, "y": 4, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.authorization.denials",
+          "aggregation": "count",
+          "groupBy": ["resource", "action"],
+          "timeRange": "1h"
+        }
+      ],
+      "columns": ["Resource", "Action", "Count"],
+      "sortBy": "Count",
+      "sortOrder": "desc"
+    },
+    {
+      "id": 6,
+      "title": "Session Timeouts",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "security.session.timeouts",
+          "aggregation": "sum",
+          "timeRange": "24h"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Suspicious Activity",
+      "type": "heatmap",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "security.suspicious.activity",
+          "aggregation": "count",
+          "groupBy": ["type", "hour"],
+          "timeRange": "7d"
+        }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "> 10",
+        "severity": "critical",
+        "notification": ["security-team", "pagerduty"]
+      }
+    },
+    {
+      "id": 8,
+      "title": "Active Sessions",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 14, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.sessions.active",
+          "aggregation": "current",
+          "timeRange": "now"
+        }
+      ],
+      "thresholds": [
+        { "value": 100, "color": "green" },
+        { "value": 500, "color": "yellow" },
+        { "value": 1000, "color": "red" }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Top Failed Login IPs",
+      "type": "table",
+      "gridPos": { "x": 6, "y": 14, "w": 9, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.login.failures",
+          "aggregation": "count",
+          "groupBy": ["ip"],
+          "timeRange": "1h"
+        }
+      ],
+      "columns": ["IP Address", "Attempts", "Last Attempt"],
+      "sortBy": "Attempts",
+      "sortOrder": "desc",
+      "limit": 10
+    },
+    {
+      "id": 10,
+      "title": "Security Events Timeline",
+      "type": "timeline",
+      "gridPos": { "x": 15, "y": 14, "w": 9, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.*",
+          "aggregation": "events",
+          "timeRange": "1h"
+        }
+      ],
+      "eventTypes": [
+        "login_failure",
+        "csrf_failure",
+        "authorization_denial",
+        "suspicious_activity"
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "name": "Security Incidents",
+      "datasource": "audit-logs",
+      "query": "category:security AND severity:(high OR critical)",
+      "iconColor": "red"
+    },
+    {
+      "name": "Deployments",
+      "datasource": "deployments",
+      "query": "environment:production",
+      "iconColor": "blue"
+    }
+  ],
+  "variables": [
+    {
+      "name": "environment",
+      "type": "constant",
+      "value": "production"
+    },
+    {
+      "name": "timeRange",
+      "type": "interval",
+      "options": ["5m", "15m", "1h", "6h", "24h", "7d"],
+      "default": "1h"
+    }
+  ],
+  "alerts": {
+    "channels": ["email", "slack", "pagerduty"],
+    "recipients": {
+      "email": ["security@whitecross.com"],
+      "slack": ["#security-alerts"],
+      "pagerduty": ["security-oncall"]
+    }
+  }
+}

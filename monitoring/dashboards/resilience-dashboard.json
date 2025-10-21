@@ -1,0 +1,326 @@
+{
+  "title": "White Cross - Resilience & Reliability Dashboard",
+  "description": "Circuit breakers, retries, timeouts, and system resilience metrics",
+  "tags": ["resilience", "reliability", "circuit-breaker", "fallback"],
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Circuit Breaker States",
+      "type": "status-panel",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "metric": "resilience.circuit_breaker.state",
+          "aggregation": "current",
+          "groupBy": ["service", "state"],
+          "timeRange": "now"
+        }
+      ],
+      "colorMapping": {
+        "closed": "green",
+        "half-open": "yellow",
+        "open": "red"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Open Circuit Breakers",
+      "type": "singlestat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.circuit_breaker.state",
+          "filter": "state:open",
+          "aggregation": "count",
+          "timeRange": "now"
+        }
+      ],
+      "thresholds": [
+        { "value": 1, "color": "yellow" },
+        { "value": 3, "color": "red" }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "> 0",
+        "duration": "5m",
+        "severity": "warning",
+        "message": "Circuit breaker(s) open - service degradation detected"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Circuit Breaker Transitions",
+      "type": "graph",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.circuit_breaker.state",
+          "aggregation": "changes",
+          "groupBy": ["service"],
+          "timeRange": "1h"
+        }
+      ],
+      "legend": {
+        "show": true,
+        "position": "bottom"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Request Deduplication",
+      "type": "graph",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.request.deduplication",
+          "aggregation": "sum",
+          "groupBy": ["duplicate"],
+          "timeRange": "1h"
+        }
+      ],
+      "legend": {
+        "show": true
+      }
+    },
+    {
+      "id": 5,
+      "title": "Deduplication Rate",
+      "type": "singlestat",
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.request.deduplication",
+          "filter": "duplicate:true",
+          "aggregation": "rate",
+          "timeRange": "1h"
+        }
+      ],
+      "unit": "%",
+      "sparkline": {
+        "show": true,
+        "lineColor": "blue"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Retry Attempts",
+      "type": "graph",
+      "gridPos": { "x": 6, "y": 8, "w": 9, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.request.retry",
+          "aggregation": "sum",
+          "groupBy": ["attempt", "success"],
+          "timeRange": "1h"
+        }
+      ],
+      "yAxes": [
+        { "label": "Count", "position": "left" }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Retry Success Rate",
+      "type": "gauge",
+      "gridPos": { "x": 15, "y": 8, "w": 9, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.request.retry",
+          "aggregation": "successRate",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 50, "color": "red" },
+        { "value": 80, "color": "yellow" },
+        { "value": 95, "color": "green" }
+      ],
+      "unit": "%"
+    },
+    {
+      "id": 8,
+      "title": "Timeout Events",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "resilience.timeout",
+          "aggregation": "sum",
+          "groupBy": ["operation"],
+          "timeRange": "1h"
+        }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "rate > 10/min",
+        "severity": "warning"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Timeout Rate by Operation",
+      "type": "table",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "resilience.timeout",
+          "aggregation": "rate",
+          "groupBy": ["operation"],
+          "timeRange": "1h"
+        }
+      ],
+      "columns": ["Operation", "Timeout Rate", "Total Timeouts", "Avg Duration"],
+      "sortBy": "Timeout Rate",
+      "sortOrder": "desc"
+    },
+    {
+      "id": 10,
+      "title": "Fallback Executions",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 18, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "resilience.fallback",
+          "aggregation": "sum",
+          "groupBy": ["operation", "success"],
+          "timeRange": "1h"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Fallback Success Rate",
+      "type": "singlestat",
+      "gridPos": { "x": 12, "y": 18, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "metric": "resilience.fallback",
+          "aggregation": "successRate",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 80, "color": "red" },
+        { "value": 95, "color": "yellow" },
+        { "value": 99, "color": "green" }
+      ],
+      "unit": "%"
+    },
+    {
+      "id": 12,
+      "title": "Service Health Map",
+      "type": "heatmap",
+      "gridPos": { "x": 18, "y": 18, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "metrics": [
+            "resilience.circuit_breaker.state",
+            "resilience.timeout",
+            "resilience.fallback"
+          ],
+          "aggregation": "health-score",
+          "groupBy": ["service"],
+          "timeRange": "1h"
+        }
+      ],
+      "colorScheme": "red-yellow-green",
+      "healthScoreFormula": "100 - (circuitOpenTime * 10 + timeoutRate * 5 + fallbackRate * 3)"
+    },
+    {
+      "id": 13,
+      "title": "Error Budget",
+      "type": "progress",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "metric": "resilience.error_budget.remaining",
+          "aggregation": "current",
+          "timeRange": "30d"
+        }
+      ],
+      "thresholds": [
+        { "value": 10, "color": "red" },
+        { "value": 30, "color": "yellow" },
+        { "value": 50, "color": "green" }
+      ],
+      "unit": "%",
+      "target": 99.9,
+      "alert": {
+        "enabled": true,
+        "condition": "< 20",
+        "severity": "critical",
+        "message": "Error budget critically low - reliability at risk"
+      }
+    },
+    {
+      "id": 14,
+      "title": "SLA Compliance",
+      "type": "status",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "checks": [
+            {
+              "name": "99.9% Uptime",
+              "query": "resilience.uptime",
+              "condition": ">= 99.9"
+            },
+            {
+              "name": "No Prolonged Outages",
+              "query": "resilience.circuit_breaker.state{state:open}",
+              "condition": "duration < 5m"
+            },
+            {
+              "name": "Acceptable Error Rate",
+              "query": "resilience.error_rate",
+              "condition": "< 0.1"
+            },
+            {
+              "name": "Fast Recovery",
+              "query": "resilience.recovery_time",
+              "condition": "< 60s"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "name": "Circuit Breaker Opens",
+      "datasource": "metrics",
+      "query": "resilience.circuit_breaker.state{state:open}",
+      "iconColor": "red"
+    },
+    {
+      "name": "Service Deployments",
+      "datasource": "deployments",
+      "query": "environment:production",
+      "iconColor": "blue"
+    }
+  ],
+  "variables": [
+    {
+      "name": "service",
+      "type": "multi-select",
+      "datasource": "metrics",
+      "query": "resilience.circuit_breaker.state{service:*}",
+      "default": "all"
+    },
+    {
+      "name": "timeRange",
+      "type": "interval",
+      "options": ["5m", "15m", "1h", "6h", "24h"],
+      "default": "1h"
+    }
+  ],
+  "alerts": {
+    "channels": ["email", "slack", "pagerduty"],
+    "recipients": {
+      "email": ["ops@whitecross.com"],
+      "slack": ["#ops-alerts"],
+      "pagerduty": ["ops-oncall"]
+    }
+  }
+}

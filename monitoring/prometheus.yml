@@ -1,0 +1,62 @@
+# White Cross Healthcare Platform - Prometheus Configuration
+# Metrics collection and monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'white-cross'
+    environment: '${ENVIRONMENT}'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Backend API metrics
+  - job_name: 'backend-api'
+    static_configs:
+      - targets:
+          - 'backend:3001'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Node exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+
+  # PostgreSQL exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets:
+          - 'postgres-exporter:9187'
+
+  # Redis exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+
+  # CloudWatch metrics (if using AWS)
+  - job_name: 'cloudwatch'
+    static_configs:
+      - targets:
+          - 'cloudwatch-exporter:9106'
+    metrics_path: '/metrics'

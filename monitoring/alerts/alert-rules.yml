@@ -1,0 +1,517 @@
+# White Cross Healthcare Platform - Alert Rules
+# Production monitoring and observability alert configuration
+# HIPAA-compliant alerting with appropriate severity levels
+
+version: "2.0"
+environment: production
+
+# Global alert configuration
+global:
+  resolve_timeout: 5m
+  slack_api_url: ${SLACK_WEBHOOK_URL}
+  pagerduty_url: ${PAGERDUTY_URL}
+  email_from: alerts@whitecross.com
+
+# Alert routing
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'severity', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+  routes:
+    # Critical security alerts - immediate pagerduty
+    - match:
+        severity: critical
+        category: security
+      receiver: security-critical
+      continue: true
+
+    # HIPAA compliance alerts - compliance team
+    - match:
+        category: audit
+        severity: critical
+      receiver: compliance-critical
+      continue: true
+
+    # Production incidents - ops team
+    - match:
+        severity: critical
+      receiver: ops-critical
+
+    # Warnings - slack only
+    - match:
+        severity: warning
+      receiver: ops-warning
+
+# Alert receivers
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: ops@whitecross.com
+
+  - name: 'security-critical'
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_SECURITY_KEY}
+        severity: critical
+        description: "Security Alert: {{ .CommonAnnotations.summary }}"
+    slack_configs:
+      - channel: '#security-alerts'
+        title: 'CRITICAL SECURITY ALERT'
+        text: '{{ .CommonAnnotations.description }}'
+        color: danger
+    email_configs:
+      - to: security@whitecross.com,ciso@whitecross.com
+
+  - name: 'compliance-critical'
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_COMPLIANCE_KEY}
+        severity: critical
+    slack_configs:
+      - channel: '#compliance-alerts'
+        title: 'HIPAA COMPLIANCE ALERT'
+        color: danger
+    email_configs:
+      - to: compliance@whitecross.com,security@whitecross.com
+
+  - name: 'ops-critical'
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_OPS_KEY}
+        severity: critical
+    slack_configs:
+      - channel: '#ops-alerts'
+        title: 'CRITICAL ALERT'
+        color: danger
+    email_configs:
+      - to: ops@whitecross.com
+
+  - name: 'ops-warning'
+    slack_configs:
+      - channel: '#ops-alerts'
+        title: 'Warning Alert'
+        color: warning
+
+# ============================================================================
+# SECURITY ALERTS
+# ============================================================================
+
+groups:
+  - name: security_alerts
+    interval: 30s
+    rules:
+      # High failed login rate
+      - alert: HighFailedLoginRate
+        expr: rate(security_login_failures[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High failed login rate detected"
+          description: "Failed login rate is {{ $value }} per minute (threshold: 5/min)"
+          runbook: "https://docs.whitecross.com/runbooks/security/failed-logins"
+
+      - alert: CriticalFailedLoginRate
+        expr: rate(security_login_failures[5m]) > 20
+        for: 2m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Critical failed login rate - possible attack"
+          description: "Failed login rate is {{ $value }} per minute (threshold: 20/min)"
+          action: "Investigate immediately for brute force attack"
+
+      # CSRF failures
+      - alert: CSRFFailureDetected
+        expr: increase(security_csrf_failures[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "CSRF failure detected"
+          description: "CSRF validation failed {{ $value }} times in last 5 minutes"
+          action: "Investigate potential CSRF attack immediately"
+
+      # Suspicious activity
+      - alert: SuspiciousActivityDetected
+        expr: increase(security_suspicious_activity[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Suspicious activity pattern detected"
+          description: "{{ $value }} suspicious events detected in last 5 minutes"
+          action: "Security team review required"
+
+      # Token expiration spike
+      - alert: HighTokenExpirationRate
+        expr: rate(security_token_expirations[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High token expiration rate"
+          description: "Token expiration rate: {{ $value }}/min"
+
+      # Authorization denials
+      - alert: HighAuthorizationDenials
+        expr: rate(security_authorization_denials[5m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High authorization denial rate"
+          description: "Authorization denied {{ $value }} times per minute"
+
+# ============================================================================
+# AUDIT & COMPLIANCE ALERTS
+# ============================================================================
+
+  - name: audit_alerts
+    interval: 30s
+    rules:
+      # Audit logging failures
+      - alert: AuditLoggingFailure
+        expr: rate(audit_events_failed[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: audit
+        annotations:
+          summary: "HIPAA COMPLIANCE RISK: Audit logging failures detected"
+          description: "{{ $value }} audit events failed to log in last 5 minutes"
+          action: "IMMEDIATE ACTION REQUIRED - HIPAA compliance at risk"
+          compliance: "HIPAA §164.312(b) - Audit Controls"
+
+      # Low audit success rate
+      - alert: LowAuditSuccessRate
+        expr: (audit_events_logged / (audit_events_logged + audit_events_failed)) < 0.99
+        for: 5m
+        labels:
+          severity: critical
+          category: audit
+        annotations:
+          summary: "Audit logging success rate below 99%"
+          description: "Current success rate: {{ $value | humanizePercentage }}"
+          action: "Investigate audit service health immediately"
+
+      # High audit queue depth
+      - alert: HighAuditQueueDepth
+        expr: audit_queue_depth > 1000
+        for: 5m
+        labels:
+          severity: warning
+          category: audit
+        annotations:
+          summary: "Audit queue backing up"
+          description: "Audit queue depth: {{ $value }} (threshold: 1000)"
+          action: "Check audit service performance"
+
+      - alert: CriticalAuditQueueDepth
+        expr: audit_queue_depth > 5000
+        for: 2m
+        labels:
+          severity: critical
+          category: audit
+        annotations:
+          summary: "Critical audit queue depth - data loss risk"
+          description: "Audit queue depth: {{ $value }} (threshold: 5000)"
+          action: "Immediate intervention required"
+
+      # Missing PHI access logs
+      - alert: MissingPHIAccessLogs
+        expr: |
+          (rate(api_requests{endpoint=~".*health.*|.*student.*|.*patient.*"}[5m]) > 0)
+          and
+          (rate(audit_events{eventType="PHI_ACCESS"}[5m]) == 0)
+        for: 5m
+        labels:
+          severity: critical
+          category: audit
+        annotations:
+          summary: "PHI access not being logged - HIPAA violation"
+          description: "PHI endpoints accessed but no audit events logged"
+          action: "CRITICAL - All PHI access must be logged per HIPAA"
+          compliance: "HIPAA §164.312(b)"
+
+# ============================================================================
+# RESILIENCE ALERTS
+# ============================================================================
+
+  - name: resilience_alerts
+    interval: 30s
+    rules:
+      # Circuit breaker open
+      - alert: CircuitBreakerOpen
+        expr: resilience_circuit_breaker_open > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: resilience
+        annotations:
+          summary: "Circuit breaker open - service degradation"
+          description: "{{ $value }} circuit breaker(s) currently open"
+          action: "Investigate failing service(s)"
+
+      - alert: CircuitBreakerOpenProlonged
+        expr: resilience_circuit_breaker_open > 0
+        for: 15m
+        labels:
+          severity: critical
+          category: resilience
+        annotations:
+          summary: "Circuit breaker open for extended period"
+          description: "Circuit breaker(s) open for >15 minutes"
+          action: "Critical service failure - immediate escalation"
+
+      # High timeout rate
+      - alert: HighTimeoutRate
+        expr: rate(resilience_timeout[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: resilience
+        annotations:
+          summary: "High timeout rate detected"
+          description: "{{ $value }} timeouts per minute"
+
+      # Retry storm
+      - alert: RetryStorm
+        expr: rate(resilience_requests_retried[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          category: resilience
+        annotations:
+          summary: "High retry rate - potential cascading failure"
+          description: "{{ $value }} retries per minute"
+          action: "Check for upstream service issues"
+
+      # Low error budget
+      - alert: LowErrorBudget
+        expr: resilience_error_budget_remaining < 20
+        for: 30m
+        labels:
+          severity: warning
+          category: resilience
+        annotations:
+          summary: "Error budget running low"
+          description: "{{ $value }}% error budget remaining this month"
+          action: "Freeze non-critical deployments"
+
+      - alert: CriticalErrorBudget
+        expr: resilience_error_budget_remaining < 10
+        for: 15m
+        labels:
+          severity: critical
+          category: resilience
+        annotations:
+          summary: "Critical error budget - reliability at risk"
+          description: "Only {{ $value }}% error budget remaining"
+          action: "FREEZE ALL deployments - incident response"
+
+# ============================================================================
+# CACHE ALERTS
+# ============================================================================
+
+  - name: cache_alerts
+    interval: 1m
+    rules:
+      # Low cache hit rate
+      - alert: LowCacheHitRate
+        expr: cache_hit_rate < 0.5 and (cache_hits + cache_misses) > 100
+        for: 15m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Low cache hit rate affecting performance"
+          description: "Cache hit rate: {{ $value | humanizePercentage }}"
+          action: "Review cache strategy and key patterns"
+
+      # High cache memory usage
+      - alert: HighCacheMemoryUsage
+        expr: cache_memory_usage > 500 * 1024 * 1024
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Cache memory usage high"
+          description: "Cache using {{ $value | humanize1024 }}B"
+
+      # High eviction rate
+      - alert: HighCacheEvictionRate
+        expr: rate(cache_eviction[5m]) > 100
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High cache eviction rate"
+          description: "{{ $value }} evictions per minute"
+          action: "Consider increasing cache size"
+
+# ============================================================================
+# PERFORMANCE ALERTS
+# ============================================================================
+
+  - name: performance_alerts
+    interval: 1m
+    rules:
+      # API latency
+      - alert: HighAPILatencyP95
+        expr: histogram_quantile(0.95, performance_api_latency) > 1000
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High API latency (p95)"
+          description: "p95 latency: {{ $value }}ms (threshold: 1000ms)"
+
+      - alert: CriticalAPILatencyP95
+        expr: histogram_quantile(0.95, performance_api_latency) > 3000
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Critical API latency degradation"
+          description: "p95 latency: {{ $value }}ms (threshold: 3000ms)"
+
+      # Web Vitals - LCP
+      - alert: PoorLCP
+        expr: performance_web_vitals_lcp > 4000
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Poor Largest Contentful Paint"
+          description: "LCP: {{ $value }}ms (threshold: 4000ms)"
+          impact: "Users experiencing slow page loads"
+
+      # Memory usage
+      - alert: HighMemoryUsage
+        expr: performance_memory_usage > (0.9 * performance_memory_limit)
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage at {{ $value | humanizePercentage }} of limit"
+
+      # Long tasks
+      - alert: FrequentLongTasks
+        expr: rate(performance_longtask[5m]) > 5
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Frequent long tasks blocking UI"
+          description: "{{ $value }} long tasks per minute"
+
+# ============================================================================
+# HEALTH CHECK ALERTS
+# ============================================================================
+
+  - name: health_alerts
+    interval: 30s
+    rules:
+      # System unhealthy
+      - alert: SystemUnhealthy
+        expr: health_status < 0.5
+        for: 2m
+        labels:
+          severity: critical
+          category: health
+        annotations:
+          summary: "System health check failing"
+          description: "System status: unhealthy"
+          action: "Check health endpoint for failing services"
+
+      # System degraded
+      - alert: SystemDegraded
+        expr: health_status < 1 and health_status >= 0.5
+        for: 10m
+        labels:
+          severity: warning
+          category: health
+        annotations:
+          summary: "System in degraded state"
+          description: "System status: degraded"
+
+      # Critical service down
+      - alert: CriticalServiceDown
+        expr: health_service_status{service=~"tokenManager|auditService|indexedDB"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: health
+        annotations:
+          summary: "Critical service health check failing"
+          description: "Service {{ $labels.service }} is down"
+          action: "Immediate investigation required"
+
+# ============================================================================
+# SLA & BUSINESS METRICS
+# ============================================================================
+
+  - name: sla_alerts
+    interval: 5m
+    rules:
+      # SLA breach
+      - alert: SLABreach
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.001
+        for: 5m
+        labels:
+          severity: critical
+          category: sla
+        annotations:
+          summary: "SLA breach - 99.9% uptime target at risk"
+          description: "Error rate: {{ $value | humanizePercentage }}"
+
+      # Uptime
+      - alert: UptimeBelow99_9
+        expr: avg_over_time(health_status[30d]) < 0.999
+        for: 1h
+        labels:
+          severity: critical
+          category: sla
+        annotations:
+          summary: "30-day uptime below 99.9% SLA"
+          description: "Current uptime: {{ $value | humanizePercentage }}"
+
+# Alert inhibition rules
+inhibit_rules:
+  # Don't alert on degraded if system is already unhealthy
+  - source_match:
+      severity: 'critical'
+      alertname: 'SystemUnhealthy'
+    target_match:
+      severity: 'warning'
+      alertname: 'SystemDegraded'
+    equal: ['service']
+
+  # Don't alert on high queue if audit is already failing
+  - source_match:
+      severity: 'critical'
+      category: 'audit'
+    target_match:
+      severity: 'warning'
+      alertname: 'HighAuditQueueDepth'
+    equal: ['environment']

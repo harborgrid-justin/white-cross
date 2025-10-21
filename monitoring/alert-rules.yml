@@ -1,0 +1,259 @@
+# White Cross Healthcare Platform - Prometheus Alert Rules
+# HIPAA-compliant monitoring and alerting
+
+groups:
+  - name: white_cross_critical
+    interval: 30s
+    rules:
+      # Application Health
+      - alert: ApplicationDown
+        expr: up{job="backend-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "White Cross API is down"
+          description: "The White Cross backend API has been down for more than 1 minute"
+          action: "Immediate investigation required. Check logs and restart services if necessary."
+
+      # Database Connectivity
+      - alert: DatabaseConnectionFailure
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: database
+          hipaa: "true"
+        annotations:
+          summary: "Database is unreachable"
+          description: "PostgreSQL database has been unreachable for 30 seconds"
+          action: "CRITICAL: PHI data access is affected. Immediate response required."
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: errors
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          action: "Check application logs and recent deployments"
+
+  - name: white_cross_performance
+    interval: 1m
+    rules:
+      # Response Time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 3
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile response time is {{ $value }}s (threshold: 3s)"
+          action: "Investigate slow queries and optimize performance"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+          action: "Consider scaling up or optimizing application"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+          action: "Check for memory leaks and consider scaling"
+
+  - name: white_cross_database
+    interval: 1m
+    rules:
+      # Database Connection Pool
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Database connections at {{ $value | humanizePercentage }} of maximum"
+          action: "Investigate connection leaks or increase pool size"
+
+      # Slow Queries
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_time[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+          hipaa: "true"
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value }}ms"
+          action: "Review and optimize slow queries affecting PHI access"
+
+      # Database Disk Space
+      - alert: DatabaseDiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/var/lib/postgresql"} / node_filesystem_size_bytes{mountpoint="/var/lib/postgresql"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: critical
+          category: storage
+          hipaa: "true"
+        annotations:
+          summary: "Database disk space critically low"
+          description: "Only {{ $value | humanize }}% disk space remaining"
+          action: "URGENT: Expand storage immediately to prevent data loss"
+
+  - name: white_cross_hipaa_compliance
+    interval: 1m
+    rules:
+      # Audit Log Failures
+      - alert: AuditLogFailures
+        expr: rate(audit_log_errors_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: compliance
+          hipaa: "true"
+        annotations:
+          summary: "HIPAA audit logging failures detected"
+          description: "Audit log errors: {{ $value }} per second"
+          action: "CRITICAL HIPAA VIOLATION: Fix audit logging immediately and document incident"
+
+      # Unauthorized Access Attempts
+      - alert: UnauthorizedAccessAttempts
+        expr: rate(http_requests_total{status="401"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+          hipaa: "true"
+        annotations:
+          summary: "High rate of unauthorized access attempts"
+          description: "{{ $value }} unauthorized attempts per second"
+          action: "Investigate potential security breach. Review access logs."
+
+      # PHI Access Without Audit
+      - alert: PHIAccessWithoutAudit
+        expr: rate(phi_access_total[5m]) > rate(audit_log_phi_access_total[5m]) * 1.01
+        for: 1m
+        labels:
+          severity: critical
+          category: compliance
+          hipaa: "true"
+        annotations:
+          summary: "PHI accessed without proper audit logging"
+          description: "HIPAA violation: PHI access not being audited"
+          action: "CRITICAL: Stop all PHI access until audit logging is restored"
+
+  - name: white_cross_security
+    interval: 1m
+    rules:
+      # SSL Certificate Expiration
+      - alert: SSLCertificateExpiringSoon
+        expr: ssl_certificate_expiry_days < 30
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate expires in {{ $value }} days"
+          action: "Renew SSL certificate before expiration"
+
+      # Failed Login Attempts
+      - alert: HighFailedLoginRate
+        expr: rate(login_failures_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High rate of failed login attempts"
+          description: "{{ $value }} failed logins per second"
+          action: "Possible brute force attack. Review and potentially block IPs."
+
+      # Rate Limiting Triggered
+      - alert: RateLimitingTriggered
+        expr: rate(rate_limit_exceeded_total[5m]) > 50
+        for: 5m
+        labels:
+          severity: info
+          category: security
+        annotations:
+          summary: "Rate limiting frequently triggered"
+          description: "Rate limit exceeded {{ $value }} times per second"
+          action: "Review rate limiting thresholds or investigate abuse"
+
+  - name: white_cross_data_integrity
+    interval: 5m
+    rules:
+      # Backup Failures
+      - alert: DatabaseBackupFailure
+        expr: time() - database_last_backup_timestamp > 86400
+        for: 1h
+        labels:
+          severity: critical
+          category: backup
+          hipaa: "true"
+        annotations:
+          summary: "Database backup has not run in 24 hours"
+          description: "Last successful backup: {{ $value | humanizeDuration }}"
+          action: "CRITICAL: Investigate backup system immediately (HIPAA requirement)"
+
+      # Data Replication Lag
+      - alert: DatabaseReplicationLag
+        expr: pg_replication_lag_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Database replication lag is high"
+          description: "Replication lag is {{ $value }}s"
+          action: "Check replication health and network connectivity"
+
+  - name: white_cross_availability
+    interval: 1m
+    rules:
+      # Redis Unavailable
+      - alert: RedisUnavailable
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis cache is unavailable"
+          description: "Redis has been down for 1 minute"
+          action: "Check Redis service and restart if necessary"
+
+      # High Cache Miss Rate
+      - alert: HighCacheMissRate
+        expr: rate(cache_misses_total[5m]) / rate(cache_requests_total[5m]) > 0.5
+        for: 10m
+        labels:
+          severity: info
+          category: performance
+        annotations:
+          summary: "High cache miss rate"
+          description: "Cache miss rate is {{ $value | humanizePercentage }}"
+          action: "Review caching strategy and configuration"

@@ -13,6 +13,7 @@
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
+import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
 import {
   Medication,
   StudentMedication,
@@ -423,8 +424,22 @@ export class MedicationsApi {
         `${API_ENDPOINTS.MEDICATIONS.BASE}?${queryString.toString()}`
       );
 
+      // Audit log for viewing medications list
+      await auditService.log({
+        action: AuditAction.VIEW_MEDICATIONS,
+        resourceType: AuditResourceType.MEDICATION,
+        status: AuditStatus.SUCCESS,
+      });
+
       return response.data.data;
     } catch (error: any) {
+      // Audit log for failed attempt
+      await auditService.log({
+        action: AuditAction.VIEW_MEDICATIONS,
+        resourceType: AuditResourceType.MEDICATION,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.message || 'Failed to fetch medications');
     }
   }
@@ -440,8 +455,22 @@ export class MedicationsApi {
         `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`
       );
 
+      await auditService.log({
+        action: AuditAction.VIEW_MEDICATION,
+        resourceType: AuditResourceType.MEDICATION,
+        resourceId: id,
+        status: AuditStatus.SUCCESS,
+      });
+
       return response.data.data;
     } catch (error: any) {
+      await auditService.log({
+        action: AuditAction.VIEW_MEDICATION,
+        resourceType: AuditResourceType.MEDICATION,
+        resourceId: id,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.message || 'Failed to fetch medication');
     }
   }
@@ -458,11 +487,32 @@ export class MedicationsApi {
         medicationData
       );
 
-      return response.data.data.medication;
+      const medication = response.data.data.medication;
+
+      await auditService.log({
+        action: AuditAction.CREATE_MEDICATION,
+        resourceType: AuditResourceType.MEDICATION,
+        resourceId: medication.id,
+        resourceIdentifier: medication.name,
+        status: AuditStatus.SUCCESS,
+        isPHI: true,
+        metadata: {
+          isControlled: medication.isControlled,
+          dosageForm: medication.dosageForm,
+        },
+      });
+
+      return medication;
     } catch (error: any) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
+      await auditService.log({
+        action: AuditAction.CREATE_MEDICATION,
+        resourceType: AuditResourceType.MEDICATION,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.message || 'Failed to create medication');
     }
   }
@@ -525,6 +575,7 @@ export class MedicationsApi {
 
   /**
    * Log medication administration
+   * CRITICAL: This is a patient safety operation and must be audited
    */
   async logAdministration(logData: MedicationAdministrationData): Promise<MedicationLog> {
     try {
@@ -535,11 +586,40 @@ export class MedicationsApi {
         logData
       );
 
-      return response.data.data.medicationLog;
+      const medicationLog = response.data.data.medicationLog;
+
+      // CRITICAL: Immediate audit log for medication administration
+      await auditService.log({
+        action: AuditAction.ADMINISTER_MEDICATION,
+        resourceType: AuditResourceType.MEDICATION_LOG,
+        resourceId: medicationLog.id,
+        studentId: medicationLog.studentId,
+        status: AuditStatus.SUCCESS,
+        isPHI: true,
+        metadata: {
+          dosageGiven: logData.dosageGiven,
+          timeGiven: logData.timeGiven,
+          studentMedicationId: logData.studentMedicationId,
+          hasSideEffects: !!logData.sideEffects,
+        },
+      });
+
+      return medicationLog;
     } catch (error: any) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
+      // CRITICAL: Log failed administration attempt
+      await auditService.log({
+        action: AuditAction.ADMINISTER_MEDICATION,
+        resourceType: AuditResourceType.MEDICATION_LOG,
+        status: AuditStatus.FAILURE,
+        isPHI: true,
+        context: {
+          error: error.message,
+          studentMedicationId: logData.studentMedicationId,
+        },
+      });
       throw new Error(error.response?.data?.message || 'Failed to log administration');
     }
   }
@@ -649,6 +729,7 @@ export class MedicationsApi {
 
   /**
    * Report adverse reaction
+   * CRITICAL: Patient safety event that must be immediately audited
    */
   async reportAdverseReaction(reactionData: AdverseReactionData): Promise<AdverseReaction> {
     try {
@@ -657,8 +738,37 @@ export class MedicationsApi {
         reactionData
       );
 
-      return response.data.data.report;
+      const report = response.data.data.report;
+
+      // CRITICAL: Immediate audit log for adverse reaction
+      await auditService.log({
+        action: AuditAction.REPORT_ADVERSE_REACTION,
+        resourceType: AuditResourceType.ADVERSE_REACTION,
+        resourceId: report.id,
+        studentId: report.studentId,
+        status: AuditStatus.SUCCESS,
+        isPHI: true,
+        metadata: {
+          severity: reactionData.severity,
+          studentMedicationId: reactionData.studentMedicationId,
+          reportedAt: reactionData.reportedAt,
+        },
+      });
+
+      return report;
     } catch (error: any) {
+      // CRITICAL: Log failed adverse reaction report
+      await auditService.log({
+        action: AuditAction.REPORT_ADVERSE_REACTION,
+        resourceType: AuditResourceType.ADVERSE_REACTION,
+        status: AuditStatus.FAILURE,
+        isPHI: true,
+        context: {
+          error: error.message,
+          severity: reactionData.severity,
+          studentMedicationId: reactionData.studentMedicationId,
+        },
+      });
       throw new Error(error.response?.data?.message || 'Failed to report adverse reaction');
     }
   }

@@ -1,0 +1,19 @@
+{
+  "*.{ts,tsx}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{js,jsx}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{json,md,yml,yaml}": [
+    "prettier --write"
+  ],
+  "backend/**/*.ts": [
+    "bash -c 'cd backend && tsc --noEmit'"
+  ],
+  "frontend/**/*.{ts,tsx}": [
+    "bash -c 'cd frontend && tsc --noEmit'"
+  ]
+}

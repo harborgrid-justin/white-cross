@@ -13,6 +13,7 @@
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
 import { z } from 'zod';
+import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
 import {
   Student,
   CreateStudentData,
@@ -301,8 +302,25 @@ export class StudentsApi {
         throw new Error(response.data.error?.message || 'Student not found');
       }
 
-      return response.data.data.student;
+      const student = response.data.data.student;
+
+      // Audit log for viewing student PHI
+      await auditService.logPHIAccess(
+        AuditAction.VIEW_STUDENT,
+        id,
+        AuditResourceType.STUDENT,
+        id
+      );
+
+      return student;
     } catch (error: any) {
+      await auditService.log({
+        action: AuditAction.VIEW_STUDENT,
+        resourceType: AuditResourceType.STUDENT,
+        resourceId: id,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch student');
     }
   }
@@ -324,11 +342,34 @@ export class StudentsApi {
         throw new Error(response.data.error?.message || 'Failed to create student');
       }
 
-      return response.data.data.student;
+      const student = response.data.data.student;
+
+      // Audit log for creating student
+      await auditService.log({
+        action: AuditAction.CREATE_STUDENT,
+        resourceType: AuditResourceType.STUDENT,
+        resourceId: student.id,
+        studentId: student.id,
+        resourceIdentifier: `${student.firstName} ${student.lastName}`,
+        status: AuditStatus.SUCCESS,
+        isPHI: true,
+        metadata: {
+          studentNumber: student.studentNumber,
+          grade: student.grade,
+        },
+      });
+
+      return student;
     } catch (error: any) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
+      await auditService.log({
+        action: AuditAction.CREATE_STUDENT,
+        resourceType: AuditResourceType.STUDENT,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to create student');
     }
   }
@@ -352,11 +393,36 @@ export class StudentsApi {
         throw new Error(response.data.error?.message || 'Failed to update student');
       }
 
-      return response.data.data.student;
+      const student = response.data.data.student;
+
+      // Audit log for updating student with change tracking
+      await auditService.log({
+        action: AuditAction.UPDATE_STUDENT,
+        resourceType: AuditResourceType.STUDENT,
+        resourceId: id,
+        studentId: id,
+        resourceIdentifier: `${student.firstName} ${student.lastName}`,
+        status: AuditStatus.SUCCESS,
+        isPHI: true,
+        afterState: studentData,
+        metadata: {
+          fieldsUpdated: Object.keys(studentData),
+        },
+      });
+
+      return student;
     } catch (error: any) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
+      await auditService.log({
+        action: AuditAction.UPDATE_STUDENT,
+        resourceType: AuditResourceType.STUDENT,
+        resourceId: id,
+        studentId: id,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to update student');
     }
   }
@@ -588,6 +654,7 @@ export class StudentsApi {
   /**
    * Export student data for reporting or compliance
    * Matches backend: StudentService.exportStudentData()
+   * CRITICAL: Exports contain PHI and must be audited immediately
    */
   async exportStudentData(studentId: string): Promise<ExportStudentDataResponse> {
     try {
@@ -601,8 +668,26 @@ export class StudentsApi {
         throw new Error(response.data.error?.message || 'Failed to export student data');
       }
 
+      // CRITICAL: Audit log for exporting student data
+      await auditService.log({
+        action: AuditAction.EXPORT_STUDENT_DATA,
+        resourceType: AuditResourceType.STUDENT,
+        resourceId: studentId,
+        studentId,
+        status: AuditStatus.SUCCESS,
+        isPHI: true,
+      });
+
       return response.data.data;
     } catch (error: any) {
+      await auditService.log({
+        action: AuditAction.EXPORT_STUDENT_DATA,
+        resourceType: AuditResourceType.STUDENT,
+        resourceId: studentId,
+        studentId,
+        status: AuditStatus.FAILURE,
+        context: { error: error.message },
+      });
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to export student data');
     }
   }

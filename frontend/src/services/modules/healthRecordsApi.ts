@@ -953,7 +953,7 @@ export class HealthRecordsApi {
       );
 
       const record = response.data.data!;
-      await this.logPHIAccess('UPDATE_HEALTH_RECORD', record.studentId, 'HEALTH_RECORD', id);
+      await this.logPHIAccess(AuditAction.UPDATE_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
 
       return record;
     } catch (error: any) {
@@ -971,7 +971,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/${id}`);
 
-      await this.logPHIAccess('DELETE_HEALTH_RECORD', record.studentId, 'HEALTH_RECORD', id);
+      await this.logPHIAccess(AuditAction.DELETE_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -990,7 +990,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/timeline?${params.toString()}`
       );
 
-      await this.logPHIAccess('VIEW_HEALTH_TIMELINE', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_HEALTH_TIMELINE, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1007,7 +1007,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/summary`
       );
 
-      await this.logPHIAccess('VIEW_HEALTH_SUMMARY', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_HEALTH_SUMMARY, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1048,7 +1048,7 @@ export class HealthRecordsApi {
         { responseType: 'blob' }
       );
 
-      await this.logPHIAccess('EXPORT_HEALTH_RECORDS', studentId);
+      await this.logPHIAccess(AuditAction.EXPORT_HEALTH_RECORDS, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data;
     } catch (error: any) {
@@ -1074,7 +1074,7 @@ export class HealthRecordsApi {
         }
       );
 
-      await this.logPHIAccess('IMPORT_HEALTH_RECORDS', studentId);
+      await this.logPHIAccess(AuditAction.IMPORT_HEALTH_RECORDS, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1115,7 +1115,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/allergies`
       );
 
-      await this.logPHIAccess('VIEW_ALLERGIES', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_ALLERGIES, studentId, AuditResourceType.ALLERGY);
 
       return response.data.data!.allergies;
     } catch (error: any) {
@@ -1133,7 +1133,7 @@ export class HealthRecordsApi {
       );
 
       const allergy = response.data.data!;
-      await this.logPHIAccess('VIEW_ALLERGY', allergy.studentId, 'ALLERGY', id);
+      await this.logPHIAccess(AuditAction.VIEW_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
 
       return allergy;
     } catch (error: any) {
@@ -1155,7 +1155,7 @@ export class HealthRecordsApi {
       );
 
       const allergy = response.data.data!;
-      await this.logPHIAccess('CREATE_ALLERGY', data.studentId, 'ALLERGY', allergy.id);
+      await this.logPHIAccess(AuditAction.CREATE_ALLERGY, data.studentId, AuditResourceType.ALLERGY, allergy.id);
 
       return allergy;
     } catch (error: any) {
@@ -1177,7 +1177,7 @@ export class HealthRecordsApi {
       );
 
       const allergy = response.data.data!;
-      await this.logPHIAccess('UPDATE_ALLERGY', allergy.studentId, 'ALLERGY', id);
+      await this.logPHIAccess(AuditAction.UPDATE_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
 
       return allergy;
     } catch (error: any) {
@@ -1194,7 +1194,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/allergies/${id}`);
 
-      await this.logPHIAccess('DELETE_ALLERGY', allergy.studentId, 'ALLERGY', id);
+      await this.logPHIAccess(AuditAction.DELETE_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -1211,7 +1211,7 @@ export class HealthRecordsApi {
       );
 
       const allergy = response.data.data!;
-      await this.logPHIAccess('VERIFY_ALLERGY', allergy.studentId, 'ALLERGY', id);
+      await this.logPHIAccess(AuditAction.VERIFY_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
 
       return allergy;
     } catch (error: any) {
@@ -1228,7 +1228,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/allergies/critical`
       );
 
-      await this.logPHIAccess('VIEW_CRITICAL_ALLERGIES', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_CRITICAL_ALLERGIES, studentId, AuditResourceType.ALLERGY);
 
       return response.data.data!.allergies;
     } catch (error: any) {
@@ -1254,7 +1254,7 @@ export class HealthRecordsApi {
         { medicationId }
       );
 
-      await this.logPHIAccess('CHECK_CONTRAINDICATIONS', studentId);
+      await this.logPHIAccess(AuditAction.CHECK_CONTRAINDICATIONS, studentId, AuditResourceType.ALLERGY);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1301,7 +1301,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/conditions`
       );
 
-      await this.logPHIAccess('VIEW_CHRONIC_CONDITIONS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_CHRONIC_CONDITIONS, studentId, AuditResourceType.CHRONIC_CONDITION);
 
       return response.data.data!.conditions;
     } catch (error: any) {
@@ -1319,7 +1319,7 @@ export class HealthRecordsApi {
       );
 
       const condition = response.data.data!;
-      await this.logPHIAccess('VIEW_CHRONIC_CONDITION', condition.studentId, 'CHRONIC_CONDITION', id);
+      await this.logPHIAccess(AuditAction.VIEW_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
 
       return condition;
     } catch (error: any) {
@@ -1341,7 +1341,7 @@ export class HealthRecordsApi {
       );
 
       const condition = response.data.data!;
-      await this.logPHIAccess('CREATE_CHRONIC_CONDITION', data.studentId, 'CHRONIC_CONDITION', condition.id);
+      await this.logPHIAccess(AuditAction.CREATE_CHRONIC_CONDITION, data.studentId, AuditResourceType.CHRONIC_CONDITION, condition.id);
 
       return condition;
     } catch (error: any) {
@@ -1363,7 +1363,7 @@ export class HealthRecordsApi {
       );
 
       const condition = response.data.data!;
-      await this.logPHIAccess('UPDATE_CHRONIC_CONDITION', condition.studentId, 'CHRONIC_CONDITION', id);
+      await this.logPHIAccess(AuditAction.UPDATE_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
 
       return condition;
     } catch (error: any) {
@@ -1380,7 +1380,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/conditions/${id}`);
 
-      await this.logPHIAccess('DELETE_CHRONIC_CONDITION', condition.studentId, 'CHRONIC_CONDITION', id);
+      await this.logPHIAccess(AuditAction.DELETE_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -1397,7 +1397,7 @@ export class HealthRecordsApi {
       );
 
       const condition = response.data.data!;
-      await this.logPHIAccess('UPDATE_CONDITION_STATUS', condition.studentId, 'CHRONIC_CONDITION', id);
+      await this.logPHIAccess(AuditAction.UPDATE_CONDITION_STATUS, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
 
       return condition;
     } catch (error: any) {
@@ -1414,7 +1414,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/conditions/active`
       );
 
-      await this.logPHIAccess('VIEW_ACTIVE_CONDITIONS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_ACTIVE_CONDITIONS, studentId, AuditResourceType.CHRONIC_CONDITION);
 
       return response.data.data!.conditions;
     } catch (error: any) {
@@ -1476,7 +1476,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/vaccinations`
       );
 
-      await this.logPHIAccess('VIEW_VACCINATIONS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_VACCINATIONS, studentId, AuditResourceType.VACCINATION);
 
       return response.data.data!.vaccinations;
     } catch (error: any) {
@@ -1494,7 +1494,7 @@ export class HealthRecordsApi {
       );
 
       const vaccination = response.data.data!;
-      await this.logPHIAccess('VIEW_VACCINATION', vaccination.studentId, 'VACCINATION', id);
+      await this.logPHIAccess(AuditAction.VIEW_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
 
       return vaccination;
     } catch (error: any) {
@@ -1516,7 +1516,7 @@ export class HealthRecordsApi {
       );
 
       const vaccination = response.data.data!;
-      await this.logPHIAccess('CREATE_VACCINATION', data.studentId, 'VACCINATION', vaccination.id);
+      await this.logPHIAccess(AuditAction.CREATE_VACCINATION, data.studentId, AuditResourceType.VACCINATION, vaccination.id);
 
       return vaccination;
     } catch (error: any) {
@@ -1538,7 +1538,7 @@ export class HealthRecordsApi {
       );
 
       const vaccination = response.data.data!;
-      await this.logPHIAccess('UPDATE_VACCINATION', vaccination.studentId, 'VACCINATION', id);
+      await this.logPHIAccess(AuditAction.UPDATE_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
 
       return vaccination;
     } catch (error: any) {
@@ -1555,7 +1555,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/vaccinations/${id}`);
 
-      await this.logPHIAccess('DELETE_VACCINATION', vaccination.studentId, 'VACCINATION', id);
+      await this.logPHIAccess(AuditAction.DELETE_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -1570,7 +1570,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/vaccinations/compliance`
       );
 
-      await this.logPHIAccess('CHECK_VACCINATION_COMPLIANCE', studentId);
+      await this.logPHIAccess(AuditAction.CHECK_VACCINATION_COMPLIANCE, studentId, AuditResourceType.VACCINATION);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1592,7 +1592,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/vaccinations/upcoming?daysAhead=${daysAhead}`
       );
 
-      await this.logPHIAccess('VIEW_UPCOMING_VACCINATIONS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_UPCOMING_VACCINATIONS, studentId, AuditResourceType.VACCINATION);
 
       return response.data.data!.upcoming;
     } catch (error: any) {
@@ -1610,7 +1610,7 @@ export class HealthRecordsApi {
         { responseType: 'blob' }
       );
 
-      await this.logPHIAccess('GENERATE_VACCINATION_REPORT', studentId);
+      await this.logPHIAccess(AuditAction.GENERATE_VACCINATION_REPORT, studentId, AuditResourceType.VACCINATION);
 
       return response.data;
     } catch (error: any) {
@@ -1656,7 +1656,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/screenings`
       );
 
-      await this.logPHIAccess('VIEW_SCREENINGS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_SCREENINGS, studentId, AuditResourceType.SCREENING);
 
       return response.data.data!.screenings;
     } catch (error: any) {
@@ -1674,7 +1674,7 @@ export class HealthRecordsApi {
       );
 
       const screening = response.data.data!;
-      await this.logPHIAccess('VIEW_SCREENING', screening.studentId, 'SCREENING', id);
+      await this.logPHIAccess(AuditAction.VIEW_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
 
       return screening;
     } catch (error: any) {
@@ -1696,7 +1696,7 @@ export class HealthRecordsApi {
       );
 
       const screening = response.data.data!;
-      await this.logPHIAccess('CREATE_SCREENING', data.studentId, 'SCREENING', screening.id);
+      await this.logPHIAccess(AuditAction.CREATE_SCREENING, data.studentId, AuditResourceType.SCREENING, screening.id);
 
       return screening;
     } catch (error: any) {
@@ -1718,7 +1718,7 @@ export class HealthRecordsApi {
       );
 
       const screening = response.data.data!;
-      await this.logPHIAccess('UPDATE_SCREENING', screening.studentId, 'SCREENING', id);
+      await this.logPHIAccess(AuditAction.UPDATE_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
 
       return screening;
     } catch (error: any) {
@@ -1735,7 +1735,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/screenings/${id}`);
 
-      await this.logPHIAccess('DELETE_SCREENING', screening.studentId, 'SCREENING', id);
+      await this.logPHIAccess(AuditAction.DELETE_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -1807,7 +1807,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/growth`
       );
 
-      await this.logPHIAccess('VIEW_GROWTH_MEASUREMENTS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_GROWTH_MEASUREMENTS, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!.measurements;
     } catch (error: any) {
@@ -1825,7 +1825,7 @@ export class HealthRecordsApi {
       );
 
       const measurement = response.data.data!;
-      await this.logPHIAccess('VIEW_GROWTH_MEASUREMENT', measurement.studentId, 'GROWTH_MEASUREMENT', id);
+      await this.logPHIAccess(AuditAction.VIEW_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
 
       return measurement;
     } catch (error: any) {
@@ -1847,7 +1847,7 @@ export class HealthRecordsApi {
       );
 
       const measurement = response.data.data!;
-      await this.logPHIAccess('CREATE_GROWTH_MEASUREMENT', data.studentId, 'GROWTH_MEASUREMENT', measurement.id);
+      await this.logPHIAccess(AuditAction.CREATE_GROWTH_MEASUREMENT, data.studentId, AuditResourceType.GROWTH_MEASUREMENT, measurement.id);
 
       return measurement;
     } catch (error: any) {
@@ -1869,7 +1869,7 @@ export class HealthRecordsApi {
       );
 
       const measurement = response.data.data!;
-      await this.logPHIAccess('UPDATE_GROWTH_MEASUREMENT', measurement.studentId, 'GROWTH_MEASUREMENT', id);
+      await this.logPHIAccess(AuditAction.UPDATE_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
 
       return measurement;
     } catch (error: any) {
@@ -1886,7 +1886,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/growth/${id}`);
 
-      await this.logPHIAccess('DELETE_GROWTH_MEASUREMENT', measurement.studentId, 'GROWTH_MEASUREMENT', id);
+      await this.logPHIAccess(AuditAction.DELETE_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -1901,7 +1901,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/growth/trends`
       );
 
-      await this.logPHIAccess('VIEW_GROWTH_TRENDS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_GROWTH_TRENDS, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1926,7 +1926,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/growth/concerns`
       );
 
-      await this.logPHIAccess('VIEW_GROWTH_CONCERNS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_GROWTH_CONCERNS, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1950,7 +1950,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/growth/percentiles`
       );
 
-      await this.logPHIAccess('CALCULATE_PERCENTILES', studentId);
+      await this.logPHIAccess(AuditAction.CALCULATE_PERCENTILES, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!;
     } catch (error: any) {
@@ -1980,7 +1980,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/vitals?${params.toString()}`
       );
 
-      await this.logPHIAccess('VIEW_VITAL_SIGNS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_VITAL_SIGNS, studentId, AuditResourceType.VITAL_SIGNS);
 
       return response.data.data!.vitals;
     } catch (error: any) {
@@ -1998,7 +1998,7 @@ export class HealthRecordsApi {
       );
 
       const vitals = response.data.data!;
-      await this.logPHIAccess('VIEW_VITAL_SIGNS', vitals.studentId, 'VITAL_SIGNS', id);
+      await this.logPHIAccess(AuditAction.VIEW_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
 
       return vitals;
     } catch (error: any) {
@@ -2020,7 +2020,7 @@ export class HealthRecordsApi {
       );
 
       const vitals = response.data.data!;
-      await this.logPHIAccess('CREATE_VITAL_SIGNS', data.studentId, 'VITAL_SIGNS', vitals.id);
+      await this.logPHIAccess(AuditAction.CREATE_VITAL_SIGNS, data.studentId, AuditResourceType.VITAL_SIGNS, vitals.id);
 
       return vitals;
     } catch (error: any) {
@@ -2042,7 +2042,7 @@ export class HealthRecordsApi {
       );
 
       const vitals = response.data.data!;
-      await this.logPHIAccess('UPDATE_VITAL_SIGNS', vitals.studentId, 'VITAL_SIGNS', id);
+      await this.logPHIAccess(AuditAction.UPDATE_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
 
       return vitals;
     } catch (error: any) {
@@ -2059,7 +2059,7 @@ export class HealthRecordsApi {
 
       await apiInstance.delete(`${this.baseEndpoint}/vitals/${id}`);
 
-      await this.logPHIAccess('DELETE_VITAL_SIGNS', vitals.studentId, 'VITAL_SIGNS', id);
+      await this.logPHIAccess(AuditAction.DELETE_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
@@ -2074,7 +2074,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/vitals/latest`
       );
 
-      await this.logPHIAccess('VIEW_LATEST_VITALS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_LATEST_VITALS, studentId, AuditResourceType.VITAL_SIGNS);
 
       return response.data.data!.vitals;
     } catch (error: any) {
@@ -2101,7 +2101,7 @@ export class HealthRecordsApi {
         `${this.baseEndpoint}/student/${studentId}/vitals/trends?${params.toString()}`
       );
 
-      await this.logPHIAccess('VIEW_VITAL_TRENDS', studentId);
+      await this.logPHIAccess(AuditAction.VIEW_VITAL_TRENDS, studentId, AuditResourceType.VITAL_SIGNS);
 
       return response.data.data!;
     } catch (error: any) {

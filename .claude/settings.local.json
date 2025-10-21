@@ -97,7 +97,9 @@
       "Bash(rm C:/temp/white-cross/backend/src/services/communicationService.ts)",
       "Bash(rm C:/temp/white-cross/backend/src/services/medicationService.ts)",
       "Bash(do sed -i \"s|from ''../../../services/healthRecordService''|from ''../../../services/healthRecord''|g\" \"$file\")",
-      "Bash(paste:*)"
+      "Bash(paste:*)",
+      "Bash(wc:*)",
+      "Read(//f/temp/**)"
     ],
     "deny": [],
     "ask": []

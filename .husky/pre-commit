@@ -1,0 +1,57 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged for staged files
+npx lint-staged
+
+# Check for console.log in staged files (excluding test files)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$' | grep -v -E '\.(test|spec)\.(ts|tsx|js|jsx)$')
+
+if [ -n "$STAGED_FILES" ]; then
+  echo "🔎 Checking for console.log statements..."
+  if echo "$STAGED_FILES" | xargs grep -n "console\.log" 2>/dev/null; then
+    echo "❌ Error: console.log found in staged files (excluding test files)"
+    echo "Please remove console.log statements before committing"
+    exit 1
+  fi
+fi
+
+# Check for TODOs without ticket numbers
+if [ -n "$STAGED_FILES" ]; then
+  echo "🎫 Checking for TODOs without ticket numbers..."
+  if echo "$STAGED_FILES" | xargs grep -n "TODO" 2>/dev/null | grep -v "#[0-9]"; then
+    echo "⚠️  Warning: TODOs should include ticket numbers (e.g., TODO: #123)"
+    echo "Continue anyway? (y/n)"
+    read -r response
+    if [ "$response" != "y" ]; then
+      exit 1
+    fi
+  fi
+fi
+
+# Check for debugger statements
+if [ -n "$STAGED_FILES" ]; then
+  echo "🐛 Checking for debugger statements..."
+  if echo "$STAGED_FILES" | xargs grep -n "debugger" 2>/dev/null; then
+    echo "❌ Error: debugger statement found in staged files"
+    exit 1
+  fi
+fi
+
+# Check for sensitive data patterns
+if [ -n "$STAGED_FILES" ]; then
+  echo "🔐 Checking for potential secrets..."
+  if echo "$STAGED_FILES" | xargs grep -nE "(password|api[_-]?key|secret|token|auth[_-]?token).*=.*['\"][^'\"]{8,}" 2>/dev/null | grep -v -E "\.test\.|\.spec\.|\.example\."; then
+    echo "⚠️  Warning: Potential secrets detected in staged files"
+    echo "Please ensure no actual credentials are being committed"
+    echo "Continue anyway? (y/n)"
+    read -r response
+    if [ "$response" != "y" ]; then
+      exit 1
+    fi
+  fi
+fi
+
+echo "✅ Pre-commit checks passed!"

@@ -1,0 +1,311 @@
+{
+  "title": "White Cross - Audit & Compliance Dashboard",
+  "description": "HIPAA audit logging and compliance monitoring",
+  "tags": ["audit", "hipaa", "compliance", "phi-access"],
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Audit Events Logged",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "metric": "audit.events",
+          "aggregation": "sum",
+          "groupBy": ["eventType"],
+          "timeRange": "24h"
+        }
+      ],
+      "legend": {
+        "show": true,
+        "position": "bottom"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Audit Logging Success Rate",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "metric": "audit.events",
+          "aggregation": "successRate",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 95, "color": "red" },
+        { "value": 99, "color": "yellow" },
+        { "value": 99.9, "color": "green" }
+      ],
+      "unit": "%",
+      "alert": {
+        "enabled": true,
+        "condition": "< 99",
+        "severity": "critical",
+        "message": "Audit logging failure rate exceeds threshold - HIPAA compliance at risk"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Audit Failures",
+      "type": "singlestat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "audit.events.failed",
+          "aggregation": "sum",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 1, "color": "yellow" },
+        { "value": 10, "color": "red" }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "> 0",
+        "severity": "critical"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Audit Queue Depth",
+      "type": "graph",
+      "gridPos": { "x": 18, "y": 4, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "audit.queue.depth",
+          "aggregation": "max",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 500, "color": "yellow" },
+        { "value": 1000, "color": "red" }
+      ],
+      "alert": {
+        "enabled": true,
+        "condition": "> 1000",
+        "severity": "warning"
+      }
+    },
+    {
+      "id": 5,
+      "title": "PHI Access Events",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "metric": "audit.events",
+          "filter": "eventType:PHI_ACCESS",
+          "aggregation": "count",
+          "groupBy": ["resource", "action", "user"],
+          "timeRange": "24h"
+        }
+      ],
+      "columns": [
+        "Timestamp",
+        "User (Anonymized)",
+        "Resource",
+        "Action",
+        "Result"
+      ],
+      "sortBy": "Timestamp",
+      "sortOrder": "desc",
+      "pagination": true
+    },
+    {
+      "id": 6,
+      "title": "Audit Event Types Distribution",
+      "type": "pie",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "metric": "audit.events",
+          "aggregation": "count",
+          "groupBy": ["eventType"],
+          "timeRange": "24h"
+        }
+      ],
+      "legend": {
+        "show": true,
+        "position": "right"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Audit Batch Performance",
+      "type": "graph",
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "audit.batch.latency",
+          "aggregation": "avg",
+          "timeRange": "1h"
+        },
+        {
+          "metric": "audit.batch.size",
+          "aggregation": "avg",
+          "timeRange": "1h"
+        }
+      ],
+      "yAxes": [
+        { "label": "Latency (ms)", "position": "left" },
+        { "label": "Batch Size", "position": "right" }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Audit Retry Count",
+      "type": "singlestat",
+      "gridPos": { "x": 18, "y": 12, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "audit.retry",
+          "aggregation": "sum",
+          "timeRange": "1h"
+        }
+      ],
+      "thresholds": [
+        { "value": 10, "color": "yellow" },
+        { "value": 50, "color": "red" }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Compliance Status",
+      "type": "status",
+      "gridPos": { "x": 0, "y": 16, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "checks": [
+            {
+              "name": "All PHI Access Logged",
+              "query": "audit.events{eventType:PHI_ACCESS}",
+              "condition": "successRate > 99.9"
+            },
+            {
+              "name": "No Missing Audit Events",
+              "query": "audit.events.failed",
+              "condition": "count == 0"
+            },
+            {
+              "name": "Audit Log Retention",
+              "query": "audit.retention.days",
+              "condition": ">= 2555"
+            },
+            {
+              "name": "Audit Log Integrity",
+              "query": "audit.integrity.check",
+              "condition": "status == passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "High-Risk Actions",
+      "type": "table",
+      "gridPos": { "x": 8, "y": 16, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "metric": "audit.events",
+          "filter": "action:(DELETE OR EXPORT OR BULK_UPDATE)",
+          "aggregation": "count",
+          "groupBy": ["action", "resource"],
+          "timeRange": "24h"
+        }
+      ],
+      "columns": ["Action", "Resource", "Count", "Last Occurrence"],
+      "sortBy": "Count",
+      "sortOrder": "desc"
+    },
+    {
+      "id": 11,
+      "title": "Audit Storage Usage",
+      "type": "graph",
+      "gridPos": { "x": 16, "y": 16, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "metric": "audit.storage.size",
+          "aggregation": "current",
+          "timeRange": "7d"
+        }
+      ],
+      "unit": "GB",
+      "thresholds": [
+        { "value": 100, "color": "yellow" },
+        { "value": 500, "color": "red" }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Failed Access Attempts",
+      "type": "heatmap",
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 6 },
+      "targets": [
+        {
+          "metric": "audit.events",
+          "filter": "result:FAILURE OR result:DENIED",
+          "aggregation": "count",
+          "groupBy": ["hour", "resource"],
+          "timeRange": "7d"
+        }
+      ],
+      "xAxis": "hour",
+      "yAxis": "resource",
+      "colorScheme": "red-yellow-green"
+    }
+  ],
+  "annotations": [
+    {
+      "name": "Compliance Audits",
+      "datasource": "compliance-events",
+      "query": "type:hipaa-audit",
+      "iconColor": "purple"
+    },
+    {
+      "name": "Audit System Incidents",
+      "datasource": "incidents",
+      "query": "category:audit AND severity:high",
+      "iconColor": "red"
+    }
+  ],
+  "variables": [
+    {
+      "name": "environment",
+      "type": "constant",
+      "value": "production"
+    },
+    {
+      "name": "timeRange",
+      "type": "interval",
+      "options": ["1h", "6h", "24h", "7d", "30d"],
+      "default": "24h"
+    },
+    {
+      "name": "eventType",
+      "type": "multi-select",
+      "options": [
+        "PHI_ACCESS",
+        "PHI_MODIFY",
+        "PHI_DELETE",
+        "PHI_EXPORT",
+        "AUTH_EVENT",
+        "CONFIG_CHANGE"
+      ],
+      "default": "all"
+    }
+  ],
+  "alerts": {
+    "channels": ["email", "slack", "pagerduty"],
+    "recipients": {
+      "email": ["compliance@whitecross.com", "security@whitecross.com"],
+      "slack": ["#compliance-alerts", "#security-alerts"],
+      "pagerduty": ["compliance-oncall"]
+    }
+  }
+}
