@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-293 | vendorApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/vendors | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Vendor API Client
  * Handles all vendor-related API operations including CRUD, performance metrics,
  * vendor comparisons, and rating management

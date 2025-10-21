@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-264 | ExampleStudentsService.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../core, ../../constants/api | Dependencies: zod, ../core, ../../constants/api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces | Key Features: useState, useEffect, component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Example: Students API Service using the new enterprise-grade patterns
  *
  * This example demonstrates how to:

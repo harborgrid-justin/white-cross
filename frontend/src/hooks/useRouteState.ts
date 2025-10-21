@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-145 | useRouteState.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, react-router-dom
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, types | Key Features: useState, useEffect, useMemo
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enterprise Route-Level State Persistence Hooks
  *
  * Comprehensive hooks for managing and persisting state across route changes,
@@ -751,6 +763,8 @@ export function useNavigationState() {
     previousPath: prevState?.previousPath || null,
     /** Previous route state */
     previousState: prevState?.previousState || null,
+    /** Whether there is a previous path to navigate back to */
+    canGoBack: !!prevState?.previousPath,
     /** Navigate with state preservation */
     navigateWithState,
     /** Navigate back with state restoration */
@@ -820,6 +834,9 @@ export function usePageState(config: PaginationConfig = {}) {
 
   // Per-route page memory
   const pageMemoryRef = useRef<Map<string, PaginationState>>(new Map());
+  
+  // Ref to track last filter state for resetOnFilterChange
+  const lastFiltersRef = useRef<string>('');
 
   // Initialize from URL or memory
   const [state, setState] = useState<PaginationState>(() => {
@@ -918,7 +935,6 @@ export function usePageState(config: PaginationConfig = {}) {
 
       // Store filter string to detect changes
       const filterString = filterParams.toString();
-      const lastFiltersRef = useRef<string>(filterString);
 
       if (lastFiltersRef.current !== filterString && state.page !== defaultPage) {
         resetPage();

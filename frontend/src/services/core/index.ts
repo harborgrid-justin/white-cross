@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-258 | index.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./ApiClient, ./ApiMonitoring | Dependencies: ./ApiClient, ./ApiMonitoring
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, types, named exports | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Core API Services - Enterprise-grade API handling
  *
  * This module provides a comprehensive, type-safe API layer with:

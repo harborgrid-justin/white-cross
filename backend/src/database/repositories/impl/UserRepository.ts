@@ -1,4 +1,32 @@
 /**
+ * LOC: 15A22F41E7
+ * WC-GEN-106 | UserRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - User.ts (database/models/core/User.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - ... and 1 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ */
+
+/**
+ * WC-GEN-106 | UserRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../base/BaseRepository, ../../models/core/User, ../../audit/IAuditLogger | Dependencies: sequelize, ../base/BaseRepository, ../../models/core/User
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * User Repository Implementation
  * Authentication and authorization data access
  *

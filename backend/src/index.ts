@@ -1,3 +1,31 @@
+/**
+ * LOC: DCDC3E0B33
+ * WC-IDX-MAIN-001 | Main Application Entry Point & Server Configuration
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (constants/index.ts)
+ *   - auth.ts (routes/auth.ts)
+ *   - students.ts (routes/students.ts)
+ *   - ... and 24 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-IDX-MAIN-001 | Main Application Entry Point & Server Configuration
+ * Purpose: Hapi.js server initialization, route registration, middleware setup
+ * Upstream: config/*, routes/*, middleware/*, database/models, utils/logger, constants
+ * Downstream: None (entry point) | Called by: npm start, docker container
+ * Related: docker-compose.yml, package.json, .env.example
+ * Exports: server (default) | Key Services: Hapi server, Sequelize ORM, Swagger docs
+ * Last Updated: 2025-10-17 | Dependencies: @hapi/hapi, sequelize, dotenv
+ * Critical Path: Database connection → Auth setup → Route registration → Server start
+ * LLM Context: Main server orchestration, handles all HTTP requests, graceful shutdown
+ */
+
 // Load environment variables FIRST before any other imports
 import dotenv from 'dotenv';
 dotenv.config();
@@ -27,6 +55,7 @@ import { communicationRoutes } from './routes/communication';
 import { configurationRoutes } from './routes/configuration';
 import { dashboardRoutes } from './routes/dashboard';
 import { integrationRoutes } from './routes/integrations';
+import { devRoutes } from './routes/dev';
 
 // TODO: Convert remaining routes from Express to Hapi
 // import administrationRoutes from './routes/administration';
@@ -161,7 +190,10 @@ const init = async () => {
       ...dashboardRoutes,
 
       // Integration Hub routes
-      ...integrationRoutes
+      ...integrationRoutes,
+
+      // Development routes (only active in development)
+      ...devRoutes
 
       // TODO: Convert remaining routes from Express to Hapi
       // ...administrationRoutes,

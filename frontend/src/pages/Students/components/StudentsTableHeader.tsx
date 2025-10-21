@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-242 | StudentsTableHeader.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./StudentsBulkActions | Dependencies: react, ./StudentsBulkActions
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Students Table Header Component
  *
  * Displays table header with student count and selection controls

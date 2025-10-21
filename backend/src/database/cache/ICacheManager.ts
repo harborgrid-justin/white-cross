@@ -1,4 +1,32 @@
 /**
+ * LOC: BC0CC377F7
+ * WC-GEN-014 | ICacheManager.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - AllergyRepository.ts (database/repositories/impl/AllergyRepository.ts)
+ *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
+ *   - AuditLogRepository.ts (database/repositories/impl/AuditLogRepository.ts)
+ *   - ChronicConditionRepository.ts (database/repositories/impl/ChronicConditionRepository.ts)
+ *   - ... and 8 more
+ */
+
+/**
+ * WC-GEN-014 | ICacheManager.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: Independent module | Dependencies: None
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces, constants, functions | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Cache Manager Interface
  * Provides abstraction for caching layer with PHI encryption support
  */

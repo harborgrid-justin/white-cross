@@ -1,3 +1,26 @@
+/**
+ * LOC: 4C58ADD7C0
+ * WC-GEN-094 | Session.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ */
+
+/**
+ * WC-GEN-094 | Session.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 

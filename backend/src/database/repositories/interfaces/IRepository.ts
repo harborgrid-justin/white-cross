@@ -1,4 +1,33 @@
 /**
+ * LOC: AA3FF826A4
+ * WC-GEN-112 | IRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - QueryTypes.ts (database/types/QueryTypes.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - IAllergyRepository.ts (database/repositories/interfaces/IAllergyRepository.ts)
+ *   - IAuditLogRepository.ts (database/repositories/interfaces/IAuditLogRepository.ts)
+ *   - IChronicConditionRepository.ts (database/repositories/interfaces/IChronicConditionRepository.ts)
+ *   - IHealthRecordRepository.ts (database/repositories/interfaces/IHealthRecordRepository.ts)
+ *   - ... and 1 more
+ */
+
+/**
+ * WC-GEN-112 | IRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../types/ExecutionContext, ../../types/QueryTypes | Dependencies: ../../types/ExecutionContext, ../../types/QueryTypes
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Base Repository Interface
  * Defines standard CRUD operations for all repositories
  */

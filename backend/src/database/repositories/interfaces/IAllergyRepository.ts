@@ -1,4 +1,29 @@
 /**
+ * LOC: 192FA0ED37
+ * WC-GEN-108 | IAllergyRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - IUnitOfWork.ts (database/uow/IUnitOfWork.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
+ * WC-GEN-108 | IAllergyRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ./IRepository | Dependencies: ./IRepository
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: interfaces, types | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Allergy Repository Interface
  */
 

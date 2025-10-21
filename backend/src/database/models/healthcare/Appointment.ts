@@ -1,3 +1,29 @@
+/**
+ * LOC: F175DC7C84
+ * WC-GEN-061 | Appointment.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/models/index.ts)
+ *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
+ *   - UserService.ts (database/services/UserService.ts)
+ */
+
+/**
+ * WC-GEN-061 | Appointment.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../config/sequelize, ../../types/enums | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { AppointmentType, AppointmentStatus } from '../../types/enums';

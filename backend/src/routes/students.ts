@@ -1,5 +1,28 @@
+/**
+ * LOC: 0553FEE047
+ * WC-RTE-STU-022 | students.ts - Student Management API Routes with Health Records Integration
+ *
+ * UPSTREAM (imports from):
+ *   - studentService.ts (services/studentService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-STU-022 | students.ts - Student Management API Routes with Health Records Integration
+ * Purpose: Complete student lifecycle management API including PHI-protected health data access with role-based permissions
+ * Upstream: ../services/studentService | Dependencies: @hapi/hapi, joi, JWT auth middleware
+ * Downstream: Student dashboard, health tracking, enrollment system | Called by: Frontend student modules, admin panels
+ * Related: healthRecords.ts, appointments.ts, users.ts | Integrates: Mental health records, sensitive data protection
+ * Exports: studentRoutes (11 route handlers) | Key Services: CRUD operations, transfers, search, health records access
+ * Last Updated: 2025-10-18 | File Type: .ts - Student PHI and Mental Health Protected
+ * Critical Path: JWT auth → Role validation → Student service calls → PHI-compliant responses → Audit logging
+ * LLM Context: Central student API with health record integration, role-based access to sensitive/mental health data, HIPAA compliant
+ */
+
 import { ServerRoute } from '@hapi/hapi';
-import { StudentService } from '../services/studentService';
+import { StudentService } from '../services/student';
 import Joi from 'joi';
 
 // Get all students

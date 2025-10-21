@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-189 | index.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../contexts/AuthContext, ./hooks/useHealthRecordsPageData, ./components/HealthRecordsHeader | Dependencies: lucide-react, ../../contexts/AuthContext, react-hot-toast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useState, useEffect, functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Health Records Page - Enterprise Implementation
  *
  * Complete health records management system with:

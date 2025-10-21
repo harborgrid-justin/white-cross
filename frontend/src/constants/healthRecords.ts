@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-107 | healthRecords.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: lucide-react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { 
   FileText, 
   Heart, 
@@ -9,17 +21,17 @@ import {
   Ear, 
   Activity 
 } from 'lucide-react'
-import type { TabType, RecordType } from '@/types/healthRecords'
+import type { TabType, HealthRecordType } from '@/types/healthRecords'
 
 export const RECORD_TYPES = [
-  { value: 'CHECKUP' as RecordType, label: 'Regular Checkup', icon: Stethoscope },
-  { value: 'VACCINATION' as RecordType, label: 'Vaccination', icon: Shield },
-  { value: 'ILLNESS' as RecordType, label: 'Illness', icon: AlertCircle },
-  { value: 'INJURY' as RecordType, label: 'Injury', icon: Activity },
-  { value: 'SCREENING' as RecordType, label: 'Screening', icon: Eye },
-  { value: 'VISION' as RecordType, label: 'Vision Test', icon: Eye },
-  { value: 'HEARING' as RecordType, label: 'Hearing Test', icon: Ear },
-  { value: 'PHYSICAL_EXAM' as RecordType, label: 'Physical Exam', icon: Stethoscope },
+  { value: 'CHECKUP' as HealthRecordType, label: 'Regular Checkup', icon: Stethoscope },
+  { value: 'VACCINATION' as HealthRecordType, label: 'Vaccination', icon: Shield },
+  { value: 'ILLNESS' as HealthRecordType, label: 'Illness', icon: AlertCircle },
+  { value: 'INJURY' as HealthRecordType, label: 'Injury', icon: Activity },
+  { value: 'SCREENING' as HealthRecordType, label: 'Screening', icon: Eye },
+  { value: 'VISION' as HealthRecordType, label: 'Vision Test', icon: Eye },
+  { value: 'HEARING' as HealthRecordType, label: 'Hearing Test', icon: Ear },
+  { value: 'PHYSICAL_EXAM' as HealthRecordType, label: 'Physical Exam', icon: Stethoscope },
 ]
 
 export const HEALTH_TABS = [

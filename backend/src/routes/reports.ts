@@ -1,3 +1,27 @@
+/**
+ * LOC: 4FE91D5957
+ * WC-RTE-RPT-041 | reports.ts - Healthcare Analytics and Reporting API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - reportService.ts (services/reportService.ts)
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-RPT-041 | reports.ts - Healthcare Analytics and Reporting API Routes
+ * Purpose: Express.js routes for comprehensive healthcare reporting including health trends, compliance, performance metrics, and custom report generation
+ * Upstream: ../services/reportService/ReportService, ../utils/logger | Dependencies: express
+ * Downstream: Frontend analytics dashboards, compliance reporting UI, export systems, government reporting | Called by: Analytics interfaces, compliance officers, administrators
+ * Related: ../services/reportService.ts, dashboard.ts, compliance.ts, healthRecords.ts, medications.ts, incidentReports.ts
+ * Exports: router | Key Services: Health trend analysis, medication compliance, incident statistics, attendance correlation, custom reporting, data export
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~200
+ * Critical Path: Authentication → Report parameter validation → Data aggregation → Analytics processing → Export formatting → Response delivery
+ * LLM Context: Healthcare analytics system with 9 endpoints for health trends, medication usage, incident statistics, compliance reporting, and custom report generation with export capabilities
+ */
+
 import express from 'express';
 import { ReportService } from '../services/reportService';
 import { logger } from '../utils/logger';

@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-016 | HealthRecordsErrorBoundary.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../hooks/useHealthRecords, ../../services/modules/healthRecordsApi | Dependencies: lucide-react, @tanstack/react-query, ../../hooks/useHealthRecords
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, functions, classes | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Health Records Error Boundary
  *
  * Specialized error boundary for health records with:
@@ -14,7 +26,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Shield, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { healthRecordsKeys } from '../../hooks/useHealthRecords';
+import { healthRecordKeys } from '../../hooks/useHealthRecords';
 import {
   HealthRecordsApiError,
   CircuitBreakerError,
@@ -345,7 +357,7 @@ export function HealthRecordsErrorBoundaryWrapper({
 
   const handleError = (error: Error, errorInfo: ErrorInfo) => {
     // Cleanup health records data from React Query cache
-    queryClient.removeQueries({ queryKey: healthRecordsKeys.all });
+    queryClient.removeQueries({ queryKey: healthRecordKeys.all });
 
     // Call custom error handler if provided
     if (onError) {

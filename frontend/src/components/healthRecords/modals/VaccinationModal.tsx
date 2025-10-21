@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-023 | VaccinationModal.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import type { Vaccination, VaccinationFormErrors } from '@/types/healthRecords'
 
@@ -72,7 +84,7 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
               type="date" 
               name="dateAdministered"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={vaccination?.dateAdministered || ''}
+              defaultValue={vaccination?.administeredDate || ''}
               data-testid="vaccination-date-input"
             />
             {errors.dateAdministered && (
@@ -102,7 +114,7 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
               name="dose"
               className="w-full border border-gray-300 rounded px-3 py-2" 
               placeholder="e.g., 1st dose, 0.5ml"
-              defaultValue={vaccination?.dose || ''}
+              defaultValue={vaccination?.doseNumber || ''}
               data-testid="vaccination-dose-input"
             />
             {errors.dose && (

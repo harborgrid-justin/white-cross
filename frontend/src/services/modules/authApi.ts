@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-271 | authApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../../constants/config, ../types | Dependencies: ../config/apiConfig, ../../constants/config, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { apiInstance, API_ENDPOINTS, tokenUtils } from '../config/apiConfig';
 import { API_CONFIG } from '../../constants/config';
 import { z } from 'zod';
@@ -254,6 +266,45 @@ export class AuthApi {
       return payload.exp < currentTime;
     } catch (error) {
       return true;
+    }
+  }
+
+  /**
+   * Get all users for development/testing (includes passwords)
+   * Only works in development environment
+   */
+  async getDevUsers(): Promise<Array<{
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    password: string;
+    displayName: string;
+  }>> {
+    try {
+      const response = await apiInstance.get<{
+        success: boolean;
+        data: {
+          users: Array<{
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            role: string;
+            password: string;
+            displayName: string;
+          }>;
+        };
+      }>(API_ENDPOINTS.DEV.USERS);
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error('Failed to fetch development users');
+      }
+
+      return response.data.data.users;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error?.message || 'Failed to fetch development users');
     }
   }
 }

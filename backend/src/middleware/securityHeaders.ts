@@ -1,4 +1,27 @@
 /**
+ * LOC: 634FFC1ED7
+ * WC-MID-SHD-051 | OWASP Security Headers & CSP Implementation Middleware
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-MID-SHD-051 | OWASP Security Headers & CSP Implementation Middleware
+ * Purpose: Comprehensive HTTP security headers, CSP, HSTS, HIPAA PHI protection
+ * Upstream: utils/logger, OWASP security guidelines, crypto API
+ * Downstream: All HTTP responses | Called by: Hapi server extensions
+ * Related: middleware/security.ts, HIPAA compliance, OWASP Top 10 protection
+ * Exports: securityHeadersMiddleware, cspNonceMiddleware, generateCSPNonce
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, crypto
+ * Critical Path: Response → Security headers application → PHI protection
+ * LLM Context: Healthcare security compliance, CSP nonces, download protection
+ */
+
+/**
  * Security Headers Middleware
  * Implements OWASP security best practices for HTTP headers
  *

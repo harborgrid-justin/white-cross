@@ -1,3 +1,27 @@
+/**
+ * LOC: 7C2B963143
+ * WC-SVC-DSH-018 | dashboardService.ts - Dashboard Analytics and Statistics Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - dashboard.ts (routes/dashboard.ts)
+ */
+
+/**
+ * WC-SVC-DSH-018 | dashboardService.ts - Dashboard Analytics and Statistics Service
+ * Purpose: Real-time dashboard data aggregation with performance caching, trend analysis, and multi-module statistics
+ * Upstream: ../database/models, studentService, medicationService, appointmentService, incidentService | Dependencies: sequelize aggregation
+ * Downstream: routes/dashboard.ts, frontend/dashboard, reportService | Called by: Dashboard routes, admin interface
+ * Related: studentService, medicationService, appointmentService, incidentReportService, healthRecordService
+ * Exports: DashboardService class, dashboard interfaces | Key Services: Statistics, trends, charts, real-time feeds, caching
+ * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Aggregated PHI data - no individual patient details exposed
+ * Critical Path: Data aggregation → Cache check → Multi-service queries → Trend calculation → Response formatting
+ * LLM Context: Central analytics hub providing real-time insights and trends across all health management modules
+ */
+
 import { Op, fn, col, literal } from 'sequelize';
 import { logger } from '../utils/logger';
 import {

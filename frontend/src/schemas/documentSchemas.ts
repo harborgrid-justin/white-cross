@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-250 | documentSchemas.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/documents | Dependencies: zod, ../types/documents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, types | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Document Validation Schemas
  * Zod schemas for document management operations
  * Matches backend Sequelize validations exactly
@@ -41,7 +53,7 @@ const uuidSchema = z.string().uuid({ message: 'Must be a valid UUID' });
  * Document title validation
  */
 const titleSchema = z
-  .string({ required_error: 'Document title is required' })
+  .string({ message: 'Document title is required' })
   .min(MIN_TITLE_LENGTH, `Title must be at least ${MIN_TITLE_LENGTH} characters`)
   .max(MAX_TITLE_LENGTH, `Title must not exceed ${MAX_TITLE_LENGTH} characters`)
   .refine(
@@ -67,7 +79,7 @@ const descriptionSchema = z
  * Document category validation
  */
 const categorySchema = z.nativeEnum(DocumentCategory, {
-  errorMap: () => ({
+  error: () => ({
     message: `Category must be one of: ${Object.values(DocumentCategory).join(', ')}`,
   }),
 });
@@ -76,7 +88,7 @@ const categorySchema = z.nativeEnum(DocumentCategory, {
  * Document status validation
  */
 const statusSchema = z.nativeEnum(DocumentStatus, {
-  errorMap: () => ({
+  error: () => ({
     message: `Status must be one of: ${Object.values(DocumentStatus).join(', ')}`,
   }),
 });
@@ -85,7 +97,7 @@ const statusSchema = z.nativeEnum(DocumentStatus, {
  * Document access level validation
  */
 const accessLevelSchema = z.nativeEnum(DocumentAccessLevel, {
-  errorMap: () => ({
+  error: () => ({
     message: `Access level must be one of: ${Object.values(DocumentAccessLevel).join(', ')}`,
   }),
 });
@@ -94,7 +106,7 @@ const accessLevelSchema = z.nativeEnum(DocumentAccessLevel, {
  * File type (MIME type) validation
  */
 const fileTypeSchema = z
-  .string({ required_error: 'File type is required' })
+  .string({ message: 'File type is required' })
   .min(1, 'File type cannot be empty')
   .refine(
     (val) => ALLOWED_FILE_TYPES.all.includes(val.toLowerCase().trim()),
@@ -108,7 +120,7 @@ const fileTypeSchema = z
  * File name validation
  */
 const fileNameSchema = z
-  .string({ required_error: 'File name is required' })
+  .string({ message: 'File name is required' })
   .min(1, 'File name cannot be empty')
   .max(255, 'File name must not exceed 255 characters')
   .refine(
@@ -121,7 +133,7 @@ const fileNameSchema = z
  * File size validation
  */
 const fileSizeSchema = z
-  .number({ required_error: 'File size is required' })
+  .number({ message: 'File size is required' })
   .int('File size must be an integer')
   .min(MIN_FILE_SIZE_BYTES, `File size must be at least ${MIN_FILE_SIZE_BYTES / 1024}KB`)
   .max(MAX_FILE_SIZE_BYTES, `File size must not exceed ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB`);
@@ -130,7 +142,7 @@ const fileSizeSchema = z
  * File URL validation
  */
 const fileUrlSchema = z
-  .string({ required_error: 'File URL is required' })
+  .string({ message: 'File URL is required' })
   .url('File URL must be a valid URL')
   .max(500, 'File URL must not exceed 500 characters');
 
@@ -314,12 +326,12 @@ export const signDocumentSchema = z.object({
   documentId: uuidSchema,
   signedBy: uuidSchema.describe('Signer user ID'),
   signedByRole: z
-    .string({ required_error: 'Signer role is required' })
+    .string({ message: 'Signer role is required' })
     .min(1, 'Signer role cannot be empty')
     .max(100, 'Signer role must not exceed 100 characters')
     .transform((val) => val.trim()),
   signatureData: z.string().max(10000, 'Signature data must not exceed 10000 characters').optional(),
-  ipAddress: z.string().ip().optional(),
+  ipAddress: z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/, 'Must be a valid IP address').optional(),
 });
 
 /**

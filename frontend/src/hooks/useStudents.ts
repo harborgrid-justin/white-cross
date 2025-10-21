@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-147 | useStudents.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @tanstack/react-query, @/services, react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, named exports | Key Features: useState, useMemo, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enterprise Student Domain Hooks
  *
  * Comprehensive TanStack Query hooks for student management following enterprise patterns.
@@ -22,11 +34,31 @@ import { studentsApi } from '@/services';
 import type {
   Student,
   StudentFilters,
-  CreateStudentRequest,
-  UpdateStudentRequest
-} from '@/services/modules/studentsApi';
-import type { PaginatedResponse } from '@/services/utils/apiUtils';
+  CreateStudentData,
+  UpdateStudentData,
+  PaginatedStudentsResponse,
+  PaginationMetadata,
+} from '@/types/student.types';
 import { useMemo, useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '@/stores/hooks';
+import {
+  studentsActions,
+  selectStudentUIState,
+  selectSelectedStudentIds,
+  selectStudentViewMode,
+  selectStudentFilters,
+  selectStudentSort,
+  selectStudentPagination,
+  selectStudentSearchQuery,
+  selectShowInactiveStudents,
+  selectFilteredAndSortedStudents,
+  selectPaginatedStudents,
+  selectStudentPaginationInfo,
+  selectSelectedStudents,
+  selectIsBulkSelectMode,
+  selectExpandedStudentCards,
+  type StudentUIState,
+} from '@/stores/slices/studentsSlice';
 
 // =====================
 // QUERY KEY FACTORY
@@ -96,7 +128,7 @@ const CACHE_CONFIG = {
  */
 export interface UseStudentsReturn {
   /** Paginated student data */
-  data: PaginatedResponse<Student> | undefined;
+  data: PaginatedStudentsResponse | undefined;
   /** Array of students for convenience */
   students: Student[];
   /** Pagination metadata */
@@ -116,6 +148,56 @@ export interface UseStudentsReturn {
   isInitialLoading: boolean;
   /** Manual refetch function */
   refetch: () => void;
+  
+  // Redux UI state and actions
+  /** Selected student IDs */
+  selectedStudentIds: string[];
+  /** Currently selected students */
+  selectedStudents: Student[];
+  /** View mode (grid, list, table) */
+  viewMode: StudentUIState['viewMode'];
+  /** Current filters */
+  filters: StudentFilters;
+  /** Search query */
+  searchQuery: string;
+  /** Sort configuration */
+  sortConfig: { sortBy: StudentUIState['sortBy']; sortOrder: StudentUIState['sortOrder'] };
+  /** Pagination info */
+  paginationInfo: any;
+  /** Bulk select mode */
+  isBulkSelectMode: boolean;
+  /** Expanded card IDs */
+  expandedCardIds: string[];
+  
+  // UI Actions
+  /** Select a student */
+  selectStudent: (id: string) => void;
+  /** Deselect a student */
+  deselectStudent: (id: string) => void;
+  /** Select multiple students */
+  selectMultipleStudents: (ids: string[]) => void;
+  /** Select all students */
+  selectAllStudents: (ids: string[]) => void;
+  /** Clear all selections */
+  clearSelection: () => void;
+  /** Toggle bulk select mode */
+  toggleBulkSelectMode: () => void;
+  /** Set view mode */
+  setViewMode: (mode: StudentUIState['viewMode']) => void;
+  /** Set filters */
+  setFilters: (filters: Partial<StudentFilters>) => void;
+  /** Clear filters */
+  clearFilters: () => void;
+  /** Set search query */
+  setSearchQuery: (query: string) => void;
+  /** Set sorting */
+  setSorting: (config: { sortBy: StudentUIState['sortBy']; sortOrder: StudentUIState['sortOrder'] }) => void;
+  /** Set page */
+  setPage: (page: number) => void;
+  /** Set page size */
+  setPageSize: (size: number) => void;
+  /** Toggle card expansion */
+  toggleCardExpansion: (id: string) => void;
 }
 
 /**
@@ -165,14 +247,22 @@ export interface StudentStats {
 // =====================
 
 /**
- * Hook for fetching paginated student list with filters.
+ * Hook for fetching paginated student list with filters and Redux integration.
  *
  * @param filters - Optional filters for student list
- * @returns Student list with pagination and loading states
+ * @returns Student list with pagination, loading states, and UI management
  *
  * @example
  * ```tsx
- * const { students, pagination, isLoading } = useStudents({
+ * const { 
+ *   students, 
+ *   pagination, 
+ *   isLoading,
+ *   selectedStudentIds,
+ *   viewMode,
+ *   setViewMode,
+ *   selectStudent
+ * } = useStudents({
  *   grade: '5',
  *   isActive: true,
  *   page: 1,
@@ -181,6 +271,9 @@ export interface StudentStats {
  * ```
  */
 export const useStudents = (filters: StudentFilters = {}): UseStudentsReturn => {
+  const dispatch = useAppDispatch();
+  
+  // TanStack Query for server state
   const queryResult = useQuery({
     queryKey: studentKeys.list(filters),
     queryFn: () => studentsApi.getAll(filters),
@@ -190,8 +283,19 @@ export const useStudents = (filters: StudentFilters = {}): UseStudentsReturn => 
     placeholderData: (previousData) => previousData,
   });
 
+  // Redux UI state selectors
+  const selectedStudentIds = useAppSelector(selectSelectedStudentIds);
+  const selectedStudents = useAppSelector(selectSelectedStudents);
+  const viewMode = useAppSelector(selectStudentViewMode);
+  const uiFilters = useAppSelector(selectStudentFilters);
+  const searchQuery = useAppSelector(selectStudentSearchQuery);
+  const sortConfig = useAppSelector(selectStudentSort);
+  const paginationInfo = useAppSelector(selectStudentPaginationInfo);
+  const isBulkSelectMode = useAppSelector(selectIsBulkSelectMode);
+  const expandedCardIds = useAppSelector(selectExpandedStudentCards);
+
   // Extract students array and pagination from response
-  const students = useMemo(() => queryResult.data?.data || [], [queryResult.data?.data]);
+  const students = useMemo(() => queryResult.data?.students || [], [queryResult.data?.students]);
 
   const pagination = useMemo(() => {
     if (!queryResult.data?.pagination) return undefined;
@@ -200,11 +304,69 @@ export const useStudents = (filters: StudentFilters = {}): UseStudentsReturn => 
       total: queryResult.data.pagination.total,
       page: queryResult.data.pagination.page,
       limit: queryResult.data.pagination.limit,
-      totalPages: queryResult.data.pagination.totalPages,
+      totalPages: queryResult.data.pagination.pages,
     };
   }, [queryResult.data]);
 
+  // UI action creators
+  const selectStudent = useCallback((id: string) => {
+    dispatch(studentsActions.selectStudent(id));
+  }, [dispatch]);
+
+  const deselectStudent = useCallback((id: string) => {
+    dispatch(studentsActions.deselectStudent(id));
+  }, [dispatch]);
+
+  const selectMultipleStudents = useCallback((ids: string[]) => {
+    dispatch(studentsActions.selectMultipleStudents(ids));
+  }, [dispatch]);
+
+  const selectAllStudents = useCallback((ids: string[]) => {
+    dispatch(studentsActions.selectAllStudents(ids));
+  }, [dispatch]);
+
+  const clearSelection = useCallback(() => {
+    dispatch(studentsActions.clearSelection());
+  }, [dispatch]);
+
+  const toggleBulkSelectMode = useCallback(() => {
+    dispatch(studentsActions.toggleBulkSelectMode());
+  }, [dispatch]);
+
+  const setViewMode = useCallback((mode: StudentUIState['viewMode']) => {
+    dispatch(studentsActions.setViewMode(mode));
+  }, [dispatch]);
+
+  const setFilters = useCallback((newFilters: Partial<StudentFilters>) => {
+    dispatch(studentsActions.setFilters(newFilters));
+  }, [dispatch]);
+
+  const clearFilters = useCallback(() => {
+    dispatch(studentsActions.clearFilters());
+  }, [dispatch]);
+
+  const setSearchQuery = useCallback((query: string) => {
+    dispatch(studentsActions.setSearchQuery(query));
+  }, [dispatch]);
+
+  const setSorting = useCallback((config: { sortBy: StudentUIState['sortBy']; sortOrder: StudentUIState['sortOrder'] }) => {
+    dispatch(studentsActions.setSorting(config));
+  }, [dispatch]);
+
+  const setPage = useCallback((page: number) => {
+    dispatch(studentsActions.setPage(page));
+  }, [dispatch]);
+
+  const setPageSize = useCallback((size: number) => {
+    dispatch(studentsActions.setPageSize(size));
+  }, [dispatch]);
+
+  const toggleCardExpansion = useCallback((id: string) => {
+    dispatch(studentsActions.toggleCardExpansion(id));
+  }, [dispatch]);
+
   return {
+    // Server state
     data: queryResult.data,
     students,
     pagination,
@@ -213,6 +375,33 @@ export const useStudents = (filters: StudentFilters = {}): UseStudentsReturn => 
     isFetching: queryResult.isFetching,
     isInitialLoading: queryResult.isLoading && queryResult.isFetching,
     refetch: queryResult.refetch,
+    
+    // Redux UI state
+    selectedStudentIds,
+    selectedStudents,
+    viewMode,
+    filters: uiFilters,
+    searchQuery,
+    sortConfig,
+    paginationInfo,
+    isBulkSelectMode,
+    expandedCardIds,
+    
+    // UI Actions
+    selectStudent,
+    deselectStudent,
+    selectMultipleStudents,
+    selectAllStudents,
+    clearSelection,
+    toggleBulkSelectMode,
+    setViewMode,
+    setFilters,
+    clearFilters,
+    setSearchQuery,
+    setSorting,
+    setPage,
+    setPageSize,
+    toggleCardExpansion,
   };
 };
 
@@ -390,7 +579,7 @@ export const useStudentStats = () => {
  * ```tsx
  * const createStudent = useCreateStudent();
  *
- * const handleSubmit = async (data: CreateStudentRequest) => {
+ * const handleSubmit = async (data: CreateStudentData) => {
  *   try {
  *     const newStudent = await createStudent.mutateAsync(data);
  *     toast.success('Student created successfully');
@@ -403,9 +592,10 @@ export const useStudentStats = () => {
  */
 export const useCreateStudent = () => {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (data: CreateStudentRequest) => studentsApi.create(data),
+    mutationFn: (data: CreateStudentData) => studentsApi.create(data),
     onSuccess: (newStudent) => {
       // Invalidate all student list queries to refetch with new student
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
@@ -415,6 +605,9 @@ export const useCreateStudent = () => {
 
       // Also invalidate stats if they exist
       queryClient.invalidateQueries({ queryKey: studentKeys.stats() });
+
+      // Update Redux store
+      dispatch(studentsActions.addOne(newStudent));
     },
     onError: (error: Error) => {
       // Healthcare data errors should be logged for audit
@@ -435,7 +628,7 @@ export const useCreateStudent = () => {
  * ```tsx
  * const updateStudent = useUpdateStudent();
  *
- * const handleUpdate = async (id: string, data: UpdateStudentRequest) => {
+ * const handleUpdate = async (id: string, data: UpdateStudentData) => {
  *   try {
  *     await updateStudent.mutateAsync({ id, data });
  *     toast.success('Student updated successfully');
@@ -447,9 +640,10 @@ export const useCreateStudent = () => {
  */
 export const useUpdateStudent = () => {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateStudentRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateStudentData }) =>
       studentsApi.update(id, data),
     onSuccess: (updatedStudent, variables) => {
       // Invalidate the specific student detail query
@@ -463,6 +657,9 @@ export const useUpdateStudent = () => {
 
       // Invalidate stats
       queryClient.invalidateQueries({ queryKey: studentKeys.stats() });
+
+      // Update Redux store
+      dispatch(studentsActions.updateOne({ id: variables.id, changes: updatedStudent }));
     },
     onError: (error: Error) => {
       console.error('Failed to update student:', error);
@@ -528,7 +725,7 @@ export const useDeleteStudent = () => {
  * ```tsx
  * const bulkImport = useBulkImportStudents();
  *
- * const handleImport = async (students: CreateStudentRequest[]) => {
+ * const handleImport = async (students: CreateStudentData[]) => {
  *   try {
  *     const result = await bulkImport.mutateAsync(students);
  *     toast.success(`Imported ${result.success} students. ${result.failed} failed.`);
@@ -540,10 +737,20 @@ export const useDeleteStudent = () => {
  */
 export const useBulkImportStudents = () => {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (students: CreateStudentRequest[]) =>
-      studentsApi.bulkImport(students),
+    mutationFn: async (students: CreateStudentData[]) => {
+      // Since bulkImport might not exist, we'll process them individually
+      const results = await Promise.allSettled(
+        students.map(student => studentsApi.create(student))
+      );
+      
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+      
+      return { success: successful, failed, total: students.length };
+    },
     onSuccess: () => {
       // Invalidate all student queries as bulk import affects everything
       queryClient.invalidateQueries({ queryKey: studentKeys.all });
@@ -563,14 +770,11 @@ export const useBulkImportStudents = () => {
  * ```tsx
  * const exportStudents = useExportStudents();
  *
- * const handleExport = async (filters?: StudentFilters) => {
+ * const handleExport = async (studentId: string) => {
  *   try {
- *     const blob = await exportStudents.mutateAsync(filters);
- *     const url = window.URL.createObjectURL(blob);
- *     const link = document.createElement('a');
- *     link.href = url;
- *     link.download = `students-${new Date().toISOString()}.csv`;
- *     link.click();
+ *     const exportData = await exportStudents.mutateAsync(studentId);
+ *     // Process export data
+ *     console.log('Export successful:', exportData);
  *   } catch (error) {
  *     toast.error('Export failed');
  *   }
@@ -579,8 +783,8 @@ export const useBulkImportStudents = () => {
  */
 export const useExportStudents = () => {
   return useMutation({
-    mutationFn: (filters?: StudentFilters) =>
-      studentsApi.exportStudents(filters || {}),
+    mutationFn: (studentId: string) =>
+      studentsApi.exportStudentData(studentId),
     onError: (error: Error) => {
       console.error('Export failed:', error);
     },

@@ -1,4 +1,29 @@
 /**
+ * LOC: EB979020E7
+ * WC-IDX-230 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - crudOperations.ts (services/chronicCondition/crudOperations.ts)
+ *   - queryOperations.ts (services/chronicCondition/queryOperations.ts)
+ *   - businessLogic.ts (services/chronicCondition/businessLogic.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-IDX-230 | index.ts - Module exports and entry point
+ * Purpose: module exports and entry point
+ * Upstream: ../../database/models, ./crudOperations, ./queryOperations | Dependencies: sequelize, ../../database/models, ./crudOperations
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: module exports and entry point, part of backend architecture
+ */
+
+/**
  * Chronic Condition Service - Main Module
  *
  * Enterprise-grade service for managing student chronic health conditions.

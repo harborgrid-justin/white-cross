@@ -1,3 +1,27 @@
+/**
+ * LOC: C41E6D37EC
+ * WC-SVC-STU-006 | Student Management Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - students.ts (routes/students.ts)
+ */
+
+/**
+ * WC-SVC-STU-006 | Student Management Service
+ * Purpose: Core student operations including enrollment, health records, and CRUD
+ * Upstream: database/models/Student, validators/studentValidators | Dependencies: Sequelize, validators
+ * Downstream: routes/students.ts, healthRecordService, medicationService | Called by: Student API routes
+ * Related: studentValidators.ts, healthRecordService.ts, EmergencyContact.ts
+ * Exports: StudentService class | Key Services: CRUD, enrollment, health record linkage
+ * Last Updated: 2025-10-17 | Dependencies: sequelize, joi, lodash
+ * Critical Path: Validation → Database operation → Health record setup → Response
+ * LLM Context: HIPAA-compliant student management, school enrollment workflows
+ */
+
 import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
 import {

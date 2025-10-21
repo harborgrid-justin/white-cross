@@ -93,7 +93,10 @@
       "Bash(do echo \"\")",
       "Bash(do if [ -d \"C:/temp/white-cross/backend/src/services/$dir\" ])",
       "Bash(then echo \"✓ $dir/\")",
-      "Bash(else echo \"✗ $dir\")"
+      "Bash(else echo \"✗ $dir\")",
+      "Bash(rm C:/temp/white-cross/backend/src/services/communicationService.ts)",
+      "Bash(rm C:/temp/white-cross/backend/src/services/medicationService.ts)",
+      "Bash(do sed -i \"s|from ''../../../services/healthRecordService''|from ''../../../services/healthRecord''|g\" \"$file\")"
     ],
     "deny": [],
     "ask": []

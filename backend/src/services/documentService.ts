@@ -1,3 +1,26 @@
+/**
+ * LOC: D6A44FD802
+ * WC-GEN-248 | documentService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - documents.ts (routes/documents.ts)
+ */
+
+/**
+ * WC-GEN-248 | documentService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../utils/logger, ../database/models, ../database/types/enums | Dependencies: sequelize, ../utils/logger, ../database/models
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
 import {
@@ -28,16 +51,6 @@ import {
   DocumentValidationError,
   RETENTION_YEARS,
 } from '../utils/documentValidation';
-
-// Type augmentation for Document model associations
-declare module '../database/models' {
-  interface Document {
-    versions?: Document[];
-    parent?: Document;
-    signatures?: DocumentSignature[];
-    auditTrail?: DocumentAuditTrail[];
-  }
-}
 
 /**
  * Interface for creating a new document

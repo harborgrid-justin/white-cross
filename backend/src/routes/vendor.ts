@@ -1,3 +1,26 @@
+/**
+ * LOC: 2A439AECEA
+ * WC-RTE-VEN-042 | vendor.ts - Medical Supply Vendor Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - vendorService.ts (services/vendorService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-VEN-042 | vendor.ts - Medical Supply Vendor Management API Routes
+ * Purpose: Hapi.js routes for comprehensive vendor relationship management including supplier evaluation, price comparison, and procurement integration
+ * Upstream: ../services/vendorService/VendorService,CreateVendorData,UpdateVendorData | Dependencies: @hapi/hapi, joi
+ * Downstream: Frontend vendor management UI, procurement systems, price comparison tools, purchase order automation | Called by: Procurement interfaces, vendor evaluation dashboards
+ * Related: ../services/vendorService.ts, purchaseOrder.ts, inventory.ts, budget.ts, integration.ts
+ * Exports: vendorRoutes | Key Services: Vendor CRUD, performance tracking, price comparison, search functionality, supplier evaluation, rating management
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~200
+ * Critical Path: Authentication → Vendor validation → Performance tracking → Price analysis → Procurement integration → Response
+ * LLM Context: Medical supply vendor management with 7 endpoints for supplier relationships, price comparison, performance evaluation, and procurement automation
+ */
+
 import { ServerRoute, Request, ResponseToolkit } from '@hapi/hapi';
 import { VendorService, CreateVendorData, UpdateVendorData } from '../services/vendorService';
 import Joi from 'joi';

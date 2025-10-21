@@ -1,4 +1,16 @@
 /**
+ * WF-MAIN-208 | index.main.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../hooks/useRouteState, ./hooks/useIncidentReportsData, ./hooks/useIncidentReportsFilters | Dependencies: react-router-dom, ../../hooks/useRouteState, ./hooks/useIncidentReportsData
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useCallback, component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Incident Reports Page - Enterprise Implementation
  *
  * Complete incident management system with:

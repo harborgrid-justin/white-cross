@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-154 | stateSyncMiddleware.types.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @/middleware/stateSyncMiddleware.types, @/middleware/stateSyncMiddleware, @/middleware/stateSyncMiddleware
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, functions, interfaces, types | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * State Synchronization Middleware - Type Definitions
  *
  * Comprehensive type definitions for state sync middleware.

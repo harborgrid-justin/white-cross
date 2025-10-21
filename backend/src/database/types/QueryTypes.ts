@@ -1,4 +1,30 @@
 /**
+ * LOC: 7FCB18E724
+ * WC-GEN-130 | QueryTypes.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - HealthRecordRepository.ts (database/repositories/impl/HealthRecordRepository.ts)
+ *   - StudentRepository.ts (database/repositories/impl/StudentRepository.ts)
+ *   - IHealthRecordRepository.ts (database/repositories/interfaces/IHealthRecordRepository.ts)
+ *   - IRepository.ts (database/repositories/interfaces/IRepository.ts)
+ */
+
+/**
+ * WC-GEN-130 | QueryTypes.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: Independent module | Dependencies: None
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces, types, functions | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Query Type Definitions
  * Common types for repository queries and results
  */

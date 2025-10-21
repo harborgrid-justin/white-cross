@@ -1,4 +1,27 @@
 /**
+ * LOC: 6606C9D55F
+ * WC-GEN-366 | workerPool.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-366 | workerPool.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../shared | Dependencies: worker_threads, os, path
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, functions, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Worker Thread Pool Manager
  *
  * Manages a pool of worker threads for CPU-intensive operations
@@ -13,7 +36,7 @@ import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import path from 'path';
 import { EventEmitter } from 'events';
-import { logger } from '../utils/logger';
+import { logger } from '../shared';
 
 interface WorkerTask {
   id: string;

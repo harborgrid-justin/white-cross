@@ -1,3 +1,28 @@
+/**
+ * LOC: C7FDC9BE2F
+ * WC-GEN-206 | AppointmentRecurringService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - appointment.ts (types/appointment.ts)
+ *   - AppointmentService.ts (services/appointment/AppointmentService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
+ * WC-GEN-206 | AppointmentRecurringService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../utils/logger, ../../types/appointment, ./AppointmentService | Dependencies: ../../utils/logger, ../../types/appointment, ./AppointmentService
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { logger } from '../../utils/logger';
 import { CreateAppointmentData, RecurrencePattern } from '../../types/appointment';
 import { AppointmentService } from './AppointmentService';

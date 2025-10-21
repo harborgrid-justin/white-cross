@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-022 | MeasurementModal.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import type { GrowthMeasurement, GrowthMeasurementFormErrors } from '@/types/healthRecords'
 
@@ -53,7 +65,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
               type="date" 
               name="date"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={measurement?.date || ''}
+              defaultValue={measurement?.measurementDate || ''}
               data-testid="measurement-date-input"
             />
             {errors.date && (
@@ -69,7 +81,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
               step="0.1"
               className="w-full border border-gray-300 rounded px-3 py-2" 
               placeholder="Height in inches"
-              defaultValue={measurement?.height?.replace(' in', '') || ''}
+              defaultValue={measurement?.height || ''}
               data-testid="height-input"
             />
             {errors.height && (
@@ -85,7 +97,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
               step="0.1"
               className="w-full border border-gray-300 rounded px-3 py-2" 
               placeholder="Weight in pounds"
-              defaultValue={measurement?.weight?.replace(' lbs', '') || ''}
+              defaultValue={measurement?.weight || ''}
               data-testid="weight-input"
             />
             {errors.weight && (

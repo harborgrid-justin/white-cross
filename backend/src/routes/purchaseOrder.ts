@@ -1,3 +1,26 @@
+/**
+ * LOC: 038975FCA1
+ * WC-RTE-PUR-040 | purchaseOrder.ts - Purchase Order Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - purchaseOrderService.ts (services/purchaseOrderService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-PUR-040 | purchaseOrder.ts - Purchase Order Management API Routes
+ * Purpose: Hapi.js routes for comprehensive purchase order lifecycle management including vendor integration, approval workflows, and inventory receiving
+ * Upstream: ../services/purchaseOrderService/PurchaseOrderService | Dependencies: @hapi/hapi, joi
+ * Downstream: Frontend procurement UI, vendor management systems, inventory updates, budget tracking | Called by: Procurement interfaces, automated reorder systems
+ * Related: ../services/purchaseOrderService.ts, inventory.ts, vendor.ts, budget.ts, administration.ts
+ * Exports: purchaseOrderRoutes | Key Services: Order CRUD, approval workflows, receiving processing, reorder automation, vendor communication
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~200
+ * Critical Path: Authentication → Order validation → Approval workflow → Vendor processing → Inventory receiving → Budget reconciliation
+ * LLM Context: Healthcare procurement system with 8 endpoints for managing purchase orders, approvals, receiving, and automated reordering for medical supplies
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { PurchaseOrderService } from '../services/purchaseOrderService';
 import Joi from 'joi';

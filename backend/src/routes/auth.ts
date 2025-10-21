@@ -1,10 +1,35 @@
+/**
+ * LOC: 415BD5A60F
+ * WC-RTE-AUTH-029 | Enhanced Authentication API Routes with Shared Utilities
+ *
+ * UPSTREAM (imports from):
+ *   - User.ts (database/models/core/User.ts)
+ *   - index.ts (constants/index.ts)
+ *   - sequelizeErrorHandler.ts (utils/sequelizeErrorHandler.ts)
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-AUTH-029 | Enhanced Authentication API Routes with Shared Utilities
+ * Purpose: Advanced authentication system with comprehensive JWT management, token refresh, user verification, and Swagger documentation using shared utility functions
+ * Upstream: ../database/models/core/User, ../shared auth utilities, Sequelize error handler | Dependencies: @hapi/hapi, Sequelize User model, joi, shared utilities
+ * Downstream: All authenticated endpoints, frontend auth system, API documentation | Called by: Login/registration forms, token management, API consumers
+ * Related: Access control routes, user management, audit logging, API documentation
+ * Exports: authRoutes (5 Hapi route handlers with Swagger docs) | Key Services: Registration, login, token verification, refresh, current user
+ * Last Updated: 2025-10-18 | File Type: .ts | Security: Shared password utilities, JWT management, role validation, comprehensive error handling
+ * Critical Path: Request validation → Authentication processing → Token management → User session handling → Swagger documentation
+ * LLM Context: Production-ready authentication system for healthcare platform with comprehensive JWT token management, password security, role-based access, token refresh capabilities, and full API documentation for secure medical data access
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { User } from '../database/models/core/User';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import { ENVIRONMENT, JWT_CONFIG } from '../constants';
-import { createErrorResponse, isUniqueConstraintError } from '../utils/sequelizeErrorHandler';
+import { createErrorResponse } from '../utils/sequelizeErrorHandler';
+import { hashPassword, comparePassword, generateToken, verifyToken, refreshToken, extractTokenFromHeader, decodeToken } from '../shared';
 
 // Register endpoint
 const registerHandler = async (request: any, h: any) => {
@@ -21,8 +46,8 @@ const registerHandler = async (request: any, h: any) => {
       }).code(409);
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Hash password using shared utility
+    const hashedPassword = await hashPassword(password);
 
     // Create user
     const user = await User.create({
@@ -62,8 +87,8 @@ const loginHandler = async (request: any, h: any) => {
       }).code(401);
     }
 
-    // Verify password using model method
-    const isValidPassword = await user.comparePassword(password);
+    // Verify password using shared utility
+    const isValidPassword = await comparePassword(password, user.password);
     if (!isValidPassword) {
       return h.response({
         success: false,
@@ -74,20 +99,12 @@ const loginHandler = async (request: any, h: any) => {
     // Update last login
     await user.update({ lastLogin: new Date() });
 
-    // Generate JWT for API access
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        aud: JWT_CONFIG.AUDIENCE,
-        iss: JWT_CONFIG.ISSUER
-      },
-      (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string,
-      {
-        expiresIn: '24h'
-      }
-    );
+    // Generate JWT for API access using shared utility
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    });
 
     // Use the model's toSafeObject method
     const safeUser = user.toSafeObject();
@@ -108,7 +125,7 @@ const loginHandler = async (request: any, h: any) => {
 // Verify token endpoint
 const verifyHandler = async (request: any, h: any) => {
   try {
-    const token = request.headers.authorization?.replace('Bearer ', '');
+    const token = extractTokenFromHeader(request.headers.authorization);
 
     if (!token) {
       return h.response({
@@ -117,7 +134,7 @@ const verifyHandler = async (request: any, h: any) => {
       }).code(401);
     }
 
-    const decoded = jwt.verify(token, (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string) as jwt.JwtPayload & { userId: string };
+    const decoded = verifyToken(token);
 
     // Verify user still exists and is active
     const user = await User.findByPk(decoded.userId, {
@@ -147,7 +164,7 @@ const verifyHandler = async (request: any, h: any) => {
 // Refresh token endpoint
 const refreshHandler = async (request: any, h: any) => {
   try {
-    const token = request.headers.authorization?.replace('Bearer ', '');
+    const token = extractTokenFromHeader(request.headers.authorization);
 
     if (!token) {
       return h.response({
@@ -156,21 +173,9 @@ const refreshHandler = async (request: any, h: any) => {
       }).code(401);
     }
 
-    // Verify the existing token (even if expired, we can still read the payload)
-    let decoded;
-    try {
-      decoded = jwt.verify(token, (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string) as jwt.JwtPayload & { userId: string };
-    } catch (error: any) {
-      // If token is expired, we can still decode it without verification to get user info
-      if (error.name === 'TokenExpiredError') {
-        decoded = jwt.decode(token) as jwt.JwtPayload & { userId: string };
-      } else {
-        return h.response({
-          success: false,
-          error: { message: 'Invalid token' }
-        }).code(401);
-      }
-    }
+    // Use shared utility to refresh token
+    const newToken = refreshToken(token);
+    const decoded = decodeToken(newToken);
 
     if (!decoded || !decoded.userId) {
       return h.response({
@@ -190,21 +195,6 @@ const refreshHandler = async (request: any, h: any) => {
         error: { message: 'User not found or inactive' }
       }).code(401);
     }
-
-    // Generate new JWT token
-    const newToken = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        aud: JWT_CONFIG.AUDIENCE,
-        iss: JWT_CONFIG.ISSUER
-      },
-      (ENVIRONMENT.JWT_SECRET || JWT_CONFIG.DEFAULT_SECRET) as string,
-      {
-        expiresIn: '24h'
-      }
-    );
 
     return h.response({
       success: true,

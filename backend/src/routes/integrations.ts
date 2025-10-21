@@ -1,4 +1,27 @@
 /**
+ * LOC: 6032E52E4C
+ * WC-RTE-IGT-038 | integrations.ts - Healthcare Integration Hub API Routes (Hapi.js)
+ *
+ * UPSTREAM (imports from):
+ *   - integrationService.ts (services/integrationService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-IGT-038 | integrations.ts - Healthcare Integration Hub API Routes (Hapi.js)
+ * Purpose: Hapi.js routes for comprehensive external healthcare system integrations with SIS/EHR/pharmacy/lab/government reporting
+ * Upstream: ../services/integrationService/IntegrationService | Dependencies: @hapi/hapi, joi
+ * Downstream: External SIS/EHR/pharmacy/lab/insurance/government systems, admin integration management UI | Called by: Integration admin panels, automated sync processes
+ * Related: ../services/integrationService.ts, integration.ts (Express version), healthRecords.ts, students.ts, medications.ts, reports.ts
+ * Exports: integrationRoutes | Key Services: Integration CRUD, connection testing, manual sync triggers, audit logging, statistics, admin-only operations
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~400
+ * Critical Path: Admin authentication → Integration config validation → External API communication → Data synchronization → Audit trail → Response
+ * LLM Context: Healthcare integration hub (Hapi.js version) with 10 comprehensive endpoints for managing SIS/EHR/pharmacy/lab/government integrations, testing, sync operations, and monitoring
+ */
+
+/**
  * Integration Hub Routes for Hapi.js
  * Provides REST API endpoints for integration management
  *
@@ -14,7 +37,7 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { IntegrationService } from '../services/integrationService';
+import { IntegrationService } from '../services/integration';
 import Joi from 'joi';
 
 // Middleware to check if user is admin

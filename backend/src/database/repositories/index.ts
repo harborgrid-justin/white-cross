@@ -1,4 +1,27 @@
 /**
+ * LOC: 38F4E7BD98
+ * WC-IDX-107 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/repositories/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (database/repositories/index.ts)
+ */
+
+/**
+ * WC-IDX-107 | index.ts - Module exports and entry point
+ * Purpose: module exports and entry point
+ * Upstream: Independent module | Dependencies: @/database/repositories
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: module exports and entry point, part of backend architecture
+ */
+
+/**
  * Repository Layer Index
  * Central export point for all repositories and interfaces
  *

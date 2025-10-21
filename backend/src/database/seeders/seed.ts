@@ -1,6 +1,29 @@
 #!/usr/bin/env ts-node
 
 /**
+ * LOC: D7F6D66F96
+ * WC-GEN-124 | seed.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.service.ts (database/services/sequelize.service.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-124 | seed.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../services/sequelize.service | Dependencies: ../services/sequelize.service, sequelize, dotenv
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Master Seeder Runner for Sequelize
  *
  * Runs all seeders in the correct dependency order.
@@ -20,9 +43,10 @@
 import sequelize from '../services/sequelize.service';
 import { QueryInterface, QueryTypes } from 'sequelize';
 import dotenv from 'dotenv';
+import path from 'path';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from backend directory
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
 
 // Seeder configuration
 const SEEDERS = [

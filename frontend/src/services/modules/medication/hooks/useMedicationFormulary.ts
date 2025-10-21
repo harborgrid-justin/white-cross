@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-287 | useMedicationFormulary.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../api | Dependencies: @tanstack/react-query, ../api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Medication Formulary Hook
  *
  * Purpose: React Query integration for medication formulary operations
@@ -42,7 +54,7 @@ export const formularyKeys = {
 export interface UseMedicationFormularyReturn {
   // Query results
   searchFormulary: ReturnType<typeof useQuery<any>>;
-  getMedicationById: (id: string) => ReturnType<typeof useQuery<Medication>>;
+  // getMedicationById: (id: string) => ReturnType<typeof useQuery<Medication>>; // Commented out - violates Rules of Hooks
 
   // Mutations
   scanBarcode: ReturnType<typeof useMutation<BarcodeResult, Error, string>>;
@@ -74,14 +86,16 @@ export function useMedicationFormulary(options?: {
   });
 
   // Get medication by ID (factory function)
-  const getMedicationById = (id: string) => {
-    return useQuery({
-      queryKey: formularyKeys.detail(id),
-      queryFn: () => medicationFormularyApi.getMedicationById(id),
-      enabled: !!id,
-      staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    });
-  };
+  // Note: This factory function pattern violates Rules of Hooks
+  // TODO: Refactor to use a separate custom hook like `useMedicationById(id)`
+  // const getMedicationById = (id: string) => {
+  //   return useQuery({
+  //     queryKey: formularyKeys.detail(id),
+  //     queryFn: () => medicationFormularyApi.getMedicationById(id),
+  //     enabled: !!id,
+  //     staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  //   });
+  // };
 
   // Scan barcode (mutation - no cache)
   const scanBarcode = useMutation({
@@ -163,7 +177,7 @@ export function useMedicationFormulary(options?: {
 
   return {
     searchFormulary,
-    getMedicationById,
+    // getMedicationById, // Commented out - violates Rules of Hooks
     scanBarcode,
     checkInteractions,
     createMedication,

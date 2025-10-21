@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-128 | useCommunicationOptions.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../services/config/apiConfig | Dependencies: @tanstack/react-query, ../services/config/apiConfig
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Communication Options Hook
  *
  * Provides access to communication channel configurations and notification types.

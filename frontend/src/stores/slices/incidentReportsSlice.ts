@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-311 | incidentReportsSlice.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../services/modules/incidentReportsApi | Dependencies: @reduxjs/toolkit, ../../services/modules/incidentReportsApi, react-hot-toast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Incident Reports Redux Slice
  * Production-grade state management for incident reporting system
  *
@@ -43,7 +55,7 @@ const log = debug('whitecross:incident-reports-slice');
 /**
  * Sort configuration for incident reports list
  */
-interface SortConfig {
+export interface SortConfig {
   column: 'occurredAt' | 'severity' | 'type' | 'status' | 'reportedAt';
   order: 'asc' | 'desc';
 }
@@ -51,7 +63,7 @@ interface SortConfig {
 /**
  * View mode for incident reports display
  */
-type ViewMode = 'list' | 'grid' | 'detail';
+export type ViewMode = 'list' | 'grid' | 'detail';
 
 /**
  * Pagination metadata

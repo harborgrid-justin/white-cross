@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-286 | useMedicationAdministration.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../api, ./useOfflineQueue, ./useMedicationSafety | Dependencies: react, @tanstack/react-query, ../api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, interfaces, classes | Key Features: useState, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Medication Administration Hook
  *
  * SAFETY-CRITICAL HOOK

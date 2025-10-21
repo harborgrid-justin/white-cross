@@ -1,4 +1,16 @@
 /**
+ * WF-IDX-247 | index.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../contexts/AuthContext, ../components/LoadingSpinner, ../constants/routes | Dependencies: react-router-dom, ../contexts/AuthContext, ../components/LoadingSpinner
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, named exports | Key Features: useState, useEffect, functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Application Routing Configuration
  * Production-grade routing with comprehensive guards, validation, and monitoring
  *
@@ -13,20 +25,15 @@
  * - Page transitions
  */
 
-import React, { Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthContext } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 import {
   AuthGuard,
-  RoleGuard,
-  PermissionGuard,
-  RouteParamValidator,
-  CombinedGuard,
   UserRole,
 } from './guards';
-import { buildBreadcrumbs } from './routeUtils';
 
 // ============================================================================
 // LAYOUT COMPONENTS
@@ -43,27 +50,8 @@ import Login from '../pages/Login';
 
 // Protected pages
 import Dashboard from '../pages/Dashboard';
-import Students from '../pages/Students';
-import Medications from '../pages/Medications';
-import Appointments from '../pages/Appointments';
 import HealthRecords from '../pages/HealthRecords';
-import IncidentReports from '../pages/IncidentReports';
-import EmergencyContacts from '../pages/EmergencyContacts';
-import Communication from '../pages/Communication';
-import Inventory from '../pages/Inventory';
-import Reports from '../pages/Reports';
-import Settings from '../pages/Settings';
-import Documents from '../pages/Documents';
 import AccessDenied from '../pages/AccessDenied';
-
-// Incident Reports sub-pages
-import {
-  IncidentWitnesses,
-  IncidentActions,
-  IncidentEvidence,
-  IncidentTimeline,
-  IncidentExport,
-} from '../pages/IncidentReports';
 
 // ============================================================================
 // ERROR BOUNDARY
@@ -126,8 +114,6 @@ interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
   requiredPermission?: string;
   requiredPermissions?: string[];
-  featureName?: string;
-  paramSchema?: Record<string, 'uuid' | 'number' | string[] | RegExp | ((value: string) => boolean)>;
 }
 
 /**
@@ -137,12 +123,8 @@ interface ProtectedRouteProps {
  * - Authentication verification
  * - Role-based access control
  * - Permission checking
- * - Route parameter validation
- * - Feature flag checking
  * - Loading states
  * - Error boundaries
- * - Breadcrumb generation
- * - Analytics tracking
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
@@ -150,40 +132,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   requiredPermission,
   requiredPermissions,
-  featureName,
-  paramSchema,
 }) => {
   const { user, loading } = useAuthContext();
-  const location = useLocation();
-  const [breadcrumbs, setBreadcrumbs] = useState<any[]>([]);
-
-  // Generate breadcrumbs on location change
-  useEffect(() => {
-    if (user) {
-      const crumbs = buildBreadcrumbs(location.pathname);
-      setBreadcrumbs(crumbs);
-    }
-  }, [location.pathname, user]);
-
-  // Track page views for analytics
-  useEffect(() => {
-    if (user && !loading) {
-      // TODO: Send page view to analytics service
-      console.debug('[Analytics] Page view:', location.pathname, {
-        userId: user.id,
-        role: user.role,
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }, [location.pathname, user, loading]);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
   if (!user) {
-    const redirectUrl = `${PUBLIC_ROUTES.LOGIN}?redirect=${encodeURIComponent(location.pathname + location.search)}`;
-    return <Navigate to={redirectUrl} replace />;
+    return <Navigate to={PUBLIC_ROUTES.LOGIN} replace />;
   }
 
   // Check role-based access
@@ -209,13 +166,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   return (
     <RouteErrorBoundary>
       <Suspense fallback={<LoadingSpinner />}>
-        {paramSchema ? (
-          <RouteParamValidator schema={paramSchema} redirectOnInvalid="/404">
-            {children}
-          </RouteParamValidator>
-        ) : (
-          children
-        )}
+        {children}
       </Suspense>
     </RouteErrorBoundary>
   );
@@ -259,867 +210,90 @@ export const AppRoutes: React.FC = () => {
       />
 
       {/* ===== PROTECTED ROUTES ===== */}
+      
+      {/* ----- DASHBOARD ----- */}
       <Route
-        path="/*"
+        path={PROTECTED_ROUTES.DASHBOARD}
         element={
           <AuthGuard>
             <Layout>
               <PageTransition>
-                <Routes>
-                  {/* ----- DASHBOARD ----- */}
-                  <Route
-                    path={PROTECTED_ROUTES.DASHBOARD}
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
 
-                  {/* ----- STUDENTS ----- */}
-                  <Route path={PROTECTED_ROUTES.STUDENTS}>
-                    {/* Students List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="students.read"
-                        >
-                          <Students />
-                        </ProtectedRoute>
-                      }
-                    />
+      {/* ----- HEALTH RECORDS ----- */}
+      <Route
+        path={PROTECTED_ROUTES.HEALTH_RECORDS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute
+                  allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
+                  requiredPermission="health_records.read"
+                >
+                  <HealthRecords />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
 
-                    {/* Student Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="students.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Students />
-                        </ProtectedRoute>
-                      }
-                    />
+      {/* ----- ACCESS DENIED ----- */}
+      <Route
+        path={PROTECTED_ROUTES.ACCESS_DENIED}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <AccessDenied />
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
 
-                    {/* Student Edit */}
-                    <Route
-                      path=":id/edit"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}
-                          requiredPermission="students.update"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Students />
-                        </CombinedGuard>
-                      }
-                    />
+      {/* ----- DEFAULT REDIRECT ----- */}
+      <Route
+        path="/"
+        element={<Navigate to={PROTECTED_ROUTES.DASHBOARD} replace />}
+      />
 
-                    {/* New Student */}
-                    <Route
-                      path="new"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="students.create"
-                        >
-                          <Students />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- MEDICATIONS ----- */}
-                  <Route path={PROTECTED_ROUTES.MEDICATIONS}>
-                    {/* Medications List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="medications.read"
-                        >
-                          <Medications />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Medication Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="medications.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Medications />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Medication Edit */}
-                    <Route
-                      path=":id/edit"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="medications.update"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Medications />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Medication Administer - High Security */}
-                    <Route
-                      path=":id/administer"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="medications.administer"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Medications />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* New Medication */}
-                    <Route
-                      path="new"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="medications.create"
-                        >
-                          <Medications />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Medication Inventory */}
-                    <Route
-                      path="inventory"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="medications.read"
-                        >
-                          <Medications />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- APPOINTMENTS ----- */}
-                  <Route path={PROTECTED_ROUTES.APPOINTMENTS}>
-                    {/* Appointments List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="appointments.read"
-                        >
-                          <Appointments />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Appointment Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="appointments.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Appointments />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Appointment Edit */}
-                    <Route
-                      path=":id/edit"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="appointments.update"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Appointments />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* New Appointment */}
-                    <Route
-                      path="new"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="appointments.create"
-                        >
-                          <Appointments />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Schedule View */}
-                    <Route
-                      path="schedule"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'READ_ONLY']}
-                          requiredPermission="appointments.read"
-                        >
-                          <Appointments />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- HEALTH RECORDS ----- */}
-                  <Route path={PROTECTED_ROUTES.HEALTH_RECORDS}>
-                    {/* Health Records List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="health_records.read"
-                        >
-                          <HealthRecords />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Health Record Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="health_records.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <HealthRecords />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Health Records by Student */}
-                    <Route
-                      path="student/:studentId"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY']}
-                          requiredPermission="health_records.read"
-                          paramSchema={{ studentId: 'uuid' }}
-                        >
-                          <HealthRecords />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* New Health Record */}
-                    <Route
-                      path="new"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}
-                          requiredPermission="health_records.create"
-                        >
-                          <HealthRecords />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- INCIDENT REPORTS ----- */}
-                  <Route path={PROTECTED_ROUTES.INCIDENT_REPORTS}>
-                    {/* Incident Reports List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="incidents.read"
-                        >
-                          <IncidentReports />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Incident Report Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="incidents.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentReports />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Incident Report Edit */}
-                    <Route
-                      path=":id/edit"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}
-                          requiredPermission="incidents.update"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentReports />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* New Incident Report */}
-                    <Route
-                      path="new"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}
-                          requiredPermission="incidents.create"
-                        >
-                          <IncidentReports />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Incident Witnesses - Feature Flag Protected */}
-                    <Route
-                      path=":id/witnesses"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="incidents.read"
-                          featureName="incident-witnesses"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentWitnesses />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Incident Actions - Feature Flag Protected */}
-                    <Route
-                      path=":id/actions"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="incidents.update"
-                          featureName="incident-actions"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentActions />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Incident Evidence - Feature Flag Protected */}
-                    <Route
-                      path=":id/evidence"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="incidents.update"
-                          featureName="incident-evidence"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentEvidence />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Incident Timeline - Feature Flag Protected */}
-                    <Route
-                      path=":id/timeline"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'SCHOOL_ADMIN']}
-                          requiredPermission="incidents.read"
-                          featureName="incident-timeline"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentTimeline />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Incident Export - Feature Flag Protected */}
-                    <Route
-                      path=":id/export"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="incidents.read"
-                          featureName="incident-export"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <IncidentExport />
-                        </CombinedGuard>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- EMERGENCY CONTACTS ----- */}
-                  <Route path={PROTECTED_ROUTES.EMERGENCY_CONTACTS}>
-                    {/* Emergency Contacts List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="emergency_contacts.read"
-                        >
-                          <EmergencyContacts />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Emergency Contact Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="emergency_contacts.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <EmergencyContacts />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Emergency Contacts by Student */}
-                    <Route
-                      path="student/:studentId"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="emergency_contacts.read"
-                          paramSchema={{ studentId: 'uuid' }}
-                        >
-                          <EmergencyContacts />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* New Emergency Contact */}
-                    <Route
-                      path="new"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="emergency_contacts.create"
-                        >
-                          <EmergencyContacts />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- COMMUNICATION ----- */}
-                  <Route path={PROTECTED_ROUTES.COMMUNICATION}>
-                    {/* Communication Dashboard */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute requiredPermission="communication.read">
-                          <Communication />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Send Communication */}
-                    <Route
-                      path="send"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'STAFF']}
-                          requiredPermission="communication.send"
-                        >
-                          <Communication />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Communication Templates */}
-                    <Route
-                      path="templates"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'SCHOOL_ADMIN']}
-                          requiredPermission="communication.read"
-                        >
-                          <Communication />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Communication History */}
-                    <Route
-                      path="history"
-                      element={
-                        <ProtectedRoute requiredPermission="communication.read">
-                          <Communication />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- DOCUMENTS ----- */}
-                  <Route path={PROTECTED_ROUTES.DOCUMENTS}>
-                    {/* Documents List */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY']}
-                          requiredPermission="documents.read"
-                        >
-                          <Documents />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Document Detail */}
-                    <Route
-                      path=":id"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY']}
-                          requiredPermission="documents.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Documents />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Documents by Student */}
-                    <Route
-                      path="student/:studentId"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}
-                          requiredPermission="documents.read"
-                          paramSchema={{ studentId: 'uuid' }}
-                        >
-                          <Documents />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Upload Document */}
-                    <Route
-                      path="upload"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}
-                          requiredPermission="documents.create"
-                        >
-                          <Documents />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- INVENTORY ----- */}
-                  <Route path={PROTECTED_ROUTES.INVENTORY}>
-                    {/* Inventory Dashboard */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="inventory.read"
-                        >
-                          <Inventory />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Inventory Items */}
-                    <Route
-                      path="items"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="inventory.read"
-                        >
-                          <Inventory />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Inventory Alerts */}
-                    <Route
-                      path="alerts"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="inventory.read"
-                        >
-                          <Inventory />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Inventory Transactions */}
-                    <Route
-                      path="transactions"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE']}
-                          requiredPermission="inventory.update"
-                        >
-                          <Inventory />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Inventory Vendors - Admin Only */}
-                    <Route
-                      path="vendors"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN']}
-                          requiredPermission="inventory.update"
-                        >
-                          <Inventory />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- REPORTS ----- */}
-                  <Route path={PROTECTED_ROUTES.REPORTS}>
-                    {/* Reports Dashboard */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="reports.read"
-                        >
-                          <Reports />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Generate Reports */}
-                    <Route
-                      path="generate"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="reports.create"
-                        >
-                          <Reports />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Scheduled Reports */}
-                    <Route
-                      path="scheduled"
-                      element={
-                        <ProtectedRoute
-                          allowedRoles={['ADMIN', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="reports.read"
-                        >
-                          <Reports />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* View Report */}
-                    <Route
-                      path=":id"
-                      element={
-                        <CombinedGuard
-                          allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR', 'READ_ONLY', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN']}
-                          requiredPermission="reports.read"
-                          paramSchema={{ id: 'uuid' }}
-                        >
-                          <Reports />
-                        </CombinedGuard>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- SETTINGS (ADMIN ONLY) ----- */}
-                  <Route path={PROTECTED_ROUTES.SETTINGS}>
-                    {/* Settings Overview */}
-                    <Route
-                      index
-                      element={
-                        <ProtectedRoute
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.read"
-                        >
-                          <Settings />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Districts Management */}
-                    <Route
-                      path="districts"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.update"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Schools Management */}
-                    <Route
-                      path="schools"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.update"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Users Management */}
-                    <Route
-                      path="users"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.update"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Configuration */}
-                    <Route
-                      path="configuration"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.update"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Integrations */}
-                    <Route
-                      path="integrations"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.update"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Backups */}
-                    <Route
-                      path="backups"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.read"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Monitoring */}
-                    <Route
-                      path="monitoring"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.read"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-
-                    {/* Audit Logs */}
-                    <Route
-                      path="audit"
-                      element={
-                        <CombinedGuard
-                          requiredRole="ADMIN"
-                          requiredPermission="settings.read"
-                        >
-                          <Settings />
-                        </CombinedGuard>
-                      }
-                    />
-                  </Route>
-
-                  {/* ----- ACCESS DENIED ----- */}
-                  <Route path={PROTECTED_ROUTES.ACCESS_DENIED} element={<AccessDenied />} />
-
-                  {/* ----- DEFAULT REDIRECT ----- */}
-                  <Route
-                    path="/"
-                    element={<Navigate to={PROTECTED_ROUTES.DASHBOARD} replace />}
-                  />
-
-                  {/* ----- 404 CATCH ALL ----- */}
-                  <Route
-                    path="*"
-                    element={
-                      <div className="flex items-center justify-center min-h-screen">
-                        <div className="text-center">
-                          <h1 className="text-6xl font-bold text-gray-300 mb-4">404</h1>
-                          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Page Not Found</h2>
-                          <p className="text-gray-600 mb-6">
-                            The page you're looking for doesn't exist.
-                          </p>
-                          <button
-                            onClick={() => window.history.back()}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2"
-                          >
-                            Go Back
-                          </button>
-                          <button
-                            onClick={() => window.location.href = PROTECTED_ROUTES.DASHBOARD}
-                            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-                          >
-                            Go to Dashboard
-                          </button>
-                        </div>
-                      </div>
-                    }
-                  />
-                </Routes>
+      {/* ----- 404 CATCH ALL ----- */}
+      <Route
+        path="*"
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <div className="flex items-center justify-center min-h-screen">
+                  <div className="text-center">
+                    <h1 className="text-6xl font-bold text-gray-300 mb-4">404</h1>
+                    <h2 className="text-2xl font-semibold text-gray-700 mb-2">Page Not Found</h2>
+                    <p className="text-gray-600 mb-6">
+                      The page you're looking for doesn't exist.
+                    </p>
+                    <button
+                      onClick={() => window.history.back()}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2"
+                    >
+                      Go Back
+                    </button>
+                    <button
+                      onClick={() => window.location.href = PROTECTED_ROUTES.DASHBOARD}
+                      className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                    >
+                      Go to Dashboard
+                    </button>
+                  </div>
+                </div>
               </PageTransition>
             </Layout>
           </AuthGuard>

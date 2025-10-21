@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-345 | navigationUtils.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types, ../types/navigation, ../guards/navigationGuards | Dependencies: ../types, ../types/navigation, ../guards/navigationGuards
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, functions | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Navigation Utilities
  *
  * Helper functions for filtering navigation items based on permissions,

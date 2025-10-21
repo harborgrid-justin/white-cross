@@ -1,6 +1,31 @@
+/**
+ * LOC: 8B3066B717
+ * WC-GEN-296 | userService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (shared/index.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - users.ts (routes/users.ts)
+ */
+
+/**
+ * WC-GEN-296 | userService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../utils/logger, ../shared, ../database/models | Dependencies: sequelize, ../utils/logger, ../shared
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Op, QueryTypes } from 'sequelize';
-import bcrypt from 'bcryptjs';
 import { logger } from '../utils/logger';
+import { hashPassword, comparePassword } from '../shared';
 import {
   User,
   Student,
@@ -226,8 +251,8 @@ export class UserService {
         throw new Error('User already exists with this email');
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(data.password, 12);
+      // Hash password using shared utility
+      const hashedPassword = await hashPassword(data.password);
 
       const user = await User.create({
         ...data,
@@ -304,14 +329,14 @@ export class UserService {
         throw new Error('User not found');
       }
 
-      // Verify current password
-      const isValidPassword = await bcrypt.compare(data.currentPassword, user.password);
+      // Verify current password using shared utility
+      const isValidPassword = await comparePassword(data.currentPassword, user.password);
       if (!isValidPassword) {
         throw new Error('Current password is incorrect');
       }
 
-      // Hash new password
-      const hashedPassword = await bcrypt.hash(data.newPassword, 12);
+      // Hash new password using shared utility
+      const hashedPassword = await hashPassword(data.newPassword);
 
       await user.update({ password: hashedPassword });
 
@@ -457,8 +482,8 @@ export class UserService {
         throw new Error('User not found');
       }
 
-      // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      // Hash new password using shared utility
+      const hashedPassword = await hashPassword(newPassword);
 
       await user.update({ password: hashedPassword });
 

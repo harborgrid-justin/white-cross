@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-202 | useIncidentReportsFilters.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../../hooks/useRouteState | Dependencies: react, ../../../hooks/useRouteState
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useState, useMemo, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * useIncidentReportsFilters Hook
  *
  * Manages filter state and logic for incident reports

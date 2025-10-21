@@ -1,3 +1,26 @@
+/**
+ * LOC: 1EB0403DE8
+ * WC-GEN-291 | reportService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - reports.ts (routes/reports.ts)
+ */
+
+/**
+ * WC-GEN-291 | reportService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../utils/logger, ../database/models, ../database/types/enums | Dependencies: sequelize, ../utils/logger, ../database/models
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Op, fn, col, literal, QueryTypes } from 'sequelize';
 import { logger } from '../utils/logger';
 import {

@@ -1,4 +1,31 @@
 /**
+ * LOC: 3E34DA2D42
+ * WC-GEN-195 | auditLogging.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - index.ts (database/models/index.ts)
+ *   - types.ts (services/allergy/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - bulkOperations.ts (services/allergy/bulkOperations.ts)
+ *   - crudOperations.ts (services/allergy/crudOperations.ts)
+ *   - queryOperations.ts (services/allergy/queryOperations.ts)
+ */
+
+/**
+ * WC-GEN-195 | auditLogging.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: ../../utils/logger, ../../database/models, ./types
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: functions | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Allergy Audit Logging Module
  *
  * Handles PHI-compliant audit logging for allergy operations

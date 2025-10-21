@@ -1,4 +1,27 @@
 /**
+ * LOC: 14CAD75B0C
+ * WC-GEN-364 | medicationValidators.test.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-364 | medicationValidators.test.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../medicationValidators | Dependencies: ../medicationValidators
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Medication Validators Test Suite
  * Comprehensive unit tests for medication validation schemas
  * Tests: Five Rights of Medication Administration, NDC codes, DEA schedules, dosage formats

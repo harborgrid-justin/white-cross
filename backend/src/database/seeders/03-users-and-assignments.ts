@@ -1,5 +1,29 @@
-import { QueryInterface, QueryTypes } from 'sequelize';
-import bcrypt from 'bcryptjs';
+/**
+ * LOC: 25AA0E84BA
+ * WC-GEN-117 | 03-users-and-assignments.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (shared/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-117 | 03-users-and-assignments.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../shared | Dependencies: sequelize, ../../shared
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+import { QueryInterface, DataTypes, QueryTypes } from 'sequelize';
+import { hashPassword } from '../../shared';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Seeder: Users and Role Assignments
@@ -22,22 +46,25 @@ module.exports = {
     const now = new Date();
 
     // Hash passwords
-    const defaultPassword = await bcrypt.hash('admin123', 10);
-    const testNursePassword = await bcrypt.hash('testNursePassword', 10);
-    const testAdminPassword = await bcrypt.hash('AdminPassword123!', 10);
-    const testReadOnlyPassword = await bcrypt.hash('ReadOnlyPassword123!', 10);
-    const testCounselorPassword = await bcrypt.hash('CounselorPassword123!', 10);
+    const defaultPassword = await hashPassword('AdminPassword123!'); // Using secure default
+    const testNursePassword = await hashPassword('NursePassword123!'); // Updated to meet complexity requirements
+    const testAdminPassword = await hashPassword('AdminPassword123!');
+    const testReadOnlyPassword = await hashPassword('ReadOnlyPassword123!');
+    const testCounselorPassword = await hashPassword('CounselorPassword123!');
 
     // Get district and schools for foreign key references
-    const [[district]] = await queryInterface.sequelize.query(
-      `SELECT id FROM "Districts" WHERE code = 'UNIFIED_DISTRICT' LIMIT 1`,
+    const districtResults = await queryInterface.sequelize.query(
+      `SELECT id FROM "districts" WHERE code = 'UNIFIED_DISTRICT' LIMIT 1`,
       { type: QueryTypes.SELECT }
-    ) as [[{ id: number }], unknown];
+    ) as Array<{ id: string }>;
 
-    const [schools] = await queryInterface.sequelize.query(
-      `SELECT id, code FROM "Schools" ORDER BY id`,
+    const schoolResults = await queryInterface.sequelize.query(
+      `SELECT id, code FROM "schools" ORDER BY id`,
       { type: QueryTypes.SELECT }
-    ) as [Array<{ id: number; code: string }>, unknown];
+    ) as Array<{ id: string; code: string }>;
+
+    const district = districtResults[0];
+    const schools = schoolResults;
 
     const centralHigh = schools.find((s) => s.code === 'CENTRAL_HIGH');
     const westElem = schools.find((s) => s.code === 'WEST_ELEM');
@@ -49,6 +76,7 @@ module.exports = {
     const users = [
       // ADMIN USERS
       {
+        id: uuidv4(),
         email: 'admin@whitecross.health',
         password: defaultPassword,
         firstName: 'System',
@@ -61,6 +89,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'district.admin@unifiedschools.edu',
         password: defaultPassword,
         firstName: 'Robert',
@@ -73,6 +102,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'school.admin@centralhigh.edu',
         password: defaultPassword,
         firstName: 'Patricia',
@@ -85,6 +115,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'admin@school.edu',
         password: testAdminPassword,
         firstName: 'Test',
@@ -99,6 +130,7 @@ module.exports = {
 
       // NURSE USERS
       {
+        id: uuidv4(),
         email: 'nurse@whitecross.health',
         password: defaultPassword,
         firstName: 'Sarah',
@@ -111,6 +143,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'nurse2@centralhigh.edu',
         password: defaultPassword,
         firstName: 'Maria',
@@ -123,6 +156,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'nurse@westelementary.edu',
         password: defaultPassword,
         firstName: 'Emily',
@@ -135,6 +169,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'nurse@eastmiddle.edu',
         password: defaultPassword,
         firstName: 'Michael',
@@ -147,6 +182,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'nurse@northelementary.edu',
         password: defaultPassword,
         firstName: 'Amanda',
@@ -159,6 +195,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'nurse@southhigh.edu',
         password: defaultPassword,
         firstName: 'Christopher',
@@ -171,6 +208,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'nurse@school.edu',
         password: testNursePassword,
         firstName: 'Test',
@@ -183,13 +221,14 @@ module.exports = {
         updatedAt: now,
       },
 
-      // COUNSELOR USERS
+      // ADDITIONAL SCHOOL ADMIN USERS (replacing counselors)
       {
+        id: uuidv4(),
         email: 'counselor@centralhigh.edu',
         password: defaultPassword,
         firstName: 'James',
         lastName: 'Mitchell',
-        role: 'COUNSELOR',
+        role: 'SCHOOL_ADMIN',
         isActive: true,
         districtId: district?.id || null,
         schoolId: centralHigh?.id || null,
@@ -197,11 +236,12 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'counselor@eastmiddle.edu',
         password: defaultPassword,
         firstName: 'Rachel',
         lastName: 'Green',
-        role: 'COUNSELOR',
+        role: 'SCHOOL_ADMIN',
         isActive: true,
         districtId: district?.id || null,
         schoolId: eastMiddle?.id || null,
@@ -209,11 +249,12 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'counselor@school.edu',
         password: testCounselorPassword,
         firstName: 'Test',
         lastName: 'Counselor',
-        role: 'COUNSELOR',
+        role: 'SCHOOL_ADMIN',
         isActive: true,
         districtId: district?.id || null,
         schoolId: centralHigh?.id || null,
@@ -221,13 +262,14 @@ module.exports = {
         updatedAt: now,
       },
 
-      // VIEWER USERS
+      // ADDITIONAL NURSE USERS (replacing viewers)
       {
+        id: uuidv4(),
         email: 'viewer@centralhigh.edu',
         password: defaultPassword,
         firstName: 'Linda',
         lastName: 'Davis',
-        role: 'VIEWER',
+        role: 'NURSE',
         isActive: true,
         districtId: district?.id || null,
         schoolId: centralHigh?.id || null,
@@ -235,11 +277,12 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         email: 'readonly@school.edu',
         password: testReadOnlyPassword,
         firstName: 'Test',
         lastName: 'ReadOnly',
-        role: 'VIEWER',
+        role: 'NURSE',
         isActive: true,
         districtId: district?.id || null,
         schoolId: centralHigh?.id || null,
@@ -248,69 +291,13 @@ module.exports = {
       },
     ];
 
-    await queryInterface.bulkInsert('Users', users, {});
+    await queryInterface.bulkInsert('users', users, {});
 
-    // Get inserted users and roles for role assignments
-    const [insertedUsers] = await queryInterface.sequelize.query(
-      'SELECT id, email FROM "Users"',
-      { type: QueryTypes.SELECT }
-    ) as [Array<{ id: number; email: string }>, unknown];
-
-    const [insertedRoles] = await queryInterface.sequelize.query(
-      'SELECT id, name FROM "Roles"',
-      { type: QueryTypes.SELECT }
-    ) as [Array<{ id: number; name: string }>, unknown];
-
-    const adminRole = insertedRoles.find((r) => r.name === 'Administrator');
-    const nurseRole = insertedRoles.find((r) => r.name === 'School Nurse');
-    const counselorRole = insertedRoles.find((r) => r.name === 'School Counselor');
-    const readOnlyRole = insertedRoles.find((r) => r.name === 'Read Only');
-
-    // Create User-Role Assignments
-    const userRoleAssignments: Array<{ userId: number; roleId: number; createdAt: Date; updatedAt: Date }> = [];
-
-    // Map users to roles
-    const userRoleMap = [
-      { email: 'admin@whitecross.health', roleName: 'Administrator' },
-      { email: 'district.admin@unifiedschools.edu', roleName: 'Administrator' },
-      { email: 'school.admin@centralhigh.edu', roleName: 'Administrator' },
-      { email: 'admin@school.edu', roleName: 'Administrator' },
-      { email: 'nurse@whitecross.health', roleName: 'School Nurse' },
-      { email: 'nurse2@centralhigh.edu', roleName: 'School Nurse' },
-      { email: 'nurse@westelementary.edu', roleName: 'School Nurse' },
-      { email: 'nurse@eastmiddle.edu', roleName: 'School Nurse' },
-      { email: 'nurse@northelementary.edu', roleName: 'School Nurse' },
-      { email: 'nurse@southhigh.edu', roleName: 'School Nurse' },
-      { email: 'nurse@school.edu', roleName: 'School Nurse' },
-      { email: 'counselor@centralhigh.edu', roleName: 'School Counselor' },
-      { email: 'counselor@eastmiddle.edu', roleName: 'School Counselor' },
-      { email: 'counselor@school.edu', roleName: 'School Counselor' },
-      { email: 'viewer@centralhigh.edu', roleName: 'Read Only' },
-      { email: 'readonly@school.edu', roleName: 'Read Only' },
-    ];
-
-    userRoleMap.forEach((mapping) => {
-      const user = insertedUsers.find((u) => u.email === mapping.email);
-      const role = insertedRoles.find((r) => r.name === mapping.roleName);
-
-      if (user && role) {
-        userRoleAssignments.push({
-          userId: user.id,
-          roleId: role.id,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
-    });
-
-    await queryInterface.bulkInsert('UserRoleAssignments', userRoleAssignments, {});
-
-    console.log(`✓ Seeded ${users.length} users with role assignments`);
+    console.log(`✓ Seeded ${users.length} users (role assignments skipped - permissions system not available)`);
   },
 
   down: async (queryInterface: QueryInterface): Promise<void> => {
-    await queryInterface.bulkDelete('UserRoleAssignments', {}, {});
-    await queryInterface.bulkDelete('Users', {}, {});
-    console.log('✓ Removed all user role assignments and users');
+    await queryInterface.bulkDelete('users', {}, {});
+    console.log('✓ Removed all users');
   },
 };

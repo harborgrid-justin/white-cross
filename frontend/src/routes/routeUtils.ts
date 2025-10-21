@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-248 | routeUtils.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types, ../constants/routes, ./guards | Dependencies: ../types, ../constants/routes, ./guards
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants, functions, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Route Utilities for White Cross Healthcare Platform
  *
  * Provides utility functions for route management including:

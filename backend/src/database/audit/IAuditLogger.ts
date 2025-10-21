@@ -1,4 +1,32 @@
 /**
+ * LOC: AEDD537A37
+ * WC-GEN-013 | IAuditLogger.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - AllergyRepository.ts (database/repositories/impl/AllergyRepository.ts)
+ *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
+ *   - AuditLogRepository.ts (database/repositories/impl/AuditLogRepository.ts)
+ *   - ChronicConditionRepository.ts (database/repositories/impl/ChronicConditionRepository.ts)
+ *   - ... and 9 more
+ */
+
+/**
+ * WC-GEN-013 | IAuditLogger.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../types/ExecutionContext | Dependencies: ../types/ExecutionContext
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: interfaces, types, constants, functions | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * HIPAA-Compliant Audit Logger Interface
  * Tracks all Protected Health Information (PHI) access and modifications
  */

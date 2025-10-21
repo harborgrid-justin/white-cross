@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-340 | routeValidationExamples.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../routeValidation, ../../types/incidents | Dependencies: react, react-router-dom, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Route Validation System - Practical Examples
  *
  * This file contains real-world examples of using the route validation system

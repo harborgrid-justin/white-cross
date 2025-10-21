@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-292 | studentsApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/student.types | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, classes | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
 import { z } from 'zod';
@@ -161,7 +173,7 @@ const createStudentSchema = z.object({
  */
 const updateStudentSchema = createStudentSchema.partial().extend({
   isActive: z.boolean({
-    invalid_type_error: 'Active status must be a boolean'
+    error: 'Active status must be a boolean'
   }).optional(),
 
   updatedBy: z
@@ -186,7 +198,7 @@ const studentFiltersSchema = z.object({
 
   isActive: z
     .boolean({
-      invalid_type_error: 'Active filter must be a boolean'
+      error: 'Active filter must be a boolean'
     })
     .optional(),
 
@@ -197,13 +209,13 @@ const studentFiltersSchema = z.object({
 
   hasAllergies: z
     .boolean({
-      invalid_type_error: 'Has allergies filter must be a boolean'
+      error: 'Has allergies filter must be a boolean'
     })
     .optional(),
 
   hasMedications: z
     .boolean({
-      invalid_type_error: 'Has medications filter must be a boolean'
+      error: 'Has medications filter must be a boolean'
     })
     .optional(),
 
@@ -215,7 +227,7 @@ const studentFiltersSchema = z.object({
 
   page: z
     .number({
-      invalid_type_error: 'Page must be a number'
+      error: 'Page must be a number'
     })
     .int('Page must be an integer')
     .min(1, 'Page must be at least 1')
@@ -223,7 +235,7 @@ const studentFiltersSchema = z.object({
 
   limit: z
     .number({
-      invalid_type_error: 'Limit must be a number'
+      error: 'Limit must be a number'
     })
     .int('Limit must be an integer')
     .min(1, 'Limit must be at least 1')

@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-073 | IntegrationsTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../../services/api, ./IntegrationModal | Dependencies: ../../../services/api, react-hot-toast, ./IntegrationModal
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export | Key Features: useState, useEffect, component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React, { useState, useEffect } from 'react'
 import { integrationApi } from '../../../services/api'
 import toast from 'react-hot-toast'
@@ -52,7 +64,7 @@ export default function IntegrationsTab() {
     if (!confirm('Are you sure you want to delete this integration?')) return
 
     try {
-      await integrationApi.delete()
+      await integrationApi.delete(id)
       toast.success('Integration deleted successfully')
       loadIntegrations()
       loadStatistics()
@@ -64,7 +76,7 @@ export default function IntegrationsTab() {
   const handleTestConnection = async (id: string) => {
     try {
       setTestingId(id)
-      const response = await integrationApi.testConnection()
+      const response = await integrationApi.testConnection(id)
       const result = response.data?.result
       if (result?.success) {
         toast.success(result.message || 'Connection test successful')
@@ -82,7 +94,7 @@ export default function IntegrationsTab() {
   const handleSync = async (id: string) => {
     try {
       setSyncingId(id)
-      const response = await integrationApi.sync()
+      const response = await integrationApi.sync(id)
       const result = response.data?.result
       if (result?.success) {
         toast.success(`Synced ${result.recordsSucceeded || 0} of ${result.recordsProcessed || 0} records`)

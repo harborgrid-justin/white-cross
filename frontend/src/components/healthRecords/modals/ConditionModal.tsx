@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-019 | ConditionModal.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, @/constants/healthRecords
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import type { ChronicCondition, ConditionFormErrors } from '@/types/healthRecords'
 import { SEVERITY_LEVELS, CONDITION_STATUS_OPTIONS } from '@/constants/healthRecords'
@@ -54,13 +66,13 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosed Date</label>
             <input 
               type="date" 
-              name="diagnosedDate"
+              name="diagnosisDate"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={condition?.diagnosedDate || ''}
+              defaultValue={condition?.diagnosisDate || ''}
               data-testid="diagnosed-date-input"
             />
-            {errors.diagnosedDate && (
-              <p className="text-red-600 text-sm mt-1" data-testid="diagnosed-date-error">{errors.diagnosedDate}</p>
+            {errors.diagnosisDate && (
+              <p className="text-red-600 text-sm mt-1" data-testid="diagnosed-date-error">{errors.diagnosisDate}</p>
             )}
           </div>
           

@@ -1,3 +1,27 @@
+/**
+ * LOC: 9E6DB275FA
+ * WC-MID-AUS-044 | Sequelize-Based Authentication Middleware & JWT Token Management
+ *
+ * UPSTREAM (imports from):
+ *   - User.ts (database/models/core/User.ts)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ */
+
+/**
+ * WC-MID-AUS-044 | Sequelize-Based Authentication Middleware & JWT Token Management
+ * Purpose: JWT authentication for Hapi.js and Express, Sequelize user validation
+ * Upstream: database/models/core/User, constants/JWT_CONFIG, constants/ENVIRONMENT
+ * Downstream: routes/auth-sequelize.ts, index-sequelize.ts | Called by: Hapi auth strategy
+ * Related: middleware/auth.ts, routes/auth.ts, database/models/core/User.ts
+ * Exports: configureAuth, authMiddleware, auth, AuthRequest, ExpressAuthRequest
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, @hapi/jwt, express, sequelize
+ * Critical Path: JWT decode → User lookup → Role validation → Request authorization
+ * LLM Context: Alternative auth implementation using Sequelize ORM for user validation
+ */
+
 import { Server, Request as HapiRequest, ResponseToolkit } from '@hapi/hapi';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from '@hapi/jwt';

@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-358 | communicationSchemas.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../types/communication | Dependencies: zod, ../types/communication
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions, types | Key Features: component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Communication Module Validation Schemas
  * Comprehensive Zod schemas for frontend validation
  * Aligns with backend validation requirements
@@ -124,7 +136,7 @@ const smsContentValidator = z.string().refine(
 
 export const messageRecipientSchema = z.object({
   type: z.nativeEnum(RecipientType, {
-    errorMap: () => ({ message: 'Invalid recipient type' }),
+    error: () => ({ message: 'Invalid recipient type' }),
   }),
   id: z.string().uuid('Recipient ID must be a valid UUID'),
   email: emailValidator.optional(),
@@ -153,10 +165,10 @@ export const createMessageTemplateSchema = z
       .min(COMMUNICATION_LIMITS.MESSAGE_CONTENT_MIN_LENGTH, 'Template content is required')
       .max(COMMUNICATION_LIMITS.MESSAGE_CONTENT_MAX_LENGTH, `Content cannot exceed ${COMMUNICATION_LIMITS.MESSAGE_CONTENT_MAX_LENGTH} characters`),
     type: z.nativeEnum(MessageType, {
-      errorMap: () => ({ message: 'Invalid message type' }),
+      error: () => ({ message: 'Invalid message type' }),
     }),
     category: z.nativeEnum(MessageCategory, {
-      errorMap: () => ({ message: 'Invalid message category' }),
+      error: () => ({ message: 'Invalid message category' }),
     }),
     variables: z
       .array(
@@ -232,10 +244,10 @@ export const createMessageSchema = z
       .min(COMMUNICATION_LIMITS.MESSAGE_CONTENT_MIN_LENGTH, 'Message content is required')
       .max(COMMUNICATION_LIMITS.MESSAGE_CONTENT_MAX_LENGTH, `Content cannot exceed ${COMMUNICATION_LIMITS.MESSAGE_CONTENT_MAX_LENGTH} characters`),
     priority: z.nativeEnum(MessagePriority, {
-      errorMap: () => ({ message: 'Invalid message priority' }),
+      error: () => ({ message: 'Invalid message priority' }),
     }),
     category: z.nativeEnum(MessageCategory, {
-      errorMap: () => ({ message: 'Invalid message category' }),
+      error: () => ({ message: 'Invalid message category' }),
     }),
     templateId: z.string().uuid('Template ID must be a valid UUID').optional(),
     scheduledAt: futureDateValidator.optional(),
@@ -364,10 +376,10 @@ export const broadcastMessageSchema = z
       .min(COMMUNICATION_LIMITS.MESSAGE_CONTENT_MIN_LENGTH, 'Message content is required')
       .max(COMMUNICATION_LIMITS.MESSAGE_CONTENT_MAX_LENGTH, `Content cannot exceed ${COMMUNICATION_LIMITS.MESSAGE_CONTENT_MAX_LENGTH} characters`),
     priority: z.nativeEnum(MessagePriority, {
-      errorMap: () => ({ message: 'Invalid message priority' }),
+      error: () => ({ message: 'Invalid message priority' }),
     }),
     category: z.nativeEnum(MessageCategory, {
-      errorMap: () => ({ message: 'Invalid message category' }),
+      error: () => ({ message: 'Invalid message category' }),
     }),
     scheduledAt: futureDateValidator.optional(),
     translateTo: z.array(z.string().length(2, 'Language codes must be 2 characters')).optional(),
@@ -414,10 +426,10 @@ export const emergencyAlertSchema = z
       .min(1, 'Emergency alert message is required')
       .max(COMMUNICATION_LIMITS.EMERGENCY_ALERT_MESSAGE_MAX_LENGTH, `Message cannot exceed ${COMMUNICATION_LIMITS.EMERGENCY_ALERT_MESSAGE_MAX_LENGTH} characters`),
     severity: z.nativeEnum(EmergencyAlertSeverity, {
-      errorMap: () => ({ message: 'Invalid severity level' }),
+      error: () => ({ message: 'Invalid severity level' }),
     }),
     audience: z.nativeEnum(EmergencyAlertAudience, {
-      errorMap: () => ({ message: 'Invalid audience type' }),
+      error: () => ({ message: 'Invalid audience type' }),
     }),
     groups: z.array(z.string().uuid()).optional(),
     channels: z

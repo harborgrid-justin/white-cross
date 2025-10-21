@@ -1,4 +1,27 @@
 /**
+ * LOC: D77590BD9B
+ * WC-GEN-344 | documentValidation.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-344 | documentValidation.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../database/types/enums | Dependencies: ../database/types/enums
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces, constants, functions | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Document Validation Utilities
  * Comprehensive validation for document management operations
  * Ensures HIPAA compliance, data integrity, and business rule enforcement

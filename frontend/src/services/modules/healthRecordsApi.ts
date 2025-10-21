@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-278 | healthRecordsApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../types | Dependencies: ../config/apiConfig, zod, ../types
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, types, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enterprise-Grade Health Records API Client
  *
  * Purpose: Comprehensive management of student health records with all sub-modules
@@ -866,6 +878,26 @@ export class HealthRecordsApi {
     } catch (error: any) {
       throw this.sanitizeError(error);
     }
+  }
+
+  /**
+   * Get student health records (alias for getRecords for compatibility)
+   */
+  async getStudentHealthRecords(studentId: string, filters?: HealthRecordFilters): Promise<PaginatedResponse<HealthRecord>> {
+    return this.getRecords(studentId, filters);
+  }
+
+  /**
+   * Log access to health records
+   */
+  async logAccess(params: {
+    action: string;
+    studentId: string;
+    resourceType: string;
+    resourceId: string;
+    details?: any;
+  }): Promise<void> {
+    await this.logPHIAccess(params.action, params.studentId, params.resourceType, params.resourceId);
   }
 
   /**
@@ -2077,6 +2109,30 @@ export class HealthRecordsApi {
       throw this.sanitizeError(error);
     }
   }
+
+  // ==========================================
+  // METHOD ALIASES FOR BACKWARD COMPATIBILITY
+  // ==========================================
+
+  // Health Records aliases
+  getHealthRecordById = this.getRecordById.bind(this);
+  getHealthSummary = this.getSummary.bind(this);
+  searchHealthRecords = this.searchRecords.bind(this);
+  createHealthRecord = this.createRecord.bind(this);
+  updateHealthRecord = this.updateRecord.bind(this);
+  deleteHealthRecord = this.deleteRecord.bind(this);
+
+  // Allergy aliases
+  getStudentAllergies = this.getAllergies.bind(this);
+
+  // Chronic Condition aliases
+  getStudentChronicConditions = this.getConditions.bind(this);
+  createChronicCondition = this.createCondition.bind(this);
+  updateChronicCondition = this.updateCondition.bind(this);
+  deleteChronicCondition = this.deleteCondition.bind(this);
+
+  // Vaccination aliases
+  getVaccinationRecords = this.getVaccinations.bind(this);
 }
 
 // ==========================================
@@ -2114,6 +2170,20 @@ export class ForbiddenError extends HealthRecordsApiError {
     this.name = 'ForbiddenError';
   }
 }
+
+// ==========================================
+// TYPE ALIASES FOR COMPATIBILITY
+// ==========================================
+
+// Re-export types from ../types for convenience
+export type { PaginationParams, PaginatedResponse } from '../types';
+
+// Type aliases for backward compatibility
+export type VaccinationRecord = Vaccination;
+export type CreateHealthRecordRequest = HealthRecordCreate;
+export type CreateAllergyRequest = AllergyCreate;
+export type CreateChronicConditionRequest = ChronicConditionCreate;
+export type CreateVaccinationRequest = VaccinationCreate;
 
 // ==========================================
 // EXPORT SINGLETON INSTANCE

@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-256 | ApiMonitoring.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./ApiClient | Dependencies: axios, ./ApiClient
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * API Monitoring and Performance Tracking
  * Provides request/response monitoring, performance metrics, and error tracking
  */

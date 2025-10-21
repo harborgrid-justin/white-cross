@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-348 | optimisticUpdates.test.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./optimisticUpdates, ./optimisticHelpers | Dependencies: vitest, @tanstack/react-query, ./optimisticUpdates
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: React components/utilities | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Optimistic Updates - Unit Tests
  *
  * Comprehensive test suite for the optimistic update system.

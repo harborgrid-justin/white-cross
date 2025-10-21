@@ -1,4 +1,32 @@
 /**
+ * LOC: 5A9D38C9A4
+ * WC-GEN-131 | IUnitOfWork.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - IHealthRecordRepository.ts (database/repositories/interfaces/IHealthRecordRepository.ts)
+ *   - IAllergyRepository.ts (database/repositories/interfaces/IAllergyRepository.ts)
+ *   - IChronicConditionRepository.ts (database/repositories/interfaces/IChronicConditionRepository.ts)
+ *   - IStudentRepository.ts (database/repositories/interfaces/IStudentRepository.ts)
+ *   - IAuditLogRepository.ts (database/repositories/interfaces/IAuditLogRepository.ts)
+ *   - ... and 1 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
+ * WC-GEN-131 | IUnitOfWork.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../repositories/interfaces/IHealthRecordRepository, ../repositories/interfaces/IAllergyRepository, ../repositories/interfaces/IChronicConditionRepository | Dependencies: ../repositories/interfaces/IHealthRecordRepository, ../repositories/interfaces/IAllergyRepository, ../repositories/interfaces/IChronicConditionRepository
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Unit of Work Interface
  * Manages transactions and repository access across multiple entities
  */

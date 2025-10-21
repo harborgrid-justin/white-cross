@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-284 | MedicationFormularyApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @/services/config/apiConfig, @/constants/api, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, types, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Medication Formulary API Client
  *
  * Purpose: Manages the system medication formulary (drug database)

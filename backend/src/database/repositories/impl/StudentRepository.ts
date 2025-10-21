@@ -1,4 +1,33 @@
 /**
+ * LOC: 99B6FD199C
+ * WC-GEN-105 | StudentRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - QueryTypes.ts (database/types/QueryTypes.ts)
+ *   - ... and 2 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
+ * WC-GEN-105 | StudentRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../base/BaseRepository, ../../models/core/Student, ../interfaces/IStudentRepository | Dependencies: sequelize, ../base/BaseRepository, ../../models/core/Student
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Student Repository Implementation
  * FERPA-compliant data access for student records
  *

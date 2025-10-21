@@ -1,3 +1,30 @@
+/**
+ * LOC: 1F097AF82C
+ * WC-GEN-204 | AppointmentAvailabilityService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - appointment.ts (types/appointment.ts)
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - AppointmentService.ts (services/appointment/AppointmentService.ts)
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
+ * WC-GEN-204 | AppointmentAvailabilityService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../utils/logger, ../../types/appointment, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../types/appointment
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { AvailabilitySlot } from '../../types/appointment';

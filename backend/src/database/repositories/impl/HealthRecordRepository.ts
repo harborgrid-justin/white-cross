@@ -1,4 +1,33 @@
 /**
+ * LOC: 0F9A4EE093
+ * WC-GEN-102 | HealthRecordRepository.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - BaseRepository.ts (database/repositories/base/BaseRepository.ts)
+ *   - HealthRecord.ts (database/models/healthcare/HealthRecord.ts)
+ *   - IAuditLogger.ts (database/audit/IAuditLogger.ts)
+ *   - ICacheManager.ts (database/cache/ICacheManager.ts)
+ *   - ExecutionContext.ts (database/types/ExecutionContext.ts)
+ *   - ... and 2 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - RepositoryFactory.ts (database/repositories/RepositoryFactory.ts)
+ *   - SequelizeUnitOfWork.ts (database/uow/SequelizeUnitOfWork.ts)
+ */
+
+/**
+ * WC-GEN-102 | HealthRecordRepository.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../base/BaseRepository, ../../models/healthcare/HealthRecord, ../interfaces/IHealthRecordRepository | Dependencies: sequelize, ../base/BaseRepository, ../../models/healthcare/HealthRecord
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Health Record Repository Implementation
  * PHI-compliant data access for health records
  *

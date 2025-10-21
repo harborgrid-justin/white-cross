@@ -1,4 +1,37 @@
 /**
+ * LOC: 37C9F00530
+ * WC-IDX-074 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - sequelize.ts (database/config/sequelize.ts)
+ *   - User.ts (database/models/core/User.ts)
+ *   - Student.ts (database/models/core/Student.ts)
+ *   - EmergencyContact.ts (database/models/core/EmergencyContact.ts)
+ *   - Medication.ts (database/models/core/Medication.ts)
+ *   - ... and 57 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - BaseService.ts (database/services/BaseService.ts)
+ *   - index.ts (index.ts)
+ *   - inventoryMaintenanceJob.ts (jobs/inventoryMaintenanceJob.ts)
+ *   - medicationReminderJob.ts (jobs/medicationReminderJob.ts)
+ *   - auditLogging.ts (middleware/auditLogging.ts)
+ *   - ... and 67 more
+ */
+
+/**
+ * WC-IDX-074 | index.ts - Module exports and entry point
+ * Purpose: module exports and entry point
+ * Upstream: ../config/sequelize, ./core/User, ./core/Student | Dependencies: ../config/sequelize, ./core/User, ./core/Student
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: functions, default export | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: module exports and entry point, part of backend architecture
+ */
+
+/**
  * Sequelize Models Registry and Associations
  * Central hub for all database models with relationship definitions
  */

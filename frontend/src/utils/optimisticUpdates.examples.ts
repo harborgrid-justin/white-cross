@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-347 | optimisticUpdates.examples.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @tanstack/react-query, @/hooks/useOptimisticIncidents, @/utils/optimisticHelpers
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useState, component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Optimistic Updates - Usage Examples
  *
  * Comprehensive examples demonstrating how to use the optimistic update system

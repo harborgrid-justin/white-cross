@@ -1,3 +1,28 @@
+/**
+ * LOC: D2CD3BF009
+ * WC-CFG-SWG-053 | Swagger API Documentation Configuration & Healthcare API Specs
+ *
+ * UPSTREAM (imports from):
+ *   - package.json (../package.json)
+ *   - index.ts (constants/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index-sequelize.ts (index-sequelize.ts)
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-CFG-SWG-053 | Swagger API Documentation Configuration & Healthcare API Specs
+ * Purpose: Hapi-Swagger setup, API documentation, HIPAA-compliant endpoint specs
+ * Upstream: package.json, constants/SWAGGER_CONFIG, constants/ENVIRONMENT
+ * Downstream: All API routes, index.ts | Called by: Hapi server registration
+ * Related: All routes/*, middleware/*, HIPAA compliance documentation
+ * Exports: swaggerOptions, extendedInfo | Key Services: API documentation generation
+ * Last Updated: 2025-10-18 | Dependencies: @hapi/hapi, hapi-swagger, package.json
+ * Critical Path: Hapi registration → Route discovery → Documentation generation
+ * LLM Context: Healthcare API documentation, JWT auth specs, HIPAA compliance info
+ */
+
 import { ServerRegisterPluginObject } from '@hapi/hapi';
 import * as HapiSwagger from 'hapi-swagger';
 import * as Pack from '../../package.json';
@@ -130,7 +155,6 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
     schemes: ['http', 'https'],
     host: process.env.SWAGGER_HOST || `localhost:${ENVIRONMENT.PORT}`,
     expanded: 'list',
-    lang: 'en',
     // Custom branding
     customCss: `
       .swagger-ui .topbar {

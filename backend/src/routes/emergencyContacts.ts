@@ -1,3 +1,26 @@
+/**
+ * LOC: 4C011FD33A
+ * WC-RTE-EMG-036 | emergencyContacts.ts - Emergency Contact Management API Routes
+ *
+ * UPSTREAM (imports from):
+ *   - emergencyContactService.ts (services/emergencyContactService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (index.ts)
+ */
+
+/**
+ * WC-RTE-EMG-036 | emergencyContacts.ts - Emergency Contact Management API Routes
+ * Purpose: Hapi.js routes for comprehensive emergency contact lifecycle, multi-channel notifications, and crisis communication for student safety
+ * Upstream: ../services/emergencyContactService/EmergencyContactService | Dependencies: @hapi/hapi, joi
+ * Downstream: Frontend emergency management UI, notification systems, student safety workflows, crisis response | Called by: Emergency interfaces, safety protocols
+ * Related: ../services/emergencyContactService.ts, students.ts, communication.ts, incidentReports.ts, healthRecords.ts
+ * Exports: emergencyContactRoutes | Key Services: Contact CRUD, priority management, multi-channel notifications, contact verification, statistics
+ * Last Updated: 2025-10-18 | File Type: .ts | Lines: ~200
+ * Critical Path: Authentication → Contact validation → Notification delivery → Response tracking → Crisis escalation
+ * LLM Context: Student safety emergency contact system with 8 endpoints for contact management, SMS/email/voice notifications, verification, and crisis communication
+ */
+
 import { ServerRoute } from '@hapi/hapi';
 import { EmergencyContactService } from '../services/emergencyContactService';
 import Joi from 'joi';

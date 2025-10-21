@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-034 | ScreeningsTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, lucide-react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import { Plus, Eye, Ear } from 'lucide-react'
 import type { Screening } from '@/types/healthRecords'
@@ -20,7 +32,7 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
   // No mock data - this is CRITICAL for HIPAA compliance
   const displayScreenings = (screenings || []).map(screening => ({
     ...screening,
-    icon: screening.type === 'Vision' ? Eye : Ear
+    icon: screening.screeningType === 'Vision' ? Eye : Ear
   }))
 
   return (
@@ -52,18 +64,18 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
               <div className="flex justify-between items-start">
                 <div className="flex items-start gap-3">
                   <Icon className={`h-5 w-5 mt-1 ${
-                    screening.result === 'Pass' ? 'text-green-600' : 'text-orange-600'
+                    screening.results === 'Pass' ? 'text-green-600' : 'text-orange-600'
                   }`} />
                   <div>
-                    <h4 className="font-semibold">{screening.type}</h4>
+                    <h4 className="font-semibold">{screening.screeningType}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`text-xs px-2 py-1 rounded ${
-                        screening.result === 'Pass' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                        screening.results === 'Pass' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                       }`} data-testid="screening-result">
-                        {screening.result}
+                        {screening.results}
                       </span>
                       <span className="text-sm text-gray-600" data-testid="screening-date">
-                        {screening.date}
+                        {screening.screeningDate}
                       </span>
                     </div>
                   </div>

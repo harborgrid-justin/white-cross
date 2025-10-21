@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-276 | documentsApi.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../config/apiConfig, ../utils/apiUtils, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils, ../utils/apiUtils
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { extractApiData } from '../utils/apiUtils';
 import { buildUrlParams } from '../utils/apiUtils';

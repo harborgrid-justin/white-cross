@@ -1,4 +1,31 @@
 /**
+ * LOC: 4949361C52
+ * WC-IDX-177 | index.ts - Module exports and entry point
+ *
+ * UPSTREAM (imports from):
+ *   - roleOperations.ts (services/accessControl/roleOperations.ts)
+ *   - permissionOperations.ts (services/accessControl/permissionOperations.ts)
+ *   - rbacOperations.ts (services/accessControl/rbacOperations.ts)
+ *   - authorizationOperations.ts (services/accessControl/authorizationOperations.ts)
+ *   - auditOperations.ts (services/accessControl/auditOperations.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - accessControl.ts (routes/accessControl.ts)
+ */
+
+/**
+ * WC-IDX-177 | index.ts - Module exports and entry point
+ * Purpose: module exports and entry point
+ * Upstream: ./roleOperations, ./permissionOperations, ./rbacOperations | Dependencies: ./roleOperations, ./permissionOperations, ./rbacOperations
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, constants | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: module exports and entry point, part of backend architecture
+ */
+
+/**
  * Access Control Service - Main Entry Point
  *
  * This service provides enterprise-grade access control functionality including:

@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-201 | useIncidentReportsData.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../../stores/hooks/reduxHooks, ../../../stores/slices/incidentReportsSlice | Dependencies: react, ../../../stores/hooks/reduxHooks, ../../../stores/slices/incidentReportsSlice
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useEffect, useCallback, component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * useIncidentReportsData Hook
  *
  * Manages data fetching and state for incident reports
@@ -7,8 +19,9 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '../../../stores/hooks/reduxHooks';
 import {
+  useAppDispatch,
+  useAppSelector,
   fetchIncidentReports,
   searchIncidentReports,
   setFilters,
@@ -19,7 +32,7 @@ import {
   selectIsLoading,
   selectError,
   selectReportStatistics,
-} from '../../../stores/slices/incidentReportsSlice';
+} from '../../../stores';
 import type {
   IncidentReportFilters,
   IncidentType,

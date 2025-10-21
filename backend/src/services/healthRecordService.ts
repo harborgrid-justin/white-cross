@@ -1,3 +1,32 @@
+/**
+ * LOC: 377BCE712E
+ * WC-SVC-HLT-014 | healthRecordService.ts - Health Record Management Service
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - allergies.ts (routes/healthRecords/handlers/allergies.ts)
+ *   - chronicConditions.ts (routes/healthRecords/handlers/chronicConditions.ts)
+ *   - growthMeasurements.ts (routes/healthRecords/handlers/growthMeasurements.ts)
+ *   - mainHealthRecords.ts (routes/healthRecords/handlers/mainHealthRecords.ts)
+ *   - screenings.ts (routes/healthRecords/handlers/screenings.ts)
+ *   - ... and 3 more
+ */
+
+/**
+ * WC-SVC-HLT-014 | healthRecordService.ts - Health Record Management Service
+ * Purpose: Comprehensive health record operations including medical history, allergies, conditions, vaccinations, vitals
+ * Upstream: ../utils/logger, ../database/models, ../utils/healthRecordValidators, ../database/types/enums | Dependencies: sequelize, op operators
+ * Downstream: routes/health.ts, routes/students.ts, medicationService, reportService | Called by: Health routes, student dashboard
+ * Related: allergyService, chronicConditionService, vaccinationService, studentService, auditService
+ * Exports: HealthRecordService class, health data interfaces | Key Services: CRUD operations, validation, HIPAA compliance
+ * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Contains PHI - medical records, vitals, allergies
+ * Critical Path: Student health lookup → Record validation → Database operations → Audit logging
+ * LLM Context: Core health management system, handles all medical data with comprehensive validation and safety checks
+ */
+
 import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
 import {

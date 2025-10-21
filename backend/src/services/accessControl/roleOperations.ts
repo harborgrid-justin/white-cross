@@ -1,4 +1,29 @@
 /**
+ * LOC: C94B779741
+ * WC-GEN-180 | roleOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *   - auditService.ts (services/auditService.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/accessControl/index.ts)
+ */
+
+/**
+ * WC-GEN-180 | roleOperations.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Role Management Operations
  *
  * This module handles all role-related operations including CRUD operations,
@@ -15,7 +40,7 @@ import {
   sequelize
 } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { auditService } from '../auditService';
+import { auditService, AuditService } from '../auditService';
 import {
   CreateRoleData,
   UpdateRoleData
@@ -143,7 +168,7 @@ export async function createRole(data: CreateRoleData, auditUserId?: string): Pr
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'Role',
@@ -162,7 +187,7 @@ export async function createRole(data: CreateRoleData, auditUserId?: string): Pr
     logger.error('Error creating role:', error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'Role',
@@ -251,7 +276,7 @@ export async function updateRole(id: string, data: UpdateRoleData, auditUserId?:
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.UPDATE,
       entityType: 'Role',
@@ -272,7 +297,7 @@ export async function updateRole(id: string, data: UpdateRoleData, auditUserId?:
     logger.error(`Error updating role ${id}:`, error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.UPDATE,
       entityType: 'Role',
@@ -334,7 +359,7 @@ export async function deleteRole(id: string, auditUserId?: string): Promise<{ su
     await transaction.commit();
 
     // Audit logging
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.DELETE,
       entityType: 'Role',
@@ -349,7 +374,7 @@ export async function deleteRole(id: string, auditUserId?: string): Promise<{ su
     logger.error(`Error deleting role ${id}:`, error);
 
     // Audit failed attempt
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.DELETE,
       entityType: 'Role',

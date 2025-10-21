@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-006 | BackButton.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../hooks/useRouteState | Dependencies: react, lucide-react, ../hooks/useRouteState
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, functions, types | Key Features: component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * BackButton Component
  *
  * Enterprise navigation component with state restoration,

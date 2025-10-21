@@ -1,3 +1,26 @@
+/**
+ * LOC: 17D8C29D4A
+ * WC-VAL-HLT-059 | healthRecordValidators.ts - Healthcare Data Validation Schemas
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-VAL-HLT-059 | healthRecordValidators.ts - Healthcare Data Validation Schemas
+ * Purpose: Comprehensive Joi validation for health records, allergies, conditions, vaccinations, screenings
+ * Upstream: ../shared/healthcare/validators, joi | Dependencies: joi, healthcare validators, ICD codes
+ * Downstream: ../routes/healthRecords.ts, ../services/healthRecordService.ts | Called by: health record endpoints
+ * Related: ../middleware/auditLogging.ts, ../validators/complianceValidators.ts, ../database/models/HealthRecord.ts
+ * Exports: createHealthRecordSchema, createAllergySchema, createVaccinationSchema, createVitalSignsSchema | Key Services: HIPAA-compliant health data validation
+ * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Validation Layer
+ * Critical Path: Request validation → Health data sanitization → Clinical validation → PHI protection
+ * LLM Context: Medical record validators with clinical standards, allergy management, vaccination tracking, vital signs monitoring, growth measurements, screening protocols
+ */
+
 import Joi from 'joi';
 
 /**
@@ -5,6 +28,13 @@ import Joi from 'joi';
  * Provides comprehensive validation for all health record types
  * in compliance with healthcare data standards
  */
+
+// Import shared healthcare validators
+import { 
+  validateMedicalCode, 
+  validateAllergySeverity, 
+  validateVitalSigns
+} from '../shared/healthcare/validators';
 
 // ============================================================================
 // HEALTH RECORD VALIDATION

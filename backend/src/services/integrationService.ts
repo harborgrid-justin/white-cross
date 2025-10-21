@@ -1,3 +1,28 @@
+/**
+ * LOC: 56944D7E5D
+ * WC-GEN-271 | integrationService.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - enums.ts (database/types/enums.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - integration.ts (routes/integration.ts)
+ *   - integrations.ts (routes/integrations.ts)
+ */
+
+/**
+ * WC-GEN-271 | integrationService.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../utils/logger, ../database/models, ../database/types/enums | Dependencies: sequelize, ../utils/logger, ../database/models
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes, interfaces | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Op } from 'sequelize';
 import { logger } from '../utils/logger';
 import {

@@ -1,0 +1,876 @@
+/**
+ * Student Mutation Hooks
+ * 
+ * Production-grade TanStack Query mutation hooks for student CRUD operations 
+ * with comprehensive error handling, cache management, and healthcare compliance.
+ * 
+ * @module hooks/students/mutations
+ * @author White Cross Healthcare Platform
+ * @version 2.0.0
+ */
+
+import {
+  useMutation,
+  useQueryClient,
+  type UseMutationResult,
+  type UseMutationOptions,
+} from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { studentQueryKeys } from './queryKeys';
+import { cacheConfig, CACHE_INVALIDATION_STRATEGIES } from './cacheConfig';
+import { studentsApi } from '@/services/modules/studentsApi';
+import type { 
+  Student, 
+  CreateStudentData, 
+  UpdateStudentData,
+  TransferStudentRequest,
+  BulkUpdateStudentsRequest
+} from '@/types/student.types';
+
+/**
+ * Enhanced API error type with healthcare-specific context
+ */
+interface ApiError extends Error {
+  status?: number;
+  statusCode?: number;
+  response?: any;
+  context?: 'validation' | 'authorization' | 'server' | 'network' | 'compliance';
+  auditRequired?: boolean;
+}
+
+/**
+ * Mutation result types with enhanced metadata
+ */
+export interface StudentMutationResult {
+  success: boolean;
+  student?: Student;
+  message?: string;
+  errors?: Record<string, string[]>;
+  auditId?: string;
+}
+
+export interface BulkMutationResult {
+  success: boolean;
+  successCount: number;
+  failureCount: number;
+  results: Array<{
+    id: string;
+    success: boolean;
+    student?: Student;
+    error?: string;
+  }>;
+  auditId?: string;
+}
+
+/**
+ * Cache invalidation utility with healthcare considerations
+ */
+const invalidateStudentCache = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  studentId?: string,
+  changes?: Partial<Student>,
+  strategy: keyof typeof CACHE_INVALIDATION_STRATEGIES = 'immediate'
+) => {
+  const invalidationStrategy = CACHE_INVALIDATION_STRATEGIES[strategy];
+  
+  // Always invalidate base lists
+  queryClient.invalidateQueries({ 
+    queryKey: studentQueryKeys.lists.all(),
+    ...invalidationStrategy
+  });
+  
+  // Invalidate statistics
+  queryClient.invalidateQueries({ 
+    queryKey: studentQueryKeys.statistics.all(),
+    ...invalidationStrategy
+  });
+
+  if (studentId) {
+    // Invalidate specific student queries
+    queryClient.invalidateQueries({ 
+      queryKey: studentQueryKeys.details.byId(studentId),
+      ...invalidationStrategy
+    });
+    
+    // Invalidate related data
+    queryClient.invalidateQueries({ 
+      queryKey: studentQueryKeys.relationships.emergencyContacts(studentId),
+      ...invalidationStrategy
+    });
+  }
+
+  // Handle specific field changes
+  if (changes) {
+    if (changes.grade) {
+      queryClient.invalidateQueries({ 
+        queryKey: studentQueryKeys.lists.byGrade(changes.grade),
+        ...invalidationStrategy
+      });
+    }
+    
+    if (changes.nurseId) {
+      queryClient.invalidateQueries({ 
+        queryKey: studentQueryKeys.assignments.all(),
+        ...invalidationStrategy
+      });
+    }
+    
+    if (changes.isActive !== undefined) {
+      queryClient.invalidateQueries({ 
+        queryKey: studentQueryKeys.lists.active(),
+        ...invalidationStrategy
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: studentQueryKeys.lists.inactive(),
+        ...invalidationStrategy
+      });
+    }
+  }
+};
+
+/**
+ * Hook for creating a new student with comprehensive validation
+ * 
+ * @param options - Mutation options with enhanced error handling
+ * @returns Mutation handlers with healthcare audit support
+ * 
+ * @example
+ * ```tsx
+ * const createStudent = useCreateStudent({
+ *   onSuccess: (result) => {
+ *     toast.success(`Student ${result.student?.firstName} created successfully`);
+ *     navigate(`/students/${result.student?.id}`);
+ *   },
+ *   onError: (error) => {
+ *     if (error.context === 'validation') {
+ *       setFormErrors(error.response?.data?.errors);
+ *     } else {
+ *       toast.error('Failed to create student. Please try again.');
+ *     }
+ *   }
+ * });
+ * 
+ * const handleSubmit = async (data: CreateStudentData) => {
+ *   try {
+ *     await createStudent.mutateAsync(data);
+ *   } catch (error) {
+ *     // Error handling is done in onError callback
+ *   }
+ * };
+ * ```
+ */
+export const useCreateStudent = (
+  options?: UseMutationOptions<StudentMutationResult, ApiError, CreateStudentData>
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 3 };
+
+  return useMutation({
+    mutationFn: async (data: CreateStudentData): Promise<StudentMutationResult> => {
+      try {
+        // Validate required fields
+        if (!data.firstName?.trim()) {
+          throw Object.assign(new Error('First name is required'), {
+            context: 'validation',
+            auditRequired: false
+          });
+        }
+        
+        if (!data.lastName?.trim()) {
+          throw Object.assign(new Error('Last name is required'), {
+            context: 'validation',
+            auditRequired: false
+          });
+        }
+
+        if (!data.studentNumber?.trim()) {
+          throw Object.assign(new Error('Student number is required'), {
+            context: 'validation',
+            auditRequired: false
+          });
+        }
+
+        const student = await studentsApi.create(data);
+        
+        return {
+          success: true,
+          student,
+          message: `Student ${student.firstName} ${student.lastName} created successfully`,
+          auditId: `create_${Date.now()}_${student.id}`,
+        };
+      } catch (error: any) {
+        const enhancedError = Object.assign(error, {
+          context: error.context || (error.status >= 400 && error.status < 500 ? 'validation' : 'server'),
+          auditRequired: true,
+        });
+        
+        throw enhancedError;
+      }
+    },
+
+    onSuccess: (result, variables) => {
+      // Invalidate cache with immediate strategy for critical healthcare data
+      invalidateStudentCache(queryClient, result.student?.id, variables, 'immediate');
+      
+      // Pre-populate the detail cache with the new student
+      if (result.student) {
+        queryClient.setQueryData(
+          studentQueryKeys.details.byId(result.student.id),
+          result.student
+        );
+      }
+
+      // Audit logging for healthcare compliance
+      console.info('Student created:', {
+        studentId: result.student?.id,
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'CREATE_STUDENT',
+      });
+
+      options?.onSuccess?.(result, variables, undefined);
+    },
+
+    onError: (error, variables) => {
+      // Enhanced error logging for healthcare audit
+      console.error('Student creation failed:', {
+        error: error.message,
+        context: error.context,
+        variables: {
+          ...variables,
+          // Redact sensitive data for logging
+          dateOfBirth: '[REDACTED]',
+          medicalRecordNum: '[REDACTED]',
+        },
+        timestamp: new Date().toISOString(),
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, variables, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Hook for updating an existing student with change tracking
+ * 
+ * @param options - Mutation options
+ * @returns Mutation handlers with change audit
+ * 
+ * @example
+ * ```tsx
+ * const updateStudent = useUpdateStudent({
+ *   onSuccess: (result) => {
+ *     toast.success('Student updated successfully');
+ *   }
+ * });
+ * 
+ * const handleUpdate = async (id: string, changes: UpdateStudentData) => {
+ *   await updateStudent.mutateAsync({ id, data: changes });
+ * };
+ * ```
+ */
+export const useUpdateStudent = (
+  options?: UseMutationOptions<
+    StudentMutationResult, 
+    ApiError, 
+    { id: string; data: UpdateStudentData }
+  >
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 3 };
+
+  return useMutation({
+    mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
+      try {
+        // Get existing student for change tracking
+        const existingStudent = queryClient.getQueryData<Student>(
+          studentQueryKeys.details.byId(id)
+        );
+
+        const updatedStudent = await studentsApi.update(id, data);
+        
+        // Track changes for audit
+        const changes = existingStudent ? {
+          before: existingStudent,
+          after: updatedStudent,
+          modifiedFields: Object.keys(data),
+        } : null;
+
+        return {
+          success: true,
+          student: updatedStudent,
+          message: `Student ${updatedStudent.firstName} ${updatedStudent.lastName} updated successfully`,
+          auditId: `update_${Date.now()}_${id}`,
+        };
+      } catch (error: any) {
+        throw Object.assign(error, {
+          context: error.context || (error.status >= 400 && error.status < 500 ? 'validation' : 'server'),
+          auditRequired: true,
+        });
+      }
+    },
+
+    onSuccess: (result, { id, data }) => {
+      // Update cache with new data
+      if (result.student) {
+        queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
+      }
+
+      // Invalidate related caches based on what changed
+      invalidateStudentCache(queryClient, id, data, 'immediate');
+
+      // Healthcare audit logging
+      console.info('Student updated:', {
+        studentId: id,
+        changes: Object.keys(data),
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'UPDATE_STUDENT',
+      });
+
+      options?.onSuccess?.(result, { id, data }, undefined);
+    },
+
+    onError: (error, { id, data }) => {
+      console.error('Student update failed:', {
+        error: error.message,
+        studentId: id,
+        context: error.context,
+        timestamp: new Date().toISOString(),
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, { id, data }, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Hook for soft-deleting a student (deactivation)
+ * 
+ * Healthcare systems typically use soft deletes to maintain audit trails
+ * 
+ * @param options - Mutation options
+ * @returns Mutation handlers for deactivation
+ */
+export const useDeactivateStudent = (
+  options?: UseMutationOptions<StudentMutationResult, ApiError, string>
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 3 };
+
+  return useMutation({
+    mutationFn: async (studentId: string): Promise<StudentMutationResult> => {
+      try {
+        const updatedStudent = await studentsApi.update(studentId, { isActive: false });
+        
+        return {
+          success: true,
+          student: updatedStudent,
+          message: `Student ${updatedStudent.firstName} ${updatedStudent.lastName} deactivated`,
+          auditId: `deactivate_${Date.now()}_${studentId}`,
+        };
+      } catch (error: any) {
+        throw Object.assign(error, {
+          context: error.context || 'server',
+          auditRequired: true,
+        });
+      }
+    },
+
+    onSuccess: (result, studentId) => {
+      // Update cache to reflect deactivation
+      if (result.student) {
+        queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
+      }
+
+      // Invalidate active/inactive lists
+      invalidateStudentCache(queryClient, studentId, { isActive: false }, 'immediate');
+
+      console.info('Student deactivated:', {
+        studentId,
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'DEACTIVATE_STUDENT',
+      });
+
+      options?.onSuccess?.(result, studentId, undefined);
+    },
+
+    onError: (error, studentId) => {
+      console.error('Student deactivation failed:', {
+        error: error.message,
+        studentId,
+        timestamp: new Date().toISOString(),
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, studentId, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Hook for reactivating a deactivated student
+ * 
+ * @param options - Mutation options
+ * @returns Mutation handlers for reactivation
+ */
+export const useReactivateStudent = (
+  options?: UseMutationOptions<StudentMutationResult, ApiError, string>
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 3 };
+
+  return useMutation({
+    mutationFn: async (studentId: string): Promise<StudentMutationResult> => {
+      try {
+        const updatedStudent = await studentsApi.update(studentId, { isActive: true });
+        
+        return {
+          success: true,
+          student: updatedStudent,
+          message: `Student ${updatedStudent.firstName} ${updatedStudent.lastName} reactivated`,
+          auditId: `reactivate_${Date.now()}_${studentId}`,
+        };
+      } catch (error: any) {
+        throw Object.assign(error, {
+          context: error.context || 'server',
+          auditRequired: true,
+        });
+      }
+    },
+
+    onSuccess: (result, studentId) => {
+      if (result.student) {
+        queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
+      }
+
+      invalidateStudentCache(queryClient, studentId, { isActive: true }, 'immediate');
+
+      console.info('Student reactivated:', {
+        studentId,
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'REACTIVATE_STUDENT',
+      });
+
+      options?.onSuccess?.(result, studentId, undefined);
+    },
+
+    onError: (error, studentId) => {
+      console.error('Student reactivation failed:', {
+        error: error.message,
+        studentId,
+        timestamp: new Date().toISOString(),
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, studentId, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Hook for transferring a student to a different nurse
+ * 
+ * @param options - Mutation options
+ * @returns Mutation handlers for transfer
+ */
+export const useTransferStudent = (
+  options?: UseMutationOptions<
+    StudentMutationResult, 
+    ApiError, 
+    { id: string; data: TransferStudentRequest }
+  >
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 3 };
+
+  return useMutation({
+    mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
+      try {
+        const updatedStudent = await studentsApi.update(id, { nurseId: data.nurseId });
+        
+        return {
+          success: true,
+          student: updatedStudent,
+          message: `Student ${updatedStudent.firstName} ${updatedStudent.lastName} transferred successfully`,
+          auditId: `transfer_${Date.now()}_${id}`,
+        };
+      } catch (error: any) {
+        throw Object.assign(error, {
+          context: error.context || 'server',
+          auditRequired: true,
+        });
+      }
+    },
+
+    onSuccess: (result, { id, data }) => {
+      if (result.student) {
+        queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
+      }
+
+      // Invalidate assignment-related caches
+      invalidateStudentCache(queryClient, id, { nurseId: data.nurseId }, 'immediate');
+
+      console.info('Student transferred:', {
+        studentId: id,
+        newNurseId: data.nurseId,
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'TRANSFER_STUDENT',
+      });
+
+      options?.onSuccess?.(result, { id, data }, undefined);
+    },
+
+    onError: (error, { id, data }) => {
+      console.error('Student transfer failed:', {
+        error: error.message,
+        studentId: id,
+        newNurseId: data.nurseId,
+        timestamp: new Date().toISOString(),
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, { id, data }, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Hook for bulk updating multiple students
+ * 
+ * @param options - Mutation options
+ * @returns Mutation handlers for bulk operations
+ */
+export const useBulkUpdateStudents = (
+  options?: UseMutationOptions<BulkMutationResult, ApiError, BulkUpdateStudentsRequest>
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 2 }; // Fewer retries for bulk operations
+
+  return useMutation({
+    mutationFn: async (request: BulkUpdateStudentsRequest): Promise<BulkMutationResult> => {
+      try {
+        // Process in batches to avoid overwhelming the server
+        const batchSize = 10;
+        const batches = [];
+        
+        for (let i = 0; i < request.studentIds.length; i += batchSize) {
+          batches.push(request.studentIds.slice(i, i + batchSize));
+        }
+
+        const results = [];
+        let successCount = 0;
+        let failureCount = 0;
+
+        for (const batch of batches) {
+          const batchResults = await Promise.allSettled(
+            batch.map(async (id) => {
+              try {
+                const student = await studentsApi.update(id, request.updateData);
+                return { id, success: true, student };
+              } catch (error: any) {
+                return { id, success: false, error: error.message };
+              }
+            })
+          );
+
+          for (const result of batchResults) {
+            if (result.status === 'fulfilled') {
+              results.push(result.value);
+              if (result.value.success) {
+                successCount++;
+              } else {
+                failureCount++;
+              }
+            } else {
+              results.push({ id: 'unknown', success: false, error: result.reason?.message });
+              failureCount++;
+            }
+          }
+        }
+
+        return {
+          success: successCount > 0,
+          successCount,
+          failureCount,
+          results,
+          auditId: `bulk_update_${Date.now()}`,
+        };
+      } catch (error: any) {
+        throw Object.assign(error, {
+          context: 'server',
+          auditRequired: true,
+        });
+      }
+    },
+
+    onSuccess: (result, request) => {
+      // Invalidate all caches after bulk operation
+      invalidateStudentCache(queryClient, undefined, request.updateData, 'conservative');
+
+      console.info('Bulk student update completed:', {
+        totalRequested: request.studentIds.length,
+        successCount: result.successCount,
+        failureCount: result.failureCount,
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'BULK_UPDATE_STUDENTS',
+      });
+
+      options?.onSuccess?.(result, request, undefined);
+    },
+
+    onError: (error, request) => {
+      console.error('Bulk student update failed:', {
+        error: error.message,
+        totalRequested: request.studentIds.length,
+        timestamp: new Date().toISOString(),
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, request, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Hook for permanent deletion (HIPAA compliance - use with extreme caution)
+ * 
+ * This should only be used for legal compliance requirements (e.g., data purging)
+ * and requires appropriate authorization levels.
+ * 
+ * @param options - Mutation options with enhanced authorization checks
+ * @returns Mutation handlers for permanent deletion
+ */
+export const usePermanentDeleteStudent = (
+  options?: UseMutationOptions<
+    { success: boolean; message: string; auditId: string }, 
+    ApiError, 
+    { id: string; reason: string; authorization: string }
+  >
+) => {
+  const queryClient = useQueryClient();
+  const config = cacheConfig.mutations || { retry: 1 }; // Minimal retry for destructive operations
+
+  return useMutation({
+    mutationFn: async ({ id, reason, authorization }) => {
+      try {
+        // Verify authorization (this would be more robust in production)
+        if (!authorization || authorization.length < 10) {
+          throw Object.assign(new Error('Valid authorization code required for permanent deletion'), {
+            context: 'authorization',
+            auditRequired: true,
+          });
+        }
+
+        await studentsApi.delete(id);
+        
+        return {
+          success: true,
+          message: 'Student permanently deleted from system',
+          auditId: `permanent_delete_${Date.now()}_${id}`,
+        };
+      } catch (error: any) {
+        throw Object.assign(error, {
+          context: error.context || 'server',
+          auditRequired: true,
+        });
+      }
+    },
+
+    onSuccess: (result, { id, reason, authorization }) => {
+      // Remove from all caches
+      queryClient.removeQueries({ queryKey: studentQueryKeys.details.byId(id) });
+      invalidateStudentCache(queryClient, undefined, undefined, 'immediate');
+
+      // Critical audit log for permanent deletion
+      console.warn('PERMANENT STUDENT DELETION:', {
+        studentId: id,
+        reason,
+        authorization: '[REDACTED]',
+        auditId: result.auditId,
+        timestamp: new Date().toISOString(),
+        action: 'PERMANENT_DELETE_STUDENT',
+        severity: 'CRITICAL',
+      });
+
+      options?.onSuccess?.(result, { id, reason, authorization }, undefined);
+    },
+
+    onError: (error, { id, reason, authorization }) => {
+      console.error('Permanent student deletion failed:', {
+        error: error.message,
+        studentId: id,
+        reason,
+        context: error.context,
+        timestamp: new Date().toISOString(),
+        severity: 'CRITICAL',
+        auditRequired: error.auditRequired,
+      });
+
+      options?.onError?.(error, { id, reason, authorization }, undefined);
+    },
+
+    retry: config.retry,
+    retryDelay: config.retryDelay,
+  });
+};
+
+/**
+ * Composite hook that provides all mutation operations
+ * 
+ * @returns Object containing all mutation hooks
+ * 
+ * @example
+ * ```tsx
+ * const {
+ *   createStudent,
+ *   updateStudent,
+ *   deactivateStudent,
+ *   transferStudent,
+ *   bulkUpdate,
+ *   isCreating,
+ *   isUpdating,
+ *   isTransferring
+ * } = useStudentMutations();
+ * ```
+ */
+export const useStudentMutations = () => {
+  const createStudent = useCreateStudent();
+  const updateStudent = useUpdateStudent();
+  const deactivateStudent = useDeactivateStudent();
+  const reactivateStudent = useReactivateStudent();
+  const transferStudent = useTransferStudent();
+  const bulkUpdate = useBulkUpdateStudents();
+  const permanentDelete = usePermanentDeleteStudent();
+
+  return {
+    // Mutation hooks
+    createStudent,
+    updateStudent,
+    deactivateStudent,
+    reactivateStudent,
+    transferStudent,
+    bulkUpdate,
+    permanentDelete,
+
+    // Convenience mutation functions
+    create: createStudent.mutate,
+    update: updateStudent.mutate,
+    deactivate: deactivateStudent.mutate,
+    reactivate: reactivateStudent.mutate,
+    transfer: transferStudent.mutate,
+    bulkUpdateStudents: bulkUpdate.mutate,
+    deleteStudentPermanently: permanentDelete.mutate,
+
+    // Async versions
+    createAsync: createStudent.mutateAsync,
+    updateAsync: updateStudent.mutateAsync,
+    deactivateAsync: deactivateStudent.mutateAsync,
+    reactivateAsync: reactivateStudent.mutateAsync,
+    transferAsync: transferStudent.mutateAsync,
+    bulkUpdateAsync: bulkUpdate.mutateAsync,
+    deleteStudentPermanentlyAsync: permanentDelete.mutateAsync,
+
+    // Loading states
+    isCreating: createStudent.isPending,
+    isUpdating: updateStudent.isPending,
+    isDeactivating: deactivateStudent.isPending,
+    isReactivating: reactivateStudent.isPending,
+    isTransferring: transferStudent.isPending,
+    isBulkUpdating: bulkUpdate.isPending,
+    isDeleting: permanentDelete.isPending,
+
+    // Any mutation in progress
+    isMutating: createStudent.isPending || 
+                updateStudent.isPending || 
+                deactivateStudent.isPending || 
+                reactivateStudent.isPending || 
+                transferStudent.isPending || 
+                bulkUpdate.isPending || 
+                permanentDelete.isPending,
+
+    // Error states
+    createError: createStudent.error,
+    updateError: updateStudent.error,
+    deactivateError: deactivateStudent.error,
+    reactivateError: reactivateStudent.error,
+    transferError: transferStudent.error,
+    bulkUpdateError: bulkUpdate.error,
+    deleteError: permanentDelete.error,
+
+    // Success states
+    createSuccess: createStudent.isSuccess,
+    updateSuccess: updateStudent.isSuccess,
+    deactivateSuccess: deactivateStudent.isSuccess,
+    reactivateSuccess: reactivateStudent.isSuccess,
+    transferSuccess: transferStudent.isSuccess,
+    bulkUpdateSuccess: bulkUpdate.isSuccess,
+    deleteSuccess: permanentDelete.isSuccess,
+
+    // Reset functions
+    resetCreate: createStudent.reset,
+    resetUpdate: updateStudent.reset,
+    resetDeactivate: deactivateStudent.reset,
+    resetReactivate: reactivateStudent.reset,
+    resetTransfer: transferStudent.reset,
+    resetBulkUpdate: bulkUpdate.reset,
+    resetDelete: permanentDelete.reset,
+
+    // Reset all mutations
+    resetAll: useCallback(() => {
+      createStudent.reset();
+      updateStudent.reset();
+      deactivateStudent.reset();
+      reactivateStudent.reset();
+      transferStudent.reset();
+      bulkUpdate.reset();
+      permanentDelete.reset();
+    }, [
+      createStudent.reset,
+      updateStudent.reset,
+      deactivateStudent.reset,
+      reactivateStudent.reset,
+      transferStudent.reset,
+      bulkUpdate.reset,
+      permanentDelete.reset,
+    ]),
+  };
+};
+
+/**
+ * Export all mutation hooks
+ */
+export default {
+  useCreateStudent,
+  useUpdateStudent,
+  useDeactivateStudent,
+  useReactivateStudent,
+  useTransferStudent,
+  useBulkUpdateStudents,
+  usePermanentDeleteStudent,
+  useStudentMutations,
+};

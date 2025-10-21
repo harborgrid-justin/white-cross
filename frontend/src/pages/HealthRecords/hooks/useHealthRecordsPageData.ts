@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-188 | useHealthRecordsPageData.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../../hooks/useHealthRecordsData, ../../../hooks/useHealthRecords | Dependencies: react, ../../../hooks/useHealthRecordsData, ../../../hooks/useHealthRecords
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions | Key Features: useState, useCallback
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * useHealthRecordsPageData Hook
  *
  * Manages data fetching and state for health records page

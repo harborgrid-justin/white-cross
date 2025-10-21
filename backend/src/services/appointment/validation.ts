@@ -1,3 +1,27 @@
+/**
+ * LOC: 111508072A
+ * WC-GEN-215 | validation.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - index.ts (database/models/index.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - appointmentService.ts (services/appointmentService.ts)
+ */
+
+/**
+ * WC-GEN-215 | validation.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../database/models, ../../database/types/enums, ../../types/appointment | Dependencies: sequelize, ../../database/models, ../../database/types/enums
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: classes | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { Op } from 'sequelize';
 import { Appointment } from '../../database/models';
 import {

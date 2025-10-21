@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-030 | ChronicConditionsTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, lucide-react, @/utils/healthRecords
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component, arrow component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import { Plus, Heart } from 'lucide-react'
 import { getSeverityColor, getStatusColor } from '@/utils/healthRecords'
@@ -17,7 +29,7 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
   onViewCarePlan,
   user
 }) => {
-  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
+  const canModify = user?.role !== 'READ_ONLY'
 
   // Use the conditions prop passed from parent component (real API data)
   // No mock data - this is CRITICAL for HIPAA compliance
@@ -60,14 +72,14 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
                       {condition.severity}
                     </span>
                   </div>
-                  {condition.diagnosedDate && (
+                  {condition.diagnosisDate && (
                     <p className="text-sm text-gray-600 mt-1" data-testid="diagnosed-date">
-                      Diagnosed: {condition.diagnosedDate}
+                      Diagnosed: {condition.diagnosisDate}
                     </p>
                   )}
-                  {condition.nextReview && (
+                  {condition.nextReviewDate && (
                     <p className="text-sm text-gray-600 mt-1" data-testid="next-review">
-                      Next review: {condition.nextReview}
+                      Next review: {condition.nextReviewDate}
                     </p>
                   )}
                 </div>

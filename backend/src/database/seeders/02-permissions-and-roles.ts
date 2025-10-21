@@ -1,4 +1,28 @@
+/**
+ * LOC: 33CC070480
+ * WC-GEN-116 | 02-permissions-and-roles.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-116 | 02-permissions-and-roles.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: Independent module | Dependencies: sequelize
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { QueryInterface, QueryTypes } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Seeder: Permissions and Roles
@@ -44,24 +68,25 @@ module.exports = {
     ];
 
     const permissions = permissionsData.map((perm) => ({
+      id: uuidv4(),
       resource: perm.resource,
       action: perm.action,
       description: `${perm.action.charAt(0).toUpperCase() + perm.action.slice(1)} ${perm.resource}`,
       createdAt: now,
-      updatedAt: now,
     }));
 
-    await queryInterface.bulkInsert('Permissions', permissions, {});
+    await queryInterface.bulkInsert('permissions', permissions, {});
 
     // Get inserted permissions for role mappings
     const [insertedPermissions] = await queryInterface.sequelize.query(
-      'SELECT id, resource, action FROM "Permissions"',
+      'SELECT id, resource, action FROM "permissions"',
       { type: QueryTypes.SELECT }
-    ) as [Array<{ id: number; resource: string; action: string }>, unknown];
+    ) as [Array<{ id: string; resource: string; action: string }>, unknown];
 
     // Create Roles
     const rolesData = [
       {
+        id: uuidv4(),
         name: 'Administrator',
         description: 'Full system access',
         isSystem: true,
@@ -69,6 +94,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         name: 'School Nurse',
         description: 'Standard nurse permissions',
         isSystem: true,
@@ -76,6 +102,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         name: 'Read Only',
         description: 'View-only access to records',
         isSystem: true,
@@ -83,6 +110,7 @@ module.exports = {
         updatedAt: now,
       },
       {
+        id: uuidv4(),
         name: 'School Counselor',
         description: 'Counselor access to student records',
         isSystem: true,
@@ -91,13 +119,13 @@ module.exports = {
       },
     ];
 
-    await queryInterface.bulkInsert('Roles', rolesData, {});
+    await queryInterface.bulkInsert('roles', rolesData, {});
 
     // Get inserted roles
     const [insertedRoles] = await queryInterface.sequelize.query(
-      'SELECT id, name FROM "Roles"',
+      'SELECT id, name FROM "roles"',
       { type: QueryTypes.SELECT }
-    ) as [Array<{ id: number; name: string }>, unknown];
+    ) as [Array<{ id: string; name: string }>, unknown];
 
     const adminRole = insertedRoles.find((r) => r.name === 'Administrator');
     const nurseRole = insertedRoles.find((r) => r.name === 'School Nurse');
@@ -105,16 +133,16 @@ module.exports = {
     const counselorRole = insertedRoles.find((r) => r.name === 'School Counselor');
 
     // Create Role-Permission mappings
-    const rolePermissions: Array<{ roleId: number; permissionId: number; createdAt: Date; updatedAt: Date }> = [];
+    const rolePermissions: Array<{ id: string; roleId: string; permissionId: string; createdAt: Date }> = [];
 
     // Admin gets all permissions
     if (adminRole) {
       insertedPermissions.forEach((perm) => {
         rolePermissions.push({
+          id: uuidv4(),
           roleId: adminRole.id,
           permissionId: perm.id,
           createdAt: now,
-          updatedAt: now,
         });
       });
     }
@@ -125,10 +153,10 @@ module.exports = {
         .filter((p) => !p.resource.includes('administration') && p.action !== 'delete')
         .forEach((perm) => {
           rolePermissions.push({
+            id: uuidv4(),
             roleId: nurseRole.id,
             permissionId: perm.id,
             createdAt: now,
-            updatedAt: now,
           });
         });
     }
@@ -139,10 +167,10 @@ module.exports = {
         .filter((p) => p.action === 'read')
         .forEach((perm) => {
           rolePermissions.push({
+            id: uuidv4(),
             roleId: readOnlyRole.id,
             permissionId: perm.id,
             createdAt: now,
-            updatedAt: now,
           });
         });
     }
@@ -157,23 +185,23 @@ module.exports = {
         )
         .forEach((perm) => {
           rolePermissions.push({
+            id: uuidv4(),
             roleId: counselorRole.id,
             permissionId: perm.id,
             createdAt: now,
-            updatedAt: now,
           });
         });
     }
 
-    await queryInterface.bulkInsert('RolePermissions', rolePermissions, {});
+    await queryInterface.bulkInsert('role_permissions', rolePermissions, {});
 
     console.log(`✓ Seeded ${permissions.length} permissions and 4 roles with mappings`);
   },
 
   down: async (queryInterface: QueryInterface): Promise<void> => {
-    await queryInterface.bulkDelete('RolePermissions', {}, {});
-    await queryInterface.bulkDelete('Roles', {}, {});
-    await queryInterface.bulkDelete('Permissions', {}, {});
+    await queryInterface.bulkDelete('role_permissions', {}, {});
+    await queryInterface.bulkDelete('roles', {}, {});
+    await queryInterface.bulkDelete('permissions', {}, {});
     console.log('✓ Removed all role permissions, roles, and permissions');
   },
 };

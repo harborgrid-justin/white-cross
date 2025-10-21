@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-266 | incidentReportApi.js - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./config/apiConfig | Dependencies: ./config/apiConfig
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: default export, constants | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .js
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 // Incident Report API - handles incident reporting operations
 import { apiInstance } from './config/apiConfig';
 

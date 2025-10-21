@@ -1,6 +1,29 @@
 /**
- * Centralized constants for White Cross Healthcare Platform Backend
- * All static values, routes, URLs, and configuration should be defined here
+ * LOC: E35EF1673A
+ * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - redis.ts (config/redis.ts)
+ *   - swagger.ts (config/swagger.ts)
+ *   - index-sequelize.ts (index-sequelize.ts)
+ *   - index.ts (index.ts)
+ *   - auth-sequelize.ts (middleware/auth-sequelize.ts)
+ *   - ... and 3 more
+ */
+
+/**
+ * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
+ * Purpose: Global constants, API routes, validation patterns, error messages, config
+ * Upstream: process.env variables, .env file | Called by: All application modules
+ * Downstream: index.ts, middleware/*, routes/*, services/*, validators/*
+ * Related: .env.example, config/*, types/*, swagger.ts
+ * Exports: API_ROUTES, HTTP_STATUS, USER_ROLES, PERMISSIONS, CONSTANTS (default)
+ * Last Updated: 2025-10-17 | Dependencies: None (pure constants)
+ * Critical Path: Environment variables → Constants → Application configuration
+ * LLM Context: Central source of truth for all app constants, validation, messaging
  */
 
 // ===== API ROUTES =====

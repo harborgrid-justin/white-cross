@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-360 | incidentReportValidation.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: zod, @/types/incidents
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, types | Key Features: arrow component
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Incident Report Validation Schemas - Frontend
  * Enterprise-grade Zod validation matching backend Joi schemas
  *
@@ -57,11 +69,11 @@ export const createIncidentReportSchema = z.object({
     .min(1, 'Reporter ID is required'),
 
   type: z.nativeEnum(IncidentType, {
-    errorMap: () => ({ message: `Incident type must be one of: ${Object.values(IncidentType).join(', ')}` })
+    error: () => ({ message: `Incident type must be one of: ${Object.values(IncidentType).join(', ')}` })
   }),
 
   severity: z.nativeEnum(IncidentSeverity, {
-    errorMap: () => ({ message: `Severity must be one of: ${Object.values(IncidentSeverity).join(', ')}` })
+    error: () => ({ message: `Severity must be one of: ${Object.values(IncidentSeverity).join(', ')}` })
   }),
 
   description: z.string()
@@ -187,7 +199,7 @@ export const createWitnessStatementSchema = z.object({
     .max(VALIDATION_CONSTRAINTS.WITNESS_NAME_MAX_LENGTH, `Witness name cannot exceed ${VALIDATION_CONSTRAINTS.WITNESS_NAME_MAX_LENGTH} characters`),
 
   witnessType: z.nativeEnum(WitnessType, {
-    errorMap: () => ({ message: `Witness type must be one of: ${Object.values(WitnessType).join(', ')}` })
+    error: () => ({ message: `Witness type must be one of: ${Object.values(WitnessType).join(', ')}` })
   }),
 
   witnessContact: z.string().optional(),
@@ -239,7 +251,7 @@ export const createFollowUpActionSchema = z.object({
     }, 'Due date must be in the future'),
 
   priority: z.nativeEnum(ActionPriority, {
-    errorMap: () => ({ message: `Priority must be one of: ${Object.values(ActionPriority).join(', ')}` })
+    error: () => ({ message: `Priority must be one of: ${Object.values(ActionPriority).join(', ')}` })
   }),
 
   assignedTo: z.string().uuid('Invalid assigned user ID format').optional(),
@@ -309,7 +321,7 @@ export const markParentNotifiedSchema = z.object({
  */
 export const notifyParentSchema = z.object({
   method: z.nativeEnum(ParentNotificationMethod, {
-    errorMap: () => ({ message: `Method must be one of: ${Object.values(ParentNotificationMethod).join(', ')}` })
+    error: () => ({ message: `Method must be one of: ${Object.values(ParentNotificationMethod).join(', ')}` })
   }),
 });
 
@@ -318,7 +330,7 @@ export const notifyParentSchema = z.object({
  */
 export const addEvidenceSchema = z.object({
   evidenceType: z.enum(['photo', 'video'], {
-    errorMap: () => ({ message: 'Evidence type must be either "photo" or "video"' })
+    error: () => ({ message: 'Evidence type must be either "photo" or "video"' })
   }),
   evidenceUrls: z.array(z.string().url('Each evidence URL must be valid')).min(1, 'At least one evidence URL is required'),
 });
@@ -329,7 +341,7 @@ export const addEvidenceSchema = z.object({
 export const updateInsuranceClaimSchema = z.object({
   claimNumber: z.string().min(1, 'Insurance claim number is required'),
   status: z.nativeEnum(InsuranceClaimStatus, {
-    errorMap: () => ({ message: `Status must be one of: ${Object.values(InsuranceClaimStatus).join(', ')}` })
+    error: () => ({ message: `Status must be one of: ${Object.values(InsuranceClaimStatus).join(', ')}` })
   }),
 });
 
@@ -338,7 +350,7 @@ export const updateInsuranceClaimSchema = z.object({
  */
 export const updateComplianceStatusSchema = z.object({
   status: z.nativeEnum(ComplianceStatus, {
-    errorMap: () => ({ message: `Status must be one of: ${Object.values(ComplianceStatus).join(', ')}` })
+    error: () => ({ message: `Status must be one of: ${Object.values(ComplianceStatus).join(', ')}` })
   }),
 });
 

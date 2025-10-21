@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-255 | ApiClient.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ../../constants/config, ../../constants/api | Dependencies: ../../constants/config, ../../constants/api
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, interfaces, classes | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Enhanced API Client with enterprise-grade error handling and interceptors
  * Provides type-safe HTTP methods with comprehensive error handling
  */

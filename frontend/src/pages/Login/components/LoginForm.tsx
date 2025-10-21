@@ -1,3 +1,15 @@
+/**
+ * WF-COMP-220 | LoginForm.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: react, react-hook-form, lucide-react
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
 import React from 'react'
 import { UseFormRegister, FieldErrors } from 'react-hook-form'
 import { Eye, EyeOff } from 'lucide-react'
@@ -44,7 +56,9 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
               }
             })}
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             className="input-field"
             placeholder="Enter your email"
             data-cy="email-input"
@@ -70,7 +84,9 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
               }
             })}
             id="password"
+            name="password"
             type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
             className="input-field pr-10"
             placeholder="Enter your password"
             data-cy="password-input"

@@ -1,4 +1,32 @@
 /**
+ * LOC: 49AC6FBA67
+ * WC-SVC-APT-016 | appointmentService.ts - Appointment Management Service Facade
+ *
+ * UPSTREAM (imports from):
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - AppointmentAvailabilityService.ts (services/appointment/AppointmentAvailabilityService.ts)
+ *   - AppointmentReminderService.ts (services/appointment/AppointmentReminderService.ts)
+ *   - AppointmentWaitlistService.ts (services/appointment/AppointmentWaitlistService.ts)
+ *   - AppointmentRecurringService.ts (services/appointment/AppointmentRecurringService.ts)
+ *   - ... and 5 more
+ *
+ * DOWNSTREAM (imported by):
+ *   - appointments.ts (routes/appointments.ts)
+ */
+
+/**
+ * WC-SVC-APT-016 | appointmentService.ts - Appointment Management Service Facade
+ * Purpose: Unified appointment management interface with scheduling, availability, reminders, waitlist, and recurring patterns
+ * Upstream: ./appointment/* modules, ../types/appointment, ../shared/time/businessHours | Dependencies: Modular appointment services
+ * Downstream: routes/appointments.ts, dashboardService, reportService | Called by: Appointment routes, nurse dashboard
+ * Related: nurseService, studentService, healthRecordService, communicationService, auditService
+ * Exports: AppointmentService facade, appointment types | Key Services: Facade pattern for modular appointment system
+ * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Contains student appointment data and nurse schedules
+ * Critical Path: Appointment request → Availability check → Validation → Scheduling → Reminder setup
+ * LLM Context: Main orchestration layer for appointment management - delegates to specialized modules in ./appointment/
+ */
+
+/**
  * AppointmentService - Main orchestration layer for appointment management
  *
  * This service has been refactored into a modular architecture with the following components:
@@ -41,6 +69,14 @@ import { AppointmentCalendarService } from './appointment/AppointmentCalendarSer
 import { NurseAvailabilityService } from './appointment/NurseAvailabilityService';
 import { AppointmentValidation } from './appointment/validation';
 import { AppointmentStatusTransitions } from './appointment/statusTransitions';
+
+// Import shared time utilities
+import { 
+  isWithinBusinessHours, 
+  calculateTimeSlots, 
+  getNextBusinessDay, 
+  formatAppointmentTime 
+} from '../shared/time/businessHours';
 
 /**
  * Main AppointmentService class - Facade pattern implementation

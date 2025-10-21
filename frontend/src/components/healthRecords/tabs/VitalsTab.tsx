@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-036 | VitalsTab.tsx - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: lucide-react, @/hooks/useHealthRecords
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants | Key Features: useState, useMemo, functional component
+ * Last Updated: 2025-10-17 | File Type: .tsx
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * VitalsTab Component
  *
  * Enterprise-grade vitals tracking component with:
@@ -46,10 +58,10 @@ const NORMAL_RANGES = {
 }
 
 export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
-  const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
+  const canModify = user?.role !== 'READ_ONLY'
 
   // API hooks
-  const { data: vitalsData, isLoading, refetch } = useRecentVitals(studentId, 20)
+  const { data: vitalsData, isLoading, refetch } = useRecentVitals(studentId, { limit: 20 })
   const recordVitalsMutation = useRecordVitals()
 
   // State
@@ -321,12 +333,14 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
               </div>
             )}
 
-            {latestVitals.bloodPressure && (
+            {(latestVitals.bloodPressureSystolic || latestVitals.bloodPressureDiastolic) && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Activity className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold">{latestVitals.bloodPressure}</div>
+                <div className="text-2xl font-bold">
+                  {latestVitals.bloodPressureSystolic}/{latestVitals.bloodPressureDiastolic}
+                </div>
                 <div className="text-sm text-gray-600">Blood Pressure</div>
                 <div className="text-xs text-gray-500 mt-1">
                   Normal: {NORMAL_RANGES.bloodPressureSystolic.min}/{NORMAL_RANGES.bloodPressureDiastolic.min} -
@@ -353,7 +367,7 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            Recorded: {new Date(latestVitals.timestamp).toLocaleString()}
+            Recorded: {new Date(latestVitals.recordDate).toLocaleString()}
           </div>
         </div>
       )}
@@ -391,7 +405,7 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
                 {vitalsData.map((vital, index) => (
                   <tr key={index} className="border-t hover:bg-gray-50" data-testid="vital-row">
                     <td className="px-4 py-2 text-sm">
-                      {new Date(vital.timestamp).toLocaleString()}
+                      {new Date(vital.recordDate).toLocaleString()}
                     </td>
                     <td className={`px-4 py-2 text-sm ${vital.temperature ? getStatusColor(vital.temperature, 'temperature') : ''}`}>
                       {vital.temperature || '-'}
@@ -399,7 +413,11 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
                         <AlertTriangle className="inline h-3 w-3 ml-1" />
                       )}
                     </td>
-                    <td className="px-4 py-2 text-sm">{vital.bloodPressure || '-'}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {vital.bloodPressureSystolic && vital.bloodPressureDiastolic 
+                        ? `${vital.bloodPressureSystolic}/${vital.bloodPressureDiastolic}` 
+                        : '-'}
+                    </td>
                     <td className={`px-4 py-2 text-sm ${vital.heartRate ? getStatusColor(vital.heartRate, 'heartRate') : ''}`}>
                       {vital.heartRate || '-'}
                       {vital.heartRate && !isNormal(vital.heartRate, 'heartRate') && (

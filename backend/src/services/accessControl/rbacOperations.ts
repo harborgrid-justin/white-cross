@@ -1,4 +1,29 @@
 /**
+ * LOC: 97740ACDE5
+ * WC-GEN-179 | rbacOperations.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - auditService.ts (services/auditService.ts)
+ *   - types.ts (services/accessControl/types.ts)
+ *
+ * DOWNSTREAM (imported by):
+ *   - index.ts (services/accessControl/index.ts)
+ */
+
+/**
+ * WC-GEN-179 | rbacOperations.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
+/**
  * Role-Based Access Control (RBAC) Operations
  *
  * This module handles user role assignments, permission checking,
@@ -22,7 +47,7 @@ import {
   IncidentSeverity,
   SecurityIncidentStatus
 } from '../../database/types/enums';
-import { auditService } from '../auditService';
+import { auditService, AuditService } from '../auditService';
 import { UserPermissionsResult } from './types';
 
 // Type augmentations for model associations
@@ -154,7 +179,7 @@ export async function assignRoleToUser(
     await transaction.commit();
 
     // Audit logging - Security-critical operation
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'UserRoleAssignment',
@@ -194,7 +219,7 @@ export async function assignRoleToUser(
     logger.error('Error assigning role to user:', error);
 
     // Audit failed attempt - Security-critical
-    await auditService.logAction({
+    await AuditService.logAction({
       userId: auditUserId,
       action: AuditAction.CREATE,
       entityType: 'UserRoleAssignment',

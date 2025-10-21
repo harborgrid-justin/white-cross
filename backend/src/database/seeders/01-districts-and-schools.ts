@@ -1,4 +1,28 @@
+/**
+ * LOC: 88F20C704B
+ * WC-GEN-115 | 01-districts-and-schools.ts - General utility functions and operations
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node)
+ *
+ * DOWNSTREAM (imported by):
+ *   - None (not imported)
+ */
+
+/**
+ * WC-GEN-115 | 01-districts-and-schools.ts - General utility functions and operations
+ * Purpose: general utility functions and operations
+ * Upstream: Independent module | Dependencies: sequelize
+ * Downstream: Routes, services, other modules | Called by: Application components
+ * Related: Similar modules, tests, documentation
+ * Exports: Various exports | Key Services: Core functionality
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Module loading → Function execution → Response handling
+ * LLM Context: general utility functions and operations, part of backend architecture
+ */
+
 import { QueryInterface, QueryTypes } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Seeder: Districts and Schools
@@ -16,24 +40,24 @@ module.exports = {
   up: async (queryInterface: QueryInterface): Promise<void> => {
     const now = new Date();
 
+    // Generate district ID
+    const districtId = uuidv4();
+
     // Create District
     await queryInterface.bulkInsert(
-      'Districts',
+      'districts',
       [
         {
+          id: districtId,
           name: 'Unified School District',
           code: 'UNIFIED_DISTRICT',
-          description: 'A comprehensive unified school district serving Demo City and surrounding areas',
           address: '1000 Education Boulevard',
           city: 'Demo City',
           state: 'CA',
           zipCode: '90210',
           phone: '(555) 100-1000',
-          phoneNumber: '(555) 100-1000',
           email: 'district@unifiedschools.edu',
           website: 'https://unifiedschools.edu',
-          superintendent: 'Dr. Richard Hamilton',
-          status: 'Active',
           isActive: true,
           createdAt: now,
           updatedAt: now,
@@ -41,14 +65,12 @@ module.exports = {
       ]
     );
 
-    // Get the district ID for foreign key relationships
-    const districtId = 1;
-
     // Create Schools
     await queryInterface.bulkInsert(
-      'Schools',
+      'schools',
       [
         {
+          id: uuidv4(),
           name: 'Central High School',
           code: 'CENTRAL_HIGH',
           address: '2000 School Campus Drive',
@@ -56,20 +78,16 @@ module.exports = {
           state: 'CA',
           zipCode: '90210',
           phone: '(555) 200-2000',
-          phoneNumber: '(555) 200-2000',
           email: 'office@centralhigh.edu',
           principal: 'Dr. Margaret Thompson',
-          principalName: 'Dr. Margaret Thompson',
           studentCount: 500,
-          totalEnrollment: 500,
-          schoolType: 'High',
-          status: 'Active',
           isActive: true,
           districtId: districtId,
           createdAt: now,
           updatedAt: now,
         },
         {
+          id: uuidv4(),
           name: 'West Elementary School',
           code: 'WEST_ELEM',
           address: '3500 Westside Boulevard',
@@ -77,20 +95,16 @@ module.exports = {
           state: 'CA',
           zipCode: '90211',
           phone: '(555) 300-3000',
-          phoneNumber: '(555) 300-3000',
           email: 'office@westelementary.edu',
           principal: 'Mrs. Jennifer Martinez',
-          principalName: 'Mrs. Jennifer Martinez',
           studentCount: 350,
-          totalEnrollment: 350,
-          schoolType: 'Elementary',
-          status: 'Active',
           isActive: true,
           districtId: districtId,
           createdAt: now,
           updatedAt: now,
         },
         {
+          id: uuidv4(),
           name: 'East Middle School',
           code: 'EAST_MIDDLE',
           address: '4200 Eastbrook Avenue',
@@ -98,20 +112,16 @@ module.exports = {
           state: 'CA',
           zipCode: '90212',
           phone: '(555) 400-4000',
-          phoneNumber: '(555) 400-4000',
           email: 'office@eastmiddle.edu',
           principal: 'Mr. David Chen',
-          principalName: 'Mr. David Chen',
           studentCount: 420,
-          totalEnrollment: 420,
-          schoolType: 'Middle',
-          status: 'Active',
           isActive: true,
           districtId: districtId,
           createdAt: now,
           updatedAt: now,
         },
         {
+          id: uuidv4(),
           name: 'North Elementary School',
           code: 'NORTH_ELEM',
           address: '5100 Northern Heights Road',
@@ -119,20 +129,16 @@ module.exports = {
           state: 'CA',
           zipCode: '90213',
           phone: '(555) 500-5000',
-          phoneNumber: '(555) 500-5000',
           email: 'office@northelementary.edu',
           principal: 'Dr. Susan Anderson',
-          principalName: 'Dr. Susan Anderson',
           studentCount: 310,
-          totalEnrollment: 310,
-          schoolType: 'Elementary',
-          status: 'Active',
           isActive: true,
           districtId: districtId,
           createdAt: now,
           updatedAt: now,
         },
         {
+          id: uuidv4(),
           name: 'South High School',
           code: 'SOUTH_HIGH',
           address: '6000 South Campus Way',
@@ -140,14 +146,9 @@ module.exports = {
           state: 'CA',
           zipCode: '90214',
           phone: '(555) 600-6000',
-          phoneNumber: '(555) 600-6000',
           email: 'office@southhigh.edu',
           principal: 'Dr. Robert Williams',
-          principalName: 'Dr. Robert Williams',
           studentCount: 480,
-          totalEnrollment: 480,
-          schoolType: 'High',
-          status: 'Active',
           isActive: true,
           districtId: districtId,
           createdAt: now,
@@ -161,8 +162,8 @@ module.exports = {
   },
 
   down: async (queryInterface: QueryInterface): Promise<void> => {
-    await queryInterface.bulkDelete('Schools', {}, {});
-    await queryInterface.bulkDelete('Districts', {}, {});
+    await queryInterface.bulkDelete('schools', {}, {});
+    await queryInterface.bulkDelete('districts', {}, {});
     console.log('✓ Removed all schools and districts');
   },
 };

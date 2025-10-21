@@ -1,4 +1,16 @@
 /**
+ * WF-COMP-127 | useAppointments.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: React, external libs | Dependencies: @tanstack/react-query, @/services/api, react-hot-toast
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: constants, functions | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
+ */
+
+/**
  * Appointments Domain Hook
  * Provides comprehensive appointment management functionality using TanStack Query
  * Implements enterprise patterns with proper caching, optimistic updates, and error handling
@@ -9,11 +21,10 @@ import { appointmentsApi } from '@/services/api';
 import type {
   Appointment,
   AppointmentFilters,
-  AppointmentCreateData,
-  AppointmentUpdateData,
+  AppointmentFormData,
   AppointmentStatistics,
   PaginatedResponse,
-  WaitlistEntry,
+  WaitlistEntryData,
   WaitlistFilters,
   AvailabilitySlot,
   NurseAvailability,
@@ -103,7 +114,7 @@ export function useAppointmentStats(
  */
 export function useWaitlist(
   filters?: WaitlistFilters,
-  options?: Omit<UseQueryOptions<{ waitlist: WaitlistEntry[] }>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<{ waitlist: WaitlistEntryData[] }>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery({
     queryKey: appointmentKeys.waitlist(filters),
@@ -160,7 +171,7 @@ export function useCreateAppointment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: AppointmentCreateData) => appointmentsApi.create(data),
+    mutationFn: (data: AppointmentFormData) => appointmentsApi.create(data),
     onMutate: async (newAppointment) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: appointmentKeys.lists() });
@@ -201,7 +212,7 @@ export function useUpdateAppointment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AppointmentUpdateData }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<AppointmentFormData> }) =>
       appointmentsApi.update(id, data),
     onSuccess: (data) => {
       // Invalidate affected queries
