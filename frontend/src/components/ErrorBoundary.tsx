@@ -1,21 +1,8 @@
-/**
- * WF-COMP-014 | ErrorBoundary.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../constants/errors | Dependencies: ../constants/errors
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants, functions, classes | Key Features: component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { ERROR_CODES, getUserMessage } from '../constants/errors';
+import React from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
+  children?: ReactNode;
 }
 
 interface State {
@@ -26,7 +13,7 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false,
+    hasError: false
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -34,96 +21,62 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-
+    console.error('Uncaught error:', error, errorInfo);
     this.setState({
       error,
-      errorInfo,
+      errorInfo
     });
-
-    // Log error to monitoring service in production
-    if (import.meta.env.PROD) {
-      // Here you would integrate with your error monitoring service
-      // e.g., Sentry, LogRocket, etc.
-    }
   }
-
-  private handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
-  };
-
-  private handleReload = () => {
-    window.location.reload();
-  };
 
   public render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
-      const isApiError = this.state.error &&
-        (this.state.error as any).response;
-
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center mb-4">
+          <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
+            <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-8 w-8 text-red-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
+                <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-800">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
                   Something went wrong
                 </h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  An unexpected error occurred. Please refresh the page or try again later.
+                </p>
               </div>
             </div>
-
-            <div className="mb-6">
-              <p className="text-sm text-gray-600 mb-2">
-                {isApiError
-                  ? getUserMessage(ERROR_CODES.NETWORK_ERROR)
-                  : getUserMessage(ERROR_CODES.SERVER_ERROR)
-                }
-              </p>
-
-              {import.meta.env.DEV && this.state.error && (
-                <details className="mt-2">
-                  <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
-                    Error Details (Development)
+            
+            {process.env.NODE_ENV === 'development' && this.state.error && (
+              <div className="mt-4">
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-gray-700 font-medium">
+                    Error Details
                   </summary>
-                  <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
-                    {this.state.error.toString()}
-                    {this.state.errorInfo?.componentStack}
-                  </pre>
+                  <div className="mt-2 p-3 bg-red-50 rounded border">
+                    <pre className="text-xs text-red-700 whitespace-pre-wrap">
+                      {this.state.error.toString()}
+                      {this.state.errorInfo && this.state.errorInfo.componentStack}
+                    </pre>
+                  </div>
                 </details>
-              )}
-            </div>
+              </div>
+            )}
 
-            <div className="flex space-x-3">
+            <div className="mt-4 flex space-x-3">
               <button
-                onClick={this.handleRetry}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
-              >
-                Try Again
-              </button>
-              <button
-                onClick={this.handleReload}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
+                onClick={() => window.location.reload()}
+                className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 Reload Page
+              </button>
+              <button
+                onClick={() => this.setState({ hasError: false, error: undefined, errorInfo: undefined })}
+                className="flex-1 bg-gray-200 text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Try Again
               </button>
             </div>
           </div>
@@ -133,35 +86,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
-}
-
-// Hook version for functional components
-export const useErrorHandler = () => {
-  return (error: Error) => {
-    console.error('Error caught by useErrorHandler:', error);
-
-    // You could integrate with toast notifications here
-    // toast.error('An error occurred. Please try again.');
-
-    // Or throw to let ErrorBoundary handle it
-    throw error;
-  };
-};
-
-// HOC for class components
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  fallback?: ReactNode
-) {
-  const WrappedComponent = (props: P) => (
-    <ErrorBoundary fallback={fallback}>
-      <Component {...props} />
-    </ErrorBoundary>
-  );
-
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-
-  return WrappedComponent;
 }
 
 export default ErrorBoundary;

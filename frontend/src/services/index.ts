@@ -49,14 +49,13 @@ export type { LoginCredentials, RegisterData, AuthApi } from './modules/authApi'
 
 export { studentsApi } from './modules/studentsApi';
 export type { 
-  StudentFilters, 
+ 
   StudentsApi 
 } from './modules/studentsApi';
 
 export { healthRecordsApi } from './modules/healthRecordsApi';
 export type { 
   HealthRecordFilters,
-  GrowthData,
   VaccinationRecord,
   HealthSummary,
   HealthRecordsApi 
@@ -65,8 +64,7 @@ export type {
 export { medicationsApi } from './modules/medicationsApi';
 export type { 
   MedicationFilters,
-  StudentMedication,
-  MedicationSchedule,
+
   MedicationsApi
 } from './modules/medicationsApi';
 

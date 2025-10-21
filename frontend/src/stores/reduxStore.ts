@@ -40,8 +40,8 @@ import { communicationReducer } from './slices/communicationSlice';
 import { inventoryReducer } from './slices/inventorySlice';
 import { reportsReducer } from './slices/reportsSlice';
 // Phase 3: Advanced enterprise features
-import enterpriseReducer from './enterprise/enterpriseFeatures';
-import orchestrationReducer from './orchestration/crossDomainOrchestration';
+import enterpriseReducer from './shared/enterprise/enterpriseFeatures';
+import orchestrationReducer from './shared/orchestration/crossDomainOrchestration';
 import {
   createStateSyncMiddleware,
   loadInitialState,
@@ -49,7 +49,7 @@ import {
   ConflictStrategy,
   type StateSyncConfig,
   type RootState as SyncRootState,
-} from '../middleware/stateSyncMiddleware';
+} from '../middleware/redux/stateSyncMiddleware';
 
 /**
  * Root reducer configuration

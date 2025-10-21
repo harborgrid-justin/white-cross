@@ -20,6 +20,7 @@
 
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
+import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 import { HealthRecord, Student } from '../../database/models';
 import {
   CreateHealthRecordData,
@@ -92,7 +93,7 @@ export class HealthRecordModule {
       };
     } catch (error) {
       logger.error('Error fetching student health records:', error);
-      throw new Error('Failed to fetch health records');
+      throw handleSequelizeError(error as Error);
     }
   }
 
@@ -152,7 +153,7 @@ export class HealthRecordModule {
       return healthRecord;
     } catch (error) {
       logger.error('Error creating health record:', error);
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
 
@@ -227,8 +228,7 @@ export class HealthRecordModule {
       );
       return existingRecord;
     } catch (error) {
-      logger.error('Error updating health record:', error);
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
 
@@ -254,8 +254,7 @@ export class HealthRecordModule {
 
       return records;
     } catch (error) {
-      logger.error('Error fetching vaccination records:', error);
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
 
@@ -314,7 +313,7 @@ export class HealthRecordModule {
       };
     } catch (error) {
       logger.error('Error in bulk delete operation:', error);
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
 }

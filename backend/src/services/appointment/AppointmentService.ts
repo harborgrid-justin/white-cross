@@ -1,297 +1,386 @@
 /**
- * LOC: 3ADB25290A
- * WC-GEN-208 | AppointmentService.ts - General utility functions and operations
+ * LOC: 49AC6FBA67
+ * WC-SVC-APT-016 | appointmentService.ts - Appointment Management Service Facade
  *
  * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
  *   - AppointmentAvailabilityService.ts (services/appointment/AppointmentAvailabilityService.ts)
  *   - AppointmentReminderService.ts (services/appointment/AppointmentReminderService.ts)
  *   - AppointmentWaitlistService.ts (services/appointment/AppointmentWaitlistService.ts)
- *   - index.ts (database/models/index.ts)
- *   - ... and 1 more
+ *   - AppointmentRecurringService.ts (services/appointment/AppointmentRecurringService.ts)
+ *   - ... and 5 more
  *
  * DOWNSTREAM (imported by):
- *   - AppointmentRecurringService.ts (services/appointment/AppointmentRecurringService.ts)
+ *   - appointments.ts (routes/appointments.ts)
  */
 
 /**
- * WC-GEN-208 | AppointmentService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../types/appointment, ./AppointmentAvailabilityService | Dependencies: sequelize, ../../utils/logger, ../../types/appointment
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * WC-SVC-APT-016 | appointmentService.ts - Appointment Management Service Facade
+ * Purpose: Unified appointment management interface with scheduling, availability, reminders, waitlist, and recurring patterns
+ * Upstream: ./appointment/* modules, ../types/appointment, ../shared/time/businessHours | Dependencies: Modular appointment services
+ * Downstream: routes/appointments.ts, dashboardService, reportService | Called by: Appointment routes, nurse dashboard
+ * Related: nurseService, studentService, healthRecordService, communicationService, auditService
+ * Exports: AppointmentService facade, appointment types | Key Services: Facade pattern for modular appointment system
+ * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Contains student appointment data and nurse schedules
+ * Critical Path: Appointment request → Availability check → Validation → Scheduling → Reminder setup
+ * LLM Context: Main orchestration layer for appointment management - delegates to specialized modules in ./appointment/
  */
 
-import { Op } from 'sequelize';
-import { logger } from '../../utils/logger';
+/**
+ * AppointmentService - Main orchestration layer for appointment management
+ *
+ * This service has been refactored into a modular architecture with the following components:
+ *
+ * CORE MODULES (located in ./appointment/):
+ * - validation.ts: Business rule validation logic
+ * - statusTransitions.ts: Finite state machine for appointment lifecycle
+ * - crudOperations.ts: Basic CRUD operations for appointments
+ * - AppointmentAvailabilityService.ts: Availability and conflict checking
+ * - AppointmentReminderService.ts: Reminder scheduling and sending
+ * - AppointmentWaitlistService.ts: Waitlist management and slot filling
+ * - AppointmentRecurringService.ts: Recurring appointment patterns
+ * - AppointmentStatisticsService.ts: Reporting and analytics
+ * - AppointmentCalendarService.ts: Calendar export functionality
+ * - NurseAvailabilityService.ts: Nurse schedule management
+ *
+ * This file now serves as a facade pattern implementation, providing a unified interface
+ * while delegating to specialized modules for actual implementation.
+ */
+
 import {
   CreateAppointmentData,
   UpdateAppointmentData,
-  AppointmentFilters
-} from '../../types/appointment';
-import { AppointmentAvailabilityService } from './AppointmentAvailabilityService';
-import { AppointmentReminderService } from './AppointmentReminderService';
-import { AppointmentWaitlistService } from './AppointmentWaitlistService';
-import { Appointment, Student, User } from '../../database/models';
-import { AppointmentStatus } from '../../database/types/enums';
+  AppointmentFilters,
+  AvailabilitySlot,
+  ReminderData,
+  NurseAvailabilityData,
+  WaitlistEntry,
+  RecurrencePattern
+} from '../types/appointment';
 
+// Import all modular services
+import { AppointmentCrudOperations } from './appointment/crudOperations';
+import { AppointmentAvailabilityService } from './appointment/AppointmentAvailabilityService';
+import { AppointmentReminderService } from './appointment/AppointmentReminderService';
+import { AppointmentWaitlistService } from './appointment/AppointmentWaitlistService';
+import { AppointmentRecurringService } from './appointment/AppointmentRecurringService';
+import { AppointmentStatisticsService } from './appointment/AppointmentStatisticsService';
+import { AppointmentCalendarService } from './appointment/AppointmentCalendarService';
+import { NurseAvailabilityService } from './appointment/NurseAvailabilityService';
+import { AppointmentValidation } from './appointment/validation';
+import { AppointmentStatusTransitions } from './appointment/statusTransitions';
 
+// Import shared time utilities
+import { 
+  isWithinBusinessHours, 
+  calculateTimeSlots, 
+  getNextBusinessDay, 
+  formatAppointmentTime 
+} from '../shared/time/businessHours';
+
+/**
+ * Main AppointmentService class - Facade pattern implementation
+ * Provides backward compatibility while delegating to modular components
+ */
 export class AppointmentService {
+  // =====================
+  // CONFIGURATION CONSTANTS (Delegated to validation module)
+  // =====================
+
+  static get MIN_DURATION_MINUTES() { return 15; }
+  static get MAX_DURATION_MINUTES() { return 120; }
+  static get DEFAULT_DURATION_MINUTES() { return AppointmentValidation.getDefaultDuration(); }
+  static get BUFFER_TIME_MINUTES() { return AppointmentValidation.getBufferTimeMinutes(); }
+  static get MIN_CANCELLATION_HOURS() { return 2; }
+  static get MAX_APPOINTMENTS_PER_DAY() { return 16; }
+  static get BUSINESS_HOURS() { return AppointmentValidation.getBusinessHours(); }
+
+  // =====================
+  // CRUD OPERATIONS (Delegated to crudOperations module)
+  // =====================
+
   /**
    * Get appointments with pagination and filters
    */
-  static async getAppointments(page: number = 1, limit: number = 20, filters: AppointmentFilters = {}) {
-    try {
-      const offset = (page - 1) * limit;
-      const whereClause: any = {};
+  static async getAppointments(
+    page: number = 1,
+    limit: number = 20,
+    filters: AppointmentFilters = {}
+  ) {
+    return AppointmentCrudOperations.getAppointments(page, limit, filters);
+  }
 
-      if (filters.nurseId) whereClause.nurseId = filters.nurseId;
-      if (filters.studentId) whereClause.studentId = filters.studentId;
-      if (filters.status) whereClause.status = filters.status;
-      if (filters.type) whereClause.type = filters.type;
-
-      if (filters.dateFrom || filters.dateTo) {
-        whereClause.scheduledAt = {};
-        if (filters.dateFrom) whereClause.scheduledAt[Op.gte] = filters.dateFrom;
-        if (filters.dateTo) whereClause.scheduledAt[Op.lte] = filters.dateTo;
-      }
-
-      const { rows: appointments, count: total } = await Appointment.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          },
-          {
-            model: User,
-            as: 'nurse',
-            attributes: ['id', 'firstName', 'lastName', 'email']
-          }
-        ],
-        order: [['scheduledAt', 'ASC']]
-      });
-
-      return { appointments, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
-    } catch (error) {
-      logger.error('Error fetching appointments:', error);
-      throw new Error('Failed to fetch appointments');
-    }
+  /**
+   * Get a single appointment by ID
+   */
+  static async getAppointmentById(id: string) {
+    return AppointmentCrudOperations.getAppointmentById(id);
   }
 
   /**
    * Create new appointment
    */
   static async createAppointment(data: CreateAppointmentData) {
-    try {
-      const student = await Student.findByPk(data.studentId);
-      if (!student) throw new Error('Student not found');
-
-      const nurse = await User.findByPk(data.nurseId);
-      if (!nurse) throw new Error('Nurse not found');
-
-      const conflicts = await AppointmentAvailabilityService.checkAvailability(
-        data.nurseId,
-        data.scheduledAt,
-        data.duration || 30
-      );
-
-      if (conflicts.length > 0) throw new Error('Nurse is not available at the requested time');
-
-      const appointment = await Appointment.create(
-        { ...data, duration: data.duration || 30 } as any
-      );
-
-      // Reload with associations
-      await appointment.reload({
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          },
-          {
-            model: User,
-            as: 'nurse',
-            attributes: ['id', 'firstName', 'lastName', 'email']
-          }
-        ]
-      });
-
-      logger.info(`Appointment created: ${appointment.type} for ${student.firstName} ${student.lastName}`);
-      await AppointmentReminderService.scheduleReminders(appointment.id);
-
-      return appointment;
-    } catch (error) {
-      logger.error('Error creating appointment:', error);
-      throw error;
-    }
+    return AppointmentCrudOperations.createAppointment(data);
   }
 
   /**
    * Update appointment
    */
   static async updateAppointment(id: string, data: UpdateAppointmentData) {
-    try {
-      const existing = await Appointment.findByPk(id, {
-        include: [
-          { model: Student, as: 'student' },
-          { model: User, as: 'nurse' }
-        ]
-      });
-
-      if (!existing) throw new Error('Appointment not found');
-
-      if (data.scheduledAt && data.scheduledAt.getTime() !== existing.scheduledAt.getTime()) {
-        const conflicts = await AppointmentAvailabilityService.checkAvailability(
-          existing.nurseId,
-          data.scheduledAt,
-          data.duration || existing.duration,
-          id
-        );
-
-        if (conflicts.length > 0) throw new Error('Nurse is not available at the requested time');
-      }
-
-      await existing.update(data as any);
-      
-      // Reload with associations
-      await existing.reload({
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          },
-          {
-            model: User,
-            as: 'nurse',
-            attributes: ['id', 'firstName', 'lastName', 'email']
-          }
-        ]
-      });
-
-      const appointment = existing;
-
-      logger.info(`Appointment updated: ${appointment.id}`);
-      return appointment;
-    } catch (error) {
-      logger.error('Error updating appointment:', error);
-      throw error;
-    }
+    return AppointmentCrudOperations.updateAppointment(id, data);
   }
 
   /**
    * Cancel appointment
    */
   static async cancelAppointment(id: string, reason?: string) {
-    try {
-      const appointment = await Appointment.findByPk(id);
-      if (!appointment) throw new Error('Appointment not found');
-      
-      await appointment.update({
-        status: AppointmentStatus.CANCELLED,
-        notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
-      });
-
-      // Reload with associations
-      await appointment.reload({
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['firstName', 'lastName']
-          },
-          {
-            model: User,
-            as: 'nurse',
-            attributes: ['firstName', 'lastName']
-          }
-        ]
-      });
-
-      logger.info(`Appointment cancelled: ${appointment.type} for ${appointment.student.firstName}`);
-
-      try {
-        await AppointmentWaitlistService.fillSlotFromWaitlist({
-          scheduledAt: appointment.scheduledAt,
-          duration: appointment.duration,
-          nurseId: appointment.nurseId,
-          type: appointment.type
-        });
-      } catch (waitlistError) {
-        logger.warn('Could not fill slot from waitlist:', waitlistError);
-      }
-
-      return appointment;
-    } catch (error) {
-      logger.error('Error cancelling appointment:', error);
-      throw error;
-    }
+    return AppointmentCrudOperations.cancelAppointment(id, reason);
   }
 
   /**
    * Mark appointment as no-show
    */
   static async markNoShow(id: string) {
-    try {
-      const appointment = await Appointment.findByPk(id);
-      if (!appointment) throw new Error('Appointment not found');
-      
-      await appointment.update({ status: AppointmentStatus.NO_SHOW });
+    return AppointmentCrudOperations.markNoShow(id);
+  }
 
-      // Reload with associations
-      await appointment.reload({
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['firstName', 'lastName']
-          }
-        ]
-      });
+  /**
+   * Start appointment (transition to IN_PROGRESS status)
+   */
+  static async startAppointment(id: string) {
+    return AppointmentCrudOperations.startAppointment(id);
+  }
 
-      logger.info(`Appointment marked as no-show: ${appointment.type}`);
-      return appointment;
-    } catch (error) {
-      logger.error('Error marking appointment as no-show:', error);
-      throw error;
-    }
+  /**
+   * Complete appointment (transition to COMPLETED status)
+   */
+  static async completeAppointment(id: string, completionData?: {
+    notes?: string;
+    outcomes?: string;
+    followUpRequired?: boolean;
+    followUpDate?: Date;
+  }) {
+    return AppointmentCrudOperations.completeAppointment(id, completionData);
   }
 
   /**
    * Get upcoming appointments for a nurse
    */
   static async getUpcomingAppointments(nurseId: string, limit: number = 10) {
-    try {
-      const appointments = await Appointment.findAll({
-        where: {
-          nurseId,
-          scheduledAt: { [Op.gte]: new Date() },
-          status: { [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS] }
-        },
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          }
-        ],
-        order: [['scheduledAt', 'ASC']],
-        limit
-      });
+    return AppointmentCrudOperations.getUpcomingAppointments(nurseId, limit);
+  }
 
-      return appointments;
-    } catch (error) {
-      logger.error('Error fetching upcoming appointments:', error);
-      throw error;
-    }
+  // =====================
+  // AVAILABILITY OPERATIONS (Delegated to AppointmentAvailabilityService)
+  // =====================
+
+  /**
+   * Check nurse availability for a given time slot
+   */
+  static async checkAvailability(
+    nurseId: string,
+    startTime: Date,
+    duration: number,
+    excludeAppointmentId?: string
+  ) {
+    return AppointmentAvailabilityService.checkAvailability(
+      nurseId,
+      startTime,
+      duration,
+      excludeAppointmentId
+    );
+  }
+
+  /**
+   * Get available time slots for a nurse on a given date
+   */
+  static async getAvailableSlots(
+    nurseId: string,
+    date: Date,
+    slotDuration: number = 30
+  ): Promise<AvailabilitySlot[]> {
+    return AppointmentAvailabilityService.getAvailableSlots(nurseId, date, slotDuration);
+  }
+
+  // =====================
+  // REMINDER OPERATIONS (Delegated to AppointmentReminderService)
+  // =====================
+
+  /**
+   * Schedule automatic reminders for an appointment
+   */
+  static async scheduleReminders(appointmentId: string) {
+    return AppointmentReminderService.scheduleReminders(appointmentId);
+  }
+
+  /**
+   * Send appointment reminders through multiple channels
+   */
+  static async sendReminder(reminderId: string) {
+    return AppointmentReminderService.sendReminder(reminderId);
+  }
+
+  /**
+   * Process pending reminders
+   */
+  static async processPendingReminders() {
+    return AppointmentReminderService.processPendingReminders();
+  }
+
+  // =====================
+  // RECURRING APPOINTMENTS (Delegated to AppointmentRecurringService)
+  // =====================
+
+  /**
+   * Create recurring appointments
+   */
+  static async createRecurringAppointments(
+    baseData: CreateAppointmentData,
+    recurrencePattern: RecurrencePattern
+  ) {
+    return AppointmentRecurringService.createRecurringAppointments(baseData, recurrencePattern);
+  }
+
+  // =====================
+  // STATISTICS & REPORTING (Delegated to AppointmentStatisticsService)
+  // =====================
+
+  /**
+   * Get appointment statistics
+   */
+  static async getAppointmentStatistics(nurseId?: string, dateFrom?: Date, dateTo?: Date) {
+    return AppointmentStatisticsService.getAppointmentStatistics(nurseId, dateFrom, dateTo);
+  }
+
+  // =====================
+  // CALENDAR OPERATIONS (Delegated to AppointmentCalendarService)
+  // =====================
+
+  /**
+   * Generate calendar export (iCal format) for appointments
+   */
+  static async generateCalendarExport(nurseId: string, dateFrom?: Date, dateTo?: Date): Promise<string> {
+    return AppointmentCalendarService.generateCalendarExport(nurseId, dateFrom, dateTo);
+  }
+
+  // =====================
+  // NURSE AVAILABILITY (Delegated to NurseAvailabilityService)
+  // =====================
+
+  /**
+   * Set nurse availability schedule
+   */
+  static async setNurseAvailability(data: NurseAvailabilityData) {
+    return NurseAvailabilityService.setNurseAvailability(data);
+  }
+
+  /**
+   * Get nurse availability schedule
+   */
+  static async getNurseAvailability(nurseId: string, date?: Date) {
+    return NurseAvailabilityService.getNurseAvailability(nurseId, date);
+  }
+
+  /**
+   * Update nurse availability
+   */
+  static async updateNurseAvailability(id: string, data: Partial<NurseAvailabilityData>) {
+    return NurseAvailabilityService.updateNurseAvailability(id, data);
+  }
+
+  /**
+   * Delete nurse availability
+   */
+  static async deleteNurseAvailability(id: string) {
+    return NurseAvailabilityService.deleteNurseAvailability(id);
+  }
+
+  // =====================
+  // WAITLIST OPERATIONS (Delegated to AppointmentWaitlistService)
+  // =====================
+
+  /**
+   * Add to waitlist
+   */
+  static async addToWaitlist(data: WaitlistEntry) {
+    return AppointmentWaitlistService.addToWaitlist(data);
+  }
+
+  /**
+   * Get waitlist entries
+   */
+  static async getWaitlist(filters?: { nurseId?: string; status?: string; priority?: string }) {
+    return AppointmentWaitlistService.getWaitlist(filters);
+  }
+
+  /**
+   * Remove from waitlist
+   */
+  static async removeFromWaitlist(id: string, reason?: string) {
+    return AppointmentWaitlistService.removeFromWaitlist(id, reason);
+  }
+
+  /**
+   * Automatically fill slots from waitlist when appointment is cancelled
+   */
+  static async fillSlotFromWaitlist(cancelledAppointment: {
+    scheduledAt: Date;
+    duration: number;
+    nurseId: string;
+    type: any;
+  }) {
+    return AppointmentWaitlistService.fillSlotFromWaitlist(cancelledAppointment);
+  }
+
+  // =====================
+  // VALIDATION UTILITIES (Delegated to validation module)
+  // =====================
+
+  /**
+   * Validate appointment date/time is in the future
+   */
+  static validateFutureDateTime(scheduledAt: Date): void {
+    return AppointmentValidation.validateFutureDateTime(scheduledAt);
+  }
+
+  /**
+   * Validate appointment duration
+   */
+  static validateDuration(duration: number): void {
+    return AppointmentValidation.validateDuration(duration);
+  }
+
+  /**
+   * Validate status transition is allowed
+   */
+  static validateStatusTransition(currentStatus: any, newStatus: any): void {
+    return AppointmentStatusTransitions.validateStatusTransition(currentStatus as any, newStatus as any);
+  }
+
+  /**
+   * Check if status transition is allowed
+   */
+  static canTransitionTo(currentStatus: any, newStatus: any): boolean {
+    return AppointmentStatusTransitions.canTransitionTo(currentStatus as any, newStatus as any);
+  }
+
+  /**
+   * Get all allowed transitions for a given status
+   */
+  static getAllowedTransitions(currentStatus: any) {
+    return AppointmentStatusTransitions.getAllowedTransitions(currentStatus as any);
   }
 }
+
+// Export types for convenience
+export {
+  CreateAppointmentData,
+  UpdateAppointmentData,
+  AppointmentFilters,
+  AvailabilitySlot,
+  ReminderData,
+  NurseAvailabilityData,
+  WaitlistEntry,
+  RecurrencePattern
+};

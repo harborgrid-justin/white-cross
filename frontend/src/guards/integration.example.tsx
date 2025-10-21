@@ -67,11 +67,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
  */
 
 // Simple page that only needs authentication
-import Dashboard from '../pages/Dashboard';
+import Dashboard from '../pages/dashboard/Dashboard';
 export const ProtectedDashboard = withAuthGuard(Dashboard);
 
 // Page that needs role check
-import Settings from '../pages/Settings';
+import Settings from '../pages/admin/Settings';
 export const AdminSettings = withRoleGuard(['ADMIN'])(Settings);
 
 // Page that needs both auth and role
@@ -89,9 +89,9 @@ export const NurseSettings = composeGuards([
  */
 
 // Import your page components
-import Students from '../pages/Students';
-import Medications from '../pages/Medications';
-import IncidentReports from '../pages/IncidentReports';
+import Students from '../pages/students/Students';
+import Medications from '../pages/health/Medications';
+import IncidentReports from '../pages/incidents/IncidentReports';
 
 // Apply guards at component level
 const ProtectedStudents = composeGuards([

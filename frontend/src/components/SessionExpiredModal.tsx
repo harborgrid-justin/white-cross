@@ -1,53 +1,53 @@
-/**
- * WF-COMP-066 | SessionExpiredModal.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export | Key Features: component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-import React from 'react'
-import { AlertTriangle } from 'lucide-react'
+import React from 'react';
+import { AlertTriangle, LogOut, RefreshCw } from 'lucide-react';
 
 interface SessionExpiredModalProps {
-  isOpen: boolean
-  onLoginAgain: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onRefresh: () => void;
+  onLogout: () => void;
 }
 
-export default function SessionExpiredModal({ isOpen, onLoginAgain }: SessionExpiredModalProps) {
-  if (!isOpen) return null
+const SessionExpiredModal: React.FC<SessionExpiredModalProps> = ({
+  isOpen,
+  onClose,
+  onRefresh,
+  onLogout
+}) => {
+  if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      data-testid="session-expired-modal"
-    >
-      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <AlertTriangle className="h-6 w-6 text-yellow-600" />
-          <h3 className="text-lg font-semibold text-gray-900">
-            Session Expired
-          </h3>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="h-6 w-6 text-orange-500" />
+          <h2 className="text-lg font-semibold text-gray-900">Session Expired</h2>
         </div>
         
         <p className="text-gray-600 mb-6">
-          Your session has expired for security reasons. Please log in again to continue.
+          Your session has expired for security reasons. Please refresh to continue 
+          or log out to sign in again.
         </p>
-        
-        <div className="flex justify-end">
+
+        <div className="flex gap-3 justify-end">
           <button
-            onClick={onLoginAgain}
-            className="btn-primary"
-            data-testid="login-again-button"
+            onClick={onLogout}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
           >
-            Log In Again
+            <LogOut className="h-4 w-4" />
+            Log Out
+          </button>
+          <button
+            onClick={onRefresh}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh Session
           </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default SessionExpiredModal;

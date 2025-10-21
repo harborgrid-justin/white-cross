@@ -30,7 +30,7 @@ import { Navigate, useLocation, useParams, useNavigate, useBlocker } from 'react
 import { useAuthContext } from '../contexts/AuthContext';
 import { User } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
-import AccessDenied from '../pages/AccessDenied';
+import AccessDenied from '../pages/auth/AccessDenied';
 
 // ============================================================================
 // TYPE DEFINITIONS

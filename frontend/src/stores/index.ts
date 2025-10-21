@@ -32,6 +32,21 @@ export { store, default as reduxStore } from './reduxStore';
 export type { RootState, AppDispatch } from './reduxStore';
 
 // =====================
+// DOMAIN-BASED ORGANIZATION (NEW ENTERPRISE STRUCTURE)
+// =====================
+
+// Domain exports for enterprise-grade organization
+export * from './domains';
+
+// Shared utilities and cross-cutting concerns
+export * from './shared';
+
+// Domain-specific hooks and selectors available via domain imports
+// Example: import { useAuth, useHealthAlerts } from '@/stores/domains/core';
+//          import { useNurseDashboard } from '@/stores/domains/healthcare';
+//          import { enterpriseFeatures } from '@/stores/shared/enterprise';
+
+// =====================
 // HOOKS - ALL EXPORTS FROM HOOKS DIRECTORY
 // =====================
 
@@ -168,7 +183,7 @@ export {
   medicationsSelectors,
   selectActiveMedications,
   selectMedicationsByStudent,
-  selectMedicationsDueToday,
+  selectActiveMedicationsByStudent,
 } from './slices/medicationsSlice';
 
 // =====================
@@ -182,7 +197,7 @@ export {
   appointmentsSelectors,
   selectUpcomingAppointments,
   selectAppointmentsByStudent,
-  selectAppointmentsByDate,
+  selectAppointmentsByType,
 } from './slices/appointmentsSlice';
 
 // =====================
@@ -220,8 +235,8 @@ export {
   communicationActions,
   communicationThunks,
   communicationSelectors,
-  selectUnreadMessages,
-  selectMessagesByThread,
+  selectSentMessages,
+  selectMessagesByType,
 } from './slices/communicationSlice';
 
 // =====================
@@ -234,7 +249,7 @@ export {
   inventoryThunks,
   inventorySelectors,
   selectLowStockItems,
-  selectExpiredItems,
+  selectExpiringItems,
 } from './slices/inventorySlice';
 
 // =====================

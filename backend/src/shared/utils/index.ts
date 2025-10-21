@@ -26,8 +26,8 @@ export * from './array';
 export * from './object';
 export * from './string';
 export * from './date';
-export * from './validation';
 export * from './responseHelpers';
+// Note: validation utilities moved to ../security/validation.service.ts
 // DateHelpers provides more comprehensive date utilities
 export { 
   formatDate, 

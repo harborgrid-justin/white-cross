@@ -26,7 +26,7 @@
  * LLM Context: general utility functions and operations, part of backend architecture
  */
 
-import winston from 'winston';
+import * as winston from 'winston';
 
 const logFormat = winston.format.combine(
   winston.format.timestamp(),

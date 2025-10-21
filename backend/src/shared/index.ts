@@ -32,24 +32,63 @@
  * This module exports all shared functionality that can be used
  * across different parts of the application to reduce code duplication
  * and improve maintainability.
+ * 
+ * REORGANIZED FOR ENTERPRISE SOA COMPLIANCE:
+ * - Consolidated utilities with proper naming conventions
+ * - Removed duplicates between shared and middleware
+ * - Applied enterprise best practices
+ * - Separated business logic from infrastructure concerns
  */
 
-// Utility functions
-export * from './utils';
+// ==========================================
+// ENTERPRISE UTILITIES (REORGANIZED)
+// ==========================================
 
-// Security functions
-export * from './security';
+// Consolidated utility functions with proper naming
+export {
+  UTILITY_CONSTANTS,
+  type UtilityResult,
+  type PaginationOptions
+} from './utilities';
 
-// Authentication functions
-export * from './auth';
+// Enterprise security services (consolidated from auth + security)
+export {
+  AuthenticationService,
+  createAuthenticationService,
+  type UserProfile,
+  type TokenPayload,
+  type AuthenticationConfig,
+  type AuthenticationResult
+} from './security/authentication.service';
 
-// Validation functions
-export * from './validation';
+export {
+  ValidationService,
+  createValidationService,
+  createHealthcareValidation,
+  createAdminValidation,
+  HEALTHCARE_PATTERNS,
+  VALIDATION_CONFIGS,
+  HEALTHCARE_VALIDATION_RULES,
+  type ValidationRule,
+  type ValidationError,
+  type ValidationResult as SecurityValidationResult,
+  type ValidationConfig
+} from './security/validation.service';
+
+// Other security utilities
+export * from './security/rate-limiting.service';
+export * from './security/permission.utils';
+export * from './security/sql-sanitizer.service';
+export * from './security/headers';
+
+// ==========================================
+// BUSINESS DOMAIN SERVICES
+// ==========================================
 
 // Database utilities
 export * from './database';
 
-// Logging utilities
+// Logging utilities  
 export * from './logging';
 
 // Healthcare utilities
@@ -69,3 +108,14 @@ export * from './monitoring';
 
 // Configuration utilities
 export * from './config';
+
+// ==========================================
+// LEGACY COMPATIBILITY (REMOVED)
+// ==========================================
+// The following legacy exports have been removed and consolidated:
+// - './auth' -> Use './security/authentication.service' instead
+// - './validation' -> Use './security/validation.service' instead
+// - './utils/validation' -> Use './security/validation.service' instead
+
+// Legacy utilities still available (but prefer utilities/* for new code)
+export * from './utils';

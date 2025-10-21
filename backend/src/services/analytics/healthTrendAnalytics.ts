@@ -17,6 +17,7 @@
  */
 
 import { logger } from '../../utils/logger';
+import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 
 /**
  * Time Period for Analytics
@@ -356,7 +357,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error generating population summary', { error, schoolId, period });
-      throw new Error('Failed to generate population health summary');
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -436,8 +437,7 @@ export class HealthTrendAnalytics {
       return chartData;
       
     } catch (error) {
-      logger.error('Error getting condition trends', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -478,7 +478,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error getting medication trends', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -573,7 +573,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error getting incident analytics', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -638,7 +638,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error getting immunization dashboard', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -690,7 +690,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error getting absence correlation', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -740,7 +740,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error getting predictive insights', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -770,8 +770,7 @@ export class HealthTrendAnalytics {
       return comparison;
       
     } catch (error) {
-      logger.error('Error comparing cohorts', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   
@@ -830,7 +829,7 @@ export class HealthTrendAnalytics {
       
     } catch (error) {
       logger.error('Error getting health metrics', { error, schoolId });
-      throw error;
+      throw handleSequelizeError(error as Error);
     }
   }
   

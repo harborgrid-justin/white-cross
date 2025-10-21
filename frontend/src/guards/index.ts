@@ -90,4 +90,4 @@ export {
 
 export {
   default as AccessDenied
-} from '../pages/AccessDenied';
+} from '../pages/auth/AccessDenied';

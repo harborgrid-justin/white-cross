@@ -29,6 +29,9 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { incidentReportsApi } from '../../services/modules/incidentReportsApi';
+import {
+  IncidentSeverity,
+} from '../../types/incidents';
 import type {
   IncidentReport,
   WitnessStatement,
@@ -38,7 +41,6 @@ import type {
   IncidentReportFilters,
   IncidentSearchParams,
   IncidentType,
-  IncidentSeverity,
   IncidentStatus,
   CreateWitnessStatementRequest,
   CreateFollowUpActionRequest,

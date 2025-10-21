@@ -127,7 +127,7 @@ export function useOptimisticIncidentCreate(
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: incidentKeys.lists() });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -139,7 +139,7 @@ export function useOptimisticIncidentCreate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -200,7 +200,7 @@ export function useOptimisticIncidentUpdate(
       queryClient.invalidateQueries({ queryKey: incidentKeys.lists() });
       queryClient.setQueryData(incidentKeys.detail(variables.id), response.report);
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -212,7 +212,7 @@ export function useOptimisticIncidentUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -261,7 +261,7 @@ export function useOptimisticIncidentDelete(
       queryClient.removeQueries({ queryKey: incidentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: incidentKeys.lists() });
 
-      options?.onSuccess?.(response, id, context);
+      options?.onSuccess?.(response, id, context, queryClient);
     },
 
     onError: (error, id, context) => {
@@ -273,7 +273,7 @@ export function useOptimisticIncidentDelete(
         });
       }
 
-      options?.onError?.(error, id, context);
+      options?.onError?.(error, id, context, queryClient);
     },
   });
 }
@@ -342,7 +342,7 @@ export function useOptimisticWitnessCreate(
         queryKey: incidentKeys.detail(variables.incidentReportId),
       });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -352,7 +352,7 @@ export function useOptimisticWitnessCreate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -409,7 +409,7 @@ export function useOptimisticWitnessUpdate(
         confirmUpdate(context.updateId, response.statement, queryClient);
       }
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -419,7 +419,7 @@ export function useOptimisticWitnessUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -473,7 +473,7 @@ export function useOptimisticWitnessVerify(
         confirmUpdate(context.updateId, response.statement, queryClient);
       }
 
-      options?.onSuccess?.(response, statementId, context);
+      options?.onSuccess?.(response, statementId, context, queryClient);
     },
 
     onError: (error, statementId, context) => {
@@ -483,7 +483,7 @@ export function useOptimisticWitnessVerify(
         });
       }
 
-      options?.onError?.(error, statementId, context);
+      options?.onError?.(error, statementId, context, queryClient);
     },
   });
 }
@@ -552,7 +552,7 @@ export function useOptimisticFollowUpCreate(
         queryKey: incidentKeys.detail(variables.incidentReportId),
       });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -562,7 +562,7 @@ export function useOptimisticFollowUpCreate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -619,7 +619,7 @@ export function useOptimisticFollowUpUpdate(
         confirmUpdate(context.updateId, response.action, queryClient);
       }
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -629,7 +629,7 @@ export function useOptimisticFollowUpUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -690,7 +690,7 @@ export function useOptimisticFollowUpComplete(
         confirmUpdate(context.updateId, response.action, queryClient);
       }
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -700,7 +700,7 @@ export function useOptimisticFollowUpComplete(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }

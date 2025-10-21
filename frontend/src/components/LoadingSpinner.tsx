@@ -1,24 +1,34 @@
-/**
- * WF-COMP-045 | LoadingSpinner.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export | Key Features: component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
+import React from 'react';
+import { Loader2 } from 'lucide-react';
 
-import React from 'react'
+interface LoadingSpinnerProps {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  text?: string;
+}
 
-export default function LoadingSpinner() {
+const sizeClasses = {
+  sm: 'h-4 w-4',
+  md: 'h-6 w-6', 
+  lg: 'h-8 w-8',
+  xl: 'h-12 w-12'
+};
+
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
+  size = 'md', 
+  className = '', 
+  text 
+}) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        <p className="mt-4 text-gray-600">Loading...</p>
+    <div className={`flex items-center justify-center ${className}`}>
+      <div className="flex flex-col items-center space-y-2">
+        <Loader2 className={`${sizeClasses[size]} animate-spin text-indigo-600`} />
+        {text && (
+          <span className="text-sm text-gray-500 font-medium">{text}</span>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default LoadingSpinner;

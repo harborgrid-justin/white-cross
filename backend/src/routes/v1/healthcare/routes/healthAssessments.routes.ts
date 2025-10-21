@@ -1,0 +1,360 @@
+/**
+ * Health Assessments Routes
+ * HTTP endpoints for health risk assessments, screenings, growth tracking, and emergency notifications
+ * All routes prefixed with /api/v1/health-assessments
+ */
+
+import { ServerRoute } from '@hapi/hapi';
+import { asyncHandler } from '../../../shared/utils';
+import { HealthAssessmentsController } from '../controllers/healthAssessments.controller';
+import {
+  healthRiskParamSchema,
+  healthRiskQuerySchema,
+  recordScreeningSchema,
+  growthMeasurementSchema,
+  growthAnalysisQuerySchema,
+  emergencyNotificationSchema,
+  immunizationForecastQuerySchema
+} from '../validators/healthAssessments.validators';
+
+/**
+ * HEALTH RISK ASSESSMENT ROUTES
+ */
+
+const getHealthRiskRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/risk/{studentId}',
+  handler: asyncHandler(HealthAssessmentsController.getHealthRisk),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Healthcare', 'v1'],
+    description: 'Calculate health risk score for a student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns comprehensive health risk assessment including risk factors, chronic conditions impact, medication interactions, and recommendations. Used for care planning and intervention prioritization.',
+    validate: {
+      params: healthRiskParamSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'Health risk assessment calculated successfully' },
+          '401': { description: 'Unauthorized' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+const getHighRiskStudentsRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/high-risk-students',
+  handler: asyncHandler(HealthAssessmentsController.getHighRiskStudents),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Healthcare', 'Administration', 'v1'],
+    description: 'Get list of high-risk students',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns students with health risk scores above the specified threshold. Includes risk factors, priority interventions needed, and care team assignments. Used for proactive health management.',
+    validate: {
+      query: healthRiskQuerySchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'High-risk students retrieved successfully' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Requires NURSE or ADMIN role' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+/**
+ * HEALTH SCREENINGS ROUTES
+ */
+
+const recordScreeningRoute: ServerRoute = {
+  method: 'POST',
+  path: '/api/v1/health-assessments/screenings',
+  handler: asyncHandler(HealthAssessmentsController.recordScreening),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Screenings', 'Healthcare', 'v1'],
+    description: 'Record health screening results',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Records various types of health screening results (vision, hearing, scoliosis, dental, BMI). Includes pass/fail status, detailed results, follow-up recommendations, and parent notification requirements. Critical for early intervention.',
+    validate: {
+      payload: recordScreeningSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '201': { description: 'Health screening recorded successfully' },
+          '400': { description: 'Validation error' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Requires NURSE role' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+const getScreeningHistoryRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/screenings/{studentId}',
+  handler: asyncHandler(HealthAssessmentsController.getScreeningHistory),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Screenings', 'Healthcare', 'v1'],
+    description: 'Get screening history for a student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns complete screening history for a student including trends, follow-up status, and intervention outcomes. Used for longitudinal health monitoring.',
+    validate: {
+      params: healthRiskParamSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'Screening history retrieved successfully' },
+          '401': { description: 'Unauthorized' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+/**
+ * GROWTH TRACKING ROUTES
+ */
+
+const recordGrowthMeasurementRoute: ServerRoute = {
+  method: 'POST',
+  path: '/api/v1/health-assessments/growth/{studentId}',
+  handler: asyncHandler(HealthAssessmentsController.recordGrowthMeasurement),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Growth', 'Healthcare', 'v1'],
+    description: 'Record growth measurement for student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Records height, weight, BMI, and other growth measurements. Automatically calculates percentiles and flags concerning trends. Supports head circumference for younger students. Critical for monitoring developmental health.',
+    validate: {
+      params: healthRiskParamSchema,
+      payload: growthMeasurementSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '201': { description: 'Growth measurement recorded successfully' },
+          '400': { description: 'Validation error or measurement outside normal ranges' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Requires NURSE role' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+const getGrowthAnalysisRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/growth/{studentId}/analysis',
+  handler: asyncHandler(HealthAssessmentsController.getGrowthAnalysis),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Growth', 'Healthcare', 'v1'],
+    description: 'Analyze growth trends for student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Provides comprehensive growth trend analysis including percentile tracking, velocity calculations, and clinical recommendations. Identifies concerning patterns like growth faltering or excessive weight gain.',
+    validate: {
+      params: healthRiskParamSchema,
+      query: growthAnalysisQuerySchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'Growth analysis generated successfully' },
+          '401': { description: 'Unauthorized' },
+          '404': { description: 'Student not found or insufficient data' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+/**
+ * IMMUNIZATION FORECAST ROUTES
+ */
+
+const getImmunizationForecastRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/immunizations/{studentId}/forecast',
+  handler: asyncHandler(HealthAssessmentsController.getImmunizationForecast),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Immunizations', 'Healthcare', 'v1'],
+    description: 'Get immunization forecast for student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Generates immunization schedule based on current status, age, and CDC guidelines. Shows overdue, due soon, and future immunizations. Includes contraindication checking and catch-up schedules.',
+    validate: {
+      params: healthRiskParamSchema,
+      query: immunizationForecastQuerySchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'Immunization forecast generated successfully' },
+          '401': { description: 'Unauthorized' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+/**
+ * EMERGENCY NOTIFICATION ROUTES
+ */
+
+const sendEmergencyNotificationRoute: ServerRoute = {
+  method: 'POST',
+  path: '/api/v1/health-assessments/emergency/notify',
+  handler: asyncHandler(HealthAssessmentsController.sendEmergencyNotification),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Emergency', 'Healthcare', 'v1'],
+    description: 'Send emergency health notification',
+    notes: '**CRITICAL PHI ENDPOINT** - Triggers emergency notification system for urgent health situations. Automatically contacts parents, emergency contacts, and medical staff based on severity. Creates incident report and audit trail. Used for medical emergencies, allergic reactions, and serious injuries.',
+    validate: {
+      payload: emergencyNotificationSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '201': { description: 'Emergency notification sent successfully' },
+          '400': { description: 'Validation error' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Requires NURSE role' },
+          '500': { description: 'Internal server error - Emergency protocols activated' }
+        }
+      }
+    }
+  }
+};
+
+const getEmergencyHistoryRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/emergency/{studentId}',
+  handler: asyncHandler(HealthAssessmentsController.getEmergencyHistory),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Emergency', 'Healthcare', 'v1'],
+    description: 'Get emergency notification history for student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns history of emergency notifications for a student including incident details, response times, and outcomes. Critical for pattern recognition and care planning.',
+    validate: {
+      params: healthRiskParamSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'Emergency history retrieved successfully' },
+          '401': { description: 'Unauthorized' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+/**
+ * MEDICATION INTERACTIONS ROUTES (Extended from medications module)
+ */
+
+const getMedicationInteractionsRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/health-assessments/medication-interactions/{studentId}',
+  handler: asyncHandler(HealthAssessmentsController.getMedicationInteractions),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Medications', 'Healthcare', 'v1'],
+    description: 'Check comprehensive medication interactions for student',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Analyzes all current medications, supplements, and known allergies for potential interactions. Includes drug-drug, drug-food, and drug-condition interactions. More comprehensive than basic medication checking.',
+    validate: {
+      params: healthRiskParamSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'Medication interactions analyzed successfully' },
+          '401': { description: 'Unauthorized' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+const checkNewMedicationInteractionsRoute: ServerRoute = {
+  method: 'POST',
+  path: '/api/v1/health-assessments/medication-interactions/{studentId}/check',
+  handler: asyncHandler(HealthAssessmentsController.checkNewMedicationInteractions),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Health Assessments', 'Medications', 'Healthcare', 'v1'],
+    description: 'Check interactions for a potential new medication',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Validates potential interactions before adding a new medication to student\'s regimen. Includes severity assessment, clinical significance, and management recommendations.',
+    validate: {
+      params: healthRiskParamSchema,
+      payload: {
+        medicationName: require('joi').string().min(1).max(200).required(),
+        dosage: require('joi').string().optional(),
+        frequency: require('joi').string().optional()
+      }
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': { description: 'New medication interactions checked successfully' },
+          '400': { description: 'Validation error' },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden - Requires NURSE role' },
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
+        }
+      }
+    }
+  }
+};
+
+/**
+ * EXPORT ALL ROUTES
+ */
+
+export const healthAssessmentsRoutes: ServerRoute[] = [
+  // Health Risk Assessment (2 routes)
+  getHealthRiskRoute,
+  getHighRiskStudentsRoute,
+
+  // Health Screenings (2 routes)
+  recordScreeningRoute,
+  getScreeningHistoryRoute,
+
+  // Growth Tracking (2 routes)
+  recordGrowthMeasurementRoute,
+  getGrowthAnalysisRoute,
+
+  // Immunization Forecast (1 route)
+  getImmunizationForecastRoute,
+
+  // Emergency Notifications (2 routes)
+  sendEmergencyNotificationRoute,
+  getEmergencyHistoryRoute,
+
+  // Extended Medication Interactions (2 routes)
+  getMedicationInteractionsRoute,
+  checkNewMedicationInteractionsRoute
+];

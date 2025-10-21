@@ -137,7 +137,7 @@ const invalidateStudentCache = (
  * @example
  * ```tsx
  * const createStudent = useCreateStudent({
- *   onSuccess: (result) => {
+ *   onSuccess: (result, context) => {
  *     toast.success(`Student ${result.student?.firstName} created successfully`);
  *     navigate(`/students/${result.student?.id}`);
  *   },
@@ -208,7 +208,7 @@ export const useCreateStudent = (
       }
     },
 
-    onSuccess: (result, variables) => {
+    onSuccess: (result, variables, context) => {
       // Invalidate cache with immediate strategy for critical healthcare data
       invalidateStudentCache(queryClient, result.student?.id, variables, 'immediate');
       
@@ -228,10 +228,10 @@ export const useCreateStudent = (
         action: 'CREATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, variables, undefined);
+      options?.onSuccess?.(result, variables, context, queryClient);
     },
 
-    onError: (error, variables) => {
+    onError: (error, variables, context) => {
       // Enhanced error logging for healthcare audit
       console.error('Student creation failed:', {
         error: error.message,
@@ -246,7 +246,7 @@ export const useCreateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, variables, undefined);
+      options?.onError?.(error, variables, context, queryClient);
     },
 
     retry: config.retry,
@@ -263,7 +263,7 @@ export const useCreateStudent = (
  * @example
  * ```tsx
  * const updateStudent = useUpdateStudent({
- *   onSuccess: (result) => {
+ *   onSuccess: (result, context) => {
  *     toast.success('Student updated successfully');
  *   }
  * });
@@ -314,7 +314,7 @@ export const useUpdateStudent = (
       }
     },
 
-    onSuccess: (result, { id, data }) => {
+    onSuccess: (result, { id, data }, context) => {
       // Update cache with new data
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
@@ -332,10 +332,10 @@ export const useUpdateStudent = (
         action: 'UPDATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, { id, data }, undefined);
+      options?.onSuccess?.(result, { id, data }, context, queryClient);
     },
 
-    onError: (error, { id, data }) => {
+    onError: (error, { id, data }, context) => {
       console.error('Student update failed:', {
         error: error.message,
         studentId: id,
@@ -344,7 +344,7 @@ export const useUpdateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, { id, data }, undefined);
+      options?.onError?.(error, { id, data }, context, queryClient);
     },
 
     retry: config.retry,
@@ -385,7 +385,7 @@ export const useDeactivateStudent = (
       }
     },
 
-    onSuccess: (result, studentId) => {
+    onSuccess: (result, studentId, context) => {
       // Update cache to reflect deactivation
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
@@ -401,10 +401,10 @@ export const useDeactivateStudent = (
         action: 'DEACTIVATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, studentId, undefined);
+      options?.onSuccess?.(result, studentId, context, queryClient);
     },
 
-    onError: (error, studentId) => {
+    onError: (error, studentId, context) => {
       console.error('Student deactivation failed:', {
         error: error.message,
         studentId,
@@ -412,7 +412,7 @@ export const useDeactivateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, studentId, undefined);
+      options?.onError?.(error, studentId, context, queryClient);
     },
 
     retry: config.retry,
@@ -451,7 +451,7 @@ export const useReactivateStudent = (
       }
     },
 
-    onSuccess: (result, studentId) => {
+    onSuccess: (result, studentId, context) => {
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
       }
@@ -465,10 +465,10 @@ export const useReactivateStudent = (
         action: 'REACTIVATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, studentId, undefined);
+      options?.onSuccess?.(result, studentId, context, queryClient);
     },
 
-    onError: (error, studentId) => {
+    onError: (error, studentId, context) => {
       console.error('Student reactivation failed:', {
         error: error.message,
         studentId,
@@ -476,7 +476,7 @@ export const useReactivateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, studentId, undefined);
+      options?.onError?.(error, studentId, context, queryClient);
     },
 
     retry: config.retry,
@@ -519,7 +519,7 @@ export const useTransferStudent = (
       }
     },
 
-    onSuccess: (result, { id, data }) => {
+    onSuccess: (result, { id, data }, context) => {
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
       }
@@ -535,10 +535,10 @@ export const useTransferStudent = (
         action: 'TRANSFER_STUDENT',
       });
 
-      options?.onSuccess?.(result, { id, data }, undefined);
+      options?.onSuccess?.(result, { id, data }, context, queryClient);
     },
 
-    onError: (error, { id, data }) => {
+    onError: (error, { id, data }, context) => {
       console.error('Student transfer failed:', {
         error: error.message,
         studentId: id,
@@ -547,7 +547,7 @@ export const useTransferStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, { id, data }, undefined);
+      options?.onError?.(error, { id, data }, context, queryClient);
     },
 
     retry: config.retry,
@@ -624,7 +624,7 @@ export const useBulkUpdateStudents = (
       }
     },
 
-    onSuccess: (result, request) => {
+    onSuccess: (result, request, context) => {
       // Invalidate all caches after bulk operation
       invalidateStudentCache(queryClient, undefined, request.updateData, 'conservative');
 
@@ -637,10 +637,10 @@ export const useBulkUpdateStudents = (
         action: 'BULK_UPDATE_STUDENTS',
       });
 
-      options?.onSuccess?.(result, request, undefined);
+      options?.onSuccess?.(result, request, context, queryClient);
     },
 
-    onError: (error, request) => {
+    onError: (error, request, context) => {
       console.error('Bulk student update failed:', {
         error: error.message,
         totalRequested: request.studentIds.length,
@@ -648,7 +648,7 @@ export const useBulkUpdateStudents = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, request, undefined);
+      options?.onError?.(error, request, context, queryClient);
     },
 
     retry: config.retry,
@@ -701,7 +701,7 @@ export const usePermanentDeleteStudent = (
       }
     },
 
-    onSuccess: (result, { id, reason, authorization }) => {
+    onSuccess: (result, { id, reason, authorization }, context) => {
       // Remove from all caches
       queryClient.removeQueries({ queryKey: studentQueryKeys.details.byId(id) });
       invalidateStudentCache(queryClient, undefined, undefined, 'immediate');
@@ -717,10 +717,10 @@ export const usePermanentDeleteStudent = (
         severity: 'CRITICAL',
       });
 
-      options?.onSuccess?.(result, { id, reason, authorization }, undefined);
+      options?.onSuccess?.(result, { id, reason, authorization }, context, queryClient);
     },
 
-    onError: (error, { id, reason, authorization }) => {
+    onError: (error, { id, reason, authorization }, context) => {
       console.error('Permanent student deletion failed:', {
         error: error.message,
         studentId: id,
@@ -731,7 +731,7 @@ export const usePermanentDeleteStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, { id, reason, authorization }, undefined);
+      options?.onError?.(error, { id, reason, authorization }, context, queryClient);
     },
 
     retry: config.retry,
@@ -874,3 +874,11 @@ export default {
   usePermanentDeleteStudent,
   useStudentMutations,
 };
+
+
+
+
+
+
+
+

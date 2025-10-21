@@ -96,7 +96,8 @@
       "Bash(else echo \"✗ $dir\")",
       "Bash(rm C:/temp/white-cross/backend/src/services/communicationService.ts)",
       "Bash(rm C:/temp/white-cross/backend/src/services/medicationService.ts)",
-      "Bash(do sed -i \"s|from ''../../../services/healthRecordService''|from ''../../../services/healthRecord''|g\" \"$file\")"
+      "Bash(do sed -i \"s|from ''../../../services/healthRecordService''|from ''../../../services/healthRecord''|g\" \"$file\")",
+      "Bash(paste:*)"
     ],
     "deny": [],
     "ask": []

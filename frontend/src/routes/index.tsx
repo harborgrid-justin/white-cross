@@ -39,19 +39,19 @@ import {
 // LAYOUT COMPONENTS
 // ============================================================================
 
-import Layout from '../components/Layout';
+import { Layout } from '../components/layout';
 
 // ============================================================================
 // PAGE COMPONENTS
 // ============================================================================
 
 // Public pages
-import Login from '../pages/Login';
+import Login from '../pages/auth/Login';
 
 // Protected pages
-import Dashboard from '../pages/Dashboard';
-import HealthRecords from '../pages/HealthRecords';
-import AccessDenied from '../pages/AccessDenied';
+import Dashboard from '../pages/dashboard/Dashboard';
+import HealthRecords from '../pages/health/HealthRecords';
+import AccessDenied from '../pages/auth/AccessDenied';
 
 // ============================================================================
 // ERROR BOUNDARY

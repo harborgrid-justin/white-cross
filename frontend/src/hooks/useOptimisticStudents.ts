@@ -147,7 +147,7 @@ export function useOptimisticStudentCreate(
         queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
       }
 
-      options?.onSuccess?.(response, variables, context, undefined);
+      options?.onSuccess?.(response, variables, context, undefined, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -164,7 +164,7 @@ export function useOptimisticStudentCreate(
         }
       }
 
-      options?.onError?.(error, variables, context, undefined);
+      options?.onError?.(error, variables, context, undefined, queryClient);
     },
   });
 }
@@ -256,7 +256,7 @@ export function useOptimisticStudentUpdate(
         queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
       }
 
-      options?.onSuccess?.(response, variables, context, undefined);
+      options?.onSuccess?.(response, variables, context, undefined, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -276,7 +276,7 @@ export function useOptimisticStudentUpdate(
         }
       }
 
-      options?.onError?.(error, variables, context, undefined);
+      options?.onError?.(error, variables, context, undefined, queryClient);
     },
   });
 }
@@ -350,7 +350,7 @@ export function useOptimisticStudentDeactivate(
       // Invalidate assigned students
       queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
 
-      options?.onSuccess?.(response, id, context, undefined);
+      options?.onSuccess?.(response, id, context, undefined, queryClient);
     },
 
     onError: (error, id, context) => {
@@ -367,7 +367,7 @@ export function useOptimisticStudentDeactivate(
         }
       }
 
-      options?.onError?.(error, id, context, undefined);
+      options?.onError?.(error, id, context, undefined, queryClient);
     },
   });
 }
@@ -429,7 +429,7 @@ export function useOptimisticStudentReactivate(
       queryClient.setQueryData(studentKeys.detail(id), response);
       queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
 
-      options?.onSuccess?.(response, id, context, undefined);
+      options?.onSuccess?.(response, id, context, undefined, queryClient);
     },
 
     onError: (error, id, context) => {
@@ -444,7 +444,7 @@ export function useOptimisticStudentReactivate(
         dispatch(studentsActions.updateOne({ id, changes: { isActive: false } }));
       }
 
-      options?.onError?.(error, id, context, undefined);
+      options?.onError?.(error, id, context, undefined, queryClient);
     },
   });
 }
@@ -519,7 +519,7 @@ export function useOptimisticStudentTransfer(
       // Invalidate assigned students for both old and new nurses
       queryClient.invalidateQueries({ queryKey: studentKeys.assigned() });
 
-      options?.onSuccess?.(response, variables, context, undefined);
+      options?.onSuccess?.(response, variables, context, undefined, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -539,7 +539,7 @@ export function useOptimisticStudentTransfer(
         }
       }
 
-      options?.onError?.(error, variables, context, undefined);
+      options?.onError?.(error, variables, context, undefined, queryClient);
     },
   });
 }
@@ -612,7 +612,7 @@ export function useOptimisticStudentPermanentDelete(
         });
       }
 
-      options?.onSuccess?.(response, id, context, undefined);
+      options?.onSuccess?.(response, id, context, undefined, queryClient);
     },
 
     onError: (error, id, context) => {
@@ -629,7 +629,7 @@ export function useOptimisticStudentPermanentDelete(
         }
       }
 
-      options?.onError?.(error, id, context, undefined);
+      options?.onError?.(error, id, context, undefined, queryClient);
     },
   });
 }

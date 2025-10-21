@@ -36,92 +36,10 @@
  */
 
 // Export types
-export * from './types';
+export * from './administration.types';
 
-// Export district operations
-export {
-  createDistrict,
-  getDistricts,
-  getDistrictById,
-  updateDistrict,
-  deleteDistrict
-} from './districtOperations';
 
-// Export school operations
-export {
-  createSchool,
-  getSchools,
-  getSchoolById,
-  updateSchool,
-  deleteSchool
-} from './schoolOperations';
-
-// Export configuration operations
-export {
-  getConfiguration,
-  getAllConfigurations,
-  setConfiguration,
-  deleteConfiguration,
-  getConfigurationHistory
-} from './configurationOperations';
-
-// Export settings operations
-export {
-  getSystemSettings,
-  updateSystemSettings
-} from './settingsOperations';
-
-// Export backup operations
-export {
-  createBackup,
-  getBackupLogs,
-  getBackupById
-} from './backupOperations';
-
-// Export performance operations
-export {
-  recordMetric,
-  getMetrics
-} from './performanceOperations';
-
-// Export system health operations
-export {
-  getSystemHealth
-} from './systemHealthOperations';
-
-// Export license operations
-export {
-  createLicense,
-  getLicenses,
-  getLicenseById,
-  updateLicense,
-  deactivateLicense
-} from './licenseOperations';
-
-// Export training operations
-export {
-  createTrainingModule,
-  getTrainingModules,
-  getTrainingModuleById,
-  updateTrainingModule,
-  deleteTrainingModule,
-  recordTrainingCompletion,
-  getUserTrainingProgress
-} from './trainingOperations';
-
-// Export audit operations
-export {
-  createAuditLog,
-  getAuditLogs
-} from './auditOperations';
-
-// Export user management operations
-export {
-  getUsers,
-  createUser,
-  updateUser,
-  deleteUser
-} from './userManagementOperations';
+export { administrationService } from './administration.service';
 
 /**
  * AdministrationService class for backwards compatibility

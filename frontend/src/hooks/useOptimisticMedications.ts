@@ -137,7 +137,7 @@ export function useOptimisticMedicationCreate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.lists() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -149,7 +149,7 @@ export function useOptimisticMedicationCreate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -202,7 +202,7 @@ export function useOptimisticMedicationUpdate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.lists() });
       queryClient.setQueryData(medicationKeys.detail(variables.id), response);
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -214,7 +214,7 @@ export function useOptimisticMedicationUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -262,7 +262,7 @@ export function useOptimisticMedicationDelete(
       queryClient.invalidateQueries({ queryKey: medicationKeys.lists() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, id, context);
+      options?.onSuccess?.(response, id, context, queryClient);
     },
 
     onError: (error, id, context) => {
@@ -274,7 +274,7 @@ export function useOptimisticMedicationDelete(
         });
       }
 
-      options?.onError?.(error, id, context);
+      options?.onError?.(error, id, context, queryClient);
     },
   });
 }
@@ -333,7 +333,7 @@ export function useOptimisticPrescriptionCreate(
         queryKey: medicationKeys.detail(variables.medicationId),
       });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -343,7 +343,7 @@ export function useOptimisticPrescriptionCreate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -409,7 +409,7 @@ export function useOptimisticPrescriptionDeactivate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.schedule() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -419,7 +419,7 @@ export function useOptimisticPrescriptionDeactivate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -497,7 +497,7 @@ export function useOptimisticMedicationAdministration(
       queryClient.invalidateQueries({ queryKey: medicationKeys.reminders() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -507,7 +507,7 @@ export function useOptimisticMedicationAdministration(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -561,7 +561,7 @@ export function useOptimisticInventoryAdd(
         queryKey: medicationKeys.detail(variables.medicationId),
       });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -571,7 +571,7 @@ export function useOptimisticInventoryAdd(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -618,7 +618,7 @@ export function useOptimisticInventoryUpdate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.alerts() });
       queryClient.setQueryData(medicationKeys.inventoryItem(variables.id), response);
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -628,7 +628,7 @@ export function useOptimisticInventoryUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
@@ -680,7 +680,7 @@ export function useOptimisticAdverseReactionReport(
       queryClient.invalidateQueries({ queryKey: medicationKeys.adverseReactions() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context);
+      options?.onSuccess?.(response, variables, context, queryClient);
     },
 
     onError: (error, variables, context) => {
@@ -690,7 +690,7 @@ export function useOptimisticAdverseReactionReport(
         });
       }
 
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables, context, queryClient);
     },
   });
 }
