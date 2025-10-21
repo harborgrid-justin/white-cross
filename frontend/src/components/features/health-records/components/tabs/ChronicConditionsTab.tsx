@@ -12,9 +12,9 @@
 
 import React from 'react'
 import { Plus, Heart } from 'lucide-react'
-import { getSeverityColor, getStatusColor } from '@/utils/healthRecords'
-import type { ChronicCondition } from '@/types/healthRecords'
-import type { User } from '@/types'
+import { getConditionSeverityColor, getStatusColor } from '../../../../../utils/healthRecords'
+import type { ChronicCondition } from '../../../../../types/healthRecords'
+import type { User } from '../../../../../types'
 
 interface ChronicConditionsTabProps {
   conditions: ChronicCondition[]
@@ -68,7 +68,7 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
                     <span className={`text-xs px-2 py-1 rounded ${getStatusColor(condition.status)}`} data-testid="status-badge">
                       {condition.status === 'ACTIVE' ? 'Active' : condition.status === 'MANAGED' ? 'Managed' : 'Resolved'}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded ${getSeverityColor(condition.severity)}`} data-testid="severity-indicator">
+                    <span className={`text-xs px-2 py-1 rounded ${getConditionSeverityColor(condition.severity)}`} data-testid="severity-indicator">
                       {condition.severity}
                     </span>
                   </div>

@@ -1,8 +1,16 @@
 /**
  * Navigation Components
  * 
- * Components for navigation and wayfinding.
+ * Components for navigation and routing.
  */
 
-export { TabNavigation } from './TabNavigation'
-export { default as Breadcrumbs } from './Breadcrumbs'
+export { 
+  Tabs, 
+  TabsList, 
+  TabsTrigger, 
+  TabsContent,
+  type TabsProps,
+  type TabsListProps,
+  type TabsTriggerProps,
+  type TabsContentProps
+} from './Tabs';

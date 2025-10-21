@@ -13,13 +13,13 @@
  */
 
 // Import all health service modules
-import { allergiesApi } from './allergies.api';
-import { chronicConditionsApi } from './chronicConditions.api';
-import { vaccinationsApi } from './vaccinations.api';
-import { screeningsApi } from './screenings.api';
-import { growthMeasurementsApi } from './growthMeasurements.api';
-import { vitalSignsApi } from './vitalSigns.api';
-import { healthRecordsApi } from './healthRecords.api';
+import { allergiesApi } from './allergiesApi';
+import { chronicConditionsApi } from './chronicConditionsApi';
+import { vaccinationsApi } from './vaccinationsApi';
+import { screeningsApi } from './screeningsApi';
+import { growthMeasurementsApi } from './growthMeasurementsApi';
+import { vitalSignsApi } from './vitalSignsApi';
+import { healthRecordsApi } from './healthRecordsApi';
 
 // Re-export all individual APIs
 export {
@@ -40,7 +40,7 @@ export type {
   AllergyCreate,
   AllergyUpdate,
   AllergyFilters
-} from './allergies.api';
+} from './allergiesApi';
 
 export type {
   // Chronic Conditions types
@@ -51,7 +51,7 @@ export type {
   ChronicConditionUpdate,
   ChronicConditionFilters,
   CarePlanUpdate
-} from './chronicConditions.api';
+} from './chronicConditionsApi';
 
 export type {
   // Vaccinations types
@@ -64,7 +64,7 @@ export type {
   VaccinationFilters,
   VaccinationSchedule,
   ComplianceReport
-} from './vaccinations.api';
+} from './vaccinationsApi';
 
 export type {
   // Screenings types
@@ -76,7 +76,7 @@ export type {
   ScreeningUpdate,
   ScreeningFilters,
   ScreeningSchedule
-} from './screenings.api';
+} from './screeningsApi';
 
 export type {
   // Growth Measurements types
@@ -92,7 +92,7 @@ export type {
   GrowthMeasurementFilters,
   GrowthTrend,
   GrowthChart
-} from './growthMeasurements.api';
+} from './growthMeasurementsApi';
 
 export type {
   // Vital Signs types
@@ -107,7 +107,7 @@ export type {
   VitalSignsFilters,
   VitalSignsTrend,
   VitalSignsAlert
-} from './vitalSigns.api';
+} from './vitalSignsApi';
 
 export type {
   // Health Records types
@@ -119,7 +119,7 @@ export type {
   HealthSummary,
   ExportOptions,
   ImportResult
-} from './healthRecords.api';
+} from './healthRecordsApi';
 
 // ==========================================
 // UNIFIED HEALTH API CLASS
@@ -159,7 +159,7 @@ export class UnifiedHealthApi {
         this.vitals.getLatestVitalSigns(studentId),
         this.growth.getLatestMeasurement(studentId),
         this.vaccinations.getComplianceReport(studentId),
-        this.screenings.getStudentScreenings(studentId, { limit: 5 })
+        this.screenings.getStudentScreenings(studentId, {}).then(result => result.slice(0, 5))
       ]);
 
       return {

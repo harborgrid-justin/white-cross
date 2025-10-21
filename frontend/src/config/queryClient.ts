@@ -22,8 +22,8 @@
 import { QueryClient, QueryCache, MutationCache, DefaultOptions } from '@tanstack/react-query';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import { getCacheManager } from '../services/cache/CacheManager';
-import { auditService } from '../services/audit/AuditService';
+import { getCacheManager } from '../services/cache';
+import { auditService } from '../services/audit';
 import { getGlobalHealthMonitor } from '../services/resilience/HealthMonitor';
 import toast from 'react-hot-toast';
 

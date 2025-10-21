@@ -14,7 +14,7 @@ import {
   INDEXED_DB_CONFIG,
   canPersistEntity,
   getPersistedTTL
-} from './cache-config';
+} from './cacheConfig';
 import { QueryKeyFactory } from './QueryKeyFactory';
 
 /**

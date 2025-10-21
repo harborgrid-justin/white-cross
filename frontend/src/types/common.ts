@@ -15,15 +15,55 @@
  * These types should be imported by all modules to ensure consistency
  */
 
-// Re-export core types from services
-export type {
-  ApiResponse,
-  PaginatedResponse,
-  PaginationResponse,
-  DateRangeFilter,
-  SearchParams,
-  User
-} from '../services/types';
+// Core API response types
+export interface ApiResponse<T = any> {
+  data: T;
+  success: boolean;
+  message?: string;
+  timestamp?: string;
+}
+
+export interface PaginatedResponse<T = any> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  success: boolean;
+}
+
+export interface PaginationResponse {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+export interface DateRangeFilter {
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface SearchParams {
+  q?: string;
+  filters?: Record<string, any>;
+  sort?: string;
+  order?: 'asc' | 'desc';
+}
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  active: boolean;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Define PaginationParams here to avoid circular dependency
 export interface PaginationParams {

@@ -13,10 +13,10 @@
 // Re-export all types from the main types directory to ensure consistency
 // This prevents type incompatibilities between services and components
 
-export * from '@/types'
+export * from '../../types'
 
 // Re-export specific types that might be needed by services
 export type {
   ApiResponse,
   LegacyMedicationWithCount
-} from '@/types'
+} from '../../types'

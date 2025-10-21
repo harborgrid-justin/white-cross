@@ -12,8 +12,8 @@
 
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import { LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/useMedicationsData'
-import { useReminderManagement } from '../../../../hooks/useReminderManagement'
+import { useMedicationsData } from '../../../../hooks/domains/medications'
+import { useReminderManagement } from '../../../../hooks/utilities'
 import { formatDate } from '../../../../utils/medications'
 import type { MedicationReminder } from '../../../../types/api'
 

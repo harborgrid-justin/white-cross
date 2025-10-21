@@ -53,6 +53,21 @@ import Dashboard from '../pages/dashboard/Dashboard';
 import HealthRecords from '../pages/health/HealthRecords';
 import AccessDenied from '../pages/auth/AccessDenied';
 
+// Appointments
+import { AppointmentSchedule } from '../pages/appointments';
+
+// Inventory
+import { InventoryItems, InventoryAlerts, InventoryTransactions, InventoryVendors } from '../pages/inventory';
+
+// Reports
+import { ReportsGenerate, ScheduledReports } from '../pages/reports';
+
+// Admin
+import { Users, Roles, Permissions } from '../pages/admin';
+
+// Budget
+import { BudgetOverview, BudgetPlanning, BudgetTracking, BudgetReports } from '../pages/budget';
+
 // ============================================================================
 // ERROR BOUNDARY
 // ============================================================================
@@ -239,6 +254,212 @@ export const AppRoutes: React.FC = () => {
                   requiredPermission="health_records.read"
                 >
                   <HealthRecords />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+
+      {/* ----- APPOINTMENTS ----- */}
+      <Route
+        path={PROTECTED_ROUTES.APPOINTMENTS_SCHEDULE}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <AppointmentSchedule />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+
+      {/* ----- INVENTORY ----- */}
+      <Route
+        path={PROTECTED_ROUTES.INVENTORY_ITEMS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <InventoryItems />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.INVENTORY_ALERTS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <InventoryAlerts />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.INVENTORY_TRANSACTIONS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <InventoryTransactions />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.INVENTORY_VENDORS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <InventoryVendors />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+
+      {/* ----- REPORTS ----- */}
+      <Route
+        path={PROTECTED_ROUTES.REPORTS_GENERATE}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <ReportsGenerate />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.REPORTS_SCHEDULED}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+                  <ScheduledReports />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+
+      {/* ----- ADMINISTRATION ----- */}
+      <Route
+        path={PROTECTED_ROUTES.ADMIN_USERS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <Users />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.ADMIN_ROLES}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <Roles />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.ADMIN_PERMISSIONS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <Permissions />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+
+      {/* ----- BUDGET ----- */}
+      <Route
+        path={PROTECTED_ROUTES.BUDGET_OVERVIEW}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                  <BudgetOverview />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.BUDGET_PLANNING}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                  <BudgetPlanning />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.BUDGET_TRACKING}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                  <BudgetTracking />
+                </ProtectedRoute>
+              </PageTransition>
+            </Layout>
+          </AuthGuard>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.BUDGET_REPORTS}
+        element={
+          <AuthGuard>
+            <Layout>
+              <PageTransition>
+                <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                  <BudgetReports />
                 </ProtectedRoute>
               </PageTransition>
             </Layout>

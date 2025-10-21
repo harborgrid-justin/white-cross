@@ -16,7 +16,7 @@
 // Re-export common types for backward compatibility
 export * from './common'
 
-// Re-export API types for convenient access
+// Re-export API types for convenient access  
 export * from './api'
 
 // Re-export compliance types
@@ -63,6 +63,61 @@ export * from './state'
 
 // Re-export navigation types
 export * from './navigation'
+
+// Re-export cache types
+export * from './cache'
+
+// Re-export health records types
+export * from './healthRecords'
+
+// Re-export documents types
+export * from './documents'
+
+// Re-export student types
+export * from './student.types'
+
+// Re-export medication-specific types (avoiding duplicates with api.ts)
+export type {
+  MedicationTab,
+  DosageForm,
+  AdministrationRoute,
+  SeverityLevel,
+  AdverseReactionSeverity,
+  MedicationLogStatus,
+  MedicationLog,
+  MedicationAdministrationData,
+  AdverseReactionData,
+  PrescriptionData,
+  InventoryFormData,
+  FormErrors,
+  MedicationFormErrors,
+  StudentMedicationFormErrors,
+  AdverseReactionFormErrors,
+  MedicationsResponse,
+  StudentMedicationsResponse,
+  InventoryResponse,
+  RemindersResponse,
+  AdverseReactionsResponse,
+  MedicationScheduleResponse,
+  MedicationAlertsResponse,
+  MedicationFormOptions,
+  MedicationTabConfig,
+  MedicationStats,
+  MedicationSearchFilters,
+  InventoryFilters,
+  MedicationEventHandlers,
+  InventoryEventHandlers,
+  ReminderEventHandlers,
+  AdverseReactionEventHandlers,
+  TabContentProps,
+  ModalProps,
+  MedicationModalProps,
+  AdverseReactionModalProps,
+  FiveRightsValidation,
+  UseMedicationsDataReturn,
+  UseFormValidationReturn,
+  UseToastReturn
+} from './medications'
 
 // Legacy ApiResponse interface for backward compatibility
 export interface ApiResponse<T> {

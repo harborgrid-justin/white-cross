@@ -11,7 +11,7 @@
  */
 
 import React from 'react'
-import type { ChronicCondition, ConditionFormErrors } from '@/types/healthRecords'
+import type { ChronicCondition, ConditionFormErrors } from '../../../../../types/healthRecords'
 import { SEVERITY_LEVELS, CONDITION_STATUS_OPTIONS } from '@/constants/healthRecords'
 
 interface ConditionModalProps {
@@ -71,8 +71,8 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
               defaultValue={condition?.diagnosisDate || ''}
               data-testid="diagnosed-date-input"
             />
-            {errors.diagnosisDate && (
-              <p className="text-red-600 text-sm mt-1" data-testid="diagnosed-date-error">{errors.diagnosisDate}</p>
+            {errors.diagnosedDate && (
+              <p className="text-red-600 text-sm mt-1" data-testid="diagnosed-date-error">{errors.diagnosedDate}</p>
             )}
           </div>
           

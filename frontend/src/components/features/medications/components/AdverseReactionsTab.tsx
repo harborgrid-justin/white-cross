@@ -11,8 +11,8 @@
  */
 
 import { AlertTriangle } from 'lucide-react'
-import { LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/useMedicationsData'
+import { LoadingSpinner, EmptyState } from '../../../ui/feedback'
+import { useMedicationsData } from '../../../../hooks/domains/medications'
 import { getSeverityColor, formatDate } from '../../../../utils/medications'
 import type { AdverseReaction } from '../../../../types/api'
 
@@ -179,4 +179,4 @@ export const AdverseReactionsTab: React.FC<AdverseReactionsTabProps> = ({
   )
 }
 
-
+export default AdverseReactionsTab

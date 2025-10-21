@@ -65,4 +65,4 @@ export {
   mustBeIdempotent,
   getRetryStrategy,
   healthcareComplianceRules
-} from './healthcare-config';
+} from './healthcareConfig';

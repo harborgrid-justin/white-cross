@@ -4,12 +4,12 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 import { Provider } from 'react-redux';
-import { store } from './stores/reduxStore';
-import { AuthProvider } from './contexts/AuthContext';
+import { store } from './stores';
+import { AuthProvider } from './hooks/utilities/AuthContext';
 import AppRoutes from './routes';
-import GlobalErrorBoundary from './components/errors/GlobalErrorBoundary';
-import BackendConnectionError from './components/BackendConnectionError';
-import LoadingSpinner from './components/LoadingSpinner';
+import { GlobalErrorBoundary } from './components/shared/errors';
+import { BackendConnectionError } from './components/shared/errors';
+import { LoadingSpinner } from './components/ui/feedback';
 import { initializeApp, BootstrapResult } from './bootstrap';
 import { queryClient, setupQueryPersistence } from './config/queryClient';
 

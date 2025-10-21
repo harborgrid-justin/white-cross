@@ -6,31 +6,19 @@
  */
 
 import React, { useEffect } from 'react';
-import {
-  // Core hooks
-  useAppSelector,
-
-  // Auth
+import { 
+  useAppSelector, 
+  useAppDispatch,
   useCurrentUser,
-  useIsAuthenticated,
-
-  // Students
-  useActiveStudents,
-  useStudentsByGrade,
-
-  // Medications
-  useMedicationsDueToday,
-
-  // Incidents
-  useIncidentReports,
-
-  // Communication
-  useUnreadMessages,
-
-  // Inventory
-  useLowStockItems,
-  useExpiredItems,
-} from '@/stores';
+  useIsAuthenticated
+} from '../../../hooks/shared/reduxHooks';
+import { 
+  useStudents,
+  useStudentManagement 
+} from '../../../hooks/domains/students';
+import { 
+  useMedicationsData 
+} from '../../../hooks/domains/medications';
 
 /**
  * Dashboard showing data from multiple Redux slices
@@ -40,22 +28,17 @@ export default function ReduxIntegrationDemo() {
   const user = useCurrentUser();
   const isAuthenticated = useIsAuthenticated();
 
-  // Student data
-  const activeStudents = useActiveStudents();
-  const grade5Students = useStudentsByGrade('5');
+  // Student data using available hooks
+  const studentsQuery = useStudents();
+  const studentManagement = useStudentManagement();
 
-  // Medication data
-  const medicationsDue = useMedicationsDueToday();
+  // Medication data using available hooks
+  const medicationsData = useMedicationsData();
 
-  // Incident data
-  const incidents = useIncidentReports();
-
-  // Communication data
-  const unreadMessages = useUnreadMessages();
-
-  // Inventory data
-  const lowStockItems = useLowStockItems();
-  const expiredItems = useExpiredItems();
+  // Mock data for demo purposes (since some hooks aren't implemented yet)
+  const mockIncidents = { data: [], loading: false };
+  const mockMessages = { unreadCount: 0 };
+  const mockInventory = { lowStock: [], expired: [] };
 
   // Loading states from different slices
   const studentsLoading = useAppSelector(state => state.students.loading.list.isLoading);
@@ -114,15 +97,15 @@ export default function ReduxIntegrationDemo() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-green-50 p-4 rounded border border-green-200">
             <div className="text-2xl font-bold text-green-700">
-              {studentsLoading ? '...' : activeStudents.length}
+              {studentsLoading ? '...' : studentsQuery?.students?.length || 0}
             </div>
             <div className="text-sm text-green-600">Active Students</div>
           </div>
           <div className="bg-blue-50 p-4 rounded border border-blue-200">
             <div className="text-2xl font-bold text-blue-700">
-              {studentsLoading ? '...' : grade5Students.length}
+              {studentsLoading ? '...' : 0}
             </div>
-            <div className="text-sm text-blue-600">5th Grade Students</div>
+            <div className="text-sm text-blue-600">5th Grade Students (Mock)</div>
           </div>
         </div>
       </section>
@@ -134,12 +117,12 @@ export default function ReduxIntegrationDemo() {
         </h2>
         <div className="bg-orange-50 p-4 rounded border border-orange-200">
           <div className="text-2xl font-bold text-orange-700">
-            {medicationsLoading ? '...' : medicationsDue.length}
+            {medicationsLoading ? '...' : medicationsData?.medications?.length || 0}
           </div>
           <div className="text-sm text-orange-600">
             Medications Due Today
           </div>
-          {!medicationsLoading && medicationsDue.length > 0 && (
+          {!medicationsLoading && (medicationsData?.medications?.length || 0) > 0 && (
             <div className="mt-2 text-xs text-orange-500">
               ⚠️ Requires immediate attention
             </div>
@@ -154,9 +137,9 @@ export default function ReduxIntegrationDemo() {
         </h2>
         <div className="bg-red-50 p-4 rounded border border-red-200">
           <div className="text-2xl font-bold text-red-700">
-            {incidents.length}
+            {mockIncidents.data.length}
           </div>
-          <div className="text-sm text-red-600">Total Incident Reports</div>
+          <div className="text-sm text-red-600">Total Incident Reports (Mock)</div>
         </div>
       </section>
 
@@ -167,9 +150,9 @@ export default function ReduxIntegrationDemo() {
         </h2>
         <div className="bg-purple-50 p-4 rounded border border-purple-200">
           <div className="text-2xl font-bold text-purple-700">
-            {unreadMessages.length}
+            {mockMessages.unreadCount}
           </div>
-          <div className="text-sm text-purple-600">Unread Messages</div>
+          <div className="text-sm text-purple-600">Unread Messages (Mock)</div>
         </div>
       </section>
 
@@ -181,15 +164,15 @@ export default function ReduxIntegrationDemo() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
             <div className="text-2xl font-bold text-yellow-700">
-              {inventoryLoading ? '...' : lowStockItems.length}
+              {inventoryLoading ? '...' : mockInventory.lowStock.length}
             </div>
-            <div className="text-sm text-yellow-600">Low Stock Items</div>
+            <div className="text-sm text-yellow-600">Low Stock Items (Mock)</div>
           </div>
           <div className="bg-red-50 p-4 rounded border border-red-200">
             <div className="text-2xl font-bold text-red-700">
-              {inventoryLoading ? '...' : expiredItems.length}
+              {inventoryLoading ? '...' : mockInventory.expired.length}
             </div>
-            <div className="text-sm text-red-600">Expired Items</div>
+            <div className="text-sm text-red-600">Expired Items (Mock)</div>
           </div>
         </div>
       </section>

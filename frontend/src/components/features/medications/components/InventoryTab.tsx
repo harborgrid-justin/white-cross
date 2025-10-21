@@ -12,7 +12,7 @@
 
 import { Package } from 'lucide-react'
 import { AlertBanner, LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/useMedicationsData'
+import { useMedicationsData } from '../../../../hooks/domains/medications'
 import { getExpirationStatus, getStockStatus, formatDate } from '../../../../utils/medications'
 import type { MedicationInventory } from '../../../../types/api'
 
@@ -192,4 +192,5 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   )
 }
 
+export default InventoryTab
 

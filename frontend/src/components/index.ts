@@ -33,6 +33,9 @@ export * from './providers'
 export * from './pages'
 
 // Legacy exports for backward compatibility (TODO: Remove after migration)
-export { Layout } from './layout'
-export { LoadingSpinner } from './ui/feedback'
+export { Layout, AppLayout } from './layout'
+export { LoadingSpinner, EmptyState, AlertBanner } from './ui/feedback'
+export { BackButton } from './ui/buttons'
 export { default as ErrorBoundary } from './providers/ErrorBoundary'
+export { AccessDenied, SessionExpiredModal } from './shared/security'
+export { BackendConnectionError, GlobalErrorBoundary } from './shared/errors'

@@ -58,60 +58,27 @@ export type AdverseReactionSeverity =
   | 'SEVERE'
   | 'LIFE_THREATENING'
 
-export type ReminderStatus =
-  | 'PENDING'
-  | 'COMPLETED'
-  | 'MISSED'
-
 export type MedicationLogStatus =
   | 'administered'
   | 'missed'
   | 'refused'
   | 'held'
 
-// Medication Interfaces
-export interface Medication {
-  id: string
-  name: string
-  genericName?: string
-  dosageForm: string
-  strength: string
-  manufacturer?: string
-  ndc?: string
-  isControlled: boolean
-  inventory?: InventoryItem[]
-  studentMedicationCount?: number
-  _count?: {
-    studentMedications: number
-  }
-  createdAt: string
-  updatedAt: string
-}
+// Import types from api.ts to avoid duplication
+import type {
+  Medication,
+  StudentMedication,
+  MedicationReminder,
+  AdverseReaction,
+  MedicationAlert as ApiMedicationAlert,
+  MedicationFormData as ApiMedicationFormData,
+  StudentMedicationFormData as ApiStudentMedicationFormData,
+  AdverseReactionFormData as ApiAdverseReactionFormData,
+  InventoryItem,
+  InventoryTransaction
+} from './api'
 
-export interface StudentMedication {
-  id: string
-  studentId: string
-  medicationId: string
-  dosage: string
-  frequency: string
-  route: string
-  instructions?: string
-  startDate: string
-  endDate?: string
-  prescribedBy: string
-  isActive: boolean
-  medication?: Medication
-  student?: {
-    id: string
-    firstName: string
-    lastName: string
-    studentNumber: string
-  }
-  logs?: MedicationLog[]
-  createdAt: string
-  updatedAt: string
-}
-
+// Medication-specific interface that extends base
 export interface MedicationLog {
   id: string
   studentMedicationId: string
@@ -132,96 +99,17 @@ export interface MedicationLog {
   updatedAt: string
 }
 
-export interface InventoryItem {
-  id: string
-  medicationId: string
-  medication?: Medication
-  batchNumber: string
-  quantity: number
-  reorderLevel: number
-  expirationDate: string
-  costPerUnit?: number
-  supplier?: string
-  alerts?: {
-    expired: boolean
-    nearExpiry: boolean
-    lowStock: boolean
-  }
-  createdAt: string
-  updatedAt: string
+// Form Data Interfaces (medication-specific extensions)
+export interface MedicationFormData extends ApiMedicationFormData {
+  // Additional medication-specific form fields can be added here
 }
 
-export interface MedicationReminder {
-  id: string
-  studentMedicationId: string
-  studentName: string
-  medicationName: string
-  dosage: string
-  scheduledTime: string
-  status: ReminderStatus
-  notes?: string
-  createdAt?: string
-  updatedAt?: string
+export interface StudentMedicationFormData extends ApiStudentMedicationFormData {
+  // Additional student medication-specific form fields can be added here
 }
 
-export interface AdverseReaction {
-  id: string
-  studentMedicationId?: string
-  studentId: string
-  medicationId: string
-  type: string
-  severity: SeverityLevel | AdverseReactionSeverity
-  description: string
-  reaction?: string
-  actionsTaken: string
-  occurredAt: string
-  reportedAt?: string
-  reportedById: string
-  parentNotified: boolean
-  followUpRequired: boolean
-  followUpNotes?: string
-  student?: {
-    id: string
-    firstName: string
-    lastName: string
-    studentNumber?: string
-  }
-  medication?: {
-    id: string
-    name: string
-    genericName?: string
-  }
-  reportedBy?: {
-    id: string
-    firstName: string
-    lastName: string
-    email?: string
-  }
-  createdAt: string
-  updatedAt: string
-}
-
-// Form Data Interfaces
-export interface MedicationFormData {
-  name: string
-  genericName?: string
-  dosageForm: string
-  strength: string
-  manufacturer?: string
-  ndc?: string
-  isControlled: boolean
-}
-
-export interface StudentMedicationFormData {
-  studentId: string
-  medicationId: string
-  dosage: string
-  frequency: string
-  route: string
-  instructions?: string
-  startDate: string
-  endDate?: string
-  prescribedBy: string
+export interface AdverseReactionFormData extends ApiAdverseReactionFormData {
+  // Additional adverse reaction-specific form fields can be added here
 }
 
 export interface MedicationAdministrationData {
@@ -256,15 +144,7 @@ export interface PrescriptionData {
   prescribedBy: string
 }
 
-export interface AdverseReactionFormData {
-  studentMedicationId: string
-  severity: AdverseReactionSeverity
-  description: string
-  reaction: string
-  actionsTaken: string
-  occurredAt: string
-  notes?: string
-}
+// Remove duplicate - this is already defined above as an extension of ApiAdverseReactionFormData
 
 export interface InventoryFormData {
   medicationId: string

@@ -21,7 +21,7 @@
 
 import React from 'react';
 import { ArrowLeft, ChevronLeft } from 'lucide-react';
-import { useNavigationState } from '../../../hooks/useRouteState';
+import { useNavigationState } from '../../../hooks/utilities/useRouteState';
 
 // ============================================================================
 // COMPONENT PROPS

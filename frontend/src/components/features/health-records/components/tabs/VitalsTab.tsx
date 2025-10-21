@@ -26,8 +26,8 @@
 
 import React, { useState, useMemo } from 'react'
 import { Plus, Activity, Heart, Thermometer, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
-import { useRecentVitals, useRecordVitals } from '@/hooks/useHealthRecords'
-import type { User } from '@/types'
+import { useRecentVitals, useRecordVitals } from '../../../../../hooks/domains/health'
+import type { User } from '../../../../../types'
 
 interface VitalsTabProps {
   studentId: string

@@ -5,3 +5,4 @@
  */
 
 export { default as BackendConnectionError } from './BackendConnectionError'
+export { GlobalErrorBoundary, useErrorHandler } from './GlobalErrorBoundary'

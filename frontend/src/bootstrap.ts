@@ -18,14 +18,13 @@
  */
 
 import { secureTokenManager } from './services/security/SecureTokenManager';
-import { csrfProtection } from './services/security/CsrfProtection';
-import { auditService } from './services/audit/AuditService';
-import { getCacheManager } from './services/cache/CacheManager';
+import { csrfProtection, setupCsrfProtection } from './services/security/CsrfProtection';
+import { auditService } from './services/audit';
+import { AuditAction, AuditResourceType, AuditStatus } from './services/audit/types';
+import { getCacheManager, getPersistenceManager } from './services/cache';
 import { serviceRegistry } from './services/core/ServiceRegistry';
 import { getGlobalHealthMonitor } from './services/resilience/HealthMonitor';
-import { setupCsrfProtection } from './services/security/CsrfProtection';
-import { apiInstance } from './services/config/apiConfig';
-import { initializePersistence } from './services/cache/persistence';
+import { apiInstance } from './services';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -131,9 +130,9 @@ async function initializeAudit(config: BootstrapConfig): Promise<{ success: bool
 
     // Log bootstrap event
     await auditService.log({
-      action: 'SYSTEM_STARTUP',
-      resourceType: 'APPLICATION',
-      status: 'SUCCESS',
+      action: AuditAction.CREATE,
+      resourceType: AuditResourceType.DOCUMENT,
+      status: AuditStatus.SUCCESS,
       context: {
         timestamp: new Date().toISOString(),
         environment: import.meta.env.MODE,
@@ -211,7 +210,8 @@ async function initializePersistenceLayer(config: BootstrapConfig): Promise<{ su
     }
 
     // Initialize IndexedDB persistence
-    await initializePersistence();
+    // Persistence manager initializes automatically when first accessed
+    getPersistenceManager();
 
     if (config.debug) {
       console.log('[Bootstrap] Persistence layer initialized');
@@ -424,9 +424,9 @@ export async function initializeApp(config: BootstrapConfig = {}): Promise<Boots
   // Log to audit service
   if (serviceStatus.audit) {
     await auditService.log({
-      action: 'SYSTEM_READY',
-      resourceType: 'APPLICATION',
-      status: success ? 'SUCCESS' : 'FAILURE',
+      action: AuditAction.CREATE,
+      resourceType: AuditResourceType.DOCUMENT,
+      status: success ? AuditStatus.SUCCESS : AuditStatus.FAILURE,
       context: {
         duration,
         services: serviceStatus,

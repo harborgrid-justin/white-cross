@@ -104,6 +104,20 @@ export const PROTECTED_ROUTES = {
   REPORTS_SCHEDULED: '/reports/scheduled',
   REPORTS_VIEW: '/reports/:id',
 
+  // Budget Management
+  BUDGET: '/budget',
+  BUDGET_OVERVIEW: '/budget/overview',
+  BUDGET_PLANNING: '/budget/planning',
+  BUDGET_TRACKING: '/budget/tracking',
+  BUDGET_REPORTS: '/budget/reports',
+
+  // Compliance
+  COMPLIANCE: '/compliance',
+  COMPLIANCE_OVERVIEW: '/compliance/overview',
+  COMPLIANCE_AUDITS: '/compliance/audits',
+  COMPLIANCE_POLICIES: '/compliance/policies',
+  COMPLIANCE_TRAINING: '/compliance/training',
+
   // Settings (Admin only)
   SETTINGS: '/settings',
   SETTINGS_OVERVIEW: '/settings/overview',
@@ -268,6 +282,8 @@ export const ROUTE_PERMISSIONS = {
   [PROTECTED_ROUTES.DOCUMENTS]: ['ADMIN', 'NURSE'],
   [PROTECTED_ROUTES.INVENTORY]: ['ADMIN', 'NURSE'],
   [PROTECTED_ROUTES.REPORTS]: ['ADMIN', 'NURSE'],
+  [PROTECTED_ROUTES.BUDGET]: ['ADMIN', 'MANAGER'],
+  [PROTECTED_ROUTES.COMPLIANCE]: ['ADMIN', 'MANAGER'],
   [PROTECTED_ROUTES.SETTINGS]: ['ADMIN'],
   [PROTECTED_ROUTES.ADMIN]: ['ADMIN'],
 } as const;
@@ -333,6 +349,12 @@ export const NAVIGATION_ITEMS = [
     path: PROTECTED_ROUTES.REPORTS,
     icon: 'BarChart3',
     roles: ['ADMIN', 'NURSE'],
+  },
+  {
+    name: 'Budget',
+    path: PROTECTED_ROUTES.BUDGET,
+    icon: 'DollarSign',
+    roles: ['ADMIN', 'MANAGER'],
   },
   {
     name: 'Administration',

@@ -21,10 +21,10 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import BackButton, { IconBackButton, BackButtonWithConfirmation } from '../../BackButton';
-import Breadcrumbs, { BreadcrumbItemComponent } from '../../Breadcrumbs';
-import { useNavigationState } from '../../../hooks/useRouteState';
-import { useAuthContext } from '../../../contexts/AuthContext';
+import BackButton, { IconBackButton, BackButtonWithConfirmation } from '../../ui/buttons/BackButton';
+import Breadcrumbs, { BreadcrumbItemComponent } from '../../ui/navigation/Breadcrumbs';
+import { useNavigationState } from '../../../hooks/utilities/useRouteState';
+import { useAuthContext } from '../../../hooks/utilities/AuthContext';
 import {
   canAccessNavigationItem,
   filterNavigationItems,

@@ -1,7 +1,8 @@
 /**
  * Display Components
  * 
- * Components for displaying data and content.
+ * Components for displaying data and visual elements.
  */
 
-export { StatsCard } from './StatsCard'
+export { Badge, type BadgeProps } from './Badge';
+export { Avatar, AvatarGroup, type AvatarProps } from './Avatar';

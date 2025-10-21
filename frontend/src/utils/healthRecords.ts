@@ -10,8 +10,8 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import type { ConditionStatus, Vaccination } from '@/types/healthRecords'
-import type { AllergySeverity } from '@/services/modules/healthRecordsApi'
+import type { ConditionStatus, Vaccination, ConditionSeverity } from '../types/healthRecords'
+import type { AllergySeverity } from '../services/modules/healthRecordsApi'
 
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
@@ -34,6 +34,21 @@ export const formatShortDate = (dateString: string): string => {
 export const getSeverityColor = (severity: AllergySeverity): string => {
   switch (severity) {
     case 'LIFE_THREATENING':
+      return 'text-red-600 bg-red-100'
+    case 'SEVERE':
+      return 'text-orange-600 bg-orange-100'
+    case 'MODERATE':
+      return 'text-yellow-600 bg-yellow-100'
+    case 'MILD':
+      return 'text-green-600 bg-green-100'
+    default:
+      return 'text-gray-600 bg-gray-100'
+  }
+}
+
+export const getConditionSeverityColor = (severity: ConditionSeverity): string => {
+  switch (severity) {
+    case 'CRITICAL':
       return 'text-red-600 bg-red-100'
     case 'SEVERE':
       return 'text-orange-600 bg-orange-100'

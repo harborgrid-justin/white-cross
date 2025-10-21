@@ -64,7 +64,7 @@ export {
   getRefetchStrategy,
   canPersistEntity,
   getPersistedTTL
-} from './cache-config';
+} from './cacheConfig';
 
 // Type Exports
 export type {

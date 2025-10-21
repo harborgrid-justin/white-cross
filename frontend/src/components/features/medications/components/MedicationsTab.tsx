@@ -12,7 +12,7 @@
 
 import { Pill } from 'lucide-react'
 import { SearchInput, LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/useMedicationsData'
+import { useMedicationsData } from '../../../../hooks/domains/medications'
 import { formatMedicationForDisplay } from '../../../../utils/medications'
 import type { LegacyMedicationWithCount } from '../../../../types'
 
@@ -222,4 +222,4 @@ export const MedicationsTab: React.FC<MedicationsTabProps> = ({
   )
 }
 
-
+export default MedicationsTab

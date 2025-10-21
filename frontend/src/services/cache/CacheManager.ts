@@ -20,7 +20,7 @@ import type {
   CacheEventListener,
   PerformanceMetrics
 } from './types';
-import { CACHE_CONFIG, PERFORMANCE_CONFIG } from './cache-config';
+import { CACHE_CONFIG, PERFORMANCE_CONFIG } from './cacheConfig';
 
 /**
  * Cache Manager Implementation

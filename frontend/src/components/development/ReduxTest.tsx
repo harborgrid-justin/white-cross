@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { useCurrentUser, useIsAuthenticated, useAuthLoading, useAuthError, useAuthActions } from '../../stores';
+import { useCurrentUser, useIsAuthenticated, useAuthLoading, useAuthError, useAuthActions } from '../../hooks/shared/reduxHooks';
 
 const ReduxTest: React.FC = () => {
   const user = useCurrentUser();
