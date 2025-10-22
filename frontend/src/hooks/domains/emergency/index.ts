@@ -1,9 +1,27 @@
 /**
- * Emergency Domain - Central Export Hub
- * 
- * Enterprise hook architecture for emergency contacts and crisis management
- * with rapid access patterns and compliance requirements.
+ * Emergency Management Domain Hooks
+ * Centralized exports for all emergency-related React Query hooks
  */
 
-// Emergency Contact Hooks
-export * from './useEmergencyContacts';
+// Configuration and types
+export * from './config';
+
+// Query hooks
+export * from './queries/useEmergencyQueries';
+
+// Mutation hooks  
+export * from './mutations/useEmergencyMutations';
+
+// Composite hooks
+export * from './composites/useEmergencyComposites';
+
+// Re-export commonly used types for convenience
+export type {
+  EmergencyPlan,
+  EmergencyIncident,
+  EmergencyContact,
+  EmergencyProcedure,
+  EmergencyResource,
+  EmergencyTraining,
+  EscalationLevel
+} from './config';
