@@ -107,12 +107,78 @@ const mockDocumentMutationAPI = {
   // Document CRUD
   createDocument: async (data: CreateDocumentInput): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate file upload
-    return { ...data, id: 'new-doc-id' } as Document;
+    return {
+      id: 'new-doc-id',
+      title: data.title,
+      description: data.description,
+      fileName: data.file.name,
+      fileSize: data.file.size,
+      mimeType: data.file.type,
+      fileUrl: `https://example.com/files/${data.file.name}`,
+      thumbnailUrl: `https://example.com/thumbnails/${data.file.name}.jpg`,
+      category: {
+        id: data.categoryId,
+        name: 'Sample Category',
+        path: '/sample-category',
+        isActive: true
+      },
+      tags: data.tags || [],
+      status: 'DRAFT' as const,
+      visibility: data.visibility || 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: {
+        customFields: data.metadata || {}
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   updateDocument: async (data: UpdateDocumentInput): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 500));
-    return data as Document;
+    return {
+      id: data.id,
+      title: data.title || 'Updated Document',
+      description: data.description,
+      fileName: 'document.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/document.pdf',
+      category: {
+        id: data.categoryId || 'default-category',
+        name: 'Updated Category',
+        path: '/updated-category',
+        isActive: true
+      },
+      tags: data.tags || [],
+      status: 'DRAFT' as const,
+      visibility: data.visibility || 'PRIVATE' as const,
+      version: 2,
+      isLatestVersion: true,
+      metadata: {
+        customFields: data.metadata || {}
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      updatedBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   deleteDocument: async (id: string): Promise<void> => {
@@ -121,12 +187,76 @@ const mockDocumentMutationAPI = {
 
   duplicateDocument: async (id: string): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 1000));
-    return { id: 'duplicated-doc-id' } as Document;
+    return {
+      id: 'duplicated-doc-id',
+      title: 'Copy of Document',
+      description: 'Duplicated document',
+      fileName: 'document-copy.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/document-copy.pdf',
+      category: {
+        id: 'default-category',
+        name: 'Default Category',
+        path: '/default-category',
+        isActive: true
+      },
+      tags: [],
+      status: 'DRAFT' as const,
+      visibility: 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: {
+        customFields: {}
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   uploadNewVersion: async (docId: string, file: File, changes: string): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 2000));
-    return { id: docId } as Document;
+    return {
+      id: docId,
+      title: 'Updated Document',
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      fileUrl: `https://example.com/files/${file.name}`,
+      category: {
+        id: 'default-category',
+        name: 'Default Category',
+        path: '/default-category',
+        isActive: true
+      },
+      tags: [],
+      status: 'DRAFT' as const,
+      visibility: 'PRIVATE' as const,
+      version: 2,
+      isLatestVersion: true,
+      metadata: {
+        customFields: {}
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      updatedBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   // Document Actions
@@ -140,23 +270,98 @@ const mockDocumentMutationAPI = {
 
   moveDocument: async (docId: string, categoryId: string): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return { id: docId, categoryId } as Document;
+    return {
+      id: docId,
+      title: 'Moved Document',
+      fileName: 'document.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/document.pdf',
+      category: {
+        id: categoryId,
+        name: 'New Category',
+        path: '/new-category',
+        isActive: true
+      },
+      tags: [],
+      status: 'DRAFT' as const,
+      visibility: 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: {
+        customFields: {}
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   restoreDocument: async (docId: string): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 500));
-    return { id: docId } as Document;
+    return {
+      id: docId,
+      title: 'Restored Document',
+      fileName: 'document.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/document.pdf',
+      category: {
+        id: 'default-category',
+        name: 'Default Category',
+        path: '/default-category',
+        isActive: true
+      },
+      tags: [],
+      status: 'PUBLISHED' as const,
+      visibility: 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: {
+        customFields: {}
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   // Category CRUD
   createCategory: async (data: CreateCategoryInput): Promise<DocumentCategory> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return { ...data, id: 'new-category-id' } as DocumentCategory;
+    return {
+      id: 'new-category-id',
+      name: data.name,
+      description: data.description,
+      parentId: data.parentId,
+      color: data.color || '#007bff',
+      icon: data.icon || 'folder',
+      path: data.parentId ? `/parent/${data.name}` : `/${data.name}`,
+      isActive: true
+    };
   },
 
   updateCategory: async (data: UpdateCategoryInput): Promise<DocumentCategory> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return data as DocumentCategory;
+    return {
+      id: data.id,
+      name: data.name || 'Updated Category',
+      description: data.description,
+      color: data.color || '#007bff',
+      icon: data.icon || 'folder',
+      path: `/${data.name || 'updated-category'}`,
+      isActive: data.isActive !== undefined ? data.isActive : true
+    };
   },
 
   deleteCategory: async (id: string): Promise<void> => {
@@ -166,12 +371,45 @@ const mockDocumentMutationAPI = {
   // Template CRUD
   createTemplate: async (data: CreateTemplateInput): Promise<DocumentTemplate> => {
     await new Promise(resolve => setTimeout(resolve, 1500));
-    return { ...data, id: 'new-template-id' } as DocumentTemplate;
+    return {
+      id: 'new-template-id',
+      name: data.name,
+      description: data.description,
+      category: data.category,
+      templateUrl: `https://example.com/templates/${data.name}.template`,
+      thumbnailUrl: `https://example.com/templates/${data.name}.jpg`,
+      fields: data.fields,
+      isPublic: data.isPublic || false,
+      usageCount: 0,
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   updateTemplate: async (data: UpdateTemplateInput): Promise<DocumentTemplate> => {
     await new Promise(resolve => setTimeout(resolve, 500));
-    return data as DocumentTemplate;
+    return {
+      id: data.id,
+      name: data.name || 'Updated Template',
+      description: data.description,
+      category: data.category || 'default',
+      templateUrl: `https://example.com/templates/${data.name || 'template'}.template`,
+      fields: data.fields || [],
+      isPublic: data.isPublic !== undefined ? data.isPublic : false,
+      usageCount: 5,
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   deleteTemplate: async (id: string): Promise<void> => {
@@ -180,18 +418,144 @@ const mockDocumentMutationAPI = {
 
   createFromTemplate: async (templateId: string, data: any): Promise<Document> => {
     await new Promise(resolve => setTimeout(resolve, 1200));
-    return { id: 'new-doc-from-template-id' } as Document;
+    return {
+      id: 'new-doc-from-template-id',
+      title: data.title || 'Document from Template',
+      fileName: 'template-document.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/template-document.pdf',
+      category: {
+        id: 'default-category',
+        name: 'Default Category',
+        path: '/default-category',
+        isActive: true
+      },
+      tags: [],
+      status: 'DRAFT' as const,
+      visibility: 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: {
+        customFields: data
+      },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   // Share CRUD
   createShare: async (data: CreateShareInput): Promise<DocumentShare> => {
     await new Promise(resolve => setTimeout(resolve, 600));
-    return { ...data, id: 'new-share-id' } as DocumentShare;
+    return {
+      id: 'new-share-id',
+      documentId: data.documentId,
+      document: {
+        id: data.documentId,
+        title: 'Shared Document',
+        fileName: 'document.pdf',
+        fileSize: 1024000,
+        mimeType: 'application/pdf',
+        fileUrl: 'https://example.com/files/document.pdf',
+        category: {
+          id: 'default-category',
+          name: 'Default Category',
+          path: '/default-category',
+          isActive: true
+        },
+        tags: [],
+        status: 'PUBLISHED' as const,
+        visibility: 'INTERNAL' as const,
+        version: 1,
+        isLatestVersion: true,
+        metadata: { customFields: {} },
+        permissions: [],
+        createdBy: {
+          id: 'current-user',
+          name: 'Current User',
+          email: 'user@example.com'
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      shareType: data.shareType,
+      shareToken: 'share-token-123',
+      expiresAt: data.expiresAt,
+      password: !!data.password,
+      allowDownload: data.allowDownload !== false,
+      allowComments: data.allowComments !== false,
+      accessCount: 0,
+      maxAccessCount: data.maxAccessCount,
+      recipients: (data.recipients || []).map((r, i) => ({
+        id: `recipient-${i}`,
+        email: r.email,
+        name: r.name,
+        accessCount: 0
+      })),
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date().toISOString()
+    };
   },
 
   updateShare: async (data: UpdateShareInput): Promise<DocumentShare> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return data as DocumentShare;
+    return {
+      id: data.id,
+      documentId: 'doc-id',
+      document: {
+        id: 'doc-id',
+        title: 'Shared Document',
+        fileName: 'document.pdf',
+        fileSize: 1024000,
+        mimeType: 'application/pdf',
+        fileUrl: 'https://example.com/files/document.pdf',
+        category: {
+          id: 'default-category',
+          name: 'Default Category',
+          path: '/default-category',
+          isActive: true
+        },
+        tags: [],
+        status: 'PUBLISHED' as const,
+        visibility: 'INTERNAL' as const,
+        version: 1,
+        isLatestVersion: true,
+        metadata: { customFields: {} },
+        permissions: [],
+        createdBy: {
+          id: 'current-user',
+          name: 'Current User',
+          email: 'user@example.com'
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      shareType: 'LINK' as const,
+      shareToken: 'share-token-123',
+      expiresAt: data.expiresAt,
+      password: false,
+      allowDownload: data.allowDownload !== false,
+      allowComments: data.allowComments !== false,
+      accessCount: 5,
+      maxAccessCount: data.maxAccessCount,
+      recipients: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString()
+    };
   },
 
   deleteShare: async (id: string): Promise<void> => {
@@ -201,12 +565,41 @@ const mockDocumentMutationAPI = {
   // Comment CRUD
   createComment: async (data: CreateCommentInput): Promise<DocumentComment> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return { ...data, id: 'new-comment-id' } as DocumentComment;
+    return {
+      id: 'new-comment-id',
+      documentId: data.documentId,
+      content: data.content,
+      page: data.page,
+      position: data.position,
+      parentId: data.parentId,
+      replies: [],
+      author: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isResolved: false
+    };
   },
 
   updateComment: async (data: UpdateCommentInput): Promise<DocumentComment> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return data as DocumentComment;
+    return {
+      id: data.id,
+      documentId: 'doc-id',
+      content: data.content,
+      replies: [],
+      author: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString(),
+      isResolved: false
+    };
   },
 
   deleteComment: async (id: string): Promise<void> => {
@@ -215,7 +608,20 @@ const mockDocumentMutationAPI = {
 
   resolveComment: async (id: string): Promise<DocumentComment> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return { id, isResolved: true } as DocumentComment;
+    return {
+      id,
+      documentId: 'doc-id',
+      content: 'Resolved comment',
+      replies: [],
+      author: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString(),
+      isResolved: true
+    };
   },
 
   // Bulk Operations
@@ -225,12 +631,66 @@ const mockDocumentMutationAPI = {
 
   bulkMove: async (docIds: string[], categoryId: string): Promise<Document[]> => {
     await new Promise(resolve => setTimeout(resolve, 800));
-    return docIds.map(id => ({ id, categoryId } as Document));
+    return docIds.map(id => ({
+      id,
+      title: 'Moved Document',
+      fileName: 'document.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/document.pdf',
+      category: {
+        id: categoryId,
+        name: 'New Category',
+        path: '/new-category',
+        isActive: true
+      },
+      tags: [],
+      status: 'DRAFT' as const,
+      visibility: 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: { customFields: {} },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
   },
 
   bulkUpdateTags: async (docIds: string[], tags: string[]): Promise<Document[]> => {
     await new Promise(resolve => setTimeout(resolve, 600));
-    return docIds.map(id => ({ id, tags } as Document));
+    return docIds.map(id => ({
+      id,
+      title: 'Tagged Document',
+      fileName: 'document.pdf',
+      fileSize: 1024000,
+      mimeType: 'application/pdf',
+      fileUrl: 'https://example.com/files/document.pdf',
+      category: {
+        id: 'default-category',
+        name: 'Default Category',
+        path: '/default-category',
+        isActive: true
+      },
+      tags,
+      status: 'DRAFT' as const,
+      visibility: 'PRIVATE' as const,
+      version: 1,
+      isLatestVersion: true,
+      metadata: { customFields: {} },
+      permissions: [],
+      createdBy: {
+        id: 'current-user',
+        name: 'Current User',
+        email: 'user@example.com'
+      },
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
   },
 
   // Export
