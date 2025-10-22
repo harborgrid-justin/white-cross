@@ -11,7 +11,11 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/utils/cn';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for merging class names
+const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 export interface SelectOption {
   value: string | number;
@@ -196,8 +200,10 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
                       type="button"
                       className="mr-1 p-1 text-gray-400 hover:text-gray-600"
                       onClick={handleClear}
+                      title="Clear selection"
+                      aria-label="Clear selection"
                     >
-                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>

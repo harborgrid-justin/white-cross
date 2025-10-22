@@ -11,7 +11,11 @@
  */
 
 import React, { useCallback, useEffect, useRef } from 'react';
-import { cn } from '@/utils/cn';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for merging class names
+const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
   label?: string;
@@ -123,7 +127,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               className
             )}
             disabled={disabled}
-            aria-invalid={hasError}
+            aria-invalid={hasError ? 'true' : 'false'}
             aria-describedby={
               error ? `${textareaId}-error` :
               helperText ? `${textareaId}-helper` : undefined

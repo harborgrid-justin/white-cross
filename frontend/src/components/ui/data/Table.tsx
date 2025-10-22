@@ -1,5 +1,9 @@
 import React from 'react';
-import { cn } from '../../../utils/cn';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for merging class names
+const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 interface TableProps extends React.TableHTMLAttributes<HTMLTableElement> {
   variant?: 'default' | 'striped' | 'bordered';
@@ -174,13 +178,27 @@ const TableCaption = React.forwardRef<HTMLTableCaptionElement, TableCaptionProps
 
 // Utility component for empty state
 const TableEmptyState: React.FC<{
-  children: React.ReactNode;
-  colSpan?: number;
-}> = ({ children, colSpan }) => {
+  children?: React.ReactNode;
+  cols?: number; // Backward compatibility
+  colSpan?: number; // Forward compatibility
+  title?: string;
+  description?: string;
+}> = ({ children, cols, colSpan, title, description }) => {
+  // Use cols for backward compatibility, fallback to colSpan
+  const finalColSpan = cols || colSpan || 1;
+  
+  // If no children provided, use title/description
+  const content = children || (
+    <div className="text-center py-12">
+      {title && <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>}
+      {description && <p className="text-gray-500">{description}</p>}
+    </div>
+  );
+
   return (
     <TableRow>
-      <TableCell colSpan={colSpan} className="text-center py-12 text-gray-500">
-        {children}
+      <TableCell colSpan={finalColSpan} className="text-center">
+        {content}
       </TableCell>
     </TableRow>
   );

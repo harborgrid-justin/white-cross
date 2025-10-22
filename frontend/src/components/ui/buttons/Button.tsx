@@ -11,7 +11,11 @@
  */
 
 import React from 'react';
-import { cn } from '@/utils/cn';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for merging class names
+const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'success';
@@ -19,7 +23,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   loading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
+  leftIcon?: React.ReactNode; // Backward compatibility
+  rightIcon?: React.ReactNode; // Backward compatibility  
   fullWidth?: boolean;
+  asChild?: boolean;
 }
 
 const buttonVariants = {
@@ -46,12 +53,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     loading = false,
     icon,
     iconPosition = 'left',
+    leftIcon, // Backward compatibility
+    rightIcon, // Backward compatibility
     fullWidth = false,
     disabled,
     children,
     ...props
   }, ref) => {
     const isDisabled = disabled || loading;
+
+    // Determine which icon to use and position (backward compatibility)
+    const finalIcon = icon || leftIcon || rightIcon;
+    const finalIconPosition = icon ? iconPosition : leftIcon ? 'left' : rightIcon ? 'right' : iconPosition;
 
     return (
       <button
@@ -94,17 +107,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         
-        {!loading && icon && iconPosition === 'left' && (
+        {!loading && finalIcon && finalIconPosition === 'left' && (
           <span className={cn(children && 'mr-2')}>
-            {icon}
+            {finalIcon}
           </span>
         )}
         
         {children}
         
-        {!loading && icon && iconPosition === 'right' && (
+        {!loading && finalIcon && finalIconPosition === 'right' && (
           <span className={cn(children && 'ml-2')}>
-            {icon}
+            {finalIcon}
           </span>
         )}
       </button>

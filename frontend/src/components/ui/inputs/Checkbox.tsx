@@ -1,5 +1,9 @@
 import React from 'react';
-import { cn } from '../../../utils/cn';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for merging class names
+const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
   label?: string;

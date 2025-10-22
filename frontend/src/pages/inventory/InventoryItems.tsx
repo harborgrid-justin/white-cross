@@ -1,106 +1,95 @@
 /**
- * WF-INV-001 | InventoryItems.tsx - Inventory items management interface
- * Purpose: Comprehensive inventory item management with CRUD operations and search
- * Upstream: ../services/modules/health/inventoryApi, ../types/inventory | Dependencies: react, react-hook-form
+ * WF-INV-001 | InventoryItems.tsx - Enhanced inventory items management interface
+ * Purpose: Comprehensive inventory item management with CRUD operations using UI components and Redux
+ * Upstream: ../services, ../components/ui, ./store | Dependencies: react, react-redux, UI components
  * Downstream: Inventory management system | Called by: React router, inventory workflow
  * Related: InventoryAlerts.tsx, InventoryTransactions.tsx, InventoryVendors.tsx
- * Exports: default InventoryItems component | Key Features: Item listing, search, filters, CRUD operations
+ * Exports: default InventoryItems component | Key Features: Redux integration, UI components, real-time data
  * Last Updated: 2025-10-21 | File Type: .tsx
- * Critical Path: Load items → Display list → Search/filter → Manage items
- * LLM Context: Inventory item management interface with comprehensive CRUD and search functionality
+ * Critical Path: Load items → Display with UI components → Redux state management → CRUD operations
+ * LLM Context: Enhanced inventory management with proper component composition and Redux integration
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import { useAuthContext } from '../../contexts/AuthContext';
-import { PROTECTED_ROUTES } from '../../constants/routes';
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  AlertTriangle, 
+  Edit, 
+  Trash2,
+  Package,
+  TrendingDown,
+  MapPin,
+  Calendar,
+  DollarSign
+} from 'lucide-react';
+
+// UI Components
+import { Button } from '../../components/ui/buttons/Button';
+import { Input } from '../../components/ui/inputs/Input';
+import { Select } from '../../components/ui/inputs/Select';
+import { SearchInput } from '../../components/ui/inputs/SearchInput';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableEmptyState,
+  TableLoadingState
+} from '../../components/ui/data/Table';
+
+// Redux
+import {
+  fetchInventoryItems,
+  fetchInventoryItemById,
+  selectInventoryItems,
+  selectItemsLoading,
+  selectItemsError,
+  selectPagination,
+  selectFilters,
+  setFilters,
+  clearItemsError,
+  inventoryApiService,
+  type InventoryFilters,
+  type CreateInventoryItemRequest
+} from './store/inventorySlice';
+
+// Types
+import { AppDispatch, RootState } from '../../store';
 
 // ============================================================================
 // INTERFACES
 // ============================================================================
 
-interface InventoryItem {
-  id: string;
-  name: string;
-  description?: string;
-  category: string;
-  sku: string;
-  barcode?: string;
-  unitOfMeasure: string;
-  currentStock: number;
-  minimumStock: number;
-  maximumStock: number;
-  unitCost: number;
-  totalValue: number;
-  location: string;
-  vendor?: string;
-  expirationDate?: string;
-  batchNumber?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
-  lastUpdated: string;
-  lowStockAlert: boolean;
-}
-
-interface ItemFilters {
-  search?: string;
-  category?: string;
-  status?: string;
-  lowStock?: boolean;
-  location?: string;
-  vendor?: string;
-}
-
-interface ItemFormData {
-  name: string;
-  description?: string;
-  category: string;
-  sku: string;
-  barcode?: string;
-  unitOfMeasure: string;
-  currentStock: number;
-  minimumStock: number;
-  maximumStock: number;
-  unitCost: number;
-  location: string;
-  vendor?: string;
-  expirationDate?: string;
-  batchNumber?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
-}
+interface ItemFormData extends CreateInventoryItemRequest {}
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
 
 const InventoryItems: React.FC = () => {
-  // Navigation and auth
+  // Navigation and Redux
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuthContext();
 
-  // State management
-  const [items, setItems] = useState<InventoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  // Redux state
+  const items = useSelector(selectInventoryItems);
+  const loading = useSelector(selectItemsLoading);
+  const error = useSelector(selectItemsError);
+  const pagination = useSelector(selectPagination);
+  const currentFilters = useSelector(selectFilters);
 
-  // Filters and search
-  const [filters, setFilters] = useState<ItemFilters>({
-    search: searchParams.get('search') || '',
-    category: searchParams.get('category') || '',
-    status: searchParams.get('status') || '',
-    lowStock: searchParams.get('lowStock') === 'true',
-    location: searchParams.get('location') || '',
-    vendor: searchParams.get('vendor') || '',
-  });
-
-  // Modal states
+  // Local state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Form management
@@ -113,138 +102,28 @@ const InventoryItems: React.FC = () => {
   } = useForm<ItemFormData>();
 
   // ============================================================================
-  // MOCK DATA (Replace with actual API calls)
+  // EFFECTS
   // ============================================================================
-
-  const mockItems: InventoryItem[] = [
-    {
-      id: '1',
-      name: 'Acetaminophen 500mg',
-      description: 'Pain reliever and fever reducer tablets',
-      category: 'MEDICATION',
-      sku: 'MED-ACE-500',
-      barcode: '123456789012',
-      unitOfMeasure: 'tablets',
-      currentStock: 150,
-      minimumStock: 50,
-      maximumStock: 500,
-      unitCost: 0.25,
-      totalValue: 37.50,
-      location: 'Pharmacy Cabinet A',
-      vendor: 'MedSupply Inc',
-      expirationDate: '2025-12-31',
-      batchNumber: 'ACE-2024-001',
-      status: 'ACTIVE',
-      lastUpdated: '2025-10-20T10:30:00Z',
-      lowStockAlert: false,
-    },
-    {
-      id: '2',
-      name: 'Bandages - Adhesive',
-      description: 'Self-adhesive bandages for wound care',
-      category: 'SUPPLIES',
-      sku: 'SUP-BAN-ADH',
-      unitOfMeasure: 'pieces',
-      currentStock: 25,
-      minimumStock: 100,
-      maximumStock: 1000,
-      unitCost: 0.15,
-      totalValue: 3.75,
-      location: 'First Aid Station',
-      vendor: 'Healthcare Supply Co',
-      status: 'ACTIVE',
-      lastUpdated: '2025-10-19T14:20:00Z',
-      lowStockAlert: true,
-    },
-    {
-      id: '3',
-      name: 'Digital Thermometer',
-      description: 'Electronic thermometer for temperature measurement',
-      category: 'EQUIPMENT',
-      sku: 'EQP-THM-DIG',
-      unitOfMeasure: 'units',
-      currentStock: 8,
-      minimumStock: 5,
-      maximumStock: 20,
-      unitCost: 15.99,
-      totalValue: 127.92,
-      location: 'Nurse Office - Drawer 1',
-      vendor: 'MedTech Solutions',
-      status: 'ACTIVE',
-      lastUpdated: '2025-10-18T09:15:00Z',
-      lowStockAlert: false,
-    },
-  ];
-
-  // ============================================================================
-  // DATA FETCHING
-  // ============================================================================
-
-  const loadItems = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Mock API call - replace with actual implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      let filteredItems = mockItems;
-
-      // Apply filters
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredItems = filteredItems.filter(item =>
-          item.name.toLowerCase().includes(searchLower) ||
-          item.sku.toLowerCase().includes(searchLower) ||
-          item.description?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      if (filters.category) {
-        filteredItems = filteredItems.filter(item => item.category === filters.category);
-      }
-
-      if (filters.status) {
-        filteredItems = filteredItems.filter(item => item.status === filters.status);
-      }
-
-      if (filters.lowStock) {
-        filteredItems = filteredItems.filter(item => item.lowStockAlert);
-      }
-
-      if (filters.location) {
-        filteredItems = filteredItems.filter(item =>
-          item.location.toLowerCase().includes(filters.location!.toLowerCase())
-        );
-      }
-
-      if (filters.vendor) {
-        filteredItems = filteredItems.filter(item =>
-          item.vendor?.toLowerCase().includes(filters.vendor!.toLowerCase())
-        );
-      }
-
-      setItems(filteredItems);
-      setTotalCount(filteredItems.length);
-    } catch (err) {
-      console.error('Failed to load inventory items:', err);
-      setError('Failed to load inventory items. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    loadItems();
-  }, [filters]);
+    // Load initial data
+    dispatch(fetchInventoryItems(currentFilters));
+  }, [dispatch, currentFilters]);
+
+  useEffect(() => {
+    // Clear error on unmount
+    return () => {
+      dispatch(clearItemsError());
+    };
+  }, [dispatch]);
 
   // ============================================================================
   // EVENT HANDLERS
   // ============================================================================
 
-  const handleFilterChange = (newFilters: Partial<ItemFilters>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
+  const handleFilterChange = (newFilters: Partial<InventoryFilters>) => {
+    const updatedFilters = { ...currentFilters, ...newFilters };
+    dispatch(setFilters(updatedFilters));
 
     // Update URL params
     const params = new URLSearchParams();
@@ -258,32 +137,26 @@ const InventoryItems: React.FC = () => {
 
   const handleCreateItem = async (data: ItemFormData) => {
     try {
-      // Mock API call - replace with actual implementation
-      console.log('Creating item:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await inventoryApiService.createItem(data);
       setShowCreateModal(false);
       reset();
-      await loadItems();
+      dispatch(fetchInventoryItems(currentFilters));
     } catch (err) {
       console.error('Failed to create item:', err);
-      setError('Failed to create item. Please try again.');
     }
   };
 
   const handleEditItem = async (data: ItemFormData) => {
+    if (!selectedItem) return;
+
     try {
-      // Mock API call - replace with actual implementation
-      console.log('Updating item:', selectedItem?.id, data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await inventoryApiService.updateItem(selectedItem.id, data);
       setShowEditModal(false);
       setSelectedItem(null);
       reset();
-      await loadItems();
+      dispatch(fetchInventoryItems(currentFilters));
     } catch (err) {
       console.error('Failed to update item:', err);
-      setError('Failed to update item. Please try again.');
     }
   };
 
@@ -291,36 +164,28 @@ const InventoryItems: React.FC = () => {
     if (!selectedItem) return;
 
     try {
-      // Mock API call - replace with actual implementation
-      console.log('Deleting item:', selectedItem.id);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await inventoryApiService.deleteItem(selectedItem.id);
       setShowDeleteModal(false);
       setSelectedItem(null);
-      await loadItems();
+      dispatch(fetchInventoryItems(currentFilters));
     } catch (err) {
       console.error('Failed to delete item:', err);
-      setError('Failed to delete item. Please try again.');
     }
   };
 
-  const openEditModal = (item: InventoryItem) => {
+  const openEditModal = (item: any) => {
     setSelectedItem(item);
     setValue('name', item.name);
     setValue('description', item.description || '');
     setValue('category', item.category);
-    setValue('sku', item.sku);
-    setValue('barcode', item.barcode || '');
-    setValue('unitOfMeasure', item.unitOfMeasure);
-    setValue('currentStock', item.currentStock);
-    setValue('minimumStock', item.minimumStock);
-    setValue('maximumStock', item.maximumStock);
-    setValue('unitCost', item.unitCost);
+    setValue('unit', item.unit);
+    setValue('minQuantity', item.minQuantity);
+    setValue('maxQuantity', item.maxQuantity);
+    setValue('cost', item.cost);
     setValue('location', item.location);
-    setValue('vendor', item.vendor || '');
+    setValue('supplier', item.supplier || '');
     setValue('expirationDate', item.expirationDate || '');
     setValue('batchNumber', item.batchNumber || '');
-    setValue('status', item.status);
     setShowEditModal(true);
   };
 
@@ -328,13 +193,14 @@ const InventoryItems: React.FC = () => {
   // RENDER HELPERS
   // ============================================================================
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      ACTIVE: 'bg-green-100 text-green-800',
-      INACTIVE: 'bg-yellow-100 text-yellow-800',
-      DISCONTINUED: 'bg-red-100 text-red-800',
-    };
-    return statusConfig[status as keyof typeof statusConfig] || 'bg-gray-100 text-gray-800';
+  const getStatusBadge = (item: any) => {
+    if (item.quantity <= item.minQuantity) {
+      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Low Stock</span>;
+    }
+    if (!item.isActive) {
+      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Inactive</span>;
+    }
+    return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>;
   };
 
   const getCategoryBadge = (category: string) => {
@@ -343,7 +209,13 @@ const InventoryItems: React.FC = () => {
       SUPPLIES: 'bg-purple-100 text-purple-800',
       EQUIPMENT: 'bg-orange-100 text-orange-800',
     };
-    return categoryConfig[category as keyof typeof categoryConfig] || 'bg-gray-100 text-gray-800';
+    const colorClass = categoryConfig[category as keyof typeof categoryConfig] || 'bg-gray-100 text-gray-800';
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+        {category}
+      </span>
+    );
   };
 
   // ============================================================================
@@ -354,237 +226,122 @@ const InventoryItems: React.FC = () => {
     const modalTitle = isEdit ? 'Edit Inventory Item' : 'Create New Inventory Item';
     const submitHandler = isEdit ? handleEditItem : handleCreateItem;
 
+    if (!showCreateModal && !showEditModal) return null;
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">{modalTitle}</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">{modalTitle}</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (isEdit) {
+                  setShowEditModal(false);
+                  setSelectedItem(null);
+                } else {
+                  setShowCreateModal(false);
+                }
+                reset();
+              }}
+            >
+              ×
+            </Button>
+          </div>
           
           <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Item Name *
-                </label>
-                <input
-                  {...register('name', { required: 'Item name is required' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  SKU *
-                </label>
-                <input
-                  {...register('sku', { required: 'SKU is required' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.sku && (
-                  <p className="mt-1 text-sm text-red-600">{errors.sku.message}</p>
-                )}
-              </div>
+              <Input
+                label="Item Name *"
+                {...register('name', { required: 'Item name is required' })}
+                error={errors.name?.message}
+              />
+              <Input
+                label="Category *"
+                {...register('category', { required: 'Category is required' })}
+                error={errors.category?.message}
+              />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                {...register('description')}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <Input
+              label="Description"
+              {...register('description')}
+            />
+
+            <div className="grid grid-cols-3 gap-4">
+              <Input
+                label="Current Stock *"
+                type="number"
+                {...register('quantity', { 
+                  required: 'Current stock is required',
+                  min: { value: 0, message: 'Stock cannot be negative' }
+                })}
+                error={errors.quantity?.message}
+              />
+              <Input
+                label="Minimum Stock *"
+                type="number"
+                {...register('minQuantity', { 
+                  required: 'Minimum stock is required',
+                  min: { value: 0, message: 'Stock cannot be negative' }
+                })}
+                error={errors.minQuantity?.message}
+              />
+              <Input
+                label="Maximum Stock"
+                type="number"
+                {...register('maxQuantity')}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category *
-                </label>
-                <select
-                  {...register('category', { required: 'Category is required' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select category...</option>
-                  <option value="MEDICATION">Medication</option>
-                  <option value="SUPPLIES">Supplies</option>
-                  <option value="EQUIPMENT">Equipment</option>
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Unit of Measure *
-                </label>
-                <input
-                  {...register('unitOfMeasure', { required: 'Unit of measure is required' })}
-                  placeholder="e.g., tablets, pieces, bottles"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.unitOfMeasure && (
-                  <p className="mt-1 text-sm text-red-600">{errors.unitOfMeasure.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Stock *
-                </label>
-                <input
-                  type="number"
-                  {...register('currentStock', { 
-                    required: 'Current stock is required',
-                    min: { value: 0, message: 'Stock cannot be negative' }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.currentStock && (
-                  <p className="mt-1 text-sm text-red-600">{errors.currentStock.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Minimum Stock *
-                </label>
-                <input
-                  type="number"
-                  {...register('minimumStock', { 
-                    required: 'Minimum stock is required',
-                    min: { value: 0, message: 'Stock cannot be negative' }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.minimumStock && (
-                  <p className="mt-1 text-sm text-red-600">{errors.minimumStock.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Maximum Stock *
-                </label>
-                <input
-                  type="number"
-                  {...register('maximumStock', { 
-                    required: 'Maximum stock is required',
-                    min: { value: 1, message: 'Maximum stock must be at least 1' }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.maximumStock && (
-                  <p className="mt-1 text-sm text-red-600">{errors.maximumStock.message}</p>
-                )}
-              </div>
+              <Input
+                label="Unit of Measure *"
+                {...register('unit', { required: 'Unit is required' })}
+                placeholder="e.g., tablets, pieces, bottles"
+                error={errors.unit?.message}
+              />
+              <Input
+                label="Unit Cost *"
+                type="number"
+                step="0.01"
+                {...register('cost', { 
+                  required: 'Unit cost is required',
+                  min: { value: 0, message: 'Cost cannot be negative' }
+                })}
+                error={errors.cost?.message}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Unit Cost *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  {...register('unitCost', { 
-                    required: 'Unit cost is required',
-                    min: { value: 0, message: 'Cost cannot be negative' }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.unitCost && (
-                  <p className="mt-1 text-sm text-red-600">{errors.unitCost.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location *
-                </label>
-                <input
-                  {...register('location', { required: 'Location is required' })}
-                  placeholder="e.g., Pharmacy Cabinet A"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.location && (
-                  <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
-                )}
-              </div>
+              <Input
+                label="Location *"
+                {...register('location', { required: 'Location is required' })}
+                error={errors.location?.message}
+              />
+              <Input
+                label="Supplier"
+                {...register('supplier')}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vendor
-                </label>
-                <input
-                  {...register('vendor')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status *
-                </label>
-                <select
-                  {...register('status', { required: 'Status is required' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                  <option value="DISCONTINUED">Discontinued</option>
-                </select>
-                {errors.status && (
-                  <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Barcode
-                </label>
-                <input
-                  {...register('barcode')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Expiration Date
-                </label>
-                <input
-                  type="date"
-                  {...register('expirationDate')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Batch Number
-              </label>
-              <input
+              <Input
+                label="Expiration Date"
+                type="date"
+                {...register('expirationDate')}
+              />
+              <Input
+                label="Batch Number"
                 {...register('batchNumber')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div className="flex justify-end space-x-3 pt-4">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => {
                   if (isEdit) {
                     setShowEditModal(false);
@@ -594,17 +351,15 @@ const InventoryItems: React.FC = () => {
                   }
                   reset();
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={isSubmitting}
               >
-                {isSubmitting ? 'Saving...' : (isEdit ? 'Update Item' : 'Create Item')}
-              </button>
+                {isEdit ? 'Update Item' : 'Create Item'}
+              </Button>
             </div>
           </form>
         </div>
@@ -622,26 +377,29 @@ const InventoryItems: React.FC = () => {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Inventory Item</h3>
+          <div className="flex items-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Delete Inventory Item</h3>
+          </div>
           <p className="text-gray-600 mb-6">
             Are you sure you want to delete "{selectedItem.name}"? This action cannot be undone.
           </p>
           <div className="flex justify-end space-x-3">
-            <button
+            <Button
+              variant="secondary"
               onClick={() => {
                 setShowDeleteModal(false);
                 setSelectedItem(null);
               }}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               Cancel
-            </button>
-            <button
-              onClick={handleDeleteItem}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              Delete Item
-            </button>
+            </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteItem}
+              >
+                Delete Item
+              </Button>
           </div>
         </div>
       </div>
@@ -649,39 +407,27 @@ const InventoryItems: React.FC = () => {
   };
 
   // ============================================================================
-  // LOADING & ERROR STATES
+  // ERROR STATE
   // ============================================================================
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Loading inventory items...</span>
-      </div>
-    );
-  }
 
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
         <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-          </div>
+          <AlertTriangle className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">Error Loading Items</h3>
             <div className="mt-2 text-sm text-red-700">
               <p>{error}</p>
             </div>
             <div className="mt-4">
-              <button
-                onClick={() => loadItems()}
-                className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => dispatch(fetchInventoryItems(currentFilters))}
               >
                 Try Again
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -696,235 +442,246 @@ const InventoryItems: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventory Items</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Package className="w-8 h-8 text-blue-600" />
+            Inventory Items
+          </h1>
+          <p className="mt-2 text-gray-600">
             Manage medical supplies, medications, and equipment inventory
           </p>
         </div>
         <div className="flex space-x-3">
           <button
-            onClick={() => navigate(PROTECTED_ROUTES.INVENTORY_ALERTS)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            onClick={() => navigate('/inventory/alerts')}
           >
-            <svg className="-ml-1 mr-2 h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+            <AlertTriangle className="w-4 h-4 mr-2" />
             Low Stock Alerts
           </button>
           <button
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            <Plus className="w-4 h-4 mr-2" />
             Add Item
           </button>
         </div>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-blue-100">
+              <Package className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Items</p>
+              <p className="text-2xl font-bold text-gray-900">{pagination.total}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-red-100">
+              <TrendingDown className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Low Stock</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {items.filter(item => item.quantity <= item.minQuantity).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-green-100">
+              <DollarSign className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Value</p>
+              <p className="text-2xl font-bold text-gray-900">
+                ${items.reduce((sum, item) => sum + (item.quantity * item.cost), 0).toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-purple-100">
+              <MapPin className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Locations</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {new Set(items.map(item => item.location)).size}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
+      <div className="bg-white p-4 rounded-lg shadow border">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Search items..."
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange({ search: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
-          </div>
-          <div>
-            <select
-              value={filters.category || ''}
-              onChange={(e) => handleFilterChange({ category: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              <option value="">All Categories</option>
-              <option value="MEDICATION">Medication</option>
-              <option value="SUPPLIES">Supplies</option>
-              <option value="EQUIPMENT">Equipment</option>
-            </select>
-          </div>
-          <div>
-            <select
-              value={filters.status || ''}
-              onChange={(e) => handleFilterChange({ status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              <option value="">All Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="DISCONTINUED">Discontinued</option>
-            </select>
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Location..."
-              value={filters.location || ''}
-              onChange={(e) => handleFilterChange({ location: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Vendor..."
-              value={filters.vendor || ''}
-              onChange={(e) => handleFilterChange({ vendor: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
-          </div>
+          <SearchInput
+            placeholder="Search items..."
+            value={currentFilters.search || ''}
+            onChange={(value) => handleFilterChange({ search: value })}
+          />
+          <Select
+            value={currentFilters.category || ''}
+            onChange={(e) => handleFilterChange({ category: e.target.value })}
+            options={[
+              { value: '', label: 'All Categories' },
+              { value: 'MEDICATION', label: 'Medication' },
+              { value: 'SUPPLIES', label: 'Supplies' },
+              { value: 'EQUIPMENT', label: 'Equipment' }
+            ]}
+          />
+          <Input
+            placeholder="Location..."
+            value={currentFilters.location || ''}
+            onChange={(e) => handleFilterChange({ location: e.target.value })}
+          />
+          <Input
+            placeholder="Supplier..."
+            value={currentFilters.supplier || ''}
+            onChange={(e) => handleFilterChange({ supplier: e.target.value })}
+          />
           <div className="flex items-center">
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.lowStock || false}
+                checked={currentFilters.lowStock || false}
                 onChange={(e) => handleFilterChange({ lowStock: e.target.checked })}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="ml-2 text-sm text-gray-600">Low Stock Only</span>
             </label>
           </div>
-        </div>
-      </div>
-
-      {/* Results Summary */}
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-700">
-          Showing {items.length} of {totalCount} items
-        </p>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">Sort by:</span>
-          <select className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-            <option>Name A-Z</option>
-            <option>Name Z-A</option>
-            <option>Stock Level</option>
-            <option>Last Updated</option>
-          </select>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<Filter className="w-4 h-4" />}
+            onClick={() => dispatch(setFilters({ page: 1, limit: 20 }))}
+          >
+            Clear Filters
+          </Button>
         </div>
       </div>
 
       {/* Items Table */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Item Details
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Stock Level
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Value
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {items.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {item.name}
-                          {item.lowStockAlert && (
-                            <svg className="inline-block ml-1 h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
+      <div className="bg-white shadow rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Item Details</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Stock Level</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableLoadingState cols={7} />
+            ) : items.length === 0 ? (
+              <TableEmptyState 
+                cols={7}
+                title="No inventory items found"
+                description="Try adjusting your search filters or add a new item."
+              />
+            ) : (
+              items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div>
+                      <div className="flex items-center">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.name}
+                            {item.quantity <= item.minQuantity && (
+                              <AlertTriangle className="inline-block ml-1 h-4 w-4 text-yellow-500" />
+                            )}
+                          </div>
+                          {item.description && (
+                            <div className="text-sm text-gray-500 truncate max-w-xs">
+                              {item.description}
+                            </div>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500">{item.sku}</div>
-                        {item.description && (
-                          <div className="text-sm text-gray-500 truncate max-w-xs">{item.description}</div>
-                        )}
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryBadge(item.category)}`}>
-                    {item.category}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className={`text-sm font-medium ${item.lowStockAlert ? 'text-red-600' : 'text-gray-900'}`}>
-                      {item.currentStock} {item.unitOfMeasure}
+                  </TableCell>
+                  <TableCell>
+                    {getCategoryBadge(item.category)}
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className={`text-sm font-medium ${item.quantity <= item.minQuantity ? 'text-red-600' : 'text-gray-900'}`}>
+                        {item.quantity} {item.unit}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Min: {item.minQuantity} {item.maxQuantity && `| Max: ${item.maxQuantity}`}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      Min: {item.minimumStock} | Max: {item.maximumStock}
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        ${(item.quantity * item.cost).toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        ${item.cost.toFixed(2)} per {item.unit}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      ${item.totalValue.toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm text-gray-900">{item.location}</div>
+                    {item.supplier && (
+                      <div className="text-sm text-gray-500">{item.supplier}</div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(item)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        leftIcon={<Edit className="w-4 h-4" />}
+                        onClick={() => openEditModal(item)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        leftIcon={<Trash2 className="w-4 h-4" />}
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </Button>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      ${item.unitCost.toFixed(2)} per {item.unitOfMeasure.slice(0, -1)}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(item.status)}`}>
-                    {item.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => openEditModal(item)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setShowDeleteModal(true);
-                      }}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {items.length === 0 && (
-          <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m6-8v2m0 0v2m0-2h2m-2 0H8" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No inventory items found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {Object.values(filters).some(v => v) 
-                ? 'Try adjusting your search filters.'
-                : 'Get started by adding your first inventory item.'
-              }
-            </p>
-          </div>
-        )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Modals */}

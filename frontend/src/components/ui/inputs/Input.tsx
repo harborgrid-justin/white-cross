@@ -11,7 +11,11 @@
  */
 
 import React from 'react';
-import { cn } from '@/utils/cn';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for merging class names
+const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -101,7 +105,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               className
             )}
             disabled={isDisabled}
-            aria-invalid={hasError}
+            aria-invalid={hasError ? 'true' : 'false'}
             aria-describedby={
               error ? `${inputId}-error` :
               helperText ? `${inputId}-helper` : undefined
