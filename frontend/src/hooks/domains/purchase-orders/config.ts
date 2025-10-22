@@ -3,19 +3,34 @@ import { QueryClient } from '@tanstack/react-query';
 // Query Keys Factory for Purchase Orders Domain
 export const purchaseOrderKeys = {
   all: ['purchase-orders'] as const,
-  list: (filters?: any) => [...purchaseOrderKeys.all, 'list', filters] as const,
-  paginated: (filters?: any) => [...purchaseOrderKeys.all, 'paginated', filters] as const,
-  detail: (id: string) => [...purchaseOrderKeys.all, 'detail', id] as const,
-  analytics: (poId: string, period?: string) => [...purchaseOrderKeys.all, 'analytics', poId, period] as const,
+  
+  // Purchase Orders
+  purchaseOrdersList: (filters?: any) => [...purchaseOrderKeys.all, 'list', filters] as const,
+  purchaseOrderDetails: (id: string) => [...purchaseOrderKeys.all, 'detail', id] as const,
+  purchaseOrdersByStatus: (status: string) => [...purchaseOrderKeys.all, 'by-status', status] as const,
+  purchaseOrdersByDepartment: (departmentId: string) => [...purchaseOrderKeys.all, 'by-department', departmentId] as const,
   
   // Line Items
   lineItems: (poId: string) => [...purchaseOrderKeys.all, 'line-items', poId] as const,
+  lineItemDetails: (id: string) => [...purchaseOrderKeys.all, 'line-item-detail', id] as const,
   
-  // Approvals
-  approvals: (poId?: string) => [...purchaseOrderKeys.all, 'approvals', poId] as const,
+  // Approval Workflows
+  approvalWorkflowsList: (filters?: any) => [...purchaseOrderKeys.all, 'approval-workflows', filters] as const,
+  approvalWorkflowDetails: (id: string) => [...purchaseOrderKeys.all, 'approval-workflow-detail', id] as const,
+  pendingApprovals: (userId: string) => [...purchaseOrderKeys.all, 'pending-approvals', userId] as const,
   
   // Receipts
-  receipts: (poId?: string) => [...purchaseOrderKeys.all, 'receipts', poId] as const,
+  receipts: (poId: string) => [...purchaseOrderKeys.all, 'receipts', poId] as const,
+  receiptDetails: (id: string) => [...purchaseOrderKeys.all, 'receipt-detail', id] as const,
+  
+  // Vendor Quotes
+  vendorQuotes: (poId: string) => [...purchaseOrderKeys.all, 'vendor-quotes', poId] as const,
+  vendorQuoteDetails: (id: string) => [...purchaseOrderKeys.all, 'vendor-quote-detail', id] as const,
+  
+  // Analytics
+  analytics: (filters?: any) => [...purchaseOrderKeys.all, 'analytics', filters] as const,
+  spendingAnalysis: (timeframe: string) => [...purchaseOrderKeys.all, 'spending-analysis', timeframe] as const,
+  vendorPerformance: (vendorId?: string) => [...purchaseOrderKeys.all, 'vendor-performance', vendorId] as const,
   
   // Documents
   documents: (poId: string) => [...purchaseOrderKeys.all, 'documents', poId] as const,
@@ -308,7 +323,7 @@ export interface POAnalytics {
 // Utility Functions
 export const invalidatePOQueries = (queryClient: QueryClient, poId?: string) => {
   if (poId) {
-    queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.detail(poId) });
+    queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.purchaseOrderDetails(poId) });
     queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.lineItems(poId) });
     queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.receipts(poId) });
   }
