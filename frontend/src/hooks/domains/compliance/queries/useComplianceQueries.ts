@@ -9,62 +9,8 @@ import {
   RiskAssessment,
   UserTrainingRecord,
 } from '../config';
-
-// Mock API functions (replace with actual API calls)
-const mockComplianceAPI = {
-  getAudits: async (filters?: any): Promise<ComplianceAudit[]> => {
-    // Mock implementation
-    return [];
-  },
-  getAuditById: async (id: string): Promise<ComplianceAudit> => {
-    // Mock implementation
-    return {} as ComplianceAudit;
-  },
-  getAuditReports: async (auditId: string): Promise<any[]> => {
-    // Mock implementation
-    return [];
-  },
-  getPolicies: async (filters?: any): Promise<CompliancePolicy[]> => {
-    // Mock implementation
-    return [];
-  },
-  getPolicyById: async (id: string): Promise<CompliancePolicy> => {
-    // Mock implementation
-    return {} as CompliancePolicy;
-  },
-  getPolicyVersions: async (policyId: string): Promise<CompliancePolicy[]> => {
-    // Mock implementation
-    return [];
-  },
-  getTraining: async (filters?: any): Promise<ComplianceTraining[]> => {
-    // Mock implementation
-    return [];
-  },
-  getTrainingById: async (id: string): Promise<ComplianceTraining> => {
-    // Mock implementation
-    return {} as ComplianceTraining;
-  },
-  getUserTraining: async (userId: string): Promise<UserTrainingRecord[]> => {
-    // Mock implementation
-    return [];
-  },
-  getIncidents: async (filters?: any): Promise<ComplianceIncident[]> => {
-    // Mock implementation
-    return [];
-  },
-  getIncidentById: async (id: string): Promise<ComplianceIncident> => {
-    // Mock implementation
-    return {} as ComplianceIncident;
-  },
-  getRiskAssessments: async (filters?: any): Promise<RiskAssessment[]> => {
-    // Mock implementation
-    return [];
-  },
-  getRiskAssessmentById: async (id: string): Promise<RiskAssessment> => {
-    // Mock implementation
-    return {} as RiskAssessment;
-  },
-};
+import { complianceApi } from '@/services';
+import { useApiError } from '../../../shared/useApiError';
 
 // Audit Queries
 export const useAudits = (
@@ -73,7 +19,10 @@ export const useAudits = (
 ) => {
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.auditsList(filters),
-    queryFn: () => mockComplianceAPI.getAudits(filters),
+    queryFn: async () => {
+      const response = await complianceApi.getAuditLogs(filters);
+      return response.data.map((log: any) => log as ComplianceAudit);
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.AUDITS_STALE_TIME,
     ...options,
   });
@@ -85,7 +34,10 @@ export const useAuditDetails = (
 ) => {
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.auditDetails(id),
-    queryFn: () => mockComplianceAPI.getAuditById(id),
+    queryFn: async () => {
+      const response = await complianceApi.getAuditLogs({ id });
+      return response.data[0] as ComplianceAudit;
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.AUDITS_STALE_TIME,
     enabled: !!id,
     ...options,
@@ -98,7 +50,10 @@ export const useAuditReports = (
 ) => {
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.auditReports(auditId),
-    queryFn: () => mockComplianceAPI.getAuditReports(auditId),
+    queryFn: async () => {
+      // Note: API doesn't have a specific method for audit reports
+      return [];
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.REPORTS_STALE_TIME,
     enabled: !!auditId,
     ...options,
@@ -114,7 +69,10 @@ export const usePolicies = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.policiesList(filters),
-    queryFn: () => mockComplianceAPI.getPolicies(filters),
+    queryFn: async () => {
+      const response = await complianceApi.getPolicies(filters);
+      return response.data.map((policy: any) => policy as CompliancePolicy);
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.POLICIES_STALE_TIME,
     onError: handleError,
     ...options,
@@ -129,7 +87,10 @@ export const usePolicyDetails = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.policyDetails(id),
-    queryFn: () => mockComplianceAPI.getPolicyById(id),
+    queryFn: async () => {
+      const response = await complianceApi.getPolicies({ id });
+      return response.data[0] as CompliancePolicy;
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.POLICIES_STALE_TIME,
     enabled: !!id,
     onError: handleError,
@@ -145,7 +106,10 @@ export const usePolicyVersions = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.policyVersions(policyId),
-    queryFn: () => mockComplianceAPI.getPolicyVersions(policyId),
+    queryFn: async () => {
+      // Note: API doesn't have a specific method for policy versions
+      return [];
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.POLICIES_STALE_TIME,
     enabled: !!policyId,
     onError: handleError,
