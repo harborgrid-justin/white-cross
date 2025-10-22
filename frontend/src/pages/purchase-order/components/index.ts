@@ -1,3 +1,9 @@
+/**
+ * Purchase Order Management Components
+ * 
+ * Comprehensive component exports for purchase order functionality
+ */
+
 // Purchase Order Management Components
 export { default as PurchaseOrderList } from './PurchaseOrderList';
 export { default as PurchaseOrderCard } from './PurchaseOrderCard';

@@ -1,17 +1,79 @@
 /**
- * Validation Error Middleware
- * 
- * Enterprise-grade validation error handling middleware with healthcare compliance.
- * Handles validation errors from request validation, input sanitization, and data validation.
- * 
- * @module ValidationErrorMiddleware
+ * @fileoverview Validation Error Handling Middleware
+ * @module middleware/error-handling/validation/validation-error.middleware
+ * @description Enterprise-grade validation error handling middleware with comprehensive
+ * HIPAA compliance, security validation, and audit logging capabilities.
+ *
+ * Key Features:
+ * - Comprehensive validation error handling
+ * - Healthcare-specific validation (NPI, ICD-10, MRN)
+ * - PHI (Protected Health Information) detection
+ * - XSS attack detection and prevention
+ * - SQL injection detection and prevention
+ * - Rate limiting for validation errors
+ * - Audit logging for compliance
+ * - Detailed error formatting for development
+ * - Sanitized error responses for production
+ *
+ * @security
+ * - Detects and blocks XSS attempts
+ * - Detects and blocks SQL injection attempts
+ * - Identifies unmasked PHI in requests
+ * - Redacts sensitive fields from logs
+ * - Rate limits validation errors per IP
+ * - Validates healthcare identifiers (NPI, ICD-10)
+ *
+ * Validation Error Types:
+ * - REQUIRED_FIELD: Missing required fields
+ * - INVALID_FORMAT: Incorrect data format
+ * - INVALID_LENGTH: String length violations
+ * - INVALID_TYPE: Type mismatch errors
+ * - INVALID_RANGE: Numeric range violations
+ * - PHI_DETECTED: Unmasked PHI in request
+ * - SQL_INJECTION: SQL injection attempt detected
+ * - XSS_DETECTED: XSS attack attempt detected
+ * - UNSAFE_FILE_TYPE: Disallowed file upload
+ * - FILE_TOO_LARGE: File size exceeds limit
+ * - INVALID_HEALTHCARE_ID: Invalid healthcare identifier
+ * - INVALID_NPI: Invalid National Provider Identifier
+ * - INVALID_ICD_CODE: Invalid ICD-10 diagnosis code
+ *
+ * @requires ../../utils/types/middleware.types
+ *
+ * @example Basic usage
+ * ```typescript
+ * import { createValidationErrorMiddleware } from './validation-error.middleware';
+ *
+ * const validator = createValidationErrorMiddleware({
+ *   enableHealthcareValidation: true,
+ *   enablePhiDetection: true,
+ *   enableSecurityValidation: true
+ * });
+ *
+ * app.use(validator.execute.bind(validator));
+ * ```
+ *
+ * @example Custom configuration
+ * ```typescript
+ * const validator = new ValidationErrorMiddleware({
+ *   enableDetailedErrors: process.env.NODE_ENV === 'development',
+ *   maxErrorsInResponse: 5,
+ *   customErrorMessages: {
+ *     [ValidationErrorType.INVALID_NPI]: 'Please provide a valid 10-digit NPI number'
+ *   }
+ * });
+ * ```
+ *
  * @version 1.0.0
+ * @since 2025-10-21
  */
 
 import { IRequest, IResponse, IMiddleware, MiddlewareContext, HealthcareUser, INextFunction } from '../../utils/types/middleware.types';
 
 /**
- * Validation error types
+ * @enum ValidationErrorType
+ * @description Enumeration of all possible validation error types
+ * @readonly
  */
 export enum ValidationErrorType {
   REQUIRED_FIELD = 'required_field',
@@ -30,7 +92,15 @@ export enum ValidationErrorType {
 }
 
 /**
- * Validation error detail interface
+ * @interface ValidationErrorDetail
+ * @description Detailed information about a specific validation error
+ *
+ * @property {string} field - The field path that failed validation (e.g., 'body.email')
+ * @property {ValidationErrorType} type - The type of validation error
+ * @property {string} message - Human-readable error message
+ * @property {any} [value] - The invalid value (may be redacted for security)
+ * @property {Record<string, any>} [constraints] - Validation constraints that were violated
+ * @property {string} [suggestion] - Suggested fix for the error
  */
 export interface ValidationErrorDetail {
   field: string;
@@ -42,7 +112,20 @@ export interface ValidationErrorDetail {
 }
 
 /**
- * Configuration interface for validation error middleware
+ * @interface IValidationErrorConfig
+ * @description Configuration options for the validation error middleware
+ *
+ * @property {boolean} enableDetailedErrors - Include detailed error info in responses (disable in production)
+ * @property {boolean} enableHealthcareValidation - Enable healthcare-specific validation (NPI, ICD-10, etc.)
+ * @property {boolean} enablePhiDetection - Detect and flag potential PHI in requests
+ * @property {boolean} enableSecurityValidation - Detect XSS and SQL injection attempts
+ * @property {number} maxErrorsInResponse - Maximum number of errors to include in response
+ * @property {boolean} enableAuditLogging - Log validation failures for audit compliance
+ * @property {Partial<Record<ValidationErrorType, string>>} customErrorMessages - Custom error messages by type
+ * @property {string[]} excludeFieldsFromLogs - Fields to redact from audit logs
+ * @property {boolean} enableRateLimit - Enable rate limiting for validation errors
+ * @property {number} maxErrorsPerWindow - Maximum validation errors allowed per IP per window
+ * @property {number} rateLimitWindow - Rate limit window duration in seconds
  */
 export interface IValidationErrorConfig {
   /** Enable detailed error messages in responses */
@@ -148,11 +231,42 @@ class ValidationErrorRateLimiter {
 }
 
 /**
- * Healthcare-specific validators
+ * @class HealthcareValidators
+ * @description Static utility class providing healthcare-specific validation methods
+ * for medical identifiers and codes used in HIPAA-compliant systems
+ *
+ * @example
+ * ```typescript
+ * // Validate NPI
+ * const isValid = HealthcareValidators.validateNPI('1234567893');
+ *
+ * // Validate ICD-10 code
+ * const isValidCode = HealthcareValidators.validateICD10('E11.9');
+ *
+ * // Detect PHI
+ * const hasPHI = HealthcareValidators.detectPHI('SSN: 123-45-6789');
+ * ```
  */
 export class HealthcareValidators {
   /**
-   * Validate NPI (National Provider Identifier) number
+   * @method validateNPI
+   * @static
+   * @description Validates National Provider Identifier (NPI) number format and checksum
+   * using the Luhn algorithm for integrity verification
+   *
+   * @param {string} npi - The NPI number to validate (must be exactly 10 digits)
+   * @returns {boolean} True if NPI is valid, false otherwise
+   *
+   * @security Uses Luhn algorithm to verify NPI checksum
+   *
+   * @example
+   * ```typescript
+   * HealthcareValidators.validateNPI('1234567893'); // true if valid
+   * HealthcareValidators.validateNPI('123');        // false (too short)
+   * HealthcareValidators.validateNPI('ABC1234567'); // false (non-numeric)
+   * ```
+   *
+   * @see https://www.cms.gov/Regulations-and-Guidance/Administrative-Simplification/NationalProvIdentStand
    */
   static validateNPI(npi: string): boolean {
     if (!npi || typeof npi !== 'string') return false;
@@ -179,7 +293,22 @@ export class HealthcareValidators {
   }
 
   /**
-   * Validate ICD-10 code format
+   * @method validateICD10
+   * @static
+   * @description Validates ICD-10 (International Classification of Diseases, 10th Revision)
+   * diagnostic code format
+   *
+   * @param {string} code - The ICD-10 code to validate
+   * @returns {boolean} True if ICD-10 code format is valid, false otherwise
+   *
+   * @example
+   * ```typescript
+   * HealthcareValidators.validateICD10('E11.9');   // true (Type 2 diabetes)
+   * HealthcareValidators.validateICD10('J45.50');  // true (Asthma)
+   * HealthcareValidators.validateICD10('ABC');     // false (invalid format)
+   * ```
+   *
+   * @see https://www.who.int/standards/classifications/classification-of-diseases
    */
   static validateICD10(code: string): boolean {
     if (!code || typeof code !== 'string') return false;
@@ -190,7 +319,31 @@ export class HealthcareValidators {
   }
 
   /**
-   * Detect potential PHI in text
+   * @method detectPHI
+   * @static
+   * @description Detects potential Protected Health Information (PHI) in text using
+   * pattern matching for common PHI identifiers
+   *
+   * @param {string} text - The text to scan for PHI
+   * @returns {boolean} True if potential PHI is detected, false otherwise
+   *
+   * @security Critical for HIPAA compliance - flags unmasked sensitive data
+   *
+   * Detects the following PHI patterns:
+   * - Social Security Numbers (SSN): XXX-XX-XXXX format
+   * - Credit card numbers: 16-digit patterns
+   * - Phone numbers: XXX-XXX-XXXX format
+   * - Email addresses
+   * - Date patterns (potential DOB)
+   *
+   * @example
+   * ```typescript
+   * HealthcareValidators.detectPHI('123-45-6789');        // true (SSN pattern)
+   * HealthcareValidators.detectPHI('4111111111111111');   // true (CC pattern)
+   * HealthcareValidators.detectPHI('Hello world');        // false
+   * ```
+   *
+   * @see https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html
    */
   static detectPHI(text: string): boolean {
     if (!text || typeof text !== 'string') return false;
@@ -209,18 +362,64 @@ export class HealthcareValidators {
 }
 
 /**
- * Enterprise validation error middleware with healthcare compliance
+ * @class ValidationErrorMiddleware
+ * @implements {IMiddleware}
+ * @description Enterprise-grade validation error handling middleware with comprehensive
+ * HIPAA compliance, security validation, and audit logging
+ *
+ * This middleware intercepts requests and validates them against multiple security
+ * and compliance criteria before allowing them to proceed to route handlers.
+ *
+ * Features:
+ * - Validates request body, query parameters, and route parameters
+ * - Detects and blocks XSS attacks
+ * - Detects and blocks SQL injection attempts
+ * - Identifies unmasked PHI (HIPAA compliance)
+ * - Validates healthcare identifiers (NPI, ICD-10, MRN)
+ * - Rate limits validation errors per IP address
+ * - Comprehensive audit logging
+ * - Custom error message formatting
+ *
+ * @example
+ * ```typescript
+ * const middleware = new ValidationErrorMiddleware({
+ *   enableHealthcareValidation: true,
+ *   enablePhiDetection: true,
+ *   enableSecurityValidation: true,
+ *   maxErrorsInResponse: 5
+ * });
+ *
+ * // Use in Express
+ * app.use(middleware.execute.bind(middleware));
+ *
+ * // Use in Hapi
+ * server.ext('onPreAuth', middleware.execute.bind(middleware));
+ * ```
  */
 export class ValidationErrorMiddleware implements IMiddleware {
   public readonly name = 'ValidationErrorMiddleware';
   public readonly version = '1.0.0';
-  
+
   private rateLimiter?: ValidationErrorRateLimiter;
   private config: IValidationErrorConfig;
 
+  /**
+   * @constructor
+   * @param {Partial<IValidationErrorConfig>} [config={}] - Middleware configuration options
+   * @description Creates a new ValidationErrorMiddleware instance with the specified configuration
+   *
+   * @example
+   * ```typescript
+   * const middleware = new ValidationErrorMiddleware({
+   *   enableDetailedErrors: process.env.NODE_ENV === 'development',
+   *   enableHealthcareValidation: true,
+   *   maxErrorsInResponse: 10
+   * });
+   * ```
+   */
   constructor(config: Partial<IValidationErrorConfig> = {}) {
     this.config = { ...DEFAULT_VALIDATION_ERROR_CONFIG, ...config };
-    
+
     if (this.config.enableRateLimit) {
       this.rateLimiter = new ValidationErrorRateLimiter(
         this.config.rateLimitWindow * 1000,
@@ -230,7 +429,31 @@ export class ValidationErrorMiddleware implements IMiddleware {
   }
 
   /**
-   * Required execute method for IMiddleware interface
+   * @method execute
+   * @async
+   * @description Main middleware execution method that validates incoming requests
+   * @param {IRequest} request - The incoming HTTP request
+   * @param {IResponse} response - The HTTP response object
+   * @param {INextFunction} next - Callback to proceed to next middleware
+   * @param {MiddlewareContext} _context - Middleware execution context
+   * @returns {Promise<void>}
+   *
+   * @throws {Error} If validation encounters an internal error
+   *
+   * Validation Flow:
+   * 1. Validate request body, query params, and route params
+   * 2. Check for security violations (XSS, SQL injection)
+   * 3. Detect PHI in request data
+   * 4. Validate healthcare-specific fields
+   * 5. If errors found, check rate limiting
+   * 6. Log errors for audit compliance
+   * 7. Return formatted error response
+   *
+   * @example
+   * ```typescript
+   * // Middleware automatically called on each request
+   * // Validation errors result in 400 Bad Request response
+   * ```
    */
   public async execute(
     request: IRequest, 
@@ -611,7 +834,35 @@ export class ValidationErrorMiddleware implements IMiddleware {
 }
 
 /**
- * Factory function to create validation error middleware with healthcare defaults
+ * @function createValidationErrorMiddleware
+ * @description Factory function to create a ValidationErrorMiddleware instance with
+ * healthcare-optimized defaults for HIPAA compliance
+ *
+ * @param {Partial<IValidationErrorConfig>} [config={}] - Optional configuration overrides
+ * @returns {ValidationErrorMiddleware} Configured middleware instance
+ *
+ * Default Healthcare Configuration:
+ * - enableDetailedErrors: false (for production security)
+ * - enableHealthcareValidation: true (NPI, ICD-10, MRN validation)
+ * - enablePhiDetection: true (critical for HIPAA)
+ * - enableSecurityValidation: true (XSS, SQL injection prevention)
+ * - enableAuditLogging: true (required for compliance)
+ * - maxErrorsInResponse: 5 (limit information disclosure)
+ * - Redacts sensitive fields from logs (password, ssn, medicalRecord, etc.)
+ *
+ * @example
+ * ```typescript
+ * // Use with default healthcare settings
+ * const middleware = createValidationErrorMiddleware();
+ *
+ * // Override specific settings
+ * const customMiddleware = createValidationErrorMiddleware({
+ *   maxErrorsInResponse: 10,
+ *   customErrorMessages: {
+ *     [ValidationErrorType.INVALID_NPI]: 'Please enter a valid provider NPI'
+ *   }
+ * });
+ * ```
  */
 export function createValidationErrorMiddleware(
   config: Partial<IValidationErrorConfig> = {}

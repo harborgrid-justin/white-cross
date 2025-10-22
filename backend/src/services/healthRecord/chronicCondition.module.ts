@@ -1,22 +1,36 @@
 /**
+ * @fileoverview Chronic Condition Management Service - ICD-10 Compliant Condition Tracking
+ * @module services/healthRecord/chronicCondition.module
+ * @description Long-term health condition management with care plan coordination
+ *
+ * Key Features:
+ * - CRUD operations for chronic conditions
+ * - ICD-10 diagnosis code validation
+ * - Condition status tracking (active, controlled, resolved)
+ * - Severity classification (mild, moderate, severe, critical)
+ * - Care plan management
+ * - Medication tracking
+ * - Activity restrictions documentation
+ * - Trigger identification
+ * - Review date scheduling
+ * - Emergency action plans
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Administrative Safeguards
+ * @compliance HIPAA Security Rule §164.312 - Technical Safeguards
+ * @compliance ICD-10-CM Official Guidelines - Diagnosis coding
+ * @compliance Section 504 of Rehabilitation Act - Reasonable accommodations
+ * @compliance ADA (Americans with Disabilities Act) - Disability accommodations
+ * @security PHI - All operations tracked in audit log
+ * @audit Minimum 6-year retention for HIPAA compliance
+ * @coordination Care plans shared with authorized school staff
+ *
+ * @requires ../../utils/logger
+ * @requires ../../database/models
+ * @requires ./validation.module
+ *
  * LOC: 2E9B6F1C73
- * WC-SVC-HLT-CHR | chronicCondition.module.ts - Chronic Condition Management Module
- *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - models (database/models)
- *   - enums.ts (database/types/enums.ts)
- *   - types.ts (./types.ts)
- *   - validation.module.ts (./validation.module.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (./index.ts)
- *
- * Purpose: Chronic condition tracking with ICD-10 validation and care plan management
- * Exports: ChronicConditionModule class with CRUD operations for chronic conditions
- * HIPAA: Contains PHI - chronic medical conditions with critical severity alerts
+ * WC-SVC-HLT-CHR | chronicCondition.module.ts
  * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Condition validation → ICD-10 check → Severity assessment → Database
  */
 
 import { logger } from '../../utils/logger';
@@ -26,12 +40,80 @@ import { CreateChronicConditionData } from './types';
 import { ValidationModule } from './validation.module';
 
 /**
- * Chronic Condition Module
- * Manages student chronic condition records with ICD-10 validation and care plans
+ * @class ChronicConditionModule
+ * @description Manages chronic health conditions with ICD-10 compliance and care coordination
+ * @security All methods require proper authentication and authorization
+ * @audit All operations logged for compliance tracking
+ * @safety Critical/severe conditions trigger automatic staff notifications
  */
 export class ChronicConditionModule {
   /**
-   * Add chronic condition to student with validation
+   * @method addChronicCondition
+   * @description Record new chronic condition with ICD-10 validation and care plan setup
+   * @async
+   *
+   * @param {CreateChronicConditionData} data - Chronic condition information
+   * @param {string} data.studentId - Student UUID
+   * @param {string} data.condition - Condition name (e.g., "Type 1 Diabetes", "Asthma")
+   * @param {string} [data.icdCode] - ICD-10 diagnosis code (e.g., "E10.9", "J45.30")
+   * @param {Date} [data.diagnosisDate] - Date condition was diagnosed
+   * @param {string} [data.severity] - Severity (mild, moderate, severe, critical)
+   * @param {string} [data.status] - Status (active, controlled, resolved, monitoring)
+   * @param {Array<string>} [data.medications] - List of medications for condition
+   * @param {Array<string>} [data.restrictions] - Activity restrictions
+   * @param {Array<string>} [data.triggers] - Known triggers
+   * @param {string} [data.carePlan] - Care plan details
+   * @param {string} [data.emergencyPlan] - Emergency action plan
+   * @param {Date} [data.nextReviewDate] - Next review/follow-up date
+   * @param {string} [data.notes] - Additional notes
+   *
+   * @returns {Promise<any>} Created chronic condition record with associations
+   *
+   * @throws {Error} When student not found
+   * @throws {Error} When condition name is empty
+   * @throws {Error} When ICD-10 code is invalid
+   * @throws {Error} When diagnosis date is invalid (future date)
+   * @throws {ValidationError} When required fields missing
+   * @throws {ForbiddenError} When user lacks 'health:conditions:create' permission
+   *
+   * @security PHI Creation - Requires 'health:conditions:create' permission
+   * @audit PHI creation logged with student ID and condition details
+   * @validation ICD-10 codes validated against WHO database
+   * @validation Diagnosis dates cannot be in the future
+   * @safety Critical/severe conditions trigger immediate staff notifications
+   * @coordination Care plans accessible to authorized staff (nurses, counselors)
+   * @accommodation Section 504 plans may be required for certain conditions
+   *
+   * @example
+   * // Record Type 1 Diabetes with care plan
+   * const condition = await ChronicConditionModule.addChronicCondition({
+   *   studentId: 'student-123',
+   *   condition: 'Type 1 Diabetes',
+   *   icdCode: 'E10.9',
+   *   diagnosisDate: new Date('2022-03-15'),
+   *   severity: 'severe',
+   *   status: 'active',
+   *   medications: ['Insulin', 'Metformin'],
+   *   restrictions: ['Monitor blood sugar before PE', 'Keep glucose tablets accessible'],
+   *   triggers: ['Skipped meals', 'Excessive exercise'],
+   *   carePlan: 'Check blood sugar 4x daily, insulin before meals',
+   *   emergencyPlan: 'If blood sugar <70, give glucose tablets immediately',
+   *   nextReviewDate: new Date('2025-03-15')
+   * });
+   *
+   * @example
+   * // Record moderate asthma
+   * const condition = await ChronicConditionModule.addChronicCondition({
+   *   studentId: 'student-456',
+   *   condition: 'Asthma',
+   *   icdCode: 'J45.30',
+   *   severity: 'moderate',
+   *   status: 'controlled',
+   *   medications: ['Albuterol inhaler (rescue)', 'Flovent (daily)'],
+   *   restrictions: ['May need breaks during strenuous activity'],
+   *   triggers: ['Cold air', 'Exercise', 'Dust'],
+   *   emergencyPlan: 'Use rescue inhaler, call 911 if no improvement'
+   * });
    */
   static async addChronicCondition(data: CreateChronicConditionData): Promise<any> {
     try {

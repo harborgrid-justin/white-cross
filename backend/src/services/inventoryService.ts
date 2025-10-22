@@ -1,4 +1,35 @@
 /**
+ * @fileoverview Inventory Management Service Orchestrator
+ * @module services/inventory
+ * @description Main orchestrator for comprehensive school health inventory management system
+ *
+ * This service provides a unified API for all inventory operations, delegating to specialized
+ * services for stock management, purchase orders, vendor management, maintenance scheduling,
+ * and analytics reporting.
+ *
+ * Key Features:
+ * - Stock level tracking and reorder point management
+ * - Purchase order creation and workflow management
+ * - Vendor management and performance tracking
+ * - Equipment maintenance scheduling
+ * - Expiration date monitoring and alerts
+ * - Comprehensive analytics and reporting
+ * - Audit trail for all inventory transactions
+ *
+ * @business Reorder alerts when quantity <= reorderLevel
+ * @business Critical medical supplies (EpiPens, insulin, AEDs) require higher reorder levels
+ * @business 30-day expiration warnings for medications and supplies
+ * @business Annual equipment maintenance requirements
+ *
+ * @requires ./inventory/inventoryRepository
+ * @requires ./inventory/stockService
+ * @requires ./inventory/transactionService
+ * @requires ./inventory/alertsService
+ * @requires ./inventory/maintenanceService
+ * @requires ./inventory/purchaseOrderService
+ * @requires ./inventory/vendorService
+ * @requires ./inventory/analyticsService
+ *
  * LOC: 333D84BEB6
  * WC-SVC-INV-019 | inventoryService.ts - Inventory Management Service Orchestrator
  *
@@ -54,9 +85,12 @@ import type {
 
 /**
  * Main Inventory Service - Orchestrates all inventory-related operations
- * 
+ *
  * This service acts as the main entry point for all inventory functionality,
  * delegating to specialized services while maintaining the original API interface.
+ *
+ * @class InventoryService
+ * @static
  */
 export class InventoryService {
   // ========================================
@@ -65,6 +99,23 @@ export class InventoryService {
 
   /**
    * Get inventory items with pagination and filters
+   *
+   * @method getInventoryItems
+   * @static
+   * @async
+   * @param {number} [page=1] - Page number (1-indexed)
+   * @param {number} [limit=20] - Items per page
+   * @param {InventoryFilters} [filters={}] - Optional filters (category, location, status, etc.)
+   * @returns {Promise<Object>} Paginated inventory items with stock levels
+   * @returns {Promise<Object.items>} Array of inventory items
+   * @returns {Promise<Object.pagination>} Pagination metadata
+   *
+   * @business Returns items with current stock levels calculated from transactions
+   * @business Inactive items excluded by default unless explicitly requested
+   *
+   * @example
+   * const result = await InventoryService.getInventoryItems(1, 20, { category: 'MEDICATION' });
+   * // Returns: { items: [...], pagination: { page: 1, limit: 20, total: 45, pages: 3 } }
    */
   static async getInventoryItems(
     page: number = 1,

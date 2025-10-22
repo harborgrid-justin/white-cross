@@ -22,18 +22,12 @@
  */
 
 /**
- * Incident Report Validation Schemas
- * Enterprise-grade validation with healthcare compliance and safety rules
- *
- * Validation Rules:
- * - Description: Minimum 20 characters for meaningful incident documentation
- * - Location: Required for safety incidents, minimum 3 characters
- * - Time: Incident must not occur in the future
- * - Actions Taken: Minimum 10 characters, required for all incidents
- * - Parent Notification: Required for HIGH and CRITICAL severity
- * - Follow-up: Required for INJURY type incidents
- * - Witness Statements: Minimum 20 characters
- * - Follow-up Due Date: Must be in the future
+ * @fileoverview Incident Report Validation Schemas
+ * @module validators/incidentReportValidator
+ * @description Enterprise-grade Joi validation for incident reports, witness statements, and follow-up actions with safety compliance
+ * @requires joi - Validation library
+ * @requires ../database/types/enums - Incident type enums
+ * @compliance Healthcare safety incident reporting standards, insurance claim requirements
  */
 
 import Joi from 'joi';
@@ -48,7 +42,28 @@ import {
 } from '../database/types/enums';
 
 /**
- * Validation constants
+ * @constant {Object} VALIDATION_CONSTRAINTS
+ * @description Validation length constraints for incident reporting fields
+ * @property {number} DESCRIPTION_MIN_LENGTH - 20 chars minimum for meaningful documentation
+ * @property {number} DESCRIPTION_MAX_LENGTH - 5000 chars maximum
+ * @property {number} LOCATION_MIN_LENGTH - 3 chars minimum
+ * @property {number} LOCATION_MAX_LENGTH - 200 chars maximum
+ * @property {number} ACTIONS_TAKEN_MIN_LENGTH - 10 chars minimum for proper documentation
+ * @property {number} ACTIONS_TAKEN_MAX_LENGTH - 2000 chars maximum
+ * @property {number} WITNESS_STATEMENT_MIN_LENGTH - 20 chars minimum for credibility
+ * @property {number} WITNESS_STATEMENT_MAX_LENGTH - 3000 chars maximum
+ * @property {number} FOLLOW_UP_ACTION_MIN_LENGTH - 5 chars minimum
+ * @property {number} FOLLOW_UP_ACTION_MAX_LENGTH - 500 chars maximum
+ * @property {number} FOLLOW_UP_NOTES_MAX_LENGTH - 2000 chars maximum
+ * @property {number} WITNESS_NAME_MIN_LENGTH - 2 chars minimum
+ * @property {number} WITNESS_NAME_MAX_LENGTH - 100 chars maximum
+ * @security Enforces minimum lengths to ensure proper documentation for legal/insurance purposes
+ * @example
+ * // Using constraints
+ * const description = 'Student fell from playground equipment';
+ * if (description.length < VALIDATION_CONSTRAINTS.DESCRIPTION_MIN_LENGTH) {
+ *   throw new Error('Description too short');
+ * }
  */
 export const VALIDATION_CONSTRAINTS = {
   DESCRIPTION_MIN_LENGTH: 20,
@@ -67,8 +82,59 @@ export const VALIDATION_CONSTRAINTS = {
 } as const;
 
 /**
- * Schema for creating a new incident report
- * Includes all mandatory safety and compliance validations
+ * @constant {Object} createIncidentReportSchema
+ * @description Joi validation schema for creating incident reports with business rules
+ * @type {Joi.ObjectSchema}
+ * @property {string} studentId - Required UUID
+ * @property {string} reportedById - Required UUID, person filing report
+ * @property {string} type - Required, enum: ['INJURY', 'ILLNESS', 'BEHAVIORAL', 'MEDICATION_ERROR', 'ALLERGY_REACTION', 'SAFETY_HAZARD', 'OTHER']
+ * @property {string} severity - Required, enum: ['LOW', 'MODERATE', 'HIGH', 'CRITICAL']
+ * @property {string} description - Required, min 20 chars, max 5000 chars
+ * @property {string} location - Required, min 3 chars, max 200 chars
+ * @property {Array<string>} [witnesses=[]] - Optional array of witness names
+ * @property {string} actionsTaken - Required, min 10 chars, max 2000 chars
+ * @property {Date} occurredAt - Required, cannot be in future
+ * @property {boolean} [parentNotified=false] - Optional, defaults to false
+ * @property {boolean} [followUpRequired=false] - Optional, defaults to false
+ * @property {string} [followUpNotes] - Optional, max 2000 chars
+ * @property {Array<string>} [attachments=[]] - Optional array of URIs
+ * @property {Array<string>} [evidencePhotos=[]] - Optional array of photo URIs
+ * @property {Array<string>} [evidenceVideos=[]] - Optional array of video URIs
+ * @property {string} [insuranceClaimNumber] - Optional insurance claim number
+ * @validation Custom business rules:
+ * - HIGH/CRITICAL severity: Parent notification recommended (warning, not error)
+ * - INJURY type: Follow-up MUST be marked as required (error)
+ * - MEDICATION_ERROR type: Description must be min 50 chars for detail (error)
+ * @compliance
+ * - Insurance documentation requirements
+ * - Parent notification standards
+ * - Safety incident reporting requirements
+ * @example
+ * // Valid injury incident
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   reportedById: '987e6543-e21b-43d2-b654-426614174999',
+ *   type: 'INJURY',
+ *   severity: 'MODERATE',
+ *   description: 'Student tripped on playground and scraped knee. Small abrasion on left knee.',
+ *   location: 'Main playground near slide',
+ *   witnesses: ['Teacher John Smith', 'Playground monitor'],
+ *   actionsTaken: 'Cleaned wound with soap and water. Applied bandage. Ice pack given. Parent notified.',
+ *   occurredAt: '2024-10-18T14:30:00Z',
+ *   parentNotified: true,
+ *   followUpRequired: true,
+ *   followUpNotes: 'Monitor for signs of infection. Check bandage tomorrow.'
+ * }
+ *
+ * @example
+ * // Invalid - INJURY without follow-up marked
+ * {
+ *   type: 'INJURY',
+ *   severity: 'MODERATE',
+ *   description: 'Student injured on playground',
+ *   actionsTaken: 'First aid applied',
+ *   followUpRequired: false  // Will fail - INJURY requires follow-up
+ * }
  */
 export const createIncidentReportSchema = Joi.object({
   studentId: Joi.string()
@@ -637,7 +703,49 @@ export const updateComplianceStatusSchema = Joi.object({
 });
 
 /**
- * Helper function to validate data against schema
+ * @function validateIncidentData
+ * @description Helper function to validate incident data against a Joi schema
+ * @template T - Type of the expected validated data
+ * @param {Joi.ObjectSchema} schema - Joi schema to validate against
+ * @param {any} data - Raw data to validate
+ * @returns {{value: T, error?: Joi.ValidationError}} Validation result with typed value and optional error
+ * @validation Options:
+ * - abortEarly: false - Collects all validation errors, not just first one
+ * - stripUnknown: true - Removes fields not defined in schema
+ * - convert: true - Converts types (e.g., string dates to Date objects)
+ * @example
+ * // Valid incident data
+ * const result = validateIncidentData<IncidentReport>(
+ *   createIncidentReportSchema,
+ *   {
+ *     studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *     type: 'INJURY',
+ *     severity: 'MODERATE',
+ *     description: 'Student fell and scraped knee on playground',
+ *     location: 'Main playground',
+ *     actionsTaken: 'Applied first aid and notified parent',
+ *     occurredAt: '2024-10-18T14:30:00Z',
+ *     followUpRequired: true
+ *   }
+ * );
+ * if (result.error) {
+ *   console.error('Validation failed:', result.error.details);
+ * } else {
+ *   console.log('Valid data:', result.value);
+ * }
+ *
+ * @example
+ * // Invalid data - multiple errors collected
+ * const result = validateIncidentData<IncidentReport>(
+ *   createIncidentReportSchema,
+ *   {
+ *     studentId: 'invalid-uuid',
+ *     type: 'INJURY',
+ *     description: 'Too short',  // Less than 20 chars
+ *     followUpRequired: false     // Required for INJURY type
+ *   }
+ * );
+ * // result.error.details will contain all 3 errors
  */
 export const validateIncidentData = <T>(
   schema: Joi.ObjectSchema,

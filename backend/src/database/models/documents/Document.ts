@@ -1,36 +1,54 @@
 /**
+ * @fileoverview Document Database Model
+ * @module database/models/documents/Document
+ * @description Sequelize model for managing all healthcare-related documents including medical records,
+ * consent forms, incident reports, policies, and administrative documents with comprehensive version control,
+ * access control, and compliance tracking.
+ *
+ * Key Features:
+ * - Multi-category document management (medical, incident, consent, policy, etc.)
+ * - Version control with parent-child relationships
+ * - Access level control (PUBLIC, STAFF_ONLY, ADMIN_ONLY, RESTRICTED)
+ * - PHI (Protected Health Information) flag and compliance
+ * - Electronic signature support and tracking
+ * - Document retention policy enforcement
+ * - Template support with JSON metadata
+ * - File validation (type, size, extension matching)
+ * - Access auditing (last accessed, access count)
+ * - Comprehensive tag system
+ *
+ * Document Categories & Retention:
+ * - MEDICAL_RECORD: 7 years retention, auto-PHI, signature required
+ * - INCIDENT_REPORT: 7 years retention, auto-PHI, signature required
+ * - CONSENT_FORM: 7 years retention, auto-PHI, signature required
+ * - INSURANCE: 7 years retention, auto-PHI
+ * - STUDENT_FILE: 7 years retention
+ * - POLICY: 5 years retention
+ * - TRAINING: 5 years retention
+ * - ADMINISTRATIVE: 3 years retention
+ * - OTHER: 3 years retention
+ *
+ * @compliance HIPAA - Protected Health Information handling and access control
+ * @compliance FERPA - Educational records privacy requirements
+ * @compliance 21 CFR Part 11 - Electronic signatures for medical documents
+ * @compliance State regulations - Document retention requirements
+ *
+ * @legal Retention requirements vary by category (3-7 years)
+ * @legal Electronic signatures legally binding for consent forms
+ * @legal Must maintain audit trail of all access and modifications
+ * @legal PHI documents require staff-only or higher access levels
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../../types/enums
+ *
  * LOC: 5CE9998FE1
- * WC-GEN-057 | Document.ts - General utility functions and operations
- *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - enums.ts (database/types/enums.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- */
-
-/**
- * WC-GEN-057 | Document.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * Last Updated: 2025-10-17
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { DocumentCategory, DocumentStatus, DocumentAccessLevel } from '../../types/enums';
-
-/**
- * Document Model
- * Manages all healthcare-related documents including medical records,
- * consent forms, policies, and administrative documents with version control
- */
 
 interface DocumentAttributes {
   id: string;
@@ -59,6 +77,11 @@ interface DocumentAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface DocumentCreationAttributes
+ * @description Defines optional fields when creating a new document
+ * @extends DocumentAttributes
+ */
 interface DocumentCreationAttributes
   extends Optional<
     DocumentAttributes,
@@ -81,6 +104,85 @@ interface DocumentCreationAttributes
     | 'updatedAt'
   > {}
 
+/**
+ * @class Document
+ * @extends Model
+ * @description Sequelize model class for document management
+ *
+ * Workflow Summary:
+ * 1. Document uploaded → File validated (type, size, extension)
+ * 2. Category assigned → Auto-sets PHI flag and signature requirement
+ * 3. Access level determined → PUBLIC downgraded to STAFF_ONLY for PHI
+ * 4. Retention date calculated → Based on category requirements
+ * 5. Document saved → Audit trail created
+ * 6. Access tracked → lastAccessedAt and accessCount updated on view/download
+ * 7. Version control → New versions reference parentId
+ * 8. Retention enforced → Archived after retention date
+ *
+ * Access Levels:
+ * - PUBLIC: Accessible to all (policies, general information)
+ * - STAFF_ONLY: School staff only (most documents)
+ * - ADMIN_ONLY: Administrators only (sensitive records)
+ * - RESTRICTED: Specific authorization required (legal, personnel)
+ *
+ * PHI (Protected Health Information) Rules:
+ * - Auto-flagged for: MEDICAL_RECORD, INCIDENT_REPORT, CONSENT_FORM, INSURANCE
+ * - Cannot have PUBLIC access level
+ * - Requires encryption at rest and in transit
+ * - Access automatically audited
+ * - Must follow HIPAA minimum necessary standard
+ *
+ * Electronic Signature Requirements:
+ * - Auto-required for: MEDICAL_RECORD, CONSENT_FORM, INCIDENT_REPORT
+ * - Must comply with 21 CFR Part 11 for medical documents
+ * - Signature binding and non-repudiable
+ * - Linked via DocumentSignature model
+ *
+ * File Type Restrictions:
+ * - Documents: PDF, DOC, DOCX, TXT, CSV
+ * - Spreadsheets: XLS, XLSX
+ * - Images: JPG, JPEG, PNG, GIF, WEBP
+ * - Maximum size: 50MB
+ * - Minimum size: 1KB
+ * - HTTPS required for all file URLs
+ *
+ * Retention Policies:
+ * - 7 years: Medical records, incidents, consent forms, insurance, student files
+ * - 5 years: Policies, training materials
+ * - 3 years: Administrative documents, other
+ * - System warns 90 days before retention expiration
+ * - Documents archived (not deleted) after retention period
+ *
+ * Associations:
+ * - belongsTo: User (uploadedBy - uploader)
+ * - belongsTo: Student (optional - if student-specific)
+ * - belongsTo: Document (parentId - for versions)
+ * - hasMany: Document (as parent - child versions)
+ * - hasMany: DocumentSignature (electronic signatures)
+ * - hasMany: DocumentAuditTrail (access history)
+ *
+ * Hooks:
+ * - beforeCreate: Auto-set PHI flag, signature requirement, access level
+ * - beforeUpdate: Prevent PUBLIC access for PHI documents
+ *
+ * @example
+ * // Create a medical record document
+ * const doc = await Document.create({
+ *   title: 'Annual Physical Examination 2024',
+ *   description: 'Complete physical exam results',
+ *   category: DocumentCategory.MEDICAL_RECORD,
+ *   fileType: 'application/pdf',
+ *   fileName: 'physical_exam_2024.pdf',
+ *   fileSize: 524288, // 512KB
+ *   fileUrl: 'https://secure.storage/docs/abc123.pdf',
+ *   uploadedBy: 'nurse-uuid',
+ *   studentId: 'student-uuid',
+ *   tags: ['physical', 'annual', '2024'],
+ *   retentionDate: new Date('2031-01-15') // 7 years
+ * });
+ * // containsPHI = true, requiresSignature = true auto-set
+ * // accessLevel defaults to STAFF_ONLY
+ */
 export class Document extends Model<DocumentAttributes, DocumentCreationAttributes> implements DocumentAttributes {
   public id!: string;
   public title!: string;

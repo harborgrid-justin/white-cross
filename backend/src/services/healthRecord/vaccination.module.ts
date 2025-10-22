@@ -1,21 +1,35 @@
 /**
+ * @fileoverview Vaccination Management Service - CDC-Compliant Immunization Tracking
+ * @module services/healthRecord/vaccination.module
+ * @description Comprehensive vaccination record management with CVX code validation
+ *
+ * Key Features:
+ * - CRUD operations for vaccination records
+ * - CVX (Vaccine Administered) code validation
+ * - Dose series tracking (dose 1 of 3, etc.)
+ * - Vaccine expiration monitoring
+ * - VFC (Vaccines for Children) eligibility tracking
+ * - VIS (Vaccine Information Statement) provision tracking
+ * - Parental consent documentation
+ * - Exemption status management
+ * - State reporting compliance
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Administrative Safeguards
+ * @compliance HIPAA Security Rule §164.312 - Technical Safeguards
+ * @compliance CDC Immunization Schedule - Vaccine tracking requirements
+ * @compliance State Immunization Registries - Reporting requirements
+ * @compliance 42 CFR Part 73 - Select agents and toxins
+ * @security PHI - All operations tracked in audit log
+ * @audit Minimum 6-year retention for HIPAA compliance
+ * @reporting State immunization registries may require automated reporting
+ *
+ * @requires ../../utils/logger
+ * @requires ../../database/models
+ * @requires ./validation.module
+ *
  * LOC: 8B3E5D7A91
- * WC-SVC-HLT-VAC | vaccination.module.ts - Vaccination Management Module
- *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - models (database/models)
- *   - types.ts (./types.ts)
- *   - validation.module.ts (./validation.module.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (./index.ts)
- *
- * Purpose: Vaccination record management with CVX validation and dose tracking
- * Exports: VaccinationModule class with CRUD operations for vaccinations
- * HIPAA: Contains PHI - vaccination records with expiration tracking
+ * WC-SVC-HLT-VAC | vaccination.module.ts
  * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Vaccine validation → CVX check → Date validation → Database → Expiry alert
  */
 
 import { logger } from '../../utils/logger';
@@ -24,12 +38,80 @@ import { CreateVaccinationData } from './types';
 import { ValidationModule } from './validation.module';
 
 /**
- * Vaccination Module
- * Manages student vaccination records with CVX validation and dose tracking
+ * @class VaccinationModule
+ * @description Manages student vaccination records with CDC compliance and CVX validation
+ * @security All methods require proper authentication and authorization
+ * @audit All operations logged for compliance tracking
+ * @compliance CDC immunization schedules enforced through validation
  */
 export class VaccinationModule {
   /**
-   * Add vaccination record with comprehensive validation
+   * @method addVaccination
+   * @description Record new vaccination with CVX validation and dose tracking
+   * @async
+   *
+   * @param {CreateVaccinationData} data - Vaccination information
+   * @param {string} data.studentId - Student UUID
+   * @param {string} data.vaccineName - Vaccine name (e.g., "MMR", "COVID-19")
+   * @param {string} [data.cvxCode] - CVX code (CDC vaccine code)
+   * @param {Date} data.administrationDate - Date vaccine was administered
+   * @param {Date} [data.expirationDate] - Vaccine lot expiration date
+   * @param {number} [data.doseNumber] - Current dose number (e.g., 1)
+   * @param {number} [data.totalDoses] - Total doses in series (e.g., 3)
+   * @param {string} [data.lotNumber] - Vaccine lot number
+   * @param {string} [data.manufacturer] - Vaccine manufacturer
+   * @param {string} [data.administeredBy] - Healthcare provider who administered
+   * @param {string} [data.site] - Administration site (e.g., "Left deltoid")
+   * @param {string} [data.route] - Administration route (e.g., "Intramuscular")
+   * @param {string} [data.notes] - Additional notes
+   *
+   * @returns {Promise<any>} Created vaccination record with associations
+   *
+   * @throws {Error} When student not found
+   * @throws {Error} When vaccine name is empty
+   * @throws {Error} When CVX code is invalid
+   * @throws {Error} When dates are invalid (future date, expiration before administration)
+   * @throws {Error} When dose numbers are invalid
+   * @throws {ValidationError} When required fields missing
+   * @throws {ForbiddenError} When user lacks 'health:vaccinations:create' permission
+   *
+   * @security PHI Creation - Requires 'health:vaccinations:create' permission
+   * @audit PHI creation logged with student ID and vaccine details
+   * @validation CVX codes validated against CDC database
+   * @validation Expiration dates checked for expired vaccines
+   * @validation Dose numbers validated (dose ≤ total doses)
+   * @compliance CDC CVX code system ensures standardized vaccine identification
+   * @reporting Data formatted for state immunization registry submission
+   * @consent Parent/guardian consent should be obtained before administration
+   *
+   * @example
+   * // Record COVID-19 vaccination
+   * const vaccination = await VaccinationModule.addVaccination({
+   *   studentId: 'student-123',
+   *   vaccineName: 'COVID-19, mRNA',
+   *   cvxCode: '208',
+   *   administrationDate: new Date('2024-01-15'),
+   *   expirationDate: new Date('2025-12-31'),
+   *   doseNumber: 1,
+   *   totalDoses: 2,
+   *   lotNumber: 'AB12345',
+   *   manufacturer: 'Pfizer',
+   *   administeredBy: 'Dr. Jane Smith',
+   *   site: 'Left deltoid',
+   *   route: 'Intramuscular'
+   * });
+   *
+   * @example
+   * // Record MMR vaccination (single dose)
+   * const vaccination = await VaccinationModule.addVaccination({
+   *   studentId: 'student-456',
+   *   vaccineName: 'MMR',
+   *   cvxCode: '03',
+   *   administrationDate: new Date('2024-06-10'),
+   *   doseNumber: 1,
+   *   totalDoses: 1,
+   *   administeredBy: 'School Nurse'
+   * });
    */
   static async addVaccination(data: CreateVaccinationData): Promise<any> {
     try {

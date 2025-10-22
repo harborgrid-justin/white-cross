@@ -1,6 +1,36 @@
 /**
+ * @fileoverview Purchase Order Service
+ * @module services/inventory/purchaseOrder
+ * @description Comprehensive purchase order management with budget validation and approval workflow
+ *
+ * This service handles the complete purchase order lifecycle including creation, validation,
+ * approval workflow, vendor management integration, and inventory receipt tracking.
+ *
+ * Key Features:
+ * - Purchase order creation with comprehensive validation
+ * - Budget integration and spending authorization
+ * - Multi-stage approval workflow (PENDING → APPROVED → ORDERED → RECEIVED)
+ * - Vendor verification and status checks
+ * - Inventory item validation and duplicate detection
+ * - Automatic total calculations with tax and shipping
+ * - Order fulfillment tracking
+ *
+ * @business Approval workflow: PENDING → APPROVED → ORDERED → RECEIVED/PARTIALLY_RECEIVED
+ * @business Budget encumbrance created on APPROVED status
+ * @business Actual charge occurs on RECEIVED status
+ * @business Maximum order value: $99,999,999.99
+ * @business Cannot order from inactive vendors
+ * @business Only PENDING orders can be edited
+ *
+ * @financial Purchase orders create budget encumbrances
+ * @financial Received orders update actual spending
+ * @financial Order cancellation releases encumbered funds
+ *
+ * @requires ../../database/models
+ * @requires ../../database/types/enums
+ *
  * LOC: CC70917451
- * WC-GEN-279 | purchaseOrderService.ts - General utility functions and operations
+ * WC-GEN-279 | purchaseOrderService.ts - Purchase Order Management Service
  *
  * UPSTREAM (imports from):
  *   - logger.ts (utils/logger.ts)
@@ -12,22 +42,15 @@
  */
 
 /**
- * WC-GEN-279 | purchaseOrderService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: ../../utils/logger, ../../database/models, ../../database/types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
-/**
- * Purchase Order Service
- *
- * Handles purchase order creation, management, and workflow.
- * Provides comprehensive purchase order functionality with validation.
+ * WC-GEN-279 | purchaseOrderService.ts - Purchase Order Management Service
+ * Purpose: Purchase order lifecycle management with approval workflow and budget integration
+ * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: Budget service, vendor service, inventory repository
+ * Downstream: Routes, services, other modules | Called by: Inventory service, procurement workflows
+ * Related: VendorService, BudgetService, InventoryRepository
+ * Exports: PurchaseOrderService class | Key Services: Order creation, approval workflow, receipt tracking
+ * Last Updated: 2025-10-22 | File Type: .ts
+ * Critical Path: Order creation → Budget validation → Approval → Vendor fulfillment → Receipt
+ * LLM Context: Healthcare procurement with compliance tracking and budget controls
  */
 
 import { logger } from '../../utils/logger';
@@ -41,9 +64,62 @@ import {
 import { PurchaseOrderStatus } from '../../database/types/enums';
 import { CreatePurchaseOrderData, GeneratedPurchaseOrder } from './types';
 
+/**
+ * Purchase Order Service
+ *
+ * @class PurchaseOrderService
+ * @static
+ */
 export class PurchaseOrderService {
   /**
    * Create purchase order with comprehensive validation and budget checking
+   *
+   * @method createPurchaseOrder
+   * @static
+   * @async
+   * @param {CreatePurchaseOrderData} data - Order details
+   * @param {string} data.orderNumber - Unique purchase order number
+   * @param {string} data.vendorId - Vendor UUID (must be active vendor)
+   * @param {Date} data.orderDate - Order creation date
+   * @param {Date} [data.expectedDate] - Expected delivery date (must be >= orderDate)
+   * @param {Array<Object>} data.items - Line items array (minimum 1 item)
+   * @param {string} data.items[].inventoryItemId - Inventory item UUID
+   * @param {number} data.items[].quantity - Order quantity (1 to 1,000,000)
+   * @param {number} data.items[].unitCost - Unit cost (non-negative)
+   * @param {string} [data.notes] - Optional order notes
+   * @returns {Promise<PurchaseOrder>} Created order with PENDING status and full associations
+   * @throws {Error} Vendor not found or inactive
+   * @throws {Error} Duplicate order number
+   * @throws {Error} Items array empty
+   * @throws {Error} Expected date before order date
+   * @throws {Error} Duplicate items in order
+   * @throws {Error} Inventory item not found or inactive
+   * @throws {Error} Invalid quantity or cost values
+   * @throws {Error} Order total exceeds $99,999,999.99
+   *
+   * @business Creates order in PENDING status - requires approval before processing
+   * @business Validates vendor is active before allowing order
+   * @business Prevents duplicate items in same purchase order
+   * @business Each line item total limited to $99,999,999.99
+   * @business Order subtotal limited to $99,999,999.99
+   * @business Tax and shipping set to 0 initially
+   *
+   * @financial Creates budget encumbrance when approved (handled by approval workflow)
+   * @financial Total calculated as: subtotal + tax + shipping
+   *
+   * @example
+   * const order = await PurchaseOrderService.createPurchaseOrder({
+   *   orderNumber: 'PO-2024-001',
+   *   vendorId: 'vendor-uuid-123',
+   *   orderDate: new Date(),
+   *   expectedDate: new Date('2024-11-15'),
+   *   items: [
+   *     { inventoryItemId: 'item-uuid-456', quantity: 100, unitCost: 5.50 },
+   *     { inventoryItemId: 'item-uuid-789', quantity: 50, unitCost: 12.00 }
+   *   ],
+   *   notes: 'Quarterly medical supplies order'
+   * });
+   * // Returns: PurchaseOrder { status: 'PENDING', total: 1150.00, ... }
    */
   static async createPurchaseOrder(data: CreatePurchaseOrderData) {
     const transaction = await sequelize.transaction();
@@ -267,6 +343,44 @@ export class PurchaseOrderService {
 
   /**
    * Update purchase order status with workflow validation
+   *
+   * @method updatePurchaseOrderStatus
+   * @static
+   * @async
+   * @param {string} id - Purchase order UUID
+   * @param {PurchaseOrderStatus} status - New status to transition to
+   * @param {Date} [receivedDate] - Date order was received (required for RECEIVED/PARTIALLY_RECEIVED)
+   * @returns {Promise<PurchaseOrder>} Updated purchase order
+   * @throws {Error} Purchase order not found
+   * @throws {Error} Invalid status transition
+   * @throws {Error} Received date before order date
+   *
+   * @business Enforces valid status transitions workflow
+   * @business PENDING → APPROVED | CANCELLED
+   * @business APPROVED → ORDERED | CANCELLED
+   * @business ORDERED → PARTIALLY_RECEIVED | RECEIVED | CANCELLED
+   * @business PARTIALLY_RECEIVED → RECEIVED | CANCELLED
+   * @business RECEIVED → (terminal state, no transitions)
+   * @business CANCELLED → (terminal state, no transitions)
+   *
+   * @financial APPROVED status creates budget encumbrance
+   * @financial RECEIVED status converts encumbrance to actual spending
+   * @financial CANCELLED status releases encumbered budget
+   *
+   * @example
+   * // Approve a pending order
+   * const approved = await PurchaseOrderService.updatePurchaseOrderStatus(
+   *   'order-uuid-123',
+   *   PurchaseOrderStatus.APPROVED
+   * );
+   *
+   * @example
+   * // Mark order as received
+   * const received = await PurchaseOrderService.updatePurchaseOrderStatus(
+   *   'order-uuid-123',
+   *   PurchaseOrderStatus.RECEIVED,
+   *   new Date()
+   * );
    */
   static async updatePurchaseOrderStatus(id: string, status: PurchaseOrderStatus, receivedDate?: Date) {
     const transaction = await sequelize.transaction();

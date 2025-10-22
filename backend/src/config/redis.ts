@@ -1,4 +1,11 @@
 /**
+ * @fileoverview Redis Cache Configuration Module
+ * @module config/redis
+ * @description Healthcare-optimized Redis caching with connection management and invalidation strategies
+ * @requires redis - Redis client for Node.js
+ * @requires ../utils/logger - Application logging utility
+ * @requires ../constants - Cache keys and TTL constants
+ *
  * LOC: 6965D820C1
  * WC-CFG-RDS-052 | Redis Cache Configuration & Healthcare Data Caching Strategy
  *
@@ -27,18 +34,80 @@
 /**
  * Redis Cache Configuration for White Cross Healthcare Platform
  *
+ * This module provides a comprehensive Redis caching solution optimized for healthcare
+ * data with focus on:
+ * - Student health records caching for performance
+ * - Automatic cache invalidation on data updates
+ * - Connection resilience with exponential backoff
+ * - Health monitoring and statistics
+ * - HIPAA-compliant data handling
+ *
  * Features:
  * - Connection pooling and health monitoring
  * - Automatic reconnection with exponential backoff
- * - Cache invalidation strategies
- * - Performance metrics
+ * - Cache invalidation strategies (key-based and pattern-based)
+ * - Performance metrics and statistics
+ * - Graceful degradation when Redis is unavailable
+ *
+ * @example
+ * // Initialize Redis on application startup
+ * await initializeRedis();
+ *
+ * // Cache student data
+ * await cacheSet('student:123', studentData, CACHE_TTL.MEDIUM);
+ *
+ * // Retrieve cached data
+ * const student = await cacheGet('student:123');
+ *
+ * // Invalidate student cache on update
+ * await invalidateStudentCache('123');
  */
 
 import { createClient, RedisClientType } from 'redis';
 import { logger } from '../utils/logger';
 import { CACHE_KEYS, CACHE_TTL } from '../constants';
 
-// Redis configuration
+/**
+ * @constant {string} REDIS_URL
+ * @description Redis server connection URL from environment
+ * @env REDIS_URL
+ * @default 'redis://localhost:6379'
+ * @example
+ * // In .env file:
+ * REDIS_URL=redis://username:password@redis-host:6379
+ * // or for TLS:
+ * REDIS_URL=rediss://username:password@redis-host:6380
+ */
+
+/**
+ * @constant {string} REDIS_PASSWORD
+ * @description Redis authentication password from environment
+ * @env REDIS_PASSWORD
+ * @default undefined
+ * @security Store in environment variables, never commit to version control
+ * @example
+ * // In .env file:
+ * REDIS_PASSWORD=your-secure-redis-password
+ */
+
+/**
+ * @constant {Object} REDIS_CONFIG
+ * @description Redis client configuration with connection resilience
+ * @property {string} url - Redis connection URL from REDIS_URL env var
+ * @property {string} [password] - Redis password from REDIS_PASSWORD env var
+ * @property {Object} socket - Socket connection configuration
+ * @property {Function} socket.reconnectStrategy - Exponential backoff reconnection strategy
+ * @property {number} socket.connectTimeout - Connection timeout in milliseconds (10s)
+ * @property {number} commandsQueueMaxLength - Maximum queued commands (1000)
+ *
+ * @example
+ * // Reconnection strategy implements exponential backoff:
+ * // Attempt 1: 100ms delay
+ * // Attempt 2: 200ms delay
+ * // Attempt 3: 400ms delay
+ * // ...
+ * // Max delay: 30 seconds
+ */
 const REDIS_CONFIG = {
   url: process.env.REDIS_URL || 'redis://localhost:6379',
   password: process.env.REDIS_PASSWORD || undefined,
@@ -54,12 +123,44 @@ const REDIS_CONFIG = {
   commandsQueueMaxLength: 1000,
 };
 
-// Initialize Redis client
+/**
+ * @type {RedisClientType | null}
+ * @description Singleton Redis client instance
+ */
 let redisClient: RedisClientType | null = null;
+
+/**
+ * @type {boolean}
+ * @description Current Redis connection status
+ */
 let isConnected = false;
 
 /**
- * Initialize Redis connection
+ * Initialize Redis connection with health monitoring
+ *
+ * @async
+ * @function initializeRedis
+ * @description Establishes connection to Redis server with event handlers for monitoring
+ * @returns {Promise<void>} Resolves when Redis is connected and ready
+ * @throws {Error} Logs error but doesn't throw - graceful degradation if Redis unavailable
+ *
+ * @example
+ * // Initialize on application startup
+ * try {
+ *   await initializeRedis();
+ *   console.log('Redis ready');
+ * } catch (error) {
+ *   console.error('Redis initialization failed:', error);
+ * }
+ *
+ * @emits connect - When Redis client is connecting
+ * @emits ready - When Redis client is ready to accept commands
+ * @emits error - When Redis encounters an error
+ * @emits reconnecting - When Redis is attempting to reconnect
+ * @emits end - When Redis connection is closed
+ *
+ * @performance Implements exponential backoff for reconnection attempts
+ * @security Password authentication if REDIS_PASSWORD is set
  */
 export async function initializeRedis(): Promise<void> {
   try {
@@ -108,6 +209,16 @@ export async function initializeRedis(): Promise<void> {
 
 /**
  * Get Redis client instance
+ *
+ * @function getRedisClient
+ * @description Returns the singleton Redis client instance
+ * @returns {RedisClientType | null} Redis client or null if not initialized
+ *
+ * @example
+ * const client = getRedisClient();
+ * if (client) {
+ *   await client.ping();
+ * }
  */
 export function getRedisClient(): RedisClientType | null {
   return redisClient;
@@ -115,13 +226,46 @@ export function getRedisClient(): RedisClientType | null {
 
 /**
  * Check if Redis is connected
+ *
+ * @function isRedisConnected
+ * @description Verifies current Redis connection status
+ * @returns {boolean} True if Redis is connected and ready
+ *
+ * @example
+ * if (isRedisConnected()) {
+ *   // Safe to perform cache operations
+ *   await cacheSet('key', 'value');
+ * }
  */
 export function isRedisConnected(): boolean {
   return isConnected && redisClient !== null;
 }
 
 /**
- * Cache get with fallback
+ * Retrieve value from cache with automatic fallback
+ *
+ * @async
+ * @function cacheGet
+ * @template T - Type of cached value
+ * @param {string} key - Cache key to retrieve
+ * @returns {Promise<T | null>} Cached value or null if not found/unavailable
+ *
+ * @description Safely retrieves and deserializes cached data. Returns null on:
+ * - Redis not connected
+ * - Key not found
+ * - Deserialization error
+ *
+ * @example
+ * // Get student data from cache
+ * const student = await cacheGet<Student>('student:123');
+ * if (!student) {
+ *   // Cache miss - fetch from database
+ *   student = await db.getStudent('123');
+ *   await cacheSet('student:123', student);
+ * }
+ *
+ * @performance Returns immediately if Redis disconnected (graceful degradation)
+ * @throws Never throws - logs errors and returns null
  */
 export async function cacheGet<T>(key: string): Promise<T | null> {
   if (!isRedisConnected()) {
@@ -142,7 +286,31 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 /**
- * Cache set with TTL
+ * Store value in cache with Time-To-Live
+ *
+ * @async
+ * @function cacheSet
+ * @param {string} key - Cache key to store under
+ * @param {any} value - Value to cache (will be JSON serialized)
+ * @param {number} [ttlSeconds=CACHE_TTL.MEDIUM] - Time-to-live in seconds
+ * @returns {Promise<boolean>} True if successfully cached, false otherwise
+ *
+ * @description Serializes and stores data in Redis with automatic expiration.
+ * Returns false on:
+ * - Redis not connected
+ * - Serialization error
+ * - Redis operation error
+ *
+ * @example
+ * // Cache student for 5 minutes (300 seconds)
+ * await cacheSet('student:123', studentData, 300);
+ *
+ * // Cache with default TTL (CACHE_TTL.MEDIUM)
+ * await cacheSet('health:456', healthData);
+ *
+ * @performance Uses setEx for atomic set-with-expiry operation
+ * @throws Never throws - logs errors and returns false
+ * @see {@link CACHE_TTL} For predefined TTL constants
  */
 export async function cacheSet(
   key: string,
@@ -164,7 +332,26 @@ export async function cacheSet(
 }
 
 /**
- * Cache delete
+ * Delete cache entry or entries
+ *
+ * @async
+ * @function cacheDelete
+ * @param {string | string[]} key - Single key or array of keys to delete
+ * @returns {Promise<boolean>} True if successfully deleted, false otherwise
+ *
+ * @description Removes one or more keys from Redis cache. Returns false on:
+ * - Redis not connected
+ * - Redis operation error
+ *
+ * @example
+ * // Delete single key
+ * await cacheDelete('student:123');
+ *
+ * // Delete multiple keys
+ * await cacheDelete(['student:123', 'student:456', 'student:789']);
+ *
+ * @performance Batch deletion is atomic when using array of keys
+ * @throws Never throws - logs errors and returns false
  */
 export async function cacheDelete(key: string | string[]): Promise<boolean> {
   if (!isRedisConnected()) {
@@ -188,7 +375,27 @@ export async function cacheDelete(key: string | string[]): Promise<boolean> {
 }
 
 /**
- * Cache invalidation by pattern
+ * Invalidate all cache keys matching a pattern
+ *
+ * @async
+ * @function cacheInvalidatePattern
+ * @param {string} pattern - Redis glob pattern (e.g., 'student:*', 'health:123:*')
+ * @returns {Promise<number>} Number of keys invalidated
+ *
+ * @description Scans Redis for keys matching pattern and deletes them.
+ * Useful for bulk invalidation when data changes affect multiple cache entries.
+ *
+ * @example
+ * // Invalidate all student caches
+ * const count = await cacheInvalidatePattern('student:*');
+ * console.log(`Invalidated ${count} student cache entries`);
+ *
+ * // Invalidate specific student's health records
+ * await cacheInvalidatePattern('student:123:health:*');
+ *
+ * @performance Uses SCAN iterator to avoid blocking Redis
+ * @throws Never throws - logs errors and returns 0
+ * @warning Pattern matching can be expensive on large datasets
  */
 export async function cacheInvalidatePattern(pattern: string): Promise<number> {
   if (!isRedisConnected()) {
@@ -222,7 +429,33 @@ export async function cacheInvalidatePattern(pattern: string): Promise<number> {
 }
 
 /**
- * Get cache with automatic fallback and setting
+ * Get from cache or fetch and cache if missing (cache-aside pattern)
+ *
+ * @async
+ * @function cacheGetOrSet
+ * @template T - Type of value to cache/retrieve
+ * @param {string} key - Cache key
+ * @param {Function} fetchFn - Async function to fetch data if cache miss
+ * @param {number} [ttlSeconds=CACHE_TTL.MEDIUM] - Time-to-live in seconds
+ * @returns {Promise<T>} Cached or freshly fetched value
+ *
+ * @description Implements cache-aside pattern:
+ * 1. Try to get from cache
+ * 2. If found, return cached value
+ * 3. If not found, call fetchFn to get fresh data
+ * 4. Cache the fresh data
+ * 5. Return fresh data
+ *
+ * @example
+ * // Automatic caching with fallback to database
+ * const student = await cacheGetOrSet(
+ *   'student:123',
+ *   () => db.students.findByPk('123'),
+ *   CACHE_TTL.LONG
+ * );
+ *
+ * @performance Optimizes read-heavy workloads
+ * @throws Propagates errors from fetchFn
  */
 export async function cacheGetOrSet<T>(
   key: string,
@@ -247,14 +480,35 @@ export async function cacheGetOrSet<T>(
 }
 
 /**
- * Health summary cache key generator
+ * Generate cache key for student health summary
+ *
+ * @function getHealthSummaryCacheKey
+ * @param {string} studentId - Student identifier
+ * @returns {string} Formatted cache key for health summary
+ *
+ * @example
+ * const key = getHealthSummaryCacheKey('123');
+ * // Returns: 'student:123:health_summary'
+ * const summary = await cacheGet(key);
  */
 export function getHealthSummaryCacheKey(studentId: string): string {
   return `${CACHE_KEYS.STUDENT_PREFIX}${studentId}:health_summary`;
 }
 
 /**
- * Student records cache key generator
+ * Generate cache key for paginated student records
+ *
+ * @function getStudentRecordsCacheKey
+ * @param {string} studentId - Student identifier
+ * @param {number} page - Page number for pagination
+ * @param {number} limit - Records per page
+ * @param {any} [filters] - Optional filter parameters
+ * @returns {string} Formatted cache key including pagination and filters
+ *
+ * @example
+ * const key = getStudentRecordsCacheKey('123', 1, 10, { type: 'allergy' });
+ * // Returns: 'student:123:records:1:10:{"type":"allergy"}'
+ * const records = await cacheGet(key);
  */
 export function getStudentRecordsCacheKey(
   studentId: string,
@@ -267,7 +521,25 @@ export function getStudentRecordsCacheKey(
 }
 
 /**
- * Invalidate all student-related caches
+ * Invalidate all cache entries for a specific student
+ *
+ * @async
+ * @function invalidateStudentCache
+ * @param {string} studentId - Student identifier
+ * @returns {Promise<void>}
+ *
+ * @description Removes all cached data related to a student, including:
+ * - Health summaries
+ * - Medical records
+ * - Medications
+ * - Appointments
+ *
+ * @example
+ * // After updating student health record
+ * await updateHealthRecord(studentId, newData);
+ * await invalidateStudentCache(studentId);
+ *
+ * @performance Uses pattern matching to delete all related keys
  */
 export async function invalidateStudentCache(studentId: string): Promise<void> {
   const pattern = `${CACHE_KEYS.STUDENT_PREFIX}${studentId}:*`;
@@ -275,7 +547,23 @@ export async function invalidateStudentCache(studentId: string): Promise<void> {
 }
 
 /**
- * Batch cache invalidation for multiple students
+ * Batch invalidate cache for multiple students
+ *
+ * @async
+ * @function invalidateStudentsCacheBatch
+ * @param {string[]} studentIds - Array of student identifiers
+ * @returns {Promise<void>}
+ *
+ * @description Efficiently invalidates cache for multiple students using pipeline.
+ * Useful when bulk operations affect many students.
+ *
+ * @example
+ * // After bulk medication update
+ * const affectedStudents = ['123', '456', '789'];
+ * await invalidateStudentsCacheBatch(affectedStudents);
+ *
+ * @performance Uses Redis pipeline for batch operations
+ * @throws Never throws - logs errors and continues
  */
 export async function invalidateStudentsCacheBatch(studentIds: string[]): Promise<void> {
   if (!isRedisConnected()) {
@@ -299,7 +587,30 @@ export async function invalidateStudentsCacheBatch(studentIds: string[]): Promis
 }
 
 /**
- * Get cache statistics
+ * Get Redis cache statistics and metrics
+ *
+ * @async
+ * @function getCacheStats
+ * @returns {Promise<Object>} Cache statistics object
+ * @returns {boolean} returns.connected - Redis connection status
+ * @returns {number} [returns.dbSize] - Total number of keys in database
+ * @returns {string} [returns.usedMemory] - Memory used by Redis (human readable)
+ * @returns {number} [returns.hitRate] - Cache hit rate percentage (0-100)
+ *
+ * @description Retrieves performance metrics from Redis INFO command including:
+ * - Connection status
+ * - Database size (key count)
+ * - Memory usage
+ * - Hit/miss ratio
+ *
+ * @example
+ * const stats = await getCacheStats();
+ * console.log(`Cache hit rate: ${stats.hitRate?.toFixed(2)}%`);
+ * console.log(`Memory used: ${stats.usedMemory}`);
+ * console.log(`Total keys: ${stats.dbSize}`);
+ *
+ * @performance Minimal overhead - uses INFO stats section only
+ * @throws Never throws - returns { connected: false } on error
  */
 export async function getCacheStats(): Promise<{
   connected: boolean;
@@ -342,7 +653,27 @@ export async function getCacheStats(): Promise<{
 }
 
 /**
- * Graceful shutdown
+ * Gracefully disconnect from Redis
+ *
+ * @async
+ * @function disconnectRedis
+ * @returns {Promise<void>}
+ * @throws {Error} When Redis disconnection fails
+ *
+ * @description Cleanly closes Redis connection using QUIT command.
+ * Should be called during application shutdown to ensure:
+ * - Pending commands are flushed
+ * - Connection is properly closed
+ * - No hanging connections remain
+ *
+ * @example
+ * // In application shutdown handler
+ * process.on('SIGTERM', async () => {
+ *   await disconnectRedis();
+ *   process.exit(0);
+ * });
+ *
+ * @see {@link initializeRedis} For connection initialization
  */
 export async function disconnectRedis(): Promise<void> {
   if (redisClient) {

@@ -23,11 +23,46 @@
  */
 
 /**
- * Framework-agnostic Security Headers Middleware
- * Implements OWASP security best practices for HTTP headers
+ * @fileoverview Security Headers Middleware with OWASP Best Practices
+ * @module middleware/security/headers
+ * @description Framework-agnostic HTTP security headers middleware implementing OWASP Secure Headers
+ * Project recommendations for healthcare applications. Provides comprehensive protection against
+ * common web vulnerabilities through HTTP security headers.
  *
- * Compliance: OWASP Secure Headers Project
- * HIPAA: Protects PHI transmission security
+ * Key Features:
+ * - Content Security Policy (CSP) with nonce generation
+ * - HTTP Strict Transport Security (HSTS) for HTTPS enforcement
+ * - X-Frame-Options for clickjacking protection
+ * - X-Content-Type-Options for MIME sniffing prevention
+ * - Referrer Policy for information leakage control
+ * - Permissions Policy for browser feature restriction
+ * - Cross-Origin policies (COEP, COOP, CORP) for isolation
+ * - Environment-specific configurations (dev vs production)
+ * - PHI-specific download headers with cache control
+ *
+ * Security Headers Applied:
+ * - Content-Security-Policy: Controls resource loading sources
+ * - Strict-Transport-Security: Forces HTTPS connections
+ * - X-Frame-Options: Prevents iframe embedding (clickjacking)
+ * - X-Content-Type-Options: Blocks MIME type sniffing
+ * - X-XSS-Protection: Legacy XSS filter (browser-level)
+ * - Referrer-Policy: Controls referrer information leakage
+ * - Permissions-Policy: Restricts browser features (camera, geolocation, etc.)
+ * - X-Download-Options: Prevents file execution in IE
+ * - Cross-Origin-Embedder-Policy: Isolates origin
+ * - Cross-Origin-Opener-Policy: Prevents window.opener access
+ * - Cross-Origin-Resource-Policy: Controls resource sharing
+ *
+ * @security Critical security middleware - protects against XSS, clickjacking, and data leakage
+ * @compliance
+ * - OWASP Secure Headers Project
+ * - HIPAA 164.312(e)(1) - Transmission Security (HSTS)
+ * - HIPAA 164.312(a)(1) - Access Control (CSP, frame protection)
+ *
+ * @requires ../../../utils/logger - Logging utilities
+ *
+ * @version 1.0.0
+ * @since 2025-01-01
  */
 
 import { logger } from '../../../utils/logger';
@@ -174,7 +209,62 @@ export const DEVELOPMENT_SECURITY_CONFIG: SecurityHeadersConfig = {
 };
 
 /**
- * Core Security Headers Middleware Class
+ * Security Headers Middleware implementing OWASP best practices
+ *
+ * @class SecurityHeadersMiddleware
+ * @description Framework-agnostic middleware that applies comprehensive HTTP security headers
+ * to protect healthcare applications against common web vulnerabilities including XSS,
+ * clickjacking, MIME sniffing, and information leakage.
+ *
+ * Security Protection Layers:
+ * 1. **Content Security Policy (CSP)**: Prevents XSS by controlling resource sources
+ * 2. **HSTS**: Enforces HTTPS connections (required for PHI transmission)
+ * 3. **Frame Protection**: Prevents clickjacking attacks
+ * 4. **MIME Sniffing**: Blocks content type confusion attacks
+ * 5. **Referrer Control**: Prevents information leakage through referrer headers
+ * 6. **Feature Policies**: Disables unnecessary browser features (camera, geolocation)
+ * 7. **Cross-Origin Isolation**: Prevents cross-origin attacks
+ *
+ * Environment Configurations:
+ * - **Development**: Relaxed CSP, disabled HSTS, detailed errors
+ * - **Production**: Strict CSP, enforced HSTS, minimal error exposure
+ *
+ * @example
+ * // Create middleware with production defaults
+ * const securityHeaders = new SecurityHeadersMiddleware({
+ *   environment: 'production',
+ *   enableStackTrace: false,
+ *   sanitizePHI: true
+ * });
+ *
+ * @example
+ * // Apply headers to response
+ * const result = securityHeaders.applyHeaders(existingHeaders);
+ * response.setHeaders(result.headers);
+ *
+ * @example
+ * // Apply download-specific headers for PHI documents
+ * const result = securityHeaders.applyDownloadHeaders(
+ *   'patient-record.pdf',
+ *   'application/pdf',
+ *   {}
+ * );
+ *
+ * @security
+ * - CSP prevents XSS attacks by restricting script sources
+ * - HSTS enforces HTTPS for all PHI transmissions
+ * - Frame options prevent embedding in malicious sites
+ * - Permissions policy disables unnecessary browser features
+ *
+ * @compliance
+ * - OWASP Secure Headers Project compliance
+ * - HIPAA 164.312(e)(1) - Transmission Security (HSTS enforcement)
+ * - HIPAA 164.312(a)(1) - Access Control (CSP, frame protection)
+ *
+ * @performance
+ * - Headers cached and reused across requests
+ * - Nonce generation uses cryptographically secure random
+ * - Minimal overhead on response processing
  */
 export class SecurityHeadersMiddleware {
   private config: SecurityHeadersConfig;
@@ -295,7 +385,64 @@ export class SecurityHeadersMiddleware {
   }
 
   /**
-   * Apply security headers (framework-agnostic)
+   * Apply comprehensive security headers to HTTP response
+   *
+   * @function applyHeaders
+   * @param {Record<string, string>} [existingHeaders={}] - Existing headers to merge with
+   * @returns {SecurityHeaderResult} Result with applied headers and any warnings
+   *
+   * @description
+   * Applies all configured security headers to the response object. Headers are merged
+   * with existing headers, with security headers taking precedence.
+   *
+   * Headers Applied:
+   * 1. **Content-Security-Policy**: Controls allowed resource sources with nonce support
+   * 2. **Strict-Transport-Security**: Forces HTTPS with configurable max-age
+   * 3. **X-Frame-Options**: Prevents clickjacking (DENY or SAMEORIGIN)
+   * 4. **X-Content-Type-Options**: Prevents MIME sniffing (nosniff)
+   * 5. **X-XSS-Protection**: Legacy XSS filter for older browsers
+   * 6. **Referrer-Policy**: Controls referrer information sent
+   * 7. **Permissions-Policy**: Restricts browser features
+   * 8. **Additional Headers**: Custom headers from configuration
+   *
+   * Nonce Generation:
+   * - Generates cryptographically secure nonce for CSP
+   * - Nonce added to script-src and style-src directives
+   * - Replaces 'unsafe-inline' when nonce is used
+   * - Stored in response headers for template rendering
+   *
+   * @example
+   * // Apply headers to response
+   * const middleware = new SecurityHeadersMiddleware();
+   * const result = middleware.applyHeaders();
+   *
+   * if (result.applied) {
+   *   Object.entries(result.headers).forEach(([key, value]) => {
+   *     response.setHeader(key, value);
+   *   });
+   * }
+   *
+   * @example
+   * // Merge with existing headers
+   * const existing = { 'X-Custom': 'value' };
+   * const result = middleware.applyHeaders(existing);
+   * // result.headers contains both security and custom headers
+   *
+   * @security
+   * - CSP nonce prevents XSS attacks by allowing only trusted inline scripts
+   * - HSTS enforces HTTPS for all connections (prevents downgrade attacks)
+   * - Frame options prevent clickjacking attacks
+   * - MIME sniffing protection prevents content type confusion
+   *
+   * @compliance
+   * - OWASP A03:2021 - Injection (CSP protection)
+   * - OWASP A05:2021 - Security Misconfiguration (secure headers)
+   * - HIPAA 164.312(e)(1) - Transmission Security (HSTS)
+   *
+   * @performance
+   * - Single nonce generation per request
+   * - Headers built once and cached
+   * - Minimal string manipulation overhead
    */
   applyHeaders(existingHeaders: Record<string, string> = {}): SecurityHeaderResult {
     const headers: Record<string, string> = { ...existingHeaders };

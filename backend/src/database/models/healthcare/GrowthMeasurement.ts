@@ -1,25 +1,33 @@
 /**
+ * @fileoverview Growth Measurement Database Model
+ * @module database/models/healthcare/GrowthMeasurement
+ * @description Sequelize model for tracking student growth metrics including height, weight,
+ * BMI calculations, percentiles, and nutritional status monitoring.
+ *
+ * Key Features:
+ * - Height and weight tracking with unit support (metric/imperial)
+ * - Automatic BMI calculation
+ * - CDC growth chart percentile tracking
+ * - Head circumference for pediatric patients
+ * - Nutritional status assessment
+ * - Growth concern flagging
+ * - Longitudinal growth trend analysis support
+ * - Full audit trail for compliance
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Contains Protected Health Information (PHI)
+ * @compliance FERPA §99.3 - Educational health records
+ * @compliance CDC Growth Charts - Standardized percentile calculations
+ * @audit All measurements logged for medical record continuity
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../base/AuditableModel
+ *
  * LOC: 27A85F2871
- * WC-GEN-065 | GrowthMeasurement.ts - General utility functions and operations
+ * WC-GEN-065
  *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- */
-
-/**
- * WC-GEN-065 | GrowthMeasurement.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../base/AuditableModel
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * UPSTREAM: sequelize.ts, AuditableModel.ts
+ * DOWNSTREAM: index.ts, GrowthMeasurementRepository.ts
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
@@ -27,11 +35,35 @@ import { sequelize } from '../../config/sequelize';
 import { AuditableModel } from '../base/AuditableModel';
 
 /**
- * GrowthMeasurement Model
- * Manages student growth tracking including height, weight, BMI, and developmental percentiles.
- * This model contains Protected Health Information (PHI) and is subject to HIPAA compliance.
+ * @interface GrowthMeasurementAttributes
+ * @description TypeScript interface defining all GrowthMeasurement model attributes
+ *
+ * @property {string} id - Primary key, auto-generated UUID
+ * @property {string} studentId - Foreign key reference to student, required
+ * @property {string} [healthRecordId] - Optional link to related health record (nullable)
+ * @property {Date} measurementDate - Date of measurement, required
+ * @property {string} measuredBy - Person who took measurements, required
+ * @property {string} [measuredByRole] - Role (e.g., "School Nurse", "MA"), nullable
+ * @property {number} [height] - Height measurement, nullable
+ * @property {string} heightUnit - Unit for height (cm, in), defaults to "cm"
+ * @property {number} [weight] - Weight measurement, nullable
+ * @property {string} weightUnit - Unit for weight (kg, lb), defaults to "kg"
+ * @property {number} [bmi] - Body Mass Index (calculated), nullable
+ * @property {number} [bmiPercentile] - BMI percentile per CDC growth charts (0-100), nullable
+ * @property {number} [headCircumference] - Head circumference for infants/toddlers (cm), nullable
+ * @property {number} [heightPercentile] - Height percentile per CDC charts (0-100), nullable
+ * @property {number} [weightPercentile] - Weight percentile per CDC charts (0-100), nullable
+ * @property {any} [growthPercentiles] - Additional percentile data (JSONB), nullable
+ * @property {string} [nutritionalStatus] - Assessment (underweight, healthy, overweight, obese), nullable
+ * @property {string} [concerns] - Growth concerns or flags (nullable)
+ * @property {string} [notes] - Additional notes or observations (nullable)
+ * @property {string} [createdBy] - User ID who created the record (audit field)
+ * @property {string} [updatedBy] - User ID who last updated the record (audit field)
+ * @property {Date} createdAt - Timestamp of record creation
+ * @property {Date} updatedAt - Timestamp of last update
+ *
+ * @security PHI - Contains sensitive health measurements
  */
-
 interface GrowthMeasurementAttributes {
   id: string;
   studentId: string;
@@ -58,6 +90,11 @@ interface GrowthMeasurementAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface GrowthMeasurementCreationAttributes
+ * @description Attributes required when creating a new GrowthMeasurement instance.
+ * Extends GrowthMeasurementAttributes with optional fields that have defaults or are auto-generated.
+ */
 interface GrowthMeasurementCreationAttributes
   extends Optional<
     GrowthMeasurementAttributes,
@@ -83,6 +120,62 @@ interface GrowthMeasurementCreationAttributes
     | 'updatedBy'
   > {}
 
+/**
+ * @class GrowthMeasurement
+ * @extends Model
+ * @description Student growth tracking model with BMI calculation and CDC percentile monitoring.
+ *
+ * @tablename growth_measurements
+ *
+ * Key Features:
+ * - Flexible unit support (metric/imperial)
+ * - BMI auto-calculation from height/weight
+ * - CDC growth chart percentile tracking (height, weight, BMI, head circumference)
+ * - Nutritional status classification
+ * - Growth concern flagging for screening
+ * - Longitudinal trend analysis support
+ * - Full audit trail
+ * - Indexed for efficient student timeline queries
+ *
+ * BMI Categories (CDC Guidelines):
+ * - Underweight: BMI < 5th percentile
+ * - Healthy Weight: BMI 5th to < 85th percentile
+ * - Overweight: BMI 85th to < 95th percentile
+ * - Obese: BMI >= 95th percentile
+ *
+ * @security Contains PHI - Growth data is sensitive health information
+ * @compliance HIPAA Privacy Rule - 45 CFR §164.308(a)(3)(ii)(A)
+ * @compliance CDC Growth Charts - Age and sex-specific percentiles
+ *
+ * @example
+ * // Record growth measurement for 10-year-old
+ * const measurement = await GrowthMeasurement.create({
+ *   studentId: 'student-uuid',
+ *   measurementDate: new Date(),
+ *   measuredBy: 'Nurse Johnson',
+ *   measuredByRole: 'School Nurse',
+ *   height: 140.5,
+ *   heightUnit: 'cm',
+ *   weight: 35.2,
+ *   weightUnit: 'kg',
+ *   bmi: 17.8,
+ *   bmiPercentile: 52,
+ *   heightPercentile: 48,
+ *   weightPercentile: 55,
+ *   nutritionalStatus: 'Healthy Weight'
+ * });
+ *
+ * @example
+ * // Find students with concerning growth patterns
+ * const concerns = await GrowthMeasurement.findAll({
+ *   where: {
+ *     concerns: { [Op.not]: null },
+ *     measurementDate: { [Op.gte]: subMonths(new Date(), 6) }
+ *   },
+ *   include: ['student'],
+ *   order: [['measurementDate', 'DESC']]
+ * });
+ */
 export class GrowthMeasurement
   extends Model<GrowthMeasurementAttributes, GrowthMeasurementCreationAttributes>
   implements GrowthMeasurementAttributes

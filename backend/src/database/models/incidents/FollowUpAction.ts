@@ -1,25 +1,36 @@
 /**
+ * @fileoverview Follow-Up Action Database Model
+ * @module database/models/incidents/FollowUpAction
+ * @description Sequelize model for managing follow-up actions and tasks related to incident reports.
+ * Provides task assignment, priority management, and completion tracking for incident resolution.
+ *
+ * Key Features:
+ * - Action assignment to staff members
+ * - Priority-based task management (LOW, MEDIUM, HIGH, URGENT)
+ * - Due date tracking with validation
+ * - Status workflow (PENDING → IN_PROGRESS → COMPLETED/CANCELLED)
+ * - Completion tracking with timestamps and user references
+ * - Integration with incident reports
+ *
+ * Business Rules:
+ * - Due dates must be in the future for new actions
+ * - Completed actions require completedBy user reference
+ * - High priority actions should have due dates within 48 hours
+ * - Urgent priority actions should have due dates within 24 hours
+ * - Completion notes strongly recommended for audit trail
+ *
+ * @compliance HIPAA - Follow-up actions may reference PHI
+ * @compliance State regulations - Required tracking for injury incidents
+ *
+ * @legal Retention requirement: 7 years (tied to parent incident report)
+ * @legal Demonstrates due diligence in incident response
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../../types/enums
+ *
  * LOC: 7119D192A5
- * WC-GEN-071 | FollowUpAction.ts - General utility functions and operations
- *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - enums.ts (database/types/enums.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- */
-
-/**
- * WC-GEN-071 | FollowUpAction.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * Last Updated: 2025-10-17
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
@@ -27,10 +38,52 @@ import { sequelize } from '../../config/sequelize';
 import { ActionPriority, ActionStatus } from '../../types/enums';
 
 /**
- * FollowUpAction Model
- * Manages follow-up actions and tasks for incident reports including assignments and completion tracking.
+ * @interface FollowUpActionAttributes
+ * @description Defines the complete structure of a follow-up action record
+ *
+ * @property {string} id - Unique identifier (UUID v4)
+ * @property {string} incidentReportId - Reference to parent incident report
+ * @business Links action to originating incident for tracking and reporting
+ *
+ * @property {string} action - Description of the follow-up action required (5-500 characters)
+ * @business Must be specific and actionable for assignment
+ *
+ * @property {Date} dueDate - When the action must be completed
+ * @business Must be in the future for new actions
+ * @business URGENT priority: typically within 24 hours
+ * @business HIGH priority: typically within 48 hours
+ * @business MEDIUM priority: typically within 1 week
+ * @business LOW priority: typically within 2 weeks
+ *
+ * @property {ActionPriority} priority - Priority level of the action
+ * @enum {ActionPriority} ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+ * @business URGENT: Immediate attention required (e.g., critical injury follow-up)
+ * @business HIGH: Prompt attention needed (e.g., parent meeting scheduling)
+ * @business MEDIUM: Normal business priority (e.g., documentation review)
+ * @business LOW: Can be addressed when time permits (e.g., general notifications)
+ *
+ * @property {ActionStatus} status - Current status of the action
+ * @enum {ActionStatus} ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+ * @business Workflow: PENDING → IN_PROGRESS → COMPLETED
+ * @business Actions can be CANCELLED at any stage if no longer needed
+ *
+ * @property {string} [assignedTo] - User ID of assigned staff member
+ * @business Optional for unassigned actions; required before moving to IN_PROGRESS
+ *
+ * @property {Date} [completedAt] - Timestamp when action was completed
+ * @business Auto-set when status changes to COMPLETED
+ *
+ * @property {string} [completedBy] - User ID who completed the action
+ * @business Required when status is COMPLETED
+ * @compliance Provides accountability and audit trail
+ *
+ * @property {string} [notes] - Additional notes about the action (max 2000 characters)
+ * @business Strongly recommended for COMPLETED actions
+ * @compliance Provides context for compliance reviews
+ *
+ * @property {Date} createdAt - Record creation timestamp
+ * @property {Date} updatedAt - Record last update timestamp
  */
-
 interface FollowUpActionAttributes {
   id: string;
   incidentReportId: string;
@@ -46,6 +99,11 @@ interface FollowUpActionAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface FollowUpActionCreationAttributes
+ * @description Defines optional fields when creating a new follow-up action
+ * @extends FollowUpActionAttributes
+ */
 interface FollowUpActionCreationAttributes
   extends Optional<
     FollowUpActionAttributes,
@@ -60,6 +118,52 @@ interface FollowUpActionCreationAttributes
     | 'notes'
   > {}
 
+/**
+ * @class FollowUpAction
+ * @extends Model
+ * @description Sequelize model class for follow-up actions
+ *
+ * Workflow Summary:
+ * 1. Action created linked to incident report (auto-status: PENDING)
+ * 2. Action assigned to staff member (assignedTo set)
+ * 3. Staff begins work (status → IN_PROGRESS)
+ * 4. Staff completes action (status → COMPLETED, auto-timestamps applied)
+ * 5. System validates completedBy is set
+ * 6. Action retained with incident report for 7 years
+ *
+ * Priority Guidelines:
+ * - URGENT: Medical follow-up, immediate safety concerns (< 24 hours)
+ * - HIGH: Parent meetings, insurance claims, compliance reviews (< 48 hours)
+ * - MEDIUM: Documentation updates, routine follow-ups (< 1 week)
+ * - LOW: General notifications, administrative tasks (< 2 weeks)
+ *
+ * Associations:
+ * - belongsTo: IncidentReport (parent incident)
+ * - belongsTo: User (assignedTo - assigned staff member)
+ * - belongsTo: User (completedBy - completing staff member)
+ *
+ * Hooks:
+ * - beforeUpdate: Auto-timestamp completedAt when status → COMPLETED
+ * - beforeUpdate: Clear completion data if status changes away from COMPLETED
+ *
+ * @example
+ * // Create a follow-up action
+ * const action = await FollowUpAction.create({
+ *   incidentReportId: 'incident-uuid',
+ *   action: 'Schedule follow-up appointment with school nurse',
+ *   dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days
+ *   priority: ActionPriority.HIGH,
+ *   assignedTo: 'nurse-uuid'
+ * });
+ *
+ * @example
+ * // Complete an action
+ * await action.update({
+ *   status: ActionStatus.COMPLETED,
+ *   completedBy: 'nurse-uuid',
+ *   notes: 'Follow-up appointment completed. Student condition stable.'
+ * });
+ */
 export class FollowUpAction
   extends Model<FollowUpActionAttributes, FollowUpActionCreationAttributes>
   implements FollowUpActionAttributes

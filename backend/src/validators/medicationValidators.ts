@@ -21,42 +21,68 @@
  * LLM Context: Medication safety validation, prevents dosing errors, HIPAA compliance
  */
 
-import Joi from 'joi';
-
 /**
- * Medication Validation Schemas
- * Comprehensive validation for all medication operations
- * Ensures healthcare compliance, patient safety, and data integrity
- *
- * CRITICAL: These validations prevent medication errors
- * All validations follow the Five Rights of Medication Administration:
- * 1. Right Patient
- * 2. Right Medication
- * 3. Right Dose
- * 4. Right Route
- * 5. Right Time
+ * @fileoverview Medication Validation Schemas
+ * @module validators/medicationValidators
+ * @description Comprehensive Joi validation schemas for medication operations following the Five Rights of Medication Administration
+ * @requires joi - Validation library
+ * @security Implements Five Rights: Right Patient, Right Medication, Right Dose, Right Route, Right Time
+ * @compliance DEA Schedule validation for controlled substances, NDC code validation, dosage safety checks
  */
 
+import Joi from 'joi';
+
 // ============================================================================
-// MEDICATION VALIDATION
+// VALIDATION PATTERNS AND CONSTANTS
 // ============================================================================
 
 /**
- * NDC (National Drug Code) Format Validation
- * Format: XXXXX-XXXX-XX (5-4-2 format) or XXXXX-XXX-XX (5-3-2 format)
- * Example: 12345-1234-12 or 12345-123-12
+ * @constant {RegExp} ndcPattern
+ * @description NDC (National Drug Code) format validation pattern
+ * @validation
+ * - Format: XXXXX-XXXX-XX (5-4-2 format) or XXXXX-XXX-XX (5-3-2 format)
+ * - Must be all numeric with hyphens in correct positions
+ * @example
+ * // Valid NDC codes
+ * '12345-1234-12'  // 5-4-2 format
+ * '12345-123-12'   // 5-3-2 format
+ *
+ * // Invalid
+ * '1234-1234-12'   // Wrong format
+ * '12345-12345-12' // Too many digits in middle section
  */
 const ndcPattern = /^[0-9]{5}-([0-9]{3,4})-[0-9]{2}$/;
 
 /**
- * Dosage format validation
- * Supports: "500mg", "10ml", "2 tablets", "1 unit", etc.
+ * @constant {RegExp} dosagePattern
+ * @description Dosage format validation pattern for medication amounts
+ * @validation
+ * - Numeric value (integer or decimal)
+ * - Space (optional)
+ * - Unit: mg, g, mcg, ml, L, units, tablets, capsules, drops, puff, patch, spray, application, mEq, %
+ * @example
+ * // Valid dosages
+ * '500mg', '10ml', '2 tablets', '1 unit', '0.5mg', '2.5 tablets'
+ *
+ * // Invalid
+ * '500', 'mg', '500 milligrams', 'two tablets'
  */
 const dosagePattern = /^[0-9]+(\.[0-9]+)?\s*(mg|g|mcg|ml|L|units?|tablets?|capsules?|drops?|puff|patch|spray|application|mEq|%)$/i;
 
 /**
- * Frequency validation patterns
- * Common medical abbreviations: BID, TID, QID, QHS, PRN, etc.
+ * @constant {Array<RegExp>} frequencyPatterns
+ * @description Frequency validation patterns for medication administration schedules
+ * @validation Supports standard medical abbreviations and common phrases:
+ * - Daily patterns: "once daily", "twice daily", "1x daily", "2x per day"
+ * - Multiple times: "three times daily", "four times a day"
+ * - Hourly intervals: "every 6 hours", "every 8 hrs"
+ * - Medical abbreviations: QID (4x/day), TID (3x/day), BID (2x/day), QD (daily), QHS (at bedtime), PRN (as needed)
+ * - Meal-related: "before meals", "after lunch", "with dinner"
+ * - Time-specific: "at bedtime", "morning"
+ * - Periodic: "weekly", "monthly"
+ * @example
+ * // Valid frequencies
+ * 'twice daily', 'BID', 'every 6 hours', 'q8h', 'as needed', 'PRN', 'before meals', 'at bedtime'
  */
 const frequencyPatterns = [
   /^(once|twice|1x|2x|3x|4x)\s*(daily|per day)$/i,
@@ -72,13 +98,77 @@ const frequencyPatterns = [
 ];
 
 /**
- * DEA Schedule validation for controlled substances
- * Schedule I-V classification
+ * @constant {Array<string>} deaSchedules
+ * @description DEA Schedule classification for controlled substances
+ * @validation
+ * - Schedule I: High abuse potential, no accepted medical use (research only)
+ * - Schedule II: High abuse potential, accepted medical use with severe restrictions
+ * - Schedule III: Moderate to low abuse potential
+ * - Schedule IV: Low abuse potential
+ * - Schedule V: Lowest abuse potential
+ * @security Schedule II substances require witness for administration
+ * @example ['I', 'II', 'III', 'IV', 'V']
  */
 const deaSchedules = ['I', 'II', 'III', 'IV', 'V'];
 
+// ============================================================================
+// MEDICATION VALIDATION
+// ============================================================================
+
 /**
- * Schema for creating a new medication
+ * @constant {Object} createMedicationSchema
+ * @description Joi validation schema for creating a new medication in the formulary
+ * @type {Joi.ObjectSchema}
+ * @property {string} name - Required, min 2 chars, max 200 chars, medication name
+ * @property {string} [genericName] - Optional, min 2 chars, max 200 chars
+ * @property {string} dosageForm - Required, enum: ['Tablet', 'Capsule', 'Liquid', 'Injection', 'Topical', 'Inhaler', 'Drops', 'Patch', 'Suppository', 'Powder', 'Cream', 'Ointment', 'Gel', 'Spray', 'Lozenge']
+ * @property {string} strength - Required, pattern: /^[0-9]+(\.[0-9]+)?\s*(mg|g|mcg|ml|L|units?|mEq|%)$/i (e.g., "500mg", "10ml")
+ * @property {string} [manufacturer] - Optional, max 200 chars
+ * @property {string} [ndc] - Optional, NDC format: XXXXX-XXXX-XX or XXXXX-XXX-XX
+ * @property {boolean} [isControlled=false] - Optional, defaults to false
+ * @property {string} deaSchedule - Conditional required when isControlled=true, enum: ['I', 'II', 'III', 'IV', 'V']
+ * @property {boolean} requiresWitness - Defaults to true for Schedule I/II, false otherwise
+ * @validation
+ * - Controlled substances (isControlled=true) MUST have DEA Schedule
+ * - Schedule I and II substances automatically require witness
+ * - Strength must match dosage pattern with valid units
+ * @security
+ * - NDC validation prevents invalid drug codes
+ * - DEA Schedule validation ensures proper controlled substance handling
+ * - Witness requirement for high-risk medications (Schedule I/II)
+ * @example
+ * // Valid medication
+ * {
+ *   name: 'Amoxicillin',
+ *   genericName: 'Amoxicillin',
+ *   dosageForm: 'Capsule',
+ *   strength: '500mg',
+ *   manufacturer: 'Generic Pharma',
+ *   ndc: '12345-1234-12',
+ *   isControlled: false
+ * }
+ *
+ * @example
+ * // Valid controlled substance
+ * {
+ *   name: 'Adderall',
+ *   genericName: 'Amphetamine/Dextroamphetamine',
+ *   dosageForm: 'Tablet',
+ *   strength: '10mg',
+ *   isControlled: true,
+ *   deaSchedule: 'II',
+ *   requiresWitness: true
+ * }
+ *
+ * @example
+ * // Invalid - controlled substance missing DEA schedule
+ * {
+ *   name: 'Oxycodone',
+ *   dosageForm: 'Tablet',
+ *   strength: '5mg',
+ *   isControlled: true
+ *   // Missing deaSchedule - will fail validation
+ * }
  */
 export const createMedicationSchema = Joi.object({
   name: Joi.string()
@@ -261,7 +351,23 @@ export const updateMedicationSchema = Joi.object({
 // ============================================================================
 
 /**
- * Custom frequency validator
+ * @function frequencyValidator
+ * @description Custom Joi validator for medication frequency patterns
+ * @param {string} value - Frequency string to validate
+ * @param {Object} helpers - Joi helper functions
+ * @returns {string|Joi.ErrorReport} Returns value if valid, error if invalid
+ * @validation Tests value against all frequencyPatterns (medical abbreviations and common phrases)
+ * @throws {ValidationError} When frequency doesn't match any valid pattern
+ * @example
+ * // Valid inputs
+ * frequencyValidator('twice daily', helpers)    // ✓
+ * frequencyValidator('BID', helpers)           // ✓
+ * frequencyValidator('every 6 hours', helpers) // ✓
+ * frequencyValidator('as needed', helpers)     // ✓
+ *
+ * // Invalid inputs
+ * frequencyValidator('whenever', helpers)      // ✗ - Not a standard pattern
+ * frequencyValidator('sometimes', helpers)     // ✗ - Too vague
  */
 const frequencyValidator = (value: string, helpers: any) => {
   const normalizedValue = value.trim().toLowerCase();
@@ -449,8 +555,65 @@ export const updateStudentMedicationSchema = Joi.object({
 // ============================================================================
 
 /**
- * Schema for logging medication administration
- * CRITICAL: Implements Five Rights validation
+ * @constant {Object} logMedicationAdministrationSchema
+ * @description Joi validation schema for logging medication administration - CRITICAL FOR PATIENT SAFETY
+ * @type {Joi.ObjectSchema}
+ * @security Implements the Five Rights of Medication Administration:
+ * - Right Patient: studentMedicationId + patientVerified
+ * - Right Medication: Verified through studentMedicationId link
+ * - Right Dose: dosageGiven validation
+ * - Right Route: Verified through prescription
+ * - Right Time: timeGiven validation
+ * @property {string} studentMedicationId - Required UUID, links to prescription (Right Patient, Right Medication)
+ * @property {string} dosageGiven - Required, pattern: dosagePattern (e.g., "500mg", "2 tablets") (Right Dose)
+ * @property {Date} timeGiven - Required, cannot be in future (Right Time)
+ * @property {string} [notes] - Optional, max 2000 chars, administration notes
+ * @property {string} [sideEffects] - Optional, max 2000 chars, observed side effects
+ * @property {string} [deviceId] - Optional, max 100 chars, device identifier (e.g., inhaler serial)
+ * @property {string} [witnessId] - Optional UUID, required for controlled substances
+ * @property {string} [witnessName] - Optional, max 200 chars, witness name for controlled substances
+ * @property {boolean} [patientVerified=true] - Optional, defaults to true, confirms patient identity
+ * @property {boolean} [allergyChecked=true] - Optional, defaults to true, confirms allergy review
+ * @validation
+ * - Dosage must match valid format (number + unit)
+ * - Time cannot be in future (prevents backdating)
+ * - Patient verification required (safety check)
+ * - Allergy check required (safety check)
+ * @security
+ * - Patient identity verification
+ * - Allergy cross-check
+ * - Witness requirement for controlled substances
+ * - Audit trail with timestamps
+ * @example
+ * // Valid medication administration
+ * {
+ *   studentMedicationId: '123e4567-e89b-12d3-a456-426614174000',
+ *   dosageGiven: '500mg',
+ *   timeGiven: '2024-10-18T14:30:00Z',
+ *   notes: 'Administered with water, no issues',
+ *   patientVerified: true,
+ *   allergyChecked: true
+ * }
+ *
+ * @example
+ * // Controlled substance with witness
+ * {
+ *   studentMedicationId: '123e4567-e89b-12d3-a456-426614174000',
+ *   dosageGiven: '10mg',
+ *   timeGiven: '2024-10-18T08:00:00Z',
+ *   witnessId: '987e6543-e21b-43d2-b654-426614174999',
+ *   witnessName: 'Sarah Johnson, RN',
+ *   patientVerified: true,
+ *   allergyChecked: true
+ * }
+ *
+ * @example
+ * // Invalid - future timestamp
+ * {
+ *   studentMedicationId: '123e4567-e89b-12d3-a456-426614174000',
+ *   dosageGiven: '500mg',
+ *   timeGiven: '2099-01-01T00:00:00Z'  // In future - will fail
+ * }
  */
 export const logMedicationAdministrationSchema = Joi.object({
   studentMedicationId: Joi.string()

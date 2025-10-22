@@ -1,22 +1,31 @@
 /**
+ * @fileoverview Allergy Management Service - HIPAA-Compliant Allergy Tracking
+ * @module services/healthRecord/allergy.module
+ * @description Student allergy management with life-threatening severity monitoring
+ *
+ * Key Features:
+ * - CRUD operations for student allergies
+ * - Severity classification (mild, moderate, severe, life-threatening)
+ * - EpiPen requirement tracking
+ * - Duplicate allergy prevention
+ * - Automatic staff notifications for critical allergies
+ * - Verification status tracking
+ * - Reaction history documentation
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Administrative Safeguards
+ * @compliance HIPAA Security Rule §164.312 - Technical Safeguards
+ * @compliance Emergency Medical Treatment Act - Life-threatening allergen alerts
+ * @security PHI - All operations tracked in audit log
+ * @safety Life-threatening allergies trigger automatic notifications
+ * @audit Minimum 6-year retention for HIPAA compliance
+ *
+ * @requires ../../utils/logger
+ * @requires ../../database/models
+ * @requires ./validation.module
+ *
  * LOC: 5C8D3A7F42
- * WC-SVC-HLT-ALG | allergy.module.ts - Allergy Management Module
- *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - models (database/models)
- *   - enums.ts (database/types/enums.ts)
- *   - types.ts (./types.ts)
- *   - validation.module.ts (./validation.module.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (./index.ts)
- *
- * Purpose: Allergy record management with severity tracking and HIPAA compliance
- * Exports: AllergyModule class with CRUD operations for student allergies
- * HIPAA: Contains PHI - allergy information with critical severity alerts
+ * WC-SVC-HLT-ALG | allergy.module.ts
  * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Allergy validation → Severity check → Database → Alert logging
  */
 
 import { logger } from '../../utils/logger';
@@ -26,12 +35,68 @@ import { CreateAllergyData } from './types';
 import { ValidationModule } from './validation.module';
 
 /**
- * Allergy Module
- * Manages student allergy records with validation and severity tracking
+ * @class AllergyModule
+ * @description Manages student allergy records with HIPAA compliance and safety protocols
+ * @security All methods require proper authentication and authorization
+ * @audit All operations logged for compliance tracking
+ * @safety Critical severity allergies trigger automatic staff alerts
  */
 export class AllergyModule {
   /**
-   * Add allergy to student with validation
+   * @method addAllergy
+   * @description Record new allergy with safety protocols and duplicate prevention
+   * @async
+   *
+   * @param {CreateAllergyData} data - Allergy information
+   * @param {string} data.studentId - Student UUID
+   * @param {string} data.allergen - Specific allergen name (e.g., "Peanuts", "Penicillin")
+   * @param {string} data.allergyType - Type (food, medication, environmental, insect)
+   * @param {string} data.severity - Severity level (mild, moderate, severe, life-threatening)
+   * @param {string} [data.reaction] - Description of allergic reaction
+   * @param {boolean} [data.requiresEpiPen] - Whether EpiPen is required
+   * @param {boolean} [data.verified] - Whether allergy has been medically verified
+   * @param {string} [data.notes] - Additional notes
+   *
+   * @returns {Promise<any>} Created allergy record with associations
+   *
+   * @throws {Error} When student not found
+   * @throws {Error} When allergen name is empty
+   * @throws {Error} When severity is not provided
+   * @throws {Error} When allergy already exists for student
+   * @throws {ValidationError} When reaction format is invalid
+   * @throws {ForbiddenError} When user lacks 'health:allergies:create' permission
+   *
+   * @safety Life-threatening allergies trigger automatic staff notifications
+   * @safety Severe allergies logged as warnings for immediate attention
+   * @safety EpiPen location and expiration tracked separately
+   * @security PHI Creation - Requires 'health:allergies:create' permission
+   * @audit PHI creation logged with student ID and allergen
+   * @duplicate Prevents duplicate allergen entries for same student
+   *
+   * @example
+   * // Record life-threatening peanut allergy
+   * const allergy = await AllergyModule.addAllergy({
+   *   studentId: 'student-123',
+   *   allergen: 'Peanuts',
+   *   allergyType: 'food',
+   *   severity: 'life-threatening',
+   *   reaction: 'Anaphylaxis, difficulty breathing, hives',
+   *   requiresEpiPen: true,
+   *   verified: true,
+   *   notes: 'EpiPen stored in nurse office, expires 2025-06-30'
+   * });
+   *
+   * @example
+   * // Record moderate medication allergy
+   * const allergy = await AllergyModule.addAllergy({
+   *   studentId: 'student-456',
+   *   allergen: 'Penicillin',
+   *   allergyType: 'medication',
+   *   severity: 'moderate',
+   *   reaction: 'Skin rash, itching',
+   *   requiresEpiPen: false,
+   *   verified: true
+   * });
    */
   static async addAllergy(data: CreateAllergyData): Promise<any> {
     try {
@@ -104,7 +169,28 @@ export class AllergyModule {
   }
 
   /**
-   * Update allergy information
+   * @method updateAllergy
+   * @description Update allergy information with verification tracking
+   * @async
+   *
+   * @param {string} id - Allergy record UUID
+   * @param {Partial<CreateAllergyData>} data - Updated allergy data
+   *
+   * @returns {Promise<any>} Updated allergy record with associations
+   *
+   * @throws {Error} When allergy not found
+   * @throws {ForbiddenError} When user lacks 'health:allergies:update' permission
+   *
+   * @security PHI Modification - Requires 'health:allergies:update' permission
+   * @audit PHI modification logged with old and new values
+   * @verification Auto-sets verifiedAt timestamp when verified flag changes to true
+   *
+   * @example
+   * const updated = await AllergyModule.updateAllergy('allergy-123', {
+   *   severity: 'severe',
+   *   verified: true,
+   *   notes: 'Verified by allergist on 2024-01-15'
+   * });
    */
   static async updateAllergy(
     id: string,
@@ -149,7 +235,22 @@ export class AllergyModule {
   }
 
   /**
-   * Get student allergies
+   * @method getStudentAllergies
+   * @description Retrieve all allergies for a student, ordered by severity
+   * @async
+   *
+   * @param {string} studentId - Student UUID
+   *
+   * @returns {Promise<any[]>} Array of allergies ordered by severity (most severe first), then alphabetically
+   *
+   * @throws {Error} When database query fails
+   *
+   * @security PHI Access - Requires 'health:allergies:read' permission
+   * @audit PHI access logged with student ID
+   * @safety Most severe allergies listed first for quick identification
+   *
+   * @example
+   * const allergies = await AllergyModule.getStudentAllergies('student-123');
    */
   static async getStudentAllergies(studentId: string): Promise<any[]> {
     try {
@@ -176,7 +277,24 @@ export class AllergyModule {
   }
 
   /**
-   * Delete allergy
+   * @method deleteAllergy
+   * @description Delete allergy record (use with caution - consider marking inactive instead)
+   * @async
+   *
+   * @param {string} id - Allergy record UUID
+   *
+   * @returns {Promise<{success: boolean}>} Deletion result
+   *
+   * @throws {Error} When allergy not found
+   * @throws {ForbiddenError} When user lacks 'health:allergies:delete' permission
+   *
+   * @security PHI Deletion - Requires 'health:allergies:delete' permission
+   * @audit All deletions logged with allergy details
+   * @compliance Consider soft delete for HIPAA 6-year retention requirement
+   * @warning Deleting life-threatening allergies poses safety risk - verify intent
+   *
+   * @example
+   * const result = await AllergyModule.deleteAllergy('allergy-123');
    */
   static async deleteAllergy(id: string): Promise<{ success: boolean }> {
     try {

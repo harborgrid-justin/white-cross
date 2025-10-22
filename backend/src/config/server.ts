@@ -1,6 +1,34 @@
 /**
+ * @fileoverview Server Configuration Helpers
+ * @module config/server
+ * @description Hapi server configuration utilities for authentication, security, and error handling
+ * @requires @hapi/hapi - Hapi server framework
+ * @requires ../middleware - Healthcare middleware suite
+ * @requires ../database/models/User - User model for authentication
+ * @requires ../utils/logger - Application logging
+ */
+
+/**
  * Server Configuration Helpers
- * Provides helper functions for configuring Hapi server with middleware
+ *
+ * This module provides configuration utilities for the Hapi server including:
+ * - JWT authentication strategy setup
+ * - Security plugin registration
+ * - Global error handling
+ * - User authorization middleware
+ *
+ * @description Key features:
+ * - JWT-based authentication with user validation
+ * - Role-based access control (RBAC)
+ * - HIPAA-compliant audit logging
+ * - Production-ready error handling
+ * - Secure token management
+ *
+ * @example
+ * // Configure server during initialization
+ * await configureSecurity(server);
+ * await configureAuth(server);
+ * server.ext('onPreResponse', errorHandler);
  */
 
 import { Server } from '@hapi/hapi';
@@ -9,7 +37,48 @@ import { User } from '../database/models/User';
 import { logger } from '../utils/logger';
 
 /**
- * Configure authentication for Hapi server
+ * @constant {string} JWT_SECRET
+ * @description JWT signing secret from environment
+ * @env JWT_SECRET
+ * @default 'your-secret-key-here'
+ * @security CRITICAL - Must be set in production, never use default value
+ * @example
+ * // In .env file:
+ * JWT_SECRET=your-256-bit-secret-key-here
+ */
+
+/**
+ * Configure JWT authentication strategy for Hapi server
+ *
+ * @async
+ * @function configureAuth
+ * @param {Server} server - Hapi server instance
+ * @returns {Promise<void>}
+ *
+ * @description Sets up JWT authentication strategy with:
+ * - Bearer token validation
+ * - User credential loading from database
+ * - Healthcare middleware integration
+ * - HS256 algorithm verification
+ *
+ * @example
+ * const server = Hapi.server({ port: 3000 });
+ * await configureSecurity(server); // Must be called first
+ * await configureAuth(server);
+ *
+ * // Routes now require authentication by default
+ * server.route({
+ *   method: 'GET',
+ *   path: '/protected',
+ *   handler: (request, h) => {
+ *     // request.auth.credentials contains authenticated user
+ *     return { user: request.auth.credentials };
+ *   }
+ * });
+ *
+ * @throws {Error} When authentication setup fails
+ * @requires configureSecurity must be called first to register hapi-auth-jwt2
+ * @security Validates JWT tokens and loads user permissions
  */
 export async function configureAuth(server: Server) {
   // User loader function for authentication middleware
@@ -62,7 +131,24 @@ export async function configureAuth(server: Server) {
 }
 
 /**
- * Configure security middleware for Hapi server
+ * Configure security plugins for Hapi server
+ *
+ * @async
+ * @function configureSecurity
+ * @param {Server} server - Hapi server instance
+ * @returns {Promise<void>}
+ *
+ * @description Registers essential security plugins including:
+ * - hapi-auth-jwt2: JWT authentication support
+ *
+ * @example
+ * const server = Hapi.server({ port: 3000 });
+ * await configureSecurity(server);
+ * await configureAuth(server); // Call after security setup
+ *
+ * @throws {Error} When plugin registration fails
+ * @requires hapi-auth-jwt2 package must be installed
+ * @security Must be called before configureAuth
  */
 export async function configureSecurity(server: Server) {
   // Register hapi-auth-jwt2 plugin for JWT authentication
@@ -72,7 +158,35 @@ export async function configureSecurity(server: Server) {
 }
 
 /**
- * Configure error handling for Hapi server
+ * Global error handler for Hapi server
+ *
+ * @function errorHandler
+ * @param {Object} request - Hapi request object
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Object} Formatted error response or h.continue
+ *
+ * @description Handles all uncaught errors in the request lifecycle:
+ * - Logs errors with request context
+ * - Sanitizes error messages in production
+ * - Returns standardized error format
+ * - Prevents internal error exposure
+ *
+ * @example
+ * // Register as onPreResponse extension
+ * server.ext('onPreResponse', errorHandler);
+ *
+ * // Error responses follow standard format:
+ * // {
+ * //   success: false,
+ * //   error: {
+ * //     message: 'Error description',
+ * //     code: 'ERROR_CODE',
+ * //     stack: '...' // Only in development
+ * //   }
+ * // }
+ *
+ * @security Production mode hides internal error details (500 errors)
+ * @performance Minimal overhead - only processes error responses
  */
 export function errorHandler(request: any, h: any) {
   const response = request.response;

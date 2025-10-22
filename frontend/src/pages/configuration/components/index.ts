@@ -1,81 +1,58 @@
-// Configuration Management Components
-export { default as ConfigurationList } from './ConfigurationList';
-export { default as ConfigurationEditor } from './ConfigurationEditor';
-export { default as ConfigurationForm } from './ConfigurationForm';
-export { default as ConfigurationCard } from './ConfigurationCard';
-export { default as ConfigurationTable } from './ConfigurationTable';
-export { default as ConfigurationSearch } from './ConfigurationSearch';
-export { default as ConfigurationFilters } from './ConfigurationFilters';
-export { default as ConfigurationBulkActions } from './ConfigurationBulkActions';
-export { default as ConfigurationImportExport } from './ConfigurationImportExport';
+/**
+ * Configuration Module Components
+ * 
+ * Component exports for configuration functionality.
+ */
 
-// Category Management Components
-export { default as CategorySelector } from './CategorySelector';
-export { default as CategoryTree } from './CategoryTree';
-export { default as CategoryManager } from './CategoryManager';
-export { default as CategoryFilters } from './CategoryFilters';
-
-// Configuration History Components
-export { default as ConfigurationHistory } from './ConfigurationHistory';
-export { default as HistoryViewer } from './HistoryViewer';
-export { default as HistoryComparison } from './HistoryComparison';
-export { default as HistoryTimeline } from './HistoryTimeline';
-export { default as ChangeLogViewer } from './ChangeLogViewer';
-export { default as RecentChanges } from './RecentChanges';
-
-// Configuration Operations Components
-export { default as BulkUpdateDialog } from './BulkUpdateDialog';
-export { default as ResetConfirmationDialog } from './ResetConfirmationDialog';
-export { default as ConfigurationBackup } from './ConfigurationBackup';
-export { default as ConfigurationRestore } from './ConfigurationRestore';
-export { default as ConfigurationMigration } from './ConfigurationMigration';
-
-// Validation and Testing Components
-export { default as ConfigurationValidator } from './ConfigurationValidator';
-export { default as ConfigurationTester } from './ConfigurationTester';
-export { default as ValidationResults } from './ValidationResults';
-export { default as TestResults } from './TestResults';
-
-// Security and Access Components
-export { default as ConfigurationPermissions } from './ConfigurationPermissions';
-export { default as AccessControlSettings } from './AccessControlSettings';
-export { default as SecurityAudit } from './SecurityAudit';
-
-// Public Configuration Components
-export { default as PublicConfigurationViewer } from './PublicConfigurationViewer';
-export { default as PublicConfigurationList } from './PublicConfigurationList';
-export { default as SystemStatusDisplay } from './SystemStatusDisplay';
-
-// Advanced Configuration Components
-export { default as EnvironmentSelector } from './EnvironmentSelector';
-export { default as ConfigurationTemplates } from './ConfigurationTemplates';
-export { default as ConfigurationProfiles } from './ConfigurationProfiles';
-export { default as DependencyManager } from './DependencyManager';
-export { default as ConfigurationMonitor } from './ConfigurationMonitor';
-
-// Deployment and Restart Components
-export { default as RestartRequiredNotification } from './RestartRequiredNotification';
-export { default as DeploymentManager } from './DeploymentManager';
-export { default as ConfigurationDeployment } from './ConfigurationDeployment';
-export { default as SystemRestartDialog } from './SystemRestartDialog';
-
-// Analytics and Metrics Components
-export { default as ConfigurationMetrics } from './ConfigurationMetrics';
-export { default as UsageAnalytics } from './UsageAnalytics';
-export { default as PerformanceMetrics } from './PerformanceMetrics';
 export { default as ConfigurationDashboard } from './ConfigurationDashboard';
-
-// Layout and Navigation Components
-export { default as ConfigurationLayout } from './ConfigurationLayout';
-export { default as ConfigurationSidebar } from './ConfigurationSidebar';
-export { default as ConfigurationTabs } from './ConfigurationTabs';
-export { default as ConfigurationBreadcrumbs } from './ConfigurationBreadcrumbs';
-export { default as ConfigurationHeader } from './ConfigurationHeader';
-
-// Utility Components
-export { default as ConfigurationValue } from './ConfigurationValue';
-export { default as ValueEditor } from './ValueEditor';
-export { default as TypeSelector } from './TypeSelector';
-export { default as ConfigurationPreview } from './ConfigurationPreview';
-export { default as LoadingSpinner } from './LoadingSpinner';
-export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as SystemConfiguration } from './SystemConfiguration';
+export { default as GeneralSettings } from './GeneralSettings';
+export { default as ApplicationSettings } from './ApplicationSettings';
+export { default as SchoolConfiguration } from './SchoolConfiguration';
+export { default as SchoolSettings } from './SchoolSettings';
+export { default as SchoolProfile } from './SchoolProfile';
+export { default as SchoolCalendar } from './SchoolCalendar';
+export { default as AcademicConfiguration } from './AcademicConfiguration';
+export { default as GradeLevels } from './GradeLevels';
+export { default as ClassPeriods } from './ClassPeriods';
+export { default as SchoolYearSettings } from './SchoolYearSettings';
+export { default as HealthConfiguration } from './HealthConfiguration';
+export { default as HealthSettings } from './HealthSettings';
+export { default as MedicationSettings } from './MedicationSettings';
+export { default as ImmunizationSettings } from './ImmunizationSettings';
+export { default as UserConfiguration } from './UserConfiguration';
+export { default as UserSettings } from './UserSettings';
+export { default as RoleConfiguration } from './RoleConfiguration';
+export { default as PermissionSettings } from './PermissionSettings';
+export { default as NotificationConfiguration } from './NotificationConfiguration';
+export { default as EmailSettings } from './EmailSettings';
+export { default as SMSSettings } from './SMSSettings';
+export { default as AlertSettings } from './AlertSettings';
+export { default as IntegrationConfiguration } from './IntegrationConfiguration';
+export { default as APISettings } from './APISettings';
+export { default as WebhookSettings } from './WebhookSettings';
+export { default as ThirdPartyIntegrations } from './ThirdPartyIntegrations';
+export { default as SecurityConfiguration } from './SecurityConfiguration';
+export { default as AuthenticationSettings } from './AuthenticationSettings';
+export { default as PasswordSettings } from './PasswordSettings';
+export { default as SessionSettings } from './SessionSettings';
+export { default as DataConfiguration } from './DataConfiguration';
+export { default as DataRetention } from './DataRetention';
+export { default as BackupSettings } from './BackupSettings';
+export { default as ArchiveSettings } from './ArchiveSettings';
+export { default as DisplayConfiguration } from './DisplayConfiguration';
+export { default as ThemeSettings } from './ThemeSettings';
+export { default as LayoutSettings } from './LayoutSettings';
+export { default as BrandingSettings } from './BrandingSettings';
+export { default as WorkflowConfiguration } from './WorkflowConfiguration';
+export { default as WorkflowSettings } from './WorkflowSettings';
+export { default as ApprovalSettings } from './ApprovalSettings';
+export { default as AutomationRules } from './AutomationRules';
+export { default as ReportConfiguration } from './ReportConfiguration';
+export { default as ReportSettings } from './ReportSettings';
+export { default as ReportTemplates } from './ReportTemplates';
+export { default as ScheduledReports } from './ScheduledReports';
+export { default as ComplianceConfiguration } from './ComplianceConfiguration';
+export { default as ComplianceSettings } from './ComplianceSettings';
+export { default as PolicySettings } from './PolicySettings';
+export { default as AuditSettings } from './AuditSettings';

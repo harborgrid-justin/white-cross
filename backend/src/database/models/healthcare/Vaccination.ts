@@ -1,25 +1,39 @@
 /**
+ * @fileoverview Vaccination Database Model
+ * @module database/models/healthcare/Vaccination
+ * @description Sequelize model for managing student vaccination records including immunization
+ * tracking, compliance status, exemptions, and adverse event reporting.
+ *
+ * Key Features:
+ * - CVX and NDC code support for standardized vaccine identification
+ * - Dose series tracking (e.g., 1 of 3)
+ * - VIS (Vaccine Information Statement) documentation
+ * - Vaccination compliance status monitoring
+ * - Medical and religious exemption tracking
+ * - Adverse event reporting
+ * - VFC (Vaccines for Children) eligibility
+ * - Consent documentation
+ * - Administration site and route tracking
+ * - Next due date calculation
+ * - Full audit trail for compliance
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Contains Protected Health Information (PHI)
+ * @compliance FERPA §99.3 - Educational health records
+ * @compliance CDC Immunization Guidelines - Vaccine administration and documentation
+ * @compliance State School Immunization Requirements - Varies by jurisdiction
+ * @compliance 42 USC §1396s - VFC Program requirements
+ * @audit All access and modifications logged per immunization registry requirements
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../../types/enums
+ * @requires ../base/AuditableModel
+ *
  * LOC: 4F8B6128F9
- * WC-GEN-069 | Vaccination.ts - General utility functions and operations
+ * WC-GEN-069
  *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- */
-
-/**
- * WC-GEN-069 | Vaccination.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * UPSTREAM: sequelize.ts, enums.ts, AuditableModel.ts
+ * DOWNSTREAM: index.ts, VaccinationRepository.ts
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
@@ -33,11 +47,50 @@ import {
 import { AuditableModel } from '../base/AuditableModel';
 
 /**
- * Vaccination Model
- * Manages student vaccination records including doses, compliance status, exemptions, and adverse events.
- * This model contains Protected Health Information (PHI) and is subject to HIPAA compliance.
+ * @interface VaccinationAttributes
+ * @description TypeScript interface defining all Vaccination model attributes
+ *
+ * @property {string} id - Primary key, auto-generated UUID
+ * @property {string} studentId - Foreign key reference to student, required
+ * @property {string} [healthRecordId] - Optional link to related health record (nullable)
+ * @property {string} vaccineName - Vaccine name (e.g., "MMR", "DTaP"), required
+ * @property {VaccineType} [vaccineType] - Category of vaccine (nullable)
+ * @property {string} [manufacturer] - Vaccine manufacturer (e.g., "Pfizer", "Moderna"), nullable
+ * @property {string} [lotNumber] - Vaccine lot number for tracking and recalls, nullable
+ * @property {string} [cvxCode] - CVX code (CDC vaccine identifier), nullable
+ * @property {string} [ndcCode] - NDC code (National Drug Code), nullable
+ * @property {number} [doseNumber] - Dose number in series (e.g., 1 of 3), nullable
+ * @property {number} [totalDoses] - Total doses in series (nullable)
+ * @property {boolean} seriesComplete - Whether vaccination series is complete, defaults to false
+ * @property {Date} administrationDate - Date vaccine was administered, required
+ * @property {string} administeredBy - Person who administered vaccine, required
+ * @property {string} [administeredByRole] - Role of administrator (e.g., "RN", "MD"), nullable
+ * @property {string} [facility] - Facility where vaccine was given (nullable)
+ * @property {AdministrationSite} [siteOfAdministration] - Body site (e.g., left arm), nullable
+ * @property {AdministrationRoute} [routeOfAdministration] - Route (e.g., intramuscular), nullable
+ * @property {string} [dosageAmount] - Dosage given (e.g., "0.5mL"), nullable
+ * @property {Date} [expirationDate] - Vaccine expiration date, nullable
+ * @property {Date} [nextDueDate] - Next dose due date, nullable
+ * @property {string} [reactions] - Immediate reactions observed (nullable)
+ * @property {any} [adverseEvents] - Structured adverse event data (JSONB), nullable
+ * @property {boolean} exemptionStatus - Whether student has exemption, defaults to false
+ * @property {string} [exemptionReason] - Reason for exemption (medical/religious), nullable
+ * @property {string} [exemptionDocument] - Path to exemption documentation, nullable
+ * @property {VaccineComplianceStatus} complianceStatus - Compliance status, defaults to COMPLIANT
+ * @property {boolean} vfcEligibility - VFC program eligibility, defaults to false
+ * @property {boolean} visProvided - Whether VIS was provided, defaults to false
+ * @property {Date} [visDate] - Date VIS was provided to parent/guardian, nullable
+ * @property {boolean} consentObtained - Whether consent was obtained, defaults to false
+ * @property {string} [consentBy] - Who provided consent (parent/guardian name), nullable
+ * @property {string} [notes] - Additional notes or comments (nullable)
+ * @property {string} [createdBy] - User ID who created the record (audit field)
+ * @property {string} [updatedBy] - User ID who last updated the record (audit field)
+ * @property {Date} createdAt - Timestamp of record creation
+ * @property {Date} updatedAt - Timestamp of last update
+ *
+ * @security PHI - Critical for school enrollment and outbreak prevention
+ * @safety Adverse events must be reported to VAERS (Vaccine Adverse Event Reporting System)
  */
-
 interface VaccinationAttributes {
   id: string;
   studentId: string;
@@ -78,6 +131,11 @@ interface VaccinationAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface VaccinationCreationAttributes
+ * @description Attributes required when creating a new Vaccination instance.
+ * Extends VaccinationAttributes with optional fields that have defaults or are auto-generated.
+ */
 interface VaccinationCreationAttributes
   extends Optional<
     VaccinationAttributes,
@@ -116,6 +174,103 @@ interface VaccinationCreationAttributes
     | 'updatedBy'
   > {}
 
+/**
+ * @class Vaccination
+ * @extends Model
+ * @description Student vaccination tracking model with compliance monitoring and adverse event reporting.
+ *
+ * @tablename vaccinations
+ *
+ * Key Features:
+ * - Comprehensive vaccine tracking with CVX/NDC codes
+ * - Dose series management
+ * - Compliance status monitoring for school requirements
+ * - Exemption tracking (medical, religious, philosophical)
+ * - VIS (Vaccine Information Statement) documentation
+ * - Consent tracking
+ * - Adverse event reporting (VAERS integration support)
+ * - VFC eligibility tracking
+ * - Lot number tracking for recalls
+ * - Next due date reminders
+ * - Full audit trail
+ * - Indexed for efficient queries by student, vaccine type, compliance, and due dates
+ *
+ * Vaccine Types (from VaccineType enum):
+ * - DTaP/Tdap: Diphtheria, Tetanus, Pertussis
+ * - MMR: Measles, Mumps, Rubella
+ * - Varicella: Chickenpox
+ * - Polio (IPV)
+ * - Hepatitis A & B
+ * - HPV: Human Papillomavirus
+ * - Meningococcal (MenACWY, MenB)
+ * - COVID-19
+ * - Influenza
+ *
+ * Compliance Status (from VaccineComplianceStatus enum):
+ * - COMPLIANT: Meets all requirements
+ * - OVERDUE: Past due date
+ * - EXEMPT: Has valid exemption
+ * - NON_COMPLIANT: Does not meet requirements, no exemption
+ *
+ * Administration Sites (from AdministrationSite enum):
+ * - LEFT_ARM, RIGHT_ARM (deltoid muscle)
+ * - LEFT_THIGH, RIGHT_THIGH (vastus lateralis)
+ * - ORAL, NASAL
+ *
+ * @security Contains PHI - Critical for outbreak prevention
+ * @compliance HIPAA Privacy Rule - 45 CFR §164.308(a)(3)(ii)(A)
+ * @compliance CDC Immunization Guidelines - Proper vaccine administration
+ * @compliance State School Entry Requirements - Varies by jurisdiction
+ * @compliance VFC Program - 42 USC §1396s
+ * @safety Adverse events must be reported to VAERS within required timeframes
+ *
+ * @example
+ * // Record MMR vaccine administration
+ * const vaccination = await Vaccination.create({
+ *   studentId: 'student-uuid',
+ *   vaccineName: 'MMR',
+ *   vaccineType: VaccineType.MMR,
+ *   manufacturer: 'Merck',
+ *   lotNumber: 'ABC123',
+ *   cvxCode: '03',
+ *   doseNumber: 1,
+ *   totalDoses: 2,
+ *   administrationDate: new Date('2024-01-15'),
+ *   administeredBy: 'Jane Smith, RN',
+ *   administeredByRole: 'RN',
+ *   facility: 'County Health Department',
+ *   siteOfAdministration: AdministrationSite.LEFT_ARM,
+ *   routeOfAdministration: AdministrationRoute.INTRAMUSCULAR,
+ *   dosageAmount: '0.5mL',
+ *   nextDueDate: new Date('2028-01-15'),
+ *   complianceStatus: VaccineComplianceStatus.COMPLIANT,
+ *   visProvided: true,
+ *   visDate: new Date('2024-01-15'),
+ *   consentObtained: true,
+ *   consentBy: 'Mary Johnson (mother)'
+ * });
+ *
+ * @example
+ * // Find students with overdue vaccinations
+ * const overdue = await Vaccination.findAll({
+ *   where: {
+ *     complianceStatus: VaccineComplianceStatus.OVERDUE,
+ *     nextDueDate: { [Op.lt]: new Date() }
+ *   },
+ *   include: ['student'],
+ *   order: [['nextDueDate', 'ASC']]
+ * });
+ *
+ * @example
+ * // Track vaccine lot for recall
+ * const lotRecords = await Vaccination.findAll({
+ *   where: {
+ *     manufacturer: 'Pfizer',
+ *     lotNumber: 'RECALLED123'
+ *   },
+ *   include: ['student']
+ * });
+ */
 export class Vaccination
   extends Model<VaccinationAttributes, VaccinationCreationAttributes>
   implements VaccinationAttributes

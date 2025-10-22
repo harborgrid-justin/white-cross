@@ -23,11 +23,49 @@
  */
 
 /**
- * Framework-agnostic Audit Logging Middleware
- * Provides HIPAA-compliant audit logging for healthcare applications
+ * @fileoverview HIPAA-Compliant Audit Logging Middleware
+ * @module middleware/monitoring/audit
+ * @description Framework-agnostic audit logging middleware providing comprehensive access
+ * tracking, PHI access logging, and compliance monitoring for healthcare applications.
+ * Implements HIPAA audit trail requirements with 6-year retention and real-time alerting.
  *
- * HIPAA: Access logging, PHI tracking, audit trail requirements
- * Security: Action tracking, user accountability, forensic analysis
+ * Key Features:
+ * - Comprehensive PHI access logging (view, edit, create, delete, export)
+ * - Authentication and authorization event tracking
+ * - Emergency access logging with mandatory reasoning
+ * - Healthcare-specific event types (medication admin, allergy updates, etc.)
+ * - Configurable retention periods (default: 6 years for HIPAA)
+ * - Real-time security alerts for sensitive actions
+ * - Failed access attempt tracking (brute force detection)
+ * - Audit trail search and export functionality
+ * - Event severity classification (INFO, WARNING, ERROR, CRITICAL)
+ *
+ * Event Categories:
+ * - **Authentication**: Login, logout, failed attempts, session management
+ * - **Authorization**: Access granted/denied, permission escalation
+ * - **PHI Access**: Read, create, update, delete, export of patient data
+ * - **System**: Configuration changes, emergency access
+ * - **Healthcare**: Medication administration, allergy updates, vaccination records
+ *
+ * HIPAA Audit Requirements:
+ * - Who: User ID, email, role
+ * - What: Action performed, resource accessed
+ * - When: Timestamp (millisecond precision)
+ * - Where: IP address, client information
+ * - Why: Reasoning (required for emergency access)
+ * - Result: Success or failure
+ *
+ * @security Critical compliance middleware - maintains audit trail for forensic analysis
+ * @compliance
+ * - HIPAA 164.312(b) - Audit Controls (comprehensive logging)
+ * - HIPAA 164.308(a)(1)(ii)(D) - Information System Activity Review
+ * - HIPAA 164.308(a)(5)(ii)(C) - Log-in Monitoring
+ * - HIPAA 164.312(a)(1) - Access Control Logging
+ *
+ * @requires ../../../utils/logger - Logging utilities
+ *
+ * @version 1.0.0
+ * @since 2025-01-01
  */
 
 import { logger } from '../../../utils/logger';
@@ -180,7 +218,102 @@ export const AUDIT_CONFIGS = {
 };
 
 /**
- * Audit Logging Middleware Class
+ * HIPAA-Compliant Audit Logging Middleware
+ *
+ * @class AuditMiddleware
+ * @description Framework-agnostic audit logging middleware implementing HIPAA-compliant
+ * audit trail requirements for healthcare applications. Tracks all PHI access, authentication
+ * events, and system actions with comprehensive forensic details.
+ *
+ * Audit Trail Components:
+ * 1. **Who**: User identification (ID, email, role)
+ * 2. **What**: Action performed and resource accessed
+ * 3. **When**: Precise timestamp (millisecond accuracy)
+ * 4. **Where**: Client location (IP address, user agent)
+ * 5. **Why**: Reason/justification (required for emergency access)
+ * 6. **Result**: Success or failure status
+ *
+ * Event Types Tracked:
+ * - Authentication: Login, logout, failed attempts, session events
+ * - Authorization: Access grants/denials, permission changes
+ * - PHI Operations: View, create, update, delete, export patient data
+ * - System Events: Configuration changes, emergency access
+ * - Healthcare Actions: Medication admin, allergy updates, vaccinations
+ *
+ * Retention Policy:
+ * - Healthcare config: 6 years (2190 days) - HIPAA requirement
+ * - Production config: 6 years with aggressive cleanup
+ * - Development config: 30 days for testing
+ * - Automatic cleanup runs daily to remove expired events
+ *
+ * Security Features:
+ * - PHI access tracking with student/patient correlation
+ * - Emergency access requires mandatory reasoning
+ * - Real-time alerts for sensitive actions
+ * - Failed attempt tracking for brute force detection
+ * - Comprehensive search and filtering capabilities
+ * - Export functionality for compliance reporting
+ *
+ * @example
+ * // Create healthcare-compliant audit logger
+ * const auditLogger = createHealthcareAudit();
+ *
+ * @example
+ * // Log PHI access
+ * await auditLogger.logPHIAccess(
+ *   'VIEW',
+ *   'student123',
+ *   'nurse456',
+ *   'nurse@hospital.com',
+ *   'school_nurse',
+ *   '192.168.1.1',
+ *   '/api/students/123/health-records',
+ *   'Regular checkup review'
+ * );
+ *
+ * @example
+ * // Log emergency access
+ * await auditLogger.logEmergencyAccess(
+ *   'admin789',
+ *   'admin@hospital.com',
+ *   'system_administrator',
+ *   'student123',
+ *   '192.168.1.1',
+ *   'Student experiencing anaphylaxis - immediate access to allergy records required'
+ * );
+ *
+ * @example
+ * // Search audit events
+ * const violations = auditLogger.searchEvents({
+ *   eventType: AuditEventType.ACCESS_DENIED,
+ *   startTime: Date.now() - 24*60*60*1000, // Last 24 hours
+ *   severity: AuditSeverity.ERROR
+ * }, 100);
+ *
+ * @example
+ * // Get PHI access summary
+ * const summary = auditLogger.getAuditSummary(7*24*60*60*1000); // Last 7 days
+ * console.log(`PHI accesses: ${summary.phiAccess}`);
+ * console.log(`Failed attempts: ${summary.failedAttempts}`);
+ * console.log(`Emergency accesses: ${summary.emergencyAccess}`);
+ *
+ * @security
+ * - Immutable audit trail (events cannot be modified after creation)
+ * - Comprehensive forensic data for security investigations
+ * - Real-time alerting for suspicious activities
+ * - Automatic retention and cleanup per HIPAA requirements
+ *
+ * @compliance
+ * - HIPAA 164.312(b) - Audit Controls (mandatory audit logging)
+ * - HIPAA 164.308(a)(1)(ii)(D) - Activity Review (searchable logs)
+ * - HIPAA 164.308(a)(5)(ii)(C) - Log-in Monitoring (authentication tracking)
+ * - HIPAA 164.530(j) - Documentation retention (6-year minimum)
+ *
+ * @performance
+ * - Asynchronous event logging (non-blocking)
+ * - In-memory storage with configurable max capacity
+ * - Periodic cleanup prevents memory exhaustion
+ * - Efficient search with indexed filtering
  */
 export class AuditMiddleware {
   private config: AuditConfig;

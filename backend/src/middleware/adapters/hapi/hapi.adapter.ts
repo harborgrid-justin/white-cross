@@ -1,10 +1,33 @@
 /**
- * Hapi Framework Adapter for Healthcare Middleware System
- * Provides Hapi.js-specific implementations of framework-agnostic middleware
- * 
- * @fileoverview Hapi adapter implementation for healthcare middleware with HIPAA compliance
+ * @fileoverview Hapi Framework Adapter for Healthcare Middleware System
+ * @module middleware/adapters/hapi
+ * @description Provides Hapi.js-specific implementations and adapters for framework-agnostic
+ * middleware components. Converts framework-agnostic middleware to Hapi lifecycle extensions,
+ * plugins, and route handlers with HIPAA-compliant healthcare context enhancement.
+ *
+ * Key Features:
+ * - Framework-agnostic middleware → Hapi extension conversion
+ * - Healthcare context enhancement for HIPAA compliance
+ * - Request/Response wrapper implementations for IRequest/IResponse
+ * - Plugin creation utilities for middleware integration
+ * - Security headers and sanitization utilities
+ * - PHI access tracking and audit logging support
+ *
+ * Architecture:
+ * - HapiRequestWrapper: Adapts Hapi Request to IRequest interface
+ * - HapiResponseWrapper: Adapts Hapi ResponseToolkit to IResponse interface
+ * - HapiMiddlewareAdapter: Converts middleware to Hapi extensions/plugins
+ * - HapiMiddlewareUtils: Utility functions for Hapi-specific operations
+ *
+ * @security Handles HIPAA-compliant request/response processing
+ * @compliance HIPAA - PHI access tracking, audit logging, security headers
+ *
+ * @requires @hapi/hapi - Hapi.js framework types
+ * @requires ../../utils/types/middleware.types - Framework-agnostic middleware types
+ *
  * @version 1.0.0
  * @author Healthcare Platform Team
+ * @since 2025-10-21
  */
 
 import { Request, ResponseToolkit, ServerRoute, Plugin } from '@hapi/hapi';
@@ -182,11 +205,68 @@ export class HapiNextWrapper implements INextFunction {
 }
 
 /**
- * Hapi middleware adapter that converts framework-agnostic middleware to Hapi extensions
+ * Hapi Middleware Adapter - Converts framework-agnostic middleware to Hapi components
+ *
+ * @class HapiMiddlewareAdapter
+ * @description Static utility class that adapts framework-agnostic middleware to Hapi.js
+ * lifecycle extensions, plugins, and route configurations. Handles request/response wrapping
+ * and provides healthcare-specific enhancements.
+ *
+ * @example
+ * // Convert middleware to Hapi extension
+ * const extension = HapiMiddlewareAdapter.adaptAsExtension(
+ *   authenticationMiddleware,
+ *   'onPreHandler'
+ * );
+ * server.ext(extension);
+ *
+ * @example
+ * // Convert middleware to Hapi plugin
+ * const plugin = HapiMiddlewareAdapter.adaptAsPlugin(
+ *   loggingMiddleware,
+ *   { name: 'logging', extensionPoint: 'onRequest' }
+ * );
+ * await server.register(plugin);
  */
 export class HapiMiddlewareAdapter {
   /**
-   * Adapts a framework-agnostic middleware to Hapi lifecycle extension
+   * Adapts framework-agnostic middleware to Hapi lifecycle extension
+   *
+   * @static
+   * @function adaptAsExtension
+   * @param {IMiddleware} middleware - Framework-agnostic middleware to adapt
+   * @param {'onRequest'|'onPreAuth'|'onCredentials'|'onPostAuth'|'onPreHandler'|'onPostHandler'|'onPreResponse'} [point='onPreHandler'] - Hapi lifecycle extension point
+   * @returns {Object} Hapi extension configuration object
+   * @returns {string} returns.type - Extension point type
+   * @returns {Function} returns.method - Extension handler function
+   *
+   * @description Wraps middleware in Hapi-compatible extension handler. Converts Hapi
+   * Request/ResponseToolkit to framework-agnostic IRequest/IResponse interfaces, executes
+   * middleware, and handles response appropriately.
+   *
+   * @example
+   * // Add authentication middleware at onPreHandler
+   * const authExtension = HapiMiddlewareAdapter.adaptAsExtension(
+   *   authMiddleware,
+   *   'onPreHandler'
+   * );
+   * server.ext(authExtension);
+   *
+   * @example
+   * // Add logging middleware at onRequest
+   * const logExtension = HapiMiddlewareAdapter.adaptAsExtension(
+   *   loggingMiddleware,
+   *   'onRequest'
+   * );
+   * server.ext(logExtension);
+   *
+   * @example
+   * // Response transformation at onPreResponse
+   * const transformExtension = HapiMiddlewareAdapter.adaptAsExtension(
+   *   responseTransformer,
+   *   'onPreResponse'
+   * );
+   * server.ext(transformExtension);
    */
   static adaptAsExtension(middleware: IMiddleware, point: 'onRequest' | 'onPreAuth' | 'onCredentials' | 'onPostAuth' | 'onPreHandler' | 'onPostHandler' | 'onPreResponse' = 'onPreHandler') {
     return {

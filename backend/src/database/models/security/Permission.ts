@@ -1,40 +1,47 @@
 /**
+ * @fileoverview Permission Database Model
+ * @module database/models/security/Permission
+ * @description Sequelize model for granular permission management in RBAC system.
+ * Defines specific actions (read, create, update, delete, etc.) that can be performed
+ * on system resources (students, medications, health_records, etc.) for PHI protection.
+ *
+ * Key Features:
+ * - Resource-based permissions (students, medications, health_records, reports, etc.)
+ * - Action-based permissions (read, create, update, delete, manage, audit, etc.)
+ * - Unique constraint on resource+action combinations prevents duplicate permissions
+ * - Links to roles via RolePermission junction table for RBAC implementation
+ * - Validates resource and action types against allowed lists
+ * - Enforces valid resource-action combinations (e.g., system resources have limited actions)
+ *
+ * @security Implements least-privilege access principle for HIPAA compliance
+ * @compliance HIPAA - Granular access control for PHI protection
+ * @compliance FERPA - Educational record access management
+ *
+ * @requires sequelize - ORM for database operations
+ *
  * LOC: C926C7F60A
- * WC-GEN-090 | Permission.ts - General utility functions and operations
+ * WC-GEN-090 | Permission.ts
  *
  * UPSTREAM (imports from):
  *   - sequelize.ts (database/config/sequelize.ts)
  *
  * DOWNSTREAM (imported by):
  *   - index.ts (database/models/index.ts)
- */
-
-/**
- * WC-GEN-090 | Permission.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ *   - RolePermission.ts - Links permissions to roles
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 
 /**
- * Permission Model
+ * @interface PermissionAttributes
+ * @description TypeScript interface defining all Permission model attributes
  *
- * HIPAA Compliance: Defines granular permissions for accessing and modifying
- * healthcare data. Essential for implementing least-privilege access control.
- *
- * Key Features:
- * - Resource-based permissions (students, medications, reports, etc.)
- * - Action-based permissions (read, create, update, delete)
- * - Unique constraint on resource+action combinations
- * - Links to roles via RolePermission junction table
+ * @property {string} id - Primary key, auto-generated UUID
+ * @property {string} resource - Resource type (e.g., 'students', 'medications', 'health_records')
+ * @property {string} action - Action type (e.g., 'read', 'create', 'update', 'delete', 'manage')
+ * @property {string} [description] - Optional description of what this permission allows
+ * @property {Date} createdAt - Record creation timestamp
  */
 interface PermissionAttributes {
   id: string;
@@ -44,13 +51,94 @@ interface PermissionAttributes {
   createdAt: Date;
 }
 
+/**
+ * @interface PermissionCreationAttributes
+ * @description Attributes required when creating a new Permission instance.
+ * Extends PermissionAttributes with optional fields that have defaults or are auto-generated.
+ */
 interface PermissionCreationAttributes extends Optional<PermissionAttributes, 'id' | 'createdAt' | 'description'> {}
 
+/**
+ * @class Permission
+ * @extends Model
+ * @description Permission model representing granular access rights in the RBAC system.
+ * Each permission defines a specific action that can be performed on a resource type,
+ * enabling fine-grained access control for PHI and system features.
+ *
+ * @tablename permissions
+ *
+ * RBAC Implementation:
+ * - Permissions are assigned to roles via RolePermission junction table
+ * - Users inherit permissions from their assigned roles
+ * - Each permission = resource + action (e.g., students:read, medications:create)
+ * - Unique constraint on resource+action prevents duplicate permissions
+ *
+ * Valid Resources:
+ * - students, medications, health_records, reports, users, system, security
+ * - appointments, incidents, emergency_contacts, inventory, documents
+ * - communications, compliance, analytics
+ *
+ * Valid Actions:
+ * - read, create, update, delete (CRUD operations)
+ * - manage (full control), administer (system-level)
+ * - configure, export, import, approve, review, audit
+ *
+ * Special Constraints:
+ * - system resources: limited to read, configure, manage actions
+ * - security resources: limited to read, manage, audit actions
+ * - compliance resources: limited to read, manage, audit, export actions
+ *
+ * @example
+ * // Create a permission
+ * const permission = await Permission.create({
+ *   resource: 'health_records',
+ *   action: 'read',
+ *   description: 'View student health records'
+ * });
+ *
+ * @example
+ * // Find all medication permissions
+ * const medPermissions = await Permission.findAll({
+ *   where: { resource: 'medications' }
+ * });
+ *
+ * @security Validated resource and action types prevent invalid permissions
+ * @security Resource-action combinations are validated for consistency
+ */
 export class Permission extends Model<PermissionAttributes, PermissionCreationAttributes> implements PermissionAttributes {
+  /**
+   * @property {string} id - Primary key UUID
+   * @security Used for foreign key relationships in RBAC
+   */
   public id!: string;
+
+  /**
+   * @property {string} resource - Resource type (e.g., 'students', 'health_records')
+   * @validation Must be lowercase alphanumeric with underscores only
+   * @validation Must be from allowed resource list
+   * @security Controls what data/features this permission applies to
+   */
   public resource!: string;
+
+  /**
+   * @property {string} action - Action type (e.g., 'read', 'create', 'update')
+   * @validation Must be lowercase alphanumeric with underscores only
+   * @validation Must be from allowed action list
+   * @validation Must be valid for the specified resource
+   * @security Controls what operations can be performed on the resource
+   */
   public action!: string;
+
+  /**
+   * @property {string} description - Optional permission description
+   * @validation Max 500 characters
+   */
   public description?: string;
+
+  /**
+   * @property {Date} createdAt - Record creation timestamp
+   * @readonly
+   */
   public readonly createdAt!: Date;
 }
 

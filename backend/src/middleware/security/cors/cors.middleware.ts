@@ -1,17 +1,37 @@
 /**
- * CORS Middleware
- * 
- * Enterprise-grade CORS (Cross-Origin Resource Sharing) middleware with healthcare compliance.
- * Provides secure cross-origin access control with HIPAA-compliant configurations.
- * 
- * @module CorsMiddleware
+ * @fileoverview CORS Middleware for Healthcare Applications
+ * @module middleware/security/cors
+ * @description Enterprise-grade CORS (Cross-Origin Resource Sharing) middleware with HIPAA-compliant
+ * configurations for healthcare platforms. Provides secure cross-origin access control with
+ * healthcare-specific validation, preflight caching, and comprehensive audit logging.
+ *
+ * Key Features:
+ * - Healthcare-compliant CORS policies with trusted domain validation
+ * - Preflight request caching for performance optimization
+ * - Rate limiting for preflight requests (prevent abuse)
+ * - Dynamic origin validation with custom validators
+ * - Comprehensive audit logging for compliance tracking
+ * - HTTPS enforcement for healthcare data protection
+ *
+ * @security Critical security middleware - controls cross-origin access to PHI
+ * @compliance HIPAA - Access Control (164.312(a)(1)), Transmission Security (164.312(e)(1))
+ *
+ * @requires ../../utils/types/middleware.types - Framework-agnostic interfaces
+ *
  * @version 1.0.0
+ * @since 2025-01-01
  */
 
 import { IRequest, IResponse, IMiddleware, MiddlewareContext, HealthcareUser, INextFunction } from '../../utils/types/middleware.types';
 
 /**
- * CORS methods enum
+ * CORS HTTP methods enumeration
+ *
+ * @enum {string}
+ * @description Supported HTTP methods for CORS requests in healthcare platform
+ *
+ * @example
+ * const allowedMethods = [CorsMethod.GET, CorsMethod.POST];
  */
 export enum CorsMethod {
   GET = 'GET',
@@ -24,7 +44,36 @@ export enum CorsMethod {
 }
 
 /**
- * CORS configuration interface
+ * CORS configuration interface for healthcare applications
+ *
+ * @interface ICorsConfig
+ * @description Comprehensive CORS configuration with healthcare-specific security settings
+ *
+ * @property {boolean} enabled - Enable/disable CORS middleware
+ * @property {string[] | Function} allowedOrigins - Allowed origins (array or validation function)
+ * @property {CorsMethod[]} allowedMethods - Allowed HTTP methods for CORS requests
+ * @property {string[]} allowedHeaders - Headers that can be sent in CORS requests
+ * @property {string[]} exposedHeaders - Headers exposed to browser JavaScript
+ * @property {boolean} allowCredentials - Allow cookies and authorization headers
+ * @property {number} maxAge - Preflight cache duration in seconds
+ * @property {boolean} enableHealthcareCors - Enable healthcare-specific CORS policies
+ * @property {boolean} strictMode - Enforce strict HTTPS-only origin validation
+ * @property {Function} [originValidator] - Custom origin validation function
+ * @property {boolean} enableDynamicOrigins - Enable dynamic origin management
+ * @property {string[]} trustedDomains - Trusted healthcare domains (e.g., .healthcare.gov)
+ * @property {boolean} enableAuditLogging - Enable CORS request audit logging for compliance
+ * @property {Object} preflightRateLimit - Rate limiting configuration for preflight requests
+ * @property {Object} errorHandling - Error handling and logging configuration
+ *
+ * @example
+ * const config: ICorsConfig = {
+ *   enabled: true,
+ *   allowedOrigins: ['https://app.hospital.com'],
+ *   allowedMethods: [CorsMethod.GET, CorsMethod.POST],
+ *   strictMode: true,
+ *   enableHealthcareCors: true,
+ *   enableAuditLogging: true
+ * };
  */
 export interface ICorsConfig {
   /** Enable CORS middleware */
@@ -281,7 +330,49 @@ class HealthcareCorsValidators {
 }
 
 /**
- * Enterprise CORS middleware with healthcare compliance
+ * Enterprise CORS middleware with HIPAA-compliant healthcare features
+ *
+ * @class CorsMiddleware
+ * @implements {IMiddleware}
+ * @description Framework-agnostic CORS middleware providing secure cross-origin resource sharing
+ * for healthcare applications. Includes preflight caching, rate limiting, origin validation,
+ * and comprehensive audit logging for regulatory compliance.
+ *
+ * Security Features:
+ * - HTTPS-only enforcement in strict mode
+ * - Trusted healthcare domain validation
+ * - Preflight request rate limiting (prevent DoS)
+ * - Request origin whitelisting with custom validators
+ * - Credential support for authenticated requests
+ * - Comprehensive audit logging for access tracking
+ *
+ * Performance Features:
+ * - Preflight response caching (reduces repeated OPTIONS requests)
+ * - Automatic cache cleanup to prevent memory leaks
+ * - Efficient origin validation with early returns
+ *
+ * HIPAA Compliance:
+ * - Access control logging (164.312(a)(1))
+ * - Transmission security (164.312(e)(1))
+ * - Audit controls (164.312(b))
+ *
+ * @example
+ * // Create CORS middleware with healthcare defaults
+ * const corsMiddleware = new CorsMiddleware({
+ *   enabled: true,
+ *   strictMode: true,
+ *   enableHealthcareCors: true,
+ *   allowedOrigins: ['https://app.hospital.com'],
+ *   trustedDomains: ['.healthcare.gov', '.hhs.gov'],
+ *   enableAuditLogging: true
+ * });
+ *
+ * @example
+ * // Use in middleware chain
+ * await corsMiddleware.execute(request, response, next, context);
+ *
+ * @security Validates all cross-origin requests before allowing access to PHI
+ * @performance Caches preflight responses for 24 hours (configurable)
  */
 export class CorsMiddleware implements IMiddleware {
   public readonly name = 'CorsMiddleware';
@@ -307,12 +398,63 @@ export class CorsMiddleware implements IMiddleware {
   }
 
   /**
-   * Required execute method for IMiddleware interface
+   * Execute CORS middleware - validates and sets CORS headers
+   *
+   * @function execute
+   * @async
+   * @middleware
+   * @implements {IMiddleware.execute}
+   * @param {IRequest} request - Incoming HTTP request
+   * @param {IResponse} response - HTTP response object
+   * @param {INextFunction} next - Next middleware function
+   * @param {MiddlewareContext} _context - Middleware execution context
+   * @returns {Promise<void>} Resolves when CORS processing is complete
+   *
+   * @description
+   * Main CORS middleware execution flow:
+   * 1. Check if CORS is enabled
+   * 2. Create CORS context from request
+   * 3. Rate limit preflight requests (if enabled)
+   * 4. Validate origin against allowed origins
+   * 5. Set CORS headers on response
+   * 6. Handle preflight OPTIONS requests
+   * 7. Log CORS request for audit trail
+   * 8. Pass control to next middleware
+   *
+   * Configuration:
+   * - Enabled: {@link ICorsConfig.enabled}
+   * - Allowed Origins: {@link ICorsConfig.allowedOrigins}
+   * - Strict Mode: {@link ICorsConfig.strictMode}
+   * - Rate Limiting: {@link ICorsConfig.preflightRateLimit}
+   * - Audit Logging: {@link ICorsConfig.enableAuditLogging}
+   *
+   * @security
+   * - Validates origin before allowing cross-origin access
+   * - Enforces HTTPS in strict mode for PHI protection
+   * - Rate limits preflight requests to prevent abuse
+   * - Logs all CORS requests for compliance auditing
+   *
+   * @compliance
+   * HIPAA 164.312(a)(1) - Access control logging
+   * HIPAA 164.312(e)(1) - Transmission security (HTTPS enforcement)
+   *
+   * @throws {Error} When CORS validation fails or rate limit exceeded
+   *
+   * @example
+   * // Automatic execution in middleware chain
+   * server.ext('onPreResponse', async (request, h) => {
+   *   await corsMiddleware.execute(request, response, next, context);
+   * });
+   *
+   * @example
+   * // Manual execution
+   * const corsMiddleware = new CorsMiddleware(config);
+   * await corsMiddleware.execute(req, res, next, context);
    */
   public async execute(
-    request: IRequest, 
-    response: IResponse, 
-    next: INextFunction, 
+    request: IRequest,
+    response: IResponse,
+    next: INextFunction,
     _context: MiddlewareContext
   ): Promise<void> {
     if (!this.config.enabled) {

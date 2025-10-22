@@ -1,34 +1,86 @@
 /**
+ * @fileoverview Enterprise Validation Service
+ * @module shared/security/validation.service
+ * @description Framework-agnostic validation service providing centralized validation logic,
+ * input sanitization, and healthcare-specific data validation for HIPAA compliance.
+ *
+ * Key Features:
+ * - Framework-agnostic validation architecture
+ * - HIPAA-compliant healthcare data validation
+ * - Medical Record Number (MRN) validation
+ * - National Provider Identifier (NPI) validation with Luhn algorithm
+ * - ICD-10 diagnostic code validation
+ * - PHI (Protected Health Information) detection
+ * - XSS and SQL injection prevention
+ * - Automatic input sanitization
+ * - Configurable validation rules
+ * - Custom validation function support
+ *
+ * @security
+ * - Prevents XSS attacks through input sanitization
+ * - Blocks SQL injection patterns
+ * - Validates PHI fields for HIPAA compliance
+ * - Enforces field length limits
+ * - Implements type-safe validation
+ * - Detects unmasked SSN patterns
+ *
+ * Healthcare Validation Patterns:
+ * - MRN: Alphanumeric, 6-20 characters
+ * - NPI: Exactly 10 digits with Luhn checksum
+ * - ICD-10: Letter + 2 digits + optional decimal + 1-4 chars
+ * - Phone: US phone number formats
+ * - SSN: Masked format (***-**-XXXX)
+ * - DOB: YYYY-MM-DD format
+ *
+ * @requires ../logging/logger
+ *
+ * @example Basic usage
+ * ```typescript
+ * import { createValidationService, HEALTHCARE_VALIDATION_RULES } from './validation.service';
+ *
+ * const validator = createValidationService();
+ * const result = await validator.validateData(studentData, HEALTHCARE_VALIDATION_RULES.student);
+ *
+ * if (!result.isValid) {
+ *   console.error('Validation errors:', result.errors);
+ * } else {
+ *   // Use sanitized data
+ *   const safeData = result.sanitizedData;
+ * }
+ * ```
+ *
+ * @example Healthcare-specific validation
+ * ```typescript
+ * import { createHealthcareValidation } from './validation.service';
+ *
+ * const validator = createHealthcareValidation();
+ * const result = await validator.validateHealthRecordData(healthRecord);
+ * ```
+ *
  * LOC: VALIDATION_SERVICE_CONSOLIDATED
- * WC-SEC-VAL-001 | Enterprise Validation Service
+ * UPSTREAM: ../logging/logger
+ * DOWNSTREAM: middleware/validation/*, services/validation/*, routes/validation/*
  *
- * UPSTREAM (imports from):
- *   - joi validation library
- *   - express-validator
- *   - shared utilities
- *
- * DOWNSTREAM (imported by):
- *   - middleware/validation/*
- *   - services/validation/*
- *   - routes/validation/*
- */
-
-/**
- * WC-SEC-VAL-001 | Enterprise Validation Service
- * Purpose: Centralized validation logic, input sanitization, healthcare data validation
- * Upstream: Joi, express-validator, healthcare patterns | Dependencies: Framework-agnostic
- * Downstream: Validation middleware, API routes | Called by: Framework adapters
- * Related: middleware/validation/*, utilities/validation.utils.ts
- * Exports: ValidationService class, healthcare validators | Key Services: Data validation, sanitization
- * Last Updated: 2025-10-21 | Dependencies: Framework-agnostic
- * Critical Path: Input validation → Schema validation → Healthcare compliance → Sanitization
- * LLM Context: Healthcare platform validation, HIPAA compliance, OWASP security
+ * @version 1.0.0
+ * @since 2025-10-21
  */
 
 import { logger } from '../logging/logger';
 
 /**
- * Validation rule interface
+ * @interface ValidationRule
+ * @description Defines a validation rule for a single field
+ *
+ * @property {string} field - The field name to validate
+ * @property {boolean} [required] - Whether the field is required
+ * @property {string} [type] - Expected data type (string, number, boolean, email, phone, uuid, date)
+ * @property {number} [minLength] - Minimum string length
+ * @property {number} [maxLength] - Maximum string length
+ * @property {number} [min] - Minimum numeric value
+ * @property {number} [max] - Maximum numeric value
+ * @property {RegExp} [pattern] - Regular expression pattern to match
+ * @property {string[]} [enum] - List of allowed values
+ * @property {Function} [custom] - Custom validation function
  */
 export interface ValidationRule {
   field: string;
@@ -44,7 +96,13 @@ export interface ValidationRule {
 }
 
 /**
- * Validation error interface
+ * @interface ValidationError
+ * @description Represents a validation error for a specific field
+ *
+ * @property {string} field - The field that failed validation
+ * @property {string} message - Human-readable error message
+ * @property {any} [value] - The invalid value (may be redacted)
+ * @property {string} [code] - Error code for programmatic handling
  */
 export interface ValidationError {
   field: string;
@@ -54,7 +112,12 @@ export interface ValidationError {
 }
 
 /**
- * Validation result interface
+ * @interface ValidationResult
+ * @description Result of a validation operation
+ *
+ * @property {boolean} isValid - Whether validation passed
+ * @property {ValidationError[]} errors - Array of validation errors (empty if valid)
+ * @property {any} [sanitizedData] - Sanitized data (only present if valid)
  */
 export interface ValidationResult {
   isValid: boolean;
@@ -63,7 +126,14 @@ export interface ValidationResult {
 }
 
 /**
- * Validation configuration interface
+ * @interface ValidationConfig
+ * @description Configuration options for the validation service
+ *
+ * @property {boolean} enableHipaaCompliance - Enable HIPAA compliance checks (PHI detection, SSN masking)
+ * @property {boolean} enableSecurityValidation - Enable security checks (XSS, SQL injection)
+ * @property {boolean} logValidationErrors - Log validation errors for monitoring
+ * @property {number} maxFieldLength - Maximum allowed field length
+ * @property {readonly string[]} [allowedFileTypes] - Allowed MIME types for file uploads
  */
 export interface ValidationConfig {
   enableHipaaCompliance: boolean;
@@ -74,7 +144,25 @@ export interface ValidationConfig {
 }
 
 /**
- * Healthcare-specific validation patterns
+ * @constant HEALTHCARE_PATTERNS
+ * @description Regular expression patterns for healthcare-specific data validation
+ * @readonly
+ *
+ * @property {RegExp} MRN - Medical Record Number: alphanumeric, 6-20 characters
+ * @property {RegExp} NPI - National Provider Identifier: exactly 10 digits
+ * @property {RegExp} ICD10 - ICD-10 diagnostic codes: letter + 2 digits + optional decimal + 1-4 chars
+ * @property {RegExp} PHONE - US phone numbers: various formats supported
+ * @property {RegExp} SSN_PARTIAL - Masked SSN: ***-**-XXXX format
+ * @property {RegExp} DOB - Date of birth: YYYY-MM-DD format
+ * @property {RegExp} EMERGENCY_RELATIONSHIP - Emergency contact relationships
+ *
+ * @example
+ * ```typescript
+ * import { HEALTHCARE_PATTERNS } from './validation.service';
+ *
+ * const isValidNPI = HEALTHCARE_PATTERNS.NPI.test('1234567890');
+ * const isValidICD = HEALTHCARE_PATTERNS.ICD10.test('E11.9');
+ * ```
  */
 export const HEALTHCARE_PATTERNS = {
   // Medical Record Number - alphanumeric, 6-20 characters
@@ -176,20 +264,75 @@ export const HEALTHCARE_VALIDATION_RULES: Record<string, ValidationRule[]> = {
 };
 
 /**
- * Enterprise Validation Service
- * 
- * Provides centralized validation logic that can be used across
- * different frameworks and middleware implementations.
+ * @class ValidationService
+ * @description Enterprise-grade validation service providing centralized validation logic
+ * that can be used across different frameworks and middleware implementations
+ *
+ * Features:
+ * - Type validation (string, number, boolean, email, phone, uuid, date)
+ * - Length validation (min/max length for strings)
+ * - Range validation (min/max for numbers)
+ * - Pattern matching (regex validation)
+ * - Enum validation (allowed values)
+ * - Custom validation functions
+ * - HIPAA compliance validation
+ * - Security validation (XSS, SQL injection)
+ * - Automatic data sanitization
+ *
+ * @example
+ * ```typescript
+ * const service = new ValidationService(VALIDATION_CONFIGS.healthcare);
+ *
+ * const rules: ValidationRule[] = [
+ *   { field: 'email', required: true, type: 'email' },
+ *   { field: 'age', required: true, type: 'number', min: 0, max: 120 }
+ * ];
+ *
+ * const result = await service.validateData(userData, rules);
+ * if (result.isValid) {
+ *   console.log('Sanitized data:', result.sanitizedData);
+ * }
+ * ```
  */
 export class ValidationService {
   private config: ValidationConfig;
 
+  /**
+   * @constructor
+   * @param {ValidationConfig} [config=VALIDATION_CONFIGS.healthcare] - Validation configuration
+   * @description Creates a new ValidationService instance with the specified configuration
+   */
   constructor(config: ValidationConfig = VALIDATION_CONFIGS.healthcare) {
     this.config = config;
   }
 
   /**
-   * Validate data against rules
+   * @method validateData
+   * @async
+   * @description Validates data against an array of validation rules
+   * @param {any} data - The data object to validate
+   * @param {ValidationRule[]} rules - Array of validation rules to apply
+   * @returns {Promise<ValidationResult>} Validation result with errors and sanitized data
+   *
+   * Validation Process:
+   * 1. Iterate through each rule
+   * 2. Validate field against rule constraints
+   * 3. Run HIPAA compliance checks if enabled
+   * 4. Run security validation if enabled
+   * 5. Sanitize valid fields
+   * 6. Log errors if logging enabled
+   * 7. Return result with sanitized data or errors
+   *
+   * @example
+   * ```typescript
+   * const rules: ValidationRule[] = [
+   *   { field: 'firstName', required: true, type: 'string', minLength: 1, maxLength: 50 },
+   *   { field: 'email', required: true, type: 'email' },
+   *   { field: 'age', required: false, type: 'number', min: 0, max: 120 }
+   * ];
+   *
+   * const result = await validator.validateData({ firstName: 'John', email: 'john@example.com' }, rules);
+   * ```
    */
   async validateData(data: any, rules: ValidationRule[]): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
@@ -566,28 +709,74 @@ export class ValidationService {
 }
 
 /**
- * Factory function for creating validation service
+ * @function createValidationService
+ * @description Factory function to create a ValidationService instance with custom configuration
+ * @param {ValidationConfig} [config] - Optional validation configuration
+ * @returns {ValidationService} New ValidationService instance
+ *
+ * @example
+ * ```typescript
+ * const validator = createValidationService({
+ *   enableHipaaCompliance: true,
+ *   enableSecurityValidation: true,
+ *   logValidationErrors: true,
+ *   maxFieldLength: 1000
+ * });
+ * ```
  */
 export function createValidationService(config?: ValidationConfig): ValidationService {
   return new ValidationService(config);
 }
 
 /**
- * Create healthcare-specific validation service
+ * @function createHealthcareValidation
+ * @description Factory function to create a ValidationService instance pre-configured
+ * for healthcare operations with HIPAA compliance
+ * @returns {ValidationService} ValidationService instance with healthcare configuration
+ *
+ * Healthcare Configuration:
+ * - enableHipaaCompliance: true (PHI detection, SSN masking)
+ * - enableSecurityValidation: true (XSS, SQL injection prevention)
+ * - logValidationErrors: true (audit compliance)
+ * - maxFieldLength: 1000
+ * - allowedFileTypes: ['image/jpeg', 'image/png', 'application/pdf', 'text/plain']
+ *
+ * @example
+ * ```typescript
+ * const validator = createHealthcareValidation();
+ * const result = await validator.validateHealthRecordData(healthRecord);
+ * ```
  */
 export function createHealthcareValidation(): ValidationService {
   return new ValidationService(VALIDATION_CONFIGS.healthcare);
 }
 
 /**
- * Create admin-specific validation service
+ * @function createAdminValidation
+ * @description Factory function to create a ValidationService instance pre-configured
+ * for administrative operations with strict validation
+ * @returns {ValidationService} ValidationService instance with admin configuration
+ *
+ * Admin Configuration:
+ * - enableHipaaCompliance: true
+ * - enableSecurityValidation: true
+ * - logValidationErrors: true
+ * - maxFieldLength: 500 (stricter limit)
+ * - allowedFileTypes: ['application/pdf', 'text/csv', 'application/vnd.ms-excel']
+ *
+ * @example
+ * ```typescript
+ * const validator = createAdminValidation();
+ * const result = await validator.validateAuthData(adminCredentials);
+ * ```
  */
 export function createAdminValidation(): ValidationService {
   return new ValidationService(VALIDATION_CONFIGS.admin);
 }
 
 /**
- * Default export for convenience
+ * @default
+ * @description Default export containing all validation service components
  */
 export default {
   ValidationService,

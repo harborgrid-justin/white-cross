@@ -1,4 +1,12 @@
 /**
+ * @fileoverview Swagger API Documentation Configuration
+ * @module config/swagger
+ * @description Hapi-Swagger configuration for comprehensive API documentation with HIPAA compliance
+ * @requires @hapi/hapi - Hapi server framework types
+ * @requires hapi-swagger - Swagger/OpenAPI documentation plugin
+ * @requires ../../package.json - Application version and metadata
+ * @requires ../constants - Swagger configuration constants
+ *
  * LOC: D2CD3BF009
  * WC-CFG-SWG-053 | Swagger API Documentation Configuration & Healthcare API Specs
  *
@@ -28,6 +36,56 @@ import * as HapiSwagger from 'hapi-swagger';
 import * as Pack from '../../package.json';
 import { SWAGGER_CONFIG, ENVIRONMENT } from '../constants';
 
+/**
+ * @constant {string} SWAGGER_HOST
+ * @description Swagger documentation host address from environment
+ * @env SWAGGER_HOST
+ * @default `localhost:${ENVIRONMENT.PORT}`
+ * @example
+ * // In .env file:
+ * SWAGGER_HOST=api.whitecross.com
+ * // or for local development:
+ * SWAGGER_HOST=localhost:3000
+ */
+
+/**
+ * @constant {ServerRegisterPluginObject} swaggerOptions
+ * @description Hapi server plugin configuration for Swagger/OpenAPI documentation
+ *
+ * @property {Object} plugin - HapiSwagger plugin reference
+ * @property {Object} options - Swagger configuration options
+ * @property {Object} options.info - API metadata
+ * @property {string} options.info.title - API title
+ * @property {string} options.info.version - API version from package.json
+ * @property {string} options.info.description - API description with compliance notes
+ * @property {Object} options.info.contact - API contact information
+ * @property {Object} options.info.license - API license information
+ * @property {Array<Object>} options.tags - API endpoint categories
+ * @property {Object} options.securityDefinitions - JWT authentication definition
+ * @property {Array<Object>} options.security - Default security requirements
+ * @property {string} options.grouping - Group endpoints by tags
+ * @property {string} options.sortEndpoints - Sort endpoints by order
+ * @property {string} options.documentationPath - Path to documentation endpoint
+ * @property {boolean} options.swaggerUI - Enable Swagger UI
+ * @property {string} options.swaggerUIPath - Path to Swagger UI
+ * @property {string} options.jsonPath - Path to JSON schema
+ * @property {string} options.basePath - API base path
+ * @property {boolean} options.cors - Enable CORS
+ * @property {Array<string>} options.schemes - Supported protocols
+ * @property {string} options.host - API host address
+ * @property {string} options.customCss - Custom Swagger UI styling
+ * @property {boolean} options.responseValidation - Validate responses
+ *
+ * @example
+ * // Register Swagger plugin in Hapi server
+ * await server.register(swaggerOptions);
+ *
+ * // Access Swagger UI
+ * // http://localhost:3000/documentation
+ *
+ * @see {@link SWAGGER_CONFIG} For configuration constants
+ * @see {@link https://github.com/glennjones/hapi-swagger} For plugin documentation
+ */
 export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOptions> = {
   plugin: HapiSwagger,
   options: {
@@ -174,7 +232,37 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
   }
 };
 
-// Extended info for documentation
+/**
+ * @constant {Object} extendedInfo
+ * @description Extended API documentation information with markdown formatting
+ *
+ * @property {string} title - API title
+ * @property {string} version - API version from package.json
+ * @property {string} description - Detailed markdown-formatted API documentation including:
+ *   - Overview of API functionality
+ *   - Security and HIPAA compliance information
+ *   - Authentication instructions
+ *   - Rate limiting details
+ *   - Response format standards
+ *   - Pagination guidelines
+ *   - Support contact information
+ * @property {Object} contact - API contact information
+ * @property {Object} license - API license information
+ *
+ * @example
+ * // Use in custom documentation pages
+ * console.log(extendedInfo.description);
+ *
+ * @description Provides comprehensive API documentation including:
+ * - HIPAA compliance features
+ * - JWT authentication flow
+ * - Rate limiting policies
+ * - Standard response formats
+ * - Error handling conventions
+ * - Pagination parameters
+ *
+ * @see {@link swaggerOptions} For Swagger plugin configuration
+ */
 export const extendedInfo = {
   title: 'White Cross Healthcare Platform API',
   version: Pack.version,

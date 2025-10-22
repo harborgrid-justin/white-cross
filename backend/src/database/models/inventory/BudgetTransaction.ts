@@ -1,4 +1,37 @@
 /**
+ * @fileoverview Budget Transaction Database Model
+ * @module database/models/inventory/BudgetTransaction
+ * @description Sequelize model for recording individual budget transactions
+ *
+ * Key Features:
+ * - Detailed transaction logging for audit compliance
+ * - Links to purchase orders and other source documents
+ * - Supports positive (spending) and negative (refunds/adjustments) amounts
+ * - Categorized spending for budget tracking
+ * - Immutable records with timestamp-only tracking
+ *
+ * @business All spending against budget categories must be recorded as transactions
+ * @business Transactions are immutable once created (no updates/deletes)
+ * @business Budget category spentAmount = SUM(transactions.amount) for that category
+ * @business Negative amounts represent refunds, credits, or downward adjustments
+ * @business Positive amounts represent expenditures, encumbrances, or upward adjustments
+ *
+ * @financial Transaction Date vs Created At:
+ * - transactionDate: When expense actually occurred (e.g., invoice date)
+ * - createdAt: When record was entered into system
+ * - These may differ for backdated entries or delayed invoice processing
+ *
+ * @financial Reference Types:
+ * - PURCHASE_ORDER: Linked to PurchaseOrder record
+ * - INVOICE: External vendor invoice
+ * - MANUAL: Manual entry by admin
+ * - ADJUSTMENT: Budget correction or reallocation
+ * - OTHER: Other document types
+ *
+ * @requires sequelize
+ */
+
+/**
  * LOC: 63D7B4C804
  * WC-GEN-078 | BudgetTransaction.ts - General utility functions and operations
  *
@@ -9,29 +42,35 @@
  *   - index.ts (database/models/index.ts)
  */
 
-/**
- * WC-GEN-078 | BudgetTransaction.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize | Dependencies: sequelize, ../../config/sequelize
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 
 /**
- * BudgetTransaction Model
- * Records individual budget transactions against budget categories.
- * Tracks spending with descriptions, dates, and optional references to
- * purchase orders or other transactions.
- * Provides detailed financial audit trail.
+ * @interface BudgetTransactionAttributes
+ * @description Defines the complete structure of a budget transaction record
+ *
+ * @property {string} id - Unique identifier (UUID v4)
+ * @property {number} amount - Transaction amount (positive = expense, negative = credit)
+ * @property {string} description - Transaction description (required, 1-5000 characters)
+ * @property {Date} transactionDate - Date transaction occurred
+ * @property {string} [referenceId] - ID of related document (e.g., PO number, invoice number)
+ * @property {string} [referenceType] - Type of referenced document
+ * @property {string} [notes] - Additional transaction notes
+ * @property {Date} createdAt - Record creation timestamp
+ * @property {string} categoryId - Foreign key to BudgetCategory
+ *
+ * @business Transaction Amount Rules:
+ * - Positive: Expenditures, encumbrances (reserved funds)
+ * - Negative: Refunds, credits, reversed encumbrances
+ * - Cannot be zero (validation enforced)
+ * - Absolute value cannot exceed $99,999,999.99
+ *
+ * @business Reference Tracking:
+ * - referenceId + referenceType together link to source document
+ * - Both must be provided together or both omitted
+ * - Enables audit trail from budget to source documentation
+ * - Examples: ("PO-2024-001", "PURCHASE_ORDER") or ("INV-12345", "INVOICE")
  */
-
 interface BudgetTransactionAttributes {
   id: string;
   amount: number;
@@ -46,20 +85,152 @@ interface BudgetTransactionAttributes {
   categoryId: string;
 }
 
+/**
+ * @interface BudgetTransactionCreationAttributes
+ * @description Attributes required/optional when creating a new budget transaction
+ * @extends {Optional<BudgetTransactionAttributes>}
+ *
+ * Required on creation:
+ * - amount (cannot be zero)
+ * - description (explanation of transaction)
+ * - categoryId (budget category to charge)
+ *
+ * Optional on creation:
+ * - id (auto-generated UUID)
+ * - transactionDate (defaults to NOW)
+ * - referenceId, referenceType (both required together if used)
+ * - notes
+ * - createdAt (auto-generated, immutable)
+ */
 interface BudgetTransactionCreationAttributes
   extends Optional<BudgetTransactionAttributes, 'id' | 'createdAt' | 'transactionDate' | 'referenceId' | 'referenceType' | 'notes'> {}
 
+/**
+ * @class BudgetTransaction
+ * @extends {Model<BudgetTransactionAttributes, BudgetTransactionCreationAttributes>}
+ * @description Sequelize model for budget transaction records
+ *
+ * Records all financial transactions against budget categories. Provides
+ * complete audit trail and supports automated budget tracking.
+ *
+ * @example
+ * // Record purchase order expense
+ * const transaction = await BudgetTransaction.create({
+ *   categoryId: medicalSuppliesCategory.id,
+ *   amount: 1250.00,
+ *   description: "Monthly medical supplies order",
+ *   transactionDate: new Date(),
+ *   referenceId: "PO-2024-001",
+ *   referenceType: "PURCHASE_ORDER",
+ *   notes: "Approved by director 10/15/2024"
+ * });
+ *
+ * @example
+ * // Record vendor refund
+ * const refund = await BudgetTransaction.create({
+ *   categoryId: equipmentCategory.id,
+ *   amount: -150.00, // Negative for credit
+ *   description: "Refund for defective thermometer",
+ *   transactionDate: new Date(),
+ *   referenceId: "INV-98765",
+ *   referenceType: "INVOICE",
+ *   notes: "Vendor credit memo #CM-456"
+ * });
+ *
+ * @example
+ * // Calculate category spending
+ * const transactions = await BudgetTransaction.findAll({
+ *   where: { categoryId: category.id },
+ *   attributes: [
+ *     [sequelize.fn('SUM', sequelize.col('amount')), 'totalSpent'],
+ *     [sequelize.fn('COUNT', sequelize.col('id')), 'transactionCount']
+ *   ]
+ * });
+ *
+ * @example
+ * // Find recent transactions
+ * const recentTransactions = await BudgetTransaction.findAll({
+ *   where: {
+ *     transactionDate: {
+ *       [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 30))
+ *     }
+ *   },
+ *   order: [['transactionDate', 'DESC']],
+ *   include: [{ model: BudgetCategory }]
+ * });
+ */
 export class BudgetTransaction extends Model<BudgetTransactionAttributes, BudgetTransactionCreationAttributes> implements BudgetTransactionAttributes {
+  /**
+   * @property {string} id - Unique identifier (UUID v4)
+   */
   public id!: string;
+
+  /**
+   * @property {number} amount - Transaction amount
+   * @validation Required, non-zero, DECIMAL(10,2), absolute value max $99,999,999.99
+   * @financial Positive values = expenditures/charges to budget
+   * @financial Negative values = refunds/credits to budget
+   * @financial Cannot be zero (use ADJUSTMENT type for zero-sum corrections)
+   */
   public amount!: number;
+
+  /**
+   * @property {string} description - Transaction description
+   * @validation Required, 1-5000 characters, non-empty
+   * @business Should clearly explain purpose of transaction
+   * @business Include relevant details: vendor, item, quantity, reason
+   * @business Used for audit reporting and budget reviews
+   */
   public description!: string;
+
+  /**
+   * @property {Date} transactionDate - Date transaction occurred
+   * @validation Required, cannot be before year 2000, cannot be in future
+   * @default NOW
+   * @business Represents actual transaction date (e.g., invoice date, PO approval date)
+   * @business May differ from createdAt for backdated or delayed entries
+   * @business Used for fiscal year reporting and accrual accounting
+   */
   public transactionDate!: Date;
+
+  /**
+   * @property {string} [referenceId] - Reference document ID
+   * @validation Optional, up to 255 characters, required if referenceType is set
+   * @business Links to source document for audit trail
+   * @business Examples: "PO-2024-001", "INV-12345", "ADJ-2024-Q2-01"
+   * @business Must be provided with referenceType
+   */
   public referenceId?: string;
+
+  /**
+   * @property {string} [referenceType] - Reference document type
+   * @validation Optional, up to 100 characters, must be valid type, required if referenceId is set
+   * @business Valid types: PURCHASE_ORDER, INVOICE, MANUAL, ADJUSTMENT, OTHER
+   * @business Categorizes source document for reporting
+   * @business Must be provided with referenceId
+   */
   public referenceType?: string;
+
+  /**
+   * @property {string} [notes] - Additional notes
+   * @validation Optional, up to 10,000 characters
+   * @business Can include approval information, special circumstances, or audit notes
+   */
   public notes?: string;
+
+  /**
+   * @property {Date} createdAt - Record creation timestamp
+   * @readonly Immutable once created, tracks when record was entered
+   * @business May differ from transactionDate for backdated entries
+   */
   public readonly createdAt!: Date;
 
-  // Foreign Keys
+  /**
+   * @property {string} categoryId - Budget category reference
+   * @validation Required, must reference valid BudgetCategory
+   * @business Determines which budget category is charged/credited
+   * @business Category should be active and match fiscal year of transaction
+   */
   public categoryId!: string;
 }
 

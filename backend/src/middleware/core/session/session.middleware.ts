@@ -1,4 +1,33 @@
 /**
+ * @fileoverview Framework-Agnostic Session Management Middleware
+ * @module middleware/session/session
+ * @description HIPAA-compliant session management middleware providing secure session lifecycle
+ * management, automatic timeout handling, concurrent session limits, and comprehensive audit logging
+ * for healthcare platforms.
+ *
+ * Key Features:
+ * - Automatic session timeout with configurable warning periods
+ * - Concurrent session limits per user with automatic cleanup
+ * - HIPAA-compliant audit logging for all session operations
+ * - Support for multiple session stores (Memory, Redis)
+ * - Session activity tracking and validation
+ * - Framework-agnostic design (Hapi/Express adapters)
+ * - Role-specific session configurations (healthcare, admin, emergency)
+ * - PHI access tracking for compliance
+ *
+ * Session Lifecycle:
+ * 1. Session Creation → Generate secure session ID
+ * 2. Activity Tracking → Update lastActivity on each request
+ * 3. Timeout Validation → Check if session exceeded timeout
+ * 4. Warning Period → Notify user before expiration
+ * 5. Session Cleanup → Remove expired/inactive sessions
+ *
+ * @security Critical session middleware - handles user session lifecycle
+ * @compliance HIPAA - Access control and audit logging (164.308(a)(4), 164.312(a)(1))
+ * @compliance OWASP - Session Management Best Practices
+ *
+ * @requires ../../../utils/logger - Application logging service
+ *
  * LOC: WC-MID-SESS-001
  * WC-MID-SESS-001 | Framework-Agnostic Session Management Middleware
  *
@@ -17,23 +46,34 @@
  * Downstream: All authenticated routes | Called by: Framework adapters
  * Related: authentication/jwt.middleware.ts, security/headers/security-headers.middleware.ts
  * Exports: SessionMiddleware class, session configs | Key Services: Session lifecycle, timeout management
- * Last Updated: 2025-10-21 | Dependencies: Framework-agnostic with Redis support
+ * Last Updated: 2025-10-22 | Dependencies: Framework-agnostic with Redis support
  * Critical Path: Session creation → Activity tracking → Timeout validation → Session cleanup
  * LLM Context: HIPAA compliance, healthcare session security, automatic logout
- */
-
-/**
- * Framework-agnostic Session Management Middleware
- * Manages user sessions with HIPAA-compliant security and timeouts
- *
- * Security: OWASP Session Management, HIPAA access control requirements
- * Healthcare: Automatic session timeout, audit logging, PHI access tracking
  */
 
 import { logger } from '../../../utils/logger';
 
 /**
  * Session configuration interface
+ *
+ * @interface SessionConfig
+ * @property {number} sessionTimeout - Maximum session duration in milliseconds
+ * @property {number} warningTime - Time in milliseconds before expiration to show warning
+ * @property {number} maxConcurrentSessions - Maximum number of simultaneous sessions per user
+ * @property {boolean} requireReauth - Require re-authentication for sensitive operations (PHI access)
+ * @property {boolean} trackActivity - Enable activity tracking on each request
+ * @property {boolean} auditSessions - Enable HIPAA-compliant audit logging
+ * @property {SessionStore} [store] - Custom session store implementation (defaults to MemorySessionStore)
+ *
+ * @example
+ * const config: SessionConfig = {
+ *   sessionTimeout: 30 * 60 * 1000, // 30 minutes
+ *   warningTime: 5 * 60 * 1000,     // 5 minutes
+ *   maxConcurrentSessions: 3,
+ *   requireReauth: true,
+ *   trackActivity: true,
+ *   auditSessions: true
+ * };
  */
 export interface SessionConfig {
   sessionTimeout: number;        // Session timeout in milliseconds
@@ -329,11 +369,61 @@ export class RedisSessionStore implements SessionStore {
 
 /**
  * Session Management Middleware Class
+ *
+ * @class SessionMiddleware
+ * @description Manages user sessions with HIPAA-compliant security features including
+ * automatic timeouts, concurrent session limits, activity tracking, and comprehensive
+ * audit logging. Supports multiple storage backends (memory and Redis).
+ *
+ * @example
+ * // Create session middleware with healthcare configuration
+ * const sessionMiddleware = new SessionMiddleware(SESSION_CONFIGS.healthcare);
+ *
+ * @example
+ * // Create session with Redis store
+ * const sessionMiddleware = new SessionMiddleware({
+ *   ...SESSION_CONFIGS.healthcare,
+ *   store: new RedisSessionStore(redisClient)
+ * });
+ *
+ * @example
+ * // Custom configuration
+ * const sessionMiddleware = new SessionMiddleware({
+ *   sessionTimeout: 15 * 60 * 1000,  // 15 minutes
+ *   warningTime: 2 * 60 * 1000,       // 2 minutes warning
+ *   maxConcurrentSessions: 1,
+ *   requireReauth: true,
+ *   trackActivity: true,
+ *   auditSessions: true
+ * });
  */
 export class SessionMiddleware {
   private config: SessionConfig;
   private store: SessionStore;
 
+  /**
+   * Creates an instance of SessionMiddleware
+   *
+   * @constructor
+   * @param {SessionConfig} config - Session configuration
+   * @param {number} config.sessionTimeout - Session timeout in milliseconds
+   * @param {number} config.warningTime - Warning time before timeout
+   * @param {number} config.maxConcurrentSessions - Max concurrent sessions per user
+   * @param {boolean} config.requireReauth - Require re-auth for sensitive operations
+   * @param {boolean} config.trackActivity - Enable activity tracking
+   * @param {boolean} config.auditSessions - Enable audit logging
+   * @param {SessionStore} [config.store] - Optional custom session store
+   *
+   * @example
+   * const sessionMiddleware = new SessionMiddleware({
+   *   sessionTimeout: 30 * 60 * 1000,
+   *   warningTime: 5 * 60 * 1000,
+   *   maxConcurrentSessions: 3,
+   *   requireReauth: true,
+   *   trackActivity: true,
+   *   auditSessions: true
+   * });
+   */
   constructor(config: SessionConfig) {
     this.config = config;
     this.store = config.store || new MemorySessionStore();
@@ -351,7 +441,53 @@ export class SessionMiddleware {
   }
 
   /**
-   * Create a new session
+   * Create a new user session
+   *
+   * @function createSession
+   * @async
+   * @param {string} userId - Unique user identifier
+   * @param {string} email - User email address
+   * @param {string} role - User role (school_nurse, admin, etc.)
+   * @param {string} ipAddress - Client IP address for audit trail
+   * @param {string} userAgent - Client user agent string
+   * @param {string[]} [permissions] - Optional explicit permissions
+   * @returns {Promise<SessionData>} Created session data
+   *
+   * @description Creates a new session for authenticated user. Enforces concurrent session
+   * limits by automatically deactivating oldest session if limit is exceeded. Generates
+   * cryptographically secure session ID and logs creation for HIPAA compliance.
+   *
+   * @throws {Error} When session store operations fail
+   *
+   * @example
+   * // Create session after successful authentication
+   * const session = await sessionMiddleware.createSession(
+   *   user.id,
+   *   user.email,
+   *   'school_nurse',
+   *   request.ip,
+   *   request.headers['user-agent'],
+   *   user.permissions
+   * );
+   * console.log('Session created:', session.sessionId);
+   *
+   * @example
+   * // In Hapi route handler
+   * {
+   *   method: 'POST',
+   *   path: '/api/auth/login',
+   *   handler: async (request, h) => {
+   *     const user = await authenticateUser(request.payload);
+   *     const session = await sessionMiddleware.createSession(
+   *       user.id,
+   *       user.email,
+   *       user.role,
+   *       request.info.remoteAddress,
+   *       request.headers['user-agent']
+   *     );
+   *     return h.response({ sessionId: session.sessionId }).code(201);
+   *   }
+   * }
    */
   async createSession(
     userId: string,
@@ -414,6 +550,52 @@ export class SessionMiddleware {
 
   /**
    * Validate session and check timeout
+   *
+   * @function validateSession
+   * @async
+   * @middleware
+   * @param {string} sessionId - Session ID to validate
+   * @returns {Promise<SessionResult>} Validation result with session data or error
+   *
+   * @description Validates session existence, activity status, and timeout. Automatically
+   * updates lastActivity timestamp if tracking is enabled. Returns warning if session
+   * is approaching expiration. Deactivates session if timeout exceeded.
+   *
+   * @throws Never throws - returns error in result object
+   *
+   * @example
+   * // Validate session in middleware
+   * const result = await sessionMiddleware.validateSession(sessionId);
+   * if (!result.valid) {
+   *   return h.response({ error: result.error.message }).code(401);
+   * }
+   *
+   * @example
+   * // Check for expiration warning
+   * const result = await sessionMiddleware.validateSession(sessionId);
+   * if (result.valid && result.warning) {
+   *   console.log(`Session expires in ${result.warning.timeRemaining}ms`);
+   * }
+   *
+   * @example
+   * // Use in Hapi pre-handler
+   * {
+   *   method: 'GET',
+   *   path: '/api/protected',
+   *   options: {
+   *     pre: [{
+   *       method: async (request, h) => {
+   *         const sessionId = request.state.sessionId;
+   *         const result = await sessionMiddleware.validateSession(sessionId);
+   *         if (!result.valid) {
+   *           throw Boom.unauthorized(result.error.message);
+   *         }
+   *         return result.session;
+   *       },
+   *       assign: 'session'
+   *     }]
+   *   }
+   * }
    */
   async validateSession(sessionId: string): Promise<SessionResult> {
     try {

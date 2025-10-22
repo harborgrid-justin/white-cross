@@ -1,6 +1,32 @@
 /**
+ * @fileoverview Inventory Alerts Service
+ * @module services/inventory/alerts
+ * @description Comprehensive alert system for stock levels, expiration dates, and maintenance schedules
+ *
+ * This service provides real-time monitoring and alert generation for inventory management,
+ * including low stock warnings, expiration tracking, maintenance due notifications, and
+ * actionable recommendations for inventory management.
+ *
+ * Key Features:
+ * - Multi-level alert system (CRITICAL, HIGH, MEDIUM, LOW)
+ * - Low stock and out-of-stock detection
+ * - Expiration date monitoring (30-day warning period)
+ * - Equipment maintenance scheduling alerts
+ * - Alert categorization and filtering
+ * - Actionable recommendations based on alert patterns
+ * - Days-until-action tracking for time-sensitive items
+ *
+ * @business Low stock: currentStock <= reorderLevel (but > 0)
+ * @business Out of stock: currentStock = 0 (CRITICAL)
+ * @business Near expiry: <= 30 days until expiration
+ * @business Expired: expirationDate <= current date (CRITICAL)
+ * @business Maintenance due: <= 7 days until scheduled maintenance
+ * @business Alert severity determines priority and urgency
+ *
+ * @requires ../../database/models
+ *
  * LOC: 414A4DDD72
- * WC-GEN-272 | alertsService.ts - General utility functions and operations
+ * WC-GEN-272 | alertsService.ts - Inventory Alerts Service
  *
  * UPSTREAM (imports from):
  *   - logger.ts (utils/logger.ts)
@@ -9,25 +35,19 @@
  *
  * DOWNSTREAM (imported by):
  *   - inventoryService.ts (services/inventoryService.ts)
+ *   - dashboard routes (for alert summaries)
  */
 
 /**
- * WC-GEN-272 | alertsService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
-/**
- * Inventory Alerts Service
- *
- * Handles inventory monitoring and alert generation.
- * Provides functionality for low stock, expiration, and maintenance alerts.
+ * WC-GEN-272 | alertsService.ts - Inventory Alerts and Monitoring Service
+ * Purpose: Real-time alert generation for stock levels, expiration, and maintenance
+ * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: Stock calculations, expiration tracking
+ * Downstream: Dashboard, inventory routes, notification system | Called by: Inventory service, automated monitoring
+ * Related: StockService, MaintenanceService, NotificationService
+ * Exports: AlertsService class | Key Services: Alert generation, expiration monitoring, recommendations
+ * Last Updated: 2025-10-22 | File Type: .ts
+ * Critical Path: Stock check → Expiration check → Maintenance check → Alert generation → Priority sorting
+ * LLM Context: School health compliance with medication expiration and equipment maintenance tracking
  */
 
 import { QueryTypes } from 'sequelize';
@@ -35,9 +55,47 @@ import { logger } from '../../utils/logger';
 import { sequelize } from '../../database/models';
 import { InventoryAlert, StockQueryResult } from './types';
 
+/**
+ * Inventory Alerts Service
+ *
+ * @class AlertsService
+ * @static
+ */
 export class AlertsService {
   /**
-   * Get all inventory alerts
+   * Get all inventory alerts with priority sorting
+   *
+   * @method getInventoryAlerts
+   * @static
+   * @async
+   * @returns {Promise<InventoryAlert[]>} Array of alerts sorted by severity (CRITICAL first)
+   * @returns {Promise<InventoryAlert[].id>} Unique alert identifier
+   * @returns {Promise<InventoryAlert[].type>} Alert type (OUT_OF_STOCK, LOW_STOCK, EXPIRED, NEAR_EXPIRY, MAINTENANCE_DUE)
+   * @returns {Promise<InventoryAlert[].severity>} Severity level (CRITICAL, HIGH, MEDIUM, LOW)
+   * @returns {Promise<InventoryAlert[].message>} Human-readable alert message
+   * @returns {Promise<InventoryAlert[].itemId>} Related inventory item UUID
+   * @returns {Promise<InventoryAlert[].itemName>} Inventory item name
+   * @returns {Promise<InventoryAlert[].daysUntilAction>} Optional days until action needed
+   *
+   * @business Out of stock items = CRITICAL severity
+   * @business Expired items = CRITICAL severity
+   * @business Items expiring in <= 7 days = HIGH severity
+   * @business Items expiring in 8-30 days = MEDIUM severity
+   * @business Low stock (above 0) = HIGH severity
+   * @business Maintenance overdue = HIGH severity
+   * @business Maintenance due in <= 7 days = MEDIUM severity
+   *
+   * @business Expiration warning period: 30 days
+   * @business Critical medications (insulin, EpiPens) prioritized in alerts
+   * @business Alerts sorted by severity for action prioritization
+   *
+   * @example
+   * const alerts = await AlertsService.getInventoryAlerts();
+   * // Returns: [
+   * //   { id: 'out_stock_item1', type: 'OUT_OF_STOCK', severity: 'CRITICAL', message: '...', ... },
+   * //   { id: 'expired_item2', type: 'EXPIRED', severity: 'CRITICAL', message: '...', ... },
+   * //   { id: 'low_stock_item3', type: 'LOW_STOCK', severity: 'HIGH', message: '...', ... }
+   * // ]
    */
   static async getInventoryAlerts(): Promise<InventoryAlert[]> {
     try {

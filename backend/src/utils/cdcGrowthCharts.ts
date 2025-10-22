@@ -1,4 +1,9 @@
 /**
+ * @fileoverview CDC Growth Charts Integration Utilities
+ * @module utils/cdcGrowthCharts
+ * @description Provides CDC-based growth chart calculations including percentiles for height,
+ * weight, BMI, and head circumference using the LMS (Lambda-Mu-Sigma) method
+ *
  * LOC: CDC-GROWTH-001
  * WC-UTIL-CDC-001 | CDC Growth Charts Integration
  *
@@ -10,7 +15,13 @@
 import { logger } from './logger';
 
 /**
- * Gender enum for growth chart calculations
+ * @enum {string}
+ * @description Gender options for growth chart calculations
+ * @property {string} MALE - Male gender identifier
+ * @property {string} FEMALE - Female gender identifier
+ *
+ * @example
+ * const gender = GrowthChartGender.MALE;
  */
 export enum GrowthChartGender {
   MALE = 'MALE',
@@ -18,7 +29,22 @@ export enum GrowthChartGender {
 }
 
 /**
- * Growth measurement data
+ * @typedef {Object} GrowthMeasurement
+ * @description Input data for growth percentile calculations
+ * @property {number} ageInMonths - Age in months (0-240, representing 0-20 years)
+ * @property {GrowthChartGender} gender - Gender for age/gender-specific calculations
+ * @property {number} [heightCm] - Height in centimeters (optional, 40-200cm)
+ * @property {number} [weightKg] - Weight in kilograms (optional, 2-200kg)
+ * @property {number} [headCircumferenceCm] - Head circumference in cm (optional, 30-60cm, for ages 0-36 months only)
+ *
+ * @example
+ * const measurement: GrowthMeasurement = {
+ *   ageInMonths: 24,
+ *   gender: GrowthChartGender.MALE,
+ *   heightCm: 85.5,
+ *   weightKg: 12.5,
+ *   headCircumferenceCm: 48.0
+ * };
  */
 export interface GrowthMeasurement {
   ageInMonths: number;
@@ -29,7 +55,30 @@ export interface GrowthMeasurement {
 }
 
 /**
- * Growth percentile results
+ * @typedef {Object} GrowthPercentiles
+ * @description Calculated growth percentiles and interpretations
+ * @property {number} [heightPercentile] - Height percentile (0.1-99.9)
+ * @property {number} [weightPercentile] - Weight percentile (0.1-99.9)
+ * @property {number} [bmiPercentile] - BMI percentile (0.1-99.9, for ages 24+ months)
+ * @property {number} [headCircumferencePercentile] - Head circumference percentile (0-36 months only)
+ * @property {number} [bmi] - Calculated BMI value
+ * @property {Object} interpretation - Clinical interpretations of percentiles
+ * @property {string} [interpretation.height] - Height percentile interpretation
+ * @property {string} [interpretation.weight] - Weight percentile interpretation
+ * @property {string} [interpretation.bmi] - BMI percentile interpretation with CDC categories
+ *
+ * @example
+ * const percentiles: GrowthPercentiles = {
+ *   heightPercentile: 55.2,
+ *   weightPercentile: 48.7,
+ *   bmiPercentile: 42.1,
+ *   bmi: 17.2,
+ *   interpretation: {
+ *     height: 'Average height (25th-75th percentile)',
+ *     weight: 'Average weight (25th-75th percentile)',
+ *     bmi: 'Healthy weight (5th-85th percentile)'
+ *   }
+ * };
  */
 export interface GrowthPercentiles {
   heightPercentile?: number;

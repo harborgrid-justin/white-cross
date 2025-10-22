@@ -1,6 +1,38 @@
 /**
+ * @fileoverview Inventory Analytics Service
+ * @module services/inventory/analytics
+ * @description Comprehensive analytics and reporting for inventory management and financial tracking
+ *
+ * This service provides advanced analytics, reporting, and business intelligence for
+ * inventory operations including valuation, usage patterns, supplier performance,
+ * turnover rates, cost analysis, and seasonal trends.
+ *
+ * Key Features:
+ * - Inventory valuation by category
+ * - Usage analytics and consumption patterns
+ * - Supplier performance metrics
+ * - Inventory turnover rate calculations
+ * - ABC analysis (Pareto principle for inventory)
+ * - Expiration analysis and waste tracking
+ * - Cost analysis by category
+ * - Monthly transaction trends
+ * - Seasonal usage patterns
+ * - Comprehensive reporting dashboards
+ *
+ * @business Inventory valuation = currentStock * unitCost per item
+ * @business Turnover rate = totalUsed / averageStock
+ * @business ABC Analysis: A items = 80% of value, B = 15%, C = 5%
+ * @business Usage trends identify high-consumption items
+ * @business Supplier performance tracks reliability and value
+ *
+ * @financial Total inventory value for balance sheet reporting
+ * @financial Cost analysis for budget planning
+ * @financial Supplier spending for vendor negotiations
+ *
+ * @requires ../../database/models
+ *
  * LOC: 260E28F914
- * WC-GEN-273 | analyticsService.ts - General utility functions and operations
+ * WC-GEN-273 | analyticsService.ts - Inventory Analytics Service
  *
  * UPSTREAM (imports from):
  *   - logger.ts (utils/logger.ts)
@@ -8,34 +40,59 @@
  *
  * DOWNSTREAM (imported by):
  *   - inventoryService.ts (services/inventoryService.ts)
+ *   - reporting routes (for dashboards)
  */
 
 /**
- * WC-GEN-273 | analyticsService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
-/**
- * Analytics Service
- *
- * Provides comprehensive analytics, reporting, and statistics for inventory.
- * Handles valuation, usage analytics, supplier performance, and trends.
+ * WC-GEN-273 | analyticsService.ts - Inventory Analytics and Reporting Service
+ * Purpose: Business intelligence and analytics for inventory management
+ * Upstream: ../../utils/logger, ../../database/models | Dependencies: Sequelize aggregations, complex queries
+ * Downstream: Dashboard routes, reporting endpoints | Called by: Inventory service, administrative reporting
+ * Related: StockService, FinancialReporting, BudgetService
+ * Exports: AnalyticsService class | Key Services: Valuation, usage analytics, ABC analysis, trends
+ * Last Updated: 2025-10-22 | File Type: .ts
+ * Critical Path: Data aggregation → Analysis → Visualization → Decision support
+ * LLM Context: School health inventory with financial reporting and operational insights
  */
 
 import { QueryTypes } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { sequelize } from '../../database/models';
 
+/**
+ * Inventory Analytics Service
+ *
+ * @class AnalyticsService
+ * @static
+ */
 export class AnalyticsService {
   /**
-   * Get inventory valuation
+   * Get inventory valuation by category
+   *
+   * @method getInventoryValuation
+   * @static
+   * @async
+   * @returns {Promise<Array<Object>>} Valuation breakdown by category
+   * @returns {Promise<Array<Object>.category>} Inventory category
+   * @returns {Promise<Array<Object>.itemCount>} Number of items in category
+   * @returns {Promise<Array<Object>.totalValue>} Total value (stock * unit cost)
+   * @returns {Promise<Array<Object>.totalQuantity>} Total units in stock
+   *
+   * @business Valuation = SUM(currentStock * unitCost) per category
+   * @business Only active items included in valuation
+   * @business Sorted by total value descending (highest value first)
+   * @business Used for financial reporting and insurance purposes
+   *
+   * @financial Total inventory asset value for balance sheet
+   * @financial Category breakdown for budget allocation planning
+   *
+   * @example
+   * const valuation = await AnalyticsService.getInventoryValuation();
+   * // Returns: [
+   * //   { category: 'MEDICATION', itemCount: 45, totalValue: 12500.00, totalQuantity: 2500 },
+   * //   { category: 'EQUIPMENT', itemCount: 23, totalValue: 8900.50, totalQuantity: 125 },
+   * //   { category: 'SUPPLIES', itemCount: 67, totalValue: 3200.25, totalQuantity: 5400 }
+   * // ]
    */
   static async getInventoryValuation() {
     try {

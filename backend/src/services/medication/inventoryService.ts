@@ -1,4 +1,30 @@
 /**
+ * @fileoverview Medication Inventory Management Service
+ * @module services/medication/inventory
+ * @description Specialized medication inventory tracking with expiration monitoring and batch management
+ *
+ * This service provides medication-specific inventory management including batch
+ * tracking, expiration date monitoring, reorder level management, and compliance
+ * with medication storage and handling requirements.
+ *
+ * Key Features:
+ * - Batch number tracking for medication lots
+ * - Expiration date monitoring with 30-day warnings
+ * - Low stock alerts based on reorder levels
+ * - Medication-specific inventory transactions
+ * - DEA controlled substance tracking preparation
+ * - Automatic alert generation for expired/expiring medications
+ * - Audit trail for all medication inventory changes
+ *
+ * @business 90-day expiration warning for critical medications (insulin, EpiPens)
+ * @business 30-day expiration warning for standard medications
+ * @business Expired medications must be removed from active inventory
+ * @business Batch numbers required for medication traceability
+ * @business Reorder levels higher for emergency medications
+ * @business DEA Schedule II-V medications require enhanced tracking
+ *
+ * @requires ../../database/models
+ *
  * LOC: 7359200817-INV
  * WC-SVC-MED-INV | Medication Inventory Management Service
  *
@@ -17,7 +43,7 @@
  * Downstream: MedicationService | Called by: Medication service index
  * Related: Medication model, alerting system
  * Exports: InventoryService class | Key Services: Stock management, alerts
- * Last Updated: 2025-10-18 | Dependencies: sequelize
+ * Last Updated: 2025-10-22 | Dependencies: sequelize
  * Critical Path: Inventory tracking → Alert generation → Reorder management
  * LLM Context: Healthcare inventory compliance with expiration and stock monitoring
  */
@@ -27,9 +53,43 @@ import { logger } from '../../utils/logger';
 import { MedicationInventory, Medication, sequelize } from '../../database/models';
 import { CreateInventoryData } from './types';
 
+/**
+ * Medication Inventory Service
+ *
+ * @class InventoryService
+ * @static
+ */
 export class InventoryService {
   /**
    * Add medication to inventory with batch tracking
+   *
+   * @method addToInventory
+   * @static
+   * @async
+   * @param {CreateInventoryData} data - Inventory entry details
+   * @param {string} data.medicationId - Medication UUID
+   * @param {number} data.quantity - Quantity to add
+   * @param {string} data.batchNumber - Manufacturer batch/lot number (required for traceability)
+   * @param {Date} data.expirationDate - Expiration date from batch label
+   * @param {number} data.reorderLevel - Reorder point for this medication
+   * @returns {Promise<MedicationInventory>} Created inventory record with medication details
+   * @throws {Error} Medication not found
+   *
+   * @business Batch number required for medication recall traceability
+   * @business Expiration date used for rotation (FIFO) and alerts
+   * @business Reorder level set per medication based on usage patterns
+   * @business Critical medications (insulin, EpiPens) should have higher reorder levels
+   * @business DEA controlled substances require additional documentation
+   *
+   * @example
+   * const inventory = await InventoryService.addToInventory({
+   *   medicationId: 'med-uuid-123',
+   *   quantity: 100,
+   *   batchNumber: 'LOT-2024-0456',
+   *   expirationDate: new Date('2025-12-31'),
+   *   reorderLevel: 20
+   * });
+   * // Logs: "Inventory added: 100 units of Albuterol (Batch: LOT-2024-0456)"
    */
   static async addToInventory(data: CreateInventoryData) {
     try {
@@ -69,6 +129,33 @@ export class InventoryService {
 
   /**
    * Get inventory with low stock and expiration alerts
+   *
+   * @method getInventoryWithAlerts
+   * @static
+   * @async
+   * @returns {Promise<Object>} Inventory items categorized by alert status
+   * @returns {Promise<Object.inventory>} All inventory items with alert flags
+   * @returns {Promise<Object.alerts>} Categorized alerts object
+   * @returns {Promise<Object.alerts.lowStock>} Items at or below reorder level
+   * @returns {Promise<Object.alerts.nearExpiry>} Items expiring within 30 days (not expired)
+   * @returns {Promise<Object.alerts.expired>} Items past expiration date
+   *
+   * @business Low stock: quantity <= reorderLevel
+   * @business Near expiry: expirationDate <= 30 days from now (and not expired)
+   * @business Expired: expirationDate <= current date
+   * @business Critical medications prioritized in alert ordering
+   * @business Expired medications should be removed from active use immediately
+   *
+   * @example
+   * const result = await InventoryService.getInventoryWithAlerts();
+   * // Returns: {
+   * //   inventory: [...all items with alert flags...],
+   * //   alerts: {
+   * //     lowStock: [{ medication: 'EpiPen', quantity: 2, reorderLevel: 5, ... }],
+   * //     nearExpiry: [{ medication: 'Insulin', expirationDate: '2024-11-15', ... }],
+   * //     expired: [{ medication: 'Aspirin', expirationDate: '2024-10-01', ... }]
+   * //   }
+   * // }
    */
   static async getInventoryWithAlerts() {
     try {

@@ -1,10 +1,34 @@
 /**
- * Express Framework Adapter for Healthcare Middleware System
- * Provides Express.js-specific implementations of framework-agnostic middleware
- * 
- * @fileoverview Express adapter implementation for healthcare middleware with HIPAA compliance
+ * @fileoverview Express Framework Adapter for Healthcare Middleware System
+ * @module middleware/adapters/express
+ * @description Provides Express.js-specific implementations and adapters for framework-agnostic
+ * middleware components. Converts framework-agnostic middleware to Express middleware functions
+ * with HIPAA-compliant healthcare context enhancement and error handling.
+ *
+ * Key Features:
+ * - Framework-agnostic middleware → Express RequestHandler conversion
+ * - Healthcare context enhancement for HIPAA compliance
+ * - Request/Response wrapper implementations for IRequest/IResponse
+ * - Error handler creation utilities
+ * - Middleware chaining utilities
+ * - Security headers and sanitization utilities
+ * - PHI access tracking and audit logging support
+ *
+ * Architecture:
+ * - ExpressRequestWrapper: Adapts Express Request to IRequest interface
+ * - ExpressResponseWrapper: Adapts Express Response to IResponse interface
+ * - ExpressMiddlewareAdapter: Converts middleware to Express RequestHandler
+ * - ExpressMiddlewareUtils: Utility functions for Express-specific operations
+ *
+ * @security Handles HIPAA-compliant request/response processing
+ * @compliance HIPAA - PHI access tracking, audit logging, security headers
+ *
+ * @requires express - Express.js framework types
+ * @requires ../../utils/types/middleware.types - Framework-agnostic middleware types
+ *
  * @version 1.0.0
  * @author Healthcare Platform Team
+ * @since 2025-10-21
  */
 
 import { Request, Response, NextFunction, RequestHandler } from 'express';
@@ -157,11 +181,67 @@ export class ExpressNextWrapper implements INextFunction {
 }
 
 /**
- * Express middleware adapter that converts framework-agnostic middleware to Express middleware
+ * Express Middleware Adapter - Converts framework-agnostic middleware to Express components
+ *
+ * @class ExpressMiddlewareAdapter
+ * @description Static utility class that adapts framework-agnostic middleware to Express.js
+ * middleware functions (RequestHandler), error handlers, and provides healthcare-specific
+ * request/response enhancements.
+ *
+ * @example
+ * // Convert middleware to Express RequestHandler
+ * const expressMiddleware = ExpressMiddlewareAdapter.adapt(authenticationMiddleware);
+ * app.use(expressMiddleware);
+ *
+ * @example
+ * // Chain multiple middleware
+ * const middlewares = ExpressMiddlewareAdapter.chain(
+ *   corsMiddleware,
+ *   authMiddleware,
+ *   rbacMiddleware
+ * );
+ * app.use('/api', ...middlewares);
+ *
+ * @example
+ * // Create error handler
+ * const errorHandler = ExpressMiddlewareAdapter.createErrorHandler(
+ *   (error, req, res, context) => {
+ *     res.setStatus(500).json({ error: error.message });
+ *   }
+ * );
+ * app.use(errorHandler);
  */
 export class ExpressMiddlewareAdapter {
   /**
-   * Adapts a framework-agnostic middleware to Express RequestHandler
+   * Adapts framework-agnostic middleware to Express RequestHandler
+   *
+   * @static
+   * @function adapt
+   * @param {IMiddleware} middleware - Framework-agnostic middleware to adapt
+   * @returns {RequestHandler} Express middleware function
+   *
+   * @description Wraps middleware in Express-compatible handler. Converts Express
+   * Request/Response/NextFunction to framework-agnostic IRequest/IResponse/INextFunction
+   * interfaces, executes middleware with proper context.
+   *
+   * @example
+   * // Use with authentication middleware
+   * const authMiddleware = ExpressMiddlewareAdapter.adapt(jwtAuthMiddleware);
+   * app.use('/api', authMiddleware);
+   *
+   * @example
+   * // Use with logging middleware
+   * const logger = ExpressMiddlewareAdapter.adapt(loggingMiddleware);
+   * app.use(logger);
+   *
+   * @example
+   * // Apply to specific routes
+   * app.get('/protected',
+   *   ExpressMiddlewareAdapter.adapt(authMiddleware),
+   *   (req, res) => {
+   *     res.json({ message: 'Protected resource' });
+   *   }
+   * );
    */
   static adapt(middleware: IMiddleware): RequestHandler {
     return (req: Request, res: Response, next: NextFunction): void => {

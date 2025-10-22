@@ -1,6 +1,35 @@
 /**
+ * @fileoverview Vendor Management Service
+ * @module services/inventory/vendor
+ * @description Comprehensive vendor management for procurement and supplier relationships
+ *
+ * This service handles all aspects of vendor management including registration, contact
+ * information, performance ratings, and vendor qualification tracking for school
+ * health supply procurement.
+ *
+ * Key Features:
+ * - Vendor registration and profile management
+ * - Contact information and communication tracking
+ * - Vendor performance rating system (1-5 scale)
+ * - Payment terms management
+ * - Active/inactive vendor status control
+ * - Vendor search and filtering capabilities
+ * - Performance metrics and reporting
+ * - Bulk vendor operations
+ *
+ * @business Active vendors only eligible for purchase orders
+ * @business Rating scale: 1 (poor) to 5 (excellent)
+ * @business Email and phone validation enforced
+ * @business Website must be valid URL with http/https
+ * @business Vendor names must be unique within system
+ *
+ * @financial Payment terms tracked for cash flow planning
+ * @financial Vendor performance impacts future purchasing decisions
+ *
+ * @requires ../../database/models
+ *
  * LOC: 7FADF8130B
- * WC-GEN-286 | vendorService.ts - General utility functions and operations
+ * WC-GEN-286 | vendorService.ts - Vendor Management Service
  *
  * UPSTREAM (imports from):
  *   - logger.ts (utils/logger.ts)
@@ -9,25 +38,19 @@
  *
  * DOWNSTREAM (imported by):
  *   - inventoryService.ts (services/inventoryService.ts)
+ *   - purchaseOrderService.ts (services/inventory/purchaseOrderService.ts)
  */
 
 /**
- * WC-GEN-286 | vendorService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
-/**
- * Vendor Service
- *
- * Handles vendor management and related operations.
- * Provides vendor CRUD operations and performance tracking.
+ * WC-GEN-286 | vendorService.ts - Vendor Management Service
+ * Purpose: Vendor lifecycle management with performance tracking and qualification
+ * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, validation utilities
+ * Downstream: Purchase order service, procurement workflows | Called by: Inventory service, procurement routes
+ * Related: PurchaseOrderService, InventoryService, AnalyticsService
+ * Exports: VendorService class | Key Services: Vendor CRUD, ratings, performance metrics
+ * Last Updated: 2025-10-22 | File Type: .ts
+ * Critical Path: Vendor registration → Qualification → Active status → Purchase order eligibility
+ * LLM Context: Healthcare supplier management with compliance and performance tracking
  */
 
 import { Op } from 'sequelize';
@@ -35,9 +58,47 @@ import { logger } from '../../utils/logger';
 import { Vendor } from '../../database/models';
 import { CreateVendorData } from './types';
 
+/**
+ * Vendor Management Service
+ *
+ * @class VendorService
+ * @static
+ */
 export class VendorService {
   /**
-   * Create vendor
+   * Create vendor with validation
+   *
+   * @method createVendor
+   * @static
+   * @async
+   * @param {CreateVendorData} data - Vendor information
+   * @param {string} data.name - Vendor name (required, max 255 chars)
+   * @param {string} [data.contactName] - Primary contact person
+   * @param {string} [data.email] - Contact email (validated format)
+   * @param {string} [data.phone] - Contact phone (validated format)
+   * @param {string} [data.address] - Vendor address
+   * @param {string} [data.city] - City
+   * @param {string} [data.state] - State/province
+   * @param {string} [data.zipCode] - Postal code
+   * @param {string} [data.website] - Website URL (must start with http/https)
+   * @param {number} [data.rating] - Performance rating (1-5)
+   * @param {string} [data.paymentTerms] - Payment terms (Net 30, Net 60, etc.)
+   * @param {boolean} [data.isActive=true] - Active status
+   * @returns {Promise<Vendor>} Created vendor record
+   *
+   * @business New vendors created with active status by default
+   * @business Vendor name required and should be descriptive
+   * @business Contact information recommended for procurement communication
+   *
+   * @example
+   * const vendor = await VendorService.createVendor({
+   *   name: 'Medical Supply Co.',
+   *   contactName: 'John Smith',
+   *   email: 'john@medicalsupply.com',
+   *   phone: '555-1234',
+   *   paymentTerms: 'Net 30',
+   *   rating: 4
+   * });
    */
   static async createVendor(data: CreateVendorData) {
     try {

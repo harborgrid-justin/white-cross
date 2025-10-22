@@ -1,26 +1,51 @@
 /**
+ * @fileoverview Health Record Service - Unified HIPAA-Compliant Health Management Interface
+ * @module services/healthRecord
+ * @description Facade service providing unified access to all health record operations
+ *
+ * Architecture:
+ * - Facade Pattern: Single entry point for all health record operations
+ * - Module Delegation: Routes requests to specialized submodules
+ * - Type Safety: Comprehensive TypeScript interfaces exported
+ * - Backward Compatibility: Maintains stable API while modules evolve
+ *
+ * Service Capabilities:
+ * - Health Record Management (CRUD operations)
+ * - Allergy Tracking (life-threatening severity monitoring)
+ * - Vaccination Records (CVX code validation, CDC compliance)
+ * - Chronic Condition Management (ICD-10 codes, care plans)
+ * - Vital Signs Tracking (CDC growth charts, BMI calculation)
+ * - Search and Filtering (cross-student queries, advanced filters)
+ * - Import/Export (JSON format, bulk operations)
+ * - Statistics and Analytics (aggregated reporting)
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Administrative Safeguards
+ * @compliance HIPAA Security Rule §164.312 - Technical Safeguards
+ * @compliance FERPA §99.3 - Education records with health information
+ * @compliance CDC Guidelines - Immunization and growth tracking
+ * @compliance ICD-10-CM - Diagnosis coding standards
+ * @security PHI - All operations tracked in audit log
+ * @security Access Control - Role-based permissions required
+ * @security Data Encryption - PHI encrypted at rest and in transit
+ * @audit Minimum 6-year retention for HIPAA compliance
+ * @audit All PHI access logged with user and timestamp
+ *
+ * Emergency Access:
+ * - Break-glass mechanism for emergency PHI access
+ * - Automatic audit log entry for emergency access
+ * - Follow-up review required for all break-glass events
+ *
+ * Parent/Guardian Consent:
+ * - Parental consent required for minors under state law
+ * - Consent status tracked in student records
+ * - Age of majority varies by state (typically 18)
+ *
+ * @requires All healthRecord submodules
+ * @requires ./types
+ *
  * LOC: 377BCE712E
- * WC-SVC-HLT-014 | index.ts - Health Record Service Main Entry Point
- *
- * UPSTREAM (imports from):
- *   - All healthRecord modules (*.module.ts)
- *   - types.ts (./types.ts)
- *
- * DOWNSTREAM (imported by):
- *   - allergies.ts (routes/healthRecords/handlers/allergies.ts)
- *   - chronicConditions.ts (routes/healthRecords/handlers/chronicConditions.ts)
- *   - growthMeasurements.ts (routes/healthRecords/handlers/growthMeasurements.ts)
- *   - mainHealthRecords.ts (routes/healthRecords/handlers/mainHealthRecords.ts)
- *   - screenings.ts (routes/healthRecords/handlers/screenings.ts)
- *   - ... and 3 more
- *
- * Purpose: Unified service interface for health record operations
- * Architecture: Facade pattern - delegates to specialized modules
- * Exports: HealthRecordService class, all types and interfaces
- * HIPAA: Contains PHI operations - maintains all security and audit requirements
+ * WC-SVC-HLT-014 | index.ts
  * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Request → Service method → Module delegation → Response
- * LLM Context: Main entry point for health record services, delegates to focused modules
  */
 
 // Export all types for external use
@@ -49,15 +74,42 @@ import {
 } from './types';
 
 /**
- * Health Record Service
- * Unified facade for all health record operations
- * Delegates to specialized modules while maintaining backward compatibility
+ * @class HealthRecordService
+ * @description Unified facade for all HIPAA-compliant health record operations
+ * @architecture Facade pattern - delegates to specialized modules
+ * @security All methods require authentication and appropriate permissions
+ * @audit All PHI operations logged for HIPAA compliance
+ * @encryption PHI data encrypted at rest (AES-256) and in transit (TLS 1.2+)
+ *
+ * Permission Model:
+ * - health:read - View health records
+ * - health:create - Create new health records
+ * - health:update - Modify existing health records
+ * - health:delete - Delete health records (use with caution)
+ * - health:allergies:* - Allergy-specific permissions
+ * - health:vaccinations:* - Vaccination-specific permissions
+ * - health:conditions:* - Chronic condition-specific permissions
+ * - health:emergency - Break-glass emergency access
+ *
+ * @example
+ * // Typical usage in route handler
+ * import { HealthRecordService } from '@/services/healthRecord';
+ *
+ * const records = await HealthRecordService.getStudentHealthRecords(
+ *   studentId,
+ *   page,
+ *   limit,
+ *   filters
+ * );
  */
 export class HealthRecordService {
   // ==================== Health Record Operations ====================
 
   /**
-   * Get health records for a student with pagination and filters
+   * @method getStudentHealthRecords
+   * @description Retrieve paginated health records for a student with filtering
+   * @async
+   * @see HealthRecordModule.getStudentHealthRecords for detailed documentation
    */
   static async getStudentHealthRecords(
     studentId: string,

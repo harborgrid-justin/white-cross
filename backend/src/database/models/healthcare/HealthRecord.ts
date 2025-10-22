@@ -1,27 +1,32 @@
 /**
+ * @fileoverview Health Record Database Model
+ * @module database/models/healthcare/HealthRecord
+ * @description Sequelize model for managing comprehensive student health records including
+ * medical visits, diagnoses, treatments, and follow-up care tracking.
+ *
+ * Key Features:
+ * - Multi-type health record support (medical, dental, vision, mental health, etc.)
+ * - NPI provider and facility tracking
+ * - ICD diagnosis code support
+ * - Follow-up care workflow management
+ * - Document attachment support
+ * - Confidentiality flags for sensitive records
+ * - Full audit trail for HIPAA compliance
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Contains Protected Health Information (PHI)
+ * @compliance FERPA §99.3 - Educational health records
+ * @audit All access and modifications logged per HIPAA requirements
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../../types/enums
+ * @requires ../base/AuditableModel
+ *
  * LOC: CAB88918CD
- * WC-GEN-066 | HealthRecord.ts - General utility functions and operations
+ * WC-GEN-066
  *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - enums.ts (database/types/enums.ts)
- *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- *   - HealthRecordRepository.ts (database/repositories/impl/HealthRecordRepository.ts)
- */
-
-/**
- * WC-GEN-066 | HealthRecord.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * UPSTREAM: sequelize.ts, enums.ts, AuditableModel.ts
+ * DOWNSTREAM: index.ts, HealthRecordRepository.ts
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
@@ -29,6 +34,37 @@ import { sequelize } from '../../config/sequelize';
 import { HealthRecordType } from '../../types/enums';
 import { AuditableModel } from '../base/AuditableModel';
 
+/**
+ * @interface HealthRecordAttributes
+ * @description TypeScript interface defining all HealthRecord model attributes
+ *
+ * @property {string} id - Primary key, auto-generated UUID
+ * @property {string} studentId - Foreign key reference to student, required
+ * @property {HealthRecordType} recordType - Type of health record (medical, dental, vision, etc.), required
+ * @property {string} title - Brief title/summary of the health record, required
+ * @property {string} description - Detailed description of the health event, required
+ * @property {Date} recordDate - Date when the health event occurred, required
+ * @property {string} [provider] - Healthcare provider name (nullable)
+ * @property {string} [providerNpi] - National Provider Identifier (10-digit), nullable
+ * @property {string} [facility] - Healthcare facility name (nullable)
+ * @property {string} [facilityNpi] - Facility National Provider Identifier, nullable
+ * @property {string} [diagnosis] - Medical diagnosis description (nullable)
+ * @property {string} [diagnosisCode] - ICD-10 diagnosis code (nullable)
+ * @property {string} [treatment] - Treatment provided or recommended (nullable)
+ * @property {boolean} followUpRequired - Whether follow-up care is needed, defaults to false
+ * @property {Date} [followUpDate] - Scheduled date for follow-up (nullable)
+ * @property {boolean} followUpCompleted - Whether follow-up has been completed, defaults to false
+ * @property {string[]} attachments - Array of file paths/URLs for supporting documents, defaults to []
+ * @property {any} [metadata] - Additional structured data (JSONB), nullable
+ * @property {boolean} isConfidential - Whether record contains sensitive information, defaults to false
+ * @property {string} [notes] - Additional notes or comments (nullable)
+ * @property {string} [createdBy] - User ID who created the record (audit field)
+ * @property {string} [updatedBy] - User ID who last updated the record (audit field)
+ * @property {Date} createdAt - Timestamp of record creation
+ * @property {Date} updatedAt - Timestamp of last update
+ *
+ * @security PHI - All fields except id, timestamps contain Protected Health Information
+ */
 interface HealthRecordAttributes {
   id: string;
   studentId: string;
@@ -56,6 +92,11 @@ interface HealthRecordAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface HealthRecordCreationAttributes
+ * @description Attributes required when creating a new HealthRecord instance.
+ * Extends HealthRecordAttributes with optional fields that have defaults or are auto-generated.
+ */
 interface HealthRecordCreationAttributes
   extends Optional<
     HealthRecordAttributes,
@@ -80,6 +121,63 @@ interface HealthRecordCreationAttributes
     | 'updatedBy'
   > {}
 
+/**
+ * @class HealthRecord
+ * @extends Model
+ * @description Student health record model for tracking medical visits, diagnoses, treatments, and follow-up care.
+ *
+ * @tablename health_records
+ *
+ * Key Features:
+ * - Supports multiple record types (medical, dental, vision, mental health, injury, immunization)
+ * - Provider and facility tracking with NPI identifiers
+ * - ICD-10 diagnosis code support for standardized coding
+ * - Follow-up workflow with scheduling and completion tracking
+ * - Document attachment support for lab results, prescriptions, etc.
+ * - Confidentiality flags for sensitive information (mental health, etc.)
+ * - Comprehensive audit trail via AuditableModel
+ * - Indexed for efficient queries by student, type, and follow-up status
+ *
+ * Record Types (from HealthRecordType enum):
+ * - MEDICAL: General medical visits and treatments
+ * - DENTAL: Dental examinations and procedures
+ * - VISION: Vision screenings and eye care
+ * - MENTAL_HEALTH: Mental health assessments and counseling
+ * - INJURY: Accident or injury reports
+ * - IMMUNIZATION: Vaccination records
+ * - OTHER: Other health-related records
+ *
+ * @security Contains PHI - All operations audited and logged
+ * @compliance HIPAA Privacy Rule - 45 CFR §164.308(a)(3)(ii)(A)
+ * @compliance FERPA - 20 U.S.C. §1232g for educational health records
+ *
+ * @example
+ * // Create a medical visit record
+ * const record = await HealthRecord.create({
+ *   studentId: 'student-uuid',
+ *   recordType: HealthRecordType.MEDICAL,
+ *   title: 'Annual Physical Examination',
+ *   description: 'Routine annual physical exam - all systems normal',
+ *   recordDate: new Date('2024-01-15'),
+ *   provider: 'Dr. Jane Smith',
+ *   providerNpi: '1234567890',
+ *   facility: 'County Health Clinic',
+ *   diagnosisCode: 'Z00.00',
+ *   followUpRequired: false,
+ *   isConfidential: false
+ * });
+ *
+ * @example
+ * // Query records requiring follow-up
+ * const pendingFollowUps = await HealthRecord.findAll({
+ *   where: {
+ *     followUpRequired: true,
+ *     followUpCompleted: false,
+ *     followUpDate: { [Op.lte]: new Date() }
+ *   },
+ *   order: [['followUpDate', 'ASC']]
+ * });
+ */
 export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCreationAttributes> implements HealthRecordAttributes {
   public id!: string;
   public studentId!: string;

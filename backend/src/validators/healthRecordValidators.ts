@@ -21,18 +21,20 @@
  * LLM Context: Medical record validators with clinical standards, allergy management, vaccination tracking, vital signs monitoring, growth measurements, screening protocols
  */
 
-import Joi from 'joi';
-
 /**
- * Health Record Validation Schemas
- * Provides comprehensive validation for all health record types
- * in compliance with healthcare data standards
+ * @fileoverview Health Record Validation Schemas
+ * @module validators/healthRecordValidators
+ * @description Comprehensive Joi validation schemas for health records, allergies, conditions, vaccinations, screenings, growth measurements, and vital signs
+ * @requires joi - Validation library
+ * @requires ../shared/healthcare/validators - Shared healthcare validation utilities
  */
 
+import Joi from 'joi';
+
 // Import shared healthcare validators
-import { 
-  validateMedicalCode, 
-  validateAllergySeverity, 
+import {
+  validateMedicalCode,
+  validateAllergySeverity,
   validateVitalSigns
 } from '../shared/healthcare/validators';
 
@@ -41,7 +43,39 @@ import {
 // ============================================================================
 
 /**
- * Schema for creating a new health record
+ * @constant {Object} createHealthRecordSchema
+ * @description Joi validation schema for creating a new health record
+ * @type {Joi.ObjectSchema}
+ * @property {string} studentId - Required, valid UUID format
+ * @property {string} recordType - Required, enum: ['ALLERGY', 'IMMUNIZATION', 'CHRONIC_CONDITION', 'SCREENING', 'GROWTH', 'VITAL_SIGNS', 'GENERAL']
+ * @property {Date} recordDate - Required, cannot be in the future (max: 'now')
+ * @property {string} title - Required, min 3 chars, max 200 chars
+ * @property {string} [description] - Optional, max 5000 chars, allows empty string or null
+ * @property {string} [providerId] - Optional, valid UUID format
+ * @property {Array<string>} [attachments] - Optional array of URI strings
+ * @property {Object} [metadata] - Optional metadata object
+ * @property {boolean} [isConfidential=false] - Optional, defaults to false
+ * @property {Array<string>} [tags] - Optional array of strings, max 50 chars each
+ * @example
+ * // Valid health record payload
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   recordType: 'ALLERGY',
+ *   recordDate: '2024-10-18T10:00:00Z',
+ *   title: 'Peanut Allergy Diagnosis',
+ *   description: 'Severe peanut allergy diagnosed by Dr. Smith',
+ *   isConfidential: true,
+ *   tags: ['allergy', 'food', 'severe']
+ * }
+ *
+ * @example
+ * // Invalid - will fail validation
+ * {
+ *   studentId: 'invalid-uuid',      // Not valid UUID
+ *   recordType: 'INVALID_TYPE',     // Not in enum
+ *   recordDate: '2099-01-01',       // In the future
+ *   title: 'AB'                     // Too short (min 3 chars)
+ * }
  */
 export const createHealthRecordSchema = Joi.object({
   studentId: Joi.string().uuid().required()
@@ -90,7 +124,24 @@ export const createHealthRecordSchema = Joi.object({
 });
 
 /**
- * Schema for updating an existing health record
+ * @constant {Object} updateHealthRecordSchema
+ * @description Joi validation schema for updating an existing health record (partial update)
+ * @type {Joi.ObjectSchema}
+ * @property {Date} [recordDate] - Optional, cannot be in the future
+ * @property {string} [title] - Optional, min 3 chars, max 200 chars
+ * @property {string} [description] - Optional, max 5000 chars
+ * @property {string} [providerId] - Optional, valid UUID
+ * @property {Array<string>} [attachments] - Optional array of URIs
+ * @property {Object} [metadata] - Optional metadata object
+ * @property {boolean} [isConfidential] - Optional boolean flag
+ * @property {Array<string>} [tags] - Optional array, max 50 chars per tag
+ * @validation All fields are optional, but at least one field must be provided (.min(1))
+ * @example
+ * // Valid update
+ * {
+ *   title: 'Updated Allergy Information',
+ *   isConfidential: false
+ * }
  */
 export const updateHealthRecordSchema = Joi.object({
   recordDate: Joi.date().max('now')
@@ -125,7 +176,60 @@ export const updateHealthRecordSchema = Joi.object({
 // ============================================================================
 
 /**
- * Schema for creating a new allergy record
+ * @constant {Object} createAllergySchema
+ * @description Joi validation schema for creating a new allergy record with EpiPen tracking
+ * @type {Joi.ObjectSchema}
+ * @property {string} studentId - Required, valid UUID
+ * @property {string} allergen - Required, min 2 chars, max 200 chars, allergen name
+ * @property {string} allergyType - Required, enum: ['FOOD', 'MEDICATION', 'ENVIRONMENTAL', 'INSECT', 'LATEX', 'OTHER']
+ * @property {string} severity - Required, enum: ['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING']
+ * @property {Array<string>} symptoms - Required, min 1 symptom, each 2-100 chars
+ * @property {string} [reactions] - Optional, max 2000 chars
+ * @property {string} treatment - Conditional required for SEVERE/LIFE_THREATENING (min 10 chars), optional otherwise
+ * @property {Date} [onsetDate] - Optional, cannot be in future
+ * @property {Date} [diagnosedDate] - Optional, cannot be in future
+ * @property {string} [diagnosedBy] - Optional, max 200 chars, physician name
+ * @property {boolean} hasEpiPen - Conditional required for LIFE_THREATENING
+ * @property {string} epiPenLocation - Conditional required when hasEpiPen is true (min 5 chars)
+ * @property {Date} epiPenExpiration - Conditional required when hasEpiPen is true, must be in future
+ * @property {boolean} [isActive=true] - Optional, defaults to true
+ * @property {boolean} [isVerified=false] - Optional, defaults to false
+ * @property {string} [verifiedBy] - Optional, valid UUID
+ * @property {Date} [verifiedAt] - Optional, cannot be in future
+ * @property {string} [notes] - Optional, max 5000 chars
+ * @validation
+ * - SEVERE/LIFE_THREATENING severity requires treatment description (min 10 chars)
+ * - LIFE_THREATENING allergies require hasEpiPen to be specified
+ * - hasEpiPen=true requires epiPenLocation and epiPenExpiration
+ * - EpiPen expiration must be in future (not expired)
+ * @example
+ * // Valid severe allergy with EpiPen
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   allergen: 'Peanuts',
+ *   allergyType: 'FOOD',
+ *   severity: 'LIFE_THREATENING',
+ *   symptoms: ['Anaphylaxis', 'Throat swelling', 'Difficulty breathing'],
+ *   treatment: 'Administer EpiPen immediately and call 911',
+ *   hasEpiPen: true,
+ *   epiPenLocation: 'Nurse office, red medical cabinet',
+ *   epiPenExpiration: '2025-12-31',
+ *   diagnosedBy: 'Dr. Sarah Johnson',
+ *   isActive: true
+ * }
+ *
+ * @example
+ * // Invalid - missing required EpiPen info
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   allergen: 'Shellfish',
+ *   allergyType: 'FOOD',
+ *   severity: 'LIFE_THREATENING',
+ *   symptoms: ['Anaphylaxis'],
+ *   treatment: 'Emergency protocol',
+ *   hasEpiPen: true
+ *   // Missing epiPenLocation and epiPenExpiration - will fail validation
+ * }
  */
 export const createAllergySchema = Joi.object({
   studentId: Joi.string().uuid().required()
@@ -237,7 +341,10 @@ export const createAllergySchema = Joi.object({
 });
 
 /**
- * Schema for updating an allergy record
+ * @constant {Object} updateAllergySchema
+ * @description Joi validation schema for updating an existing allergy record (partial update)
+ * @type {Joi.ObjectSchema}
+ * @validation All fields optional, at least one required (.min(1))
  */
 export const updateAllergySchema = Joi.object({
   allergen: Joi.string().min(2).max(200)
@@ -309,7 +416,49 @@ export const updateAllergySchema = Joi.object({
 // ============================================================================
 
 /**
- * Schema for creating a chronic condition record
+ * @constant {Object} createConditionSchema
+ * @description Joi validation schema for creating chronic condition records with ICD-10 codes
+ * @type {Joi.ObjectSchema}
+ * @property {string} studentId - Required UUID
+ * @property {string} condition - Required, min 3 chars, max 200 chars
+ * @property {string} [icdCode] - Optional ICD-10 code, pattern: /^[A-Z][0-9]{2}(\.[0-9A-Z]{1,4})?$/ (e.g., E11.9, J45.40)
+ * @property {string} severity - Required, enum: ['MILD', 'MODERATE', 'SEVERE', 'CRITICAL']
+ * @property {Date} diagnosedDate - Required, cannot be in future
+ * @property {string} [diagnosedBy] - Optional, max 200 chars
+ * @property {Array<string>} [symptoms] - Optional array, max 200 chars each
+ * @property {Array<string>} [triggers] - Optional array, max 200 chars each
+ * @property {string} [treatment] - Optional, max 5000 chars
+ * @property {Array<string>} [medications] - Optional array of UUIDs
+ * @property {string} actionPlan - Conditional required for SEVERE/CRITICAL (min 20 chars, max 10000 chars)
+ * @property {Array<string>} [restrictions] - Optional array, max 200 chars each
+ * @property {Array<string>} [accommodations] - Optional array, max 500 chars each
+ * @property {string} [emergencyProtocol] - Optional, max 5000 chars
+ * @property {Date} [lastReviewDate] - Optional, cannot be in future
+ * @property {Date} [nextReviewDate] - Optional, must be in future
+ * @property {boolean} [isActive=true] - Optional, defaults to true
+ * @property {boolean} [isControlled=false] - Optional, defaults to false
+ * @property {string} [notes] - Optional, max 5000 chars
+ * @validation
+ * - ICD-10 code format: Letter + 2 digits + optional decimal + 1-4 alphanumeric chars
+ * - SEVERE/CRITICAL conditions require detailed action plan (min 20 chars)
+ * @example
+ * // Valid chronic condition
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   condition: 'Type 1 Diabetes',
+ *   icdCode: 'E10.9',
+ *   severity: 'SEVERE',
+ *   diagnosedDate: '2023-01-15',
+ *   diagnosedBy: 'Dr. Emily Chen',
+ *   symptoms: ['Frequent urination', 'Excessive thirst', 'Fatigue'],
+ *   triggers: ['Stress', 'Illness', 'Missed insulin dose'],
+ *   actionPlan: 'Monitor blood glucose 4x daily. Administer insulin as prescribed...',
+ *   restrictions: ['No unsupervised physical activity'],
+ *   accommodations: ['Extra time for restroom breaks', 'Snack breaks as needed'],
+ *   emergencyProtocol: 'If blood glucose < 70, give 15g fast-acting carbs. Call parent and 911 if no improvement',
+ *   isActive: true,
+ *   isControlled: true
+ * }
  */
 export const createConditionSchema = Joi.object({
   studentId: Joi.string().uuid().required()
@@ -393,7 +542,10 @@ export const createConditionSchema = Joi.object({
 });
 
 /**
- * Schema for updating a chronic condition record
+ * @constant {Object} updateConditionSchema
+ * @description Joi validation schema for updating chronic condition (partial update)
+ * @type {Joi.ObjectSchema}
+ * @validation All fields optional, at least one required (.min(1))
  */
 export const updateConditionSchema = Joi.object({
   condition: Joi.string().min(3).max(200)
@@ -463,7 +615,67 @@ export const updateConditionSchema = Joi.object({
 // ============================================================================
 
 /**
- * Schema for creating a vaccination record
+ * @constant {Object} createVaccinationSchema
+ * @description Joi validation schema for vaccination records with CVX/NDC codes and lot tracking
+ * @type {Joi.ObjectSchema}
+ * @property {string} studentId - Required UUID
+ * @property {string} vaccineName - Required, min 2 chars, max 200 chars
+ * @property {string} [cvxCode] - Optional CVX code, pattern: /^[0-9]{1,3}$/ (1-3 digits)
+ * @property {string} [ndcCode] - Optional NDC code, pattern: /^[0-9]{5}-[0-9]{4}-[0-9]{2}$/ (format: 12345-1234-12)
+ * @property {string} [manufacturer] - Optional, max 200 chars
+ * @property {string} lotNumber - Required, min 1 char, max 100 chars
+ * @property {Date} expirationDate - Required, must be in future (vaccine not expired)
+ * @property {Date} administeredDate - Required, cannot be in future
+ * @property {string} administeredBy - Required, max 200 chars, administrator name
+ * @property {string} administrationSite - Required, enum: ['LEFT_ARM', 'RIGHT_ARM', 'LEFT_THIGH', 'RIGHT_THIGH', 'ORAL', 'NASAL', 'OTHER']
+ * @property {string} route - Required, enum: ['IM', 'SC', 'ID', 'ORAL', 'NASAL', 'OTHER']
+ * @property {string} dosage - Required, max 100 chars
+ * @property {number} doseNumber - Required, integer, min 1
+ * @property {number} totalDoses - Required, integer, must be >= doseNumber
+ * @property {Date} [nextDoseDate] - Optional, must be in future
+ * @property {string} [facilityName] - Optional, max 200 chars
+ * @property {string} [facilityAddress] - Optional, max 500 chars
+ * @property {string} [adverseReactions] - Optional, max 2000 chars
+ * @property {Array<string>} [contraindications] - Optional array, max 200 chars each
+ * @property {boolean} [isValid=true] - Optional, defaults to true
+ * @property {string} [notes] - Optional, max 5000 chars
+ * @validation
+ * - CVX code: 1-3 digit numeric code
+ * - NDC code: Format XXXXX-XXXX-XX
+ * - Expiration date must be in future (cannot administer expired vaccine)
+ * - Total doses must be >= current dose number
+ * - Routes: IM (intramuscular), SC (subcutaneous), ID (intradermal), ORAL, NASAL
+ * @example
+ * // Valid vaccination record
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   vaccineName: 'MMR (Measles, Mumps, Rubella)',
+ *   cvxCode: '03',
+ *   ndcCode: '00006-4681-00',
+ *   manufacturer: 'Merck',
+ *   lotNumber: 'ABC123XYZ',
+ *   expirationDate: '2025-12-31',
+ *   administeredDate: '2024-10-15',
+ *   administeredBy: 'Jane Smith, RN',
+ *   administrationSite: 'LEFT_ARM',
+ *   route: 'SC',
+ *   dosage: '0.5 mL',
+ *   doseNumber: 2,
+ *   totalDoses: 2,
+ *   facilityName: 'Lincoln Elementary School',
+ *   isValid: true
+ * }
+ *
+ * @example
+ * // Invalid - expired vaccine
+ * {
+ *   vaccineName: 'Flu Vaccine',
+ *   lotNumber: 'XYZ789',
+ *   expirationDate: '2023-01-01',  // In the past - will fail
+ *   administeredDate: '2024-10-18',
+ *   doseNumber: 1,
+ *   totalDoses: 1
+ * }
  */
 export const createVaccinationSchema = Joi.object({
   studentId: Joi.string().uuid().required()
@@ -949,7 +1161,54 @@ export const updateGrowthMeasurementSchema = Joi.object({
 // ============================================================================
 
 /**
- * Schema for creating a vital signs record
+ * @constant {Object} createVitalSignsSchema
+ * @description Joi validation schema for vital signs with clinical range validation
+ * @type {Joi.ObjectSchema}
+ * @property {string} studentId - Required UUID
+ * @property {Date} recordedDate - Required, cannot be in future
+ * @property {number} temperature - Required, min 35°C, max 42°C (95°F - 107.6°F)
+ * @property {string} [temperatureUnit='C'] - Optional, enum: ['C', 'F'], defaults to Celsius
+ * @property {number} heartRate - Required integer, min 40 bpm, max 200 bpm
+ * @property {number} respiratoryRate - Required integer, min 8, max 60 breaths/min
+ * @property {number} bloodPressureSystolic - Required integer, min 60 mmHg, max 200 mmHg
+ * @property {number} bloodPressureDiastolic - Required integer, min 40 mmHg, max 130 mmHg, must be < systolic
+ * @property {number} [oxygenSaturation] - Optional, min 70%, max 100%
+ * @property {number} [painLevel] - Optional integer, min 0, max 10 (pain scale)
+ * @property {string} recordedBy - Required, max 200 chars, recorder name
+ * @property {string} [notes] - Optional, max 2000 chars
+ * @validation
+ * - Temperature range: 35-42°C for realistic values
+ * - Heart rate: 40-200 bpm (covers infants to adults)
+ * - Respiratory rate: 8-60 breaths/min (covers infants to adults)
+ * - Blood pressure: Diastolic must be less than systolic
+ * - Oxygen saturation: 70-100% (below 70% is critical)
+ * - Pain level: 0-10 scale (0 = no pain, 10 = worst pain)
+ * @example
+ * // Valid vital signs
+ * {
+ *   studentId: '123e4567-e89b-12d3-a456-426614174000',
+ *   recordedDate: '2024-10-18T10:30:00Z',
+ *   temperature: 37.2,
+ *   temperatureUnit: 'C',
+ *   heartRate: 75,
+ *   respiratoryRate: 16,
+ *   bloodPressureSystolic: 120,
+ *   bloodPressureDiastolic: 80,
+ *   oxygenSaturation: 98,
+ *   painLevel: 2,
+ *   recordedBy: 'Nurse Johnson'
+ * }
+ *
+ * @example
+ * // Invalid - diastolic >= systolic
+ * {
+ *   temperature: 37.0,
+ *   heartRate: 72,
+ *   respiratoryRate: 16,
+ *   bloodPressureSystolic: 120,
+ *   bloodPressureDiastolic: 125,  // Greater than systolic - will fail
+ *   recordedBy: 'Staff Name'
+ * }
  */
 export const createVitalSignsSchema = Joi.object({
   studentId: Joi.string().uuid().required()

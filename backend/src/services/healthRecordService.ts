@@ -1,30 +1,64 @@
 /**
+ * @fileoverview Health Record Service (Legacy) - Comprehensive PHI Management System
+ * @module services/healthRecordService
+ * @description Direct database access service for health records, allergies, and conditions
+ * @deprecated Consider using services/healthRecord/ modules for new implementations
+ *
+ * Service Overview:
+ * This service provides direct database operations for health records. It includes
+ * comprehensive validation, HIPAA compliance, and audit logging. For new code,
+ * consider using the modular services in services/healthRecord/ directory which
+ * provide better separation of concerns and maintainability.
+ *
+ * Key Features:
+ * - Complete health record CRUD operations
+ * - Allergy management with severity tracking
+ * - Chronic condition tracking with ICD-10 validation
+ * - Vaccination records with CVX code validation
+ * - Vital signs tracking with BMI calculation
+ * - Growth chart data for CDC percentiles
+ * - Comprehensive health summary generation
+ * - Advanced filtering and search capabilities
+ * - Import/export functionality
+ * - Statistical reporting
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Administrative Safeguards
+ * @compliance HIPAA Security Rule §164.312 - Technical Safeguards
+ * @compliance FERPA §99.3 - Education records with health information
+ * @compliance CDC Guidelines - Immunization and growth tracking
+ * @compliance ICD-10-CM - Diagnosis coding standards
+ * @security PHI - All operations tracked in audit log
+ * @security Access Control - Role-based permissions required
+ * @security Data Encryption - PHI encrypted at rest (AES-256) and in transit (TLS 1.2+)
+ * @audit Minimum 6-year retention for HIPAA compliance
+ * @audit All PHI access logged with user ID and timestamp
+ *
+ * Emergency Access (Break-Glass):
+ * - Emergency personnel can override access restrictions
+ * - All break-glass events automatically logged
+ * - Administrative review required within 24 hours
+ * - Justification must be documented
+ *
+ * Parent/Guardian Consent:
+ * - Consent required for students under age of majority
+ * - Consent status tracked in student records
+ * - Some treatments require explicit written consent
+ * - Emergency treatment may proceed without consent
+ *
+ * Data Retention:
+ * - Active records: Indefinite retention while student enrolled
+ * - Graduated students: 6 years minimum (HIPAA requirement)
+ * - Deleted records: Soft delete preferred, 6-year retention
+ * - Audit logs: 6 years minimum, never delete
+ *
+ * @requires ../utils/logger
+ * @requires ../database/models
+ * @requires ../utils/healthRecordValidators
+ * @requires ../database/types/enums
+ *
  * LOC: 377BCE712E
- * WC-SVC-HLT-014 | healthRecordService.ts - Health Record Management Service
- *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - enums.ts (database/types/enums.ts)
- *
- * DOWNSTREAM (imported by):
- *   - allergies.ts (routes/healthRecords/handlers/allergies.ts)
- *   - chronicConditions.ts (routes/healthRecords/handlers/chronicConditions.ts)
- *   - growthMeasurements.ts (routes/healthRecords/handlers/growthMeasurements.ts)
- *   - mainHealthRecords.ts (routes/healthRecords/handlers/mainHealthRecords.ts)
- *   - screenings.ts (routes/healthRecords/handlers/screenings.ts)
- *   - ... and 3 more
- */
-
-/**
- * WC-SVC-HLT-014 | healthRecordService.ts - Health Record Management Service
- * Purpose: Comprehensive health record operations including medical history, allergies, conditions, vaccinations, vitals
- * Upstream: ../utils/logger, ../database/models, ../utils/healthRecordValidators, ../database/types/enums | Dependencies: sequelize, op operators
- * Downstream: routes/health.ts, routes/students.ts, medicationService, reportService | Called by: Health routes, student dashboard
- * Related: allergyService, chronicConditionService, vaccinationService, studentService, auditService
- * Exports: HealthRecordService class, health data interfaces | Key Services: CRUD operations, validation, HIPAA compliance
- * Last Updated: 2025-10-18 | File Type: .ts | HIPAA: Contains PHI - medical records, vitals, allergies
- * Critical Path: Student health lookup → Record validation → Database operations → Audit logging
- * LLM Context: Core health management system, handles all medical data with comprehensive validation and safety checks
+ * WC-SVC-HLT-014 | healthRecordService.ts
+ * Last Updated: 2025-10-18 | File Type: .ts
  */
 
 import { Op } from 'sequelize';

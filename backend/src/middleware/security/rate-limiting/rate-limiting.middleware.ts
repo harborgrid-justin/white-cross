@@ -23,11 +23,40 @@
  */
 
 /**
- * Framework-agnostic Rate Limiting Middleware
- * Prevents brute force attacks and API abuse
+ * @fileoverview Rate Limiting Middleware for Healthcare API Protection
+ * @module middleware/security/rate-limiting
+ * @description Framework-agnostic rate limiting middleware preventing brute force attacks,
+ * API abuse, and PHI data harvesting in healthcare applications. Implements sliding window
+ * algorithm with Redis or in-memory storage for distributed and single-instance deployments.
  *
- * Security: OWASP API Security Top 10 - API4:2023 Unrestricted Resource Consumption
- * HIPAA: Protects against PHI data harvesting attacks
+ * Key Features:
+ * - Sliding window rate limiting algorithm for accurate request tracking
+ * - Redis support for distributed rate limiting across multiple servers
+ * - In-memory fallback for development and single-instance deployments
+ * - Preset configurations for different endpoint types (auth, PHI export, etc.)
+ * - Per-user and per-IP rate limiting strategies
+ * - Configurable time windows and request limits
+ * - Automatic cleanup of expired rate limit records
+ * - Comprehensive logging for security monitoring
+ *
+ * Rate Limiting Strategies:
+ * - Authentication endpoints: 5 attempts per 15 minutes (brute force protection)
+ * - PHI export endpoints: 10 exports per hour (data harvesting prevention)
+ * - Communication endpoints: 10 messages per minute (spam prevention)
+ * - Emergency alerts: 3 alerts per hour (abuse prevention)
+ * - API general: 100 requests per minute (standard throttling)
+ * - Report generation: 5 reports per 5 minutes (resource protection)
+ *
+ * @security Critical security middleware - prevents automated attacks and abuse
+ * @compliance
+ * - OWASP API Security Top 10 - API4:2023 Unrestricted Resource Consumption
+ * - HIPAA 164.312(a)(1) - Access control (prevents unauthorized PHI access attempts)
+ * - HIPAA 164.312(b) - Audit controls (logs rate limit violations)
+ *
+ * @requires ../../../utils/logger - Logging utilities
+ *
+ * @version 1.0.0
+ * @since 2025-01-01
  */
 
 import { logger } from '../../../utils/logger';
@@ -343,7 +372,72 @@ export class RedisRateLimitStore implements RateLimitStore {
 }
 
 /**
- * Rate Limiting Middleware Class
+ * Rate Limiting Middleware for Healthcare API Protection
+ *
+ * @class RateLimitingMiddleware
+ * @description Framework-agnostic rate limiting middleware implementing sliding window algorithm
+ * to prevent brute force attacks, API abuse, and PHI data harvesting. Supports both Redis
+ * (distributed) and in-memory (single-instance) storage backends.
+ *
+ * Algorithm:
+ * Uses sliding window rate limiting for accurate request counting:
+ * 1. Identify request by user ID or IP address
+ * 2. Increment request counter in time window
+ * 3. Compare against configured limit
+ * 4. Allow or block request based on count
+ * 5. Return remaining quota and reset time
+ *
+ * Storage Backends:
+ * - Redis: Recommended for production and multi-server deployments
+ * - Memory: Development and single-instance deployments only
+ *
+ * Healthcare-Specific Rate Limits:
+ * - Auth endpoints: 5 attempts / 15 min (prevent credential stuffing)
+ * - PHI export: 10 exports / hour (prevent bulk data theft)
+ * - Communication: 10 messages / minute (prevent spam)
+ * - Emergency alerts: 3 alerts / hour (prevent false alarms)
+ * - Reports: 5 reports / 5 min (prevent resource exhaustion)
+ *
+ * @example
+ * // Create rate limiter with Redis backend
+ * const rateLimiter = RateLimitingMiddleware.createWithRedis(redisClient);
+ *
+ * @example
+ * // Check rate limit for authentication
+ * const result = await rateLimiter.checkRateLimit('auth', RATE_LIMIT_CONFIGS.auth, {
+ *   ip: '192.168.1.1',
+ *   userId: 'user123',
+ *   path: '/api/auth/login',
+ *   method: 'POST'
+ * });
+ *
+ * if (!result.allowed) {
+ *   return response.status(429).json({
+ *     error: result.error,
+ *     retryAfter: result.retryAfter
+ *   });
+ * }
+ *
+ * @example
+ * // Get rate limit headers for response
+ * const headers = rateLimiter.getRateLimitHeaders(result, config);
+ * response.setHeaders(headers);
+ *
+ * @security
+ * - Prevents brute force attacks on authentication endpoints
+ * - Blocks automated PHI data harvesting attempts
+ * - Mitigates DDoS attacks through request throttling
+ * - Logs rate limit violations for security monitoring
+ *
+ * @compliance
+ * OWASP API4:2023 - Prevents unrestricted resource consumption
+ * HIPAA 164.312(a)(1) - Access control through rate limiting
+ * HIPAA 164.312(b) - Audit logging of security events
+ *
+ * @performance
+ * - Automatic cleanup of expired records
+ * - Efficient key-based lookups
+ * - Minimal memory footprint with TTL-based expiration
  */
 export class RateLimitingMiddleware {
   private store: RateLimitStore;
@@ -369,7 +463,64 @@ export class RateLimitingMiddleware {
   }
 
   /**
-   * Check rate limit for a request
+   * Check rate limit for incoming request
+   *
+   * @function checkRateLimit
+   * @async
+   * @param {string} identifier - Rate limit identifier (e.g., 'auth', 'export', 'api')
+   * @param {RateLimitConfig} config - Rate limit configuration
+   * @param {RequestContext} context - Request context with IP, user ID, path, method
+   * @returns {Promise<RateLimitResult>} Rate limit result with allowed status and remaining quota
+   *
+   * @description
+   * Checks if request is within rate limit and returns result with quota information.
+   * Uses sliding window algorithm for accurate request counting.
+   *
+   * Flow:
+   * 1. Generate unique key from identifier, IP, and user ID
+   * 2. Increment request counter in time window
+   * 3. Check if total requests exceed limit
+   * 4. Calculate remaining points
+   * 5. Log violation if limit exceeded
+   * 6. Return result with quota and retry information
+   *
+   * Key Generation:
+   * - Default: `ratelimit:{identifier}:{userId|ip}`
+   * - Custom: Use config.keyGenerator for custom logic
+   *
+   * @throws Never throws - fails open (allows request) on errors for availability
+   *
+   * @example
+   * // Check authentication rate limit
+   * const result = await rateLimiter.checkRateLimit('auth', RATE_LIMIT_CONFIGS.auth, {
+   *   ip: '192.168.1.1',
+   *   userId: 'user123',
+   *   path: '/api/auth/login',
+   *   method: 'POST'
+   * });
+   *
+   * if (!result.allowed) {
+   *   console.log(`Rate limit exceeded. Retry after ${result.retryAfter} seconds`);
+   * }
+   *
+   * @example
+   * // Check PHI export rate limit
+   * const result = await rateLimiter.checkRateLimit('export', RATE_LIMIT_CONFIGS.export, {
+   *   ip: request.ip,
+   *   userId: request.user.id,
+   *   path: '/api/students/export',
+   *   method: 'POST'
+   * });
+   *
+   * @security
+   * - Logs all rate limit violations for security monitoring
+   * - Triggers callback on limit exceeded (if configured)
+   * - Fails open on errors to maintain service availability
+   *
+   * @performance
+   * - O(1) lookup and increment operations
+   * - Automatic cleanup of expired entries
+   * - Efficient storage with TTL-based expiration
    */
   async checkRateLimit(
     identifier: string,

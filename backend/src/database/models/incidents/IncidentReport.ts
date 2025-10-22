@@ -1,29 +1,41 @@
 /**
+ * @fileoverview Incident Report Database Model
+ * @module database/models/incidents/IncidentReport
+ * @description Sequelize model for managing student incident reports in school health settings.
+ * Provides comprehensive incident documentation, tracking, and compliance management.
+ *
+ * Key Features:
+ * - Incident type classification (injury, illness, behavioral, medication errors, etc.)
+ * - Severity-based notification workflows
+ * - Parent/guardian notification tracking with timestamps
+ * - Evidence collection (photos, videos, attachments)
+ * - Follow-up action management
+ * - Witness statement integration
+ * - Insurance claim tracking
+ * - Legal compliance status monitoring
+ *
+ * Business Rules:
+ * - Injury incidents automatically require follow-up actions
+ * - Medication errors require detailed descriptions (minimum 50 characters)
+ * - Critical severity incidents require principal notification within 1 hour
+ * - High severity incidents require parent notification within 2 hours
+ * - Incident reports are immutable after 24 hours (audit trail maintained)
+ *
+ * @compliance HIPAA - Protected Health Information (PHI) handling
+ * @compliance FERPA - Educational records privacy requirements
+ * @compliance State regulations - Mandatory incident reporting timelines
+ *
+ * @legal Retention requirement: 7 years from incident date
+ * @legal Required for liability protection and legal proceedings
+ * @legal Must maintain complete audit trail of all changes
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../../types/enums
+ * @requires ../base/AuditableModel
+ *
  * LOC: 1A882E668E
- * WC-GEN-072 | IncidentReport.ts - General utility functions and operations
- *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - enums.ts (database/types/enums.ts)
- *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
- *   - Student.ts (database/models/core/Student.ts)
- *   - User.ts (database/models/core/User.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- *   - UserService.ts (database/services/UserService.ts)
- */
-
-/**
- * WC-GEN-072 | IncidentReport.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums, ../base/AuditableModel | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * Last Updated: 2025-10-17
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
@@ -33,6 +45,68 @@ import { AuditableModel } from '../base/AuditableModel';
 import type { Student } from '../core/Student';
 import type { User } from '../core/User';
 
+/**
+ * @interface IncidentReportAttributes
+ * @description Defines the complete structure of an incident report record
+ * @property {string} id - Unique identifier (UUID v4)
+ * @property {string} studentId - Reference to affected student
+ * @property {string} reportedById - Reference to staff member who filed the report
+ *
+ * @property {IncidentType} type - Type of incident
+ * @enum {IncidentType} ['INJURY', 'ILLNESS', 'BEHAVIORAL', 'MEDICATION_ERROR', 'ALLERGIC_REACTION', 'EMERGENCY', 'OTHER']
+ * @business INJURY incidents automatically require follow-up
+ * @business MEDICATION_ERROR incidents require detailed description (50+ characters)
+ * @business EMERGENCY incidents trigger immediate notification protocols
+ *
+ * @property {IncidentSeverity} severity - Severity level of the incident
+ * @enum {IncidentSeverity} ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+ * @business CRITICAL severity requires principal notification within 1 hour
+ * @business HIGH severity requires parent notification within 2 hours
+ * @business MEDIUM severity requires parent notification within 4 hours
+ * @business LOW severity requires parent notification within same school day
+ *
+ * @property {string} description - Detailed incident description (20-5000 characters)
+ * @compliance Required for legal documentation and compliance audits
+ *
+ * @property {string} location - Where the incident occurred (3-200 characters)
+ * @business Required for safety pattern analysis and prevention
+ *
+ * @property {string[]} witnesses - Array of witness identifiers
+ * @business Critical for legal proceedings and incident verification
+ *
+ * @property {string} actionsTaken - Immediate actions taken (10-2000 characters)
+ * @compliance Required documentation for all incidents per state regulations
+ *
+ * @property {boolean} parentNotified - Whether parent/guardian was notified
+ * @business Must be true within timeframe based on severity level
+ * @property {string} [parentNotificationMethod] - Method used (call, email, SMS, in-person)
+ * @property {Date} [parentNotifiedAt] - Timestamp of parent notification
+ * @property {string} [parentNotifiedBy] - Staff member who notified parent
+ *
+ * @property {boolean} followUpRequired - Whether follow-up actions are needed
+ * @business Automatically true for INJURY type incidents
+ * @property {string} [followUpNotes] - Additional follow-up notes (max 2000 characters)
+ *
+ * @property {string[]} attachments - Array of attachment file URLs
+ * @property {string[]} evidencePhotos - Array of photo evidence URLs
+ * @property {string[]} evidenceVideos - Array of video evidence URLs
+ * @compliance Evidence must be stored securely with encryption
+ *
+ * @property {string} [insuranceClaimNumber] - Insurance claim reference number
+ * @property {InsuranceClaimStatus} [insuranceClaimStatus] - Status of insurance claim
+ * @enum {InsuranceClaimStatus} ['NOT_FILED', 'FILED', 'PENDING', 'APPROVED', 'DENIED', 'CLOSED']
+ *
+ * @property {ComplianceStatus} legalComplianceStatus - Legal compliance review status
+ * @enum {ComplianceStatus} ['PENDING', 'COMPLIANT', 'NON_COMPLIANT', 'UNDER_REVIEW']
+ * @compliance All incidents require compliance review within 48 hours
+ *
+ * @property {Date} occurredAt - When the incident occurred
+ * @business Cannot be in the future; used for reporting and analytics
+ *
+ * @property {Date} createdAt - Record creation timestamp
+ * @property {Date} updatedAt - Record last update timestamp
+ * @legal Full audit trail maintained via AuditableModel hooks
+ */
 interface IncidentReportAttributes {
   id: string;
   studentId: string;
@@ -60,6 +134,11 @@ interface IncidentReportAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface IncidentReportCreationAttributes
+ * @description Defines optional fields when creating a new incident report
+ * @extends IncidentReportAttributes
+ */
 interface IncidentReportCreationAttributes
   extends Optional<
     IncidentReportAttributes,
@@ -78,6 +157,56 @@ interface IncidentReportCreationAttributes
     | 'insuranceClaimStatus'
   > {}
 
+/**
+ * @class IncidentReport
+ * @extends Model
+ * @description Sequelize model class for incident reports
+ *
+ * Workflow Summary:
+ * 1. Incident occurs → Staff creates report with type and severity
+ * 2. System validates required fields based on incident type
+ * 3. Parent notification tracked with method, timestamp, and notifier
+ * 4. Evidence can be attached (photos, videos, documents)
+ * 5. Follow-up actions created if needed
+ * 6. Witness statements collected and linked
+ * 7. Compliance review completed within 48 hours
+ * 8. Record retained for 7 years per legal requirements
+ *
+ * Notification Workflows:
+ * - CRITICAL severity: Principal notified immediately + Parent within 1 hour
+ * - HIGH severity: Parent notified within 2 hours
+ * - MEDIUM severity: Parent notified within 4 hours
+ * - LOW severity: Parent notified same school day
+ * - EMERGENCY type: All emergency contacts notified immediately
+ *
+ * Associations:
+ * - belongsTo: Student (affected student)
+ * - belongsTo: User (reporting staff member)
+ * - hasMany: FollowUpAction (related follow-up tasks)
+ * - hasMany: WitnessStatement (witness testimonies)
+ *
+ * Hooks:
+ * - beforeCreate: Auto-set followUpRequired for INJURY incidents
+ * - beforeUpdate: Auto-timestamp parent notification
+ * - Audit hooks: Track all changes via AuditableModel
+ *
+ * @example
+ * // Create a new incident report
+ * const report = await IncidentReport.create({
+ *   studentId: 'student-uuid',
+ *   reportedById: 'staff-uuid',
+ *   type: IncidentType.INJURY,
+ *   severity: IncidentSeverity.HIGH,
+ *   description: 'Student fell on playground and injured left arm',
+ *   location: 'Elementary Playground - Slide Area',
+ *   actionsTaken: 'Applied ice pack, contacted parent, monitored for 30 minutes',
+ *   parentNotified: true,
+ *   parentNotificationMethod: 'phone',
+ *   followUpRequired: true,
+ *   occurredAt: new Date(),
+ *   legalComplianceStatus: ComplianceStatus.PENDING
+ * });
+ */
 export class IncidentReport
   extends Model<IncidentReportAttributes, IncidentReportCreationAttributes>
   implements IncidentReportAttributes

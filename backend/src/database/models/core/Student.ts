@@ -1,4 +1,12 @@
 /**
+ * @fileoverview Student Database Model
+ * @module models/core/Student
+ * @description Sequelize model for student records with HIPAA-compliant audit trails.
+ * Includes comprehensive validation, PHI protection, and educational health management.
+ * @requires sequelize - ORM library for database operations
+ * @requires enums - Gender and other student-related enumerations
+ * @requires AuditableModel - Base model for HIPAA audit compliance
+ *
  * LOC: FB6CFF0220
  * WC-MDL-STU-009 | Student Database Model
  *
@@ -8,24 +16,10 @@
  *   - AuditableModel.ts (database/models/base/AuditableModel.ts)
  *
  * DOWNSTREAM (imported by):
- *   - AppointmentWaitlist.ts (database/models/healthcare/AppointmentWaitlist.ts)
- *   - IncidentReport.ts (database/models/incidents/IncidentReport.ts)
- *   - index.ts (database/models/index.ts)
- *   - StudentMedication.ts (database/models/medications/StudentMedication.ts)
- *   - StudentRepository.ts (database/repositories/impl/StudentRepository.ts)
- *   - ... and 3 more
- */
-
-/**
- * WC-MDL-STU-009 | Student Database Model
- * Purpose: Sequelize model for student records with associations and validation
- * Upstream: Sequelize ORM, database/config | Dependencies: sequelize, joi validation
- * Downstream: studentService, healthRecordService, routes | Called by: Student operations
- * Related: User.ts, HealthRecord.ts, EmergencyContact.ts, Allergy.ts, Medication.ts
- * Exports: Student model class | Key Services: Student CRUD, associations, validation
- * Last Updated: 2025-10-17 | Dependencies: sequelize, @types/sequelize
- * Critical Path: Model definition → Associations → Validation → Database operations
- * LLM Context: HIPAA-compliant student data model, educational records management
+ *   - HealthRecord.ts, EmergencyContact.ts, Allergy.ts, Medication.ts
+ *   - StudentRepository.ts, StudentService.ts, StudentController.ts
+ *
+ * Related Models: User, HealthRecord, EmergencyContact, Allergy, StudentMedication
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
@@ -33,6 +27,27 @@ import { sequelize } from '../../config/sequelize';
 import { Gender } from '../../types/enums';
 import { AuditableModel } from '../base/AuditableModel';
 
+/**
+ * @interface StudentAttributes
+ * @description TypeScript interface defining all Student model attributes
+ *
+ * @property {string} id - Primary key, auto-generated UUID
+ * @property {string} studentNumber - Unique student identifier, 4-20 alphanumeric chars with hyphens
+ * @property {string} firstName - Student's first name, 1-100 chars, letters/spaces/hyphens/apostrophes only
+ * @property {string} lastName - Student's last name, 1-100 chars, letters/spaces/hyphens/apostrophes only
+ * @property {Date} dateOfBirth - Birth date, must be in past, age 3-100 years (DATEONLY format)
+ * @property {string} grade - Current grade level, 1-10 chars (e.g., "K", "1", "12")
+ * @property {Gender} gender - Gender (MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY)
+ * @property {string} [photo] - Photo URL, max 500 chars, validated URL format (nullable)
+ * @property {string} [medicalRecordNum] - Medical record number, 5-20 chars, unique, alphanumeric with hyphens (nullable, PHI)
+ * @property {boolean} isActive - Active enrollment status, defaults to true
+ * @property {Date} enrollmentDate - Date of enrollment, defaults to current date, must be 2000-present
+ * @property {string} [nurseId] - Assigned nurse UUID (nullable)
+ * @property {string} [createdBy] - User ID who created record (audit field)
+ * @property {string} [updatedBy] - User ID who last updated record (audit field)
+ * @property {Date} createdAt - Record creation timestamp
+ * @property {Date} updatedAt - Record last update timestamp
+ */
 export interface StudentAttributes {
   id: string;
   studentNumber: string;
@@ -52,12 +67,57 @@ export interface StudentAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface StudentCreationAttributes
+ * @description Attributes required when creating a new Student instance.
+ * Extends StudentAttributes with optional fields that have defaults or are auto-generated.
+ */
 interface StudentCreationAttributes
   extends Optional<
     StudentAttributes,
     'id' | 'createdAt' | 'updatedAt' | 'isActive' | 'enrollmentDate' | 'photo' | 'medicalRecordNum' | 'nurseId' | 'createdBy' | 'updatedBy'
   > {}
 
+/**
+ * @class Student
+ * @extends Model
+ * @description Student model representing students in the school health management system.
+ * Contains PHI (Protected Health Information) and is HIPAA-compliant with automatic audit trails.
+ *
+ * @tablename students
+ *
+ * Key Features:
+ * - Comprehensive field validation (name format, age range, student number format)
+ * - HIPAA audit trail via AuditableModel
+ * - Unique student number and optional medical record number
+ * - Multiple indexes for optimized queries (studentNumber, nurseId, isActive, grade, name)
+ * - Computed properties: fullName, age
+ * - Associations: emergencyContacts, medications, healthRecords, allergies
+ *
+ * PHI Fields: firstName, lastName, dateOfBirth, photo, medicalRecordNum
+ *
+ * @example
+ * // Create a new student
+ * const student = await Student.create({
+ *   studentNumber: 'STU-2024-001',
+ *   firstName: 'Emma',
+ *   lastName: 'Wilson',
+ *   dateOfBirth: new Date('2015-03-15'),
+ *   grade: '3',
+ *   gender: Gender.FEMALE
+ * }, { userId: 'nurse-uuid' });
+ *
+ * @example
+ * // Get student with age calculation
+ * const student = await Student.findByPk('student-uuid');
+ * console.log(`${student.fullName} is ${student.age} years old`);
+ *
+ * @example
+ * // Find active students in a grade
+ * const students = await Student.findAll({
+ *   where: { grade: '5', isActive: true }
+ * });
+ */
 export class Student extends Model<StudentAttributes, StudentCreationAttributes> implements StudentAttributes {
   public id!: string;
   public studentNumber!: string;
@@ -76,10 +136,30 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
+  /**
+   * @member {string} fullName
+   * @description Computed property returning student's full name.
+   * @returns {string} Full name (firstName + lastName)
+   * @instance
+   * @memberof Student
+   * @example
+   * console.log(student.fullName); // "Emma Wilson"
+   */
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;
   }
 
+  /**
+   * @member {number} age
+   * @description Computed property calculating student's current age in years.
+   * Accounts for month and day to provide accurate age.
+   * @returns {number} Age in years
+   * @instance
+   * @memberof Student
+   * @example
+   * const student = await Student.findByPk('student-id');
+   * console.log(`Student age: ${student.age}`); // "Student age: 8"
+   */
   get age(): number {
     const today = new Date();
     const birthDate = new Date(this.dateOfBirth);
@@ -91,8 +171,20 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     return age;
   }
 
-  // Associations
+  /**
+   * @member {any[]} emergencyContacts
+   * @description Association with EmergencyContact model (hasMany).
+   * Populated when including 'emergencyContacts' in query.
+   * @memberof Student
+   */
   declare emergencyContacts?: any[];
+
+  /**
+   * @member {any[]} medications
+   * @description Association with StudentMedication model (hasMany).
+   * Populated when including 'medications' in query.
+   * @memberof Student
+   */
   declare medications?: any[];
 }
 

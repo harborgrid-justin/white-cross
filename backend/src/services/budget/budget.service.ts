@@ -1,4 +1,39 @@
 
+/**
+ * @fileoverview Budget Management Service
+ * @module services/budget
+ * @description Comprehensive budget tracking and fiscal year management system
+ *
+ * This service provides complete budget management functionality including category
+ * allocation, transaction tracking, spending analysis, and fiscal year reporting
+ * for school health operations.
+ *
+ * Key Features:
+ * - Fiscal year budget allocation and tracking (July 1 - June 30)
+ * - Budget category management with spending limits
+ * - Real-time transaction tracking and validation
+ * - Budget utilization monitoring and alerts
+ * - Spending trend analysis and forecasting
+ * - Year-over-year budget comparison
+ * - Over-budget detection and reporting
+ * - Budget allocation recommendations based on historical data
+ *
+ * @business Fiscal year runs July 1 - June 30
+ * @business Budget categories track allocated vs. spent amounts
+ * @business Spending exceeding allocation generates warnings (not hard blocks)
+ * @business 0.5% buffer allowed for rounding differences
+ * @business Budget transactions linked to purchase orders and invoices
+ * @business All spending requires budget category assignment
+ *
+ * @financial Real-time budget utilization tracking
+ * @financial Automated spending encumbrance on purchase order approval
+ * @financial Actual charge on invoice receipt
+ * @financial Budget rollover requires manual year-end processing
+ *
+ * @requires ../../database/models
+ * @requires ./budget.repository
+ */
+
 import { logger } from '../../utils/logger';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 import {
@@ -68,12 +103,45 @@ export interface SpendingTrend {
   transactionCount: number;
 }
 
+/**
+ * Budget Management Service
+ *
+ * @class BudgetService
+ * @static
+ */
 export class BudgetService {
   /**
    * Get budget categories for a fiscal year with optional filtering
-   * @param fiscalYear - The fiscal year to filter by (defaults to current year)
-   * @param activeOnly - Whether to return only active categories
-   * @returns Array of budget categories with calculated metrics
+   *
+   * @method getBudgetCategories
+   * @static
+   * @async
+   * @param {number} [fiscalYear] - Fiscal year (defaults to current calendar year)
+   * @param {boolean} [activeOnly=true] - Return only active categories
+   * @returns {Promise<BudgetCategoryWithMetrics[]>} Categories with calculated metrics
+   * @returns {Promise<BudgetCategoryWithMetrics[].allocatedAmount>} Allocated budget
+   * @returns {Promise<BudgetCategoryWithMetrics[].spentAmount>} Amount spent to date
+   * @returns {Promise<BudgetCategoryWithMetrics[].remainingAmount>} Calculated remaining (allocated - spent)
+   * @returns {Promise<BudgetCategoryWithMetrics[].utilizationPercentage>} Percentage used (spent/allocated * 100)
+   *
+   * @business Fiscal year: July 1 - June 30
+   * @business Utilization calculated as (spent / allocated) * 100
+   * @business Remaining can be negative if over budget
+   * @business Active categories are eligible for new transactions
+   * @business Includes recent transactions (last 5) for context
+   *
+   * @example
+   * const categories = await BudgetService.getBudgetCategories(2024, true);
+   * // Returns: [
+   * //   {
+   * //     name: 'Medical Supplies',
+   * //     allocatedAmount: 50000,
+   * //     spentAmount: 32500,
+   * //     remainingAmount: 17500,
+   * //     utilizationPercentage: 65.00
+   * //   },
+   * //   ...
+   * // ]
    */
   static async getBudgetCategories(
     fiscalYear?: number,
@@ -228,8 +296,52 @@ export class BudgetService {
 
   /**
    * Create budget transaction with automatic spent amount update
-   * @param data - Transaction data
-   * @returns Created transaction with category information
+   *
+   * @method createBudgetTransaction
+   * @static
+   * @async
+   * @param {CreateBudgetTransactionData} data - Transaction details
+   * @param {string} data.categoryId - Budget category UUID
+   * @param {number} data.amount - Transaction amount (positive for spending)
+   * @param {string} data.description - Transaction description (required)
+   * @param {string} [data.referenceId] - Reference UUID (purchase order, invoice, etc.)
+   * @param {string} [data.referenceType] - Reference type (PURCHASE_ORDER, INVOICE, ADJUSTMENT)
+   * @param {string} [data.notes] - Additional notes
+   * @returns {Promise<BudgetTransaction>} Created transaction with category details
+   * @throws {Error} Budget category not found
+   * @throws {Error} Category is inactive
+   *
+   * @business Automatically updates category spentAmount
+   * @business Warns if transaction would exceed budget (doesn't block)
+   * @business Transaction date set to current date/time
+   * @business Inactive categories cannot receive new transactions
+   * @business Description required for audit trail
+   *
+   * @financial Real-time budget utilization tracking
+   * @financial Creates audit trail for all spending
+   * @financial Links to source documents via referenceId/referenceType
+   * @financial Budget encumbrance vs. actual charge tracked via referenceType
+   *
+   * @example
+   * // Record purchase order encumbrance
+   * const transaction = await BudgetService.createBudgetTransaction({
+   *   categoryId: 'category-uuid-123',
+   *   amount: 250.00,
+   *   description: 'Medical supplies - PO-2024-001',
+   *   referenceId: 'po-uuid-456',
+   *   referenceType: 'PURCHASE_ORDER',
+   *   notes: 'Encumbrance for approved purchase order'
+   * });
+   *
+   * @example
+   * // Record actual invoice payment
+   * const transaction = await BudgetService.createBudgetTransaction({
+   *   categoryId: 'category-uuid-123',
+   *   amount: 245.50,
+   *   description: 'Medical supplies - Invoice #12345',
+   *   referenceId: 'invoice-uuid-789',
+   *   referenceType: 'INVOICE'
+   * });
    */
   static async createBudgetTransaction(
     data: CreateBudgetTransactionData

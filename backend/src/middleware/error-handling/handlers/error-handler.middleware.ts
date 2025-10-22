@@ -1,6 +1,19 @@
 /**
- * LOC: 3835B8CB7D
- * WC-MID-ERR-045 | Framework-Agnostic HIPAA-Compliant Error Handler & Sequelize Error Management
+ * @fileoverview Global Error Handling Middleware - Framework-Agnostic HIPAA-Compliant Error Handler
+ * @module middleware/error-handling/handlers/error-handler
+ * @description Centralized error handling with PHI protection, Sequelize error mapping, and comprehensive logging
+ *
+ * LOC: 3835B8CB7D | WC-MID-ERR-045
+ *
+ * Key Features:
+ * - Error classification by type and severity
+ * - HIPAA-compliant PHI sanitization in error messages
+ * - Production vs development error response differentiation
+ * - Sequelize ORM error mapping and handling
+ * - Comprehensive audit logging with severity-based routing
+ * - Configurable error handling behavior
+ * - Stack trace sanitization in production
+ * - Custom error code generation
  *
  * UPSTREAM (imports from):
  *   - utils/logger (logging utilities)
@@ -8,33 +21,71 @@
  * DOWNSTREAM (imported by):
  *   - adapters/hapi/error-handler.adapter.ts
  *   - adapters/express/error-handler.adapter.ts
- */
-
-/**
- * WC-MID-ERR-045 | Framework-Agnostic HIPAA-Compliant Error Handler & Sequelize Error Management
- * Purpose: Centralized error handling, PHI protection, Sequelize error mapping
- * Upstream: utils/logger, @hapi/boom, sequelize validation errors
- * Downstream: All routes and services | Called by: Framework-specific adapters
- * Related: utils/logger.ts, monitoring/audit/*, database/models/*
- * Exports: ErrorHandlerMiddleware class | Key Services: Error sanitization, logging
- * Last Updated: 2025-10-21 | Dependencies: Framework-agnostic
- * Critical Path: Error detection → Classification → Sanitization → Response
- * LLM Context: HIPAA compliance, prevents PHI leakage, detailed audit logging
- */
-
-/**
- * Framework-agnostic Error Handler Middleware with Sequelize Error Support
+ *   - All routes and services
  *
- * HIPAA Compliance: Ensures error messages don't leak PHI while maintaining
- * detailed logging for security audits and debugging.
+ * Related Components:
+ *   - utils/logger.ts - Logging infrastructure
+ *   - monitoring/audit/* - Audit trail services
+ *   - database/models/* - Sequelize models
  *
- * Security: Sanitizes error messages in production to prevent information disclosure.
+ * @security Never expose stack traces or sensitive data in production
+ * @security All error messages sanitized for PHI patterns
+ * @security SQL queries and parameters redacted in production
+ *
+ * @compliance HIPAA - No PHI in error messages or logs
+ * @compliance SOC2 - Comprehensive audit logging
+ * @compliance PCI-DSS - Credit card pattern sanitization
+ *
+ * @requires utils/logger
+ *
+ * Critical Path: Error detection → Classification → Sanitization → Logging → Response
+ *
+ * @example
+ * // Development configuration
+ * const errorHandler = new ErrorHandlerMiddleware({
+ *   environment: 'development',
+ *   enableStackTrace: true,
+ *   enableDetailedErrors: true,
+ *   sanitizePHI: false
+ * });
+ *
+ * @example
+ * // Production configuration
+ * const errorHandler = createProductionErrorHandler();
+ *
+ * @example
+ * // Handle an error
+ * const errorResponse = errorHandler.handleError(error, {
+ *   requestId: 'req-123',
+ *   userId: 'user-456',
+ *   path: '/api/students',
+ *   method: 'GET'
+ * });
+ *
+ * @author Healthcare Platform Team
+ * @version 1.0.0
+ * @since 2025-10-21
  */
 
 import { logger } from '../../../utils/logger';
 
 /**
  * Error classification types
+ *
+ * @enum {string}
+ * @description Categorizes errors for appropriate handling and logging
+ *
+ * Error Type Mapping:
+ * - VALIDATION: Input validation failures, schema violations
+ * - AUTHENTICATION: Authentication failures, invalid credentials
+ * - AUTHORIZATION: Permission denied, insufficient access rights
+ * - NOT_FOUND: Resource not found errors
+ * - RATE_LIMIT: Rate limiting violations
+ * - DATABASE: Database connection, query, or constraint errors
+ * - NETWORK: Network connectivity or external service errors
+ * - BUSINESS_LOGIC: Business rule violations
+ * - SYSTEM: Internal system errors, crashes
+ * - UNKNOWN: Unclassified errors
  */
 export enum ErrorType {
   VALIDATION = 'VALIDATION',
@@ -51,6 +102,22 @@ export enum ErrorType {
 
 /**
  * Error severity levels
+ *
+ * @enum {string}
+ * @description Defines severity for logging priority and alerting
+ *
+ * Severity Guidelines:
+ * - LOW: Expected errors, validation failures, not found errors
+ * - MEDIUM: Authentication/authorization failures, rate limits
+ * - HIGH: Database errors, network failures, data integrity issues
+ * - CRITICAL: System failures, security breaches, data loss
+ *
+ * @example
+ * // Severity determines logging method
+ * if (severity === ErrorSeverity.CRITICAL) {
+ *   logger.error('Critical error', data);
+ *   // Trigger alerts
+ * }
  */
 export enum ErrorSeverity {
   LOW = 'LOW',
@@ -61,6 +128,51 @@ export enum ErrorSeverity {
 
 /**
  * Standardized error response interface
+ *
+ * @interface ErrorResponse
+ * @description Consistent error response format across all endpoints
+ *
+ * Response Structure:
+ * - success: Always false for errors
+ * - error: Error details object
+ *   - code: Machine-readable error code (e.g., "VAL_VALIDATION_FAILED")
+ *   - message: Human-readable error message (sanitized)
+ *   - type: Error classification (ErrorType enum)
+ *   - severity: Error severity level (ErrorSeverity enum)
+ *   - details: Additional error context (development only)
+ *   - timestamp: ISO 8601 formatted timestamp
+ *   - requestId: Unique request identifier for tracing
+ *   - traceId: Distributed tracing identifier
+ *
+ * @example
+ * // Production error response
+ * {
+ *   success: false,
+ *   error: {
+ *     code: 'NOT_NOT_FOUND',
+ *     message: 'Student not found',
+ *     type: 'NOT_FOUND',
+ *     severity: 'LOW',
+ *     timestamp: '2025-10-22T10:30:00.000Z',
+ *     requestId: 'req-abc123'
+ *   }
+ * }
+ *
+ * @example
+ * // Development error response (with details)
+ * {
+ *   success: false,
+ *   error: {
+ *     code: 'DAT_DATABASE_ERROR',
+ *     message: 'Database connection failed',
+ *     type: 'DATABASE',
+ *     severity: 'HIGH',
+ *     details: { stack: '...' },
+ *     timestamp: '2025-10-22T10:30:00.000Z',
+ *     requestId: 'req-abc123',
+ *     traceId: 'trace-xyz789'
+ *   }
+ * }
  */
 export interface ErrorResponse {
   success: false;
@@ -188,6 +300,28 @@ export class ErrorHandlerMiddleware {
 
   /**
    * Classify error type and severity
+   *
+   * @private
+   * @method classifyError
+   * @param {Error} error - Error object to classify
+   * @returns {{ type: ErrorType; severity: ErrorSeverity }} Classification result
+   *
+   * @description Analyzes error name and message to determine type and severity.
+   * Uses pattern matching to identify common error patterns.
+   *
+   * Classification Logic:
+   * 1. Check error name for specific patterns
+   * 2. Analyze error message content
+   * 3. Match against known error types
+   * 4. Assign appropriate severity level
+   *
+   * @example
+   * classifyError(new Error('Student not found'))
+   * // Returns: { type: 'NOT_FOUND', severity: 'LOW' }
+   *
+   * @example
+   * classifyError(new Error('Database connection failed'))
+   * // Returns: { type: 'DATABASE', severity: 'HIGH' }
    */
   private classifyError(error: Error): { type: ErrorType; severity: ErrorSeverity } {
     const errorName = error.name;
@@ -238,6 +372,34 @@ export class ErrorHandlerMiddleware {
 
   /**
    * Sanitize error message to remove PHI
+   *
+   * @private
+   * @method sanitizeErrorMessage
+   * @param {string} message - Original error message
+   * @returns {string} Sanitized error message with PHI redacted
+   *
+   * @description Removes Protected Health Information (PHI) and sensitive data from error messages
+   * to ensure HIPAA compliance. Uses regex patterns to detect and redact common PHI patterns.
+   *
+   * PHI Patterns Detected:
+   * - Email addresses
+   * - Phone numbers (various formats)
+   * - Social Security Numbers (SSN)
+   * - Credit card numbers
+   * - Medical Record Numbers (MRN)
+   * - Sensitive field values (password, ssn, dob, etc.)
+   *
+   * @security Critical for HIPAA compliance
+   * @compliance HIPAA - Prevents PHI exposure in error messages
+   * @compliance PCI-DSS - Redacts credit card information
+   *
+   * @example
+   * sanitizeErrorMessage('Error for user john@example.com')
+   * // Returns: 'Error for user [REDACTED]'
+   *
+   * @example
+   * sanitizeErrorMessage('Invalid SSN: 123-45-6789')
+   * // Returns: 'Invalid SSN: [REDACTED]'
    */
   private sanitizeErrorMessage(message: string): string {
     if (!this.config.sanitizePHI) {
@@ -528,6 +690,52 @@ export class ErrorHandlerMiddleware {
 
   /**
    * Main error handling method
+   *
+   * @public
+   * @method handleError
+   * @param {Error} error - Error object to handle
+   * @param {ErrorContext} [context={}] - Request context for logging
+   * @returns {ErrorResponse} Standardized error response
+   *
+   * @description Central entry point for error handling. Routes errors to appropriate
+   * handlers based on error type, sanitizes messages, logs errors, and returns
+   * standardized error responses.
+   *
+   * Processing Flow:
+   * 1. Add timestamp to context
+   * 2. Check if error is Sequelize-specific
+   * 3. Route to specialized handler or standard handler
+   * 4. Sanitize error message for PHI
+   * 5. Log error with appropriate severity
+   * 6. Return standardized error response
+   *
+   * Sequelize Error Handling:
+   * - SequelizeValidationError → Field-level validation errors
+   * - SequelizeUniqueConstraintError → Duplicate record errors
+   * - SequelizeForeignKeyConstraintError → Invalid reference errors
+   * - SequelizeConnectionError → Database connection failures
+   * - SequelizeTimeoutError → Query timeout errors
+   * - SequelizeDatabaseError → General database errors
+   *
+   * @example
+   * // Handle validation error
+   * const response = errorHandler.handleError(
+   *   new Error('Invalid email format'),
+   *   {
+   *     requestId: 'req-123',
+   *     userId: 'user-456',
+   *     path: '/api/students',
+   *     method: 'POST',
+   *     ip: '192.168.1.1'
+   *   }
+   * );
+   *
+   * @example
+   * // Handle Sequelize error
+   * const response = errorHandler.handleError(
+   *   sequelizeValidationError,
+   *   { requestId: 'req-789', path: '/api/students' }
+   * );
    */
   handleError(error: Error, context: ErrorContext = {}): ErrorResponse {
     // Add timestamp to context
@@ -665,6 +873,21 @@ export class ErrorHandlerMiddleware {
 
 /**
  * Factory function for creating error handler middleware
+ *
+ * @function createErrorHandler
+ * @param {ErrorHandlerConfig} [config] - Optional configuration overrides
+ * @returns {ErrorHandlerMiddleware} Configured error handler instance
+ *
+ * @description Creates a new error handler middleware instance with custom configuration.
+ * Merges provided config with environment-based defaults.
+ *
+ * @example
+ * // Create with custom configuration
+ * const errorHandler = createErrorHandler({
+ *   environment: 'staging',
+ *   enableStackTrace: true,
+ *   sanitizePHI: true
+ * });
  */
 export function createErrorHandler(config?: ErrorHandlerConfig): ErrorHandlerMiddleware {
   return ErrorHandlerMiddleware.create(config);
@@ -672,6 +895,20 @@ export function createErrorHandler(config?: ErrorHandlerConfig): ErrorHandlerMid
 
 /**
  * Create development error handler
+ *
+ * @function createDevelopmentErrorHandler
+ * @returns {ErrorHandlerMiddleware} Error handler configured for development
+ *
+ * @description Creates error handler with development-friendly settings:
+ * - Stack traces enabled
+ * - Detailed error messages
+ * - PHI sanitization disabled
+ * - Debug-level logging
+ *
+ * @security DO NOT use in production environments
+ *
+ * @example
+ * const devErrorHandler = createDevelopmentErrorHandler();
  */
 export function createDevelopmentErrorHandler(): ErrorHandlerMiddleware {
   return new ErrorHandlerMiddleware(DEVELOPMENT_CONFIG);
@@ -679,6 +916,22 @@ export function createDevelopmentErrorHandler(): ErrorHandlerMiddleware {
 
 /**
  * Create production error handler
+ *
+ * @function createProductionErrorHandler
+ * @returns {ErrorHandlerMiddleware} Error handler configured for production
+ *
+ * @description Creates error handler with production-safe settings:
+ * - Stack traces disabled
+ * - Generic error messages
+ * - PHI sanitization enabled
+ * - Error-level logging only
+ * - SQL queries redacted
+ *
+ * @security Recommended for production environments
+ * @compliance HIPAA-compliant configuration
+ *
+ * @example
+ * const prodErrorHandler = createProductionErrorHandler();
  */
 export function createProductionErrorHandler(): ErrorHandlerMiddleware {
   return new ErrorHandlerMiddleware(DEFAULT_CONFIG);

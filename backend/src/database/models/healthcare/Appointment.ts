@@ -1,33 +1,102 @@
 /**
+ * @fileoverview Appointment Database Model
+ * @module database/models/healthcare/Appointment
+ * @description Sequelize model for managing school health appointments including routine checkups,
+ * medication administration, injury assessments, and emergency visits with comprehensive scheduling
+ * and workflow management.
+ *
+ * Key Features:
+ * - Appointment type classification (routine, medication, injury, illness, etc.)
+ * - Status workflow (SCHEDULED → IN_PROGRESS → COMPLETED/CANCELLED/NO_SHOW)
+ * - Duration management in 15-minute increments
+ * - Business hours validation (8 AM - 5 PM, weekdays only)
+ * - Nurse and student assignment
+ * - Reason and notes documentation
+ * - Integration with reminders and waitlist systems
+ *
+ * Business Rules:
+ * - Appointments must be scheduled during business hours (8 AM - 5 PM)
+ * - No weekend appointments (Monday-Friday only)
+ * - Duration must be 15-120 minutes in 15-minute increments
+ * - Minimum duration: 15 minutes (quick checks)
+ * - Maximum duration: 120 minutes (comprehensive exams)
+ * - New appointments must be scheduled in the future
+ * - Reason must be 3-500 characters
+ *
+ * Appointment Types & Typical Durations:
+ * - ROUTINE_CHECKUP: 30-45 minutes (general health assessment)
+ * - MEDICATION_ADMINISTRATION: 15-30 minutes (medication dispensing and monitoring)
+ * - INJURY_ASSESSMENT: 15-45 minutes (injury evaluation and treatment)
+ * - ILLNESS_EVALUATION: 30-60 minutes (illness assessment and care planning)
+ * - FOLLOW_UP: 15-30 minutes (post-incident or post-treatment review)
+ * - SCREENING: 15-30 minutes (vision, hearing, health screenings)
+ * - EMERGENCY: Variable (immediate response, typically 30-60 minutes)
+ *
+ * @compliance HIPAA - Appointment details contain PHI
+ * @compliance FERPA - Educational records if health affects academics
+ * @compliance State regulations - Required documentation for medication administration
+ *
+ * @legal Retention requirement: 7 years from appointment date
+ * @legal Documentation required for liability protection
+ * @legal Medication administration appointments require dual verification
+ *
+ * @requires sequelize
+ * @requires ../../config/sequelize
+ * @requires ../../types/enums
+ *
  * LOC: F175DC7C84
- * WC-GEN-061 | Appointment.ts - General utility functions and operations
- *
- * UPSTREAM (imports from):
- *   - sequelize.ts (database/config/sequelize.ts)
- *   - enums.ts (database/types/enums.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (database/models/index.ts)
- *   - AppointmentRepository.ts (database/repositories/impl/AppointmentRepository.ts)
- *   - UserService.ts (database/services/UserService.ts)
- */
-
-/**
- * WC-GEN-061 | Appointment.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * Last Updated: 2025-10-17
  */
 
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { AppointmentType, AppointmentStatus } from '../../types/enums';
 
+/**
+ * @interface AppointmentAttributes
+ * @description Defines the complete structure of an appointment record
+ *
+ * @property {string} id - Unique identifier (UUID v4)
+ * @property {string} studentId - Reference to student
+ * @business Required for all appointments
+ *
+ * @property {string} nurseId - Reference to assigned nurse
+ * @business Required at creation; ensures proper staffing
+ * @business One nurse can have multiple concurrent appointments (waiting room)
+ *
+ * @property {AppointmentType} type - Type of appointment
+ * @enum {AppointmentType} ['ROUTINE_CHECKUP', 'MEDICATION_ADMINISTRATION', 'INJURY_ASSESSMENT', 'ILLNESS_EVALUATION', 'FOLLOW_UP', 'SCREENING', 'EMERGENCY']
+ * @business EMERGENCY type may bypass normal scheduling rules
+ *
+ * @property {Date} scheduledAt - When appointment is scheduled
+ * @business Must be future date for new appointments
+ * @business Must be during business hours (8 AM - 5 PM)
+ * @business Must be weekday (Monday-Friday)
+ *
+ * @property {number} duration - Appointment duration in minutes (15-120)
+ * @business Must be in 15-minute increments (15, 30, 45, 60, etc.)
+ * @business Default: 30 minutes
+ * @business Used for calendar blocking and scheduling optimization
+ *
+ * @property {AppointmentStatus} status - Current status
+ * @enum {AppointmentStatus} ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW']
+ * @business Workflow: SCHEDULED → IN_PROGRESS → COMPLETED
+ * @business Alternative paths: SCHEDULED → CANCELLED or SCHEDULED → NO_SHOW
+ * @business Default: SCHEDULED
+ *
+ * @property {string} reason - Reason for appointment (3-500 characters)
+ * @business Required for all appointments
+ * @business Helps prioritize and prepare for appointment
+ *
+ * @property {string} [notes] - Additional notes (max 5000 characters)
+ * @business Optional during scheduling
+ * @business Typically filled during/after appointment
+ * @business May contain clinical observations, treatments provided
+ * @compliance Contains PHI - restricted access required
+ *
+ * @property {Date} createdAt - Record creation timestamp
+ * @property {Date} updatedAt - Record last update timestamp
+ */
 interface AppointmentAttributes {
   id: string;
   studentId: string;
@@ -42,9 +111,83 @@ interface AppointmentAttributes {
   updatedAt: Date;
 }
 
+/**
+ * @interface AppointmentCreationAttributes
+ * @description Defines optional fields when creating a new appointment
+ * @extends AppointmentAttributes
+ */
 interface AppointmentCreationAttributes
   extends Optional<AppointmentAttributes, 'id' | 'createdAt' | 'updatedAt' | 'notes'> {}
 
+/**
+ * @class Appointment
+ * @extends Model
+ * @description Sequelize model class for appointment management
+ *
+ * Workflow Summary:
+ * 1. Student needs health service → Appointment request created
+ * 2. Nurse/staff schedules appointment → Validates business hours and availability
+ * 3. System sends reminder → Via AppointmentReminder (24h, 1h before)
+ * 4. Student arrives → Status changes to IN_PROGRESS
+ * 5. Nurse provides care → Notes documented in notes field
+ * 6. Appointment completes → Status changes to COMPLETED
+ * 7. Follow-up scheduled if needed → New appointment or follow-up action created
+ *
+ * Status Transitions:
+ * - SCHEDULED: Initial state, appointment booked
+ * - IN_PROGRESS: Student checked in, receiving care
+ * - COMPLETED: Care provided, documentation complete
+ * - CANCELLED: Appointment cancelled (by staff or student)
+ * - NO_SHOW: Student did not appear for scheduled appointment
+ *
+ * Scheduling Rules:
+ * - Business hours: Monday-Friday, 8:00 AM - 5:00 PM
+ * - Duration: 15-120 minutes in 15-minute increments
+ * - No double-booking: One student per time slot per nurse
+ * - Emergency appointments: Can override normal scheduling rules
+ * - Buffer time: Consider 5-10 minutes between appointments for documentation
+ *
+ * Reminder System Integration:
+ * - 24-hour reminder: Sent day before appointment
+ * - 1-hour reminder: Sent hour before appointment
+ * - Methods: Email, SMS, push notification (configurable)
+ * - Automatic cancellation: If no-show pattern detected (3+ consecutive)
+ *
+ * Waitlist Integration:
+ * - If no appointments available → Student added to waitlist
+ * - Cancellation occurs → Waitlist notified in priority order
+ * - Urgent priority: Immediate notification
+ * - Normal priority: Next available slot notification
+ *
+ * Associations:
+ * - belongsTo: Student (patient)
+ * - belongsTo: User (nurse - healthcare provider)
+ * - hasMany: AppointmentReminder (scheduled reminders)
+ * - hasMany: AppointmentWaitlist (if rescheduled from waitlist)
+ *
+ * Model-level Validations:
+ * - scheduledAtInFuture: New appointments must be in future
+ * - validBusinessHours: Must be scheduled 8 AM - 5 PM
+ * - notOnWeekend: No Saturday or Sunday appointments
+ *
+ * @example
+ * // Schedule a routine checkup
+ * const appointment = await Appointment.create({
+ *   studentId: 'student-uuid',
+ *   nurseId: 'nurse-uuid',
+ *   type: AppointmentType.ROUTINE_CHECKUP,
+ *   scheduledAt: new Date('2024-03-15T10:00:00'),
+ *   duration: 30,
+ *   reason: 'Annual health screening and growth measurement'
+ * });
+ *
+ * @example
+ * // Complete an appointment
+ * await appointment.update({
+ *   status: AppointmentStatus.COMPLETED,
+ *   notes: 'Completed routine checkup. Height: 52in, Weight: 65lbs. Vision: 20/20. No concerns noted.'
+ * });
+ */
 export class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttributes> implements AppointmentAttributes {
   public id!: string;
   public studentId!: string;

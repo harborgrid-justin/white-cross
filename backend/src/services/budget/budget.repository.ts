@@ -1,4 +1,29 @@
 
+/**
+ * @fileoverview Budget Repository
+ * @module services/budget/repository
+ * @description Data access layer for budget categories and transactions
+ *
+ * This repository provides all database operations for budget management,
+ * including CRUD operations, complex queries, and aggregations for fiscal
+ * year reporting and analysis.
+ *
+ * Key Features:
+ * - Budget category CRUD operations
+ * - Budget transaction management
+ * - Fiscal year summaries and aggregations
+ * - Spending trend analysis
+ * - Over-budget category detection
+ * - Year-over-year comparisons
+ * - Transaction filtering and pagination
+ *
+ * @business All queries use fiscal year as primary filter
+ * @business Active status used to soft-delete categories
+ * @business Aggregations calculate totals, averages, and utilization
+ *
+ * @requires ../../database/models
+ */
+
 import { Op } from 'sequelize';
 import {
   BudgetCategory,
@@ -6,6 +31,11 @@ import {
   sequelize
 } from '../../database/models';
 
+/**
+ * Budget Repository - Data Access Layer
+ *
+ * @class BudgetRepository
+ */
 export class BudgetRepository {
   async getBudgetCategories(fiscalYear: number, activeOnly: boolean) {
     const whereClause: any = { fiscalYear: fiscalYear };

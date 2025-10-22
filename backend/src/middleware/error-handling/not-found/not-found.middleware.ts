@@ -1,11 +1,53 @@
 /**
- * Not Found Middleware
- * 
- * Enterprise-grade 404 middleware with healthcare-compliant logging and response handling.
- * Follows SOA principles with framework-agnostic design and comprehensive audit trails.
- * 
- * @module NotFoundMiddleware
+ * @fileoverview Not Found (404) Middleware - Healthcare-Compliant 404 Handler
+ * @module middleware/error-handling/not-found/not-found
+ * @description Enterprise-grade 404 middleware with rate limiting, audit logging, and security features
+ *
+ * Key Features:
+ * - Framework-agnostic 404 handling
+ * - Rate limiting to prevent 404 abuse/scanning
+ * - Comprehensive audit logging for security monitoring
+ * - Configurable detail levels (production vs development)
+ * - Healthcare-compliant response formatting
+ * - Request path sanitization
+ * - IP-based rate limiting with automatic cleanup
+ * - Custom headers and messages support
+ *
+ * UPSTREAM (imports from):
+ *   - utils/types/middleware.types (Framework-agnostic interfaces)
+ *
+ * DOWNSTREAM (imported by):
+ *   - adapters/express/express.adapter.ts
+ *   - adapters/hapi/hapi.adapter.ts
+ *   - Server configuration files
+ *
+ * @security Prevents information disclosure in 404 responses
+ * @security Rate limiting prevents path enumeration attacks
+ * @security Audit logging tracks potential security scans
+ *
+ * @compliance HIPAA - Audit trail for access attempts
+ * @compliance SOC2 - Security event logging
+ *
+ * @example
+ * // Production configuration
+ * const middleware = createNotFoundMiddleware({
+ *   enableDetailedErrors: false,
+ *   enableAuditLogging: true,
+ *   includeRequestPath: false,
+ *   enableRateLimit: true
+ * });
+ *
+ * @example
+ * // Development configuration
+ * const middleware = new NotFoundMiddleware({
+ *   enableDetailedErrors: true,
+ *   includeRequestPath: true,
+ *   customMessage: 'Resource not found. Check the API documentation.'
+ * });
+ *
+ * @author Healthcare Platform Team
  * @version 1.0.0
+ * @since 2025-10-21
  */
 
 import { IRequest, IResponse, IMiddleware, MiddlewareContext, HealthcareUser, INextFunction } from '../../utils/types/middleware.types';
@@ -61,6 +103,22 @@ interface NotFoundContext {
 
 /**
  * Rate limiting store for tracking 404 requests per IP
+ *
+ * @class NotFoundRateLimiter
+ * @description In-memory rate limiter to prevent 404 abuse and path enumeration attacks.
+ * Automatically cleans up expired entries every 5 minutes.
+ *
+ * Security Features:
+ * - IP-based tracking
+ * - Sliding window implementation
+ * - Automatic memory cleanup
+ * - Configurable limits and windows
+ *
+ * @example
+ * const limiter = new NotFoundRateLimiter(3600000, 100); // 1 hour, 100 requests
+ * if (!limiter.isAllowed('192.168.1.1')) {
+ *   // Rate limit exceeded
+ * }
  */
 class NotFoundRateLimiter {
   private store: Map<string, { count: number; resetTime: number }> = new Map();
@@ -140,6 +198,50 @@ export class NotFoundMiddleware implements IMiddleware {
 
   /**
    * Handle not found requests with comprehensive logging and security features
+   *
+   * @public
+   * @async
+   * @method handle
+   * @param {IRequest} req - Framework-agnostic request object
+   * @param {IResponse} res - Framework-agnostic response object
+   * @returns {Promise<void>}
+   *
+   * @description Main handler for 404 errors. Processes requests through:
+   * 1. Context creation and IP extraction
+   * 2. Rate limit check (if enabled)
+   * 3. Audit logging
+   * 4. Response formatting and sending
+   *
+   * Processing Flow:
+   * - Extract request context (IP, path, user, etc.)
+   * - Check rate limiting (return 429 if exceeded)
+   * - Log access attempt for audit trail
+   * - Send standardized 404 response
+   * - Handle any errors with fallback response
+   *
+   * Response Format (Production):
+   * {
+   *   error: 'Not Found',
+   *   message: 'The requested resource was not found',
+   *   timestamp: '2025-10-22T10:30:00.000Z',
+   *   requestId: 'req-abc123'
+   * }
+   *
+   * Response Format (Development):
+   * {
+   *   error: 'Not Found',
+   *   message: 'The requested resource was not found',
+   *   timestamp: '2025-10-22T10:30:00.000Z',
+   *   requestId: 'req-abc123',
+   *   details: {
+   *     method: 'GET',
+   *     path: '/api/unknown',
+   *     userAgent: 'Mozilla/5.0...'
+   *   }
+   * }
+   *
+   * @example
+   * await notFoundMiddleware.handle(request, response);
    */
   public async handle(req: IRequest, res: IResponse): Promise<void> {
     try {
@@ -304,6 +406,35 @@ export class NotFoundMiddleware implements IMiddleware {
 
 /**
  * Factory function to create not found middleware with healthcare defaults
+ *
+ * @function createNotFoundMiddleware
+ * @param {Partial<INotFoundConfig>} [config={}] - Optional configuration overrides
+ * @returns {NotFoundMiddleware} Configured not found middleware instance
+ *
+ * @description Creates a not found middleware with healthcare-compliant defaults.
+ * Applies security-focused configuration suitable for production healthcare applications.
+ *
+ * Healthcare Defaults:
+ * - Detailed errors: Disabled (minimize info disclosure)
+ * - Audit logging: Enabled (HIPAA compliance)
+ * - Request path inclusion: Disabled (security)
+ * - Rate limiting: Enabled (prevent abuse)
+ * - Max requests: 50 per hour (conservative)
+ * - Custom headers: Healthcare service identifier
+ *
+ * @security Production-safe configuration by default
+ * @compliance HIPAA-compliant audit logging enabled
+ *
+ * @example
+ * // Use healthcare defaults
+ * const middleware = createNotFoundMiddleware();
+ *
+ * @example
+ * // Override specific settings
+ * const middleware = createNotFoundMiddleware({
+ *   maxRequestsPerWindow: 100,
+ *   customMessage: 'Resource not available'
+ * });
  */
 export function createNotFoundMiddleware(config: Partial<INotFoundConfig> = {}): NotFoundMiddleware {
   const healthcareConfig: Partial<INotFoundConfig> = {

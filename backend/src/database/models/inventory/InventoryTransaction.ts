@@ -1,4 +1,26 @@
 /**
+ * @fileoverview Inventory Transaction Database Model
+ * @module database/models/inventory/InventoryTransaction
+ * @description Sequelize model for tracking all inventory movements and changes
+ *
+ * Key Features:
+ * - Complete audit trail of all inventory changes
+ * - Support for multiple transaction types (PURCHASE, USAGE, ADJUSTMENT, TRANSFER, DISPOSAL)
+ * - Batch and expiration date tracking for perishable items
+ * - Cost tracking for financial reporting
+ * - Reason and notes documentation for compliance
+ *
+ * @business All inventory movements must be recorded as transactions for audit compliance
+ * @business Transactions are immutable once created (no updates allowed)
+ * @business Current inventory quantity = SUM(transactions.quantity) for each item
+ * @business Negative quantities indicate outbound movements (USAGE, DISPOSAL)
+ * @business Positive quantities indicate inbound movements (PURCHASE, ADJUSTMENT)
+ *
+ * @requires sequelize
+ * @requires InventoryTransactionType
+ */
+
+/**
  * LOC: 1C16570E37
  * WC-GEN-080 | InventoryTransaction.ts - General utility functions and operations
  *
@@ -10,29 +32,39 @@
  *   - index.ts (database/models/index.ts)
  */
 
-/**
- * WC-GEN-080 | InventoryTransaction.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../config/sequelize, ../../types/enums | Dependencies: sequelize, ../../config/sequelize, ../../types/enums
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../../config/sequelize';
 import { InventoryTransactionType } from '../../types/enums';
 
 /**
- * InventoryTransaction Model
- * Records all inventory movements including purchases, usage, adjustments,
- * transfers, and disposals.
- * Provides complete audit trail for inventory management and cost tracking.
+ * @interface InventoryTransactionAttributes
+ * @description Defines the complete structure of an inventory transaction record
+ *
+ * @property {string} id - Unique identifier (UUID v4)
+ * @property {InventoryTransactionType} type - Transaction type (PURCHASE, USAGE, ADJUSTMENT, TRANSFER, DISPOSAL)
+ * @property {number} quantity - Quantity change (positive for additions, negative for reductions)
+ * @property {number} [unitCost] - Cost per unit at time of transaction (DECIMAL 10,2)
+ * @property {string} [reason] - Explanation for transaction (up to 5000 characters)
+ * @property {string} [batchNumber] - Batch/lot number for tracking (up to 100 alphanumeric characters)
+ * @property {Date} [expirationDate] - Expiration date for perishable items
+ * @property {string} [notes] - Additional transaction notes (up to 10,000 characters)
+ * @property {Date} createdAt - Transaction timestamp (immutable)
+ * @property {string} inventoryItemId - Foreign key to InventoryItem
+ * @property {string} performedById - Foreign key to User who performed transaction
+ *
+ * @business Transaction Type Usage:
+ * - PURCHASE: Receiving new inventory from supplier (positive quantity)
+ * - USAGE: Consuming inventory for student care (negative quantity)
+ * - ADJUSTMENT: Correcting inventory count after audit (positive or negative)
+ * - TRANSFER: Moving between locations (paired transactions)
+ * - DISPOSAL: Removing expired or damaged items (negative quantity)
+ *
+ * @business Batch tracking is critical for:
+ * - Product recalls
+ * - Expiration management
+ * - Quality control investigations
+ * - Regulatory compliance (especially for medical supplies)
  */
-
 interface InventoryTransactionAttributes {
   id: string;
   type: InventoryTransactionType;
@@ -49,22 +81,152 @@ interface InventoryTransactionAttributes {
   performedById: string;
 }
 
+/**
+ * @interface InventoryTransactionCreationAttributes
+ * @description Attributes required/optional when creating a new inventory transaction
+ * @extends {Optional<InventoryTransactionAttributes>}
+ *
+ * Required on creation:
+ * - type (transaction type)
+ * - quantity (cannot be zero)
+ * - inventoryItemId
+ * - performedById
+ *
+ * Optional on creation:
+ * - id (auto-generated UUID)
+ * - createdAt (auto-generated, cannot be changed later)
+ * - unitCost, reason, batchNumber, expirationDate, notes
+ */
 interface InventoryTransactionCreationAttributes
   extends Optional<InventoryTransactionAttributes, 'id' | 'createdAt' | 'unitCost' | 'reason' | 'batchNumber' | 'expirationDate' | 'notes'> {}
 
+/**
+ * @class InventoryTransaction
+ * @extends {Model<InventoryTransactionAttributes, InventoryTransactionCreationAttributes>}
+ * @description Sequelize model for inventory transaction records
+ *
+ * Represents all movements and changes to inventory quantities. Provides
+ * complete audit trail and supports FIFO/LIFO inventory valuation methods.
+ *
+ * @example
+ * // Record a purchase from supplier
+ * const purchase = await InventoryTransaction.create({
+ *   inventoryItemId: item.id,
+ *   type: InventoryTransactionType.PURCHASE,
+ *   quantity: 500,
+ *   unitCost: 0.15,
+ *   batchNumber: "LOT-2024-001",
+ *   expirationDate: new Date("2026-12-31"),
+ *   performedById: nurse.id,
+ *   reason: "Monthly restock order",
+ *   notes: "PO #12345 - Medical Supply Co"
+ * });
+ *
+ * @example
+ * // Record item usage
+ * const usage = await InventoryTransaction.create({
+ *   inventoryItemId: item.id,
+ *   type: InventoryTransactionType.USAGE,
+ *   quantity: -10, // Negative for usage
+ *   performedById: nurse.id,
+ *   reason: "Used for student injury treatment",
+ *   notes: "Student: John Doe, Incident #456"
+ * });
+ *
+ * @example
+ * // Calculate current inventory quantity
+ * const transactions = await InventoryTransaction.findAll({
+ *   where: { inventoryItemId: item.id },
+ *   attributes: [
+ *     [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity']
+ *   ]
+ * });
+ */
 export class InventoryTransaction extends Model<InventoryTransactionAttributes, InventoryTransactionCreationAttributes> implements InventoryTransactionAttributes {
+  /**
+   * @property {string} id - Unique identifier (UUID v4)
+   */
   public id!: string;
+
+  /**
+   * @property {InventoryTransactionType} type - Transaction type
+   * @validation Required, must be valid InventoryTransactionType enum value
+   * @business Types: PURCHASE, USAGE, ADJUSTMENT, TRANSFER, DISPOSAL
+   */
   public type!: InventoryTransactionType;
+
+  /**
+   * @property {number} quantity - Quantity change
+   * @validation Required, non-zero integer, absolute value max 1,000,000
+   * @business Positive for additions (PURCHASE, ADJUSTMENT increase)
+   * @business Negative for reductions (USAGE, DISPOSAL, ADJUSTMENT decrease)
+   * @business Cannot be zero - use ADJUSTMENT with zero-net paired transactions if needed
+   */
   public quantity!: number;
+
+  /**
+   * @property {number} [unitCost] - Cost per unit
+   * @validation Optional, non-negative, DECIMAL(10,2), max $99,999,999.99
+   * @business Used for weighted average cost calculation
+   * @business Should be recorded for PURCHASE transactions
+   * @business Historical cost tracking enables FIFO/LIFO valuation
+   */
   public unitCost?: number;
+
+  /**
+   * @property {string} [reason] - Transaction explanation
+   * @validation Optional, up to 5000 characters
+   * @business Required for ADJUSTMENT and DISPOSAL transactions for audit purposes
+   * @business Recommended for USAGE to link to student care incidents
+   */
   public reason?: string;
+
+  /**
+   * @property {string} [batchNumber] - Batch/lot number
+   * @validation Optional, alphanumeric, up to 100 characters
+   * @business Critical for product recalls and quality control
+   * @business Should be recorded for all PURCHASE transactions when available
+   * @business Format typically provided by manufacturer/supplier
+   */
   public batchNumber?: string;
+
+  /**
+   * @property {Date} [expirationDate] - Expiration date
+   * @validation Optional, must be valid date, cannot be before 1900
+   * @business Required for perishable medical supplies
+   * @business System can alert when items are approaching expiration (90 days)
+   * @business Cannot add new inventory with past expiration date
+   */
   public expirationDate?: Date;
+
+  /**
+   * @property {string} [notes] - Additional notes
+   * @validation Optional, up to 10,000 characters
+   * @business Can include PO numbers, incident references, or other context
+   */
   public notes?: string;
+
+  /**
+   * @property {Date} createdAt - Transaction timestamp
+   * @readonly Immutable once created, serves as official transaction date/time
+   * @business Used for audit trails and inventory valuation calculations
+   * @business Timestamps enable time-based queries for inventory history
+   */
   public readonly createdAt!: Date;
 
-  // Foreign Keys
+  /**
+   * @property {string} inventoryItemId - Inventory item reference
+   * @validation Required, must reference valid InventoryItem
+   * @business Links transaction to specific inventory item for quantity tracking
+   */
   public inventoryItemId!: string;
+
+  /**
+   * @property {string} performedById - User who performed transaction
+   * @validation Required, must reference valid User
+   * @business Required for audit compliance and accountability
+   * @business Links to nurse, administrator, or staff member who made the change
+   */
   public performedById!: string;
 }
 

@@ -1,6 +1,32 @@
 /**
+ * @fileoverview Stock Management Service
+ * @module services/inventory/stock
+ * @description Real-time stock level tracking with reorder point monitoring and audit trails
+ *
+ * This service provides comprehensive stock management functionality including real-time
+ * inventory tracking, stock adjustments with full audit trails, reorder point monitoring,
+ * and stock level analytics for school health supplies.
+ *
+ * Key Features:
+ * - Real-time stock level calculation from transaction history
+ * - Stock adjustment tracking with reason codes
+ * - Low stock and out-of-stock detection
+ * - Reorder point management and alerts
+ * - Complete stock history with running totals
+ * - User attribution for all stock changes
+ * - Transaction-based inventory accuracy
+ *
+ * @business Stock calculated from transaction ledger (sum of all transactions)
+ * @business Low stock alert when currentStock <= reorderLevel
+ * @business Out of stock when currentStock = 0
+ * @business All adjustments require reason code for audit trail
+ * @business Critical supplies (EpiPens, insulin) should have higher reorder levels
+ *
+ * @requires ../../database/models
+ * @requires ../../database/types/enums
+ *
  * LOC: F3CBE170EE
- * WC-GEN-282 | stockService.ts - General utility functions and operations
+ * WC-GEN-282 | stockService.ts - Stock Management Service
  *
  * UPSTREAM (imports from):
  *   - logger.ts (utils/logger.ts)
@@ -12,25 +38,19 @@
  *   - inventoryQueriesService.ts (services/inventory/inventoryQueriesService.ts)
  *   - transactionService.ts (services/inventory/transactionService.ts)
  *   - inventoryService.ts (services/inventoryService.ts)
+ *   - alertsService.ts (services/inventory/alertsService.ts)
  */
 
 /**
- * WC-GEN-282 | stockService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
-/**
- * Stock Management Service
- *
- * Handles stock levels, adjustments, and stock-related calculations.
- * Provides centralized stock management functionality.
+ * WC-GEN-282 | stockService.ts - Stock Management Service with Reorder Logic
+ * Purpose: Real-time inventory tracking with reorder point management and audit trails
+ * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: Transaction ledger, inventory items
+ * Downstream: Alerts service, queries service, transaction service | Called by: Inventory operations, reorder workflows
+ * Related: AlertsService, TransactionService, PurchaseOrderService
+ * Exports: StockService class | Key Services: Stock calculations, adjustments, low stock detection
+ * Last Updated: 2025-10-22 | File Type: .ts
+ * Critical Path: Transaction creation → Stock calculation → Reorder check → Alert generation
+ * LLM Context: School health inventory with automated reorder triggers and compliance tracking
  */
 
 import { QueryTypes } from 'sequelize';
@@ -39,9 +59,29 @@ import { InventoryTransaction, InventoryItem, User, sequelize } from '../../data
 import { InventoryTransactionType } from '../../database/types/enums';
 import { StockAdjustmentResult, StockHistoryResponse } from './types';
 
+/**
+ * Stock Management Service
+ *
+ * @class StockService
+ * @static
+ */
 export class StockService {
   /**
    * Get current stock level for an item
+   *
+   * @method getCurrentStock
+   * @static
+   * @async
+   * @param {string} inventoryItemId - Inventory item UUID
+   * @returns {Promise<number>} Current stock quantity (sum of all transactions)
+   *
+   * @business Calculates stock as SUM(quantity) from all inventory_transactions
+   * @business Positive quantities = stock in, negative = stock out
+   * @business Returns 0 if no transactions exist for item
+   *
+   * @example
+   * const currentStock = await StockService.getCurrentStock('item-uuid-123');
+   * // Returns: 45 (units in stock)
    */
   static async getCurrentStock(inventoryItemId: string): Promise<number> {
     try {
@@ -62,6 +102,45 @@ export class StockService {
 
   /**
    * Adjust stock with audit trail and transaction support
+   *
+   * @method adjustStock
+   * @static
+   * @async
+   * @param {string} id - Inventory item UUID
+   * @param {number} quantity - Adjustment quantity (positive = add, negative = remove)
+   * @param {string} reason - Reason code for adjustment (required for audit)
+   * @param {string} performedBy - User UUID who performed adjustment
+   * @returns {Promise<StockAdjustmentResult>} Adjustment result with before/after stock levels
+   * @returns {Promise<StockAdjustmentResult.transaction>} Created inventory transaction
+   * @returns {Promise<StockAdjustmentResult.previousStock>} Stock level before adjustment
+   * @returns {Promise<StockAdjustmentResult.newStock>} Stock level after adjustment
+   * @returns {Promise<StockAdjustmentResult.adjustment>} Quantity adjusted
+   * @throws {Error} Inventory item not found
+   *
+   * @business Creates ADJUSTMENT type transaction in ledger
+   * @business Positive quantity increases stock, negative decreases
+   * @business Reason required for compliance and audit trail
+   * @business User attribution maintained for all changes
+   * @business Common reasons: 'damaged', 'expired', 'found', 'lost', 'stolen', 'correction'
+   *
+   * @example
+   * // Remove expired items
+   * const result = await StockService.adjustStock(
+   *   'item-uuid-123',
+   *   -10,
+   *   'expired',
+   *   'user-uuid-456'
+   * );
+   * // Returns: { previousStock: 50, newStock: 40, adjustment: -10, ... }
+   *
+   * @example
+   * // Add found items during physical count
+   * const result = await StockService.adjustStock(
+   *   'item-uuid-123',
+   *   5,
+   *   'found during physical inventory count',
+   *   'user-uuid-456'
+   * );
    */
   static async adjustStock(
     id: string,

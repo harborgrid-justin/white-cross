@@ -1,111 +1,69 @@
-// Vendor Management Components
+/**
+ * Vendor Module Components
+ * 
+ * Component exports for vendor functionality.
+ */
+
+export { default as VendorDashboard } from './VendorDashboard';
+export { default as VendorOverview } from './VendorOverview';
+export { default as VendorMetrics } from './VendorMetrics';
+export { default as VendorAlerts } from './VendorAlerts';
+export { default as VendorManagement } from './VendorManagement';
 export { default as VendorList } from './VendorList';
 export { default as VendorCard } from './VendorCard';
-export { default as VendorTable } from './VendorTable';
-export { default as VendorGrid } from './VendorGrid';
-export { default as VendorSearch } from './VendorSearch';
-export { default as VendorFilters } from './VendorFilters';
 export { default as VendorForm } from './VendorForm';
-export { default as VendorEditor } from './VendorEditor';
 export { default as VendorDetails } from './VendorDetails';
 export { default as VendorProfile } from './VendorProfile';
-
-// Vendor Operations Components
-export { default as VendorActions } from './VendorActions';
-export { default as VendorBulkActions } from './VendorBulkActions';
-export { default as VendorDeleteDialog } from './VendorDeleteDialog';
-export { default as VendorActivationToggle } from './VendorActivationToggle';
-export { default as VendorStatusBadge } from './VendorStatusBadge';
-
-// Rating and Performance Components
-export { default as VendorRating } from './VendorRating';
-export { default as VendorRatingEditor } from './VendorRatingEditor';
-export { default as BulkRatingDialog } from './BulkRatingDialog';
-export { default as VendorPerformanceMetrics } from './VendorPerformanceMetrics';
-export { default as PerformanceChart } from './PerformanceChart';
-export { default as ReliabilityScore } from './ReliabilityScore';
-export { default as DeliveryMetrics } from './DeliveryMetrics';
-
-// Comparison and Analytics Components
-export { default as VendorComparison } from './VendorComparison';
-export { default as VendorComparisonTable } from './VendorComparisonTable';
-export { default as ComparisonChart } from './ComparisonChart';
-export { default as TopVendors } from './TopVendors';
-export { default as VendorStatistics } from './VendorStatistics';
-export { default as VendorAnalytics } from './VendorAnalytics';
-export { default as VendorDashboard } from './VendorDashboard';
-
-// Contact and Communication Components
-export { default as ContactInformation } from './ContactInformation';
-export { default as ContactForm } from './ContactForm';
-export { default as CommunicationLog } from './CommunicationLog';
-export { default as VendorNotes } from './VendorNotes';
-export { default as NotesEditor } from './NotesEditor';
-
-// Payment and Financial Components
-export { default as PaymentTerms } from './PaymentTerms';
-export { default as PaymentTermsSelector } from './PaymentTermsSelector';
-export { default as VendorFinancials } from './VendorFinancials';
-export { default as SpendingAnalysis } from './SpendingAnalysis';
-export { default as PaymentHistory } from './PaymentHistory';
-export { default as InvoiceTracking } from './InvoiceTracking';
-
-// Order Management Components
-export { default as VendorOrders } from './VendorOrders';
-export { default as OrderHistory } from './OrderHistory';
-export { default as OrderSummary } from './OrderSummary';
-export { default as PurchaseOrderList } from './PurchaseOrderList';
-export { default as OrderFrequency } from './OrderFrequency';
-export { default as OrderTimeline } from './OrderTimeline';
-
-// Search and Discovery Components
-export { default as VendorSearchResults } from './VendorSearchResults';
-export { default as AdvancedSearch } from './AdvancedSearch';
-export { default as SearchSuggestions } from './SearchSuggestions';
-export { default as VendorDirectory } from './VendorDirectory';
-export { default as RecentVendors } from './RecentVendors';
-
-// Import/Export and Data Management Components
-export { default as VendorImportExport } from './VendorImportExport';
-export { default as ImportDialog } from './ImportDialog';
-export { default as ExportDialog } from './ExportDialog';
-export { default as DataValidation } from './DataValidation';
-export { default as BulkOperations } from './BulkOperations';
-export { default as VendorMerge } from './VendorMerge';
-
-// Compliance and Audit Components
-export { default as VendorCompliance } from './VendorCompliance';
-export { default as ComplianceStatus } from './ComplianceStatus';
-export { default as AuditTrail } from './AuditTrail';
-export { default as DocumentManagement } from './DocumentManagement';
-export { default as CertificationTracking } from './CertificationTracking';
-
-// Categorization and Organization Components
+export { default as VendorInformation } from './VendorInformation';
+export { default as VendorContacts } from './VendorContacts';
+export { default as VendorDocuments } from './VendorDocuments';
 export { default as VendorCategories } from './VendorCategories';
-export { default as CategorySelector } from './CategorySelector';
-export { default as TagManager } from './TagManager';
-export { default as VendorGroups } from './VendorGroups';
-export { default as GroupManagement } from './GroupManagement';
-
-// Notification and Alert Components
-export { default as VendorNotifications } from './VendorNotifications';
-export { default as AlertManager } from './AlertManager';
-export { default as ExpirationAlerts } from './ExpirationAlerts';
-export { default as PerformanceAlerts } from './PerformanceAlerts';
+export { default as CategoryList } from './CategoryList';
+export { default as CategoryCard } from './CategoryCard';
+export { default as CategoryForm } from './CategoryForm';
+export { default as VendorContracts } from './VendorContracts';
+export { default as ContractList } from './ContractList';
+export { default as ContractCard } from './ContractCard';
+export { default as ContractForm } from './ContractForm';
+export { default as ContractDetails } from './ContractDetails';
+export { default as VendorPerformance } from './VendorPerformance';
+export { default as PerformanceMetrics } from './PerformanceMetrics';
+export { default as PerformanceReviews } from './PerformanceReviews';
+export { default as PerformanceHistory } from './PerformanceHistory';
+export { default as VendorCompliance } from './VendorCompliance';
+export { default as ComplianceChecklist } from './ComplianceChecklist';
+export { default as ComplianceStatus } from './ComplianceStatus';
+export { default as ComplianceDocuments } from './ComplianceDocuments';
+export { default as VendorOrders } from './VendorOrders';
+export { default as OrderList } from './OrderList';
+export { default as OrderCard } from './OrderCard';
+export { default as OrderHistory } from './OrderHistory';
+export { default as OrderTracking } from './OrderTracking';
+export { default as VendorInvoices } from './VendorInvoices';
+export { default as InvoiceList } from './InvoiceList';
+export { default as InvoiceCard } from './InvoiceCard';
+export { default as InvoiceDetails } from './InvoiceDetails';
+export { default as InvoiceHistory } from './InvoiceHistory';
+export { default as VendorPayments } from './VendorPayments';
+export { default as PaymentList } from './PaymentList';
+export { default as PaymentCard } from './PaymentCard';
+export { default as PaymentHistory } from './PaymentHistory';
+export { default as PaymentTracking } from './PaymentTracking';
+export { default as VendorRatings } from './VendorRatings';
+export { default as RatingList } from './RatingList';
+export { default as RatingCard } from './RatingCard';
+export { default as RatingForm } from './RatingForm';
+export { default as RatingHistory } from './RatingHistory';
+export { default as VendorCommunication } from './VendorCommunication';
+export { default as MessageList } from './MessageList';
+export { default as MessageCard } from './MessageCard';
+export { default as SendMessage } from './SendMessage';
+export { default as CommunicationHistory } from './CommunicationHistory';
+export { default as VendorReports } from './VendorReports';
+export { default as SpendingReports } from './SpendingReports';
+export { default as PerformanceReports } from './PerformanceReports';
+export { default as ComplianceReports } from './ComplianceReports';
+export { default as VendorSettings } from './VendorSettings';
+export { default as VendorConfiguration } from './VendorConfiguration';
+export { default as ApprovalSettings } from './ApprovalSettings';
 export { default as NotificationSettings } from './NotificationSettings';
-
-// Layout and Navigation Components
-export { default as VendorLayout } from './VendorLayout';
-export { default as VendorSidebar } from './VendorSidebar';
-export { default as VendorHeader } from './VendorHeader';
-export { default as VendorTabs } from './VendorTabs';
-export { default as VendorBreadcrumbs } from './VendorBreadcrumbs';
-export { default as NavigationMenu } from './NavigationMenu';
-
-// Utility and Helper Components
-export { default as LoadingSpinner } from './LoadingSpinner';
-export { default as ErrorBoundary } from './ErrorBoundary';
-export { default as EmptyState } from './EmptyState';
-export { default as ConfirmationDialog } from './ConfirmationDialog';
-export { default as VendorAvatar } from './VendorAvatar';
-export { default as StatusIndicator } from './StatusIndicator';
