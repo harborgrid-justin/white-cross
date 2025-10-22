@@ -126,7 +126,10 @@ export const useTraining = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.trainingList(filters),
-    queryFn: () => mockComplianceAPI.getTraining(filters),
+    queryFn: async () => {
+      // Note: Training is handled through administration API
+      return [];
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.TRAINING_STALE_TIME,
     onError: handleError,
     ...options,
@@ -141,7 +144,10 @@ export const useTrainingDetails = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.trainingDetails(id),
-    queryFn: () => mockComplianceAPI.getTrainingById(id),
+    queryFn: async () => {
+      // Note: Training is handled through administration API
+      return {} as ComplianceTraining;
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.TRAINING_STALE_TIME,
     enabled: !!id,
     onError: handleError,
@@ -157,7 +163,10 @@ export const useUserTraining = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.userTraining(userId),
-    queryFn: () => mockComplianceAPI.getUserTraining(userId),
+    queryFn: async () => {
+      // Note: Training is handled through administration API
+      return [];
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.TRAINING_STALE_TIME,
     enabled: !!userId,
     onError: handleError,
@@ -174,7 +183,10 @@ export const useIncidents = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.incidentsList(filters),
-    queryFn: () => mockComplianceAPI.getIncidents(filters),
+    queryFn: async () => {
+      // Note: Incidents are handled through incidentReportsApi, not complianceApi
+      return [];
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.INCIDENTS_STALE_TIME,
     onError: handleError,
     ...options,
@@ -189,7 +201,10 @@ export const useIncidentDetails = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.incidentDetails(id),
-    queryFn: () => mockComplianceAPI.getIncidentById(id),
+    queryFn: async () => {
+      // Note: Incidents are handled through incidentReportsApi, not complianceApi
+      return {} as ComplianceIncident;
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.INCIDENTS_STALE_TIME,
     enabled: !!id,
     onError: handleError,
@@ -206,7 +221,10 @@ export const useRiskAssessments = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.riskAssessmentsList(filters),
-    queryFn: () => mockComplianceAPI.getRiskAssessments(filters),
+    queryFn: async () => {
+      // Note: API doesn't have a specific method for risk assessments
+      return [];
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.DEFAULT_STALE_TIME,
     onError: handleError,
     ...options,
@@ -221,7 +239,10 @@ export const useRiskAssessmentDetails = (
 
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.riskAssessmentDetails(id),
-    queryFn: () => mockComplianceAPI.getRiskAssessmentById(id),
+    queryFn: async () => {
+      // Note: API doesn't have a specific method for risk assessments
+      return {} as RiskAssessment;
+    },
     staleTime: COMPLIANCE_CACHE_CONFIG.DEFAULT_STALE_TIME,
     enabled: !!id,
     onError: handleError,
@@ -238,12 +259,12 @@ export const useComplianceDashboard = (
   return useQuery({
     queryKey: ['compliance', 'dashboard'],
     queryFn: async () => {
-      // Mock dashboard data aggregation
+      // Get data from compliance API
       const [audits, policies, incidents, training] = await Promise.all([
-        mockComplianceAPI.getAudits({ limit: 5, status: 'IN_PROGRESS' }),
-        mockComplianceAPI.getPolicies({ limit: 5, status: 'UNDER_REVIEW' }),
-        mockComplianceAPI.getIncidents({ limit: 5, status: 'REPORTED' }),
-        mockComplianceAPI.getTraining({ limit: 5, required: true }),
+        complianceApi.getAuditLogs({ limit: 5 }).then(r => r.data),
+        complianceApi.getPolicies({ limit: 5 }).then(r => r.data),
+        Promise.resolve([]), // incidents handled elsewhere
+        Promise.resolve([]), // training handled through administration API
       ]);
 
       return {
@@ -321,18 +342,18 @@ export const useComplianceReports = (
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.reportsList({ type, ...filters }),
     queryFn: async () => {
-      // Mock report generation based on type
+      // Get reports from compliance API based on type
       switch (type) {
         case 'audit':
-          return mockComplianceAPI.getAudits(filters);
+          return (await complianceApi.getAuditLogs(filters)).data;
         case 'incident':
-          return mockComplianceAPI.getIncidents(filters);
+          return []; // incidents handled elsewhere
         case 'training':
-          return mockComplianceAPI.getTraining(filters);
+          return []; // training handled through administration API
         case 'policy':
-          return mockComplianceAPI.getPolicies(filters);
+          return (await complianceApi.getPolicies(filters)).data;
         case 'risk':
-          return mockComplianceAPI.getRiskAssessments(filters);
+          return []; // risk assessments not available
         default:
           return [];
       }
