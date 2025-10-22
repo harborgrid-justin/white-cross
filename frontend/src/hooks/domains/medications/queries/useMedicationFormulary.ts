@@ -23,7 +23,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import { medicationFormularyApi } from '../api';
+import { medicationFormularyApi } from '@/services';
 import type {
   Medication,
   FormularyFilters,

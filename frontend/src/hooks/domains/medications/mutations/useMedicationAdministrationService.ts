@@ -34,7 +34,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { administrationApi } from '../api';
+import { administrationApi } from '@/services';
 import type {
   AdministrationSession,
   FiveRightsData,
@@ -43,7 +43,7 @@ import type {
   AdministrationLog,
   MedicationReminder,
   AdministrationHistoryFilters,
-} from '../api';
+} from '@/services';
 import { useOfflineQueue } from './useOfflineQueue';
 import { useMedicationSafety } from './useMedicationSafety';
 

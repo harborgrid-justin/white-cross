@@ -54,9 +54,9 @@ import type {
   CreateWitnessStatementRequest,
   UpdateWitnessStatementRequest,
   WitnessStatementFormData
-} from '../types/incidents';
+} from '@/types/incidents';
 import { incidentReportsApi } from '@/services';
-import { showSuccessToast, showErrorToast } from '../utils/toast';
+import { showSuccessToast, showErrorToast } from '@/utils/toast';
 
 // ==========================================
 // TYPE DEFINITIONS
