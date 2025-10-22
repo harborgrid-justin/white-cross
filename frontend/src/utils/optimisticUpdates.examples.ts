@@ -583,5 +583,5 @@ export function ExampleErrorHandling() {
 import React from 'react';
 import { OptimisticUpdateIndicator } from '@/components/shared/OptimisticUpdateIndicator';
 import { UpdateToast } from '@/components/shared/UpdateToast';
-import { ConflictResolutionModal } from '@/components/shared/ConflictResolutionModal';
+import { ConflictResolutionModal } from '@/components/shared/data';
 import { RollbackButton } from '@/components/shared/RollbackButton';

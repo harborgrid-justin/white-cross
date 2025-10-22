@@ -66,7 +66,7 @@ export {
 } from './slices/authSlice';
 
 // =====================
-// INCIDENT REPORTS SLICE EXPORTS
+// INCIDENT REPORTS SLICE EXPORTS (MOVED TO PAGES)
 // =====================
 
 // Async Thunks
@@ -81,7 +81,7 @@ export {
   createWitnessStatement,
   fetchFollowUpActions,
   createFollowUpAction,
-} from './slices/incidentReportsSlice';
+} from '../pages/incidents/store/incidentReportsSlice';
 
 // Synchronous Actions
 export {
@@ -96,7 +96,7 @@ export {
   resetState as resetIncidentState,
   invalidateCache as invalidateIncidentCache,
   optimisticUpdateReport,
-} from './slices/incidentReportsSlice';
+} from '../pages/incidents/store/incidentReportsSlice';
 
 // Selectors
 export {
@@ -124,7 +124,7 @@ export {
   selectIncidentsWithUnnotifiedParents,
   selectCriticalIncidents,
   selectReportStatistics,
-} from './slices/incidentReportsSlice';
+} from '../pages/incidents/store/incidentReportsSlice';
 
 // =====================
 // USERS SLICE EXPORTS
@@ -142,7 +142,7 @@ export {
 } from './slices/usersSlice';
 
 // =====================
-// STUDENTS SLICE EXPORTS
+// STUDENTS SLICE EXPORTS (MOVED TO PAGES)
 // =====================
 
 export {
@@ -156,10 +156,10 @@ export {
   selectStudentsWithAllergies,
   selectStudentsWithMedications,
   selectStudentByNumber,
-} from './slices/studentsSlice';
+} from '../pages/students/store/studentsSlice';
 
 // =====================
-// HEALTH RECORDS SLICE EXPORTS
+// HEALTH RECORDS SLICE EXPORTS (MOVED TO PAGES)
 // =====================
 
 export {
@@ -170,10 +170,10 @@ export {
   selectHealthRecordsByStudent,
   selectHealthRecordsByType,
   selectRecentHealthRecords,
-} from './slices/healthRecordsSlice';
+} from '../pages/students/store/healthRecordsSlice';
 
 // =====================
-// MEDICATIONS SLICE EXPORTS
+// MEDICATIONS SLICE EXPORTS (MOVED TO PAGES)
 // =====================
 
 export {
@@ -184,10 +184,10 @@ export {
   selectActiveMedications,
   selectMedicationsByStudent,
   selectActiveMedicationsByStudent,
-} from './slices/medicationsSlice';
+} from '../pages/medications/store/medicationsSlice';
 
 // =====================
-// APPOINTMENTS SLICE EXPORTS
+// APPOINTMENTS SLICE EXPORTS (MOVED TO PAGES)
 // =====================
 
 export {
@@ -198,10 +198,10 @@ export {
   selectUpcomingAppointments,
   selectAppointmentsByStudent,
   selectAppointmentsByType,
-} from './slices/appointmentsSlice';
+} from '../pages/appointments/store/appointmentsSlice';
 
 // =====================
-// EMERGENCY CONTACTS SLICE EXPORTS
+// EMERGENCY CONTACTS SLICE EXPORTS (MOVED TO PAGES)
 // =====================
 
 export {
@@ -211,7 +211,7 @@ export {
   emergencyContactsSelectors,
   selectContactsByStudent,
   selectPrimaryContacts,
-} from './slices/emergencyContactsSlice';
+} from '../pages/students/store/emergencyContactsSlice';
 
 // =====================
 // DOCUMENTS SLICE EXPORTS

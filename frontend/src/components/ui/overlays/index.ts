@@ -4,4 +4,18 @@
  * Modal dialogs, tooltips, and other overlay components.
  */
 
-export { ConflictResolutionModal, useConflictResolution } from './ConflictResolutionModal'
+// Base Modal Components
+export { 
+  Modal, 
+  ModalContent, 
+  ModalHeader, 
+  ModalBody, 
+  ModalFooter, 
+  ModalTitle,
+  type ModalProps,
+  type ModalContentProps,
+  type ModalHeaderProps,
+  type ModalBodyProps,
+  type ModalFooterProps,
+  type ModalTitleProps
+} from './Modal';

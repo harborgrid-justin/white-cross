@@ -38,37 +38,11 @@ import Joi from 'joi';
 import { logger } from './utils/logger';
 import { ENVIRONMENT, CORS_CONFIG } from './constants';
 
-// Import route handlers (converted for Hapi)
-import { authRoutes } from './routes/auth';
-import { studentRoutes } from './routes/students';
-import { medicationRoutes } from './routes/medications';
-import { healthRecordRoutes } from './routes/healthRecords';
-import { userRoutes } from './routes/users';
-import { emergencyContactRoutes } from './routes/emergencyContacts';
-import { appointmentRoutes } from './routes/appointments';
-import { incidentReportRoutes } from './routes/incidentReports';
-import { inventoryRoutes } from './routes/inventory';
-import { vendorRoutes } from './routes/vendor';
-import { purchaseOrderRoutes } from './routes/purchaseOrder';
-import { budgetRoutes } from './routes/budget';
-import { communicationRoutes } from './routes/communication';
-import { configurationRoutes } from './routes/configuration';
-import { dashboardRoutes } from './routes/dashboard';
-import { integrationRoutes } from './routes/integrations';
-import { devRoutes } from './routes/dev';
-
-// TODO: Convert remaining routes from Express to Hapi
-// import administrationRoutes from './routes/administration';
-// import reportRoutes from './routes/reports';
-// import complianceRoutes from './routes/compliance';
-// import documentRoutes from './routes/documents';
-// import accessControlRoutes from './routes/accessControl';
-// import auditRoutes from './routes/audit';
+// Import v1 routes (new modular structure)
+import { v1Routes, getV1RouteStats } from './routes/v1';
 
 // Import middleware and plugins
-import { configureAuth } from './middleware/auth';
-import { configureSecurity } from './middleware/security';
-import { errorHandler } from './middleware/errorHandler';
+import { configureAuth, configureSecurity, errorHandler } from './config/server';
 import { swaggerOptions } from './config/swagger';
 
 dotenv.config();
@@ -107,9 +81,6 @@ const init = async () => {
     // Register authentication
     await configureAuth(server);
 
-    // Register configuration routes
-    configurationRoutes(server);
-
     // Health check endpoint
     server.route({
       method: 'GET',
@@ -145,64 +116,13 @@ const init = async () => {
       }
     });
 
-    // API routes using Hapi route configuration
-    server.route([
-      // Auth routes
-      ...authRoutes,
+    // Register all v1 API routes
+    server.route(v1Routes);
 
-      // Student management routes
-      ...studentRoutes,
-
-      // Medication management routes
-      ...medicationRoutes,
-
-      // Health records routes
-      ...healthRecordRoutes,
-
-      // User management routes
-      ...userRoutes,
-
-      // Emergency contact routes
-      ...emergencyContactRoutes,
-
-      // Appointment management routes
-      ...appointmentRoutes,
-
-      // Incident report routes
-      ...incidentReportRoutes,
-
-      // Inventory management routes
-      ...inventoryRoutes,
-
-      // Vendor management routes
-      ...vendorRoutes,
-
-      // Purchase order routes
-      ...purchaseOrderRoutes,
-
-      // Budget management routes
-      ...budgetRoutes,
-
-      // Communication routes
-      ...communicationRoutes,
-
-      // Dashboard routes
-      ...dashboardRoutes,
-
-      // Integration Hub routes
-      ...integrationRoutes,
-
-      // Development routes (only active in development)
-      ...devRoutes
-
-      // TODO: Convert remaining routes from Express to Hapi
-      // ...administrationRoutes,
-      // ...reportRoutes,
-      // ...complianceRoutes,
-      // ...documentRoutes,
-      // ...accessControlRoutes,
-      // ...auditRoutes
-    ]);
+    // Log route statistics
+    const routeStats = getV1RouteStats();
+    logger.info(`Registered ${routeStats.total} API endpoints across ${Object.keys(routeStats.byModule).length} modules`);
+    logger.info('Route breakdown by module:', routeStats.byModule);
 
     // Register error handling
     server.ext('onPreResponse', errorHandler);
