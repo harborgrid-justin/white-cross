@@ -24,21 +24,24 @@
  */
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
+// Global/shared slices from stores/slices
 import authSlice from './slices/authSlice';
-import incidentReportsSlice from './slices/incidentReportsSlice';
 import { usersReducer } from './slices/usersSlice';
 import { districtsReducer } from './slices/districtsSlice';
 import { schoolsReducer } from './slices/schoolsSlice';
 import { settingsReducer } from './slices/settingsSlice';
-import { studentsReducer } from './slices/studentsSlice';
-import { healthRecordsReducer } from './slices/healthRecordsSlice';
-import { medicationsReducer } from './slices/medicationsSlice';
-import { appointmentsReducer } from './slices/appointmentsSlice';
-import { emergencyContactsReducer } from './slices/emergencyContactsSlice';
 import { documentsReducer } from './slices/documentsSlice';
 import { communicationReducer } from './slices/communicationSlice';
 import { inventoryReducer } from './slices/inventorySlice';
 import { reportsReducer } from './slices/reportsSlice';
+// Page-specific slices
+import incidentReportsSlice from '../pages/incidents/store/incidentReportsSlice';
+import { studentsReducer } from '../pages/students/store/studentsSlice';
+import { healthRecordsReducer } from '../pages/students/store/healthRecordsSlice';
+import { emergencyContactsReducer } from '../pages/students/store/emergencyContactsSlice';
+import { medicationsReducer } from '../pages/medications/store/medicationsSlice';
+import { appointmentsReducer } from '../pages/appointments/store/appointmentsSlice';
+import dashboardReducer from '../pages/dashboard/store/dashboardSlice';
 // Phase 3: Advanced enterprise features
 import enterpriseReducer from './shared/enterprise/enterpriseFeatures';
 import orchestrationReducer from './shared/orchestration/crossDomainOrchestration';
@@ -62,12 +65,17 @@ const rootReducer = combineReducers({
   auth: authSlice,
 
   // ============================================================
-  // IMPLEMENTED CORE DOMAINS
+  // DASHBOARD & OVERVIEW
+  // ============================================================
+  dashboard: dashboardReducer,                // Dashboard statistics and overview data
+  
+  // ============================================================
+  // CORE DOMAINS - INCIDENT MANAGEMENT
   // ============================================================
   incidentReports: incidentReportsSlice,      // Incident reporting and tracking
   
   // ============================================================
-  // PHASE 2: ADMINISTRATION & CONFIGURATION
+  // ADMINISTRATION & CONFIGURATION
   // ============================================================
   users: usersReducer,                        // User management and access control
   districts: districtsReducer,                // District management
@@ -75,28 +83,28 @@ const rootReducer = combineReducers({
   settings: settingsReducer,                  // System configuration and settings
   
   // ============================================================
-  // PHASE 2: STUDENT & HEALTH MANAGEMENT
+  // STUDENT & HEALTH MANAGEMENT
   // ============================================================
   students: studentsReducer,                  // Student management and profiles
   healthRecords: healthRecordsReducer,        // Student health records and medical history
   medications: medicationsReducer,            // Medication management and administration
   appointments: appointmentsReducer,          // Appointment scheduling and management
-  
-  // ============================================================
-  // PHASE 2: COMMUNICATION & DOCUMENTATION
-  // ============================================================
-  communication: communicationReducer,        // Messages, notifications, and templates
-  documents: documentsReducer,                // Document management and storage
   emergencyContacts: emergencyContactsReducer, // Emergency contact management
   
   // ============================================================
-  // PHASE 2: OPERATIONS & INVENTORY
+  // COMMUNICATION & DOCUMENTATION
+  // ============================================================
+  communication: communicationReducer,        // Messages, notifications, and templates
+  documents: documentsReducer,                // Document management and storage
+  
+  // ============================================================
+  // OPERATIONS & INVENTORY
   // ============================================================
   inventory: inventoryReducer,                // Medical supplies and equipment
   reports: reportsReducer,                    // Analytics and reporting
   
   // ============================================================
-  // PHASE 3: ADVANCED ENTERPRISE FEATURES
+  // ADVANCED ENTERPRISE FEATURES
   // ============================================================
   enterprise: enterpriseReducer,              // Bulk operations, audit trails, and data sync
   orchestration: orchestrationReducer,        // Cross-domain workflow orchestration
