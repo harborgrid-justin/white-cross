@@ -120,7 +120,7 @@ export type {
 export { 
   medicationFormularyApi, 
   prescriptionApi, 
-  administrationApi,
+  administrationApi as medicationAdministrationApi,
   medicationApi 
 } from './modules/medication/api';
 export type {

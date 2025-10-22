@@ -34,7 +34,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { administrationApi } from '@/services';
+import { medicationAdministrationApi as administrationApi } from '@/services';
 import type {
   AdministrationSession,
   FiveRightsData,
