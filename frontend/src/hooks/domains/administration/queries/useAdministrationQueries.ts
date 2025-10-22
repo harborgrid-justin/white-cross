@@ -11,79 +11,7 @@ import {
   UserActivity,
   SystemHealth,
 } from '../config';
-
-// Mock API functions (replace with actual API calls)
-const mockAdministrationAPI = {
-  // User management
-  getUsers: async (filters?: any): Promise<AdminUser[]> => {
-    return [];
-  },
-  getUserById: async (id: string): Promise<AdminUser> => {
-    return {} as AdminUser;
-  },
-  getUserRoles: async (userId: string): Promise<any[]> => {
-    return [];
-  },
-  getUserPermissions: async (userId: string): Promise<string[]> => {
-    return [];
-  },
-  
-  // Department management
-  getDepartments: async (filters?: any): Promise<Department[]> => {
-    return [];
-  },
-  getDepartmentById: async (id: string): Promise<Department> => {
-    return {} as Department;
-  },
-  getDepartmentStaff: async (deptId: string): Promise<any[]> => {
-    return [];
-  },
-  
-  // Settings management
-  getSettings: async (category?: string): Promise<SystemSetting[]> => {
-    return [];
-  },
-  getSettingByKey: async (key: string): Promise<SystemSetting> => {
-    return {} as SystemSetting;
-  },
-  
-  // System configuration
-  getSystemConfigurations: async (): Promise<SystemConfiguration[]> => {
-    return [];
-  },
-  getSystemConfiguration: async (module: string): Promise<SystemConfiguration> => {
-    return {} as SystemConfiguration;
-  },
-  
-  // Audit logs
-  getAuditLogs: async (filters?: any): Promise<AuditLog[]> => {
-    return [];
-  },
-  getAuditLogById: async (id: string): Promise<AuditLog> => {
-    return {} as AuditLog;
-  },
-  
-  // Notifications
-  getNotifications: async (filters?: any): Promise<AdminNotification[]> => {
-    return [];
-  },
-  getNotificationById: async (id: string): Promise<AdminNotification> => {
-    return {} as AdminNotification;
-  },
-  getUserNotifications: async (userId: string): Promise<AdminNotification[]> => {
-    return [];
-  },
-  
-  // System health
-  getSystemHealth: async (): Promise<SystemHealth> => {
-    return {} as SystemHealth;
-  },
-  
-  // User activity
-  getUserActivity: async (userId: string, filters?: any): Promise<UserActivity[]> => {
-    return [];
-  },
-};
+import { administrationApi } from '@/services';
 
 // User Management Queries
 export const useUsers = (
@@ -92,7 +20,10 @@ export const useUsers = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.usersList(filters),
-    queryFn: () => mockAdministrationAPI.getUsers(filters),
+    queryFn: async () => {
+      const response = await administrationApi.getUsers(filters);
+      return response.data;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.USERS_STALE_TIME,
     ...options,
   });
@@ -104,7 +35,9 @@ export const useUserDetails = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.userDetails(id),
-    queryFn: () => mockAdministrationAPI.getUserById(id),
+    queryFn: async () => {
+      return await administrationApi.getUserById(id);
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.USERS_STALE_TIME,
     enabled: !!id,
     ...options,
@@ -117,7 +50,10 @@ export const useUserRoles = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.userRoles(userId),
-    queryFn: () => mockAdministrationAPI.getUserRoles(userId),
+    queryFn: async () => {
+      const user = await administrationApi.getUserById(userId);
+      return user.role ? [user.role] : [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.USERS_STALE_TIME,
     enabled: !!userId,
     ...options,
@@ -130,7 +66,10 @@ export const useUserPermissions = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.userPermissions(userId),
-    queryFn: () => mockAdministrationAPI.getUserPermissions(userId),
+    queryFn: async () => {
+      const user = await administrationApi.getUserById(userId);
+      return user.permissions || [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.USERS_STALE_TIME,
     enabled: !!userId,
     ...options,
@@ -144,7 +83,10 @@ export const useDepartments = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.departmentsList(filters),
-    queryFn: () => mockAdministrationAPI.getDepartments(filters),
+    queryFn: async () => {
+      // Note: The API doesn't have a getDepartments method, using empty array for now
+      return [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.DEPARTMENTS_STALE_TIME,
     ...options,
   });
@@ -156,7 +98,10 @@ export const useDepartmentDetails = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.departmentDetails(id),
-    queryFn: () => mockAdministrationAPI.getDepartmentById(id),
+    queryFn: async () => {
+      // Note: The API doesn't have a getDepartmentById method
+      return {} as Department;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.DEPARTMENTS_STALE_TIME,
     enabled: !!id,
     ...options,
@@ -169,7 +114,10 @@ export const useDepartmentStaff = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.departmentStaff(deptId),
-    queryFn: () => mockAdministrationAPI.getDepartmentStaff(deptId),
+    queryFn: async () => {
+      // Note: The API doesn't have a getDepartmentStaff method
+      return [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.DEPARTMENTS_STALE_TIME,
     enabled: !!deptId,
     ...options,
@@ -183,7 +131,10 @@ export const useSettings = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.settingsList(category),
-    queryFn: () => mockAdministrationAPI.getSettings(category),
+    queryFn: async () => {
+      const response = await administrationApi.getSettings();
+      return Array.isArray(response) ? response : [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.SETTINGS_STALE_TIME,
     ...options,
   });
@@ -195,7 +146,10 @@ export const useSettingDetails = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.settingsDetails(key),
-    queryFn: () => mockAdministrationAPI.getSettingByKey(key),
+    queryFn: async () => {
+      const response = await administrationApi.getConfigurationByKey(key);
+      return response as SystemSetting;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.SETTINGS_STALE_TIME,
     enabled: !!key,
     ...options,
@@ -208,7 +162,10 @@ export const useSystemConfigurations = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.systemConfigList(),
-    queryFn: () => mockAdministrationAPI.getSystemConfigurations(),
+    queryFn: async () => {
+      const response = await administrationApi.getConfigurations();
+      return response;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.SETTINGS_STALE_TIME,
     ...options,
   });
@@ -220,7 +177,10 @@ export const useSystemConfiguration = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.systemConfigDetails(module),
-    queryFn: () => mockAdministrationAPI.getSystemConfiguration(module),
+    queryFn: async () => {
+      const response = await administrationApi.getConfigurationByKey(module);
+      return response as SystemConfiguration;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.SETTINGS_STALE_TIME,
     enabled: !!module,
     ...options,
@@ -234,7 +194,10 @@ export const useAuditLogs = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.auditLogsList(filters),
-    queryFn: () => mockAdministrationAPI.getAuditLogs(filters),
+    queryFn: async () => {
+      const response = await administrationApi.getAuditLogs(filters);
+      return response.data;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.AUDIT_LOGS_STALE_TIME,
     ...options,
   });
@@ -246,7 +209,10 @@ export const useAuditLogDetails = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.auditLogDetails(id),
-    queryFn: () => mockAdministrationAPI.getAuditLogById(id),
+    queryFn: async () => {
+      const response = await administrationApi.getAuditLogs({ id });
+      return response.data[0];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.AUDIT_LOGS_STALE_TIME,
     enabled: !!id,
     ...options,
@@ -260,7 +226,10 @@ export const useNotifications = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.notificationsList(filters),
-    queryFn: () => mockAdministrationAPI.getNotifications(filters),
+    queryFn: async () => {
+      // Note: The API doesn't have a getNotifications method
+      return [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.NOTIFICATIONS_STALE_TIME,
     ...options,
   });
@@ -272,7 +241,10 @@ export const useNotificationDetails = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.notificationDetails(id),
-    queryFn: () => mockAdministrationAPI.getNotificationById(id),
+    queryFn: async () => {
+      // Note: The API doesn't have a getNotificationById method
+      return {} as AdminNotification;
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.NOTIFICATIONS_STALE_TIME,
     enabled: !!id,
     ...options,
@@ -285,7 +257,10 @@ export const useUserNotifications = (
 ) => {
   return useQuery({
     queryKey: ADMINISTRATION_QUERY_KEYS.userNotifications(userId),
-    queryFn: () => mockAdministrationAPI.getUserNotifications(userId),
+    queryFn: async () => {
+      // Note: The API doesn't have a getUserNotifications method
+      return [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.NOTIFICATIONS_STALE_TIME,
     enabled: !!userId,
     ...options,
@@ -298,7 +273,10 @@ export const useSystemHealth = (
 ) => {
   return useQuery({
     queryKey: ['administration', 'system-health'],
-    queryFn: () => mockAdministrationAPI.getSystemHealth(),
+    queryFn: async () => {
+      const response = await administrationApi.getSystemHealth();
+      return response;
+    },
     staleTime: 30 * 1000, // 30 seconds for system health
     ...options,
   });
@@ -312,7 +290,10 @@ export const useUserActivity = (
 ) => {
   return useQuery({
     queryKey: ['administration', 'user-activity', userId, filters],
-    queryFn: () => mockAdministrationAPI.getUserActivity(userId, filters),
+    queryFn: async () => {
+      // Note: The API doesn't have a getUserActivity method
+      return [];
+    },
     staleTime: ADMINISTRATION_CACHE_CONFIG.AUDIT_LOGS_STALE_TIME,
     enabled: !!userId,
     ...options,
@@ -327,11 +308,11 @@ export const useAdministrationDashboard = (
     queryKey: ['administration', 'dashboard'],
     queryFn: async () => {
       const [users, departments, recentLogs, notifications, systemHealth] = await Promise.all([
-        mockAdministrationAPI.getUsers({ limit: 5, status: 'ACTIVE' }),
-        mockAdministrationAPI.getDepartments({ limit: 5 }),
-        mockAdministrationAPI.getAuditLogs({ limit: 10, sortBy: 'timestamp', sortOrder: 'desc' }),
-        mockAdministrationAPI.getNotifications({ status: 'UNREAD', limit: 5 }),
-        mockAdministrationAPI.getSystemHealth(),
+        administrationApi.getUsers({ limit: 5, status: 'ACTIVE' }).then(r => r.data),
+        Promise.resolve([]), // departments not available
+        administrationApi.getAuditLogs({ limit: 10, sortBy: 'timestamp', sortOrder: 'desc' }).then(r => r.data),
+        Promise.resolve([]), // notifications not available
+        administrationApi.getSystemHealth(),
       ]);
 
       return {
@@ -407,15 +388,15 @@ export const useAdministrationReports = (
     queryFn: async () => {
       switch (type) {
         case 'users':
-          return mockAdministrationAPI.getUsers(filters);
+          return (await administrationApi.getUsers(filters)).data;
         case 'departments':
-          return mockAdministrationAPI.getDepartments(filters);
+          return []; // departments not available
         case 'audit':
-          return mockAdministrationAPI.getAuditLogs(filters);
+          return (await administrationApi.getAuditLogs(filters)).data;
         case 'notifications':
-          return mockAdministrationAPI.getNotifications(filters);
+          return []; // notifications not available
         case 'system':
-          return [await mockAdministrationAPI.getSystemHealth()];
+          return [await administrationApi.getSystemHealth()];
         default:
           return [];
       }
