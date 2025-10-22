@@ -36,6 +36,7 @@
  */
 
 import { apiInstance } from '../config/apiConfig';
+import { API_ENDPOINTS } from '../../constants/api';
 import { z } from 'zod';
 import {
   DashboardStats,
@@ -140,7 +141,7 @@ export class DashboardApi {
   async getDashboardStats(): Promise<DashboardStats> {
     try {
       const response = await apiInstance.get<BackendApiResponse<DashboardStats>>(
-        '/api/dashboard/stats'
+        API_ENDPOINTS.DASHBOARD.STATS
       );
 
       if (!response.data.success || !response.data.data) {
@@ -201,7 +202,7 @@ export class DashboardApi {
       }
 
       const response = await apiInstance.get<BackendApiResponse<{ activities: DashboardRecentActivity[] }>>(
-        `/api/dashboard/recent-activities?${queryParams.toString()}`
+        `${API_ENDPOINTS.DASHBOARD.RECENT_ACTIVITIES}?${queryParams.toString()}`
       );
 
       if (!response.data.success || !response.data.data) {
@@ -261,7 +262,7 @@ export class DashboardApi {
       }
 
       const response = await apiInstance.get<BackendApiResponse<{ appointments: DashboardUpcomingAppointment[] }>>(
-        `/api/dashboard/upcoming-appointments?${queryParams.toString()}`
+        `${API_ENDPOINTS.DASHBOARD.UPCOMING_APPOINTMENTS}?${queryParams.toString()}`
       );
 
       if (!response.data.success || !response.data.data) {
@@ -325,7 +326,7 @@ export class DashboardApi {
       }
 
       const response = await apiInstance.get<BackendApiResponse<DashboardChartData>>(
-        `/api/dashboard/chart-data?${queryParams.toString()}`
+        `${API_ENDPOINTS.DASHBOARD.CHART_DATA}?${queryParams.toString()}`
       );
 
       if (!response.data.success || !response.data.data) {
@@ -531,7 +532,7 @@ export class DashboardApi {
       // Future enhancement: Backend to implement scope filtering
       // For now, returns general stats
       const response = await apiInstance.get<BackendApiResponse<DashboardStats>>(
-        `/api/dashboard/stats?${queryParams.toString()}`
+        `${API_ENDPOINTS.DASHBOARD.STATS}?${queryParams.toString()}`
       );
 
       if (!response.data.success || !response.data.data) {

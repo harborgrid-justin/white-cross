@@ -17,6 +17,7 @@
  */
 
 import { apiInstance } from '../config/apiConfig';
+import { API_ENDPOINTS } from '../config/api.config';
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
 import {
@@ -83,8 +84,6 @@ const receiveItemsSchema = z.object({
 // =====================
 
 export class PurchaseOrderApi {
-  private readonly baseUrl = '/api/purchase-orders';
-
   /**
    * Get all purchase orders with filtering and pagination
    */
@@ -113,8 +112,8 @@ export class PurchaseOrderApi {
       if (filters.search) queryString.append('search', filters.search);
 
       const url = queryString.toString()
-        ? `${this.baseUrl}?${queryString.toString()}`
-        : this.baseUrl;
+        ? API_ENDPOINTS.PURCHASE_ORDERS.BASE + `?${queryString.toString()}`
+        : API_ENDPOINTS.PURCHASE_ORDERS.BASE;
 
       const response = await apiInstance.get<ApiResponse<PurchaseOrdersResponse>>(url);
 
@@ -132,7 +131,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.get<ApiResponse<PurchaseOrderDetailResponse>>(
-        `${this.baseUrl}/${id}`
+        API_ENDPOINTS.PURCHASE_ORDERS.BY_ID(id)
       );
 
       return response.data.data.order;
@@ -160,7 +159,7 @@ export class PurchaseOrderApi {
       };
 
       const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
-        this.baseUrl,
+        API_ENDPOINTS.PURCHASE_ORDERS.BASE,
         formattedData
       );
 
@@ -199,7 +198,7 @@ export class PurchaseOrderApi {
       };
 
       const response = await apiInstance.put<ApiResponse<{ order: PurchaseOrder }>>(
-        `${this.baseUrl}/${id}`,
+        API_ENDPOINTS.PURCHASE_ORDERS.BY_ID(id),
         formattedData
       );
 
@@ -221,7 +220,7 @@ export class PurchaseOrderApi {
       if (!approvedBy) throw new Error('Approver ID is required');
 
       const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
-        `${this.baseUrl}/${id}/approve`,
+        API_ENDPOINTS.PURCHASE_ORDERS.APPROVE(id),
         { approvedBy }
       );
 
@@ -243,7 +242,7 @@ export class PurchaseOrderApi {
       receiveItemsSchema.parse(data);
 
       const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
-        `${this.baseUrl}/${id}/receive`,
+        API_ENDPOINTS.PURCHASE_ORDERS.RECEIVE(id),
         data
       );
 
@@ -264,7 +263,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
-        `${this.baseUrl}/${id}/cancel`,
+        API_ENDPOINTS.PURCHASE_ORDERS.CANCEL(id),
         { reason }
       );
 
@@ -282,7 +281,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.delete<ApiResponse<{ success: boolean; message: string }>>(
-        `${this.baseUrl}/${id}`
+        API_ENDPOINTS.PURCHASE_ORDERS.BY_ID(id)
       );
 
       return response.data.data;
@@ -297,7 +296,7 @@ export class PurchaseOrderApi {
   async getItemsNeedingReorder(): Promise<ReorderItem[]> {
     try {
       const response = await apiInstance.get<ApiResponse<ReorderItemsResponse>>(
-        `${this.baseUrl}/reorder/needed`
+        API_ENDPOINTS.PURCHASE_ORDERS.REORDER_NEEDED
       );
 
       return response.data.data.items;
@@ -312,7 +311,7 @@ export class PurchaseOrderApi {
   async getPurchaseOrderStatistics(): Promise<PurchaseOrderStatistics> {
     try {
       const response = await apiInstance.get<ApiResponse<PurchaseOrderStatistics>>(
-        `${this.baseUrl}/statistics`
+        API_ENDPOINTS.PURCHASE_ORDERS.STATISTICS
       );
 
       return response.data.data;
@@ -329,7 +328,7 @@ export class PurchaseOrderApi {
       if (!vendorId) throw new Error('Vendor ID is required');
 
       const response = await apiInstance.get<ApiResponse<VendorOrderHistoryResponse>>(
-        `${this.baseUrl}/vendor/${vendorId}/history?limit=${limit}`
+        API_ENDPOINTS.PURCHASE_ORDERS.VENDOR_HISTORY(vendorId) + `?limit=${limit}`
       );
 
       return response.data.data;
@@ -414,7 +413,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.get(
-        `${this.baseUrl}/${id}/export?format=${format}`,
+        API_ENDPOINTS.PURCHASE_ORDERS.EXPORT(id) + `?format=${format}`,
         {
           responseType: 'blob',
         }
@@ -434,7 +433,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.get(
-        `${this.baseUrl}/${id}/print`,
+        API_ENDPOINTS.PURCHASE_ORDERS.PRINT(id),
         {
           responseType: 'blob',
         }
@@ -454,7 +453,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.post<ApiResponse<{ success: boolean; message: string }>>(
-        `${this.baseUrl}/${id}/send`,
+        API_ENDPOINTS.PURCHASE_ORDERS.SEND(id),
         { email }
       );
 
@@ -472,7 +471,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
 
       const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
-        `${this.baseUrl}/${id}/duplicate`
+        API_ENDPOINTS.PURCHASE_ORDERS.DUPLICATE(id)
       );
 
       return response.data.data.order;
@@ -490,7 +489,7 @@ export class PurchaseOrderApi {
       if (!note || note.trim().length === 0) throw new Error('Note is required');
 
       const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
-        `${this.baseUrl}/${id}/notes`,
+        API_ENDPOINTS.PURCHASE_ORDERS.NOTES(id),
         { note }
       );
 

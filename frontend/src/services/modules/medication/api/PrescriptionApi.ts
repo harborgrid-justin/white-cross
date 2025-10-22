@@ -215,7 +215,7 @@ export class PrescriptionApi {
       }
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions`,
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS,
         data
       );
 
@@ -239,7 +239,7 @@ export class PrescriptionApi {
       if (!id) throw new Error('Prescription ID is required');
 
       const response = await apiInstance.put(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${id}`,
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_BY_ID(id),
         data
       );
 
@@ -259,7 +259,7 @@ export class PrescriptionApi {
       if (!reason) throw new Error('Discontinuation reason is required');
 
       await apiInstance.patch(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${id}/discontinue`,
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_DISCONTINUE(id),
         { reason }
       );
     } catch (error: any) {
@@ -275,7 +275,7 @@ export class PrescriptionApi {
       if (!id) throw new Error('Prescription ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${id}`
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_BY_ID(id)
       );
 
       return response.data.data;
@@ -300,7 +300,7 @@ export class PrescriptionApi {
       }
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}/prescriptions?${params.toString()}`
+        `${API_ENDPOINTS.MEDICATIONS.STUDENT_PRESCRIPTIONS(studentId)}?${params.toString()}`
       );
 
       return response.data.data;
@@ -332,7 +332,7 @@ export class PrescriptionApi {
       if (filters?.limit) params.append('limit', String(filters.limit));
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions?${params.toString()}`
+        `${API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS}?${params.toString()}`
       );
 
       return response.data.data;
@@ -349,7 +349,7 @@ export class PrescriptionApi {
       if (!prescriptionId) throw new Error('Prescription ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${prescriptionId}/history`
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_HISTORY(prescriptionId)
       );
 
       return response.data.data;
@@ -371,7 +371,7 @@ export class PrescriptionApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${prescriptionId}/verify`,
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_VERIFY(prescriptionId),
         { studentId }
       );
 
@@ -394,7 +394,7 @@ export class PrescriptionApi {
       if (!medicationId) throw new Error('Medication ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/check-allergies`,
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS_CHECK_ALLERGIES,
         { studentId, medicationId }
       );
 
@@ -412,7 +412,7 @@ export class PrescriptionApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}/allergies`
+        API_ENDPOINTS.MEDICATIONS.STUDENT_ALLERGIES(studentId)
       );
 
       return response.data.data;
@@ -427,7 +427,7 @@ export class PrescriptionApi {
   async addStudentAllergy(data: Omit<Allergy, 'id' | 'isActive'>): Promise<Allergy> {
     try {
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.STUDENT(data.studentId)}/allergies`,
+        API_ENDPOINTS.MEDICATIONS.STUDENT_ALLERGIES(data.studentId),
         data
       );
 
@@ -448,7 +448,7 @@ export class PrescriptionApi {
       if (!allergyId) throw new Error('Allergy ID is required');
 
       const response = await apiInstance.put(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/allergies/${allergyId}`,
+        API_ENDPOINTS.MEDICATIONS.ALLERGY_BY_ID(allergyId),
         data
       );
 
@@ -467,7 +467,7 @@ export class PrescriptionApi {
       if (!reason) throw new Error('Deactivation reason is required');
 
       await apiInstance.patch(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/allergies/${allergyId}/deactivate`,
+        API_ENDPOINTS.MEDICATIONS.ALLERGY_DEACTIVATE(allergyId),
         { reason }
       );
     } catch (error: any) {
@@ -490,7 +490,7 @@ export class PrescriptionApi {
       if (!prescriptionId) throw new Error('Prescription ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${prescriptionId}/renew`,
+        API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_RENEW(prescriptionId),
         data
       );
 
@@ -506,7 +506,7 @@ export class PrescriptionApi {
   async getExpiringPrescriptions(withinDays: number = 30): Promise<Prescription[]> {
     try {
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/expiring?withinDays=${withinDays}`
+        `${API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS_EXPIRING}?withinDays=${withinDays}`
       );
 
       return response.data.data;
@@ -523,7 +523,7 @@ export class PrescriptionApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}/prescriptions/prn`
+        API_ENDPOINTS.MEDICATIONS.STUDENT_PRESCRIPTIONS_PRN(studentId)
       );
 
       return response.data.data;

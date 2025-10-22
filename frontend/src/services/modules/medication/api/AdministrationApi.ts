@@ -257,7 +257,7 @@ export class AdministrationApi {
       if (!prescriptionId) throw new Error('Prescription ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/initiate`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_INITIATE,
         { prescriptionId }
       );
 
@@ -277,7 +277,7 @@ export class AdministrationApi {
   ): Promise<FiveRightsVerificationResult> {
     try {
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/verify-five-rights`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_VERIFY,
         {
           sessionId: session.sessionId,
           fiveRightsData: data,
@@ -300,7 +300,7 @@ export class AdministrationApi {
       administrationRecordSchema.parse(data);
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/record`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_RECORD,
         data
       );
 
@@ -327,7 +327,7 @@ export class AdministrationApi {
       if (!reason) throw new Error('Refusal reason is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/record-refusal`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_REFUSAL,
         {
           prescriptionId,
           scheduledTime,
@@ -356,7 +356,7 @@ export class AdministrationApi {
       if (!reason) throw new Error('Missed reason is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/record-missed`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_MISSED,
         {
           prescriptionId,
           scheduledTime,
@@ -386,7 +386,7 @@ export class AdministrationApi {
       if (!clinicalRationale) throw new Error('Clinical rationale is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/record-held`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_HELD,
         {
           prescriptionId,
           scheduledTime,
@@ -426,7 +426,7 @@ export class AdministrationApi {
       if (filters?.limit) params.append('limit', String(filters.limit));
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/history?${params.toString()}`
+        `${API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_HISTORY}?${params.toString()}`
       );
 
       return response.data.data;
@@ -444,7 +444,7 @@ export class AdministrationApi {
       if (nurseId) params.append('nurseId', nurseId);
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/today?${params.toString()}`
+        `${API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_TODAY}?${params.toString()}`
       );
 
       return response.data.data;
@@ -481,7 +481,7 @@ export class AdministrationApi {
   async getOverdueAdministrations(): Promise<MedicationReminder[]> {
     try {
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/overdue`
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_OVERDUE
       );
 
       return response.data.data;
@@ -503,7 +503,7 @@ export class AdministrationApi {
       if (!witnessId) throw new Error('Witness ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/${administrationLogId}/witness`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_WITNESS(administrationLogId),
         { witnessId }
       );
 
@@ -525,7 +525,7 @@ export class AdministrationApi {
       if (!signature) throw new Error('Signature is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/${administrationLogId}/witness/sign`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_WITNESS_SIGN(administrationLogId),
         { signature }
       );
 
@@ -547,7 +547,7 @@ export class AdministrationApi {
       if (!medicationId) throw new Error('Medication ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/check-allergies`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_CHECK_ALLERGIES,
         { studentId, medicationId }
       );
 
@@ -569,7 +569,7 @@ export class AdministrationApi {
       if (!medicationId) throw new Error('Medication ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/check-interactions`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_CHECK_INTERACTIONS,
         { studentId, medicationId }
       );
 
@@ -593,7 +593,7 @@ export class AdministrationApi {
       if (date) params.append('date', date);
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.STUDENT(studentId)}/schedule?${params.toString()}`
+        `${API_ENDPOINTS.MEDICATIONS.STUDENT_SCHEDULE(studentId)}?${params.toString()}`
       );
 
       return response.data.data;
@@ -618,7 +618,7 @@ export class AdministrationApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/administration/calculate-dose`,
+        API_ENDPOINTS.MEDICATIONS.ADMINISTRATION_CALCULATE_DOSE,
         { prescriptionId, studentId }
       );
 

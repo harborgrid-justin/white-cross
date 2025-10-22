@@ -225,7 +225,7 @@ export class MedicationFormularyApi {
       if (!id) throw new Error('Medication ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`
+        API_ENDPOINTS.MEDICATIONS.BY_ID(id)
       );
 
       return response.data.data;
@@ -246,7 +246,7 @@ export class MedicationFormularyApi {
       const normalizedNDC = ndc.replace(/-/g, '');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/ndc/${normalizedNDC}`
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_NDC(normalizedNDC)
       );
 
       return response.data.data;
@@ -264,7 +264,7 @@ export class MedicationFormularyApi {
       if (!barcode) throw new Error('Barcode is required');
 
       const response = await apiInstance.post(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/barcode-scan`,
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_BARCODE,
         { barcode }
       );
 
@@ -304,7 +304,7 @@ export class MedicationFormularyApi {
       if (!medicationId) throw new Error('Medication ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/${medicationId}/monograph`
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_MONOGRAPH(medicationId)
       );
 
       return response.data.data;
@@ -321,7 +321,7 @@ export class MedicationFormularyApi {
       if (!medicationId) throw new Error('Medication ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/${medicationId}/alternatives`
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_ALTERNATIVES(medicationId)
       );
 
       return response.data.data;
@@ -339,7 +339,7 @@ export class MedicationFormularyApi {
       if (!medicationId) throw new Error('Medication ID is required');
 
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/${medicationId}/lasa-warnings`
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_LASA(medicationId)
       );
 
       return response.data.data;
@@ -354,7 +354,7 @@ export class MedicationFormularyApi {
   async getCategories(): Promise<string[]> {
     try {
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/categories`
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_CATEGORIES
       );
 
       return response.data.data;
@@ -369,7 +369,7 @@ export class MedicationFormularyApi {
   async getForms(): Promise<MedicationForm[]> {
     try {
       const response = await apiInstance.get(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/forms`
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_FORMS
       );
 
       return response.data.data;
@@ -411,7 +411,7 @@ export class MedicationFormularyApi {
       if (!id) throw new Error('Medication ID is required');
 
       const response = await apiInstance.put(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`,
+        API_ENDPOINTS.MEDICATIONS.BY_ID(id),
         data
       );
 
@@ -430,7 +430,7 @@ export class MedicationFormularyApi {
       if (!reason) throw new Error('Deactivation reason is required');
 
       await apiInstance.patch(
-        `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}/deactivate`,
+        API_ENDPOINTS.MEDICATIONS.FORMULARY_DEACTIVATE(id),
         { reason }
       );
     } catch (error: any) {

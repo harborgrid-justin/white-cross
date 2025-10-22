@@ -99,7 +99,11 @@
       "Bash(do sed -i \"s|from ''../../../services/healthRecordService''|from ''../../../services/healthRecord''|g\" \"$file\")",
       "Bash(paste:*)",
       "Bash(wc:*)",
-      "Read(//f/temp/**)"
+      "Read(//f/temp/**)",
+      "Bash(git checkout:*)",
+      "Bash(PrescriptionApi.ts)",
+      "Bash(python update_prescription_api.py:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
