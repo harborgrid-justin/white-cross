@@ -11,8 +11,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { medicationsApi } from '../services/api';
-import { useMedicationToast } from './useMedicationToast';
+import { medicationsApi } from '@/services';
+import { useMedicationToast } from '../utilities/useMedicationToast';
 
 export interface UpdateInventoryData {
   inventoryId: string;

@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { inventoryApi } from '../services/api';
+import { inventoryApi } from '@/services';
 import toast from 'react-hot-toast';
 
 export interface InventoryFilters {

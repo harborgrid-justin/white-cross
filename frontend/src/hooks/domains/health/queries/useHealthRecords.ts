@@ -49,7 +49,7 @@ import {
   HealthRecordsApiError,
   CircuitBreakerError,
   PaginatedResponse,
-} from '../services/modules/healthRecordsApi';
+} from '@/services';
 
 // ============================================================================
 // Constants - Healthcare-Appropriate Cache Strategy

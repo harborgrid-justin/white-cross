@@ -11,7 +11,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { medicationsApi } from '../services/api';
+import { medicationsApi } from '@/services';
 import { useMedicationToast } from './useMedicationToast';
 import { z } from 'zod';
 
