@@ -28,15 +28,15 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { incidentReportsApi } from '../services';
-import { useAuthContext } from './AuthContext';
+import { incidentReportsApi } from '@/services';
+import { useAuthContext } from '../../utilities/AuthContext';
 import {
   ActionStatus,
   ActionPriority,
   type FollowUpAction,
   type CreateFollowUpActionRequest,
   type UpdateFollowUpActionRequest,
-} from '../types/incidents';
+} from '@/types/incidents';
 
 // =====================
 // TYPE DEFINITIONS

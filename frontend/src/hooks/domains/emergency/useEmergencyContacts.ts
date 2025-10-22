@@ -26,7 +26,7 @@
 
 import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { emergencyContactsApi } from '../services/modules/emergencyContactsApi';
+import { emergencyContactsApi } from '@/services';
 
 // ============================================================================
 // Type Definitions

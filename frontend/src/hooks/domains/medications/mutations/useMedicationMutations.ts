@@ -11,7 +11,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import { medicationsApi } from '../../../../services';
+import { medicationsApi } from '@/services';
 import { useApiError } from '../../../shared/useApiError';
 import { useCacheManager } from '../../../shared/useCacheManager';
 import { useHealthcareCompliance } from '../../../shared/useHealthcareCompliance';

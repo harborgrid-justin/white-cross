@@ -116,6 +116,44 @@ export type {
   CreateConfigurationPayload
 } from './configurationApi';
 
+// Medication module API exports
+export { 
+  medicationFormularyApi, 
+  prescriptionApi, 
+  administrationApi as medicationAdministrationApi,
+  medicationApi 
+} from './modules/medication/api';
+export type {
+  // Formulary types
+  Medication,
+  MedicationForm,
+  AdministrationRoute,
+  FormularyFilters,
+  DrugInteraction,
+  DrugMonograph,
+  BarcodeResult,
+  LASAMedication,
+  // Prescription types
+  Prescription,
+  PrescriptionFrequency,
+  Allergy,
+  AllergyWarning,
+  PrescriptionFilters,
+  CreatePrescriptionRequest,
+  UpdatePrescriptionRequest,
+  VerificationResult,
+  PrescriptionHistory,
+  // Administration types
+  AdministrationSession,
+  FiveRightsData,
+  FiveRightsVerificationResult,
+  AdministrationRecord,
+  AdministrationLog,
+  WitnessSignature,
+  AdministrationHistoryFilters,
+  MedicationReminder
+} from './modules/medication/api';
+
 // Additional API exports for backward compatibility and enterprise features
 export const inventoryApi = {
   getAll: async (params?: {

@@ -15,6 +15,9 @@ export * from './mutations/useEmergencyMutations';
 // Composite hooks
 export * from './composites/useEmergencyComposites';
 
+// Emergency contacts hook
+export * from './useEmergencyContacts';
+
 // Re-export commonly used types for convenience
 export type {
   EmergencyPlan,
