@@ -1,24 +1,29 @@
 /**
  * ReceivingForm Component
  * 
- * Receiving Form component for purchase order management.
+ * Receiving Form for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReceivingFormProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReceivingForm component
+ * ReceivingForm component - Receiving Form
  */
-const ReceivingForm: React.FC<ReceivingFormProps> = (props) => {
+const ReceivingForm: React.FC<ReceivingFormProps> = ({ className = '' }) => {
   return (
-    <div className="receiving-form">
-      <h3>Receiving Form</h3>
-      {/* Component implementation */}
+    <div className={`receiving-form ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Receiving Form</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Receiving Form functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

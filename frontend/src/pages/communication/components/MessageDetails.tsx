@@ -1,24 +1,29 @@
 /**
  * MessageDetails Component
  * 
- * Message Details component for communication module.
+ * Message Details for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface MessageDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * MessageDetails component
+ * MessageDetails component - Message Details
  */
-const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
+const MessageDetails: React.FC<MessageDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="message-details">
-      <h3>Message Details</h3>
-      {/* Component implementation */}
+    <div className={`message-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Message Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Message Details functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

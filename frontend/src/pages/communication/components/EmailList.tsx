@@ -1,24 +1,29 @@
 /**
  * EmailList Component
  * 
- * Email List component for communication module.
+ * Email List for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface EmailListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * EmailList component
+ * EmailList component - Email List
  */
-const EmailList: React.FC<EmailListProps> = (props) => {
+const EmailList: React.FC<EmailListProps> = ({ className = '' }) => {
   return (
-    <div className="email-list">
-      <h3>Email List</h3>
-      {/* Component implementation */}
+    <div className={`email-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Email List functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

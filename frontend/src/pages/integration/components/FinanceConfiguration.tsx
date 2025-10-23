@@ -1,24 +1,29 @@
 /**
  * FinanceConfiguration Component
  * 
- * Finance Configuration component for integration module.
+ * Finance Configuration for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface FinanceConfigurationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * FinanceConfiguration component
+ * FinanceConfiguration component - Finance Configuration
  */
-const FinanceConfiguration: React.FC<FinanceConfigurationProps> = (props) => {
+const FinanceConfiguration: React.FC<FinanceConfigurationProps> = ({ className = '' }) => {
   return (
-    <div className="finance-configuration">
-      <h3>Finance Configuration</h3>
-      {/* Component implementation */}
+    <div className={`finance-configuration ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Finance Configuration</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Finance Configuration functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

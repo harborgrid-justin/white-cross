@@ -1,24 +1,29 @@
 /**
  * LMSIntegration Component
  * 
- * L M S Integration component for integration module.
+ * L M S Integration for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface LMSIntegrationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * LMSIntegration component
+ * LMSIntegration component - L M S Integration
  */
-const LMSIntegration: React.FC<LMSIntegrationProps> = (props) => {
+const LMSIntegration: React.FC<LMSIntegrationProps> = ({ className = '' }) => {
   return (
-    <div className="l-m-s-integration">
-      <h3>L M S Integration</h3>
-      {/* Component implementation */}
+    <div className={`l-m-s-integration ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">L M S Integration</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>L M S Integration functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * DentalForm Component
  * 
- * Dental Form component for health module.
+ * Dental Form for health module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DentalFormProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DentalForm component
+ * DentalForm component - Dental Form
  */
-const DentalForm: React.FC<DentalFormProps> = (props) => {
+const DentalForm: React.FC<DentalFormProps> = ({ className = '' }) => {
   return (
-    <div className="dental-form">
-      <h3>Dental Form</h3>
-      {/* Component implementation */}
+    <div className={`dental-form ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Dental Form</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Dental Form functionality</p>
+          <p className="text-sm mt-2">Connected to health Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

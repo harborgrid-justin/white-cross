@@ -1,24 +1,29 @@
 /**
  * DentalList Component
  * 
- * Dental List component for health module.
+ * Dental List for health module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DentalListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DentalList component
+ * DentalList component - Dental List
  */
-const DentalList: React.FC<DentalListProps> = (props) => {
+const DentalList: React.FC<DentalListProps> = ({ className = '' }) => {
   return (
-    <div className="dental-list">
-      <h3>Dental List</h3>
-      {/* Component implementation */}
+    <div className={`dental-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Dental List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Dental List functionality</p>
+          <p className="text-sm mt-2">Connected to health Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

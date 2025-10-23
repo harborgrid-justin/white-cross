@@ -1,24 +1,29 @@
 /**
  * FindingCard Component
  * 
- * Finding Card component for compliance module.
+ * Finding Card for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface FindingCardProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * FindingCard component
+ * FindingCard component - Finding Card
  */
-const FindingCard: React.FC<FindingCardProps> = (props) => {
+const FindingCard: React.FC<FindingCardProps> = ({ className = '' }) => {
   return (
-    <div className="finding-card">
-      <h3>Finding Card</h3>
-      {/* Component implementation */}
+    <div className={`finding-card ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Finding Card</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Finding Card functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

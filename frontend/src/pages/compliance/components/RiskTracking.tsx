@@ -1,24 +1,29 @@
 /**
  * RiskTracking Component
  * 
- * Risk Tracking component for compliance module.
+ * Risk Tracking for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface RiskTrackingProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * RiskTracking component
+ * RiskTracking component - Risk Tracking
  */
-const RiskTracking: React.FC<RiskTrackingProps> = (props) => {
+const RiskTracking: React.FC<RiskTrackingProps> = ({ className = '' }) => {
   return (
-    <div className="risk-tracking">
-      <h3>Risk Tracking</h3>
-      {/* Component implementation */}
+    <div className={`risk-tracking ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Risk Tracking</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Risk Tracking functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

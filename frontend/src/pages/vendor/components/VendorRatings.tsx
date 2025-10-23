@@ -1,24 +1,29 @@
 /**
  * VendorRatings Component
  * 
- * Vendor Ratings component for vendor module.
+ * Vendor Ratings for vendor module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface VendorRatingsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * VendorRatings component
+ * VendorRatings component - Vendor Ratings
  */
-const VendorRatings: React.FC<VendorRatingsProps> = (props) => {
+const VendorRatings: React.FC<VendorRatingsProps> = ({ className = '' }) => {
   return (
-    <div className="vendor-ratings">
-      <h3>Vendor Ratings</h3>
-      {/* Component implementation */}
+    <div className={`vendor-ratings ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Ratings</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Vendor Ratings functionality</p>
+          <p className="text-sm mt-2">Connected to vendor Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

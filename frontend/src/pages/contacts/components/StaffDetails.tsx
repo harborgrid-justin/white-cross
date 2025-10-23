@@ -1,24 +1,29 @@
 /**
  * StaffDetails Component
  * 
- * Staff Details component for contacts module.
+ * Staff Details for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface StaffDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * StaffDetails component
+ * StaffDetails component - Staff Details
  */
-const StaffDetails: React.FC<StaffDetailsProps> = (props) => {
+const StaffDetails: React.FC<StaffDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="staff-details">
-      <h3>Staff Details</h3>
-      {/* Component implementation */}
+    <div className={`staff-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Staff Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Staff Details functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

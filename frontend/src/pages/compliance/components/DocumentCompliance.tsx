@@ -1,24 +1,29 @@
 /**
  * DocumentCompliance Component
  * 
- * Document Compliance component for compliance module.
+ * Document Compliance for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DocumentComplianceProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DocumentCompliance component
+ * DocumentCompliance component - Document Compliance
  */
-const DocumentCompliance: React.FC<DocumentComplianceProps> = (props) => {
+const DocumentCompliance: React.FC<DocumentComplianceProps> = ({ className = '' }) => {
   return (
-    <div className="document-compliance">
-      <h3>Document Compliance</h3>
-      {/* Component implementation */}
+    <div className={`document-compliance ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Document Compliance</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Document Compliance functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

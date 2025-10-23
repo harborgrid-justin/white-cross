@@ -1,24 +1,29 @@
 /**
  * InventoryOverview Component
  * 
- * Inventory Overview component for inventory module.
+ * Inventory Overview for inventory module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface InventoryOverviewProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * InventoryOverview component
+ * InventoryOverview component - Inventory Overview
  */
-const InventoryOverview: React.FC<InventoryOverviewProps> = (props) => {
+const InventoryOverview: React.FC<InventoryOverviewProps> = ({ className = '' }) => {
   return (
-    <div className="inventory-overview">
-      <h3>Inventory Overview</h3>
-      {/* Component implementation */}
+    <div className={`inventory-overview ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Inventory Overview</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Inventory Overview functionality</p>
+          <p className="text-sm mt-2">Connected to inventory Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

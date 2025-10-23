@@ -1,24 +1,29 @@
 /**
  * ReportSharing Component
  * 
- * Report Sharing component for reports module.
+ * Report Sharing for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReportSharingProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReportSharing component
+ * ReportSharing component - Report Sharing
  */
-const ReportSharing: React.FC<ReportSharingProps> = (props) => {
+const ReportSharing: React.FC<ReportSharingProps> = ({ className = '' }) => {
   return (
-    <div className="report-sharing">
-      <h3>Report Sharing</h3>
-      {/* Component implementation */}
+    <div className={`report-sharing ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Sharing</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Report Sharing functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

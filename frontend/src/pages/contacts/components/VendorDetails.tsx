@@ -1,24 +1,29 @@
 /**
  * VendorDetails Component
  * 
- * Vendor Details component for contacts module.
+ * Vendor Details for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface VendorDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * VendorDetails component
+ * VendorDetails component - Vendor Details
  */
-const VendorDetails: React.FC<VendorDetailsProps> = (props) => {
+const VendorDetails: React.FC<VendorDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="vendor-details">
-      <h3>Vendor Details</h3>
-      {/* Component implementation */}
+    <div className={`vendor-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Vendor Details functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

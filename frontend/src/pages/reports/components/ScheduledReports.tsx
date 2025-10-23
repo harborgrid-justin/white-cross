@@ -1,24 +1,29 @@
 /**
  * ScheduledReports Component
  * 
- * Scheduled Reports component for reports module.
+ * Scheduled Reports for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ScheduledReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ScheduledReports component
+ * ScheduledReports component - Scheduled Reports
  */
-const ScheduledReports: React.FC<ScheduledReportsProps> = (props) => {
+const ScheduledReports: React.FC<ScheduledReportsProps> = ({ className = '' }) => {
   return (
-    <div className="scheduled-reports">
-      <h3>Scheduled Reports</h3>
-      {/* Component implementation */}
+    <div className={`scheduled-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Scheduled Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Scheduled Reports functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

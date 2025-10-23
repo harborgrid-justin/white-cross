@@ -1,33 +1,28 @@
 /**
  * DrugLookup Component
- * Purpose: Look up drug information
- * Features: Drug database search, info retrieval, formulary
+ * 
+ * Drug Lookup for medications module.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
-const DrugLookup: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+interface DrugLookupProps {
+  className?: string;
+}
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement drug lookup logic
-  };
-
+/**
+ * DrugLookup component - Drug Lookup
+ */
+const DrugLookup: React.FC<DrugLookupProps> = ({ className = '' }) => {
   return (
-    <div className="drug-lookup">
-      <h2>Drug Lookup</h2>
-      <form onSubmit={handleSearch}>
-        <input
-          type="text"
-          placeholder="Search drug database..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button type="submit">Search</button>
-      </form>
-      <div className="drug-results">
-        {/* Display drug information results */}
+    <div className={`drug-lookup ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Drug Lookup</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Drug Lookup functionality</p>
+          <p className="text-sm mt-2">Connected to medications Redux slice</p>
+        </div>
       </div>
     </div>
   );

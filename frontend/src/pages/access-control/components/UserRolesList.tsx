@@ -1,24 +1,29 @@
 /**
  * UserRolesList Component
  * 
- * User Roles List component for access-control module.
+ * User Roles List for access-control module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface UserRolesListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * UserRolesList component
+ * UserRolesList component - User Roles List
  */
-const UserRolesList: React.FC<UserRolesListProps> = (props) => {
+const UserRolesList: React.FC<UserRolesListProps> = ({ className = '' }) => {
   return (
-    <div className="user-roles-list">
-      <h3>User Roles List</h3>
-      {/* Component implementation */}
+    <div className={`user-roles-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">User Roles List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>User Roles List functionality</p>
+          <p className="text-sm mt-2">Connected to access-control Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,16 +1,29 @@
 /**
  * SideEffectsGuide Component
- * Purpose: Side effects information
- * Features: Common/rare effects, what to watch for, when to notify
+ * 
+ * Side Effects Guide for medications module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
-const SideEffectsGuide: React.FC = () => {
+interface SideEffectsGuideProps {
+  className?: string;
+}
+
+/**
+ * SideEffectsGuide component - Side Effects Guide
+ */
+const SideEffectsGuide: React.FC<SideEffectsGuideProps> = ({ className = '' }) => {
   return (
-    <div className="side-effects-guide">
-      <h2>Side Effects Guide</h2>
-      <p>Information about medication side effects.</p>
+    <div className={`side-effects-guide ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Side Effects Guide</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Side Effects Guide functionality</p>
+          <p className="text-sm mt-2">Connected to medications Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

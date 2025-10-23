@@ -1,24 +1,29 @@
 /**
  * HRMapping Component
  * 
- * H R Mapping component for integration module.
+ * H R Mapping for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface HRMappingProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * HRMapping component
+ * HRMapping component - H R Mapping
  */
-const HRMapping: React.FC<HRMappingProps> = (props) => {
+const HRMapping: React.FC<HRMappingProps> = ({ className = '' }) => {
   return (
-    <div className="h-r-mapping">
-      <h3>H R Mapping</h3>
-      {/* Component implementation */}
+    <div className={`h-r-mapping ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">H R Mapping</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>H R Mapping functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

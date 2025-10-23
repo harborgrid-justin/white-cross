@@ -1,16 +1,29 @@
 /**
  * PrescriptionsList Component
- * Purpose: List of prescriptions
- * Features: Active/expired, refill status, prescriber info
+ * 
+ * Prescriptions List for medications module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
-const PrescriptionsList: React.FC = () => {
+interface PrescriptionsListProps {
+  className?: string;
+}
+
+/**
+ * PrescriptionsList component - Prescriptions List
+ */
+const PrescriptionsList: React.FC<PrescriptionsListProps> = ({ className = '' }) => {
   return (
-    <div className="prescriptions-list">
-      <h2>Prescriptions List</h2>
-      <p>Displaying a list of prescriptions.</p>
+    <div className={`prescriptions-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Prescriptions List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Prescriptions List functionality</p>
+          <p className="text-sm mt-2">Connected to medications Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,33 @@
 /**
  * CostCenterAllocation Component
  * 
- * Cost Center Allocation component for budget module.
+ * Cost center allocation for budget module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
+import { selectCurrentFiscalYear } from '../store/budgetSlice';
 
 interface CostCenterAllocationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CostCenterAllocation component
+ * CostCenterAllocation component - Cost center allocation
  */
-const CostCenterAllocation: React.FC<CostCenterAllocationProps> = (props) => {
+const CostCenterAllocation: React.FC<CostCenterAllocationProps> = ({ className = '' }) => {
+  const fiscalYear = useAppSelector(selectCurrentFiscalYear);
+
   return (
-    <div className="cost-center-allocation">
-      <h3>Cost Center Allocation</h3>
-      {/* Component implementation */}
+    <div className={`cost-center-allocation ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cost center allocation</h3>
+        <p className="text-gray-600 mb-4">Fiscal Year {fiscalYear}</p>
+        <div className="text-center text-gray-500 py-8">
+          <p>Cost center allocation functionality</p>
+          <p className="text-sm mt-2">This component connects to the Budget Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

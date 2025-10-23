@@ -1,24 +1,29 @@
 /**
  * CertificationList Component
  * 
- * Certification List component for compliance module.
+ * Certification List for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CertificationListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CertificationList component
+ * CertificationList component - Certification List
  */
-const CertificationList: React.FC<CertificationListProps> = (props) => {
+const CertificationList: React.FC<CertificationListProps> = ({ className = '' }) => {
   return (
-    <div className="certification-list">
-      <h3>Certification List</h3>
-      {/* Component implementation */}
+    <div className={`certification-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Certification List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Certification List functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

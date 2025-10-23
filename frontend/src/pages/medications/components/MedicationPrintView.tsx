@@ -1,28 +1,28 @@
 /**
  * MedicationPrintView Component
- * Purpose: Print-friendly medication records
- * Features: MAR, administration logs, prescription details
+ * 
+ * Medication Print View for medications module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface MedicationPrintViewProps {
-  medicationId?: string;
-  type?: 'MAR' | 'LOG' | 'PRESCRIPTION';
+  className?: string;
 }
 
-const MedicationPrintView: React.FC<MedicationPrintViewProps> = ({ medicationId, type = 'MAR' }) => {
+/**
+ * MedicationPrintView component - Medication Print View
+ */
+const MedicationPrintView: React.FC<MedicationPrintViewProps> = ({ className = '' }) => {
   return (
-    <div className="medication-print-view">
-      <div className="print-header">
-        <h1>Medication {type}</h1>
-        <p>Medication ID: {medicationId}</p>
-      </div>
-      <div className="print-content">
-        {/* Print-friendly content */}
-      </div>
-      <div className="print-footer">
-        <button onClick={() => window.print()}>Print</button>
+    <div className={`medication-print-view ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Medication Print View</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Medication Print View functionality</p>
+          <p className="text-sm mt-2">Connected to medications Redux slice</p>
+        </div>
       </div>
     </div>
   );

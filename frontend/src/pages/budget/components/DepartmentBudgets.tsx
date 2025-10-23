@@ -1,24 +1,33 @@
 /**
  * DepartmentBudgets Component
  * 
- * Department Budgets component for budget module.
+ * Department budget management for budget module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
+import { selectCurrentFiscalYear } from '../store/budgetSlice';
 
 interface DepartmentBudgetsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DepartmentBudgets component
+ * DepartmentBudgets component - Department budget management
  */
-const DepartmentBudgets: React.FC<DepartmentBudgetsProps> = (props) => {
+const DepartmentBudgets: React.FC<DepartmentBudgetsProps> = ({ className = '' }) => {
+  const fiscalYear = useAppSelector(selectCurrentFiscalYear);
+
   return (
-    <div className="department-budgets">
-      <h3>Department Budgets</h3>
-      {/* Component implementation */}
+    <div className={`department-budgets ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Department budget management</h3>
+        <p className="text-gray-600 mb-4">Fiscal Year {fiscalYear}</p>
+        <div className="text-center text-gray-500 py-8">
+          <p>Department budget management functionality</p>
+          <p className="text-sm mt-2">This component connects to the Budget Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

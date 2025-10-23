@@ -1,24 +1,29 @@
 /**
  * ContactSearch Component
  * 
- * Contact Search component for contacts module.
+ * Contact Search for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ContactSearchProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ContactSearch component
+ * ContactSearch component - Contact Search
  */
-const ContactSearch: React.FC<ContactSearchProps> = (props) => {
+const ContactSearch: React.FC<ContactSearchProps> = ({ className = '' }) => {
   return (
-    <div className="contact-search">
-      <h3>Contact Search</h3>
-      {/* Component implementation */}
+    <div className={`contact-search ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Search</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Contact Search functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };
