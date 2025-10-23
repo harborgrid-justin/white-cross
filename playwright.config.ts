@@ -20,8 +20,8 @@ export default defineConfig({
   // Reporter to use
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'test-results/html' }],
-    ['json', { outputFile: 'test-results/results.json' }]
+    ['html', { outputFolder: 'playwright-report/api-integration' }],
+    ['json', { outputFile: 'playwright-report/results.json' }]
   ],
   
   // Shared test configuration
