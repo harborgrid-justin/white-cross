@@ -27,8 +27,8 @@
 
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthContext } from '../contexts/AuthContext';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuthContext } from '../hooks/utilities/AuthContext';
+import { LoadingSpinner } from '../components/ui/feedback';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 import {
   AuthGuard,
