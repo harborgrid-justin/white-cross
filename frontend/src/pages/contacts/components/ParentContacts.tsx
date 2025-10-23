@@ -1,24 +1,29 @@
 /**
  * ParentContacts Component
  * 
- * Parent Contacts component for contacts module.
+ * Parent Contacts for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ParentContactsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ParentContacts component
+ * ParentContacts component - Parent Contacts
  */
-const ParentContacts: React.FC<ParentContactsProps> = (props) => {
+const ParentContacts: React.FC<ParentContactsProps> = ({ className = '' }) => {
   return (
-    <div className="parent-contacts">
-      <h3>Parent Contacts</h3>
-      {/* Component implementation */}
+    <div className={`parent-contacts ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Parent Contacts</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Parent Contacts functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

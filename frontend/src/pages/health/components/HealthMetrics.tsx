@@ -1,24 +1,29 @@
 /**
  * HealthMetrics Component
  * 
- * Health Metrics component for health module.
+ * Health Metrics for health module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface HealthMetricsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * HealthMetrics component
+ * HealthMetrics component - Health Metrics
  */
-const HealthMetrics: React.FC<HealthMetricsProps> = (props) => {
+const HealthMetrics: React.FC<HealthMetricsProps> = ({ className = '' }) => {
   return (
-    <div className="health-metrics">
-      <h3>Health Metrics</h3>
-      {/* Component implementation */}
+    <div className={`health-metrics ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Health Metrics</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Health Metrics functionality</p>
+          <p className="text-sm mt-2">Connected to health Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

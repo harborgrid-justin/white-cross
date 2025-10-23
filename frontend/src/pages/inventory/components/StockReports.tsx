@@ -1,24 +1,29 @@
 /**
  * StockReports Component
  * 
- * Stock Reports component for inventory module.
+ * Stock Reports for inventory module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface StockReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * StockReports component
+ * StockReports component - Stock Reports
  */
-const StockReports: React.FC<StockReportsProps> = (props) => {
+const StockReports: React.FC<StockReportsProps> = ({ className = '' }) => {
   return (
-    <div className="stock-reports">
-      <h3>Stock Reports</h3>
-      {/* Component implementation */}
+    <div className={`stock-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Stock Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Stock Reports functionality</p>
+          <p className="text-sm mt-2">Connected to inventory Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

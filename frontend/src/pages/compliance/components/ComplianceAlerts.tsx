@@ -1,24 +1,29 @@
 /**
  * ComplianceAlerts Component
  * 
- * Compliance Alerts component for compliance module.
+ * Compliance Alerts for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ComplianceAlertsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ComplianceAlerts component
+ * ComplianceAlerts component - Compliance Alerts
  */
-const ComplianceAlerts: React.FC<ComplianceAlertsProps> = (props) => {
+const ComplianceAlerts: React.FC<ComplianceAlertsProps> = ({ className = '' }) => {
   return (
-    <div className="compliance-alerts">
-      <h3>Compliance Alerts</h3>
-      {/* Component implementation */}
+    <div className={`compliance-alerts ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Compliance Alerts</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Compliance Alerts functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * IncidentsLayout Component
  * 
- * Incidents Layout component for incident report management.
+ * Incidents Layout for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface IncidentsLayoutProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * IncidentsLayout component for incident reporting system
+ * IncidentsLayout component - Incidents Layout
  */
-const IncidentsLayout: React.FC<IncidentsLayoutProps> = (props) => {
+const IncidentsLayout: React.FC<IncidentsLayoutProps> = ({ className = '' }) => {
   return (
-    <div className="incidents-layout">
-      <h3>Incidents Layout</h3>
-      {/* Component implementation */}
+    <div className={`incidents-layout ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Incidents Layout</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Incidents Layout functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

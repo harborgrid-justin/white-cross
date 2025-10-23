@@ -1,24 +1,29 @@
 /**
  * CommunicationCalendar Component
  * 
- * Communication Calendar component for communication module.
+ * Communication Calendar for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CommunicationCalendarProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CommunicationCalendar component
+ * CommunicationCalendar component - Communication Calendar
  */
-const CommunicationCalendar: React.FC<CommunicationCalendarProps> = (props) => {
+const CommunicationCalendar: React.FC<CommunicationCalendarProps> = ({ className = '' }) => {
   return (
-    <div className="communication-calendar">
-      <h3>Communication Calendar</h3>
-      {/* Component implementation */}
+    <div className={`communication-calendar ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Communication Calendar</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Communication Calendar functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

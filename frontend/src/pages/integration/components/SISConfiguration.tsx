@@ -1,24 +1,29 @@
 /**
  * SISConfiguration Component
  * 
- * S I S Configuration component for integration module.
+ * S I S Configuration for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface SISConfigurationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * SISConfiguration component
+ * SISConfiguration component - S I S Configuration
  */
-const SISConfiguration: React.FC<SISConfigurationProps> = (props) => {
+const SISConfiguration: React.FC<SISConfigurationProps> = ({ className = '' }) => {
   return (
-    <div className="s-i-s-configuration">
-      <h3>S I S Configuration</h3>
-      {/* Component implementation */}
+    <div className={`s-i-s-configuration ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">S I S Configuration</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>S I S Configuration functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

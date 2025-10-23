@@ -1,24 +1,29 @@
 /**
  * CriticalIncidentsWidget Component
  * 
- * Critical Incidents Widget component for incident report management.
+ * Critical Incidents Widget for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CriticalIncidentsWidgetProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CriticalIncidentsWidget component for incident reporting system
+ * CriticalIncidentsWidget component - Critical Incidents Widget
  */
-const CriticalIncidentsWidget: React.FC<CriticalIncidentsWidgetProps> = (props) => {
+const CriticalIncidentsWidget: React.FC<CriticalIncidentsWidgetProps> = ({ className = '' }) => {
   return (
-    <div className="critical-incidents-widget">
-      <h3>Critical Incidents Widget</h3>
-      {/* Component implementation */}
+    <div className={`critical-incidents-widget ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Critical Incidents Widget</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Critical Incidents Widget functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

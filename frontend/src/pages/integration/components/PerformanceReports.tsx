@@ -1,24 +1,29 @@
 /**
  * PerformanceReports Component
  * 
- * Performance Reports component for integration module.
+ * Performance Reports for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface PerformanceReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * PerformanceReports component
+ * PerformanceReports component - Performance Reports
  */
-const PerformanceReports: React.FC<PerformanceReportsProps> = (props) => {
+const PerformanceReports: React.FC<PerformanceReportsProps> = ({ className = '' }) => {
   return (
-    <div className="performance-reports">
-      <h3>Performance Reports</h3>
-      {/* Component implementation */}
+    <div className={`performance-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Performance Reports functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

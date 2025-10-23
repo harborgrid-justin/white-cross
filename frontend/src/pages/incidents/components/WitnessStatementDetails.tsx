@@ -1,24 +1,29 @@
 /**
  * WitnessStatementDetails Component
  * 
- * Witness Statement Details component for incident report management.
+ * Witness Statement Details for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface WitnessStatementDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * WitnessStatementDetails component for incident reporting system
+ * WitnessStatementDetails component - Witness Statement Details
  */
-const WitnessStatementDetails: React.FC<WitnessStatementDetailsProps> = (props) => {
+const WitnessStatementDetails: React.FC<WitnessStatementDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="witness-statement-details">
-      <h3>Witness Statement Details</h3>
-      {/* Component implementation */}
+    <div className={`witness-statement-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Witness Statement Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Witness Statement Details functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

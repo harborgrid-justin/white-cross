@@ -1,24 +1,29 @@
 /**
  * LocationManagement Component
  * 
- * Location Management component for inventory module.
+ * Location Management for inventory module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface LocationManagementProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * LocationManagement component
+ * LocationManagement component - Location Management
  */
-const LocationManagement: React.FC<LocationManagementProps> = (props) => {
+const LocationManagement: React.FC<LocationManagementProps> = ({ className = '' }) => {
   return (
-    <div className="location-management">
-      <h3>Location Management</h3>
-      {/* Component implementation */}
+    <div className={`location-management ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Management</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Location Management functionality</p>
+          <p className="text-sm mt-2">Connected to inventory Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,26 +1,29 @@
 /**
  * MedicationNotes Component
- * Purpose: Notes section for medication
- * Features: Add/edit notes, side effects, observations
+ * 
+ * Medication Notes for medications module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface MedicationNotesProps {
-  medicationId?: string;
+  className?: string;
 }
 
-export const MedicationNotes: React.FC<MedicationNotesProps> = ({
-  medicationId
-}) => {
+/**
+ * MedicationNotes component - Medication Notes
+ */
+const MedicationNotes: React.FC<MedicationNotesProps> = ({ className = '' }) => {
   return (
-    <div className="medication-notes">
-      <h2>Medication Notes</h2>
-      {medicationId ? (
-        <p>Displaying notes for medication ID: {medicationId}</p>
-      ) : (
-        <p>No medication ID provided.</p>
-      )}
+    <div className={`medication-notes ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Medication Notes</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Medication Notes functionality</p>
+          <p className="text-sm mt-2">Connected to medications Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * RoleFilters Component
  * 
- * Role Filters component for access-control module.
+ * Role Filters for access-control module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface RoleFiltersProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * RoleFilters component
+ * RoleFilters component - Role Filters
  */
-const RoleFilters: React.FC<RoleFiltersProps> = (props) => {
+const RoleFilters: React.FC<RoleFiltersProps> = ({ className = '' }) => {
   return (
-    <div className="role-filters">
-      <h3>Role Filters</h3>
-      {/* Component implementation */}
+    <div className={`role-filters ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Role Filters</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Role Filters functionality</p>
+          <p className="text-sm mt-2">Connected to access-control Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

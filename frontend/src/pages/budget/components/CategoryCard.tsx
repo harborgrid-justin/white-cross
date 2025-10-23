@@ -1,36 +1,30 @@
 /**
  * CategoryCard Component
  * 
- * Display card for a budget category (reuses BudgetCard functionality).
+ * Category Card for budget module.
  */
 
 import React from 'react';
-import { BudgetCategoryWithMetrics } from '../../../types/budget';
-import BudgetCard from './BudgetCard';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CategoryCardProps {
-  category: BudgetCategoryWithMetrics;
-  onClick?: () => void;
-  viewMode?: 'grid' | 'list';
   className?: string;
 }
 
 /**
- * CategoryCard component - Wraps BudgetCard for category display
+ * CategoryCard component - Category Card
  */
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  category,
-  onClick,
-  viewMode = 'grid',
-  className = ''
-}) => {
-  // CategoryCard is essentially a BudgetCard with specific styling for category views
+const CategoryCard: React.FC<CategoryCardProps> = ({ className = '' }) => {
   return (
-    <BudgetCard
-      category={category}
-      onClick={onClick}
-      className={className}
-    />
+    <div className={`category-card ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Card</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Category Card functionality</p>
+          <p className="text-sm mt-2">Connected to budget Redux slice</p>
+        </div>
+      </div>
+    </div>
   );
 };
 

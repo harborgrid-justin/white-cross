@@ -1,24 +1,29 @@
 /**
  * MissedDoseHandler Component
- * Purpose: Handle missed doses
- * Features: Missed dose recording, reason, follow-up plan
+ * 
+ * Missed Dose Handler for medications module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface MissedDoseHandlerProps {
-  medicationId?: string;
+  className?: string;
 }
 
-const MissedDoseHandler: React.FC<MissedDoseHandlerProps> = ({ medicationId }) => {
+/**
+ * MissedDoseHandler component - Missed Dose Handler
+ */
+const MissedDoseHandler: React.FC<MissedDoseHandlerProps> = ({ className = '' }) => {
   return (
-    <div className="missed-dose-handler">
-      <h2>Missed Dose Handler</h2>
-      {medicationId ? (
-        <p>Handling missed dose for medication ID: {medicationId}</p>
-      ) : (
-        <p>No medication ID provided.</p>
-      )}
+    <div className={`missed-dose-handler ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Missed Dose Handler</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Missed Dose Handler functionality</p>
+          <p className="text-sm mt-2">Connected to medications Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

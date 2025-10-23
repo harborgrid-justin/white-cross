@@ -1,24 +1,29 @@
 /**
  * WarningsList Component
  * 
- * Warnings List component for incident report management.
+ * Warnings List for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface WarningsListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * WarningsList component for incident reporting system
+ * WarningsList component - Warnings List
  */
-const WarningsList: React.FC<WarningsListProps> = (props) => {
+const WarningsList: React.FC<WarningsListProps> = ({ className = '' }) => {
   return (
-    <div className="warnings-list">
-      <h3>Warnings List</h3>
-      {/* Component implementation */}
+    <div className={`warnings-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Warnings List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Warnings List functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

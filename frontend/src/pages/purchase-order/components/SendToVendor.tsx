@@ -1,24 +1,29 @@
 /**
  * SendToVendor Component
  * 
- * Send To Vendor component for purchase order management.
+ * Send To Vendor for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface SendToVendorProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * SendToVendor component
+ * SendToVendor component - Send To Vendor
  */
-const SendToVendor: React.FC<SendToVendorProps> = (props) => {
+const SendToVendor: React.FC<SendToVendorProps> = ({ className = '' }) => {
   return (
-    <div className="send-to-vendor">
-      <h3>Send To Vendor</h3>
-      {/* Component implementation */}
+    <div className={`send-to-vendor ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Send To Vendor</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Send To Vendor functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

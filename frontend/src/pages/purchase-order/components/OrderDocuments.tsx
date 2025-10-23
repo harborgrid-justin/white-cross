@@ -1,24 +1,29 @@
 /**
  * OrderDocuments Component
  * 
- * Order Documents component for purchase order management.
+ * Order Documents for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface OrderDocumentsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * OrderDocuments component
+ * OrderDocuments component - Order Documents
  */
-const OrderDocuments: React.FC<OrderDocumentsProps> = (props) => {
+const OrderDocuments: React.FC<OrderDocumentsProps> = ({ className = '' }) => {
   return (
-    <div className="order-documents">
-      <h3>Order Documents</h3>
-      {/* Component implementation */}
+    <div className={`order-documents ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Documents</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Order Documents functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

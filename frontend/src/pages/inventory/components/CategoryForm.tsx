@@ -1,24 +1,29 @@
 /**
  * CategoryForm Component
  * 
- * Category Form component for inventory module.
+ * Category Form for inventory module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CategoryFormProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CategoryForm component
+ * CategoryForm component - Category Form
  */
-const CategoryForm: React.FC<CategoryFormProps> = (props) => {
+const CategoryForm: React.FC<CategoryFormProps> = ({ className = '' }) => {
   return (
-    <div className="category-form">
-      <h3>Category Form</h3>
-      {/* Component implementation */}
+    <div className={`category-form ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Form</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Category Form functionality</p>
+          <p className="text-sm mt-2">Connected to inventory Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

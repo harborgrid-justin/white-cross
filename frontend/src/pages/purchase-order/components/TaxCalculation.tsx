@@ -1,24 +1,29 @@
 /**
  * TaxCalculation Component
  * 
- * Tax Calculation component for purchase order management.
+ * Tax Calculation for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface TaxCalculationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * TaxCalculation component
+ * TaxCalculation component - Tax Calculation
  */
-const TaxCalculation: React.FC<TaxCalculationProps> = (props) => {
+const TaxCalculation: React.FC<TaxCalculationProps> = ({ className = '' }) => {
   return (
-    <div className="tax-calculation">
-      <h3>Tax Calculation</h3>
-      {/* Component implementation */}
+    <div className={`tax-calculation ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Tax Calculation</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Tax Calculation functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

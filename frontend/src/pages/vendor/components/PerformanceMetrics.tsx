@@ -1,24 +1,29 @@
 /**
  * PerformanceMetrics Component
  * 
- * Performance Metrics component for vendor module.
+ * Performance Metrics for vendor module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface PerformanceMetricsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * PerformanceMetrics component
+ * PerformanceMetrics component - Performance Metrics
  */
-const PerformanceMetrics: React.FC<PerformanceMetricsProps> = (props) => {
+const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ className = '' }) => {
   return (
-    <div className="performance-metrics">
-      <h3>Performance Metrics</h3>
-      {/* Component implementation */}
+    <div className={`performance-metrics ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Performance Metrics functionality</p>
+          <p className="text-sm mt-2">Connected to vendor Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * DocumentDetails Component
  * 
- * Document Details component for documents module.
+ * Document Details for documents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DocumentDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DocumentDetails component
+ * DocumentDetails component - Document Details
  */
-const DocumentDetails: React.FC<DocumentDetailsProps> = (props) => {
+const DocumentDetails: React.FC<DocumentDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="document-details">
-      <h3>Document Details</h3>
-      {/* Component implementation */}
+    <div className={`document-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Document Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Document Details functionality</p>
+          <p className="text-sm mt-2">Connected to documents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

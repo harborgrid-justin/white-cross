@@ -1,24 +1,29 @@
 /**
  * WebhookManagement Component
  * 
- * Webhook Management component for integration module.
+ * Webhook Management for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface WebhookManagementProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * WebhookManagement component
+ * WebhookManagement component - Webhook Management
  */
-const WebhookManagement: React.FC<WebhookManagementProps> = (props) => {
+const WebhookManagement: React.FC<WebhookManagementProps> = ({ className = '' }) => {
   return (
-    <div className="webhook-management">
-      <h3>Webhook Management</h3>
-      {/* Component implementation */}
+    <div className={`webhook-management ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Webhook Management</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Webhook Management functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

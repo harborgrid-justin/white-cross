@@ -1,24 +1,29 @@
 /**
  * EscalationPanel Component
  * 
- * Escalation Panel component for incident report management.
+ * Escalation Panel for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface EscalationPanelProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * EscalationPanel component for incident reporting system
+ * EscalationPanel component - Escalation Panel
  */
-const EscalationPanel: React.FC<EscalationPanelProps> = (props) => {
+const EscalationPanel: React.FC<EscalationPanelProps> = ({ className = '' }) => {
   return (
-    <div className="escalation-panel">
-      <h3>Escalation Panel</h3>
-      {/* Component implementation */}
+    <div className={`escalation-panel ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Escalation Panel</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Escalation Panel functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

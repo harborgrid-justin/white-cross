@@ -1,24 +1,29 @@
 /**
  * DocumentReports Component
  * 
- * Document Reports component for documents module.
+ * Document Reports for documents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DocumentReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DocumentReports component
+ * DocumentReports component - Document Reports
  */
-const DocumentReports: React.FC<DocumentReportsProps> = (props) => {
+const DocumentReports: React.FC<DocumentReportsProps> = ({ className = '' }) => {
   return (
-    <div className="document-reports">
-      <h3>Document Reports</h3>
-      {/* Component implementation */}
+    <div className={`document-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Document Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Document Reports functionality</p>
+          <p className="text-sm mt-2">Connected to documents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

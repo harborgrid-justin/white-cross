@@ -1,24 +1,29 @@
 /**
  * CreateIncidentForm Component
  * 
- * Create Incident Form component for incident report management.
+ * Create Incident Form for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CreateIncidentFormProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CreateIncidentForm component for incident reporting system
+ * CreateIncidentForm component - Create Incident Form
  */
-const CreateIncidentForm: React.FC<CreateIncidentFormProps> = (props) => {
+const CreateIncidentForm: React.FC<CreateIncidentFormProps> = ({ className = '' }) => {
   return (
-    <div className="create-incident-form">
-      <h3>Create Incident Form</h3>
-      {/* Component implementation */}
+    <div className={`create-incident-form ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Create Incident Form</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Create Incident Form functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

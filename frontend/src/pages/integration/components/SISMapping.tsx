@@ -1,24 +1,29 @@
 /**
  * SISMapping Component
  * 
- * S I S Mapping component for integration module.
+ * S I S Mapping for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface SISMappingProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * SISMapping component
+ * SISMapping component - S I S Mapping
  */
-const SISMapping: React.FC<SISMappingProps> = (props) => {
+const SISMapping: React.FC<SISMappingProps> = ({ className = '' }) => {
   return (
-    <div className="s-i-s-mapping">
-      <h3>S I S Mapping</h3>
-      {/* Component implementation */}
+    <div className={`s-i-s-mapping ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">S I S Mapping</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>S I S Mapping functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

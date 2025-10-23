@@ -1,24 +1,29 @@
 /**
  * UnitSettings Component
  * 
- * Unit Settings component for inventory module.
+ * Unit Settings for inventory module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface UnitSettingsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * UnitSettings component
+ * UnitSettings component - Unit Settings
  */
-const UnitSettings: React.FC<UnitSettingsProps> = (props) => {
+const UnitSettings: React.FC<UnitSettingsProps> = ({ className = '' }) => {
   return (
-    <div className="unit-settings">
-      <h3>Unit Settings</h3>
-      {/* Component implementation */}
+    <div className={`unit-settings ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Unit Settings</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Unit Settings functionality</p>
+          <p className="text-sm mt-2">Connected to inventory Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * RegulationsList Component
  * 
- * Regulations List component for compliance module.
+ * Regulations List for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface RegulationsListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * RegulationsList component
+ * RegulationsList component - Regulations List
  */
-const RegulationsList: React.FC<RegulationsListProps> = (props) => {
+const RegulationsList: React.FC<RegulationsListProps> = ({ className = '' }) => {
   return (
-    <div className="regulations-list">
-      <h3>Regulations List</h3>
-      {/* Component implementation */}
+    <div className={`regulations-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Regulations List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Regulations List functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

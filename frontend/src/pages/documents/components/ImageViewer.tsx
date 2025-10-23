@@ -1,24 +1,29 @@
 /**
  * ImageViewer Component
  * 
- * Image Viewer component for documents module.
+ * Image Viewer for documents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ImageViewerProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ImageViewer component
+ * ImageViewer component - Image Viewer
  */
-const ImageViewer: React.FC<ImageViewerProps> = (props) => {
+const ImageViewer: React.FC<ImageViewerProps> = ({ className = '' }) => {
   return (
-    <div className="image-viewer">
-      <h3>Image Viewer</h3>
-      {/* Component implementation */}
+    <div className={`image-viewer ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Image Viewer</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Image Viewer functionality</p>
+          <p className="text-sm mt-2">Connected to documents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

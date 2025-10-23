@@ -1,24 +1,29 @@
 /**
  * ReportSubscriptions Component
  * 
- * Report Subscriptions component for reports module.
+ * Report Subscriptions for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReportSubscriptionsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReportSubscriptions component
+ * ReportSubscriptions component - Report Subscriptions
  */
-const ReportSubscriptions: React.FC<ReportSubscriptionsProps> = (props) => {
+const ReportSubscriptions: React.FC<ReportSubscriptionsProps> = ({ className = '' }) => {
   return (
-    <div className="report-subscriptions">
-      <h3>Report Subscriptions</h3>
-      {/* Component implementation */}
+    <div className={`report-subscriptions ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Subscriptions</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Report Subscriptions functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

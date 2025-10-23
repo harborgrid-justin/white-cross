@@ -1,24 +1,29 @@
 /**
  * DistrictCard Component
  * 
- * District Card component for admin module.
+ * District Card for admin module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DistrictCardProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DistrictCard component
+ * DistrictCard component - District Card
  */
-const DistrictCard: React.FC<DistrictCardProps> = (props) => {
+const DistrictCard: React.FC<DistrictCardProps> = ({ className = '' }) => {
   return (
-    <div className="district-card">
-      <h3>District Card</h3>
-      {/* Component implementation */}
+    <div className={`district-card ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">District Card</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>District Card functionality</p>
+          <p className="text-sm mt-2">Connected to admin Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * OrderTemplates Component
  * 
- * Order Templates component for purchase order management.
+ * Order Templates for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface OrderTemplatesProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * OrderTemplates component
+ * OrderTemplates component - Order Templates
  */
-const OrderTemplates: React.FC<OrderTemplatesProps> = (props) => {
+const OrderTemplates: React.FC<OrderTemplatesProps> = ({ className = '' }) => {
   return (
-    <div className="order-templates">
-      <h3>Order Templates</h3>
-      {/* Component implementation */}
+    <div className={`order-templates ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Templates</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Order Templates functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

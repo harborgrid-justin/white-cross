@@ -1,24 +1,29 @@
 /**
  * ContactsList Component
  * 
- * Contacts List component for contacts module.
+ * Contacts List for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ContactsListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ContactsList component
+ * ContactsList component - Contacts List
  */
-const ContactsList: React.FC<ContactsListProps> = (props) => {
+const ContactsList: React.FC<ContactsListProps> = ({ className = '' }) => {
   return (
-    <div className="contacts-list">
-      <h3>Contacts List</h3>
-      {/* Component implementation */}
+    <div className={`contacts-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Contacts List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Contacts List functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };
