@@ -25,7 +25,8 @@
  * - Government Reporting
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
 
@@ -409,13 +410,15 @@ const updateIntegrationSchema = z.object({
  * Implements enterprise integration patterns with comprehensive error handling
  */
 export class IntegrationApi {
+  constructor(private readonly client: ApiClient) {}
+
   /**
    * Get all integrations with optional filtering
    */
   async getAll(type?: IntegrationType): Promise<IntegrationListResponse> {
     try {
       const params = type ? `?type=${encodeURIComponent(type)}` : '';
-      const response = await apiInstance.get<ApiResponse<IntegrationListResponse>>(
+      const response = await this.client.get<ApiResponse<IntegrationListResponse>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}${params}`
       );
 
@@ -432,7 +435,7 @@ export class IntegrationApi {
     try {
       if (!id) throw new Error('Integration ID is required');
 
-      const response = await apiInstance.get<ApiResponse<IntegrationResponse>>(
+      const response = await this.client.get<ApiResponse<IntegrationResponse>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/${id}`
       );
 
@@ -449,7 +452,7 @@ export class IntegrationApi {
     try {
       createIntegrationSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<IntegrationResponse>>(
+      const response = await this.client.post<ApiResponse<IntegrationResponse>>(
         API_ENDPOINTS.INTEGRATIONS.BASE,
         data
       );
@@ -472,7 +475,7 @@ export class IntegrationApi {
 
       updateIntegrationSchema.parse(data);
 
-      const response = await apiInstance.put<ApiResponse<IntegrationResponse>>(
+      const response = await this.client.put<ApiResponse<IntegrationResponse>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/${id}`,
         data
       );
@@ -493,7 +496,7 @@ export class IntegrationApi {
     try {
       if (!id) throw new Error('Integration ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ message: string }>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/${id}`
       );
 
@@ -511,7 +514,7 @@ export class IntegrationApi {
     try {
       if (!id) throw new Error('Integration ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ result: ConnectionTestResult }>>(
+      const response = await this.client.post<ApiResponse<{ result: ConnectionTestResult }>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/${id}/test`
       );
 
@@ -529,7 +532,7 @@ export class IntegrationApi {
     try {
       if (!id) throw new Error('Integration ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ result: SyncResult }>>(
+      const response = await this.client.post<ApiResponse<{ result: SyncResult }>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/${id}/sync`
       );
 
@@ -550,7 +553,7 @@ export class IntegrationApi {
       params.append('page', String(filters.page || 1));
       params.append('limit', String(filters.limit || 20));
 
-      const response = await apiInstance.get<ApiResponse<IntegrationLogsResponse>>(
+      const response = await this.client.get<ApiResponse<IntegrationLogsResponse>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/${id}/logs?${params.toString()}`
       );
 
@@ -570,7 +573,7 @@ export class IntegrationApi {
       params.append('limit', String(filters.limit || 20));
       if (filters.type) params.append('type', String(filters.type));
 
-      const response = await apiInstance.get<ApiResponse<IntegrationLogsResponse>>(
+      const response = await this.client.get<ApiResponse<IntegrationLogsResponse>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/logs/all?${params.toString()}`
       );
 
@@ -586,7 +589,7 @@ export class IntegrationApi {
    */
   async getStatistics(): Promise<IntegrationStatisticsResponse> {
     try {
-      const response = await apiInstance.get<ApiResponse<IntegrationStatisticsResponse>>(
+      const response = await this.client.get<ApiResponse<IntegrationStatisticsResponse>>(
         `${API_ENDPOINTS.INTEGRATIONS.BASE}/statistics/overview`
       );
 
@@ -712,14 +715,7 @@ export class IntegrationApi {
   }
 }
 
-// Export singleton instance
-export const integrationApi = new IntegrationApi();
-
-// Legacy compatibility exports
-export const getIntegrations = () => integrationApi.getAll();
-export const updateIntegration = (id: string, config: UpdateIntegrationRequest) =>
-  integrationApi.update(id, config);
-export const testConnection = (id: string) => integrationApi.testConnection(id);
-export const sync = (id: string) => integrationApi.sync(id);
-
-export default integrationApi;
+// Export factory function
+export function createIntegrationApi(client: ApiClient): IntegrationApi {
+  return new IntegrationApi(client);
+}

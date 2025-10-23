@@ -33,7 +33,7 @@
 
 import { Server } from '@hapi/hapi';
 import { createHealthcareMiddleware, HapiMiddlewareAdapter } from '../middleware';
-import { User } from '../database/models/User';
+import { User } from '../database/models/core/User';
 import { logger } from '../utils/logger';
 
 /**

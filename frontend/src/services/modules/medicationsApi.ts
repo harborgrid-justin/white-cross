@@ -10,7 +10,8 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
+import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
 import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
@@ -410,6 +411,12 @@ const reportAdverseReactionSchema = z.object({
 
 // Medications API class
 export class MedicationsApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Get all medications with optional filtering
    */
@@ -420,7 +427,7 @@ export class MedicationsApi {
       if (filters.limit) queryString.append('limit', String(filters.limit));
       if (filters.search) queryString.append('search', filters.search);
 
-      const response = await apiInstance.get<ApiResponse<MedicationsResponse>>(
+      const response = await this.client.get<ApiResponse<MedicationsResponse>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}?${queryString.toString()}`
       );
 
@@ -451,7 +458,7 @@ export class MedicationsApi {
     try {
       if (!id) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.get<ApiResponse<Medication>>(
+      const response = await this.client.get<ApiResponse<Medication>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`
       );
 
@@ -482,7 +489,7 @@ export class MedicationsApi {
     try {
       createMedicationSchema.parse(medicationData);
 
-      const response = await apiInstance.post<ApiResponse<{ medication: Medication }>>(
+      const response = await this.client.post<ApiResponse<{ medication: Medication }>>(
         API_ENDPOINTS.MEDICATIONS.BASE,
         medicationData
       );
@@ -524,7 +531,7 @@ export class MedicationsApi {
     try {
       if (!id) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.put<ApiResponse<Medication>>(
+      const response = await this.client.put<ApiResponse<Medication>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`,
         medicationData
       );
@@ -542,7 +549,7 @@ export class MedicationsApi {
     try {
       if (!id) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ id: string }>>(
+      const response = await this.client.delete<ApiResponse<{ id: string }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/${id}`
       );
 
@@ -559,7 +566,7 @@ export class MedicationsApi {
     try {
       assignMedicationSchema.parse(assignmentData);
 
-      const response = await apiInstance.post<ApiResponse<{ studentMedication: StudentMedication }>>(
+      const response = await this.client.post<ApiResponse<{ studentMedication: StudentMedication }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/assign`,
         assignmentData
       );
@@ -581,7 +588,7 @@ export class MedicationsApi {
     try {
       logAdministrationSchema.parse(logData);
 
-      const response = await apiInstance.post<ApiResponse<{ medicationLog: MedicationLog }>>(
+      const response = await this.client.post<ApiResponse<{ medicationLog: MedicationLog }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/administration`,
         logData
       );
@@ -631,7 +638,7 @@ export class MedicationsApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get<ApiResponse<StudentMedicationsResponse>>(
+      const response = await this.client.get<ApiResponse<StudentMedicationsResponse>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/logs/${studentId}?page=${page}&limit=${limit}`
       );
 
@@ -646,7 +653,7 @@ export class MedicationsApi {
    */
   async getInventory(): Promise<InventoryResponse> {
     try {
-      const response = await apiInstance.get<ApiResponse<InventoryResponse>>(
+      const response = await this.client.get<ApiResponse<InventoryResponse>>(
         API_ENDPOINTS.MEDICATIONS.INVENTORY
       );
 
@@ -661,7 +668,7 @@ export class MedicationsApi {
    */
   async addToInventory(inventoryData: CreateInventoryRequest): Promise<InventoryItem> {
     try {
-      const response = await apiInstance.post<ApiResponse<{ inventory: InventoryItem }>>(
+      const response = await this.client.post<ApiResponse<{ inventory: InventoryItem }>>(
         API_ENDPOINTS.MEDICATIONS.INVENTORY,
         inventoryData
       );
@@ -679,7 +686,7 @@ export class MedicationsApi {
     try {
       if (!id) throw new Error('Inventory ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ inventory: InventoryItem }>>(
+      const response = await this.client.put<ApiResponse<{ inventory: InventoryItem }>>(
         `${API_ENDPOINTS.MEDICATIONS.INVENTORY}/${id}`,
         updateData
       );
@@ -700,7 +707,7 @@ export class MedicationsApi {
       if (endDate) params.append('endDate', endDate);
       if (nurseId) params.append('nurseId', nurseId);
 
-      const response = await apiInstance.get<ApiResponse<MedicationScheduleResponse>>(
+      const response = await this.client.get<ApiResponse<MedicationScheduleResponse>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/schedule?${params.toString()}`
       );
 
@@ -717,7 +724,7 @@ export class MedicationsApi {
     try {
       const params = date ? `?date=${date}` : '';
 
-      const response = await apiInstance.get<ApiResponse<{ reminders: MedicationReminder[] }>>(
+      const response = await this.client.get<ApiResponse<{ reminders: MedicationReminder[] }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/reminders${params}`
       );
 
@@ -733,7 +740,7 @@ export class MedicationsApi {
    */
   async reportAdverseReaction(reactionData: AdverseReactionData): Promise<AdverseReaction> {
     try {
-      const response = await apiInstance.post<ApiResponse<{ report: AdverseReaction }>>(
+      const response = await this.client.post<ApiResponse<{ report: AdverseReaction }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/adverse-reaction`,
         reactionData
       );
@@ -782,7 +789,7 @@ export class MedicationsApi {
       if (medicationId) params.append('medicationId', medicationId);
       if (studentId) params.append('studentId', studentId);
 
-      const response = await apiInstance.get<ApiResponse<{ reactions: AdverseReaction[] }>>(
+      const response = await this.client.get<ApiResponse<{ reactions: AdverseReaction[] }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/adverse-reactions?${params.toString()}`
       );
 
@@ -799,7 +806,7 @@ export class MedicationsApi {
     try {
       if (!studentMedicationId) throw new Error('Student medication ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ studentMedication: StudentMedication }>>(
+      const response = await this.client.put<ApiResponse<{ studentMedication: StudentMedication }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/student-medication/${studentMedicationId}/deactivate`,
         { reason }
       );
@@ -815,7 +822,7 @@ export class MedicationsApi {
    */
   async getStats(): Promise<MedicationStats> {
     try {
-      const response = await apiInstance.get<ApiResponse<MedicationStats>>(
+      const response = await this.client.get<ApiResponse<MedicationStats>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/stats`
       );
 
@@ -830,7 +837,7 @@ export class MedicationsApi {
    */
   async getAlerts(): Promise<MedicationAlertsResponse> {
     try {
-      const response = await apiInstance.get<ApiResponse<MedicationAlertsResponse>>(
+      const response = await this.client.get<ApiResponse<MedicationAlertsResponse>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/alerts`
       );
 
@@ -845,7 +852,7 @@ export class MedicationsApi {
    */
   async getFormOptions(): Promise<MedicationFormOptions> {
     try {
-      const response = await apiInstance.get<ApiResponse<MedicationFormOptions>>(
+      const response = await this.client.get<ApiResponse<MedicationFormOptions>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/form-options`
       );
 
@@ -857,4 +864,8 @@ export class MedicationsApi {
 }
 
 // Export singleton instance
-export const medicationsApi = new MedicationsApi();
+
+// Factory function for creating MedicationsApi instances
+export function createMedicationsApi(client: ApiClient): MedicationsApi {
+  return new MedicationsApi(client);
+}

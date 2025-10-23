@@ -251,7 +251,7 @@ export const syncLogsQuerySchema = Joi.object({
 export const gradeTransitionSchema = Joi.object({
   effectiveDate: Joi.date().iso()
     .description('Date when grade transition becomes effective')
-    .default(() => new Date(), 'Current date'),
+    .default(new Date()),
   dryRun: Joi.boolean().default(false)
     .description('Preview mode - no changes will be saved'),
   grades: Joi.array().items(Joi.string())

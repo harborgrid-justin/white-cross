@@ -19,45 +19,59 @@ import {
   REQUEST_CONFIG,
   API_CONSTANTS
 } from '../../constants/api';
-import { secureTokenManager } from '../security/SecureTokenManager';
+import type { ITokenManager } from '../core/interfaces/ITokenManager';
 import { setupCsrfProtection } from '../security/CsrfProtection';
 
-// Create axios instance
-export const apiInstance: AxiosInstance = axios.create({
-  baseURL: API_CONFIG.BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-});
+/**
+ * Factory function to create axios instance with optional token manager
+ * Uses dependency injection pattern to avoid circular dependencies
+ *
+ * @param tokenManager - Optional token manager for authentication
+ * @returns Configured axios instance with CSRF protection
+ */
+export function createApiInstance(tokenManager?: ITokenManager): AxiosInstance {
+  const instance = axios.create({
+    baseURL: API_CONFIG.BASE_URL,
+    timeout: API_CONFIG.TIMEOUT,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    withCredentials: true,
+  });
 
-// Note: Authentication interceptors are handled by ApiClient.ts
-// This basic instance is for simple configurations and backward compatibility
-// For authenticated requests, use ApiClient instance instead
+  // Setup CSRF protection for the instance
+  setupCsrfProtection(instance);
 
-// Setup CSRF protection for apiInstance
-setupCsrfProtection(apiInstance);
+  return instance;
+}
 
-// Utility functions - migrated to use SecureTokenManager
-export const tokenUtils = {
-  getToken: () => secureTokenManager.getToken(),
-  setToken: (token: string, refreshToken?: string, expiresIn?: number) =>
-    secureTokenManager.setToken(token, refreshToken, expiresIn),
-  removeToken: () => secureTokenManager.clearTokens(),
-  getRefreshToken: () => secureTokenManager.getRefreshToken(),
-  setRefreshToken: (token: string) => {
-    // Get current token and re-set with new refresh token
-    const currentToken = secureTokenManager.getToken();
-    if (currentToken) {
-      secureTokenManager.setToken(currentToken, token);
-    }
-  },
-  removeRefreshToken: () => secureTokenManager.clearTokens(),
-  clearAll: () => secureTokenManager.clearTokens(),
-  isTokenValid: () => secureTokenManager.isTokenValid(),
-  updateActivity: () => secureTokenManager.updateActivity(),
-};
+/**
+ * Factory function to create token utility functions
+ * Uses dependency injection pattern to avoid circular dependencies
+ *
+ * @param tokenManager - Token manager instance to wrap
+ * @returns Object with token utility methods
+ */
+export function createTokenUtils(tokenManager: ITokenManager) {
+  return {
+    getToken: () => tokenManager.getToken(),
+    setToken: (token: string, refreshToken?: string, expiresIn?: number) =>
+      tokenManager.setToken(token, refreshToken, expiresIn),
+    removeToken: () => tokenManager.clearTokens(),
+    getRefreshToken: () => tokenManager.getRefreshToken(),
+    setRefreshToken: (token: string) => {
+      // Get current token and re-set with new refresh token
+      const currentToken = tokenManager.getToken();
+      if (currentToken) {
+        tokenManager.setToken(currentToken, token);
+      }
+    },
+    removeRefreshToken: () => tokenManager.clearTokens(),
+    clearAll: () => tokenManager.clearTokens(),
+    isTokenValid: () => tokenManager.isTokenValid(),
+    updateActivity: () => tokenManager.updateActivity(),
+  };
+}
 
 // Export API constants for use in other modules
 export { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG, API_CONSTANTS };
@@ -65,4 +79,26 @@ export { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG, API_CONSTANT
 // Export API_CONFIG from constants
 export { API_CONFIG } from '../../constants/config';
 
+// ==========================================
+// SINGLETON INSTANCES
+// ==========================================
+// Import secureTokenManager at bottom to avoid circular dependency
+// This follows the dependency injection pattern from ApiClient.ts
+import { secureTokenManager } from '../security/SecureTokenManager';
+
+/**
+ * Default axios instance for API requests
+ * Created using factory function with secureTokenManager injected
+ */
+export const apiInstance: AxiosInstance = createApiInstance(secureTokenManager);
+
+/**
+ * Token utility functions using secureTokenManager
+ * Created using factory function with secureTokenManager injected
+ */
+export const tokenUtils = createTokenUtils(secureTokenManager);
+
+/**
+ * Default export for backward compatibility
+ */
 export default apiInstance;

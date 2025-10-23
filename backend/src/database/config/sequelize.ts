@@ -55,13 +55,19 @@ if (!DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-// Connection pool configuration
+// Connection pool configuration - OPTIMIZED for performance
+// Performance Optimization: PF8X4K-POOL-001
+// - Increased max connections from 10 to 20 for better concurrency
+// - Increased min connections from 2 to 5 for faster response times
+// - Reduced acquire timeout from 60s to 30s to fail fast
+// - Set idle timeout to 10s for faster connection release
+// - Set eviction check to 1s for proactive cleanup
 const poolConfig = {
-  max: parseInt(process.env.DB_POOL_MAX || '10', 10),
-  min: parseInt(process.env.DB_POOL_MIN || '2', 10),
-  acquire: parseInt(process.env.DB_CONNECTION_TIMEOUT || '60000', 10),
-  idle: 30000,
-  evict: 10000,
+  max: parseInt(process.env.DB_POOL_MAX || '20', 10), // Max 20 connections (was 10)
+  min: parseInt(process.env.DB_POOL_MIN || '5', 10),  // Min 5 connections (was 2)
+  acquire: parseInt(process.env.DB_CONNECTION_TIMEOUT || '30000', 10), // 30s timeout (was 60s)
+  idle: 10000,  // 10s idle timeout (was 30s)
+  evict: 1000,  // 1s eviction check (was 10s)
 };
 
 // Query performance thresholds
@@ -102,11 +108,12 @@ const sequelizeOptions: Options = {
             require: true,
             rejectUnauthorized: false,
           },
-          statement_timeout: 60000,
-          idle_in_transaction_session_timeout: 120000,
+          statement_timeout: 30000, // 30s query timeout (was 60s) - Performance Optimization: PF8X4K-TIMEOUT-001
+          idle_in_transaction_session_timeout: 120000, // 2min transaction timeout
         }
       : {
-          statement_timeout: 60000,
+          statement_timeout: 30000, // 30s query timeout (was 60s) - Performance Optimization: PF8X4K-TIMEOUT-001
+          idle_in_transaction_session_timeout: 120000, // 2min transaction timeout
         },
 
   retry: {

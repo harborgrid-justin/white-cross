@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
 import {
   Medication,
@@ -10,6 +10,20 @@ import {
   IncidentReport,
   sequelize
 } from '../database/models';
+import {
+  MEDICATION_DOSAGE_FORMS,
+  MEDICATION_CATEGORIES,
+  MEDICATION_STRENGTH_UNITS,
+  MEDICATION_ROUTES,
+  MEDICATION_FREQUENCIES
+} from './shared/constants/medicationConstants';
+import {
+  ValidationError,
+  NotFoundError,
+  DatabaseError,
+  ConflictError
+} from '../shared/errors';
+import { retry } from '../shared/utils/resilience';
 
 // Type augmentations for model associations
 declare module '../database/models' {
@@ -189,37 +203,58 @@ export class MedicationService {
   }
 
   /**
-   * Create new medication
+   * Create new medication with transaction protection
    */
   static async createMedication(data: CreateMedicationData) {
+    const transaction = await sequelize.transaction();
+
     try {
-      // Check if medication with same name and strength exists
+      // Check if medication with same name and strength exists (inside transaction)
       const existingMedication = await Medication.findOne({
         where: {
           name: data.name,
           strength: data.strength,
           dosageForm: data.dosageForm
-        }
+        },
+        transaction
       });
 
       if (existingMedication) {
-        throw new Error('Medication with same name, strength, and dosage form already exists');
+        await transaction.rollback();
+        throw new ConflictError(
+          'Medication',
+          'duplicate',
+          'Medication with same name, strength, and dosage form already exists',
+          {
+            name: data.name,
+            strength: data.strength,
+            dosageForm: data.dosageForm
+          }
+        );
       }
 
-      // Check NDC uniqueness if provided
+      // Check NDC uniqueness if provided (inside transaction)
       if (data.ndc) {
         const existingNDC = await Medication.findOne({
-          where: { ndc: data.ndc }
+          where: { ndc: data.ndc },
+          transaction
         });
 
         if (existingNDC) {
-          throw new Error('Medication with this NDC already exists');
+          await transaction.rollback();
+          throw new ConflictError(
+            'Medication',
+            'duplicate_ndc',
+            'Medication with this NDC already exists',
+            { ndc: data.ndc }
+          );
         }
       }
 
-      const medication = await Medication.create(data);
+      // Create medication (inside transaction)
+      const medication = await Medication.create(data, { transaction });
 
-      // Reload with associations
+      // Reload with associations (inside transaction)
       await medication.reload({
         include: [
           {
@@ -239,52 +274,94 @@ export class MedicationService {
               'studentMedicationCount'
             ]
           ]
-        }
+        },
+        transaction
       });
 
-      logger.info(`Medication created: ${medication.name} ${medication.strength}`);
+      // Commit transaction
+      await transaction.commit();
+
+      logger.info(`Medication created: ${medication.name} ${medication.strength}`, {
+        medicationId: medication.id,
+        name: medication.name,
+        strength: medication.strength
+      });
+
       return medication;
-    } catch (error) {
-      logger.error('Error creating medication:', error);
-      throw error;
+
+    } catch (error: any) {
+      // Rollback transaction on any error
+      await transaction.rollback();
+
+      // Preserve custom errors
+      if (error instanceof ValidationError || error instanceof ConflictError || error instanceof NotFoundError) {
+        throw error;
+      }
+
+      // Log and wrap database errors
+      logger.error('Error creating medication:', {
+        error: error.message,
+        errorName: error.name,
+        data
+      });
+
+      throw new DatabaseError('createMedication', error as Error, {
+        medicationData: data
+      });
     }
   }
 
   /**
-   * Assign medication to student
+   * Assign medication to student with transaction protection
    */
   static async assignMedicationToStudent(data: CreateStudentMedicationData) {
+    const transaction = await sequelize.transaction();
+
     try {
-      // Verify student exists
-      const student = await Student.findByPk(data.studentId);
+      // Verify student exists (inside transaction)
+      const student = await Student.findByPk(data.studentId, { transaction });
 
       if (!student) {
-        throw new Error('Student not found');
+        await transaction.rollback();
+        throw new NotFoundError('Student', data.studentId);
       }
 
-      // Verify medication exists
-      const medication = await Medication.findByPk(data.medicationId);
+      // Verify medication exists (inside transaction)
+      const medication = await Medication.findByPk(data.medicationId, { transaction });
 
       if (!medication) {
-        throw new Error('Medication not found');
+        await transaction.rollback();
+        throw new NotFoundError('Medication', data.medicationId);
       }
 
-      // Check if student already has active prescription for this medication
+      // Check if student already has active prescription for this medication (inside transaction)
       const existingPrescription = await StudentMedication.findOne({
         where: {
           studentId: data.studentId,
           medicationId: data.medicationId,
           isActive: true
-        }
+        },
+        transaction
       });
 
       if (existingPrescription) {
-        throw new Error('Student already has an active prescription for this medication');
+        await transaction.rollback();
+        throw new ConflictError(
+          'StudentMedication',
+          'duplicate_prescription',
+          'Student already has an active prescription for this medication',
+          {
+            studentId: data.studentId,
+            medicationId: data.medicationId,
+            existingPrescriptionId: existingPrescription.id
+          }
+        );
       }
 
-      const studentMedication = await StudentMedication.create(data);
+      // Create student medication (inside transaction)
+      const studentMedication = await StudentMedication.create(data, { transaction });
 
-      // Reload with associations
+      // Reload with associations (inside transaction)
       await studentMedication.reload({
         include: [
           {
@@ -296,23 +373,51 @@ export class MedicationService {
             as: 'student',
             attributes: ['id', 'firstName', 'lastName', 'studentNumber']
           }
-        ]
+        ],
+        transaction
       });
 
-      logger.info(`Medication ${medication.name} assigned to student ${student.firstName} ${student.lastName}`);
+      // Commit transaction
+      await transaction.commit();
+
+      logger.info(`Medication ${medication.name} assigned to student ${student.firstName} ${student.lastName}`, {
+        studentMedicationId: studentMedication.id,
+        studentId: data.studentId,
+        medicationId: data.medicationId
+      });
+
       return studentMedication;
-    } catch (error) {
-      logger.error('Error assigning medication to student:', error);
-      throw error;
+
+    } catch (error: any) {
+      // Rollback transaction on any error
+      await transaction.rollback();
+
+      // Preserve custom errors
+      if (error instanceof ValidationError || error instanceof ConflictError || error instanceof NotFoundError) {
+        throw error;
+      }
+
+      // Log and wrap database errors
+      logger.error('Error assigning medication to student:', {
+        error: error.message,
+        errorName: error.name,
+        data
+      });
+
+      throw new DatabaseError('assignMedicationToStudent', error as Error, {
+        assignmentData: data
+      });
     }
   }
 
   /**
-   * Log medication administration
+   * Log medication administration with transaction protection
    */
   static async logMedicationAdministration(data: CreateMedicationLogData) {
+    const transaction = await sequelize.transaction();
+
     try {
-      // Verify student medication exists and is active
+      // Verify student medication exists and is active (inside transaction)
       const studentMedication = await StudentMedication.findByPk(data.studentMedicationId, {
         include: [
           {
@@ -324,24 +429,35 @@ export class MedicationService {
             as: 'student',
             attributes: ['firstName', 'lastName', 'studentNumber']
           }
-        ]
+        ],
+        transaction
       });
 
       if (!studentMedication) {
-        throw new Error('Student medication prescription not found');
+        await transaction.rollback();
+        throw new NotFoundError('StudentMedication', data.studentMedicationId);
       }
 
       if (!studentMedication.isActive) {
-        throw new Error('Medication prescription is not active');
+        await transaction.rollback();
+        throw new ValidationError(
+          'Medication prescription is not active',
+          {
+            studentMedicationId: data.studentMedicationId,
+            isActive: studentMedication.isActive
+          }
+        );
       }
 
-      // Verify nurse exists
-      const nurse = await User.findByPk(data.nurseId);
+      // Verify nurse exists (inside transaction)
+      const nurse = await User.findByPk(data.nurseId, { transaction });
 
       if (!nurse) {
-        throw new Error('Nurse not found');
+        await transaction.rollback();
+        throw new NotFoundError('User (Nurse)', data.nurseId);
       }
 
+      // Create medication log (inside transaction)
       const medicationLog = await MedicationLog.create({
         ...data,
         administeredBy: `${nurse.firstName} ${nurse.lastName}`,
@@ -351,9 +467,9 @@ export class MedicationService {
         timeGiven: data.timeGiven,
         notes: data.notes,
         sideEffects: data.sideEffects
-      });
+      }, { transaction });
 
-      // Reload with associations
+      // Reload with associations (inside transaction)
       await medicationLog.reload({
         include: [
           {
@@ -376,14 +492,40 @@ export class MedicationService {
               }
             ]
           }
-        ]
+        ],
+        transaction
       });
 
-      logger.info(`Medication administration logged: ${studentMedication.medication!.name} to ${studentMedication.student!.firstName} ${studentMedication.student!.lastName} by ${nurse.firstName} ${nurse.lastName}`);
+      // Commit transaction
+      await transaction.commit();
+
+      logger.info(`Medication administration logged: ${studentMedication.medication!.name} to ${studentMedication.student!.firstName} ${studentMedication.student!.lastName} by ${nurse.firstName} ${nurse.lastName}`, {
+        medicationLogId: medicationLog.id,
+        studentMedicationId: data.studentMedicationId,
+        nurseId: data.nurseId
+      });
+
       return medicationLog;
-    } catch (error) {
-      logger.error('Error logging medication administration:', error);
-      throw error;
+
+    } catch (error: any) {
+      // Rollback transaction on any error
+      await transaction.rollback();
+
+      // Preserve custom errors
+      if (error instanceof ValidationError || error instanceof ConflictError || error instanceof NotFoundError) {
+        throw error;
+      }
+
+      // Log and wrap database errors
+      logger.error('Error logging medication administration:', {
+        error: error.message,
+        errorName: error.name,
+        data
+      });
+
+      throw new DatabaseError('logMedicationAdministration', error as Error, {
+        administrationData: data
+      });
     }
   }
 
@@ -735,23 +877,32 @@ export class MedicationService {
 
   /**
    * Parse medication frequency to scheduled times
+   * SECURITY FIX: Added validation to prevent malformed or malicious input
    */
   private static parseFrequencyToTimes(frequency: string): Array<{ hour: number; minute: number }> {
-    const freq = frequency.toLowerCase();
+    // SECURITY: Import validation at top of file
+    // Validate frequency input to prevent injection attacks and ensure medical safety
+    const validation = this.validateFrequency(frequency);
+    if (!validation.isValid) {
+      logger.error(`Invalid medication frequency: ${frequency}`, { error: validation.error });
+      throw new Error(validation.error || 'Invalid medication frequency');
+    }
+
+    const freq = validation.normalized;
 
     // Common medication schedules
-    if (freq.includes('once') || freq.includes('1x') || freq === 'daily') {
+    if (freq.includes('once') || freq.includes('1x') || freq === 'daily' || freq === 'qd') {
       return [{ hour: 9, minute: 0 }]; // 9 AM
     }
 
-    if (freq.includes('twice') || freq.includes('2x') || freq.includes('bid')) {
+    if (freq.includes('twice') || freq.includes('2x') || freq.includes('bid') || freq.includes('b.i.d.')) {
       return [
         { hour: 9, minute: 0 },  // 9 AM
         { hour: 21, minute: 0 }  // 9 PM
       ];
     }
 
-    if (freq.includes('3') || freq.includes('three') || freq.includes('tid')) {
+    if (freq.includes('3') || freq.includes('three') || freq.includes('tid') || freq.includes('t.i.d.')) {
       return [
         { hour: 8, minute: 0 },  // 8 AM
         { hour: 14, minute: 0 }, // 2 PM
@@ -759,7 +910,7 @@ export class MedicationService {
       ];
     }
 
-    if (freq.includes('4') || freq.includes('four') || freq.includes('qid')) {
+    if (freq.includes('4') || freq.includes('four') || freq.includes('qid') || freq.includes('q.i.d.')) {
       return [
         { hour: 8, minute: 0 },  // 8 AM
         { hour: 12, minute: 0 }, // 12 PM
@@ -785,8 +936,95 @@ export class MedicationService {
       ];
     }
 
-    // Default to once daily if can't parse
+    if (freq.includes('every 4 hours') || freq.includes('q4h')) {
+      return [
+        { hour: 6, minute: 0 },
+        { hour: 10, minute: 0 },
+        { hour: 14, minute: 0 },
+        { hour: 18, minute: 0 },
+        { hour: 22, minute: 0 },
+        { hour: 2, minute: 0 }
+      ];
+    }
+
+    if (freq.includes('every 12 hours') || freq.includes('q12h')) {
+      return [
+        { hour: 8, minute: 0 },
+        { hour: 20, minute: 0 }
+      ];
+    }
+
+    if (freq.includes('weekly') || freq.includes('once weekly')) {
+      return [{ hour: 9, minute: 0 }]; // Once weekly at 9 AM
+    }
+
+    if (freq.includes('as needed') || freq.includes('prn') || freq.includes('p.r.n.')) {
+      return []; // PRN medications have no fixed schedule
+    }
+
+    // Default to once daily for any remaining valid frequencies
     return [{ hour: 9, minute: 0 }];
+  }
+
+  /**
+   * Validate medication frequency string
+   * SECURITY: Helper method for frequency validation
+   */
+  private static validateFrequency(frequency: string): {
+    isValid: boolean;
+    normalized: string;
+    error?: string;
+  } {
+    // Input sanitization
+    if (!frequency || typeof frequency !== 'string') {
+      return {
+        isValid: false,
+        normalized: '',
+        error: 'Frequency must be a non-empty string'
+      };
+    }
+
+    // Length validation (prevent DoS with very long strings)
+    if (frequency.length > 100) {
+      return {
+        isValid: false,
+        normalized: '',
+        error: 'Frequency string too long (max 100 characters)'
+      };
+    }
+
+    // Normalize: lowercase and trim
+    const normalized = frequency.toLowerCase().trim();
+
+    // Allowed patterns
+    const allowedPatterns = [
+      'once daily', 'once a day', '1x daily', '1x/day', 'daily', 'qd',
+      'twice daily', 'twice a day', '2x daily', '2x/day', 'bid', 'b.i.d.',
+      'three times daily', 'three times a day', '3x daily', '3x/day', 'tid', 't.i.d.',
+      'four times daily', 'four times a day', '4x daily', '4x/day', 'qid', 'q.i.d.',
+      'every 4 hours', 'every 6 hours', 'every 8 hours', 'every 12 hours',
+      'q4h', 'q6h', 'q8h', 'q12h',
+      'as needed', 'prn', 'p.r.n.',
+      'weekly', 'once weekly', '1x weekly'
+    ];
+
+    // Check against allowed patterns
+    const isValid = allowedPatterns.some(pattern =>
+      normalized === pattern || normalized.includes(pattern)
+    );
+
+    if (!isValid) {
+      return {
+        isValid: false,
+        normalized,
+        error: `Invalid medication frequency: "${frequency}". Must be one of the standard medical frequency patterns.`
+      };
+    }
+
+    return {
+      isValid: true,
+      normalized
+    };
   }
 
   /**
@@ -1099,6 +1337,7 @@ export class MedicationService {
 
   /**
    * Get medication form options
+   * Now uses centralized constants from medicationConstants.ts
    */
   static async getMedicationFormOptions() {
     try {
@@ -1108,98 +1347,18 @@ export class MedicationService {
         raw: true
       });
 
-      // Standard medication forms
-      const standardForms = [
-        'Tablet',
-        'Capsule',
-        'Liquid',
-        'Injection',
-        'Topical',
-        'Inhaler',
-        'Drops',
-        'Patch',
-        'Suppository',
-        'Powder',
-        'Cream',
-        'Ointment',
-        'Gel',
-        'Spray',
-        'Lozenge'
-      ];
-
-      // Combine and deduplicate
+      // Combine standard forms with existing forms from database
       const allForms = [...new Set([
-        ...standardForms,
+        ...MEDICATION_DOSAGE_FORMS,
         ...existingForms.map((f: any) => f.dosageForm).filter(Boolean)
       ])].sort();
 
-      // Standard medication categories
-      const categories = [
-        'Analgesic',
-        'Antibiotic',
-        'Antihistamine',
-        'Anti-inflammatory',
-        'Asthma Medication',
-        'Diabetic Medication',
-        'Cardiovascular',
-        'Gastrointestinal',
-        'Neurological',
-        'Dermatological',
-        'Ophthalmic',
-        'Otic',
-        'Emergency Medication',
-        'Vitamin/Supplement',
-        'Other'
-      ];
-
-      // Common strength units
-      const strengthUnits = [
-        'mg',
-        'g',
-        'mcg',
-        'ml',
-        'units',
-        'mEq',
-        '%'
-      ];
-
-      // Administration routes
-      const routes = [
-        'Oral',
-        'Sublingual',
-        'Topical',
-        'Intravenous',
-        'Intramuscular',
-        'Subcutaneous',
-        'Inhalation',
-        'Ophthalmic',
-        'Otic',
-        'Nasal',
-        'Rectal',
-        'Transdermal'
-      ];
-
       const formOptions = {
         dosageForms: allForms,
-        categories,
-        strengthUnits,
-        routes,
-        frequencies: [
-          'Once daily',
-          'Twice daily',
-          'Three times daily',
-          'Four times daily',
-          'Every 4 hours',
-          'Every 6 hours',
-          'Every 8 hours',
-          'Every 12 hours',
-          'As needed',
-          'Before meals',
-          'After meals',
-          'At bedtime',
-          'Weekly',
-          'Monthly'
-        ]
+        categories: [...MEDICATION_CATEGORIES],
+        strengthUnits: [...MEDICATION_STRENGTH_UNITS],
+        routes: [...MEDICATION_ROUTES],
+        frequencies: [...MEDICATION_FREQUENCIES]
       };
 
       logger.info('Retrieved medication form options');

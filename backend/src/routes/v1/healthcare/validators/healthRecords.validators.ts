@@ -10,8 +10,7 @@ import { paginationSchema } from '../../../shared/validators';
  * General Health Record Schemas
  */
 
-export const healthRecordQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const healthRecordQuerySchema = paginationSchema.keys({
   type: Joi.string()
     .valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING')
     .optional()

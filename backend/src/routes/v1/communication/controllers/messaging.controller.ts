@@ -4,8 +4,8 @@
  */
 
 import { Request, ResponseToolkit, Lifecycle } from '@hapi/hapi';
-import { successResponse } from '../../../shared/utils';
-import { logger } from '../../../shared/logging/logger';
+import { successResponse } from '../../../../shared/utils';
+import { logger } from '../../../../shared/logging/logger';
 
 /**
  * BULK MESSAGING HANDLERS

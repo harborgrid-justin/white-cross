@@ -36,6 +36,7 @@ import {
   sequelize
 } from '../database/models';
 import { AppointmentStatus, AppointmentType, AllergySeverity } from '../database/types/enums';
+import { DatabaseError } from '../shared/errors';
 
 /**
  * Interface definitions for dashboard data structures
@@ -146,18 +147,9 @@ export class DashboardService {
       const lastMonth = new Date(today);
       lastMonth.setMonth(lastMonth.getMonth() - 1);
 
-      // Parallel execution of all count queries for optimal performance
-      const [
-        totalStudents,
-        activeMedications,
-        todaysAppointments,
-        pendingIncidents,
-        medicationsDueToday,
-        healthAlerts,
-        studentsLastMonth,
-        medicationsLastMonth,
-        appointmentsLastMonth
-      ] = await Promise.all([
+      // Parallel execution of all count queries with graceful degradation
+      // Using Promise.allSettled to handle partial failures gracefully
+      const results = await Promise.allSettled([
         // Current period counts
         Student.count({
           where: { isActive: true }
@@ -253,6 +245,47 @@ export class DashboardService {
           }
         })
       ]);
+
+      // Metric names for logging and fallback handling
+      const metricNames = [
+        'totalStudents',
+        'activeMedications',
+        'todaysAppointments',
+        'pendingIncidents',
+        'medicationsDueToday',
+        'healthAlerts',
+        'studentsLastMonth',
+        'medicationsLastMonth',
+        'appointmentsLastMonth'
+      ];
+
+      // Extract values with fallback to 0 for failed queries
+      // This ensures dashboard remains functional even if individual metrics fail
+      const [
+        totalStudents,
+        activeMedications,
+        todaysAppointments,
+        pendingIncidents,
+        medicationsDueToday,
+        healthAlerts,
+        studentsLastMonth,
+        medicationsLastMonth,
+        appointmentsLastMonth
+      ] = results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value as number;
+        } else {
+          // Log the failure but don't crash the entire dashboard
+          logger.error(`Dashboard metric '${metricNames[index]}' failed`, {
+            metric: metricNames[index],
+            error: result.reason?.message || result.reason,
+            errorName: result.reason?.name,
+          });
+
+          // Return fallback value (0) - could also use cached value if available
+          return 0;
+        }
+      });
 
       // Calculate percentage changes for trend analysis
       const studentChange = studentsLastMonth > 0

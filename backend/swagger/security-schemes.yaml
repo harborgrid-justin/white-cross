@@ -1,0 +1,1108 @@
+# ===================================================================
+# White Cross Healthcare Platform - OpenAPI Security Schemes
+# ===================================================================
+#
+# This file defines all authentication, authorization, and security
+# mechanisms used by the White Cross API for comprehensive API documentation.
+#
+# HIPAA Compliance: All PHI (Protected Health Information) access requires
+# authentication and appropriate authorization based on user roles.
+#
+# Security Layers:
+# 1. Authentication - JWT Bearer tokens, OAuth 2.0, Session-based
+# 2. Authorization - Role-Based Access Control (RBAC) with 8 hierarchical roles
+# 3. Security Middleware - CSRF protection, rate limiting, security headers
+# 4. Transmission Security - HSTS, TLS enforcement
+#
+# Last Updated: 2025-10-23
+# ===================================================================
+
+# ===================================================================
+# OpenAPI Security Schemes Definition
+# ===================================================================
+components:
+  securitySchemes:
+    # -----------------------------------------------------------------
+    # JWT Bearer Authentication (Primary API Authentication)
+    # -----------------------------------------------------------------
+    # Used for: All API endpoints requiring authentication
+    # Token Format: Bearer <JWT>
+    # Token Lifetime: 8 hours (configurable)
+    # Refresh Token Lifetime: 7 days
+    # -----------------------------------------------------------------
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        **JWT Bearer Token Authentication**
+
+        Primary authentication method for API requests. JWT tokens are issued
+        upon successful login and must be included in the `Authorization` header
+        for all protected endpoints.
+
+        **Token Structure:**
+        ```
+        {
+          "userId": "uuid",
+          "email": "user@example.com",
+          "role": "school_nurse",
+          "iat": 1234567890,
+          "exp": 1234596690,
+          "iss": "urn:issuer:api",
+          "aud": "urn:audience:api"
+        }
+        ```
+
+        **Security Features:**
+        - Cryptographically signed with HS256 algorithm
+        - Expires after 8 hours (configurable)
+        - Contains user identity and role information
+        - Validated on every API request
+        - Issuer and audience claims verified
+
+        **Usage Example:**
+        ```bash
+        curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+          https://api.whitecross.health/api/students
+        ```
+
+        **How to Obtain:**
+        1. POST /api/auth/login with credentials
+        2. Receive JWT token in response
+        3. Include token in Authorization header for subsequent requests
+
+        **Token Refresh:**
+        - Use POST /api/auth/refresh before token expires
+        - Refresh tokens valid for 7 days
+        - New JWT issued with extended expiration
+
+        **HIPAA Compliance:**
+        - All PHI access requires valid JWT token
+        - Tokens contain minimum necessary user information
+        - All token validations are audit logged
+        - Failed authentication attempts trigger rate limiting
+
+    # -----------------------------------------------------------------
+    # OAuth 2.0 - Google Single Sign-On
+    # -----------------------------------------------------------------
+    # Used for: Enterprise SSO with Google Workspace accounts
+    # Flow: Authorization Code with PKCE
+    # Auto-provisioning: New users automatically created
+    # -----------------------------------------------------------------
+    GoogleOAuth:
+      type: oauth2
+      description: |
+        **Google OAuth 2.0 Single Sign-On**
+
+        Enterprise authentication using Google Workspace accounts. Ideal for
+        school districts and healthcare organizations using Google for Education
+        or Google Workspace.
+
+        **Configuration Requirements:**
+        - GOOGLE_CLIENT_ID environment variable
+        - GOOGLE_CLIENT_SECRET environment variable
+        - Authorized redirect URI configured in Google Console
+
+        **Authentication Flow:**
+        1. User clicks "Sign in with Google"
+        2. Redirected to Google authentication
+        3. User grants permissions
+        4. Google redirects back with authorization code
+        5. Backend exchanges code for user profile
+        6. User auto-provisioned if new
+        7. JWT token issued for API access
+
+        **Auto-Provisioning:**
+        - New users created with role: `school_nurse` (configurable)
+        - Email from Google profile used as identifier
+        - Random secure password generated (64 characters)
+        - Account marked as active
+
+        **Security Features:**
+        - OAuth 2.0 Authorization Code flow
+        - PKCE (Proof Key for Code Exchange) recommended
+        - No passwords stored for OAuth users
+        - Email verified by Google
+
+        **Supported Scopes:**
+        - openid (required)
+        - email (required)
+        - profile (required)
+
+        **Endpoints:**
+        - Initiate: GET /api/auth/google
+        - Callback: GET /api/auth/google/callback
+
+        **HIPAA Compliance:**
+        - OAuth events logged for audit trail
+        - User access reviewed based on email domain
+        - Session management follows HIPAA guidelines
+      flows:
+        authorizationCode:
+          authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
+          tokenUrl: https://oauth2.googleapis.com/token
+          scopes:
+            openid: OpenID Connect authentication
+            email: Access user email address
+            profile: Access basic profile information
+
+    # -----------------------------------------------------------------
+    # OAuth 2.0 - Microsoft Azure AD Single Sign-On
+    # -----------------------------------------------------------------
+    # Used for: Enterprise SSO with Microsoft 365 / Azure AD
+    # Flow: Authorization Code with PKCE
+    # Auto-provisioning: New users automatically created
+    # -----------------------------------------------------------------
+    MicrosoftOAuth:
+      type: oauth2
+      description: |
+        **Microsoft OAuth 2.0 Single Sign-On (Azure AD)**
+
+        Enterprise authentication using Microsoft 365 or Azure Active Directory
+        accounts. Ideal for school districts using Microsoft for Education.
+
+        **Configuration Requirements:**
+        - MICROSOFT_CLIENT_ID environment variable
+        - MICROSOFT_CLIENT_SECRET environment variable
+        - Authorized redirect URI configured in Azure Portal
+
+        **Authentication Flow:**
+        1. User clicks "Sign in with Microsoft"
+        2. Redirected to Microsoft/Azure AD authentication
+        3. User grants permissions
+        4. Microsoft redirects back with authorization code
+        5. Backend exchanges code for user profile
+        6. User auto-provisioned if new
+        7. JWT token issued for API access
+
+        **Auto-Provisioning:**
+        - New users created with role: `school_nurse` (configurable)
+        - Email from Microsoft profile used as identifier
+        - Random secure password generated (64 characters)
+        - Account marked as active
+
+        **Security Features:**
+        - OAuth 2.0 Authorization Code flow
+        - PKCE (Proof Key for Code Exchange) recommended
+        - No passwords stored for OAuth users
+        - Email verified by Microsoft
+        - Supports conditional access policies
+
+        **Supported Scopes:**
+        - user.read (required) - Read user profile
+
+        **Endpoints:**
+        - Initiate: GET /api/auth/microsoft
+        - Callback: GET /api/auth/microsoft/callback
+
+        **HIPAA Compliance:**
+        - OAuth events logged for audit trail
+        - Integrates with Azure AD security policies
+        - Session management follows HIPAA guidelines
+        - Multi-factor authentication enforced at Azure AD level
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/common/oauth2/v2.0/token
+          scopes:
+            user.read: Read user profile information
+
+    # -----------------------------------------------------------------
+    # Session-based Authentication (Cookie)
+    # -----------------------------------------------------------------
+    # Used for: Browser-based applications, web UI
+    # Session Store: Server-side (in-memory or Redis)
+    # Cookie Lifetime: 8 hours
+    # -----------------------------------------------------------------
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: white-cross-session
+      description: |
+        **Session-based Cookie Authentication**
+
+        Browser-based authentication using HTTP-only secure cookies. Used
+        primarily for web UI interactions. Sessions stored server-side for
+        enhanced security.
+
+        **Session Configuration:**
+        - Cookie Name: `white-cross-session`
+        - Max Age: 8 hours (28,800,000 ms)
+        - HttpOnly: true (JavaScript cannot access)
+        - Secure: true (HTTPS only in production)
+        - SameSite: strict (CSRF protection)
+
+        **Session Storage:**
+        - Development: In-memory store (single server)
+        - Production: Redis cluster (recommended for scalability)
+
+        **Authentication Flow:**
+        1. User logs in via POST /api/auth/login
+        2. Server creates session and sets cookie
+        3. Browser automatically includes cookie in subsequent requests
+        4. Server validates session on each request
+        5. User data deserialized from session store
+
+        **Session Data:**
+        - User ID (primary key for user lookup)
+        - Session creation timestamp
+        - Last activity timestamp
+        - IP address (for session hijacking detection)
+
+        **Security Features:**
+        - HttpOnly flag prevents XSS cookie theft
+        - Secure flag ensures HTTPS transmission
+        - SameSite strict prevents CSRF attacks
+        - Session IDs cryptographically random
+        - Automatic session expiration
+        - Session regeneration on login
+
+        **Session Management:**
+        - Login: Creates new session
+        - Logout: Destroys session server-side
+        - Timeout: 8 hours of inactivity
+        - Refresh: Activity extends session lifetime
+
+        **HIPAA Compliance:**
+        - Session creation/destruction logged
+        - Timeout enforces automatic logout
+        - Secure transmission required (HTTPS)
+        - Session data encrypted at rest (Redis encryption)
+
+    # -----------------------------------------------------------------
+    # API Key Authentication
+    # -----------------------------------------------------------------
+    # Used for: Integration partners, webhooks, service-to-service
+    # Scope: Limited to integration endpoints
+    # Rotation: Recommended every 90 days
+    # -----------------------------------------------------------------
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        **API Key Authentication for Integrations**
+
+        Long-lived API keys for integration partners, external systems,
+        and service-to-service communication. Provides programmatic access
+        without user credentials.
+
+        **Use Cases:**
+        - Third-party integrations (EHR systems, SIS)
+        - Webhook endpoints
+        - Scheduled jobs and automation
+        - Mobile app backend services
+
+        **API Key Format:**
+        - Prefix: `wc_live_` (production) or `wc_test_` (testing)
+        - Length: 32 alphanumeric characters
+        - Example: `wc_live_1234567890abcdef1234567890abcdef`
+
+        **Usage:**
+        ```bash
+        curl -H "X-API-Key: wc_live_1234567890abcdef1234567890abcdef" \
+          https://api.whitecross.health/api/integration/sync
+        ```
+
+        **Management:**
+        - Create: POST /api/integration/api-keys
+        - List: GET /api/integration/api-keys
+        - Rotate: PUT /api/integration/api-keys/:id/rotate
+        - Revoke: DELETE /api/integration/api-keys/:id
+
+        **Security Features:**
+        - Keys stored hashed (bcrypt)
+        - Scoped permissions (read-only, write, admin)
+        - Rate limiting per key
+        - IP allowlisting supported
+        - Automatic expiration supported
+        - Usage tracking and audit logs
+
+        **Best Practices:**
+        - Rotate keys every 90 days
+        - Use separate keys per integration
+        - Scope keys to minimum required permissions
+        - Never commit keys to version control
+        - Store keys in secure vault (environment variables)
+        - Monitor key usage for anomalies
+
+        **Permissions Scopes:**
+        - `integration:read` - Read integration data
+        - `integration:write` - Write integration data
+        - `integration:sync` - Trigger synchronization
+        - `integration:webhooks` - Manage webhooks
+
+        **Rate Limits:**
+        - Standard: 100 requests/minute
+        - Burst: 200 requests/minute
+        - Exceeded: 429 Too Many Requests with Retry-After header
+
+        **HIPAA Compliance:**
+        - All API key usage logged with request details
+        - Keys associated with organization/facility
+        - Access restricted to approved integration endpoints
+        - PHI access requires additional authorization
+
+# ===================================================================
+# Security Requirements by Endpoint Category
+# ===================================================================
+#
+# This section documents which security schemes are required for
+# different endpoint categories in the API.
+#
+# ===================================================================
+
+# AUTHENTICATION ENDPOINTS
+# Path: /api/auth/*
+# Security: None (public) or SessionAuth (logout)
+# Description: Login, logout, registration, password reset
+# Examples:
+#   - POST /api/auth/login - Public (no security)
+#   - POST /api/auth/logout - SessionAuth or BearerAuth
+#   - POST /api/auth/refresh - BearerAuth (refresh token)
+#   - GET /api/auth/google - Public (initiates OAuth)
+#   - GET /api/auth/google/callback - Public (OAuth callback)
+
+# STUDENT MANAGEMENT ENDPOINTS
+# Path: /api/students/*
+# Security: BearerAuth AND Role-based authorization
+# Required Roles: school_nurse, school_administrator, district_nurse,
+#                 district_administrator, system_administrator, super_admin
+# Required Permissions: read_student_basic, read_student_health (for PHI)
+# Examples:
+#   - GET /api/students - BearerAuth + read_student_basic permission
+#   - GET /api/students/:id - BearerAuth + read_student_health permission
+#   - POST /api/students - BearerAuth + school_nurse or higher
+#   - PUT /api/students/:id - BearerAuth + update_student_health permission
+#   - DELETE /api/students/:id - BearerAuth + system_administrator or higher
+
+# MEDICATION ENDPOINTS
+# Path: /api/medications/*
+# Security: BearerAuth AND Role-based authorization
+# Required Roles: school_nurse or higher
+# Required Permissions: read_medications, administer_medications, manage_medications
+# Examples:
+#   - GET /api/medications - BearerAuth + read_medications permission
+#   - POST /api/medications - BearerAuth + manage_medications permission
+#   - POST /api/medications/:id/administer - BearerAuth + administer_medications permission
+
+# HEALTH RECORDS ENDPOINTS (PHI)
+# Path: /api/health-records/*
+# Security: BearerAuth AND RBAC AND CSRF (for mutations)
+# Required Roles: school_nurse or higher (clinical roles)
+# Required Permissions: read_health_records, create_health_records, update_health_records
+# HIPAA: All access logged to audit trail
+# Examples:
+#   - GET /api/health-records/student/:studentId - BearerAuth + read_health_records
+#   - POST /api/health-records - BearerAuth + create_health_records + CSRF token
+#   - PUT /api/health-records/:id - BearerAuth + update_health_records + CSRF token
+
+# ADMINISTRATION ENDPOINTS
+# Path: /api/administration/*
+# Security: BearerAuth AND Role-based authorization
+# Required Roles: district_administrator, system_administrator, super_admin
+# Required Permissions: manage_schools, manage_users, manage_system
+# Examples:
+#   - GET /api/administration/system-health - BearerAuth + system_administrator
+#   - POST /api/administration/schools - BearerAuth + manage_schools permission
+#   - GET /api/administration/logs - BearerAuth + view_audit_logs permission
+
+# AUDIT ENDPOINTS
+# Path: /api/audit/*
+# Security: BearerAuth AND Role-based authorization
+# Required Roles: district_administrator or higher
+# Required Permissions: view_audit_logs
+# Examples:
+#   - GET /api/audit/logs - BearerAuth + view_audit_logs permission
+#   - GET /api/audit/user-activity/:userId - BearerAuth + view_audit_logs
+#   - GET /api/audit/export - BearerAuth + view_audit_logs + export_data permissions
+
+# INTEGRATION ENDPOINTS
+# Path: /api/integration/*
+# Security: ApiKeyAuth OR BearerAuth
+# Required Permissions: integration:read, integration:write, integration:sync
+# Examples:
+#   - GET /api/integration/status - ApiKeyAuth or BearerAuth
+#   - POST /api/integration/sync - ApiKeyAuth with integration:sync scope
+#   - POST /api/integration/webhooks - BearerAuth + manage_system permission
+
+# PUBLIC ENDPOINTS (No Authentication Required)
+# Paths:
+#   - GET /api/health - Health check
+#   - GET /docs - API documentation
+#   - GET /swagger.json - OpenAPI specification
+# Security: None, but rate limited for DDoS protection
+
+# ===================================================================
+# Role-Based Access Control (RBAC) Model
+# ===================================================================
+#
+# The White Cross platform implements a hierarchical RBAC system
+# with 8 distinct roles and fine-grained permissions.
+#
+# ===================================================================
+
+# ROLE HIERARCHY (lowest to highest privilege):
+#
+# 1. STUDENT (Level 0)
+#    - Can view own basic information
+#    - Can send messages
+#    Permissions: read_student_basic, send_messages
+#
+# 2. PARENT_GUARDIAN (Level 1)
+#    - Can view children's basic and health information
+#    - Can send messages to school staff
+#    Permissions: read_student_basic, read_student_health, send_messages
+#
+# 3. SCHOOL_NURSE (Level 2)
+#    - Full health record management at school level
+#    - Medication administration and management
+#    - Emergency alert creation
+#    Permissions: read_student_basic, read_student_health, update_student_health,
+#                 read_health_records, create_health_records, update_health_records,
+#                 read_medications, administer_medications, send_messages,
+#                 create_emergency_alert
+#
+# 4. SCHOOL_ADMINISTRATOR (Level 3)
+#    - School operations and reporting
+#    - Emergency response management
+#    - Limited PHI access (read-only health records)
+#    Permissions: read_student_basic, update_student_basic, read_health_records,
+#                 send_messages, broadcast_messages, view_reports,
+#                 manage_emergency_responses
+#
+# 5. DISTRICT_NURSE (Level 4)
+#    - School nurse permissions across multiple schools
+#    - District-level medication management
+#    - Cross-school reporting
+#    Permissions: All school_nurse permissions + manage_medications,
+#                 broadcast_messages, view_reports
+#
+# 6. DISTRICT_ADMINISTRATOR (Level 5)
+#    - Multi-school management
+#    - User administration across district
+#    - Audit log access
+#    Permissions: read_student_basic, update_student_basic, read_health_records,
+#                 send_messages, broadcast_messages, manage_communications,
+#                 manage_emergency_responses, manage_users, manage_schools,
+#                 view_reports, export_data, view_audit_logs
+#
+# 7. SYSTEM_ADMINISTRATOR (Level 6)
+#    - Full system access and configuration
+#    - Data management and compliance
+#    - All operations except super admin functions
+#    Permissions: All permissions except super_admin exclusive features
+#
+# 8. SUPER_ADMIN (Level 7)
+#    - Unrestricted access to all features
+#    - System-level configuration
+#    - User role management
+#    Permissions: ALL permissions in the system
+
+# PERMISSION MODEL:
+# Permissions follow a resource:action naming pattern:
+#   - read_student_basic      - View student non-PHI data
+#   - read_student_health     - View student PHI data
+#   - update_student_health   - Modify student PHI data
+#   - read_health_records     - View detailed health records
+#   - create_health_records   - Create new health records
+#   - administer_medications  - Administer medications to students
+#   - manage_users            - Create/modify user accounts
+#   - view_audit_logs         - Access system audit logs
+#   - manage_system           - System-level configuration
+
+# PERMISSION INHERITANCE:
+# When hierarchy is enabled (default):
+#   - Higher roles inherit permissions from all lower roles
+#   - district_nurse has all school_nurse permissions plus additional
+#   - super_admin has all permissions from all roles
+
+# PERMISSION CHECKING LOGIC:
+# Authorization checks support:
+#   - Single permission: hasPermission(user, 'read_health_records')
+#   - Multiple permissions (AND): hasAllPermissions(user, ['read', 'write'])
+#   - Multiple permissions (OR): hasAnyPermission(user, ['read', 'admin'])
+
+# SCOPE ENFORCEMENT:
+# Users can only access resources within their assigned:
+#   - School (school_nurse, school_administrator)
+#   - District (district_nurse, district_administrator)
+#   - System-wide (system_administrator, super_admin)
+
+# ===================================================================
+# Security Middleware and Protection Mechanisms
+# ===================================================================
+
+# CSRF PROTECTION:
+# - Applied to: POST, PUT, DELETE, PATCH requests
+# - Token Generation: Cryptographically secure random (base64, 16 bytes)
+# - Token Delivery: Cookie (HttpOnly) + Response Header
+# - Token Validation: Must match user ID and session ID
+# - Lifetime: Same as session (8 hours)
+# - Skipped Paths: /api/auth/login, /api/auth/logout, /api/webhook/*
+#
+# Usage:
+#   1. GET request receives CSRF token in cookie and X-CSRF-Token header
+#   2. Include token in subsequent mutations:
+#      - Header: X-CSRF-Token: <token>
+#      - OR Form field: _csrf=<token>
+#   3. Token validated server-side before processing request
+#
+# Headers:
+#   Request: X-CSRF-Token: AbCdEf123456...
+#   Cookie: _csrf=AbCdEf123456...; HttpOnly; Secure; SameSite=Strict
+
+# RATE LIMITING:
+# Authentication Endpoints (/api/auth/login):
+#   - Per User: 5 attempts per 15 minutes
+#   - User Lockout: 30 minutes after 5 failed attempts
+#   - Per IP: 10 attempts per 15 minutes
+#   - IP Block: 60 minutes after 10 failed attempts
+#   - Exponential Backoff: Enabled (1s base delay, 60s max)
+#
+# General API Endpoints:
+#   - Authenticated: 100 requests per minute
+#   - Unauthenticated: 20 requests per minute
+#   - Burst Allowance: 120 requests (authenticated)
+#
+# Rate Limit Headers:
+#   X-RateLimit-Limit: 100
+#   X-RateLimit-Remaining: 95
+#   X-RateLimit-Reset: 1234567890
+#   Retry-After: 60 (when limit exceeded)
+#
+# Response when exceeded:
+#   Status: 429 Too Many Requests
+#   Body: { "error": "Too many requests. Please try again later.", "retryAfter": 60 }
+
+# SECURITY HEADERS:
+# All API responses include comprehensive security headers:
+#
+# Content-Security-Policy:
+#   - Prevents XSS attacks by controlling resource sources
+#   - Production: Strict CSP with nonce-based inline scripts
+#   - Development: Relaxed CSP for debugging (report-only mode)
+#
+# Strict-Transport-Security (HSTS):
+#   - Forces HTTPS connections for 1 year
+#   - Includes subdomains
+#   - Preload list eligible
+#   - Header: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+#
+# X-Frame-Options:
+#   - Prevents clickjacking attacks
+#   - Value: DENY (no iframe embedding allowed)
+#
+# X-Content-Type-Options:
+#   - Prevents MIME type sniffing
+#   - Value: nosniff
+#
+# Referrer-Policy:
+#   - Controls referrer information leakage
+#   - Value: strict-origin-when-cross-origin
+#
+# Permissions-Policy:
+#   - Restricts browser features (camera, microphone, geolocation blocked)
+#   - Minimizes attack surface
+#
+# Cross-Origin Policies:
+#   - Cross-Origin-Embedder-Policy: require-corp
+#   - Cross-Origin-Opener-Policy: same-origin
+#   - Cross-Origin-Resource-Policy: same-origin
+
+# PASSWORD REQUIREMENTS:
+# Enforced for local authentication (not OAuth):
+#   - Minimum length: 8 characters
+#   - Must contain:
+#     * At least one lowercase letter (a-z)
+#     * At least one uppercase letter (A-Z)
+#     * At least one digit (0-9)
+#     * At least one special character (@$!%*?&)
+#   - Stored: Bcrypt hash (cost factor: 10)
+#   - Validation Pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+
+# AUDIT LOGGING:
+# All security-relevant events are logged:
+#   - User login (success and failure)
+#   - User logout
+#   - JWT token generation and validation
+#   - OAuth authentication flows
+#   - Authorization decisions (permission checks)
+#   - PHI access (HIPAA requirement)
+#   - Failed authentication attempts
+#   - Rate limit violations
+#   - Session creation/destruction
+#
+# Log Format:
+#   {
+#     "timestamp": "2025-10-23T12:00:00.000Z",
+#     "level": "info",
+#     "event": "user_login",
+#     "userId": "uuid",
+#     "email": "user@example.com",
+#     "ip": "192.168.1.100",
+#     "userAgent": "Mozilla/5.0...",
+#     "success": true,
+#     "authMethod": "local"
+#   }
+
+# ===================================================================
+# Authentication Flows and Examples
+# ===================================================================
+
+# FLOW 1: Local Email/Password Authentication
+# ┌─────────┐                    ┌─────────┐                    ┌──────────┐
+# │ Client  │                    │  API    │                    │ Database │
+# └────┬────┘                    └────┬────┘                    └────┬─────┘
+#      │                              │                              │
+#      │ POST /api/auth/login         │                              │
+#      │ { email, password }          │                              │
+#      │─────────────────────────────>│                              │
+#      │                              │                              │
+#      │                              │ Find user by email           │
+#      │                              │─────────────────────────────>│
+#      │                              │                              │
+#      │                              │<─────────────────────────────│
+#      │                              │ User record                  │
+#      │                              │                              │
+#      │                              │ Compare password (bcrypt)    │
+#      │                              │──────────────┐               │
+#      │                              │              │               │
+#      │                              │<─────────────┘               │
+#      │                              │                              │
+#      │                              │ Generate JWT token           │
+#      │                              │──────────────┐               │
+#      │                              │              │               │
+#      │                              │<─────────────┘               │
+#      │                              │                              │
+#      │                              │ Create session (if using cookies)
+#      │                              │──────────────┐               │
+#      │                              │              │               │
+#      │                              │<─────────────┘               │
+#      │                              │                              │
+#      │ 200 OK                       │                              │
+#      │ { token, user, expiresIn }   │                              │
+#      │<─────────────────────────────│                              │
+#      │                              │                              │
+#      │ GET /api/students            │                              │
+#      │ Authorization: Bearer <JWT>  │                              │
+#      │─────────────────────────────>│                              │
+#      │                              │                              │
+#      │                              │ Verify JWT signature         │
+#      │                              │──────────────┐               │
+#      │                              │              │               │
+#      │                              │<─────────────┘               │
+#      │                              │                              │
+#      │                              │ Load user from DB            │
+#      │                              │─────────────────────────────>│
+#      │                              │                              │
+#      │                              │<─────────────────────────────│
+#      │                              │ User profile                 │
+#      │                              │                              │
+#      │                              │ Check permissions            │
+#      │                              │──────────────┐               │
+#      │                              │              │               │
+#      │                              │<─────────────┘               │
+#      │                              │                              │
+#      │ 200 OK { students: [...] }   │                              │
+#      │<─────────────────────────────│                              │
+#      │                              │                              │
+
+# FLOW 2: Google OAuth Authentication
+# ┌─────────┐         ┌─────────┐         ┌────────┐         ┌──────────┐
+# │ Client  │         │  API    │         │ Google │         │ Database │
+# └────┬────┘         └────┬────┘         └───┬────┘         └────┬─────┘
+#      │                   │                  │                   │
+#      │ GET /api/auth/google                 │                   │
+#      │──────────────────>│                  │                   │
+#      │                   │                  │                   │
+#      │ 302 Redirect to Google               │                   │
+#      │<──────────────────│                  │                   │
+#      │                   │                  │                   │
+#      │ User authenticates at Google         │                   │
+#      │─────────────────────────────────────>│                   │
+#      │                   │                  │                   │
+#      │ 302 Redirect to callback with code   │                   │
+#      │<─────────────────────────────────────│                   │
+#      │                   │                  │                   │
+#      │ GET /api/auth/google/callback?code=xxx                   │
+#      │──────────────────>│                  │                   │
+#      │                   │                  │                   │
+#      │                   │ Exchange code for token              │
+#      │                   │─────────────────>│                   │
+#      │                   │                  │                   │
+#      │                   │<─────────────────│                   │
+#      │                   │ Access token + user profile          │
+#      │                   │                  │                   │
+#      │                   │ Find/create user by email            │
+#      │                   │─────────────────────────────────────>│
+#      │                   │                  │                   │
+#      │                   │<─────────────────────────────────────│
+#      │                   │ User record                          │
+#      │                   │                  │                   │
+#      │                   │ Generate JWT token                   │
+#      │                   │──────────────┐   │                   │
+#      │                   │              │   │                   │
+#      │                   │<─────────────┘   │                   │
+#      │                   │                  │                   │
+#      │ 302 Redirect to dashboard with JWT   │                   │
+#      │<──────────────────│                  │                   │
+#      │                   │                  │                   │
+
+# FLOW 3: JWT Token Refresh
+# ┌─────────┐                    ┌─────────┐
+# │ Client  │                    │  API    │
+# └────┬────┘                    └────┬────┘
+#      │                              │
+#      │ POST /api/auth/refresh       │
+#      │ Authorization: Bearer <JWT>  │
+#      │─────────────────────────────>│
+#      │                              │
+#      │                              │ Verify current JWT
+#      │                              │──────────────┐
+#      │                              │              │
+#      │                              │<─────────────┘
+#      │                              │
+#      │                              │ Generate new JWT
+#      │                              │──────────────┐
+#      │                              │              │
+#      │                              │<─────────────┘
+#      │                              │
+#      │ 200 OK                       │
+#      │ { token, expiresIn }         │
+#      │<─────────────────────────────│
+#      │                              │
+
+# ===================================================================
+# Security Best Practices for API Consumers
+# ===================================================================
+
+# AUTHENTICATION BEST PRACTICES:
+#
+# 1. Token Storage:
+#    ✓ Store JWT tokens in httpOnly cookies (web apps)
+#    ✓ Use secure storage mechanisms on mobile (Keychain, Keystore)
+#    ✗ Never store tokens in localStorage (XSS vulnerable)
+#    ✗ Never log tokens or include in URLs
+#
+# 2. Token Lifecycle:
+#    ✓ Refresh tokens before expiration (7 hours recommended)
+#    ✓ Implement automatic token refresh with retry logic
+#    ✓ Handle 401 Unauthorized by redirecting to login
+#    ✓ Clear tokens on logout
+#
+# 3. HTTPS/TLS:
+#    ✓ Always use HTTPS in production
+#    ✓ Verify SSL certificates
+#    ✓ Use TLS 1.2 or higher
+#    ✗ Never disable certificate validation
+#
+# 4. Error Handling:
+#    ✓ Handle 401 Unauthorized (token expired/invalid)
+#    ✓ Handle 403 Forbidden (insufficient permissions)
+#    ✓ Handle 429 Too Many Requests (rate limited)
+#    ✓ Implement exponential backoff for retries
+#    ✓ Log authentication failures for security monitoring
+#
+# 5. CSRF Protection (for web apps):
+#    ✓ Include CSRF token in mutation requests (POST/PUT/DELETE)
+#    ✓ Read token from response header or cookie
+#    ✓ Send token in X-CSRF-Token header
+#    ✓ Handle CSRF validation errors gracefully
+#
+# 6. Rate Limiting:
+#    ✓ Implement client-side rate limiting
+#    ✓ Respect Retry-After header when rate limited
+#    ✓ Use exponential backoff for failed requests
+#    ✓ Cache responses when appropriate
+#
+# 7. Password Security:
+#    ✓ Enforce strong password requirements client-side
+#    ✓ Never transmit passwords in URLs or logs
+#    ✓ Use password managers integration
+#    ✓ Implement "show password" toggle for UX
+#
+# 8. OAuth Best Practices:
+#    ✓ Use Authorization Code flow with PKCE
+#    ✓ Validate OAuth state parameter (CSRF protection)
+#    ✓ Store OAuth tokens securely
+#    ✓ Handle OAuth errors and edge cases
+
+# AUTHORIZATION BEST PRACTICES:
+#
+# 1. Role-Based UI:
+#    ✓ Hide/disable features based on user role
+#    ✓ Fetch user permissions on login
+#    ✓ Re-validate permissions periodically
+#    ✓ Show permission errors clearly to users
+#
+# 2. Permission Checking:
+#    ✓ Check permissions before making API calls
+#    ✓ Handle 403 Forbidden responses gracefully
+#    ✓ Provide clear error messages
+#    ✓ Don't expose role/permission logic in client code
+#
+# 3. PHI Handling:
+#    ✓ Only request PHI when necessary (minimum necessary principle)
+#    ✓ Encrypt PHI in transit (HTTPS)
+#    ✓ Clear PHI from memory after use
+#    ✓ Never cache PHI in browser storage
+#    ✓ Log PHI access for audit trail
+
+# API CLIENT EXAMPLES:
+
+# JavaScript/TypeScript (Axios):
+# ```typescript
+# import axios from 'axios';
+#
+# // Create API client with interceptors
+# const apiClient = axios.create({
+#   baseURL: 'https://api.whitecross.health',
+#   timeout: 10000,
+#   withCredentials: true, // Include cookies
+# });
+#
+# // Request interceptor: Add JWT token
+# apiClient.interceptors.request.use(
+#   (config) => {
+#     const token = getTokenFromSecureStorage();
+#     if (token) {
+#       config.headers.Authorization = `Bearer ${token}`;
+#     }
+#     return config;
+#   },
+#   (error) => Promise.reject(error)
+# );
+#
+# // Response interceptor: Handle 401 and refresh token
+# apiClient.interceptors.response.use(
+#   (response) => response,
+#   async (error) => {
+#     const originalRequest = error.config;
+#
+#     // Token expired, try to refresh
+#     if (error.response?.status === 401 && !originalRequest._retry) {
+#       originalRequest._retry = true;
+#
+#       try {
+#         const { data } = await axios.post('/api/auth/refresh', {}, {
+#           headers: { Authorization: `Bearer ${getTokenFromSecureStorage()}` }
+#         });
+#
+#         saveTokenToSecureStorage(data.token);
+#         originalRequest.headers.Authorization = `Bearer ${data.token}`;
+#
+#         return apiClient(originalRequest);
+#       } catch (refreshError) {
+#         // Refresh failed, redirect to login
+#         redirectToLogin();
+#         return Promise.reject(refreshError);
+#       }
+#     }
+#
+#     return Promise.reject(error);
+#   }
+# );
+#
+# // Login
+# const login = async (email: string, password: string) => {
+#   const { data } = await apiClient.post('/api/auth/login', { email, password });
+#   saveTokenToSecureStorage(data.token);
+#   return data.user;
+# };
+#
+# // Fetch students (with error handling)
+# const getStudents = async () => {
+#   try {
+#     const { data } = await apiClient.get('/api/students');
+#     return data.students;
+#   } catch (error) {
+#     if (error.response?.status === 403) {
+#       console.error('Insufficient permissions to view students');
+#     }
+#     throw error;
+#   }
+# };
+# ```
+
+# Python (Requests):
+# ```python
+# import requests
+# from requests.adapters import HTTPAdapter
+# from requests.packages.urllib3.util.retry import Retry
+#
+# class WhiteCrossAPI:
+#     def __init__(self, base_url, api_key=None):
+#         self.base_url = base_url
+#         self.api_key = api_key
+#         self.session = self._create_session()
+#
+#     def _create_session(self):
+#         session = requests.Session()
+#
+#         # Retry strategy
+#         retry = Retry(
+#             total=3,
+#             backoff_factor=1,
+#             status_forcelist=[429, 500, 502, 503, 504]
+#         )
+#         adapter = HTTPAdapter(max_retries=retry)
+#         session.mount('https://', adapter)
+#
+#         # Add API key header
+#         if self.api_key:
+#             session.headers.update({'X-API-Key': self.api_key})
+#
+#         return session
+#
+#     def login(self, email, password):
+#         response = self.session.post(
+#             f'{self.base_url}/api/auth/login',
+#             json={'email': email, 'password': password}
+#         )
+#         response.raise_for_status()
+#
+#         data = response.json()
+#         self.session.headers.update({
+#             'Authorization': f"Bearer {data['token']}"
+#         })
+#         return data['user']
+#
+#     def get_students(self):
+#         response = self.session.get(f'{self.base_url}/api/students')
+#
+#         if response.status_code == 403:
+#             raise PermissionError('Insufficient permissions to view students')
+#
+#         response.raise_for_status()
+#         return response.json()['students']
+#
+# # Usage
+# api = WhiteCrossAPI('https://api.whitecross.health')
+# user = api.login('nurse@school.edu', 'SecurePassword123!')
+# students = api.get_students()
+# ```
+
+# ===================================================================
+# Common Security Scenarios and Solutions
+# ===================================================================
+
+# SCENARIO 1: Mobile App Authentication
+# Challenge: Secure token storage on mobile devices
+# Solution:
+#   - iOS: Use Keychain Services for token storage
+#   - Android: Use Android Keystore for token storage
+#   - Never use SharedPreferences/UserDefaults for tokens
+#   - Implement biometric authentication with token refresh
+#   - Use certificate pinning for API calls
+
+# SCENARIO 2: Single Page Application (SPA)
+# Challenge: Token storage and CSRF protection
+# Solution:
+#   - Use httpOnly cookies for token storage (most secure)
+#   - OR use sessionStorage (cleared on tab close)
+#   - Include CSRF token in mutations
+#   - Implement automatic token refresh
+#   - Handle token expiration gracefully
+
+# SCENARIO 3: Server-to-Server Integration
+# Challenge: Authentication without user credentials
+# Solution:
+#   - Use API key authentication
+#   - Scope API keys to minimum required permissions
+#   - Rotate keys every 90 days
+#   - Use IP allowlisting when possible
+#   - Monitor API key usage
+
+# SCENARIO 4: Multi-tenant Access Control
+# Challenge: Ensure users only access their facility data
+# Solution:
+#   - User records include facilityId/schoolId
+#   - All queries filtered by user's facility
+#   - RBAC enforces school/district boundaries
+#   - Audit logs track cross-facility access attempts
+#   - Database row-level security (if supported)
+
+# SCENARIO 5: Token Theft Prevention
+# Challenge: Protect against stolen JWT tokens
+# Solution:
+#   - Short token lifetime (8 hours)
+#   - Implement token refresh flow
+#   - Track active sessions server-side
+#   - Monitor for suspicious IP/location changes
+#   - Allow users to revoke sessions remotely
+#   - Use httpOnly cookies (prevents XSS theft)
+
+# ===================================================================
+# Compliance and Regulatory Requirements
+# ===================================================================
+
+# HIPAA COMPLIANCE:
+# - Authentication: Required for all PHI access
+# - Authorization: Role-based, minimum necessary principle
+# - Audit Logging: All PHI access logged with user, timestamp, action
+# - Transmission Security: HTTPS/TLS required for all API calls
+# - Access Control: User authentication expires after 8 hours
+# - Session Management: Automatic logout after inactivity
+# - Password Requirements: Strong password policy enforced
+# - Account Lockout: Automatic after 5 failed attempts
+# - Data Encryption: PHI encrypted in transit (TLS) and at rest
+
+# FERPA COMPLIANCE (Student Data):
+# - Parental Access: Parents can view children's education records
+# - Student Access: Students 18+ can view own records
+# - Access Logging: All student record access logged
+# - Disclosure Limitations: Data shared only with authorized parties
+# - Directory Information: Controlled via privacy settings
+
+# SECURITY STANDARDS:
+# - OWASP Top 10: API follows OWASP API Security Top 10
+# - OWASP Secure Headers: All recommended headers implemented
+# - CWE/SANS Top 25: Common vulnerabilities mitigated
+# - NIST 800-63B: Authentication follows digital identity guidelines
+
+# ===================================================================
+# Support and Troubleshooting
+# ===================================================================
+
+# COMMON ERRORS:
+
+# 401 Unauthorized - Invalid or expired token
+# Solution:
+#   - Verify token is included in Authorization header
+#   - Check token format: "Bearer <token>"
+#   - Refresh token if expired
+#   - Re-authenticate if refresh fails
+
+# 403 Forbidden - Insufficient permissions
+# Solution:
+#   - Check user role and permissions
+#   - Verify endpoint requires specific role/permission
+#   - Contact administrator for role upgrade if needed
+#   - Review RBAC documentation for permission requirements
+
+# 429 Too Many Requests - Rate limit exceeded
+# Solution:
+#   - Implement exponential backoff
+#   - Respect Retry-After header
+#   - Reduce request frequency
+#   - Cache responses when appropriate
+#   - Consider upgrading API tier (if applicable)
+
+# CSRF Validation Failed
+# Solution:
+#   - Ensure CSRF token included in request
+#   - Check token in X-CSRF-Token header or _csrf field
+#   - Verify token hasn't expired (8 hour lifetime)
+#   - Ensure cookies are enabled and sent with request
+
+# CONTACT:
+# - Email: support@whitecross.health
+# - Documentation: https://api.whitecross.health/docs
+# - API Status: https://status.whitecross.health
+# - Security Issues: security@whitecross.health (GPG key available)
+
+# ===================================================================
+# End of Security Schemes Documentation
+# ===================================================================

@@ -3,7 +3,7 @@
  * Provides frontend access to user management endpoints
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { User } from '../types';
 
@@ -78,13 +78,19 @@ export interface UserFilters {
  * Handles all user management related API calls
  */
 export class UsersApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Get all users with filters
    */
   async getAll(filters?: UserFilters): Promise<PaginatedResponse<User>> {
     const params = buildPaginationParams(filters?.page, filters?.limit);
     const allParams = filters ? Object.assign({}, params, filters) : params;
-    const response = await apiInstance.get<PaginatedResponse<User>>(
+    const response = await this.client.get<PaginatedResponse<User>>(
       '/api/v1/users',
       { params: allParams }
     );
@@ -95,7 +101,7 @@ export class UsersApi {
    * Get user by ID
    */
   async getById(userId: string): Promise<User> {
-    const response = await apiInstance.get<ApiResponse<User>>(
+    const response = await this.client.get<ApiResponse<User>>(
       `/api/v1/users/${userId}`
     );
     return response.data.data!;
@@ -105,7 +111,7 @@ export class UsersApi {
    * Create new user
    */
   async create(userData: CreateUserRequest): Promise<User> {
-    const response = await apiInstance.post<ApiResponse<User>>(
+    const response = await this.client.post<ApiResponse<User>>(
       '/api/v1/users',
       userData
     );
@@ -116,7 +122,7 @@ export class UsersApi {
    * Update user
    */
   async update(userId: string, userData: UpdateUserRequest): Promise<User> {
-    const response = await apiInstance.put<ApiResponse<User>>(
+    const response = await this.client.put<ApiResponse<User>>(
       `/api/v1/users/${userId}`,
       userData
     );
@@ -130,7 +136,7 @@ export class UsersApi {
     userId: string,
     passwordData: ChangePasswordRequest
   ): Promise<{ success: boolean; message: string }> {
-    const response = await apiInstance.post<ApiResponse<{ success: boolean; message: string }>>(
+    const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
       `/api/v1/users/${userId}/change-password`,
       passwordData
     );
@@ -144,7 +150,7 @@ export class UsersApi {
     userId: string,
     passwordData: ResetPasswordRequest
   ): Promise<{ success: boolean; message: string }> {
-    const response = await apiInstance.post<ApiResponse<{ success: boolean; message: string }>>(
+    const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
       `/api/v1/users/${userId}/reset-password`,
       passwordData
     );
@@ -155,7 +161,7 @@ export class UsersApi {
    * Deactivate user
    */
   async deactivate(userId: string): Promise<{ success: boolean; message: string }> {
-    const response = await apiInstance.post<ApiResponse<{ success: boolean; message: string }>>(
+    const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
       `/api/v1/users/${userId}/deactivate`
     );
     return response.data.data!;
@@ -165,7 +171,7 @@ export class UsersApi {
    * Reactivate user
    */
   async reactivate(userId: string): Promise<User> {
-    const response = await apiInstance.post<ApiResponse<User>>(
+    const response = await this.client.post<ApiResponse<User>>(
       `/api/v1/users/${userId}/reactivate`
     );
     return response.data.data!;
@@ -175,7 +181,7 @@ export class UsersApi {
    * Get user statistics
    */
   async getStatistics(): Promise<UserStatistics> {
-    const response = await apiInstance.get<ApiResponse<UserStatistics>>(
+    const response = await this.client.get<ApiResponse<UserStatistics>>(
       '/api/v1/users/statistics'
     );
     return response.data.data!;
@@ -185,7 +191,7 @@ export class UsersApi {
    * Get users by role
    */
   async getByRole(role: string): Promise<User[]> {
-    const response = await apiInstance.get<ApiResponse<User[]>>(
+    const response = await this.client.get<ApiResponse<User[]>>(
       `/api/v1/users/role/${role}`
     );
     return response.data.data || [];
@@ -195,7 +201,7 @@ export class UsersApi {
    * Get available nurses
    */
   async getAvailableNurses(schoolId?: string): Promise<AvailableNurse[]> {
-    const response = await apiInstance.get<ApiResponse<AvailableNurse[]>>(
+    const response = await this.client.get<ApiResponse<AvailableNurse[]>>(
       '/api/v1/users/nurses/available',
       { params: { schoolId } }
     );
@@ -211,4 +217,8 @@ export class UsersApi {
 }
 
 // Export singleton instance
-export const usersApi = new UsersApi();
+
+// Factory function for creating UsersApi instances
+export function createUsersApi(client: ApiClient): UsersApi {
+  return new UsersApi(client);
+}

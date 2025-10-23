@@ -16,7 +16,7 @@
  * receiving, fulfillment, and order management
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS } from '../config/api.config';
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
@@ -85,6 +85,12 @@ const receiveItemsSchema = z.object({
 // =====================
 
 export class PurchaseOrderApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Get all purchase orders with filtering and pagination
    */
@@ -116,7 +122,7 @@ export class PurchaseOrderApi {
         ? API_ENDPOINTS.PURCHASE_ORDERS.BASE + `?${queryString.toString()}`
         : API_ENDPOINTS.PURCHASE_ORDERS.BASE;
 
-      const response = await apiInstance.get<ApiResponse<PurchaseOrdersResponse>>(url);
+      const response = await this.client.get<ApiResponse<PurchaseOrdersResponse>>(url);
 
       return response.data.data;
     } catch (error) {
@@ -131,7 +137,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.get<ApiResponse<PurchaseOrderDetailResponse>>(
+      const response = await this.client.get<ApiResponse<PurchaseOrderDetailResponse>>(
         API_ENDPOINTS.PURCHASE_ORDERS.BY_ID(id)
       );
 
@@ -159,7 +165,7 @@ export class PurchaseOrderApi {
           : undefined,
       };
 
-      const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.BASE,
         formattedData
       );
@@ -198,7 +204,7 @@ export class PurchaseOrderApi {
           : undefined,
       };
 
-      const response = await apiInstance.put<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.put<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.BY_ID(id),
         formattedData
       );
@@ -220,7 +226,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
       if (!approvedBy) throw new Error('Approver ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.APPROVE(id),
         { approvedBy }
       );
@@ -242,7 +248,7 @@ export class PurchaseOrderApi {
       // Validate data
       receiveItemsSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.RECEIVE(id),
         data
       );
@@ -263,7 +269,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.CANCEL(id),
         { reason }
       );
@@ -281,7 +287,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ success: boolean; message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.BY_ID(id)
       );
 
@@ -296,7 +302,7 @@ export class PurchaseOrderApi {
    */
   async getItemsNeedingReorder(): Promise<ReorderItem[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<ReorderItemsResponse>>(
+      const response = await this.client.get<ApiResponse<ReorderItemsResponse>>(
         API_ENDPOINTS.PURCHASE_ORDERS.REORDER_NEEDED
       );
 
@@ -311,7 +317,7 @@ export class PurchaseOrderApi {
    */
   async getPurchaseOrderStatistics(): Promise<PurchaseOrderStatistics> {
     try {
-      const response = await apiInstance.get<ApiResponse<PurchaseOrderStatistics>>(
+      const response = await this.client.get<ApiResponse<PurchaseOrderStatistics>>(
         API_ENDPOINTS.PURCHASE_ORDERS.STATISTICS
       );
 
@@ -328,7 +334,7 @@ export class PurchaseOrderApi {
     try {
       if (!vendorId) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.get<ApiResponse<VendorOrderHistoryResponse>>(
+      const response = await this.client.get<ApiResponse<VendorOrderHistoryResponse>>(
         API_ENDPOINTS.PURCHASE_ORDERS.VENDOR_HISTORY(vendorId) + `?limit=${limit}`
       );
 
@@ -413,7 +419,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.PURCHASE_ORDERS.EXPORT(id) + `?format=${format}`,
         {
           responseType: 'blob',
@@ -433,7 +439,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.PURCHASE_ORDERS.PRINT(id),
         {
           responseType: 'blob',
@@ -453,7 +459,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ success: boolean; message: string }>>(
+      const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.SEND(id),
         { email }
       );
@@ -471,7 +477,7 @@ export class PurchaseOrderApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.DUPLICATE(id)
       );
 
@@ -489,7 +495,7 @@ export class PurchaseOrderApi {
       if (!id) throw new Error('Purchase order ID is required');
       if (!note || note.trim().length === 0) throw new Error('Note is required');
 
-      const response = await apiInstance.post<ApiResponse<{ order: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ order: PurchaseOrder }>>(
         API_ENDPOINTS.PURCHASE_ORDERS.NOTES(id),
         { note }
       );
@@ -532,7 +538,11 @@ export class PurchaseOrderApi {
 }
 
 // Export singleton instance
-export const purchaseOrderApi = new PurchaseOrderApi();
 
 // Export default for convenience
 export default purchaseOrderApi;
+
+// Factory function for creating PurchaseOrderApi instances
+export function createPurchaseOrderApi(client: ApiClient): PurchaseOrderApi {
+  return new PurchaseOrderApi(client);
+}

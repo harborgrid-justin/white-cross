@@ -50,7 +50,7 @@ export interface UpdateEmergencyContactData {
   canPickupStudent?: boolean
   notes?: string
 }
-import { apiInstance } from '../config/apiConfig'
+import type { ApiClient } from '../core/ApiClient';
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
@@ -59,12 +59,13 @@ import { extractApiData, handleApiError } from '../utils/apiUtils'
  * Aligned with backend EmergencyContactService
  */
 class EmergencyContactsApiImpl implements IEmergencyContactsApi {
+  constructor(private readonly client: ApiClient) {}
   /**
    * Get emergency contacts for a student
    */
   async getByStudent(studentId: string): Promise<{ contacts: EmergencyContact[] }> {
     try {
-      const response = await apiInstance.get(`/emergency-contacts/student/${studentId}`)
+      const response = await this.client.get(`/emergency-contacts/student/${studentId}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -76,7 +77,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
    */
   async create(data: CreateEmergencyContactData): Promise<{ contact: EmergencyContact }> {
     try {
-      const response = await apiInstance.post('/emergency-contacts', data)
+      const response = await this.client.post('/emergency-contacts', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -88,7 +89,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
    */
   async update(id: string, data: UpdateEmergencyContactData): Promise<{ contact: EmergencyContact }> {
     try {
-      const response = await apiInstance.put(`/emergency-contacts/${id}`, data)
+      const response = await this.client.put(`/emergency-contacts/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -100,7 +101,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
    */
   async delete(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await apiInstance.delete(`/emergency-contacts/${id}`)
+      const response = await this.client.delete(`/emergency-contacts/${id}`)
       return response.data
     } catch (error) {
       throw handleApiError(error as any)
@@ -115,7 +116,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
     notification: Omit<EmergencyNotificationData, 'studentId'>
   ): Promise<{ results: EmergencyNotificationResult[] }> {
     try {
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         `/emergency-contacts/notify/${studentId}`,
         notification
       )
@@ -133,7 +134,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
     notification: Omit<EmergencyNotificationData, 'studentId'>
   ): Promise<{ result: EmergencyNotificationResult }> {
     try {
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         `/emergency-contacts/notify/contact/${contactId}`,
         notification
       )
@@ -151,7 +152,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
     method: 'sms' | 'email' | 'voice'
   ): Promise<ContactVerificationResponse> {
     try {
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         `/emergency-contacts/verify/${contactId}`,
         { method }
       )
@@ -166,7 +167,7 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
    */
   async getStatistics(): Promise<EmergencyContactStatistics> {
     try {
-      const response = await apiInstance.get('/emergency-contacts/statistics')
+      const response = await this.client.get('/emergency-contacts/statistics')
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -174,5 +175,8 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
   }
 }
 
-export const emergencyContactsApi = new EmergencyContactsApiImpl()
+export function createEmergencyContactsApi(client: ApiClient): IEmergencyContactsApi {
+  return new EmergencyContactsApiImpl(client);
+}
+
 export type { IEmergencyContactsApi }

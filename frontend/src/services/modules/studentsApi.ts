@@ -10,7 +10,8 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
+import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
 import { z } from 'zod';
 import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
@@ -247,6 +248,12 @@ const studentFiltersSchema = z.object({
 
 // Students API class matching backend StudentService
 export class StudentsApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Get all students with optional filtering and pagination
    * Matches backend: StudentService.getStudents()
@@ -270,7 +277,7 @@ export class StudentsApi {
       if (filters.hasMedications !== undefined) queryString.append('hasMedications', String(filters.hasMedications));
       if (filters.gender) queryString.append('gender', filters.gender);
 
-      const response = await apiInstance.get<BackendApiResponse<PaginatedStudentsResponse>>(
+      const response = await this.client.get<BackendApiResponse<PaginatedStudentsResponse>>(
         `/api/students?${queryString.toString()}`
       );
 
@@ -295,7 +302,7 @@ export class StudentsApi {
     try {
       if (!id) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get<BackendApiResponse<{ student: Student }>>(
+      const response = await this.client.get<BackendApiResponse<{ student: Student }>>(
         `/api/students/${id}`
       );
 
@@ -334,7 +341,7 @@ export class StudentsApi {
     try {
       createStudentSchema.parse(studentData);
 
-      const response = await apiInstance.post<BackendApiResponse<{ student: Student }>>(
+      const response = await this.client.post<BackendApiResponse<{ student: Student }>>(
         '/api/students',
         studentData
       );
@@ -385,7 +392,7 @@ export class StudentsApi {
 
       updateStudentSchema.parse(studentData);
 
-      const response = await apiInstance.put<BackendApiResponse<{ student: Student }>>(
+      const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
         `/api/students/${id}`,
         studentData
       );
@@ -436,7 +443,7 @@ export class StudentsApi {
     try {
       if (!id) throw new Error('Student ID is required');
 
-      const response = await apiInstance.delete<BackendApiResponse<{ message: string }>>(
+      const response = await this.client.delete<BackendApiResponse<{ message: string }>>(
         `/api/students/${id}`
       );
 
@@ -461,7 +468,7 @@ export class StudentsApi {
     try {
       if (!id) throw new Error('Student ID is required');
 
-      const response = await apiInstance.put<BackendApiResponse<{ student: Student }>>(
+      const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
         `/api/students/${id}/reactivate`
       );
 
@@ -484,7 +491,7 @@ export class StudentsApi {
       if (!id) throw new Error('Student ID is required');
       if (!transferData.nurseId) throw new Error('Nurse ID is required');
 
-      const response = await apiInstance.put<BackendApiResponse<{ student: Student }>>(
+      const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
         `/api/students/${id}/transfer`,
         transferData
       );
@@ -507,7 +514,7 @@ export class StudentsApi {
     try {
       if (!grade) throw new Error('Grade is required');
 
-      const response = await apiInstance.get<BackendApiResponse<{ students: Student[] }>>(
+      const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
         `/api/students/grade/${encodeURIComponent(grade)}`
       );
 
@@ -529,7 +536,7 @@ export class StudentsApi {
     try {
       if (!query.trim()) return [];
 
-      const response = await apiInstance.get<BackendApiResponse<{ students: Student[] }>>(
+      const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
         `/api/students/search/${encodeURIComponent(query)}`
       );
 
@@ -549,7 +556,7 @@ export class StudentsApi {
    */
   async getAssignedStudents(): Promise<Student[]> {
     try {
-      const response = await apiInstance.get<BackendApiResponse<{ students: Student[] }>>(
+      const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
         '/api/students/assigned'
       );
 
@@ -571,7 +578,7 @@ export class StudentsApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get<BackendApiResponse<StudentStatistics>>(
+      const response = await this.client.get<BackendApiResponse<StudentStatistics>>(
         `/api/students/${studentId}/statistics`
       );
 
@@ -595,7 +602,7 @@ export class StudentsApi {
         throw new Error('Student IDs are required');
       }
 
-      const response = await apiInstance.put<BackendApiResponse<{ updatedCount: number }>>(
+      const response = await this.client.put<BackendApiResponse<{ updatedCount: number }>>(
         '/api/students/bulk-update',
         bulkData
       );
@@ -618,7 +625,7 @@ export class StudentsApi {
     try {
       if (!id) throw new Error('Student ID is required');
 
-      const response = await apiInstance.delete<BackendApiResponse<{ success: boolean; message: string }>>(
+      const response = await this.client.delete<BackendApiResponse<{ success: boolean; message: string }>>(
         `/api/students/${id}/permanent`
       );
 
@@ -638,7 +645,7 @@ export class StudentsApi {
    */
   async getAllGrades(): Promise<string[]> {
     try {
-      const response = await apiInstance.get<BackendApiResponse<string[]>>(
+      const response = await this.client.get<BackendApiResponse<string[]>>(
         '/api/students/grades'
       );
 
@@ -661,7 +668,7 @@ export class StudentsApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get<BackendApiResponse<ExportStudentDataResponse>>(
+      const response = await this.client.get<BackendApiResponse<ExportStudentDataResponse>>(
         `/api/students/${studentId}/export`
       );
 
@@ -700,7 +707,7 @@ export class StudentsApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get<BackendApiResponse<any>>(
+      const response = await this.client.get<BackendApiResponse<any>>(
         `/api/students/${studentId}/health-records?sensitive=${sensitive}`
       );
 
@@ -721,7 +728,7 @@ export class StudentsApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get<BackendApiResponse<any>>(
+      const response = await this.client.get<BackendApiResponse<any>>(
         `/api/students/${studentId}/mental-health-records`
       );
 
@@ -745,4 +752,8 @@ export class StudentsApi {
 }
 
 // Export singleton instance
-export const studentsApi = new StudentsApi();
+
+// Factory function for creating StudentsApi instances
+export function createStudentsApi(client: ApiClient): StudentsApi {
+  return new StudentsApi(client);
+}

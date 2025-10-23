@@ -48,8 +48,7 @@ const PURCHASE_ORDER_STATUS = [
  * QUERY SCHEMAS
  */
 
-export const listItemsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const listItemsQuerySchema = paginationSchema.keys({
   category: Joi.string()
     .valid(...INVENTORY_CATEGORIES)
     .optional()
@@ -70,13 +69,9 @@ export const listItemsQuerySchema = Joi.object({
     .description('Filter by active status (true = active, false = archived)')
 });
 
-export const stockLevelsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit'])
-});
+export const stockLevelsQuerySchema = paginationSchema;
 
-export const stockHistoryQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit'])
-});
+export const stockHistoryQuerySchema = paginationSchema;
 
 export const listPurchaseOrdersQuerySchema = Joi.object({
   status: Joi.string()

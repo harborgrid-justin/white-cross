@@ -3,7 +3,7 @@
  * Provides frontend access to health assessment endpoints
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 
 /**
@@ -154,6 +154,8 @@ export interface CreateEmergencyNotificationRequest {
  * Handles all health assessment related API calls
  */
 export class HealthAssessmentsApi {
+  constructor(private readonly client: ApiClient) {}
+
   /**
    * Get risk assessments for a student
    */
@@ -165,7 +167,7 @@ export class HealthAssessmentsApi {
   }): Promise<PaginatedResponse<HealthRiskAssessment>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<HealthRiskAssessment>>(
+    const response = await this.client.get<PaginatedResponse<HealthRiskAssessment>>(
       `/api/v1/healthcare/health-assessments/risk-assessment/${studentId}`,
       { params: allParams }
     );
@@ -178,7 +180,7 @@ export class HealthAssessmentsApi {
   async createRiskAssessment(
     assessmentData: CreateRiskAssessmentRequest
   ): Promise<HealthRiskAssessment> {
-    const response = await apiInstance.post<ApiResponse<HealthRiskAssessment>>(
+    const response = await this.client.post<ApiResponse<HealthRiskAssessment>>(
       '/api/v1/healthcare/health-assessments/risk-assessment',
       assessmentData
     );
@@ -197,7 +199,7 @@ export class HealthAssessmentsApi {
   }): Promise<PaginatedResponse<HealthScreening>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<HealthScreening>>(
+    const response = await this.client.get<PaginatedResponse<HealthScreening>>(
       `/api/v1/healthcare/health-assessments/screenings/${studentId}`,
       { params: allParams }
     );
@@ -208,7 +210,7 @@ export class HealthAssessmentsApi {
    * Create health screening
    */
   async createScreening(screeningData: CreateScreeningRequest): Promise<HealthScreening> {
-    const response = await apiInstance.post<ApiResponse<HealthScreening>>(
+    const response = await this.client.post<ApiResponse<HealthScreening>>(
       '/api/v1/healthcare/health-assessments/screenings',
       screeningData
     );
@@ -226,7 +228,7 @@ export class HealthAssessmentsApi {
   }): Promise<PaginatedResponse<GrowthTracking>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<GrowthTracking>>(
+    const response = await this.client.get<PaginatedResponse<GrowthTracking>>(
       `/api/v1/healthcare/health-assessments/growth/${studentId}`,
       { params: allParams }
     );
@@ -237,7 +239,7 @@ export class HealthAssessmentsApi {
    * Create growth tracking record
    */
   async createGrowthTracking(trackingData: CreateGrowthTrackingRequest): Promise<GrowthTracking> {
-    const response = await apiInstance.post<ApiResponse<GrowthTracking>>(
+    const response = await this.client.post<ApiResponse<GrowthTracking>>(
       '/api/v1/healthcare/health-assessments/growth',
       trackingData
     );
@@ -248,7 +250,7 @@ export class HealthAssessmentsApi {
    * Get immunization forecast for a student
    */
   async getImmunizationForecast(studentId: string): Promise<ImmunizationForecast> {
-    const response = await apiInstance.get<ApiResponse<ImmunizationForecast>>(
+    const response = await this.client.get<ApiResponse<ImmunizationForecast>>(
       `/api/v1/healthcare/health-assessments/immunization-forecast/${studentId}`
     );
     return response.data.data!;
@@ -266,7 +268,7 @@ export class HealthAssessmentsApi {
   }): Promise<PaginatedResponse<EmergencyNotification>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<EmergencyNotification>>(
+    const response = await this.client.get<PaginatedResponse<EmergencyNotification>>(
       '/api/v1/healthcare/health-assessments/emergency-notifications',
       { params: allParams }
     );
@@ -279,7 +281,7 @@ export class HealthAssessmentsApi {
   async createEmergencyNotification(
     notificationData: CreateEmergencyNotificationRequest
   ): Promise<EmergencyNotification> {
-    const response = await apiInstance.post<ApiResponse<EmergencyNotification>>(
+    const response = await this.client.post<ApiResponse<EmergencyNotification>>(
       '/api/v1/healthcare/health-assessments/emergency-notifications',
       notificationData
     );
@@ -299,7 +301,7 @@ export class HealthAssessmentsApi {
   ): Promise<PaginatedResponse<EmergencyNotification>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<EmergencyNotification>>(
+    const response = await this.client.get<PaginatedResponse<EmergencyNotification>>(
       `/api/v1/healthcare/health-assessments/emergency-notifications/student/${studentId}`,
       { params: allParams }
     );
@@ -313,7 +315,7 @@ export class HealthAssessmentsApi {
     notificationId: string,
     updateData: Partial<EmergencyNotification>
   ): Promise<EmergencyNotification> {
-    const response = await apiInstance.put<ApiResponse<EmergencyNotification>>(
+    const response = await this.client.put<ApiResponse<EmergencyNotification>>(
       `/api/v1/healthcare/health-assessments/emergency-notifications/${notificationId}`,
       updateData
     );
@@ -326,12 +328,14 @@ export class HealthAssessmentsApi {
   async deleteEmergencyNotification(
     notificationId: string
   ): Promise<{ success: boolean; message: string }> {
-    const response = await apiInstance.delete<ApiResponse<{ success: boolean; message: string }>>(
+    const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
       `/api/v1/healthcare/health-assessments/emergency-notifications/${notificationId}`
     );
     return response.data.data!;
   }
 }
 
-// Export singleton instance
-export const healthAssessmentsApi = new HealthAssessmentsApi();
+// Export factory function
+export function createHealthAssessmentsApi(client: ApiClient): HealthAssessmentsApi {
+  return new HealthAssessmentsApi(client);
+}

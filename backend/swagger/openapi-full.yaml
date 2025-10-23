@@ -1,0 +1,1315 @@
+openapi: 3.0.3
+
+info:
+  title: White Cross Healthcare Platform API
+  version: 1.0.0
+  description: |
+    Enterprise-grade HIPAA-compliant healthcare platform API for school nurses to manage
+    student health records, medications, appointments, and emergency communications.
+
+    ## Key Features
+    - Student health records management (allergies, chronic conditions, vaccinations, vital signs)
+    - Medication tracking, administration logging, and inventory management
+    - Appointment scheduling and calendar management
+    - Incident reporting and safety tracking
+    - Emergency contact management
+    - HIPAA compliance reporting and audit trails
+    - Analytics, dashboards, and health metrics
+    - Real-time communication and notifications
+    - Document management with version control
+
+    ## Security & HIPAA Compliance
+    - All PHI endpoints encrypted (AES-256 at rest, TLS 1.2+ in transit)
+    - JWT Bearer authentication with role-based access control
+    - Comprehensive audit logging per 45 CFR § 164.308(a)(1)(ii)(D)
+    - Automatic breach notification per 45 CFR § 164.400-414
+
+    ## Authentication
+    Include JWT Bearer token in Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+
+    Obtain token via `/api/v1/auth/login` endpoint.
+
+  contact:
+    name: White Cross API Support
+    email: api-support@whitecross.com
+    url: https://docs.whitecross.com
+
+  license:
+    name: Proprietary
+    url: https://whitecross.com/license
+
+servers:
+  - url: http://localhost:3000
+    description: Local Development Server
+  - url: https://api-dev.whitecross.com
+    description: Development Environment
+  - url: https://api-staging.whitecross.com
+    description: Staging Environment
+  - url: https://api.whitecross.com
+    description: Production Environment
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication, registration, and token management
+  - name: Users
+    description: User account management and profile operations
+  - name: Access Control
+    description: Role-based access control and permissions management
+  - name: Students
+    description: Student enrollment, demographics, and profile management (PHI)
+  - name: Health Records
+    description: Comprehensive health records including allergies, conditions, vaccinations (HIGHLY SENSITIVE PHI)
+  - name: Medications
+    description: Medication formulary, prescriptions, administration logging (PHI)
+  - name: Health Assessments
+    description: Health screenings, physical exams, and assessment scheduling (PHI)
+  - name: Appointments
+    description: Appointment scheduling, calendar management, and waitlist operations (PHI)
+  - name: Emergency Contacts
+    description: Student emergency contact information and notification preferences (PHI)
+  - name: Incidents
+    description: Incident reporting, tracking, and safety analysis
+  - name: Analytics
+    description: Health metrics, trends analysis, dashboards, and custom reports
+  - name: Communications
+    description: Messaging, broadcasts, and notification management
+  - name: Documents
+    description: Document upload, storage, and retrieval with version control (PHI)
+  - name: Compliance
+    description: HIPAA compliance reporting and regulatory audits
+  - name: Audit
+    description: Audit logging, PHI access tracking, and security monitoring (CRITICAL)
+  - name: Inventory
+    description: Medical supplies and medication inventory management
+  - name: Student Management
+    description: Bulk student operations, transfers, and enrollment management
+  - name: System
+    description: System configuration, integrations, and administrative operations
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT Bearer token authentication. Format: `Authorization: Bearer <token>`
+
+        Token expires in 24 hours. Use `/api/v1/auth/refresh` to renew.
+
+  schemas:
+    # ============ Common Types ============
+    UUID:
+      type: string
+      format: uuid
+      example: '550e8400-e29b-41d4-a716-446655440000'
+
+    Timestamp:
+      type: string
+      format: date-time
+      example: '2024-01-15T14:30:00.000Z'
+
+    Date:
+      type: string
+      format: date
+      example: '2024-01-15'
+
+    Email:
+      type: string
+      format: email
+      example: 'nurse@school.edu'
+
+    PhoneNumber:
+      type: string
+      pattern: '^\+?1?\d{10,15}$'
+      example: '+12345678'
+
+    UserRole:
+      type: string
+      enum: [ADMIN, NURSE, STAFF, PARENT]
+
+    BloodType:
+      type: string
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'UNKNOWN']
+
+    Severity:
+      type: string
+      enum: [MILD, MODERATE, SEVERE, LIFE_THREATENING]
+
+    # ============ Response Wrappers ============
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            code:
+              type: string
+            details:
+              type: object
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 156
+        pages:
+          type: integer
+          example: 16
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    # ============ User & Auth ============
+    User:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          $ref: '#/components/schemas/Email'
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        phoneNumber:
+          $ref: '#/components/schemas/PhoneNumber'
+        isActive:
+          type: boolean
+        lastLogin:
+          $ref: '#/components/schemas/Timestamp'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    RegisterRequest:
+      type: object
+      required: [email, password, firstName, lastName, role]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          type: string
+          format: password
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          type: string
+          format: password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    # ============ Students ============
+    Student:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          $ref: '#/components/schemas/Date'
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
+        grade:
+          type: string
+        schoolId:
+          $ref: '#/components/schemas/UUID'
+        assignedNurseId:
+          $ref: '#/components/schemas/UUID'
+        bloodType:
+          $ref: '#/components/schemas/BloodType'
+        hasAllergies:
+          type: boolean
+        hasChronicConditions:
+          type: boolean
+        hasMedications:
+          type: boolean
+        isActive:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ============ Health Records ============
+    Allergy:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        allergen:
+          type: string
+        allergyType:
+          type: string
+          enum: [FOOD, MEDICATION, ENVIRONMENTAL, INSECT, OTHER]
+        severity:
+          $ref: '#/components/schemas/Severity'
+        reactions:
+          type: array
+          items:
+            type: string
+        treatment:
+          type: string
+        verifiedByMedicalProfessional:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    ChronicCondition:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        conditionName:
+          type: string
+        icdCode:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, CONTROLLED, IN_REMISSION, CURED]
+        severity:
+          $ref: '#/components/schemas/Severity'
+        diagnosisDate:
+          $ref: '#/components/schemas/Date'
+        carePlan:
+          type: string
+        restrictions:
+          type: array
+          items:
+            type: string
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    Vaccination:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        vaccineName:
+          type: string
+        cvxCode:
+          type: string
+        lotNumber:
+          type: string
+        manufacturer:
+          type: string
+        doseNumber:
+          type: integer
+        administrationDate:
+          $ref: '#/components/schemas/Date'
+        administeredBy:
+          $ref: '#/components/schemas/UUID'
+        nextDueDate:
+          $ref: '#/components/schemas/Date'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    VitalSigns:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        temperature:
+          type: number
+          format: float
+        bloodPressureSystolic:
+          type: integer
+        bloodPressureDiastolic:
+          type: integer
+        heartRate:
+          type: integer
+        respiratoryRate:
+          type: integer
+        oxygenSaturation:
+          type: integer
+        height:
+          type: number
+        weight:
+          type: number
+        bmi:
+          type: number
+        recordedAt:
+          $ref: '#/components/schemas/Timestamp'
+        recordedBy:
+          $ref: '#/components/schemas/UUID'
+
+    # ============ Medications ============
+    Medication:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+        genericName:
+          type: string
+        ndcCode:
+          type: string
+        dosageForm:
+          type: string
+        strength:
+          type: string
+        manufacturer:
+          type: string
+        deaSchedule:
+          type: string
+        requiresWitness:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    MedicationAdministration:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        medicationId:
+          $ref: '#/components/schemas/UUID'
+        dosage:
+          type: string
+        administeredAt:
+          $ref: '#/components/schemas/Timestamp'
+        administeredBy:
+          $ref: '#/components/schemas/UUID'
+        witnessedBy:
+          $ref: '#/components/schemas/UUID'
+        notes:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ============ Appointments ============
+    Appointment:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        nurseId:
+          $ref: '#/components/schemas/UUID'
+        appointmentType:
+          type: string
+          enum: [SCREENING, MEDICATION_CHECK, FOLLOW_UP, IMMUNIZATION, CHECKUP, EMERGENCY]
+        status:
+          type: string
+          enum: [SCHEDULED, COMPLETED, CANCELLED, NO_SHOW, RESCHEDULED]
+        startTime:
+          $ref: '#/components/schemas/Timestamp'
+        endTime:
+          $ref: '#/components/schemas/Timestamp'
+        duration:
+          type: integer
+        priority:
+          type: string
+          enum: [LOW, NORMAL, HIGH, URGENT]
+        notes:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ============ Incidents ============
+    Incident:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        incidentType:
+          type: string
+          enum: [INJURY, ILLNESS, BEHAVIORAL, ACCIDENT, MEDICAL_EMERGENCY, OTHER]
+        severity:
+          $ref: '#/components/schemas/Severity'
+        location:
+          type: string
+        description:
+          type: string
+        actions taken:
+          type: string
+        reportedBy:
+          $ref: '#/components/schemas/UUID'
+        incidentDate:
+          $ref: '#/components/schemas/Timestamp'
+        followUpRequired:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ============ Analytics ============
+    HealthMetrics:
+      type: object
+      properties:
+        totalVisits:
+          type: integer
+        incidentRate:
+          type: number
+        medicationAdministrations:
+          type: integer
+        chronicConditionPrevalence:
+          type: number
+        immunizationCompliance:
+          type: number
+        period:
+          type: string
+
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessResponse'
+
+    '201':
+      description: Resource created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessResponse'
+
+    '400':
+      description: Bad Request - Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    '401':
+      description: Unauthorized - Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    '403':
+      description: Forbidden - Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    '404':
+      description: Not Found - Resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    '409':
+      description: Conflict - Resource already exists or state conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    '429':
+      description: Too Many Requests - Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+paths:
+  # ============================================
+  # AUTHENTICATION ENDPOINTS
+  # ============================================
+  /api/v1/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register new user
+      description: Creates a new user account. Returns JWT token and user object.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+
+  /api/v1/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      description: Authenticates user credentials and returns JWT token (24-hour expiration).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /api/v1/auth/verify:
+    post:
+      tags: [Authentication]
+      summary: Verify JWT token
+      description: Validates JWT token and returns user information if valid.
+      security: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh JWT token
+      description: Exchanges existing token for new one with extended expiration.
+      security: []
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /api/v1/auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current user
+      description: Returns profile information for authenticated user.
+      responses:
+        '200':
+          description: Current user retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+
+  # ============================================
+  # STUDENT ENDPOINTS (PHI)
+  # ============================================
+  /api/v1/students:
+    get:
+      tags: [Students]
+      summary: List all students
+      description: '**PHI Protected** - Returns paginated student list with filtering options.'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: grade
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+
+    post:
+      tags: [Students]
+      summary: Create new student
+      description: '**PHI Protected** - Enrolls new student in system. Requires ADMIN or NURSE role.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+  /api/v1/students/{id}:
+    get:
+      tags: [Students]
+      summary: Get student by ID
+      description: '**HIGHLY SENSITIVE PHI** - Returns complete student information including health summary.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Student retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Student'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+
+    put:
+      tags: [Students]
+      summary: Update student
+      description: '**PHI Protected** - Updates student information. All changes logged for audit.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+
+    delete:
+      tags: [Students]
+      summary: Deactivate student
+      description: '**PHI Protected** - Soft-deletes student (archives). Admin only.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+
+  # ============================================
+  # HEALTH RECORDS ENDPOINTS (HIGHLY SENSITIVE PHI)
+  # ============================================
+  /api/v1/health-records/student/{studentId}:
+    get:
+      tags: [Health Records]
+      summary: Get all health records for student
+      description: '**HIGHLY SENSITIVE PHI** - Returns comprehensive paginated health records.'
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+
+  /api/v1/health-records/student/{studentId}/allergies:
+    get:
+      tags: [Health Records]
+      summary: Get all allergies for student
+      description: '**CRITICAL PHI** - Returns all known allergies with severity levels.'
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Allergies retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Allergy'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+
+  /api/v1/health-records/allergies:
+    post:
+      tags: [Health Records]
+      summary: Add new allergy
+      description: '**CRITICAL PHI** - Records new allergy for student. Triggers safety alerts.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Allergy'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /api/v1/health-records/student/{studentId}/conditions:
+    get:
+      tags: [Health Records]
+      summary: Get all chronic conditions for student
+      description: '**HIGHLY SENSITIVE PHI** - Returns chronic conditions with care plans.'
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Chronic conditions retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChronicCondition'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+
+  /api/v1/health-records/student/{studentId}/vaccinations:
+    get:
+      tags: [Health Records]
+      summary: Get all vaccinations for student
+      description: '**PHI Protected** - Returns immunization history with lot numbers and dates.'
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Vaccinations retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Vaccination'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+
+  /api/v1/health-records/vitals:
+    post:
+      tags: [Health Records]
+      summary: Record vital signs
+      description: '**PHI Protected** - Records vital signs with auto-calculated BMI.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VitalSigns'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+
+  # ============================================
+  # MEDICATION ENDPOINTS (PHI)
+  # ============================================
+  /api/v1/medications:
+    get:
+      tags: [Medications]
+      summary: List all medications
+      description: '**PHI Protected** - Returns paginated medication formulary.'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+
+    post:
+      tags: [Medications]
+      summary: Create new medication
+      description: '**PHI Protected** - Adds new medication to formulary. NURSE or ADMIN only.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medication'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+  /api/v1/medications/administration/log:
+    post:
+      tags: [Medications]
+      summary: Log medication administration
+      description: '**PHI Protected** - Records medication administration with witness if required.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationAdministration'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+
+  # ============================================
+  # APPOINTMENT ENDPOINTS (PHI)
+  # ============================================
+  /api/v1/appointments:
+    get:
+      tags: [Appointments]
+      summary: List all appointments
+      description: '**PHI Protected** - Returns paginated appointment list with filtering.'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: nurseId
+          in: query
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+
+    post:
+      tags: [Appointments]
+      summary: Create new appointment
+      description: '**PHI Protected** - Schedules new appointment with availability validation.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '409':
+          $ref: '#/components/responses/409'
+
+  /api/v1/appointments/{id}:
+    get:
+      tags: [Appointments]
+      summary: Get appointment by ID
+      description: '**PHI Protected** - Returns detailed appointment information.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Appointment retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+
+  # ============================================
+  # INCIDENT ENDPOINTS
+  # ============================================
+  /api/v1/incidents:
+    get:
+      tags: [Incidents]
+      summary: List all incidents
+      description: Returns paginated incident reports with filtering.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: severity
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+
+    post:
+      tags: [Incidents]
+      summary: Create incident report
+      description: Creates new incident report. Automatically notifies relevant personnel.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Incident'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+
+  # ============================================
+  # ANALYTICS ENDPOINTS
+  # ============================================
+  /api/v1/analytics/health-metrics:
+    get:
+      tags: [Analytics]
+      summary: Get aggregated health metrics
+      description: Returns comprehensive health metrics for specified time period.
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            $ref: '#/components/schemas/Date'
+        - name: endDate
+          in: query
+          schema:
+            $ref: '#/components/schemas/Date'
+        - name: schoolId
+          in: query
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Health metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/HealthMetrics'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /api/v1/analytics/dashboard/nurse:
+    get:
+      tags: [Analytics]
+      summary: Get nurse dashboard data
+      description: Real-time operational dashboard for school nurses with today's key metrics.
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+
+  # ============================================
+  # AUDIT ENDPOINTS (CRITICAL)
+  # ============================================
+  /api/v1/audit/logs:
+    get:
+      tags: [Audit]
+      summary: List audit logs
+      description: '**CRITICAL HIPAA ENDPOINT** - Returns paginated audit trail. Admin/Compliance Officer only.'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+  /api/v1/audit/phi-access:
+    get:
+      tags: [Audit]
+      summary: List PHI access logs
+      description: '**CRITICAL HIPAA ENDPOINT** - Returns PHI access audit trail per 45 CFR § 164.308.'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: studentId
+          in: query
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+  # ============================================
+  # HEALTH CHECK ENDPOINT
+  # ============================================
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Returns server health status. No authentication required.
+      security: []
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'OK'
+                  timestamp:
+                    type: string
+                  uptime:
+                    type: number
+                  environment:
+                    type: string

@@ -12,24 +12,24 @@
  * @module services/modules/health
  */
 
-// Import all health service modules
-import { allergiesApi } from './allergiesApi';
-import { chronicConditionsApi } from './chronicConditionsApi';
-import { vaccinationsApi } from './vaccinationsApi';
-import { screeningsApi } from './screeningsApi';
-import { growthMeasurementsApi } from './growthMeasurementsApi';
-import { vitalSignsApi } from './vitalSignsApi';
-import { healthRecordsApi } from './healthRecordsApi';
+// Import factory functions from all health service modules
+import { createAllergiesApi } from './allergiesApi';
+import { createChronicConditionsApi } from './chronicConditionsApi';
+import { createVaccinationsApi } from './vaccinationsApi';
+import { createScreeningsApi } from './screeningsApi';
+import { createGrowthMeasurementsApi } from './growthMeasurementsApi';
+import { createVitalSignsApi } from './vitalSignsApi';
+import { createHealthRecordsApi } from './healthRecordsApi';
 
-// Re-export all individual APIs
+// Re-export all factory functions
 export {
-  allergiesApi,
-  chronicConditionsApi,
-  vaccinationsApi,
-  screeningsApi,
-  growthMeasurementsApi,
-  vitalSignsApi,
-  healthRecordsApi
+  createAllergiesApi,
+  createChronicConditionsApi,
+  createVaccinationsApi,
+  createScreeningsApi,
+  createGrowthMeasurementsApi,
+  createVitalSignsApi,
+  createHealthRecordsApi
 };
 
 // Re-export all types from individual modules
@@ -122,310 +122,312 @@ export type {
 } from './healthRecordsApi';
 
 // ==========================================
-// UNIFIED HEALTH API CLASS
+// UNIFIED HEALTH API FACTORY
 // ==========================================
+
+import type { ApiClient } from '../../core/ApiClient';
 
 /**
- * Unified Health API Service
+ * Unified Health API Service Factory
  * Provides orchestrated access to all health modules
  */
-export class UnifiedHealthApi {
-  public readonly allergies = allergiesApi;
-  public readonly conditions = chronicConditionsApi;
-  public readonly vaccinations = vaccinationsApi;
-  public readonly screenings = screeningsApi;
-  public readonly growth = growthMeasurementsApi;
-  public readonly vitals = vitalSignsApi;
-  public readonly records = healthRecordsApi;
+export function createUnifiedHealthApi(client: ApiClient) {
+  const allergiesApi = createAllergiesApi(client);
+  const chronicConditionsApi = createChronicConditionsApi(client);
+  const vaccinationsApi = createVaccinationsApi(client);
+  const screeningsApi = createScreeningsApi(client);
+  const growthMeasurementsApi = createGrowthMeasurementsApi(client);
+  const vitalSignsApi = createVitalSignsApi(client);
+  const healthRecordsApi = createHealthRecordsApi(client);
 
-  /**
-   * Get comprehensive health overview for a student
-   */
-  async getComprehensiveHealthProfile(studentId: string) {
-    try {
-      // Fetch all health data in parallel for performance
-      const [
-        summary,
-        allergies,
-        conditions,
-        latestVitals,
-        latestGrowth,
-        complianceReport,
-        recentScreenings
-      ] = await Promise.all([
-        this.records.getHealthSummary(studentId),
-        this.allergies.getStudentAllergies(studentId),
-        this.conditions.getActiveConditions(studentId),
-        this.vitals.getLatestVitalSigns(studentId),
-        this.growth.getLatestMeasurement(studentId),
-        this.vaccinations.getComplianceReport(studentId),
-        this.screenings.getStudentScreenings(studentId, {}).then(result => result.slice(0, 5))
-      ]);
+  return {
+    allergies: allergiesApi,
+    conditions: chronicConditionsApi,
+    vaccinations: vaccinationsApi,
+    screenings: screeningsApi,
+    growth: growthMeasurementsApi,
+    vitals: vitalSignsApi,
+    records: healthRecordsApi,
 
-      return {
-        summary,
-        allergies,
-        activeConditions: conditions,
-        latestVitals,
-        latestGrowthMeasurement: latestGrowth,
-        vaccinationCompliance: complianceReport,
-        recentScreenings,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Failed to fetch comprehensive health profile:', error);
-      throw error;
-    }
-  }
+    /**
+     * Get comprehensive health overview for a student
+     */
+    async getComprehensiveHealthProfile(studentId: string) {
+      try {
+        // Fetch all health data in parallel for performance
+        const [
+          summary,
+          allergiesData,
+          conditions,
+          latestVitals,
+          latestGrowth,
+          complianceReport,
+          recentScreenings
+        ] = await Promise.all([
+          healthRecordsApi.getHealthSummary(studentId),
+          allergiesApi.getStudentAllergies(studentId),
+          chronicConditionsApi.getActiveConditions(studentId),
+          vitalSignsApi.getLatestVitalSigns(studentId),
+          growthMeasurementsApi.getLatestMeasurement(studentId),
+          vaccinationsApi.getComplianceReport(studentId),
+          screeningsApi.getStudentScreenings(studentId, {}).then(result => result.slice(0, 5))
+        ]);
 
-  /**
-   * Check for any critical health alerts
-   */
-  async getCriticalAlerts(studentId: string) {
-    try {
-      const [
-        criticalAllergies,
-        severeConditions,
-        overdueVaccinations,
-        abnormalVitals
-      ] = await Promise.all([
-        this.allergies.getCriticalAllergies(studentId),
-        this.conditions.getStudentConditions(studentId, {
-          severity: 'CRITICAL'
-        }),
-        this.vaccinations.getStudentVaccinations(studentId, {
-          overdue: true
-        }),
-        this.vitals.getUnacknowledgedAlerts()
-      ]);
-
-      return {
-        criticalAllergies,
-        severeConditions,
-        overdueVaccinations,
-        abnormalVitals: abnormalVitals.filter(a => a.studentId === studentId),
-        hasAlerts: criticalAllergies.length > 0 ||
-                  severeConditions.length > 0 ||
-                  overdueVaccinations.length > 0 ||
-                  abnormalVitals.some(a => a.studentId === studentId)
-      };
-    } catch (error) {
-      console.error('Failed to fetch critical alerts:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Perform pre-medication safety check
-   */
-  async performMedicationSafetyCheck(
-    studentId: string,
-    medicationName: string
-  ) {
-    try {
-      const [allergyConflicts, conditions] = await Promise.all([
-        this.allergies.checkMedicationConflicts(studentId, medicationName),
-        this.conditions.getActiveConditions(studentId)
-      ]);
-
-      return {
-        safe: !allergyConflicts.hasConflict,
-        allergyConflicts: allergyConflicts.conflicts,
-        relevantConditions: conditions,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Failed to perform medication safety check:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get all items requiring follow-up
-   */
-  async getFollowUpItems(schoolId?: string) {
-    try {
-      const [
-        healthRecords,
-        screenings,
-        conditions
-      ] = await Promise.all([
-        this.records.getFollowUpRequired(schoolId),
-        this.screenings.getScreeningsRequiringFollowUp(schoolId),
-        this.conditions.getConditionsForReview()
-      ]);
-
-      return {
-        healthRecords: healthRecords.data,
-        screenings: screenings.data,
-        conditions: conditions.data,
-        totalItems: healthRecords.total + screenings.total + conditions.total
-      };
-    } catch (error) {
-      console.error('Failed to fetch follow-up items:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate comprehensive health report
-   */
-  async generateComprehensiveReport(
-    studentId: string,
-    options: {
-      format?: 'PDF' | 'JSON';
-      dateFrom?: string;
-      dateTo?: string;
-      includeAll?: boolean;
-    } = {}
-  ): Promise<Blob | any> {
-    try {
-      if (options.format === 'PDF') {
-        return await this.records.exportRecords({
-          studentId,
-          format: 'PDF',
-          dateFrom: options.dateFrom,
-          dateTo: options.dateTo,
-          includeAllergies: options.includeAll ?? true,
-          includeConditions: options.includeAll ?? true,
-          includeVaccinations: options.includeAll ?? true,
-          includeVitals: options.includeAll ?? true,
-          includeMedications: options.includeAll ?? true,
-          includeSummary: true
-        });
-      } else {
-        // Return structured JSON data
-        const profile = await this.getComprehensiveHealthProfile(studentId);
         return {
-          ...profile,
-          exportDate: new Date().toISOString(),
-          exportedBy: 'System'
+          summary,
+          allergies: allergiesData,
+          activeConditions: conditions,
+          latestVitals,
+          latestGrowthMeasurement: latestGrowth,
+          vaccinationCompliance: complianceReport,
+          recentScreenings,
+          timestamp: new Date().toISOString()
         };
+      } catch (error) {
+        console.error('Failed to fetch comprehensive health profile:', error);
+        throw error;
       }
-    } catch (error) {
-      console.error('Failed to generate comprehensive report:', error);
-      throw error;
+    },
+
+    /**
+     * Check for any critical health alerts
+     */
+    async getCriticalAlerts(studentId: string) {
+      try {
+        const [
+          criticalAllergies,
+          severeConditions,
+          overdueVaccinations,
+          abnormalVitals
+        ] = await Promise.all([
+          allergiesApi.getCriticalAllergies(studentId),
+          chronicConditionsApi.getStudentConditions(studentId, {
+            severity: 'CRITICAL'
+          }),
+          vaccinationsApi.getStudentVaccinations(studentId, {
+            overdue: true
+          }),
+          vitalSignsApi.getUnacknowledgedAlerts()
+        ]);
+
+        return {
+          criticalAllergies,
+          severeConditions,
+          overdueVaccinations,
+          abnormalVitals: abnormalVitals.filter(a => a.studentId === studentId),
+          hasAlerts: criticalAllergies.length > 0 ||
+                    severeConditions.length > 0 ||
+                    overdueVaccinations.length > 0 ||
+                    abnormalVitals.some(a => a.studentId === studentId)
+        };
+      } catch (error) {
+        console.error('Failed to fetch critical alerts:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * Perform pre-medication safety check
+     */
+    async performMedicationSafetyCheck(
+      studentId: string,
+      medicationName: string
+    ) {
+      try {
+        const [allergyConflicts, conditions] = await Promise.all([
+          allergiesApi.checkMedicationConflicts(studentId, medicationName),
+          chronicConditionsApi.getActiveConditions(studentId)
+        ]);
+
+        return {
+          safe: !allergyConflicts.hasConflict,
+          allergyConflicts: allergyConflicts.conflicts,
+          relevantConditions: conditions,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.error('Failed to perform medication safety check:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * Get all items requiring follow-up
+     */
+    async getFollowUpItems(schoolId?: string) {
+      try {
+        const [
+          healthRecordsData,
+          screeningsData,
+          conditionsData
+        ] = await Promise.all([
+          healthRecordsApi.getFollowUpRequired(schoolId),
+          screeningsApi.getScreeningsRequiringFollowUp(schoolId),
+          chronicConditionsApi.getConditionsForReview()
+        ]);
+
+        return {
+          healthRecords: healthRecordsData.data,
+          screenings: screeningsData.data,
+          conditions: conditionsData.data,
+          totalItems: healthRecordsData.total + screeningsData.total + conditionsData.total
+        };
+      } catch (error) {
+        console.error('Failed to fetch follow-up items:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * Generate comprehensive health report
+     */
+    async generateComprehensiveReport(
+      studentId: string,
+      options: {
+        format?: 'PDF' | 'JSON';
+        dateFrom?: string;
+        dateTo?: string;
+        includeAll?: boolean;
+      } = {}
+    ): Promise<Blob | any> {
+      try {
+        if (options.format === 'PDF') {
+          return await healthRecordsApi.exportRecords({
+            studentId,
+            format: 'PDF',
+            dateFrom: options.dateFrom,
+            dateTo: options.dateTo,
+            includeAllergies: options.includeAll ?? true,
+            includeConditions: options.includeAll ?? true,
+            includeVaccinations: options.includeAll ?? true,
+            includeVitals: options.includeAll ?? true,
+            includeMedications: options.includeAll ?? true,
+            includeSummary: true
+          });
+        } else {
+          // Return structured JSON data
+          const profile = await this.getComprehensiveHealthProfile(studentId);
+          return {
+            ...profile,
+            exportDate: new Date().toISOString(),
+            exportedBy: 'System'
+          };
+        }
+      } catch (error) {
+        console.error('Failed to generate comprehensive report:', error);
+        throw error;
+      }
     }
-  }
+  };
 }
-
-// ==========================================
-// SINGLETON INSTANCES
-// ==========================================
-
-export const unifiedHealthApi = new UnifiedHealthApi();
 
 // ==========================================
 // LEGACY COMPATIBILITY LAYER
 // ==========================================
 
 /**
- * Legacy HealthRecordsApi compatible interface
+ * Legacy HealthRecordsApi Factory
  * Maintains backward compatibility with existing code
+ * @deprecated Use createUnifiedHealthApi or individual API factories instead
  */
-export class HealthRecordsApi {
-  private unified = unifiedHealthApi;
+export function createHealthRecordsApi_Legacy(client: ApiClient) {
+  const unified = createUnifiedHealthApi(client);
 
-  // Main health records operations
-  getRecords = this.unified.records.getStudentRecords.bind(this.unified.records);
-  getRecordById = this.unified.records.getById.bind(this.unified.records);
-  createRecord = this.unified.records.create.bind(this.unified.records);
-  updateRecord = this.unified.records.update.bind(this.unified.records);
-  deleteRecord = this.unified.records.delete.bind(this.unified.records);
-  getSummary = this.unified.records.getHealthSummary.bind(this.unified.records);
-  searchRecords = this.unified.records.searchRecords.bind(this.unified.records);
-  exportRecords = this.unified.records.exportRecords.bind(this.unified.records);
-  importRecords = this.unified.records.importRecords.bind(this.unified.records);
-
-  // Allergies operations
-  getAllergies = this.unified.allergies.getStudentAllergies.bind(this.unified.allergies);
-  getAllergyById = this.unified.allergies.getById.bind(this.unified.allergies);
-  createAllergy = this.unified.allergies.create.bind(this.unified.allergies);
-  updateAllergy = this.unified.allergies.update.bind(this.unified.allergies);
-  deleteAllergy = this.unified.allergies.delete.bind(this.unified.allergies);
-  getCriticalAllergies = this.unified.allergies.getCriticalAllergies.bind(this.unified.allergies);
-  checkMedicationConflicts = this.unified.allergies.checkMedicationConflicts.bind(this.unified.allergies);
-
-  // Chronic conditions operations
-  getConditions = this.unified.conditions.getStudentConditions.bind(this.unified.conditions);
-  getConditionById = this.unified.conditions.getById.bind(this.unified.conditions);
-  createCondition = this.unified.conditions.create.bind(this.unified.conditions);
-  updateCondition = this.unified.conditions.update.bind(this.unified.conditions);
-  deleteCondition = this.unified.conditions.delete.bind(this.unified.conditions);
-  updateCarePlan = this.unified.conditions.updateCarePlan.bind(this.unified.conditions);
-
-  // Vaccinations operations
-  getVaccinations = this.unified.vaccinations.getStudentVaccinations.bind(this.unified.vaccinations);
-  getVaccinationById = this.unified.vaccinations.getById.bind(this.unified.vaccinations);
-  createVaccination = this.unified.vaccinations.create.bind(this.unified.vaccinations);
-  updateVaccination = this.unified.vaccinations.update.bind(this.unified.vaccinations);
-  deleteVaccination = this.unified.vaccinations.delete.bind(this.unified.vaccinations);
-  getComplianceReport = this.unified.vaccinations.getComplianceReport.bind(this.unified.vaccinations);
-  checkStateCompliance = this.unified.vaccinations.checkStateCompliance.bind(this.unified.vaccinations);
-
-  // Screenings operations
-  getScreenings = this.unified.screenings.getStudentScreenings.bind(this.unified.screenings);
-  getScreeningById = this.unified.screenings.getById.bind(this.unified.screenings);
-  createScreening = this.unified.screenings.create.bind(this.unified.screenings);
-  updateScreening = this.unified.screenings.update.bind(this.unified.screenings);
-  deleteScreening = this.unified.screenings.delete.bind(this.unified.screenings);
-  getLatestScreening = this.unified.screenings.getLatestScreening.bind(this.unified.screenings);
-
-  // Growth measurements operations
-  getGrowthMeasurements = this.unified.growth.getStudentMeasurements.bind(this.unified.growth);
-  getGrowthMeasurementById = this.unified.growth.getById.bind(this.unified.growth);
-  createGrowthMeasurement = this.unified.growth.create.bind(this.unified.growth);
-  updateGrowthMeasurement = this.unified.growth.update.bind(this.unified.growth);
-  deleteGrowthMeasurement = this.unified.growth.delete.bind(this.unified.growth);
-  getGrowthTrend = this.unified.growth.getGrowthTrend.bind(this.unified.growth);
-  getGrowthChart = this.unified.growth.getGrowthChart.bind(this.unified.growth);
-
-  // Vital signs operations
-  getVitalSigns = this.unified.vitals.getStudentVitalSigns.bind(this.unified.vitals);
-  getVitalSignsById = this.unified.vitals.getById.bind(this.unified.vitals);
-  createVitalSigns = this.unified.vitals.create.bind(this.unified.vitals);
-  updateVitalSigns = this.unified.vitals.update.bind(this.unified.vitals);
-  deleteVitalSigns = this.unified.vitals.delete.bind(this.unified.vitals);
-  getLatestVitals = this.unified.vitals.getLatestVitalSigns.bind(this.unified.vitals);
-  getVitalTrends = this.unified.vitals.getVitalTrends.bind(this.unified.vitals);
-
-  // Legacy method aliases for backward compatibility
-  getHealthRecordById = this.getRecordById;
-  getHealthSummary = this.getSummary;
-  searchHealthRecords = this.searchRecords;
-  createHealthRecord = this.createRecord;
-  updateHealthRecord = this.updateRecord;
-  deleteHealthRecord = this.deleteRecord;
-  getStudentAllergies = this.getAllergies;
-  getStudentChronicConditions = this.getConditions;
-  createChronicCondition = this.createCondition;
-  updateChronicCondition = this.updateCondition;
-  deleteChronicCondition = this.deleteCondition;
-  getVaccinationRecords = this.getVaccinations;
-
-  /**
-   * Display deprecation warning for legacy usage
-   */
-  constructor() {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(
-        '[DEPRECATION] HealthRecordsApi: This monolithic API is deprecated. ' +
-        'Please migrate to the modular health services:\n' +
-        '- allergiesApi\n' +
-        '- chronicConditionsApi\n' +
-        '- vaccinationsApi\n' +
-        '- screeningsApi\n' +
-        '- growthMeasurementsApi\n' +
-        '- vitalSignsApi\n' +
-        '- healthRecordsApi\n' +
-        'Import from: @/services/modules/health'
-      );
-    }
+  // Display deprecation warning
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATION] createHealthRecordsApi_Legacy: This monolithic API is deprecated. ' +
+      'Please migrate to createUnifiedHealthApi or individual API factories:\n' +
+      '- createAllergiesApi\n' +
+      '- createChronicConditionsApi\n' +
+      '- createVaccinationsApi\n' +
+      '- createScreeningsApi\n' +
+      '- createGrowthMeasurementsApi\n' +
+      '- createVitalSignsApi\n' +
+      '- createHealthRecordsApi\n' +
+      'Import from: @/services/modules/health'
+    );
   }
+
+  return {
+    // Main health records operations
+    getRecords: unified.records.getStudentRecords.bind(unified.records),
+    getRecordById: unified.records.getById.bind(unified.records),
+    createRecord: unified.records.create.bind(unified.records),
+    updateRecord: unified.records.update.bind(unified.records),
+    deleteRecord: unified.records.delete.bind(unified.records),
+    getSummary: unified.records.getHealthSummary.bind(unified.records),
+    searchRecords: unified.records.searchRecords.bind(unified.records),
+    exportRecords: unified.records.exportRecords.bind(unified.records),
+    importRecords: unified.records.importRecords.bind(unified.records),
+
+    // Allergies operations
+    getAllergies: unified.allergies.getStudentAllergies.bind(unified.allergies),
+    getAllergyById: unified.allergies.getById.bind(unified.allergies),
+    createAllergy: unified.allergies.create.bind(unified.allergies),
+    updateAllergy: unified.allergies.update.bind(unified.allergies),
+    deleteAllergy: unified.allergies.delete.bind(unified.allergies),
+    getCriticalAllergies: unified.allergies.getCriticalAllergies.bind(unified.allergies),
+    checkMedicationConflicts: unified.allergies.checkMedicationConflicts.bind(unified.allergies),
+
+    // Chronic conditions operations
+    getConditions: unified.conditions.getStudentConditions.bind(unified.conditions),
+    getConditionById: unified.conditions.getById.bind(unified.conditions),
+    createCondition: unified.conditions.create.bind(unified.conditions),
+    updateCondition: unified.conditions.update.bind(unified.conditions),
+    deleteCondition: unified.conditions.delete.bind(unified.conditions),
+    updateCarePlan: unified.conditions.updateCarePlan.bind(unified.conditions),
+
+    // Vaccinations operations
+    getVaccinations: unified.vaccinations.getStudentVaccinations.bind(unified.vaccinations),
+    getVaccinationById: unified.vaccinations.getById.bind(unified.vaccinations),
+    createVaccination: unified.vaccinations.create.bind(unified.vaccinations),
+    updateVaccination: unified.vaccinations.update.bind(unified.vaccinations),
+    deleteVaccination: unified.vaccinations.delete.bind(unified.vaccinations),
+    getComplianceReport: unified.vaccinations.getComplianceReport.bind(unified.vaccinations),
+    checkStateCompliance: unified.vaccinations.checkStateCompliance.bind(unified.vaccinations),
+
+    // Screenings operations
+    getScreenings: unified.screenings.getStudentScreenings.bind(unified.screenings),
+    getScreeningById: unified.screenings.getById.bind(unified.screenings),
+    createScreening: unified.screenings.create.bind(unified.screenings),
+    updateScreening: unified.screenings.update.bind(unified.screenings),
+    deleteScreening: unified.screenings.delete.bind(unified.screenings),
+    getLatestScreening: unified.screenings.getLatestScreening.bind(unified.screenings),
+
+    // Growth measurements operations
+    getGrowthMeasurements: unified.growth.getStudentMeasurements.bind(unified.growth),
+    getGrowthMeasurementById: unified.growth.getById.bind(unified.growth),
+    createGrowthMeasurement: unified.growth.create.bind(unified.growth),
+    updateGrowthMeasurement: unified.growth.update.bind(unified.growth),
+    deleteGrowthMeasurement: unified.growth.delete.bind(unified.growth),
+    getGrowthTrend: unified.growth.getGrowthTrend.bind(unified.growth),
+    getGrowthChart: unified.growth.getGrowthChart.bind(unified.growth),
+
+    // Vital signs operations
+    getVitalSigns: unified.vitals.getStudentVitalSigns.bind(unified.vitals),
+    getVitalSignsById: unified.vitals.getById.bind(unified.vitals),
+    createVitalSigns: unified.vitals.create.bind(unified.vitals),
+    updateVitalSigns: unified.vitals.update.bind(unified.vitals),
+    deleteVitalSigns: unified.vitals.delete.bind(unified.vitals),
+    getLatestVitals: unified.vitals.getLatestVitalSigns.bind(unified.vitals),
+    getVitalTrends: unified.vitals.getVitalTrends.bind(unified.vitals),
+
+    // Legacy method aliases for backward compatibility
+    get getHealthRecordById() { return this.getRecordById; },
+    get getHealthSummary() { return this.getSummary; },
+    get searchHealthRecords() { return this.searchRecords; },
+    get createHealthRecord() { return this.createRecord; },
+    get updateHealthRecord() { return this.updateRecord; },
+    get deleteHealthRecord() { return this.deleteRecord; },
+    get getStudentAllergies() { return this.getAllergies; },
+    get getStudentChronicConditions() { return this.getConditions; },
+    get createChronicCondition() { return this.createCondition; },
+    get updateChronicCondition() { return this.updateCondition; },
+    get deleteChronicCondition() { return this.deleteCondition; },
+    get getVaccinationRecords() { return this.getVaccinations; }
+  };
 }
 
-// Export legacy compatible instance
-export const legacyHealthRecordsApi = new HealthRecordsApi();
-
 // Default export for maximum compatibility
-export default unifiedHealthApi;
+export default createUnifiedHealthApi;

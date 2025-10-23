@@ -23,26 +23,34 @@
  */
 
 import { HealthRecordType, AllergySeverity, ConditionStatus, ConditionSeverity } from '../../database/types/enums';
+import { VitalSigns } from '../../types/health';
+import type {
+  StudentBasicInfo,
+  AllergyInfo,
+  VaccinationRecord,
+  HealthRecordInfo,
+  ChronicConditionInfo
+} from '../../types/health/health-record.types';
 
 // Type augmentations for model associations
 declare module '../../database/models' {
   interface HealthRecord {
     student?: Student;
-    vital?: any;
-    type: any;
+    vital?: VitalSigns;
+    type: HealthRecordType;
     date: Date;
   }
-  
+
   interface Allergy {
     student?: Student;
     allergen: string;
   }
-  
+
   interface ChronicCondition {
     student?: Student;
     condition: string;
   }
-  
+
   interface Vaccination {
     student?: Student;
     vaccineName: string;
@@ -51,7 +59,7 @@ declare module '../../database/models' {
     doseNumber?: number;
     totalDoses?: number;
   }
-  
+
   interface Student {
     id: string;
     firstName: string;
@@ -66,7 +74,7 @@ export interface CreateHealthRecordData {
   type: HealthRecordType;
   date: Date;
   description: string;
-  vital?: any; // JSON data for vitals
+  vital?: VitalSigns;
   provider?: string;
   notes?: string;
   attachments?: string[];
@@ -76,7 +84,7 @@ export interface UpdateHealthRecordData {
   type?: HealthRecordType;
   date?: Date;
   description?: string;
-  vital?: any;
+  vital?: VitalSigns;
   provider?: string;
   notes?: string;
   attachments?: string[];
@@ -173,18 +181,8 @@ export interface UpdateVaccinationData {
   notes?: string;
 }
 
-// Vital signs interface
-export interface VitalSigns {
-  temperature?: number;
-  bloodPressureSystolic?: number;
-  bloodPressureDiastolic?: number;
-  heartRate?: number;
-  respiratoryRate?: number;
-  oxygenSaturation?: number;
-  height?: number;
-  weight?: number;
-  bmi?: number;
-}
+// Re-export VitalSigns from centralized types
+export { VitalSigns } from '../../types/health';
 
 // Filter interfaces
 export interface HealthRecordFilters {
@@ -230,11 +228,11 @@ export interface PaginatedResponse<T> {
 }
 
 export interface HealthSummary {
-  student: any;
-  allergies: any[];
-  recentVitals: any[];
-  recentVaccinations: any[];
-  recordCounts: Record<string, number>;
+  student: StudentBasicInfo;
+  allergies: AllergyInfo[];
+  recentVitals: VitalSigns[];
+  recentVaccinations: VaccinationRecord[];
+  recordCounts: Record<HealthRecordType | string, number>;
 }
 
 export interface GrowthDataPoint {
@@ -267,11 +265,11 @@ export interface BulkDeleteResult {
 
 export interface ExportData {
   exportDate: string;
-  student: any;
-  healthRecords: any[];
-  allergies: any[];
-  chronicConditions: any[];
-  vaccinations: any[];
+  student: StudentBasicInfo;
+  healthRecords: HealthRecordInfo[];
+  allergies: AllergyInfo[];
+  chronicConditions: ChronicConditionInfo[];
+  vaccinations: VaccinationRecord[];
   growthData: GrowthDataPoint[];
 }
 
@@ -281,20 +279,20 @@ export interface HealthDataExport {
   exportDate: Date;
   version: string;
   data: {
-    healthRecords?: any[];
-    allergies?: any[];
-    vaccinations?: any[];
-    chronicConditions?: any[];
+    healthRecords: HealthRecordInfo[];
+    allergies: AllergyInfo[];
+    vaccinations: VaccinationRecord[];
+    chronicConditions: ChronicConditionInfo[];
   };
 }
 
 export interface HealthDataImport {
   patientId: string;
   data: {
-    healthRecords?: any[];
-    allergies?: any[];
-    vaccinations?: any[];
-    chronicConditions?: any[];
+    healthRecords: Partial<HealthRecordInfo>[];
+    allergies: Partial<AllergyInfo>[];
+    vaccinations: Partial<VaccinationRecord>[];
+    chronicConditions: Partial<ChronicConditionInfo>[];
   };
 }
 

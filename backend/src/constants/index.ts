@@ -342,16 +342,48 @@ export const DATE_FORMATS = {
 } as const;
 
 // ===== TOKEN CONFIGURATION =====
+/**
+ * SECURITY: JWT secret must be set in environment variables
+ * No defaults are provided - application will fail fast if not configured
+ */
+const getJWTSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('CRITICAL: JWT_SECRET must be set in environment variables');
+    throw new Error('JWT_SECRET is required - application cannot start without it');
+  }
+  if (secret.length < 32) {
+    console.error('SECURITY WARNING: JWT_SECRET should be at least 32 characters for security');
+  }
+  return secret;
+};
+
 export const TOKEN_CONFIG = {
-  JWT_SECRET: process.env.JWT_SECRET || 'default-secret-change-in-production',
+  JWT_SECRET: getJWTSecret(),
   JWT_EXPIRES_IN: '8h',
   REFRESH_TOKEN_EXPIRES_IN: '7d',
   TOKEN_TYPE: 'Bearer',
 } as const;
 
 // ===== SESSION CONFIGURATION =====
+/**
+ * SECURITY: Session secret must be set in environment variables
+ * No defaults are provided - application will fail fast if not configured
+ */
+const getSessionSecret = (): string => {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    console.error('CRITICAL: SESSION_SECRET must be set in environment variables');
+    throw new Error('SESSION_SECRET is required - application cannot start without it');
+  }
+  if (secret.length < 32) {
+    console.error('SECURITY WARNING: SESSION_SECRET should be at least 32 characters for security');
+  }
+  return secret;
+};
+
 export const SESSION_CONFIG = {
-  SECRET: process.env.SESSION_SECRET || 'default-session-secret',
+  SECRET: getSessionSecret(),
   MAX_AGE: 8 * 60 * 60 * 1000, // 8 hours
   COOKIE_NAME: 'white-cross-session',
   SECURE: process.env.NODE_ENV === 'production',
@@ -500,7 +532,7 @@ export const ENVIRONMENT = {
   IS_PRODUCTION: process.env.NODE_ENV === 'production',
   IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
   IS_TEST: process.env.NODE_ENV === 'test',
-  JWT_SECRET: process.env.JWT_SECRET || 'default-secret-change-in-production',
+  JWT_SECRET: getJWTSecret(), // Use the same secure getter
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,

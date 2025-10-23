@@ -151,107 +151,37 @@ export class MedicationCrudService {
 
   /**
    * Get medication form options and reference data
+   * Now uses centralized constants from medicationConstants.ts
    */
   static async getMedicationFormOptions() {
     try {
+      // Import constants at runtime to avoid circular dependency
+      const {
+        MEDICATION_DOSAGE_FORMS,
+        MEDICATION_CATEGORIES,
+        MEDICATION_STRENGTH_UNITS,
+        MEDICATION_ROUTES,
+        MEDICATION_FREQUENCIES
+      } = await import('../shared/constants/medicationConstants');
+
       // Get unique dosage forms from existing medications
       const existingForms = await Medication.findAll({
         attributes: [[sequelize.fn('DISTINCT', sequelize.col('dosageForm')), 'dosageForm']],
         raw: true
       });
 
-      // Standard medication forms
-      const standardForms = [
-        'Tablet',
-        'Capsule',
-        'Liquid',
-        'Injection',
-        'Topical',
-        'Inhaler',
-        'Drops',
-        'Patch',
-        'Suppository',
-        'Powder',
-        'Cream',
-        'Ointment',
-        'Gel',
-        'Spray',
-        'Lozenge'
-      ];
-
-      // Combine and deduplicate
+      // Combine standard forms with existing forms from database
       const allForms = [...new Set([
-        ...standardForms,
+        ...MEDICATION_DOSAGE_FORMS,
         ...existingForms.map((f: any) => f.dosageForm).filter(Boolean)
       ])].sort();
 
-      // Standard medication categories
-      const categories = [
-        'Analgesic',
-        'Antibiotic',
-        'Antihistamine',
-        'Anti-inflammatory',
-        'Asthma Medication',
-        'Diabetic Medication',
-        'Cardiovascular',
-        'Gastrointestinal',
-        'Neurological',
-        'Dermatological',
-        'Ophthalmic',
-        'Otic',
-        'Emergency Medication',
-        'Vitamin/Supplement',
-        'Other'
-      ];
-
-      // Common strength units
-      const strengthUnits = [
-        'mg',
-        'g',
-        'mcg',
-        'ml',
-        'units',
-        'mEq',
-        '%'
-      ];
-
-      // Administration routes
-      const routes = [
-        'Oral',
-        'Sublingual',
-        'Topical',
-        'Intravenous',
-        'Intramuscular',
-        'Subcutaneous',
-        'Inhalation',
-        'Ophthalmic',
-        'Otic',
-        'Nasal',
-        'Rectal',
-        'Transdermal'
-      ];
-
       const formOptions = {
         dosageForms: allForms,
-        categories,
-        strengthUnits,
-        routes,
-        frequencies: [
-          'Once daily',
-          'Twice daily',
-          'Three times daily',
-          'Four times daily',
-          'Every 4 hours',
-          'Every 6 hours',
-          'Every 8 hours',
-          'Every 12 hours',
-          'As needed',
-          'Before meals',
-          'After meals',
-          'At bedtime',
-          'Weekly',
-          'Monthly'
-        ]
+        categories: [...MEDICATION_CATEGORIES],
+        strengthUnits: [...MEDICATION_STRENGTH_UNITS],
+        routes: [...MEDICATION_ROUTES],
+        frequencies: [...MEDICATION_FREQUENCIES]
       };
 
       logger.info('Retrieved medication form options');

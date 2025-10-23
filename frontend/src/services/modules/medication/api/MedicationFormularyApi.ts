@@ -27,7 +27,7 @@
  * - Interactions: 24 hours
  */
 
-import { apiInstance } from '@/services/config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
 import axios from 'axios';
@@ -187,6 +187,12 @@ const medicationSchema = z.object({
 
 // API Client
 export class MedicationFormularyApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Search medication formulary
    * Cached for 24 hours
@@ -209,7 +215,7 @@ export class MedicationFormularyApi {
       if (filters?.page) params.append('page', String(filters.page));
       if (filters?.limit) params.append('limit', String(filters.limit));
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         `${API_ENDPOINTS.MEDICATIONS.BASE}?${params.toString()}`
       );
 
@@ -226,7 +232,7 @@ export class MedicationFormularyApi {
     try {
       if (!id) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.BY_ID(id)
       );
 
@@ -247,7 +253,7 @@ export class MedicationFormularyApi {
       // Normalize NDC format (remove dashes)
       const normalizedNDC = ndc.replace(/-/g, '');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_NDC(normalizedNDC)
       );
 
@@ -265,7 +271,7 @@ export class MedicationFormularyApi {
     try {
       if (!barcode) throw new Error('Barcode is required');
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_BARCODE,
         { barcode }
       );
@@ -286,7 +292,7 @@ export class MedicationFormularyApi {
         throw new Error('At least one medication ID is required');
       }
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         `${API_ENDPOINTS.MEDICATIONS.INTERACTIONS}`,
         { medicationIds }
       );
@@ -305,7 +311,7 @@ export class MedicationFormularyApi {
     try {
       if (!medicationId) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_MONOGRAPH(medicationId)
       );
 
@@ -322,7 +328,7 @@ export class MedicationFormularyApi {
     try {
       if (!medicationId) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_ALTERNATIVES(medicationId)
       );
 
@@ -340,7 +346,7 @@ export class MedicationFormularyApi {
     try {
       if (!medicationId) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_LASA(medicationId)
       );
 
@@ -355,7 +361,7 @@ export class MedicationFormularyApi {
    */
   async getCategories(): Promise<string[]> {
     try {
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_CATEGORIES
       );
 
@@ -370,7 +376,7 @@ export class MedicationFormularyApi {
    */
   async getForms(): Promise<MedicationForm[]> {
     try {
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_FORMS
       );
 
@@ -388,7 +394,7 @@ export class MedicationFormularyApi {
       // Validate data
       medicationSchema.omit({ id: true, createdAt: true, updatedAt: true }).parse(data);
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         `${API_ENDPOINTS.MEDICATIONS.BASE}`,
         data
       );
@@ -423,7 +429,7 @@ export class MedicationFormularyApi {
     try {
       if (!id) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.put(
+      const response = await this.client.put(
         API_ENDPOINTS.MEDICATIONS.BY_ID(id),
         data
       );
@@ -442,7 +448,7 @@ export class MedicationFormularyApi {
       if (!id) throw new Error('Medication ID is required');
       if (!reason) throw new Error('Deactivation reason is required');
 
-      await apiInstance.patch(
+      await this.client.patch(
         API_ENDPOINTS.MEDICATIONS.FORMULARY_DEACTIVATE(id),
         { reason }
       );
@@ -452,5 +458,7 @@ export class MedicationFormularyApi {
   }
 }
 
-// Export singleton instance
-export const medicationFormularyApi = new MedicationFormularyApi();
+// Factory function for creating MedicationFormularyApi instances
+export function createMedicationFormularyApi(client: ApiClient): MedicationFormularyApi {
+  return new MedicationFormularyApi(client);
+}

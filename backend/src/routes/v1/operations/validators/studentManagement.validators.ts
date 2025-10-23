@@ -22,7 +22,7 @@ export const studentPhotoUploadSchema = Joi.object({
     .description('Base64 encoded image data'),
   imageFormat: Joi.string().valid('jpeg', 'jpg', 'png', 'gif').default('jpeg'),
   metadata: Joi.object({
-    capturedDate: Joi.date().default(() => new Date(), 'current date'),
+    capturedDate: Joi.date().default(() => new Date()).description('current date'),
     capturedBy: Joi.string().uuid().optional(),
     deviceInfo: Joi.string().max(200).optional(),
     location: Joi.string().max(100).optional(),
@@ -163,7 +163,7 @@ export const barcodeVerificationSchema = Joi.object({
     .description('Medication package barcode'),
   nurseBarcode: Joi.string().min(1).max(200).required()
     .description('Nurse identification barcode'),
-  administrationTime: Joi.date().default(() => new Date(), 'current time'),
+  administrationTime: Joi.date().default(() => new Date()).description('current time'),
   verificationMode: Joi.string().valid('standard', 'emergency', 'override').default('standard'),
   witnessBarcode: Joi.string().min(1).max(200).optional()
     .description('Witness barcode for controlled substances'),

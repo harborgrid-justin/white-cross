@@ -3,22 +3,28 @@
  */
 
 import { logger } from '../../../utils/logger';
-import { 
-  PaginationParams, 
+import {
+  PaginationParams,
   PaginatedResponse,
-  PaginationConstraints 
+  PaginationConstraints
 } from '../types/pagination';
-import { 
-  buildPaginationQuery, 
+import {
+  buildPaginationQuery,
   processPaginatedResult,
-  validatePaginationParams 
+  validatePaginationParams
 } from '../database/pagination';
-import { 
-  ValidationResult, 
+import {
+  ValidationResult,
   BulkOperationResult,
-  ServiceResponse 
+  ServiceResponse
 } from '../types/common';
 import { validateUUID } from '../validation/commonValidators';
+import {
+  ErrorMetadata,
+  ApplicationError,
+  SequelizeValidationErrorItem
+} from '../../../types/validation';
+import { Model, ModelStatic, Transaction, Op, Sequelize } from 'sequelize';
 
 /**
  * Base service configuration options
@@ -49,21 +55,25 @@ export abstract class BaseService {
   /**
    * Log service operation
    */
-  protected logInfo(message: string, metadata?: any): void {
+  protected logInfo(message: string, metadata?: ErrorMetadata): void {
     logger.info(`[${this.serviceName}] ${message}`, metadata);
   }
 
   /**
    * Log service error
    */
-  protected logError(message: string, error?: any, metadata?: any): void {
+  protected logError(
+    message: string,
+    error?: ApplicationError | Error | unknown,
+    metadata?: ErrorMetadata
+  ): void {
     logger.error(`[${this.serviceName}] ${message}`, { error, ...metadata });
   }
 
   /**
    * Log service warning
    */
-  protected logWarning(message: string, metadata?: any): void {
+  protected logWarning(message: string, metadata?: ErrorMetadata): void {
     logger.warn(`[${this.serviceName}] ${message}`, metadata);
   }
 
@@ -110,21 +120,27 @@ export abstract class BaseService {
    */
   protected handleError<T>(
     operation: string,
-    error: any,
-    metadata?: any
+    error: ApplicationError | Error | unknown,
+    metadata?: ErrorMetadata
   ): ServiceResponse<T> {
-    const errorMessage = error?.message || 'An unexpected error occurred';
-    
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+
     this.logError(`Error in ${operation}`, error, metadata);
-    
+
     // Don't expose internal errors to clients
     let clientMessage = errorMessage;
-    if (error?.name === 'SequelizeConnectionError') {
-      clientMessage = 'Database connection error. Please try again later.';
-    } else if (error?.name === 'SequelizeValidationError') {
-      clientMessage = `Validation failed: ${error.errors?.map((e: any) => e.message).join(', ')}`;
-    } else if (error?.name === 'SequelizeUniqueConstraintError') {
-      clientMessage = 'A record with this information already exists.';
+
+    if (error && typeof error === 'object' && 'name' in error) {
+      const errorName = (error as { name: string }).name;
+
+      if (errorName === 'SequelizeConnectionError') {
+        clientMessage = 'Database connection error. Please try again later.';
+      } else if (errorName === 'SequelizeValidationError') {
+        const errors = (error as { errors?: SequelizeValidationErrorItem[] }).errors;
+        clientMessage = `Validation failed: ${errors?.map(e => e.message).join(', ') || 'Unknown validation error'}`;
+      } else if (errorName === 'SequelizeUniqueConstraintError') {
+        clientMessage = 'A record with this information already exists.';
+      }
     }
 
     return {
@@ -140,10 +156,10 @@ export abstract class BaseService {
     operation: string,
     data: T,
     message?: string,
-    metadata?: any
+    metadata?: ErrorMetadata
   ): ServiceResponse<T> {
     this.logInfo(`${operation} completed successfully`, metadata);
-    
+
     return {
       success: true,
       data,
@@ -227,15 +243,15 @@ export abstract class BaseService {
    */
   protected async executeTransaction<T>(
     operation: string,
-    transactionCallback: (transaction: any) => Promise<T>,
-    sequelize: any
+    transactionCallback: (transaction: Transaction) => Promise<T>,
+    sequelize: Sequelize
   ): Promise<ServiceResponse<T>> {
     const transaction = await sequelize.transaction();
-    
+
     try {
       const result = await transactionCallback(transaction);
       await transaction.commit();
-      
+
       return this.handleSuccess(operation, result);
     } catch (error) {
       await transaction.rollback();
@@ -285,27 +301,27 @@ export abstract class BaseService {
   /**
    * Check if entity exists by ID
    */
-  protected async checkEntityExists(
-    model: any,
+  protected async checkEntityExists<T extends Model>(
+    model: ModelStatic<T>,
     id: string,
     entityName: string = 'Entity'
-  ): Promise<{ exists: boolean; entity?: any; error?: string }> {
+  ): Promise<{ exists: boolean; entity?: T; error?: string }> {
     try {
       const entity = await model.findByPk(id);
-      
+
       if (!entity) {
         return {
           exists: false,
           error: `${entityName} not found`
         };
       }
-      
+
       return {
         exists: true,
         entity
       };
     } catch (error) {
-      this.logError(`Error checking ${entityName} existence`, error, { id });
+      this.logError(`Error checking ${entityName} existence`, error, { additionalContext: { id } });
       return {
         exists: false,
         error: `Error checking ${entityName} existence`
@@ -318,9 +334,8 @@ export abstract class BaseService {
    */
   protected buildSearchClause(
     searchTerm: string,
-    searchFields: string[],
-    Op: any
-  ): any {
+    searchFields: string[]
+  ): Record<string, unknown> | Record<string, never> {
     if (!searchTerm || searchFields.length === 0) {
       return {};
     }
@@ -340,8 +355,8 @@ export abstract class BaseService {
     entityType: string,
     entityId: string,
     userId?: string,
-    changes?: any,
-    metadata?: any
+    changes?: Record<string, unknown>,
+    metadata?: ErrorMetadata
   ): Promise<void> {
     if (!this.enableAuditLogging) {
       return;
@@ -351,19 +366,23 @@ export abstract class BaseService {
       // This would typically use an audit service
       // For now, just log the audit information
       this.logInfo('Audit entry', {
-        action,
-        entityType,
-        entityId,
         userId,
-        changes,
-        metadata,
-        timestamp: new Date().toISOString()
+        timestamp: new Date(),
+        additionalContext: {
+          action,
+          entityType,
+          entityId,
+          changes,
+          ...metadata
+        }
       });
     } catch (error) {
       this.logError('Failed to create audit entry', error, {
-        action,
-        entityType,
-        entityId
+        additionalContext: {
+          action,
+          entityType,
+          entityId
+        }
       });
     }
   }
@@ -371,8 +390,8 @@ export abstract class BaseService {
   /**
    * Generic soft delete implementation
    */
-  protected async softDelete(
-    model: any,
+  protected async softDelete<T extends Model>(
+    model: ModelStatic<T>,
     id: string,
     userId?: string
   ): Promise<ServiceResponse<{ success: boolean }>> {
@@ -393,10 +412,10 @@ export abstract class BaseService {
         };
       }
 
-      await entity.update({ isActive: false });
-      
+      await entity.update({ isActive: false } as Partial<T>);
+
       await this.addAuditEntry('soft_delete', model.name, id, userId);
-      
+
       return this.handleSuccess('soft delete', { success: true });
     } catch (error) {
       return this.handleError('soft delete', error);
@@ -406,8 +425,8 @@ export abstract class BaseService {
   /**
    * Generic reactivate implementation
    */
-  protected async reactivate(
-    model: any,
+  protected async reactivate<T extends Model>(
+    model: ModelStatic<T>,
     id: string,
     userId?: string
   ): Promise<ServiceResponse<{ success: boolean }>> {
@@ -428,13 +447,265 @@ export abstract class BaseService {
         };
       }
 
-      await entity.update({ isActive: true });
-      
+      await entity.update({ isActive: true } as Partial<T>);
+
       await this.addAuditEntry('reactivate', model.name, id, userId);
-      
+
       return this.handleSuccess('reactivate', { success: true });
     } catch (error) {
       return this.handleError('reactivate', error);
     }
+  }
+
+  /**
+   * CRITICAL: Find entity by ID or throw error
+   * Eliminates duplicated pattern across 20+ services
+   *
+   * @param model - Sequelize model to query
+   * @param id - Entity ID to find
+   * @param entityName - Name of entity for error message
+   * @param transaction - Optional transaction
+   * @returns Promise<T> - Found entity
+   * @throws Error if entity not found
+   *
+   * @example
+   * const student = await this.findEntityOrFail(Student, studentId, 'Student', transaction);
+   */
+  protected async findEntityOrFail<T extends Model>(
+    model: ModelStatic<T>,
+    id: string,
+    entityName: string = 'Entity',
+    transaction?: Transaction
+  ): Promise<T> {
+    const entity = await model.findByPk(id, { transaction });
+
+    if (!entity) {
+      throw new Error(`${entityName} not found: ${id}`);
+    }
+
+    return entity;
+  }
+
+  /**
+   * CRITICAL: Create paginated query with common options
+   * Eliminates duplicated pagination logic across services
+   *
+   * @param model - Sequelize model to query
+   * @param options - Pagination and query options
+   * @returns Promise<PaginatedResponse<T>> - Paginated result
+   *
+   * @example
+   * const result = await this.createPaginatedQuery(Student, {
+   *   page: 1,
+   *   limit: 20,
+   *   where: { isActive: true },
+   *   include: [{ model: HealthRecord, as: 'healthRecords' }],
+   *   order: [['lastName', 'ASC']]
+   * });
+   */
+  protected async createPaginatedQuery<T extends Model>(
+    model: ModelStatic<T>,
+    options: {
+      page?: number;
+      limit?: number;
+      where?: Record<string, unknown>;
+      include?: unknown[];
+      order?: unknown[];
+      attributes?: string[];
+    }
+  ): Promise<PaginatedResponse<T>> {
+    const {
+      page = 1,
+      limit = 20,
+      where = {},
+      include = [],
+      order = [],
+      attributes,
+    } = options;
+
+    // Validate pagination
+    const validation = this.validatePagination({ page, limit });
+    if (!validation.isValid || !validation.normalizedParams) {
+      throw new Error(validation.errors?.[0]?.message || 'Invalid pagination parameters');
+    }
+
+    const { offset } = validation.normalizedParams;
+
+    // Execute query
+    const { rows, count } = await model.findAndCountAll({
+      where,
+      include,
+      order,
+      attributes,
+      offset,
+      limit,
+      distinct: true, // Important for proper counting with joins
+    });
+
+    // Create paginated response
+    return this.createPaginatedResponse({ rows, count }, page, limit);
+  }
+
+  /**
+   * CRITICAL: Reload entity with standard associations
+   * Eliminates duplicated association reloading across services
+   *
+   * @param entity - Entity to reload
+   * @param associations - Array of association configurations
+   * @param transaction - Optional transaction
+   * @returns Promise<T> - Reloaded entity with associations
+   *
+   * @example
+   * await this.reloadWithStandardAssociations(medication, [
+   *   {
+   *     model: Student,
+   *     as: 'student',
+   *     attributes: ['id', 'firstName', 'lastName', 'studentNumber']
+   *   },
+   *   {
+   *     model: User,
+   *     as: 'prescribedBy',
+   *     attributes: ['id', 'firstName', 'lastName', 'email']
+   *   }
+   * ], transaction);
+   */
+  protected async reloadWithStandardAssociations<T extends Model>(
+    entity: T,
+    associations: Array<{
+      model: ModelStatic<Model>;
+      as: string;
+      attributes?: string[];
+      include?: unknown[];
+    }>,
+    transaction?: Transaction
+  ): Promise<T> {
+    await entity.reload({
+      include: associations,
+      transaction,
+    });
+
+    return entity;
+  }
+
+  /**
+   * Build date range WHERE clause
+   * Common pattern for filtering by date ranges
+   *
+   * @param field - Field name to filter
+   * @param startDate - Start of date range (optional)
+   * @param endDate - End of date range (optional)
+   * @returns WHERE clause object
+   *
+   * @example
+   * const dateFilter = this.buildDateRangeClause('createdAt', startDate, endDate);
+   */
+  protected buildDateRangeClause(
+    field: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Record<string, unknown> {
+    const dateClause: Record<string, unknown> = {};
+
+    if (startDate || endDate) {
+      const rangeConditions: Record<string, unknown> = {};
+
+      if (startDate) {
+        rangeConditions[Op.gte] = startDate;
+      }
+
+      if (endDate) {
+        rangeConditions[Op.lte] = endDate;
+      }
+
+      dateClause[field] = rangeConditions;
+    }
+
+    return dateClause;
+  }
+
+  /**
+   * Sanitize input data by removing undefined/null values
+   * Useful for update operations where you only want to update provided fields
+   *
+   * @param data - Input data object
+   * @param options - Sanitization options
+   * @returns Sanitized data object
+   *
+   * @example
+   * const sanitized = this.sanitizeInput(updateData, { removeNull: true, removeUndefined: true });
+   */
+  protected sanitizeInput<T extends Record<string, unknown>>(
+    data: T,
+    options: {
+      removeNull?: boolean;
+      removeUndefined?: boolean;
+      removeEmptyStrings?: boolean;
+    } = {}
+  ): Partial<T> {
+    const { removeNull = true, removeUndefined = true, removeEmptyStrings = false } = options;
+
+    const sanitized: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(data)) {
+      // Skip undefined
+      if (removeUndefined && value === undefined) {
+        continue;
+      }
+
+      // Skip null
+      if (removeNull && value === null) {
+        continue;
+      }
+
+      // Skip empty strings
+      if (removeEmptyStrings && value === '') {
+        continue;
+      }
+
+      sanitized[key] = value;
+    }
+
+    return sanitized as Partial<T>;
+  }
+
+  /**
+   * Validate required fields are present in input data
+   *
+   * @param data - Input data object
+   * @param requiredFields - Array of required field names
+   * @param fieldLabels - Optional mapping of field names to user-friendly labels
+   * @returns ValidationResult
+   *
+   * @example
+   * const validation = this.validateRequiredFields(data, ['studentId', 'medicationId'], {
+   *   studentId: 'Student ID',
+   *   medicationId: 'Medication ID'
+   * });
+   */
+  protected validateRequiredFields(
+    data: Record<string, unknown>,
+    requiredFields: string[],
+    fieldLabels?: Record<string, string>
+  ): ValidationResult {
+    const errors: Array<{ field: string; message: string; code: string }> = [];
+
+    for (const field of requiredFields) {
+      const value = data[field];
+      const label = fieldLabels?.[field] || field;
+
+      if (value === undefined || value === null || value === '') {
+        errors.push({
+          field,
+          message: `${label} is required`,
+          code: 'REQUIRED_FIELD_MISSING',
+        });
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings: [],
+    };
   }
 }

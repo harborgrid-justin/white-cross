@@ -22,6 +22,7 @@
  */
 
 import { Gender } from '../../database/types/enums';
+import type { StudentBasicInfo } from '../../types/health/health-record.types';
 
 /**
  * Interface for creating a new student
@@ -85,10 +86,25 @@ export interface PaginationMetadata {
 }
 
 /**
+ * Student interface for responses
+ */
+export interface Student extends StudentBasicInfo {
+  grade?: string;
+  gender?: string;
+  isActive?: boolean;
+  nurseId?: string;
+  photo?: string;
+  medicalRecordNum?: string;
+  enrollmentDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+/**
  * Paginated student list response
  */
 export interface PaginatedStudentResponse {
-  students: any[];
+  students: Student[];
   pagination: PaginationMetadata;
 }
 
@@ -108,7 +124,7 @@ export interface StudentStatistics {
  */
 export interface StudentDataExport {
   exportDate: string;
-  student: any;
+  student: Student;
   statistics: StudentStatistics;
 }
 

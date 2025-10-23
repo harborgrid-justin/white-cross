@@ -38,7 +38,8 @@
  * - Data retention policies
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import { z } from 'zod';
 import {
   ApiResponse,
@@ -817,6 +818,8 @@ const vitalSignsCreateSchema = z.object({
 export class HealthRecordsApi {
   private readonly baseEndpoint = API_ENDPOINTS.HEALTH_RECORDS.BASE;
 
+  constructor(private readonly client: ApiClient) {}
+
   /**
    * Log PHI access for HIPAA compliance using centralized audit service
    * Never fails the main operation
@@ -861,7 +864,7 @@ export class HealthRecordsApi {
       if (filters?.page) params.append('page', String(filters.page));
       if (filters?.limit) params.append('limit', String(filters.limit));
 
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<HealthRecord>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<HealthRecord>>>(
         `${this.baseEndpoint}/student/${studentId}?${params.toString()}`
       );
 
@@ -902,7 +905,7 @@ export class HealthRecordsApi {
    */
   async getRecordById(id: string): Promise<HealthRecord> {
     try {
-      const response = await apiInstance.get<ApiResponse<HealthRecord>>(
+      const response = await this.client.get<ApiResponse<HealthRecord>>(
         `${this.baseEndpoint}/${id}`
       );
 
@@ -923,7 +926,7 @@ export class HealthRecordsApi {
       // Validate input
       healthRecordCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<HealthRecord>>(
+      const response = await this.client.post<ApiResponse<HealthRecord>>(
         this.baseEndpoint,
         data
       );
@@ -955,7 +958,7 @@ export class HealthRecordsApi {
    */
   async updateRecord(id: string, data: HealthRecordUpdate): Promise<HealthRecord> {
     try {
-      const response = await apiInstance.put<ApiResponse<HealthRecord>>(
+      const response = await this.client.put<ApiResponse<HealthRecord>>(
         `${this.baseEndpoint}/${id}`,
         data
       );
@@ -977,7 +980,7 @@ export class HealthRecordsApi {
       // Get record first to log studentId
       const record = await this.getRecordById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
     } catch (error) {
@@ -994,7 +997,7 @@ export class HealthRecordsApi {
       if (dateFrom) params.append('dateFrom', dateFrom);
       if (dateTo) params.append('dateTo', dateTo);
 
-      const response = await apiInstance.get<ApiResponse<HealthTimeline>>(
+      const response = await this.client.get<ApiResponse<HealthTimeline>>(
         `${this.baseEndpoint}/student/${studentId}/timeline?${params.toString()}`
       );
 
@@ -1011,7 +1014,7 @@ export class HealthRecordsApi {
    */
   async getSummary(studentId: string): Promise<HealthSummary> {
     try {
-      const response = await apiInstance.get<ApiResponse<HealthSummary>>(
+      const response = await this.client.get<ApiResponse<HealthSummary>>(
         `${this.baseEndpoint}/student/${studentId}/summary`
       );
 
@@ -1036,7 +1039,7 @@ export class HealthRecordsApi {
       if (filters?.page) params.append('page', String(filters.page));
       if (filters?.limit) params.append('limit', String(filters.limit));
 
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<HealthRecord>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<HealthRecord>>>(
         `${this.baseEndpoint}/search?${params.toString()}`
       );
 
@@ -1051,7 +1054,7 @@ export class HealthRecordsApi {
    */
   async exportRecords(studentId: string, format: 'pdf' | 'json' | 'csv' = 'pdf'): Promise<Blob> {
     try {
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         `${this.baseEndpoint}/student/${studentId}/export?format=${format}`,
         { responseType: 'blob' }
       );
@@ -1072,7 +1075,7 @@ export class HealthRecordsApi {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await apiInstance.post<ApiResponse<{ imported: number; errors: any[] }>>(
+      const response = await this.client.post<ApiResponse<{ imported: number; errors: any[] }>>(
         `${this.baseEndpoint}/student/${studentId}/import`,
         formData,
         {
@@ -1100,7 +1103,7 @@ export class HealthRecordsApi {
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
       if (filters?.schoolId) params.append('schoolId', filters.schoolId);
 
-      const response = await apiInstance.get<ApiResponse<HealthRecordsStatistics>>(
+      const response = await this.client.get<ApiResponse<HealthRecordsStatistics>>(
         `${this.baseEndpoint}/statistics?${params.toString()}`
       );
 
@@ -1119,7 +1122,7 @@ export class HealthRecordsApi {
    */
   async getAllergies(studentId: string): Promise<Allergy[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ allergies: Allergy[] }>>(
+      const response = await this.client.get<ApiResponse<{ allergies: Allergy[] }>>(
         `${this.baseEndpoint}/student/${studentId}/allergies`
       );
 
@@ -1136,7 +1139,7 @@ export class HealthRecordsApi {
    */
   async getAllergyById(id: string): Promise<Allergy> {
     try {
-      const response = await apiInstance.get<ApiResponse<Allergy>>(
+      const response = await this.client.get<ApiResponse<Allergy>>(
         `${this.baseEndpoint}/allergies/${id}`
       );
 
@@ -1157,7 +1160,7 @@ export class HealthRecordsApi {
       // Validate input
       allergyCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<Allergy>>(
+      const response = await this.client.post<ApiResponse<Allergy>>(
         `${this.baseEndpoint}/allergies`,
         data
       );
@@ -1189,7 +1192,7 @@ export class HealthRecordsApi {
    */
   async updateAllergy(id: string, data: AllergyUpdate): Promise<Allergy> {
     try {
-      const response = await apiInstance.put<ApiResponse<Allergy>>(
+      const response = await this.client.put<ApiResponse<Allergy>>(
         `${this.baseEndpoint}/allergies/${id}`,
         data
       );
@@ -1210,7 +1213,7 @@ export class HealthRecordsApi {
     try {
       const allergy = await this.getAllergyById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/allergies/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/allergies/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
     } catch (error) {
@@ -1223,7 +1226,7 @@ export class HealthRecordsApi {
    */
   async verifyAllergy(id: string, verifiedBy: string): Promise<Allergy> {
     try {
-      const response = await apiInstance.post<ApiResponse<Allergy>>(
+      const response = await this.client.post<ApiResponse<Allergy>>(
         `${this.baseEndpoint}/allergies/${id}/verify`,
         { verifiedBy }
       );
@@ -1242,7 +1245,7 @@ export class HealthRecordsApi {
    */
   async getCriticalAllergies(studentId: string): Promise<Allergy[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ allergies: Allergy[] }>>(
+      const response = await this.client.get<ApiResponse<{ allergies: Allergy[] }>>(
         `${this.baseEndpoint}/student/${studentId}/allergies/critical`
       );
 
@@ -1263,7 +1266,7 @@ export class HealthRecordsApi {
     warnings: string[];
   }> {
     try {
-      const response = await apiInstance.post<ApiResponse<{
+      const response = await this.client.post<ApiResponse<{
         hasContraindication: boolean;
         allergies: Allergy[];
         warnings: string[];
@@ -1296,7 +1299,7 @@ export class HealthRecordsApi {
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
 
-      const response = await apiInstance.get<ApiResponse<any>>(
+      const response = await this.client.get<ApiResponse<any>>(
         `${this.baseEndpoint}/allergies/statistics?${params.toString()}`
       );
 
@@ -1315,7 +1318,7 @@ export class HealthRecordsApi {
    */
   async getConditions(studentId: string): Promise<ChronicCondition[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ conditions: ChronicCondition[] }>>(
+      const response = await this.client.get<ApiResponse<{ conditions: ChronicCondition[] }>>(
         `${this.baseEndpoint}/student/${studentId}/conditions`
       );
 
@@ -1332,7 +1335,7 @@ export class HealthRecordsApi {
    */
   async getConditionById(id: string): Promise<ChronicCondition> {
     try {
-      const response = await apiInstance.get<ApiResponse<ChronicCondition>>(
+      const response = await this.client.get<ApiResponse<ChronicCondition>>(
         `${this.baseEndpoint}/conditions/${id}`
       );
 
@@ -1353,7 +1356,7 @@ export class HealthRecordsApi {
       // Validate input
       chronicConditionCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<ChronicCondition>>(
+      const response = await this.client.post<ApiResponse<ChronicCondition>>(
         `${this.baseEndpoint}/conditions`,
         data
       );
@@ -1385,7 +1388,7 @@ export class HealthRecordsApi {
    */
   async updateCondition(id: string, data: ChronicConditionUpdate): Promise<ChronicCondition> {
     try {
-      const response = await apiInstance.put<ApiResponse<ChronicCondition>>(
+      const response = await this.client.put<ApiResponse<ChronicCondition>>(
         `${this.baseEndpoint}/conditions/${id}`,
         data
       );
@@ -1406,7 +1409,7 @@ export class HealthRecordsApi {
     try {
       const condition = await this.getConditionById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/conditions/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/conditions/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
     } catch (error) {
@@ -1419,7 +1422,7 @@ export class HealthRecordsApi {
    */
   async updateConditionStatus(id: string, status: ConditionStatus): Promise<ChronicCondition> {
     try {
-      const response = await apiInstance.patch<ApiResponse<ChronicCondition>>(
+      const response = await this.client.patch<ApiResponse<ChronicCondition>>(
         `${this.baseEndpoint}/conditions/${id}/status`,
         { status }
       );
@@ -1438,7 +1441,7 @@ export class HealthRecordsApi {
    */
   async getActiveConditions(studentId: string): Promise<ChronicCondition[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ conditions: ChronicCondition[] }>>(
+      const response = await this.client.get<ApiResponse<{ conditions: ChronicCondition[] }>>(
         `${this.baseEndpoint}/student/${studentId}/conditions/active`
       );
 
@@ -1455,7 +1458,7 @@ export class HealthRecordsApi {
    */
   async getConditionsNeedingReview(): Promise<Array<ChronicCondition & { daysUntilReview: number }>> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ conditions: Array<ChronicCondition & { daysUntilReview: number }> }>>(
+      const response = await this.client.get<ApiResponse<{ conditions: Array<ChronicCondition & { daysUntilReview: number }> }>>(
         `${this.baseEndpoint}/conditions/review-needed`
       );
 
@@ -1481,7 +1484,7 @@ export class HealthRecordsApi {
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
 
-      const response = await apiInstance.get<ApiResponse<any>>(
+      const response = await this.client.get<ApiResponse<any>>(
         `${this.baseEndpoint}/conditions/statistics?${params.toString()}`
       );
 
@@ -1500,7 +1503,7 @@ export class HealthRecordsApi {
    */
   async getVaccinations(studentId: string): Promise<Vaccination[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ vaccinations: Vaccination[] }>>(
+      const response = await this.client.get<ApiResponse<{ vaccinations: Vaccination[] }>>(
         `${this.baseEndpoint}/student/${studentId}/vaccinations`
       );
 
@@ -1517,7 +1520,7 @@ export class HealthRecordsApi {
    */
   async getVaccinationById(id: string): Promise<Vaccination> {
     try {
-      const response = await apiInstance.get<ApiResponse<Vaccination>>(
+      const response = await this.client.get<ApiResponse<Vaccination>>(
         `${this.baseEndpoint}/vaccinations/${id}`
       );
 
@@ -1538,7 +1541,7 @@ export class HealthRecordsApi {
       // Validate input
       vaccinationCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<Vaccination>>(
+      const response = await this.client.post<ApiResponse<Vaccination>>(
         `${this.baseEndpoint}/vaccinations`,
         data
       );
@@ -1570,7 +1573,7 @@ export class HealthRecordsApi {
    */
   async updateVaccination(id: string, data: VaccinationUpdate): Promise<Vaccination> {
     try {
-      const response = await apiInstance.put<ApiResponse<Vaccination>>(
+      const response = await this.client.put<ApiResponse<Vaccination>>(
         `${this.baseEndpoint}/vaccinations/${id}`,
         data
       );
@@ -1591,7 +1594,7 @@ export class HealthRecordsApi {
     try {
       const vaccination = await this.getVaccinationById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/vaccinations/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/vaccinations/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
     } catch (error) {
@@ -1604,7 +1607,7 @@ export class HealthRecordsApi {
    */
   async checkCompliance(studentId: string): Promise<VaccinationCompliance> {
     try {
-      const response = await apiInstance.get<ApiResponse<VaccinationCompliance>>(
+      const response = await this.client.get<ApiResponse<VaccinationCompliance>>(
         `${this.baseEndpoint}/student/${studentId}/vaccinations/compliance`
       );
 
@@ -1626,7 +1629,7 @@ export class HealthRecordsApi {
     isOverdue: boolean;
   }>> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ upcoming: any[] }>>(
+      const response = await this.client.get<ApiResponse<{ upcoming: any[] }>>(
         `${this.baseEndpoint}/student/${studentId}/vaccinations/upcoming?daysAhead=${daysAhead}`
       );
 
@@ -1643,7 +1646,7 @@ export class HealthRecordsApi {
    */
   async generateVaccinationReport(studentId: string, format: 'pdf' | 'official' = 'pdf'): Promise<Blob> {
     try {
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         `${this.baseEndpoint}/student/${studentId}/vaccinations/report?format=${format}`,
         { responseType: 'blob' }
       );
@@ -1671,7 +1674,7 @@ export class HealthRecordsApi {
     try {
       const params = schoolId ? `?schoolId=${schoolId}` : '';
 
-      const response = await apiInstance.get<ApiResponse<any>>(
+      const response = await this.client.get<ApiResponse<any>>(
         `${this.baseEndpoint}/vaccinations/statistics${params}`
       );
 
@@ -1690,7 +1693,7 @@ export class HealthRecordsApi {
    */
   async getScreenings(studentId: string): Promise<Screening[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ screenings: Screening[] }>>(
+      const response = await this.client.get<ApiResponse<{ screenings: Screening[] }>>(
         `${this.baseEndpoint}/student/${studentId}/screenings`
       );
 
@@ -1707,7 +1710,7 @@ export class HealthRecordsApi {
    */
   async getScreeningById(id: string): Promise<Screening> {
     try {
-      const response = await apiInstance.get<ApiResponse<Screening>>(
+      const response = await this.client.get<ApiResponse<Screening>>(
         `${this.baseEndpoint}/screenings/${id}`
       );
 
@@ -1728,7 +1731,7 @@ export class HealthRecordsApi {
       // Validate input
       screeningCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<Screening>>(
+      const response = await this.client.post<ApiResponse<Screening>>(
         `${this.baseEndpoint}/screenings`,
         data
       );
@@ -1760,7 +1763,7 @@ export class HealthRecordsApi {
    */
   async updateScreening(id: string, data: ScreeningUpdate): Promise<Screening> {
     try {
-      const response = await apiInstance.put<ApiResponse<Screening>>(
+      const response = await this.client.put<ApiResponse<Screening>>(
         `${this.baseEndpoint}/screenings/${id}`,
         data
       );
@@ -1781,7 +1784,7 @@ export class HealthRecordsApi {
     try {
       const screening = await this.getScreeningById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/screenings/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/screenings/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
     } catch (error) {
@@ -1800,7 +1803,7 @@ export class HealthRecordsApi {
     daysOverdue: number;
   }>> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ screenings: any[] }>>(
+      const response = await this.client.get<ApiResponse<{ screenings: any[] }>>(
         `${this.baseEndpoint}/screenings/due`
       );
 
@@ -1832,7 +1835,7 @@ export class HealthRecordsApi {
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
 
-      const response = await apiInstance.get<ApiResponse<any>>(
+      const response = await this.client.get<ApiResponse<any>>(
         `${this.baseEndpoint}/screenings/statistics?${params.toString()}`
       );
 
@@ -1851,7 +1854,7 @@ export class HealthRecordsApi {
    */
   async getGrowthMeasurements(studentId: string): Promise<GrowthMeasurement[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ measurements: GrowthMeasurement[] }>>(
+      const response = await this.client.get<ApiResponse<{ measurements: GrowthMeasurement[] }>>(
         `${this.baseEndpoint}/student/${studentId}/growth`
       );
 
@@ -1868,7 +1871,7 @@ export class HealthRecordsApi {
    */
   async getGrowthMeasurementById(id: string): Promise<GrowthMeasurement> {
     try {
-      const response = await apiInstance.get<ApiResponse<GrowthMeasurement>>(
+      const response = await this.client.get<ApiResponse<GrowthMeasurement>>(
         `${this.baseEndpoint}/growth/${id}`
       );
 
@@ -1889,7 +1892,7 @@ export class HealthRecordsApi {
       // Validate input
       growthMeasurementCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<GrowthMeasurement>>(
+      const response = await this.client.post<ApiResponse<GrowthMeasurement>>(
         `${this.baseEndpoint}/growth`,
         data
       );
@@ -1921,7 +1924,7 @@ export class HealthRecordsApi {
    */
   async updateGrowthMeasurement(id: string, data: GrowthMeasurementUpdate): Promise<GrowthMeasurement> {
     try {
-      const response = await apiInstance.put<ApiResponse<GrowthMeasurement>>(
+      const response = await this.client.put<ApiResponse<GrowthMeasurement>>(
         `${this.baseEndpoint}/growth/${id}`,
         data
       );
@@ -1942,7 +1945,7 @@ export class HealthRecordsApi {
     try {
       const measurement = await this.getGrowthMeasurementById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/growth/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/growth/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
     } catch (error) {
@@ -1955,7 +1958,7 @@ export class HealthRecordsApi {
    */
   async getGrowthTrends(studentId: string): Promise<GrowthTrend> {
     try {
-      const response = await apiInstance.get<ApiResponse<GrowthTrend>>(
+      const response = await this.client.get<ApiResponse<GrowthTrend>>(
         `${this.baseEndpoint}/student/${studentId}/growth/trends`
       );
 
@@ -1980,7 +1983,7 @@ export class HealthRecordsApi {
     }>;
   }> {
     try {
-      const response = await apiInstance.get<ApiResponse<any>>(
+      const response = await this.client.get<ApiResponse<any>>(
         `${this.baseEndpoint}/student/${studentId}/growth/concerns`
       );
 
@@ -2004,7 +2007,7 @@ export class HealthRecordsApi {
     history: GrowthMeasurement[];
   }> {
     try {
-      const response = await apiInstance.get<ApiResponse<any>>(
+      const response = await this.client.get<ApiResponse<any>>(
         `${this.baseEndpoint}/student/${studentId}/growth/percentiles`
       );
 
@@ -2034,7 +2037,7 @@ export class HealthRecordsApi {
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
       if (filters?.limit) params.append('limit', String(filters.limit));
 
-      const response = await apiInstance.get<ApiResponse<{ vitals: VitalSigns[] }>>(
+      const response = await this.client.get<ApiResponse<{ vitals: VitalSigns[] }>>(
         `${this.baseEndpoint}/student/${studentId}/vitals?${params.toString()}`
       );
 
@@ -2051,7 +2054,7 @@ export class HealthRecordsApi {
    */
   async getVitalSignsById(id: string): Promise<VitalSigns> {
     try {
-      const response = await apiInstance.get<ApiResponse<VitalSigns>>(
+      const response = await this.client.get<ApiResponse<VitalSigns>>(
         `${this.baseEndpoint}/vitals/${id}`
       );
 
@@ -2072,7 +2075,7 @@ export class HealthRecordsApi {
       // Validate input
       vitalSignsCreateSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<VitalSigns>>(
+      const response = await this.client.post<ApiResponse<VitalSigns>>(
         `${this.baseEndpoint}/vitals`,
         data
       );
@@ -2104,7 +2107,7 @@ export class HealthRecordsApi {
    */
   async updateVitalSigns(id: string, data: VitalSignsUpdate): Promise<VitalSigns> {
     try {
-      const response = await apiInstance.put<ApiResponse<VitalSigns>>(
+      const response = await this.client.put<ApiResponse<VitalSigns>>(
         `${this.baseEndpoint}/vitals/${id}`,
         data
       );
@@ -2125,7 +2128,7 @@ export class HealthRecordsApi {
     try {
       const vitals = await this.getVitalSignsById(id);
 
-      await apiInstance.delete(`${this.baseEndpoint}/vitals/${id}`);
+      await this.client.delete(`${this.baseEndpoint}/vitals/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
     } catch (error) {
@@ -2138,7 +2141,7 @@ export class HealthRecordsApi {
    */
   async getLatestVitals(studentId: string): Promise<VitalSigns | null> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ vitals: VitalSigns | null }>>(
+      const response = await this.client.get<ApiResponse<{ vitals: VitalSigns | null }>>(
         `${this.baseEndpoint}/student/${studentId}/vitals/latest`
       );
 
@@ -2165,7 +2168,7 @@ export class HealthRecordsApi {
       if (dateFrom) params.append('dateFrom', dateFrom);
       if (dateTo) params.append('dateTo', dateTo);
 
-      const response = await apiInstance.get<ApiResponse<VitalSignsTrend>>(
+      const response = await this.client.get<ApiResponse<VitalSignsTrend>>(
         `${this.baseEndpoint}/student/${studentId}/vitals/trends?${params.toString()}`
       );
 
@@ -2253,7 +2256,9 @@ export type CreateChronicConditionRequest = ChronicConditionCreate;
 export type CreateVaccinationRequest = VaccinationCreate;
 
 // ==========================================
-// EXPORT SINGLETON INSTANCE
+// EXPORT FACTORY FUNCTION
 // ==========================================
 
-export const healthRecordsApi = new HealthRecordsApi();
+export function createHealthRecordsApi(client: ApiClient): HealthRecordsApi {
+  return new HealthRecordsApi(client);
+}

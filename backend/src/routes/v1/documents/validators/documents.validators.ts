@@ -10,8 +10,7 @@ import { paginationSchema } from '../../../shared/validators';
  * Document Query & Filter Schemas
  */
 
-export const documentQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const documentQuerySchema = paginationSchema.keys({
   category: Joi.string()
     .valid('MEDICAL_RECORD', 'CONSENT_FORM', 'POLICY', 'INCIDENT_REPORT', 'TRAINING', 'ADMINISTRATIVE', 'STUDENT_FILE', 'INSURANCE', 'OTHER')
     .optional()

@@ -53,7 +53,7 @@ export const recordScreeningSchema = Joi.object({
     then: Joi.required(),
     otherwise: Joi.optional()
   }),
-  screeningDate: Joi.date().max('now').default(() => new Date(), 'current date'),
+  screeningDate: Joi.date().max('now').default(() => new Date()).description('current date'),
   notes: Joi.string().max(1000).optional(),
   parentNotificationRequired: Joi.boolean().default(false),
   urgency: Joi.string().valid('low', 'medium', 'high').default('low')
@@ -72,7 +72,7 @@ export const growthMeasurementSchema = Joi.object({
     .description('BMI - will be calculated if not provided'),
   headCircumference: Joi.number().positive().precision(2).min(25).max(70).optional()
     .description('Head circumference in centimeters (typically for ages 0-3)'),
-  measurementDate: Joi.date().max('now').default(() => new Date(), 'current date'),
+  measurementDate: Joi.date().max('now').default(() => new Date()).description('current date'),
   measurementMethod: Joi.string().valid(
     'digital-scale', 
     'mechanical-scale', 

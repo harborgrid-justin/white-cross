@@ -13,10 +13,10 @@
  * @module services/modules/health/allergies
  */
 
-import { apiInstance, API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import { z } from 'zod';
 import { BaseApiService } from '../../core/BaseApiService';
-import { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '../../core/ApiClient';
 import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
 
 // ==========================================
@@ -99,8 +99,7 @@ const allergyUpdateSchema = allergyCreateSchema.partial().extend({
 // ==========================================
 
 export class AllergiesApiService extends BaseApiService<Allergy, AllergyCreate, AllergyUpdate> {
-  constructor() {
-    const client = new ApiClient(apiInstance);
+  constructor(client: ApiClient) {
     super(client, `${API_ENDPOINTS.HEALTH_RECORDS}/allergies`, {
       createSchema: allergyCreateSchema,
       updateSchema: allergyUpdateSchema
@@ -274,7 +273,9 @@ export class AllergiesApiService extends BaseApiService<Allergy, AllergyCreate, 
 }
 
 // ==========================================
-// SINGLETON EXPORT
+// FACTORY FUNCTION
 // ==========================================
 
-export const allergiesApi = new AllergiesApiService();
+export function createAllergiesApi(client: ApiClient): AllergiesApiService {
+  return new AllergiesApiService(client);
+}

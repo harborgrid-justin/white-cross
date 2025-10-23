@@ -15,7 +15,8 @@
  * Enterprise-grade API client for inventory tracking, stock management, and purchase orders
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse } from '../types';
 import { z } from 'zod';
 import type {
@@ -243,6 +244,8 @@ const createPurchaseOrderSchema = z.object({
  * Provides comprehensive inventory management functionality
  */
 export class InventoryApi {
+  constructor(private readonly client: ApiClient) {}
+
   /**
    * Get all inventory items with filtering and pagination
    */
@@ -259,7 +262,7 @@ export class InventoryApi {
       if (filters.needsMaintenance !== undefined) params.append('needsMaintenance', String(filters.needsMaintenance));
       if (filters.isActive !== undefined) params.append('isActive', String(filters.isActive));
 
-      const response = await apiInstance.get<ApiResponse<InventoryItemsResponse>>(
+      const response = await this.client.get<ApiResponse<InventoryItemsResponse>>(
         `${API_ENDPOINTS.INVENTORY.BASE}?${params.toString()}`
       );
 
@@ -276,7 +279,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Inventory item ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ item: InventoryItemWithStockResponse }>>(
+      const response = await this.client.get<ApiResponse<{ item: InventoryItemWithStockResponse }>>(
         API_ENDPOINTS.INVENTORY.BY_ID(id)
       );
 
@@ -293,7 +296,7 @@ export class InventoryApi {
     try {
       createInventoryItemSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ item: InventoryItem }>>(
+      const response = await this.client.post<ApiResponse<{ item: InventoryItem }>>(
         API_ENDPOINTS.INVENTORY.BASE,
         data
       );
@@ -314,7 +317,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Inventory item ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ item: InventoryItem }>>(
+      const response = await this.client.put<ApiResponse<{ item: InventoryItem }>>(
         API_ENDPOINTS.INVENTORY.BY_ID(id),
         data
       );
@@ -332,7 +335,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Inventory item ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ item: InventoryItem }>>(
+      const response = await this.client.delete<ApiResponse<{ item: InventoryItem }>>(
         API_ENDPOINTS.INVENTORY.BY_ID(id)
       );
 
@@ -349,7 +352,7 @@ export class InventoryApi {
     try {
       createTransactionSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ transaction: InventoryTransaction }>>(
+      const response = await this.client.post<ApiResponse<{ transaction: InventoryTransaction }>>(
         API_ENDPOINTS.INVENTORY.TRANSACTIONS,
         data
       );
@@ -370,7 +373,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Inventory item ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ currentStock: number }>>(
+      const response = await this.client.get<ApiResponse<{ currentStock: number }>>(
         API_ENDPOINTS.INVENTORY.STOCK(id)
       );
 
@@ -388,7 +391,7 @@ export class InventoryApi {
       if (!id) throw new Error('Inventory item ID is required');
       stockAdjustmentSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<StockAdjustmentResponse>>(
+      const response = await this.client.post<ApiResponse<StockAdjustmentResponse>>(
         API_ENDPOINTS.INVENTORY.ADJUST(id),
         data
       );
@@ -409,7 +412,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Inventory item ID is required');
 
-      const response = await apiInstance.get<ApiResponse<StockHistoryResponse>>(
+      const response = await this.client.get<ApiResponse<StockHistoryResponse>>(
         `${API_ENDPOINTS.INVENTORY.HISTORY(id)}?page=${page}&limit=${limit}`
       );
 
@@ -424,7 +427,7 @@ export class InventoryApi {
    */
   async getInventoryAlerts(): Promise<InventoryAlert[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ alerts: InventoryAlert[] }>>(
+      const response = await this.client.get<ApiResponse<{ alerts: InventoryAlert[] }>>(
         API_ENDPOINTS.INVENTORY.ALERTS
       );
 
@@ -441,7 +444,7 @@ export class InventoryApi {
     try {
       createMaintenanceLogSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ maintenanceLog: MaintenanceLog }>>(
+      const response = await this.client.post<ApiResponse<{ maintenanceLog: MaintenanceLog }>>(
         API_ENDPOINTS.INVENTORY.MAINTENANCE,
         data
       );
@@ -464,7 +467,7 @@ export class InventoryApi {
       if (params.startDate) queryParams.append('startDate', params.startDate);
       if (params.endDate) queryParams.append('endDate', params.endDate);
 
-      const response = await apiInstance.get<ApiResponse<{ schedule: MaintenanceLog[] }>>(
+      const response = await this.client.get<ApiResponse<{ schedule: MaintenanceLog[] }>>(
         `${API_ENDPOINTS.INVENTORY.MAINTENANCE_SCHEDULE}?${queryParams.toString()}`
       );
 
@@ -479,7 +482,7 @@ export class InventoryApi {
    */
   async getInventoryValuation(): Promise<InventoryValuationResponse[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ valuation: InventoryValuationResponse[] }>>(
+      const response = await this.client.get<ApiResponse<{ valuation: InventoryValuationResponse[] }>>(
         API_ENDPOINTS.INVENTORY.VALUATION
       );
 
@@ -499,7 +502,7 @@ export class InventoryApi {
         endDate: params.endDate,
       });
 
-      const response = await apiInstance.get<ApiResponse<{ analytics: UsageAnalyticsResponse[] }>>(
+      const response = await this.client.get<ApiResponse<{ analytics: UsageAnalyticsResponse[] }>>(
         `${API_ENDPOINTS.INVENTORY.USAGE_ANALYTICS}?${queryParams.toString()}`
       );
 
@@ -514,7 +517,7 @@ export class InventoryApi {
    */
   async getSupplierPerformance(): Promise<SupplierPerformanceResponse[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<{ performance: SupplierPerformanceResponse[] }>>(
+      const response = await this.client.get<ApiResponse<{ performance: SupplierPerformanceResponse[] }>>(
         API_ENDPOINTS.INVENTORY.SUPPLIER_PERFORMANCE
       );
 
@@ -531,7 +534,7 @@ export class InventoryApi {
     try {
       if (!query) throw new Error('Search query is required');
 
-      const response = await apiInstance.get<ApiResponse<{ items: InventoryItem[] }>>(
+      const response = await this.client.get<ApiResponse<{ items: InventoryItem[] }>>(
         `${API_ENDPOINTS.INVENTORY.SEARCH(query)}?limit=${limit}`
       );
 
@@ -546,7 +549,7 @@ export class InventoryApi {
    */
   async getInventoryStats(): Promise<InventoryStatsResponse> {
     try {
-      const response = await apiInstance.get<ApiResponse<InventoryStatsResponse>>(
+      const response = await this.client.get<ApiResponse<InventoryStatsResponse>>(
         API_ENDPOINTS.INVENTORY.STATS
       );
 
@@ -561,7 +564,7 @@ export class InventoryApi {
    */
   async generatePurchaseOrder(data: GeneratePurchaseOrderRequest): Promise<GeneratedPurchaseOrder> {
     try {
-      const response = await apiInstance.post<ApiResponse<{ purchaseOrder: GeneratedPurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ purchaseOrder: GeneratedPurchaseOrder }>>(
         API_ENDPOINTS.INVENTORY.PURCHASE_ORDER,
         data
       );
@@ -584,7 +587,7 @@ export class InventoryApi {
       const params = new URLSearchParams();
       if (isActive !== undefined) params.append('isActive', String(isActive));
 
-      const response = await apiInstance.get<ApiResponse<{ vendors: Vendor[] }>>(
+      const response = await this.client.get<ApiResponse<{ vendors: Vendor[] }>>(
         `${API_ENDPOINTS.INVENTORY.VENDORS}?${params.toString()}`
       );
 
@@ -601,7 +604,7 @@ export class InventoryApi {
     try {
       createVendorSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.post<ApiResponse<{ vendor: Vendor }>>(
         API_ENDPOINTS.INVENTORY.VENDORS,
         data
       );
@@ -622,7 +625,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.put<ApiResponse<{ vendor: Vendor }>>(
         API_ENDPOINTS.INVENTORY.VENDOR_BY_ID(id),
         data
       );
@@ -646,7 +649,7 @@ export class InventoryApi {
       if (status) params.append('status', status);
       if (vendorId) params.append('vendorId', vendorId);
 
-      const response = await apiInstance.get<ApiResponse<{ purchaseOrders: PurchaseOrder[] }>>(
+      const response = await this.client.get<ApiResponse<{ purchaseOrders: PurchaseOrder[] }>>(
         `${API_ENDPOINTS.INVENTORY.PURCHASE_ORDERS}?${params.toString()}`
       );
 
@@ -663,7 +666,7 @@ export class InventoryApi {
     try {
       createPurchaseOrderSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ purchaseOrder: PurchaseOrder }>>(
+      const response = await this.client.post<ApiResponse<{ purchaseOrder: PurchaseOrder }>>(
         API_ENDPOINTS.INVENTORY.PURCHASE_ORDERS,
         data
       );
@@ -688,7 +691,7 @@ export class InventoryApi {
     try {
       if (!id) throw new Error('Purchase order ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ purchaseOrder: PurchaseOrder }>>(
+      const response = await this.client.put<ApiResponse<{ purchaseOrder: PurchaseOrder }>>(
         API_ENDPOINTS.INVENTORY.PURCHASE_ORDER_BY_ID(id),
         { status, receivedDate }
       );
@@ -700,6 +703,7 @@ export class InventoryApi {
   }
 }
 
-// Export singleton instance
-export const inventoryApi = new InventoryApi();
-export default inventoryApi;
+// Export factory function
+export function createInventoryApi(client: ApiClient): InventoryApi {
+  return new InventoryApi(client);
+}

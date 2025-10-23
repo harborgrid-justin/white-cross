@@ -10,8 +10,7 @@ import { paginationSchema } from '../../../shared/validators';
  * Query Schemas
  */
 
-export const listAppointmentsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const listAppointmentsQuerySchema = paginationSchema.keys({
   nurseId: Joi.string()
     .uuid()
     .optional()

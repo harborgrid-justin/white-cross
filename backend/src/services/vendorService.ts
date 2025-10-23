@@ -22,9 +22,16 @@
  * LLM Context: general utility functions and operations, part of backend architecture
  */
 
-import { Op, QueryTypes } from 'sequelize';
+import { Op, QueryTypes, Transaction } from 'sequelize';
 import { logger } from '../utils/logger';
 import { Vendor, PurchaseOrder, PurchaseOrderItem, InventoryItem, sequelize } from '../database/models';
+import {
+  ValidationError,
+  NotFoundError,
+  DatabaseError,
+  ConflictError
+} from '../shared/errors';
+import { retry } from '../shared/utils/resilience';
 
 /**
  * Data transfer objects for vendor operations
@@ -372,6 +379,7 @@ export class VendorService {
 
   /**
    * Get top performing vendors based on reliability score
+   * PF2C9V-N+1-001: Optimized to use batch metrics calculation
    */
   static async getTopVendors(limit: number = 10) {
     try {
@@ -381,19 +389,26 @@ export class VendorService {
           ['rating', 'DESC NULLS LAST'],
           ['name', 'ASC']
         ],
-        limit
+        limit,
+        raw: true
       });
 
-      // Calculate metrics for each vendor
-      const vendorsWithMetrics = await Promise.all(
-        vendors.map(async (vendor) => {
-          const metrics = await this.calculateVendorMetrics(vendor.id);
-          return {
-            vendor: vendor.get({ plain: true }),
-            metrics
-          };
-        })
-      );
+      // OPTIMIZATION: Batch calculate metrics for all vendors in single query
+      const vendorIds = vendors.map(v => v.id);
+      const metricsMap = await this.calculateBatchVendorMetrics(vendorIds);
+
+      // Combine vendors with their metrics
+      const vendorsWithMetrics = vendors.map((vendor) => ({
+        vendor,
+        metrics: metricsMap.get(vendor.id) || {
+          totalOrders: 0,
+          avgDeliveryDays: 0,
+          totalSpent: 0,
+          cancelledOrders: 0,
+          onTimeDeliveryRate: 0,
+          reliabilityScore: 0
+        }
+      }));
 
       // Sort by reliability score
       vendorsWithMetrics.sort((a, b) => b.metrics.reliabilityScore - a.metrics.reliabilityScore);
@@ -401,6 +416,98 @@ export class VendorService {
       return vendorsWithMetrics;
     } catch (error) {
       logger.error('Error fetching top vendors:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Batch calculate metrics for multiple vendors in a single query
+   * PF2C9V-N+1-001: Eliminates N+1 query pattern
+   */
+  static async calculateBatchVendorMetrics(
+    vendorIds: string[]
+  ): Promise<Map<string, VendorPerformanceMetrics>> {
+    try {
+      if (vendorIds.length === 0) {
+        return new Map();
+      }
+
+      // Single aggregated query for all vendors
+      const metricsData: any[] = await sequelize.query(
+        `SELECT
+          "vendorId",
+          COUNT(*) as "totalOrders",
+          COUNT(CASE WHEN status = 'CANCELLED' THEN 1 END) as "cancelledOrders",
+          COALESCE(AVG(CASE
+            WHEN status = 'RECEIVED' AND "receivedDate" IS NOT NULL AND "orderDate" IS NOT NULL
+            THEN EXTRACT(EPOCH FROM ("receivedDate" - "orderDate")) / 86400
+          END), 0) as "avgDeliveryDays",
+          COALESCE(SUM(total), 0) as "totalSpent",
+          COUNT(CASE
+            WHEN status = 'RECEIVED' AND "expectedDate" IS NOT NULL AND "receivedDate" <= "expectedDate"
+            THEN 1
+          END) as "onTimeDeliveries",
+          COUNT(CASE WHEN status = 'RECEIVED' THEN 1 END) as "receivedOrders"
+        FROM purchase_orders
+        WHERE "vendorId" = ANY(:vendorIds)
+        GROUP BY "vendorId"`,
+        {
+          replacements: { vendorIds },
+          type: QueryTypes.SELECT
+        }
+      );
+
+      // Convert to Map for O(1) lookup
+      const metricsMap = new Map<string, VendorPerformanceMetrics>();
+
+      for (const data of metricsData) {
+        const totalOrders = parseInt(data.totalOrders, 10);
+        const cancelledOrders = parseInt(data.cancelledOrders, 10);
+        const avgDeliveryDays = parseFloat(data.avgDeliveryDays) || 0;
+        const totalSpent = parseFloat(data.totalSpent) || 0;
+        const onTimeDeliveries = parseInt(data.onTimeDeliveries, 10) || 0;
+        const receivedOrders = parseInt(data.receivedOrders, 10) || 0;
+
+        // Calculate on-time delivery rate
+        const onTimeDeliveryRate = receivedOrders > 0
+          ? (onTimeDeliveries / receivedOrders) * 100
+          : 0;
+
+        // Calculate reliability score (0-100)
+        const cancellationRate = totalOrders > 0 ? (cancelledOrders / totalOrders) : 0;
+        const reliabilityScore = Math.max(0, Math.min(100,
+          (100 - (cancellationRate * 50)) * 0.4 +
+          onTimeDeliveryRate * 0.4 +
+          (avgDeliveryDays > 0 ? Math.max(0, 100 - avgDeliveryDays * 2) : 50) * 0.2
+        ));
+
+        metricsMap.set(data.vendorId, {
+          totalOrders,
+          avgDeliveryDays: Math.round(avgDeliveryDays * 10) / 10,
+          totalSpent,
+          cancelledOrders,
+          onTimeDeliveryRate: Math.round(onTimeDeliveryRate * 10) / 10,
+          reliabilityScore: Math.round(reliabilityScore * 10) / 10
+        });
+      }
+
+      // Fill in zero metrics for vendors with no orders
+      for (const vendorId of vendorIds) {
+        if (!metricsMap.has(vendorId)) {
+          metricsMap.set(vendorId, {
+            totalOrders: 0,
+            avgDeliveryDays: 0,
+            totalSpent: 0,
+            cancelledOrders: 0,
+            onTimeDeliveryRate: 0,
+            reliabilityScore: 0
+          });
+        }
+      }
+
+      return metricsMap;
+    } catch (error) {
+      logger.error('Error calculating batch vendor metrics:', error);
       throw error;
     }
   }
@@ -531,13 +638,8 @@ export class VendorService {
    */
   static async getVendorStatistics() {
     try {
-      const [
-        totalVendors,
-        activeVendors,
-        totalPurchaseOrders,
-        totalSpent,
-        avgVendorRating
-      ] = await Promise.all([
+      // Use Promise.allSettled for graceful degradation
+      const results = await Promise.allSettled([
         Vendor.count(),
         Vendor.count({ where: { isActive: true } }),
         PurchaseOrder.count(),
@@ -551,14 +653,35 @@ export class VendorService {
         )
       ]);
 
+      const metricNames = ['totalVendors', 'activeVendors', 'totalPurchaseOrders', 'totalSpent', 'avgVendorRating'];
+      const [
+        totalVendors,
+        activeVendors,
+        totalPurchaseOrders,
+        totalSpent,
+        avgVendorRating
+      ] = results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          logger.error(`Vendor metric '${metricNames[index]}' failed`, {
+            metric: metricNames[index],
+            error: result.reason?.message,
+            errorName: result.reason?.name,
+          });
+          // Return fallback values based on metric type
+          return index <= 2 ? 0 : [{ total: 0, avg: 0 }];
+        }
+      });
+
       const totalSpentValue = (totalSpent as any)[0]?.total || 0;
       const avgRating = (avgVendorRating as any)[0]?.avg || 0;
 
       return {
-        totalVendors,
-        activeVendors,
-        inactiveVendors: totalVendors - activeVendors,
-        totalPurchaseOrders,
+        totalVendors: totalVendors as number,
+        activeVendors: activeVendors as number,
+        inactiveVendors: (totalVendors as number) - (activeVendors as number),
+        totalPurchaseOrders: totalPurchaseOrders as number,
         totalSpent: parseFloat(totalSpentValue),
         avgVendorRating: Math.round(parseFloat(avgRating) * 10) / 10
       };

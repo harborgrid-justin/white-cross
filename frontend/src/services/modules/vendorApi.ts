@@ -16,7 +16,7 @@
  * vendor comparisons, and rating management
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
 import {
@@ -77,6 +77,12 @@ const updateRatingSchema = z.object({
 // =====================
 
 export class VendorApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   private readonly baseUrl = '/api/vendors';
 
   /**
@@ -97,7 +103,7 @@ export class VendorApi {
         ? `${this.baseUrl}?${queryString.toString()}`
         : this.baseUrl;
 
-      const response = await apiInstance.get<ApiResponse<VendorsResponse>>(url);
+      const response = await this.client.get<ApiResponse<VendorsResponse>>(url);
 
       return response.data.data;
     } catch (error) {
@@ -112,7 +118,7 @@ export class VendorApi {
     try {
       if (!id) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.get<ApiResponse<VendorDetailResponse>>(
+      const response = await this.client.get<ApiResponse<VendorDetailResponse>>(
         `${this.baseUrl}/${id}`
       );
 
@@ -130,7 +136,7 @@ export class VendorApi {
       // Validate data
       createVendorSchema.parse(vendorData);
 
-      const response = await apiInstance.post<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.post<ApiResponse<{ vendor: Vendor }>>(
         this.baseUrl,
         vendorData
       );
@@ -154,7 +160,7 @@ export class VendorApi {
       // Validate data
       updateVendorSchema.parse(vendorData);
 
-      const response = await apiInstance.put<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.put<ApiResponse<{ vendor: Vendor }>>(
         `${this.baseUrl}/${id}`,
         vendorData
       );
@@ -175,7 +181,7 @@ export class VendorApi {
     try {
       if (!id) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.delete<ApiResponse<{ vendor: Vendor }>>(
         `${this.baseUrl}/${id}`
       );
 
@@ -192,7 +198,7 @@ export class VendorApi {
     try {
       if (!id) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.post<ApiResponse<{ vendor: Vendor }>>(
         `${this.baseUrl}/${id}/reactivate`
       );
 
@@ -211,7 +217,7 @@ export class VendorApi {
         throw new Error('Search query is required');
       }
 
-      const response = await apiInstance.get<ApiResponse<VendorSearchResponse>>(
+      const response = await this.client.get<ApiResponse<VendorSearchResponse>>(
         `${this.baseUrl}/search/${encodeURIComponent(query)}?limit=${limit}&activeOnly=${activeOnly}`
       );
 
@@ -230,7 +236,7 @@ export class VendorApi {
         throw new Error('Item name is required');
       }
 
-      const response = await apiInstance.get<ApiResponse<VendorComparisonResponse>>(
+      const response = await this.client.get<ApiResponse<VendorComparisonResponse>>(
         `${this.baseUrl}/compare/${encodeURIComponent(itemName)}`
       );
 
@@ -245,7 +251,7 @@ export class VendorApi {
    */
   async getTopVendors(limit: number = 10): Promise<VendorMetrics[]> {
     try {
-      const response = await apiInstance.get<ApiResponse<TopVendorsResponse>>(
+      const response = await this.client.get<ApiResponse<TopVendorsResponse>>(
         `${this.baseUrl}/top?limit=${limit}`
       );
 
@@ -266,7 +272,7 @@ export class VendorApi {
    */
   async getVendorStatistics(): Promise<VendorStatistics> {
     try {
-      const response = await apiInstance.get<ApiResponse<VendorStatistics>>(
+      const response = await this.client.get<ApiResponse<VendorStatistics>>(
         `${this.baseUrl}/statistics`
       );
 
@@ -286,7 +292,7 @@ export class VendorApi {
       // Validate rating
       updateRatingSchema.parse({ rating });
 
-      const response = await apiInstance.put<ApiResponse<{ vendor: Vendor }>>(
+      const response = await this.client.put<ApiResponse<{ vendor: Vendor }>>(
         `${this.baseUrl}/${vendorId}/rating`,
         { rating }
       );
@@ -316,7 +322,7 @@ export class VendorApi {
         }
       });
 
-      const response = await apiInstance.post<ApiResponse<BulkVendorRatingResult>>(
+      const response = await this.client.post<ApiResponse<BulkVendorRatingResult>>(
         `${this.baseUrl}/ratings/bulk`,
         { updates }
       );
@@ -336,7 +342,7 @@ export class VendorApi {
         throw new Error('Payment terms are required');
       }
 
-      const response = await apiInstance.get<ApiResponse<VendorSearchResponse>>(
+      const response = await this.client.get<ApiResponse<VendorSearchResponse>>(
         `${this.baseUrl}/payment-terms/${encodeURIComponent(paymentTerms)}`
       );
 
@@ -353,7 +359,7 @@ export class VendorApi {
     try {
       if (!vendorId) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ metrics: VendorPerformanceMetrics }>>(
+      const response = await this.client.get<ApiResponse<{ metrics: VendorPerformanceMetrics }>>(
         `${this.baseUrl}/${vendorId}/metrics`
       );
 
@@ -371,7 +377,7 @@ export class VendorApi {
     try {
       if (!id) throw new Error('Vendor ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ success: boolean }>>(
+      const response = await this.client.delete<ApiResponse<{ success: boolean }>>(
         `${this.baseUrl}/${id}/permanent`
       );
 
@@ -383,7 +389,11 @@ export class VendorApi {
 }
 
 // Export singleton instance
-export const vendorApi = new VendorApi();
 
 // Export default for convenience
 export default vendorApi;
+
+// Factory function for creating VendorApi instances
+export function createVendorApi(client: ApiClient): VendorApi {
+  return new VendorApi(client);
+}

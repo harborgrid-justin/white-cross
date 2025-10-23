@@ -25,17 +25,14 @@ export {
  * Query Schemas
  */
 
-export const listMedicationsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const listMedicationsQuerySchema = paginationSchema.keys({
   search: Joi.string()
     .trim()
     .optional()
     .description('Search term for medication name')
 });
 
-export const studentLogsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit'])
-});
+export const studentLogsQuerySchema = paginationSchema;
 
 export const scheduleQuerySchema = Joi.object({
   startDate: Joi.date()

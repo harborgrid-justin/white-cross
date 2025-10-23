@@ -13,10 +13,10 @@
  * @module services/modules/health/vitalSigns
  */
 
-import { apiInstance, API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import { z } from 'zod';
 import { BaseApiService } from '../../core/BaseApiService';
-import { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '../../core/ApiClient';
 import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
 
 // ==========================================
@@ -206,8 +206,7 @@ export class VitalSignsApiService extends BaseApiService<
   VitalSignsCreate,
   VitalSignsUpdate
 > {
-  constructor() {
-    const client = new ApiClient(apiInstance);
+  constructor(client: ApiClient) {
     super(client, `${API_ENDPOINTS.HEALTH_RECORDS}/vitals`, {
       createSchema: vitalSignsCreateSchema,
       updateSchema: vitalSignsUpdateSchema
@@ -554,7 +553,9 @@ export class VitalSignsApiService extends BaseApiService<
 }
 
 // ==========================================
-// SINGLETON EXPORT
+// FACTORY FUNCTION
 // ==========================================
 
-export const vitalSignsApi = new VitalSignsApiService();
+export function createVitalSignsApi(client: ApiClient): VitalSignsApiService {
+  return new VitalSignsApiService(client);
+}

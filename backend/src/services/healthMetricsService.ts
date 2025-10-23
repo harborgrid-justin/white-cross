@@ -7,6 +7,7 @@
 
 import { sequelize } from '../config/database';
 import { QueryTypes } from 'sequelize';
+import { logger } from '../utils/logger';
 
 interface VitalSigns {
   heartRate?: number;
@@ -358,7 +359,7 @@ class HealthMetricsService {
       }
 
       // In a real implementation, these alerts would be saved to the database
-      console.log('Critical vitals detected:', alerts);
+      logger.info('Critical vitals detected', { alerts, recordId: vitalRecord.id });
     } catch (error) {
       console.error('Error checking for critical vitals:', error);
     }

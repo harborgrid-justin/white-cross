@@ -42,7 +42,7 @@ import type {
   InsuranceSubmissionsResponse,
   ActionStatus
 } from '../types'
-import { apiInstance } from '../config/apiConfig'
+import type { ApiClient } from '../core/ApiClient';
 import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtils'
 
 /**
@@ -51,6 +51,7 @@ import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtil
  * Handles incidents, witness statements, follow-up actions, and compliance tracking
  */
 class IncidentReportsApiImpl implements IIncidentReportsApi {
+  constructor(private readonly client: ApiClient) {}
   // =====================
   // INCIDENT REPORT CRUD
   // =====================
@@ -75,7 +76,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
       if (params?.followUpRequired !== undefined) queryParams.append('followUpRequired', params.followUpRequired.toString())
       if (params?.location) queryParams.append('location', params.location)
 
-      const response = await apiInstance.get(`/incident-reports?${queryParams}`)
+      const response = await this.client.get(`/incident-reports?${queryParams}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -88,7 +89,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async getById(id: string): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.get(`/incident-reports/${id}`)
+      const response = await this.client.get(`/incident-reports/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -101,7 +102,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async create(data: CreateIncidentReportRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.post('/incident-reports', data)
+      const response = await this.client.post('/incident-reports', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -114,7 +115,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async update(id: string, data: UpdateIncidentReportRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/${id}`, data)
+      const response = await this.client.put(`/incident-reports/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -127,7 +128,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async delete(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await apiInstance.delete(`/incident-reports/${id}`)
+      const response = await this.client.delete(`/incident-reports/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -148,7 +149,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
       if (params.page) queryParams.append('page', params.page.toString())
       if (params.limit) queryParams.append('limit', params.limit.toString())
 
-      const response = await apiInstance.get(`/incident-reports/search/${params.query}?${queryParams}`)
+      const response = await this.client.get(`/incident-reports/search/${params.query}?${queryParams}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -167,7 +168,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
       if (params?.studentId) queryParams.append('studentId', params.studentId)
 
       const queryString = queryParams.toString() ? `?${queryParams}` : ''
-      const response = await apiInstance.get(`/incident-reports/statistics/overview${queryString}`)
+      const response = await this.client.get(`/incident-reports/statistics/overview${queryString}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -180,7 +181,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async getFollowUpRequired(): Promise<IncidentReportListResponse> {
     try {
-      const response = await apiInstance.get('/incident-reports/follow-up/pending')
+      const response = await this.client.get('/incident-reports/follow-up/pending')
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -193,7 +194,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async getStudentRecentIncidents(studentId: string, limit: number = 5): Promise<IncidentReportListResponse> {
     try {
-      const response = await apiInstance.get(`/incident-reports/student/${studentId}/recent?limit=${limit}`)
+      const response = await this.client.get(`/incident-reports/student/${studentId}/recent?limit=${limit}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -210,7 +211,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async markParentNotified(id: string, data: MarkParentNotifiedRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/${id}/notify-parent`, data)
+      const response = await this.client.put(`/incident-reports/${id}/notify-parent`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -223,7 +224,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async notifyParent(id: string, data: NotifyParentRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.post(`/incident-reports/${id}/notify-parent-automated`, data)
+      const response = await this.client.post(`/incident-reports/${id}/notify-parent-automated`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -240,7 +241,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async addFollowUpNotes(id: string, data: AddFollowUpNotesRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/${id}/follow-up`, data)
+      const response = await this.client.put(`/incident-reports/${id}/follow-up`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -253,7 +254,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async addFollowUpAction(data: CreateFollowUpActionRequest): Promise<FollowUpActionResponse> {
     try {
-      const response = await apiInstance.post(`/incident-reports/${data.incidentReportId}/follow-up-actions`, data)
+      const response = await this.client.post(`/incident-reports/${data.incidentReportId}/follow-up-actions`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -266,7 +267,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async updateFollowUpAction(id: string, data: UpdateFollowUpActionRequest): Promise<FollowUpActionResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/follow-up-actions/${id}`, data)
+      const response = await this.client.put(`/incident-reports/follow-up-actions/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -279,7 +280,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async completeFollowUpAction(id: string, notes?: string): Promise<FollowUpActionResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/follow-up-actions/${id}`, {
+      const response = await this.client.put(`/incident-reports/follow-up-actions/${id}`, {
         status: ActionStatus.COMPLETED,
         notes
       })
@@ -294,7 +295,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async getFollowUpActions(incidentReportId: string): Promise<FollowUpActionListResponse> {
     try {
-      const response = await apiInstance.get(`/incident-reports/${incidentReportId}/follow-up-actions`)
+      const response = await this.client.get(`/incident-reports/${incidentReportId}/follow-up-actions`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -306,7 +307,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async deleteFollowUpAction(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await apiInstance.delete(`/incident-reports/follow-up-actions/${id}`)
+      const response = await this.client.delete(`/incident-reports/follow-up-actions/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -323,7 +324,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async addWitnessStatement(data: CreateWitnessStatementRequest): Promise<WitnessStatementResponse> {
     try {
-      const response = await apiInstance.post(`/incident-reports/${data.incidentReportId}/witness-statements`, data)
+      const response = await this.client.post(`/incident-reports/${data.incidentReportId}/witness-statements`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -336,7 +337,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async updateWitnessStatement(id: string, data: UpdateWitnessStatementRequest): Promise<WitnessStatementResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/witness-statements/${id}`, data)
+      const response = await this.client.put(`/incident-reports/witness-statements/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -349,7 +350,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async verifyWitnessStatement(statementId: string): Promise<WitnessStatementResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/witness-statements/${statementId}/verify`)
+      const response = await this.client.put(`/incident-reports/witness-statements/${statementId}/verify`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -361,7 +362,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async getWitnessStatements(incidentReportId: string): Promise<WitnessStatementListResponse> {
     try {
-      const response = await apiInstance.get(`/incident-reports/${incidentReportId}/witness-statements`)
+      const response = await this.client.get(`/incident-reports/${incidentReportId}/witness-statements`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -373,7 +374,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async deleteWitnessStatement(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await apiInstance.delete(`/incident-reports/witness-statements/${id}`)
+      const response = await this.client.delete(`/incident-reports/witness-statements/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -390,7 +391,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async addEvidence(id: string, data: AddEvidenceRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.post(`/incident-reports/${id}/evidence`, data)
+      const response = await this.client.post(`/incident-reports/${id}/evidence`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -407,7 +408,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
       files.forEach((file, index) => {
         formData.append(`evidence_${index}`, file)
       })
-      const response = await apiInstance.post(`/incident-reports/${incidentReportId}/evidence`, formData, {
+      const response = await this.client.post(`/incident-reports/${incidentReportId}/evidence`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       return extractApiData(response)
@@ -421,7 +422,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async deleteEvidence(incidentReportId: string, fileName: string): Promise<{ success: boolean }> {
     try {
-      const response = await apiInstance.delete(`/incident-reports/${incidentReportId}/evidence/${fileName}`)
+      const response = await this.client.delete(`/incident-reports/${incidentReportId}/evidence/${fileName}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -438,7 +439,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async updateInsuranceClaim(id: string, data: UpdateInsuranceClaimRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/${id}/insurance-claim`, data)
+      const response = await this.client.put(`/incident-reports/${id}/insurance-claim`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -451,7 +452,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async submitToInsurance(id: string, insuranceData: any): Promise<InsuranceSubmissionResponse> {
     try {
-      const response = await apiInstance.post(`/incident-reports/${id}/insurance-submission`, insuranceData)
+      const response = await this.client.post(`/incident-reports/${id}/insurance-submission`, insuranceData)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -464,7 +465,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async getInsuranceSubmissions(incidentReportId: string): Promise<InsuranceSubmissionsResponse> {
     try {
-      const response = await apiInstance.get(`/incident-reports/${incidentReportId}/insurance-submissions`)
+      const response = await this.client.get(`/incident-reports/${incidentReportId}/insurance-submissions`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -477,7 +478,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async updateComplianceStatus(id: string, data: UpdateComplianceStatusRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await apiInstance.put(`/incident-reports/${id}/compliance`, data)
+      const response = await this.client.put(`/incident-reports/${id}/compliance`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -494,7 +495,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async generateDocument(id: string): Promise<{ document: IncidentReportDocument }> {
     try {
-      const response = await apiInstance.get(`/incident-reports/${id}/document`)
+      const response = await this.client.get(`/incident-reports/${id}/document`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -507,7 +508,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
    */
   async generateReport(id: string): Promise<Blob> {
     try {
-      const response = await apiInstance.get(`/incident-reports/${id}/generate`, { responseType: 'blob' })
+      const response = await this.client.get(`/incident-reports/${id}/generate`, { responseType: 'blob' })
       return response.data
     } catch (error) {
       throw handleApiError(error as any)
@@ -521,7 +522,7 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
   async exportReports(params?: IncidentReportFilters): Promise<Blob> {
     try {
       const queryParams = params ? `?${buildUrlParams(params)}` : ''
-      const response = await apiInstance.get(`/incident-reports/export${queryParams}`, { responseType: 'blob' })
+      const response = await this.client.get(`/incident-reports/export${queryParams}`, { responseType: 'blob' })
       return response.data
     } catch (error) {
       throw handleApiError(error as any)
@@ -530,5 +531,8 @@ class IncidentReportsApiImpl implements IIncidentReportsApi {
 
 }
 
-export const incidentReportsApi = new IncidentReportsApiImpl()
+export function createIncidentReportsApi(client: ApiClient): IIncidentReportsApi {
+  return new IncidentReportsApiImpl(client);
+}
+
 export type { IIncidentReportsApi }

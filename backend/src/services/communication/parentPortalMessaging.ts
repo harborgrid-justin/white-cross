@@ -18,7 +18,7 @@
  */
 
 import { logger } from '../../utils/logger';
-import { AuditService } from '../auditService';
+import { AuditService } from '../audit/auditService';
 
 /**
  * Message Priority Levels

@@ -13,10 +13,10 @@
  * @module services/modules/health/chronicConditions
  */
 
-import { apiInstance, API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import { z } from 'zod';
 import { BaseApiService } from '../../core/BaseApiService';
-import { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '../../core/ApiClient';
 import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
 
 // ==========================================
@@ -142,8 +142,7 @@ export class ChronicConditionsApiService extends BaseApiService<
   ChronicConditionCreate,
   ChronicConditionUpdate
 > {
-  constructor() {
-    const client = new ApiClient(apiInstance);
+  constructor(client: ApiClient) {
     super(client, `${API_ENDPOINTS.HEALTH_RECORDS}/conditions`, {
       createSchema: chronicConditionCreateSchema,
       updateSchema: chronicConditionUpdateSchema
@@ -355,7 +354,9 @@ export class ChronicConditionsApiService extends BaseApiService<
 }
 
 // ==========================================
-// SINGLETON EXPORT
+// FACTORY FUNCTION
 // ==========================================
 
-export const chronicConditionsApi = new ChronicConditionsApiService();
+export function createChronicConditionsApi(client: ApiClient): ChronicConditionsApiService {
+  return new ChronicConditionsApiService(client);
+}

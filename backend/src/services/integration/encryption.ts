@@ -38,20 +38,29 @@ export class EncryptionService {
   private static readonly TAG_LENGTH = 16;
 
   /**
-   * Get encryption key from environment or generate one
-   * In production, this should come from a secure key management service (AWS KMS, Azure Key Vault, etc.)
+   * Get encryption key from environment variables
+   * SECURITY: No defaults - fails fast if secrets not configured
+   * In production, use secure key management service (AWS KMS, Azure Key Vault, HashiCorp Vault)
    */
   private static getEncryptionKey(): Buffer {
-    const secret = process.env.ENCRYPTION_SECRET || 'default-secret-key-change-in-production';
-    
-    if (!process.env.ENCRYPTION_SECRET && process.env.NODE_ENV === 'production') {
-      logger.error('ENCRYPTION_SECRET not set in production environment!');
-      throw new Error('ENCRYPTION_SECRET must be set in production');
+    const secret = process.env.ENCRYPTION_SECRET;
+    const salt = process.env.ENCRYPTION_SALT;
+
+    // CRITICAL: Fail immediately if encryption secrets are not configured
+    if (!secret || !salt) {
+      logger.error('CRITICAL: ENCRYPTION_SECRET and ENCRYPTION_SALT must be set in environment variables');
+      throw new Error('Encryption configuration missing - ENCRYPTION_SECRET and ENCRYPTION_SALT are required');
     }
 
-    // Use a fixed salt for key derivation (in production, use a proper key derivation function)
-    const salt = process.env.ENCRYPTION_SALT || 'white-cross-encryption-salt';
-    
+    // Validate secret strength (minimum 32 characters recommended)
+    if (secret.length < 32) {
+      logger.error('SECURITY WARNING: ENCRYPTION_SECRET should be at least 32 characters');
+    }
+
+    if (salt.length < 16) {
+      logger.error('SECURITY WARNING: ENCRYPTION_SALT should be at least 16 characters');
+    }
+
     // Derive a key from the secret using scrypt
     return scryptSync(secret, salt, this.KEY_LENGTH);
   }

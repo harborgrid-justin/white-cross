@@ -2,6 +2,8 @@
  * Common TypeScript types and interfaces used across multiple services
  */
 
+import type { FieldChange, ValidationError as ValidationErrorType } from '../../../types/validation';
+
 // Common ID type
 export type ID = string;
 
@@ -111,19 +113,19 @@ export interface AuditEntry {
   entityId: ID;
   userId: ID;
   timestamp: Date;
-  changes?: Record<string, any>;
+  changes?: FieldChange[];
   ipAddress?: string;
   userAgent?: string;
 }
 
-// Generic key-value pair
-export interface KeyValuePair<T = any> {
+// Generic key-value pair (no default type - forces explicit typing)
+export interface KeyValuePair<T> {
   key: string;
   value: T;
 }
 
 // Configuration setting
-export interface ConfigSetting extends KeyValuePair {
+export interface ConfigSetting extends KeyValuePair<string | number | boolean> {
   description?: string;
   category?: string;
   isSystem?: boolean;
@@ -146,13 +148,8 @@ export interface BaseFilter {
   search?: string;
 }
 
-// Validation error detail
-export interface ValidationError {
-  field: string;
-  message: string;
-  code?: string;
-  value?: any;
-}
+// Re-export ValidationError from centralized types
+export type { ValidationError } from '../../../types/validation';
 
 // Validation result
 export interface ValidationResult {

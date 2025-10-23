@@ -1,0 +1,1475 @@
+{
+  "analytics": [
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/health-metrics"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/health-trends"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/health-metrics/student/{studentId}"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/health-metrics/school/{schoolId}"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/incidents/trends"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/incidents/by-location"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/medications/usage"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/medications/adherence"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/appointments/trends"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/appointments/no-show-rate"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/dashboard/nurse"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/dashboard/admin"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/summary"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/analytics/reports/custom"
+    },
+    {
+      "module": "analytics\\routes\\analytics.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/analytics/reports/{id}"
+    }
+  ],
+  "communications": [
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/communications/broadcasts"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts/{id}"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/communications/broadcasts/{id}/cancel"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts/{id}/recipients"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts/{id}/delivery-report"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/communications/scheduled"
+    },
+    {
+      "module": "communications\\routes\\broadcasts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/scheduled"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/messages"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/messages/{id}"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/communications/messages"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/communications/messages/{id}"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/communications/messages/{id}"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/communications/messages/{id}/reply"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/messages/inbox"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/messages/sent"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/templates"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/communications/templates"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/delivery-status/{messageId}"
+    },
+    {
+      "module": "communications\\routes\\messages.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/communications/statistics"
+    }
+  ],
+  "compliance": [
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/logs"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/logs/{id}"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/audit/logs"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/phi-access"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/audit/phi-access"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/statistics"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/user/{userId}/activity"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/export"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/security-analysis"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/audit/security-analysis/run"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/compliance-report"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/anomalies"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/session/{sessionId}"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/audit/data-access/{resourceType}/{resourceId}"
+    },
+    {
+      "module": "compliance\\routes\\audit.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/audit/logs/archive"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/reports"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/reports/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/reports"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/compliance/reports/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/compliance/reports/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/reports/generate"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/checklists"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/checklists/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/checklists"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/compliance/checklists/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/compliance/checklists/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/policies"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/policies/{policyId}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/policies"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/compliance/policies/{policyId}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/policies/{policyId}/acknowledge"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/consents/forms"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/consents/forms/{id}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/consents/forms"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/compliance/consents"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/consents/student/{studentId}"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/compliance/consents/{signatureId}/withdraw"
+    },
+    {
+      "module": "compliance\\routes\\compliance.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/compliance/statistics"
+    }
+  ],
+  "core": [
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/contacts"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/contacts/{id}"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/contacts"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/contacts/{id}"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/contacts/{id}"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/contacts/search"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/contacts/by-relation/{relationTo}"
+    },
+    {
+      "module": "core\\contacts\\contacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/contacts/stats"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/roles"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/roles/{id}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/roles"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/access-control/roles/{id}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/access-control/roles/{id}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/permissions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/permissions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/roles/{roleId}/permissions/{permissionId}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/access-control/roles/{roleId}/permissions/{permissionId}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/users/{userId}/roles/{roleId}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/access-control/users/{userId}/roles/{roleId}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/users/{userId}/permissions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/users/{userId}/check"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/users/{userId}/sessions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/access-control/sessions/{token}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/access-control/users/{userId}/sessions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/security-incidents"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/security-incidents"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/access-control/security-incidents/{id}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/ip-restrictions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/ip-restrictions"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/access-control/ip-restrictions/{id}"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/access-control/statistics"
+    },
+    {
+      "module": "core\\routes\\accessControl.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/access-control/initialize-roles"
+    },
+    {
+      "module": "core\\routes\\auth.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/auth/register"
+    },
+    {
+      "module": "core\\routes\\auth.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/auth/login"
+    },
+    {
+      "module": "core\\routes\\auth.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/auth/verify"
+    },
+    {
+      "module": "core\\routes\\auth.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/auth/refresh"
+    },
+    {
+      "module": "core\\routes\\auth.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/auth/me"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/users"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/users/{id}"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/users"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/users/{id}"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/change-password"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/reset-password"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/deactivate"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/reactivate"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/users/statistics"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/users/role/{role}"
+    },
+    {
+      "module": "core\\routes\\users.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/users/nurses/available"
+    }
+  ],
+  "documents": [
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/{id}"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/documents"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/documents/{id}"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/documents/{id}"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/download"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/documents/{id}/sign"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/signatures"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/versions"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/documents/{id}/share"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/templates"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/documents/templates/{templateId}/create"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/student/{studentId}"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/search"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/analytics"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/categories"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/audit-trail"
+    },
+    {
+      "module": "documents\\routes\\documents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/documents/expiring"
+    }
+  ],
+  "healthcare": [
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/risk/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/high-risk-students"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-assessments/screenings"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/screenings/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-assessments/growth/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/growth/{studentId}/analysis"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/immunizations/{studentId}/forecast"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-assessments/emergency/notify"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/emergency/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-assessments/medication-interactions/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\healthAssessments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-assessments/medication-interactions/{studentId}/check"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-records"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/health-records/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/health-records/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/allergies"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/allergies/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-records/allergies"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/health-records/allergies/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/health-records/allergies/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/conditions"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/conditions/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-records/conditions"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/health-records/conditions/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/health-records/conditions/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/vaccinations"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/vaccinations/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-records/vaccinations"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/health-records/vaccinations/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/health-records/vaccinations/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/health-records/vitals"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/vitals/latest"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/vitals/history"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/summary"
+    },
+    {
+      "module": "healthcare\\routes\\healthRecords.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/immunization-status"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/medications"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/medications/assign"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/medications/student-medication/{id}/deactivate"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/medications/administration"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/logs/{studentId}"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/inventory"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/medications/inventory"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/medications/inventory/{id}"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/schedule"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/reminders"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/medications/adverse-reaction"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/adverse-reactions"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/stats"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/alerts"
+    },
+    {
+      "module": "healthcare\\routes\\medications.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/medications/form-options"
+    }
+  ],
+  "incidents": [
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/incidents"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/incidents/{id}"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/incidents/{id}"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/student/{studentId}"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/evidence"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}/evidence"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/witnesses"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}/witnesses"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/follow-ups"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}/follow-ups"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/notify"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/statistics"
+    },
+    {
+      "module": "incidents\\routes\\incidents.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/incidents/search"
+    }
+  ],
+  "operations": [
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments/{id}"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/appointments/{id}"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/cancel"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/no-show"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/start"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/complete"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments/nurse/{nurseId}/available-slots"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments/nurse/{nurseId}/upcoming"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments/statistics"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/recurring"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/waitlist"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments/waitlist"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/appointments/waitlist/{id}"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/appointments/nurse/{nurseId}/calendar"
+    },
+    {
+      "module": "operations\\routes\\appointments.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/appointments/reminders/send"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/emergency-contacts/student/{studentId}"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/emergency-contacts/{id}"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/emergency-contacts/{id}"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/emergency-contacts/{id}"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts/student/{studentId}/notify"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts/{id}/notify"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts/{id}/verify"
+    },
+    {
+      "module": "operations\\routes\\emergencyContacts.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/emergency-contacts/statistics"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/items"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/items/{id}"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/inventory/items"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/inventory/items/{id}"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/inventory/items/{id}"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/stock"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/inventory/stock/adjust"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/stock/low"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/inventory/stock/count"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/stock/history/{id}"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/orders"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/inventory/orders"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/inventory/orders/{id}/receive"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/suppliers"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/inventory/suppliers"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/inventory/suppliers/{id}"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/analytics"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/reports/usage"
+    },
+    {
+      "module": "operations\\routes\\inventory.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/inventory/suppliers/performance"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/photos/{studentId}"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/photos/search"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/transcripts/{studentId}/import"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/student-management/transcripts/{studentId}/history"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/student-management/transcripts/{studentId}/trends"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/grade-transitions/bulk"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/student-management/graduating-students"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/barcode/scan"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/barcode/verify-medication"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/student-management/waitlist"
+    },
+    {
+      "module": "operations\\routes\\studentManagement.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/student-management/waitlist/{studentId}"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students/{id}"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/students"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/students/{id}"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/students/{id}/deactivate"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/students/{id}/transfer"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students/grade/{grade}"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students/search/{query}"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students/assigned"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students/{id}/health-records"
+    },
+    {
+      "module": "operations\\routes\\students.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/students/{id}/mental-health-records"
+    }
+  ],
+  "system": [
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/config"
+    },
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/system/config"
+    },
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/schools"
+    },
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/schools/{schoolId}"
+    },
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/system/schools/{schoolId}"
+    },
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/features"
+    },
+    {
+      "module": "system\\routes\\configuration.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/system/features"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/integrations"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/integrations/{id}"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/system/integrations"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "PUT",
+      "path": "/api/v1/system/integrations/{id}"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "DELETE",
+      "path": "/api/v1/system/integrations/{id}"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/system/integrations/{id}/test"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/system/sync/students"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/sync/status"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/sync/logs"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "POST",
+      "path": "/api/v1/system/grade-transition"
+    },
+    {
+      "module": "system\\routes\\integrations.routes.ts",
+      "method": "GET",
+      "path": "/api/v1/system/health"
+    }
+  ]
+}

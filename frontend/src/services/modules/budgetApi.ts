@@ -15,7 +15,8 @@
  * Enterprise-grade API client for fiscal year budgeting, spending tracking, and financial analytics
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse } from '../types';
 import { z } from 'zod';
 import type {
@@ -85,6 +86,7 @@ const updateBudgetTransactionSchema = z.object({
  * Provides comprehensive budget management and fiscal tracking functionality
  */
 export class BudgetApi {
+  constructor(private readonly client: ApiClient) {}
   /**
    * Get budget categories for a fiscal year
    */
@@ -95,7 +97,7 @@ export class BudgetApi {
       if (params.fiscalYear) queryParams.append('fiscalYear', String(params.fiscalYear));
       if (params.activeOnly !== undefined) queryParams.append('activeOnly', String(params.activeOnly));
 
-      const response = await apiInstance.get<ApiResponse<BudgetCategoriesResponse>>(
+      const response = await this.client.get<ApiResponse<BudgetCategoriesResponse>>(
         `${API_ENDPOINTS.BUDGET.CATEGORIES}?${queryParams.toString()}`
       );
 
@@ -112,7 +114,7 @@ export class BudgetApi {
     try {
       if (!id) throw new Error('Budget category ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ category: BudgetCategoryWithMetrics }>>(
+      const response = await this.client.get<ApiResponse<{ category: BudgetCategoryWithMetrics }>>(
         API_ENDPOINTS.BUDGET.CATEGORY_BY_ID(id)
       );
 
@@ -129,7 +131,7 @@ export class BudgetApi {
     try {
       createBudgetCategorySchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ category: BudgetCategory }>>(
+      const response = await this.client.post<ApiResponse<{ category: BudgetCategory }>>(
         API_ENDPOINTS.BUDGET.CATEGORIES,
         data
       );
@@ -151,7 +153,7 @@ export class BudgetApi {
       if (!id) throw new Error('Budget category ID is required');
       updateBudgetCategorySchema.parse(data);
 
-      const response = await apiInstance.put<ApiResponse<{ category: BudgetCategory }>>(
+      const response = await this.client.put<ApiResponse<{ category: BudgetCategory }>>(
         API_ENDPOINTS.BUDGET.CATEGORY_BY_ID(id),
         data
       );
@@ -172,7 +174,7 @@ export class BudgetApi {
     try {
       if (!id) throw new Error('Budget category ID is required');
 
-      await apiInstance.delete<ApiResponse<{ success: boolean }>>(
+      await this.client.delete<ApiResponse<{ success: boolean }>>(
         API_ENDPOINTS.BUDGET.CATEGORY_BY_ID(id)
       );
 
@@ -189,7 +191,7 @@ export class BudgetApi {
     try {
       const params = fiscalYear ? `?fiscalYear=${fiscalYear}` : '';
 
-      const response = await apiInstance.get<ApiResponse<{ summary: BudgetSummary }>>(
+      const response = await this.client.get<ApiResponse<{ summary: BudgetSummary }>>(
         `${API_ENDPOINTS.BUDGET.SUMMARY}${params}`
       );
 
@@ -217,7 +219,7 @@ export class BudgetApi {
       if (filters.startDate) params.append('startDate', filters.startDate);
       if (filters.endDate) params.append('endDate', filters.endDate);
 
-      const response = await apiInstance.get<ApiResponse<BudgetTransactionsResponse>>(
+      const response = await this.client.get<ApiResponse<BudgetTransactionsResponse>>(
         `${API_ENDPOINTS.BUDGET.TRANSACTIONS}?${params.toString()}`
       );
 
@@ -234,7 +236,7 @@ export class BudgetApi {
     try {
       createBudgetTransactionSchema.parse(data);
 
-      const response = await apiInstance.post<ApiResponse<{ transaction: BudgetTransaction }>>(
+      const response = await this.client.post<ApiResponse<{ transaction: BudgetTransaction }>>(
         API_ENDPOINTS.BUDGET.TRANSACTIONS,
         data
       );
@@ -259,7 +261,7 @@ export class BudgetApi {
       if (!id) throw new Error('Budget transaction ID is required');
       updateBudgetTransactionSchema.parse(data);
 
-      const response = await apiInstance.put<ApiResponse<{ transaction: BudgetTransaction }>>(
+      const response = await this.client.put<ApiResponse<{ transaction: BudgetTransaction }>>(
         API_ENDPOINTS.BUDGET.TRANSACTION_BY_ID(id),
         data
       );
@@ -280,7 +282,7 @@ export class BudgetApi {
     try {
       if (!id) throw new Error('Budget transaction ID is required');
 
-      await apiInstance.delete<ApiResponse<{ success: boolean }>>(
+      await this.client.delete<ApiResponse<{ success: boolean }>>(
         API_ENDPOINTS.BUDGET.TRANSACTION_BY_ID(id)
       );
 
@@ -303,7 +305,7 @@ export class BudgetApi {
       if (fiscalYear) params.append('fiscalYear', String(fiscalYear));
       if (categoryId) params.append('categoryId', categoryId);
 
-      const response = await apiInstance.get<ApiResponse<SpendingTrendsResponse>>(
+      const response = await this.client.get<ApiResponse<SpendingTrendsResponse>>(
         `${API_ENDPOINTS.BUDGET.TRENDS}?${params.toString()}`
       );
 
@@ -324,7 +326,7 @@ export class BudgetApi {
       if (!categoryName) throw new Error('Category name is required');
       if (!years || years.length === 0) throw new Error('Years array is required');
 
-      const response = await apiInstance.post<ApiResponse<CategoryComparisonResponse>>(
+      const response = await this.client.post<ApiResponse<CategoryComparisonResponse>>(
         API_ENDPOINTS.BUDGET.YEAR_COMPARISON,
         { categoryName, years }
       );
@@ -342,7 +344,7 @@ export class BudgetApi {
     try {
       const params = fiscalYear ? `?fiscalYear=${fiscalYear}` : '';
 
-      const response = await apiInstance.get<ApiResponse<OverBudgetCategoriesResponse>>(
+      const response = await this.client.get<ApiResponse<OverBudgetCategoriesResponse>>(
         `${API_ENDPOINTS.BUDGET.OVER_BUDGET}${params}`
       );
 
@@ -359,7 +361,7 @@ export class BudgetApi {
     try {
       const params = fiscalYear ? `?fiscalYear=${fiscalYear}` : '';
 
-      const response = await apiInstance.get<ApiResponse<BudgetRecommendationsResponse>>(
+      const response = await this.client.get<ApiResponse<BudgetRecommendationsResponse>>(
         `${API_ENDPOINTS.BUDGET.RECOMMENDATIONS}${params}`
       );
 
@@ -376,7 +378,7 @@ export class BudgetApi {
     try {
       const params = fiscalYear ? `?fiscalYear=${fiscalYear}` : '';
 
-      const response = await apiInstance.get<ApiResponse<BudgetExportData>>(
+      const response = await this.client.get<ApiResponse<BudgetExportData>>(
         `${API_ENDPOINTS.BUDGET.EXPORT}${params}`
       );
 
@@ -481,6 +483,6 @@ export class BudgetApi {
   }
 }
 
-// Export singleton instance
-export const budgetApi = new BudgetApi();
-export default budgetApi;
+export function createBudgetApi(client: ApiClient): BudgetApi {
+  return new BudgetApi(client);
+}

@@ -12,9 +12,9 @@
  *   - enhancedFeatures.test.ts (__tests__/enhancedFeatures.test.ts)
  */
 
-import { Student } from '../database/models';
-import { logger } from '../utils/logger';
-import { sequelize } from '../database/config/sequelize';
+import { Student } from '../../database/models';
+import { logger } from '../../utils/logger';
+import { sequelize } from '../../database/config/sequelize';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 
 import {

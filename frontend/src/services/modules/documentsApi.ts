@@ -10,7 +10,8 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
 import { extractApiData } from '../utils/apiUtils';
 import { buildUrlParams } from '../utils/apiUtils';
 import type { ApiResponse } from '../types';
@@ -107,12 +108,13 @@ export interface DocumentsApi {
 }
 
 class DocumentsApiImpl implements DocumentsApi {
+  constructor(private readonly client: ApiClient) {}
   // Document CRUD
   async getDocuments(filters: DocumentFilters = {}): Promise<PaginatedDocumentsResponse> {
     // Validate filters
     const validatedFilters = documentFiltersSchema.parse(filters);
     const params = buildUrlParams(validatedFilters);
-    const response = await apiInstance.get<ApiResponse<PaginatedDocumentsResponse> | undefined>(
+    const response = await this.client.get<ApiResponse<PaginatedDocumentsResponse> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}?${params.toString()}`
     );
     return extractApiData(response as any);
@@ -123,7 +125,7 @@ class DocumentsApiImpl implements DocumentsApi {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
       throw new Error('Invalid document ID format');
     }
-    const response = await apiInstance.get<ApiResponse<{ document: Document }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ document: Document }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`
     );
     return extractApiData(response as any);
@@ -132,7 +134,7 @@ class DocumentsApiImpl implements DocumentsApi {
   async createDocument(data: CreateDocumentRequest): Promise<{ document: Document }> {
     // Validate document data
     const validatedData = createDocumentSchema.parse(data);
-    const response = await apiInstance.post<ApiResponse<{ document: Document }> | undefined>(
+    const response = await this.client.post<ApiResponse<{ document: Document }> | undefined>(
       API_ENDPOINTS.DOCUMENTS.BASE,
       validatedData
     );
@@ -146,7 +148,7 @@ class DocumentsApiImpl implements DocumentsApi {
     }
     // Validate update data
     const validatedData = updateDocumentSchema.parse(data);
-    const response = await apiInstance.put<ApiResponse<{ document: Document }> | undefined>(
+    const response = await this.client.put<ApiResponse<{ document: Document }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`,
       validatedData
     );
@@ -158,7 +160,7 @@ class DocumentsApiImpl implements DocumentsApi {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
       throw new Error('Invalid document ID format');
     }
-    await apiInstance.delete(`${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`);
+    await this.client.delete(`${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`);
   }
 
   // Document Versions
@@ -183,7 +185,7 @@ class DocumentsApiImpl implements DocumentsApi {
       validatedData = createDocumentVersionSchema.parse(data);
     }
 
-    const response = await apiInstance.post<ApiResponse<{ document: DocumentVersion }> | undefined>(
+    const response = await this.client.post<ApiResponse<{ document: DocumentVersion }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${parentId}/version`,
       validatedData,
       data instanceof FormData ? {
@@ -196,7 +198,7 @@ class DocumentsApiImpl implements DocumentsApi {
   }
 
   async getDocumentVersion(versionId: string): Promise<{ version: DocumentVersion }> {
-    const response = await apiInstance.get<ApiResponse<{ document: Document }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ document: Document }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${versionId}`
     );
     const data = extractApiData(response as any);
@@ -207,7 +209,7 @@ class DocumentsApiImpl implements DocumentsApi {
   async signDocument(id: string, data: SignDocumentRequest): Promise<{ signature: DocumentSignature }> {
     // Validate signature data
     const validatedData = signDocumentSchema.parse({ ...data, documentId: id });
-    const response = await apiInstance.post<ApiResponse<{ signature: DocumentSignature }> | undefined>(
+    const response = await this.client.post<ApiResponse<{ signature: DocumentSignature }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/sign`,
       { signatureData: validatedData.signatureData }
     );
@@ -216,7 +218,7 @@ class DocumentsApiImpl implements DocumentsApi {
 
   async downloadDocument(id: string, version?: number): Promise<Blob> {
     const params = version ? `?version=${version}` : '';
-    const response = await apiInstance.get(
+    const response = await this.client.get(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/download${params}`,
       { responseType: 'blob' }
     );
@@ -235,7 +237,7 @@ class DocumentsApiImpl implements DocumentsApi {
     }
     // Validate share data
     const validatedData = shareDocumentSchema.parse(data);
-    const response = await apiInstance.post<ApiResponse<{ success: boolean; sharedWith: string[] }> | undefined>(
+    const response = await this.client.post<ApiResponse<{ success: boolean; sharedWith: string[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/share`,
       { sharedWith: validatedData.userIds }
     );
@@ -246,7 +248,7 @@ class DocumentsApiImpl implements DocumentsApi {
   // Templates
   async getTemplates(category?: string): Promise<{ templates: DocumentTemplate[] }> {
     const params = buildUrlParams({ category });
-    const response = await apiInstance.get<ApiResponse<{ templates: Document[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ templates: Document[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/list?${params.toString()}`
     );
     const result = extractApiData(response as any);
@@ -254,7 +256,7 @@ class DocumentsApiImpl implements DocumentsApi {
   }
 
   async getTemplateById(id: string): Promise<{ template: DocumentTemplate }> {
-    const response = await apiInstance.get<ApiResponse<{ document: Document }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ document: Document }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`
     );
     const result = extractApiData(response as any);
@@ -268,7 +270,7 @@ class DocumentsApiImpl implements DocumentsApi {
     }
     // Validate data
     const validatedData = createFromTemplateSchema.parse(data);
-    const response = await apiInstance.post<ApiResponse<{ document: Document }> | undefined>(
+    const response = await this.client.post<ApiResponse<{ document: Document }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/${templateId}/create`,
       validatedData
     );
@@ -278,7 +280,7 @@ class DocumentsApiImpl implements DocumentsApi {
   // Student Documents
   async getStudentDocuments(studentId: string, filters: Omit<DocumentFilters, 'studentId'> = {}): Promise<{ documents: Document[] }> {
     const params = buildUrlParams(filters);
-    const response = await apiInstance.get<ApiResponse<{ documents: Document[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ documents: Document[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/student/${studentId}?${params.toString()}`
     );
     return extractApiData(response as any);
@@ -287,7 +289,7 @@ class DocumentsApiImpl implements DocumentsApi {
   // Search and Filter
   async searchDocuments(query: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
     const params = buildUrlParams({ q: query, ...filters });
-    const response = await apiInstance.get<ApiResponse<{ documents: Document[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ documents: Document[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/search/query?${params.toString()}`
     );
     return extractApiData(response as any);
@@ -295,7 +297,7 @@ class DocumentsApiImpl implements DocumentsApi {
 
   async getExpiringDocuments(days: number = 30): Promise<{ documents: Document[] }> {
     const params = buildUrlParams({ days });
-    const response = await apiInstance.get<ApiResponse<{ documents: Document[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ documents: Document[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/expiring/list?${params.toString()}`
     );
     return extractApiData(response as any);
@@ -305,7 +307,7 @@ class DocumentsApiImpl implements DocumentsApi {
   async bulkDeleteDocuments(documentIds: string[]): Promise<BulkDeleteDocumentsResponse> {
     // Validate bulk delete request
     const validatedData = bulkDeleteDocumentsSchema.parse({ documentIds });
-    const response = await apiInstance.post<ApiResponse<BulkDeleteDocumentsResponse> | undefined>(
+    const response = await this.client.post<ApiResponse<BulkDeleteDocumentsResponse> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/bulk-delete`,
       validatedData
     );
@@ -315,14 +317,14 @@ class DocumentsApiImpl implements DocumentsApi {
   // Audit and Signatures
   async getDocumentAuditTrail(documentId: string, limit: number = 100): Promise<{ auditTrail: DocumentAuditTrail[] }> {
     const params = buildUrlParams({ limit });
-    const response = await apiInstance.get<ApiResponse<{ auditTrail: DocumentAuditTrail[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ auditTrail: DocumentAuditTrail[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/audit-trail?${params.toString()}`
     );
     return extractApiData(response as any);
   }
 
   async getDocumentSignatures(documentId: string): Promise<{ signatures: DocumentSignature[] }> {
-    const response = await apiInstance.get<ApiResponse<{ signatures: DocumentSignature[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ signatures: DocumentSignature[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/signatures`
     );
     return extractApiData(response as any);
@@ -330,7 +332,7 @@ class DocumentsApiImpl implements DocumentsApi {
 
   // Categories and Statistics
   async getDocumentCategories(): Promise<{ categories: DocumentCategoryMetadata[] }> {
-    const response = await apiInstance.get<ApiResponse<{ categories: DocumentCategoryMetadata[] }> | undefined>(
+    const response = await this.client.get<ApiResponse<{ categories: DocumentCategoryMetadata[] }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/categories`
     );
     return extractApiData(response as any);
@@ -338,7 +340,7 @@ class DocumentsApiImpl implements DocumentsApi {
 
   async getStatistics(dateRange?: { startDate: string; endDate: string }): Promise<{ statistics: DocumentStatistics }> {
     const params = buildUrlParams(dateRange || {});
-    const response = await apiInstance.get<ApiResponse<DocumentStatistics> | undefined>(
+    const response = await this.client.get<ApiResponse<DocumentStatistics> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/statistics/overview?${params.toString()}`
     );
     const data = extractApiData(response as any);
@@ -347,7 +349,7 @@ class DocumentsApiImpl implements DocumentsApi {
 
   // Archive Operations
   async archiveExpiredDocuments(): Promise<ArchiveDocumentsResponse> {
-    const response = await apiInstance.post<ApiResponse<{ archived: number }> | undefined>(
+    const response = await this.client.post<ApiResponse<{ archived: number }> | undefined>(
       `${API_ENDPOINTS.DOCUMENTS.BASE}/archive-expired`
     );
     const result = extractApiData(response as any);
@@ -355,4 +357,6 @@ class DocumentsApiImpl implements DocumentsApi {
   }
 }
 
-export const documentsApi = new DocumentsApiImpl();
+export function createDocumentsApi(client: ApiClient): DocumentsApiImpl {
+  return new DocumentsApiImpl(client);
+}

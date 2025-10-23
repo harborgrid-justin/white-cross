@@ -17,9 +17,9 @@
  */
 
 // API Clients
-export { MedicationFormularyApi, medicationFormularyApi } from './MedicationFormularyApi';
-export { PrescriptionApi, prescriptionApi } from './PrescriptionApi';
-export { AdministrationApi, administrationApi } from './AdministrationApi';
+export { MedicationFormularyApi, createMedicationFormularyApi } from './MedicationFormularyApi';
+export { PrescriptionApi, createPrescriptionApi } from './PrescriptionApi';
+export { AdministrationApi, createAdministrationApi } from './AdministrationApi';
 
 // Types from MedicationFormularyApi
 export type {
@@ -60,9 +60,9 @@ export type {
 
 // Create consolidated medication API object
 export const medicationApi = {
-  formulary: medicationFormularyApi,
-  prescription: prescriptionApi,
-  administration: administrationApi,
+  formulary: createMedicationFormularyApi,
+  prescription: createPrescriptionApi,
+  administration: createAdministrationApi,
 } as const;
 
 // Default export

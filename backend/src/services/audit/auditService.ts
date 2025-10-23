@@ -69,4 +69,6 @@ export {
   PHIAccessType,
   PHIDataCategory,
   auditService
-} from './audit';
+} from './index';
+
+// Force reload - import path corrected from './audit' to './index'

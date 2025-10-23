@@ -3,7 +3,7 @@
  * Provides frontend access to student management endpoints
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 
 /**
@@ -89,6 +89,12 @@ export interface UpdateWaitlistRequest {
  * Handles all student management related API calls
  */
 export class StudentManagementApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Upload student photo
    */
@@ -96,7 +102,7 @@ export class StudentManagementApi {
     const formData = new FormData();
     formData.append('photo', photoFile);
     
-    const response = await apiInstance.post<ApiResponse<StudentPhoto>>(
+    const response = await this.client.post<ApiResponse<StudentPhoto>>(
       `/api/v1/operations/student-management/${studentId}/photo`,
       formData,
       {
@@ -112,7 +118,7 @@ export class StudentManagementApi {
    * Get student photo
    */
   async getPhoto(studentId: string): Promise<StudentPhoto> {
-    const response = await apiInstance.get<ApiResponse<StudentPhoto>>(
+    const response = await this.client.get<ApiResponse<StudentPhoto>>(
       `/api/v1/operations/student-management/${studentId}/photo`
     );
     return response.data.data!;
@@ -128,7 +134,7 @@ export class StudentManagementApi {
   }): Promise<PaginatedResponse<AcademicTranscript>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<AcademicTranscript>>(
+    const response = await this.client.get<PaginatedResponse<AcademicTranscript>>(
       `/api/v1/operations/student-management/${studentId}/transcripts`,
       { params: allParams }
     );
@@ -142,7 +148,7 @@ export class StudentManagementApi {
     studentId: string,
     transcriptData: Omit<AcademicTranscript, 'id' | 'studentId' | 'createdAt' | 'updatedAt'>
   ): Promise<AcademicTranscript> {
-    const response = await apiInstance.post<ApiResponse<AcademicTranscript>>(
+    const response = await this.client.post<ApiResponse<AcademicTranscript>>(
       `/api/v1/operations/student-management/${studentId}/transcripts`,
       transcriptData
     );
@@ -157,7 +163,7 @@ export class StudentManagementApi {
     transcriptId: string,
     transcriptData: Partial<AcademicTranscript>
   ): Promise<AcademicTranscript> {
-    const response = await apiInstance.put<ApiResponse<AcademicTranscript>>(
+    const response = await this.client.put<ApiResponse<AcademicTranscript>>(
       `/api/v1/operations/student-management/${studentId}/transcripts/${transcriptId}`,
       transcriptData
     );
@@ -168,7 +174,7 @@ export class StudentManagementApi {
    * Get grade transitions for a student
    */
   async getGradeTransitions(studentId: string): Promise<GradeTransition[]> {
-    const response = await apiInstance.get<ApiResponse<GradeTransition[]>>(
+    const response = await this.client.get<ApiResponse<GradeTransition[]>>(
       `/api/v1/operations/student-management/${studentId}/grade-transitions`
     );
     return response.data.data || [];
@@ -186,7 +192,7 @@ export class StudentManagementApi {
       notes?: string;
     }
   ): Promise<GradeTransition> {
-    const response = await apiInstance.post<ApiResponse<GradeTransition>>(
+    const response = await this.client.post<ApiResponse<GradeTransition>>(
       `/api/v1/operations/student-management/${studentId}/grade-transitions`,
       transitionData
     );
@@ -197,7 +203,7 @@ export class StudentManagementApi {
    * Scan student barcode
    */
   async scanBarcode(barcode: string): Promise<BarcodeData> {
-    const response = await apiInstance.get<ApiResponse<BarcodeData>>(
+    const response = await this.client.get<ApiResponse<BarcodeData>>(
       `/api/v1/operations/student-management/barcode/${barcode}`
     );
     return response.data.data!;
@@ -207,7 +213,7 @@ export class StudentManagementApi {
    * Generate student barcode
    */
   async generateBarcode(studentId: string): Promise<{ barcodeUrl: string; barcodeValue: string }> {
-    const response = await apiInstance.post<ApiResponse<{ barcodeUrl: string; barcodeValue: string }>>(
+    const response = await this.client.post<ApiResponse<{ barcodeUrl: string; barcodeValue: string }>>(
       `/api/v1/operations/student-management/${studentId}/barcode`
     );
     return response.data.data!;
@@ -225,7 +231,7 @@ export class StudentManagementApi {
   }): Promise<PaginatedResponse<WaitlistEntry>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<WaitlistEntry>>(
+    const response = await this.client.get<PaginatedResponse<WaitlistEntry>>(
       '/api/v1/operations/student-management/waitlist',
       { params: allParams }
     );
@@ -236,7 +242,7 @@ export class StudentManagementApi {
    * Add student to waitlist
    */
   async addToWaitlist(waitlistData: CreateWaitlistRequest): Promise<WaitlistEntry> {
-    const response = await apiInstance.post<ApiResponse<WaitlistEntry>>(
+    const response = await this.client.post<ApiResponse<WaitlistEntry>>(
       '/api/v1/operations/student-management/waitlist',
       waitlistData
     );
@@ -250,7 +256,7 @@ export class StudentManagementApi {
     entryId: string,
     updateData: UpdateWaitlistRequest
   ): Promise<WaitlistEntry> {
-    const response = await apiInstance.put<ApiResponse<WaitlistEntry>>(
+    const response = await this.client.put<ApiResponse<WaitlistEntry>>(
       `/api/v1/operations/student-management/waitlist/${entryId}`,
       updateData
     );
@@ -261,7 +267,7 @@ export class StudentManagementApi {
    * Remove from waitlist
    */
   async removeFromWaitlist(entryId: string): Promise<{ success: boolean; message: string }> {
-    const response = await apiInstance.delete<ApiResponse<{ success: boolean; message: string }>>(
+    const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
       `/api/v1/operations/student-management/waitlist/${entryId}`
     );
     return response.data.data!;
@@ -271,7 +277,7 @@ export class StudentManagementApi {
    * Get student waitlist entries
    */
   async getStudentWaitlistEntries(studentId: string): Promise<WaitlistEntry[]> {
-    const response = await apiInstance.get<ApiResponse<WaitlistEntry[]>>(
+    const response = await this.client.get<ApiResponse<WaitlistEntry[]>>(
       `/api/v1/operations/student-management/${studentId}/waitlist`
     );
     return response.data.data || [];
@@ -279,4 +285,8 @@ export class StudentManagementApi {
 }
 
 // Export singleton instance
-export const studentManagementApi = new StudentManagementApi();
+
+// Factory function for creating StudentManagementApi instances
+export function createStudentManagementApi(client: ApiClient): StudentManagementApi {
+  return new StudentManagementApi(client);
+}

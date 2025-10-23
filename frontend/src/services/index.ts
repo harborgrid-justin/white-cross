@@ -12,6 +12,63 @@
 
 // Main API exports - provides both new modular API and backward compatibility
 
+// ==========================================
+// NEW PATTERN - ServiceManager Integration  
+// ==========================================
+
+/**
+ * Service Registry (NEW - Recommended)
+ * Provides centralized access to all API services with lazy instantiation.
+ * @example
+ * import { apiServiceRegistry } from '@/services';
+ * const students = await apiServiceRegistry.studentsApi.getAll();
+ */
+export { apiServiceRegistry } from './core/apiServiceRegistry';
+export { default as serviceRegistry } from './core/apiServiceRegistry';
+
+/**
+ * Service Initialization (NEW - Required)
+ * Initialize and cleanup services via ServiceManager.
+ * Call initializeServices() in main.tsx before React rendering.
+ * @example
+ * import { initializeServices } from '@/services';
+ * await initializeServices();
+ */
+export {
+  initializeServices,
+  cleanupServices,
+  reinitializeServices,
+  isServicesInitialized,
+  getInitializationStatus,
+} from './core/initialize';
+
+/**
+ * ServiceManager (NEW - Best Practice)
+ * Direct access to ServiceManager for advanced lifecycle management.
+ * @example
+ * import { ServiceManager } from '@/services';
+ * const sm = ServiceManager.getInstance();
+ * await sm.initialize();
+ */
+export { ServiceManager, getServiceManager, serviceManager } from './core/ServiceManager';
+export type {
+  ServiceInitializationOptions,
+  ServiceHealth,
+  ServiceManagerStatus,
+  ServiceLifecycleHooks,
+} from './core/ServiceManager';
+
+// ==========================================
+// BACKWARD COMPATIBILITY - Legacy Exports
+// ==========================================
+
+/**
+ * Individual service exports (LEGACY - Maintained for backward compatibility)
+ * @deprecated Use apiServiceRegistry or ServiceManager instead
+ * These exports will be removed in a future version.
+ */
+
+
 // Configuration and utilities
 export {
   apiInstance,

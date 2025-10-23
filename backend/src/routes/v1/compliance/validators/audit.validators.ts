@@ -10,8 +10,7 @@ import { paginationSchema } from '../../../shared/validators';
  * Audit Log Query Schemas
  */
 
-export const auditLogQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const auditLogQuerySchema = paginationSchema.keys({
   userId: Joi.string().uuid().optional().description('Filter by user ID'),
   entityType: Joi.string().trim().optional().description('Filter by entity type (e.g., STUDENT, HEALTH_RECORD, MEDICATION)'),
   action: Joi.string()
@@ -40,8 +39,7 @@ export const createAuditLogSchema = Joi.object({
  * PHI Access Log Schemas
  */
 
-export const phiAccessQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const phiAccessQuerySchema = paginationSchema.keys({
   userId: Joi.string().uuid().optional().description('Filter by user ID'),
   studentId: Joi.string().uuid().optional().description('Filter by student ID'),
   accessType: Joi.string()
@@ -91,8 +89,7 @@ export const auditStatisticsQuerySchema = Joi.object({
  * User Activity Schemas
  */
 
-export const userActivityQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const userActivityQuerySchema = paginationSchema.keys({
   startDate: Joi.date().iso().optional().description('Filter by start date'),
   endDate: Joi.date().iso().optional().description('Filter by end date'),
   action: Joi.string().optional().description('Filter by action type')

@@ -7,6 +7,7 @@
 
 import { sequelize } from '../config/database';
 import { QueryTypes } from 'sequelize';
+import { logger } from '../../utils/logger';
 
 interface TimeSlot {
   start: Date;
@@ -143,7 +144,7 @@ class AppointmentSchedulingService {
       };
 
       // In a real implementation, this would save to database
-      console.log('Appointment scheduled:', appointment);
+      logger.info('Appointment scheduled', { appointmentId: appointment.id, confirmationCode: appointment.confirmationCode });
 
       return appointment;
     } catch (error) {

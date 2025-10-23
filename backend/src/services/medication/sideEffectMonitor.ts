@@ -16,7 +16,7 @@
  */
 
 import { logger } from '../../utils/logger';
-import { AuditService } from '../auditService';
+import { AuditService } from '../audit/auditService';
 
 /**
  * Side Effect Severity Levels (FDA Classification)

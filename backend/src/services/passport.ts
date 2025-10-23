@@ -69,6 +69,7 @@ import { User } from '../database/models';
 import { UserRole } from '../database/types/enums';
 import bcrypt from 'bcryptjs';
 import { ENVIRONMENT, TOKEN_CONFIG, USER_ROLES } from '../constants';
+import { generateSecurePassword } from '../utils/securityUtils';
 
 /**
  * JWT Strategy Configuration Options
@@ -278,11 +279,12 @@ if (ENVIRONMENT.GOOGLE_CLIENT_ID && ENVIRONMENT.GOOGLE_CLIENT_SECRET) {
 
           if (!user) {
             // Create new user from Google profile
+            // SECURITY FIX: Use cryptographically secure password generation
             user = await User.create({
               email: profile.emails?.[0]?.value || '',
               firstName: profile.name?.givenName || '',
               lastName: profile.name?.familyName || '',
-              password: Math.random().toString(36).slice(-12), // Random password for OAuth users
+              password: generateSecurePassword(64), // Cryptographically secure random password for OAuth users
               role: UserRole.NURSE, // Default role
               isActive: true,
             });
@@ -353,11 +355,12 @@ if (ENVIRONMENT.MICROSOFT_CLIENT_ID && ENVIRONMENT.MICROSOFT_CLIENT_SECRET) {
 
           if (!user) {
             // Create new user from Microsoft profile
+            // SECURITY FIX: Use cryptographically secure password generation
             user = await User.create({
               email: profile.emails?.[0]?.value || '',
               firstName: profile.name?.givenName || '',
               lastName: profile.name?.familyName || '',
-              password: Math.random().toString(36).slice(-12), // Random password for OAuth users
+              password: generateSecurePassword(64), // Cryptographically secure random password for OAuth users
               role: UserRole.NURSE, // Default role
               isActive: true,
             });

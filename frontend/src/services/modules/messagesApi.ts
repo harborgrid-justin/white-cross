@@ -3,7 +3,7 @@
  * Provides frontend access to messaging and communications endpoints
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 
 /**
@@ -101,13 +101,19 @@ export interface MessageFilters {
  * Handles all messaging related API calls
  */
 export class MessagesApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Get all messages with filters
    */
   async getAll(filters?: MessageFilters): Promise<PaginatedResponse<Message>> {
     const params = buildPaginationParams(filters?.page, filters?.limit);
     const allParams = filters ? Object.assign({}, params, filters) : params;
-    const response = await apiInstance.get<PaginatedResponse<Message>>(
+    const response = await this.client.get<PaginatedResponse<Message>>(
       '/api/v1/communications/messages',
       { params: allParams }
     );
@@ -118,7 +124,7 @@ export class MessagesApi {
    * Get message by ID
    */
   async getById(messageId: string): Promise<Message> {
-    const response = await apiInstance.get<ApiResponse<Message>>(
+    const response = await this.client.get<ApiResponse<Message>>(
       `/api/v1/communications/messages/${messageId}`
     );
     return response.data.data!;
@@ -128,7 +134,7 @@ export class MessagesApi {
    * Create new message
    */
   async create(messageData: CreateMessageRequest): Promise<Message> {
-    const response = await apiInstance.post<ApiResponse<Message>>(
+    const response = await this.client.post<ApiResponse<Message>>(
       '/api/v1/communications/messages',
       messageData
     );
@@ -139,7 +145,7 @@ export class MessagesApi {
    * Update message
    */
   async update(messageId: string, messageData: UpdateMessageRequest): Promise<Message> {
-    const response = await apiInstance.put<ApiResponse<Message>>(
+    const response = await this.client.put<ApiResponse<Message>>(
       `/api/v1/communications/messages/${messageId}`,
       messageData
     );
@@ -150,7 +156,7 @@ export class MessagesApi {
    * Delete message
    */
   async delete(messageId: string): Promise<{ success: boolean; message: string }> {
-    const response = await apiInstance.delete<ApiResponse<{ success: boolean; message: string }>>(
+    const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
       `/api/v1/communications/messages/${messageId}`
     );
     return response.data.data!;
@@ -163,7 +169,7 @@ export class MessagesApi {
     body: string;
     attachments?: string[];
   }): Promise<Message> {
-    const response = await apiInstance.post<ApiResponse<Message>>(
+    const response = await this.client.post<ApiResponse<Message>>(
       `/api/v1/communications/messages/${messageId}/reply`,
       replyData
     );
@@ -180,7 +186,7 @@ export class MessagesApi {
   }): Promise<PaginatedResponse<Message>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<Message>>(
+    const response = await this.client.get<PaginatedResponse<Message>>(
       '/api/v1/communications/messages/inbox',
       { params: allParams }
     );
@@ -195,7 +201,7 @@ export class MessagesApi {
     limit?: number;
   }): Promise<PaginatedResponse<Message>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
-    const response = await apiInstance.get<PaginatedResponse<Message>>(
+    const response = await this.client.get<PaginatedResponse<Message>>(
       '/api/v1/communications/messages/sent',
       { params: paginationParams }
     );
@@ -212,7 +218,7 @@ export class MessagesApi {
   }): Promise<PaginatedResponse<MessageTemplate>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
-    const response = await apiInstance.get<PaginatedResponse<MessageTemplate>>(
+    const response = await this.client.get<PaginatedResponse<MessageTemplate>>(
       '/api/v1/communications/templates',
       { params: allParams }
     );
@@ -223,7 +229,7 @@ export class MessagesApi {
    * Create message template
    */
   async createTemplate(templateData: CreateTemplateRequest): Promise<MessageTemplate> {
-    const response = await apiInstance.post<ApiResponse<MessageTemplate>>(
+    const response = await this.client.post<ApiResponse<MessageTemplate>>(
       '/api/v1/communications/templates',
       templateData
     );
@@ -234,7 +240,7 @@ export class MessagesApi {
    * Get delivery status
    */
   async getDeliveryStatus(messageId: string): Promise<DeliveryStatus> {
-    const response = await apiInstance.get<ApiResponse<DeliveryStatus>>(
+    const response = await this.client.get<ApiResponse<DeliveryStatus>>(
       `/api/v1/communications/delivery-status/${messageId}`
     );
     return response.data.data!;
@@ -247,7 +253,7 @@ export class MessagesApi {
     startDate?: string;
     endDate?: string;
   }): Promise<MessageStatistics> {
-    const response = await apiInstance.get<ApiResponse<MessageStatistics>>(
+    const response = await this.client.get<ApiResponse<MessageStatistics>>(
       '/api/v1/communications/statistics',
       { params }
     );
@@ -270,4 +276,8 @@ export class MessagesApi {
 }
 
 // Export singleton instance
-export const messagesApi = new MessagesApi();
+
+// Factory function for creating MessagesApi instances
+export function createMessagesApi(client: ApiClient): MessagesApi {
+  return new MessagesApi(client);
+}

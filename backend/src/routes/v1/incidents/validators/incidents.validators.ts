@@ -128,8 +128,7 @@ export const studentIdParamSchema = Joi.object({
  * Query Schemas
  */
 
-export const listIncidentsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const listIncidentsQuerySchema = paginationSchema.keys({
   studentId: Joi.string().uuid().optional().description('Filter by student ID'),
   reportedById: Joi.string().uuid().optional().description('Filter by reporter ID'),
   type: Joi.string().valid(...incidentTypes).optional().description('Filter by incident type'),
@@ -142,8 +141,7 @@ export const listIncidentsQuerySchema = Joi.object({
   location: Joi.string().trim().optional().description('Filter by incident location')
 });
 
-export const searchIncidentsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const searchIncidentsQuerySchema = paginationSchema.keys({
   query: Joi.string().trim().min(2).max(200).required().description('Search query string')
 });
 

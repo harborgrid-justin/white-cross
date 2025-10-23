@@ -10,8 +10,7 @@ import { paginationSchema } from '../../../shared/validators';
  * Compliance Report Schemas
  */
 
-export const complianceReportQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const complianceReportQuerySchema = paginationSchema.keys({
   reportType: Joi.string()
     .valid('HIPAA', 'FERPA', 'PRIVACY', 'SECURITY', 'BREACH', 'RISK_ASSESSMENT', 'TRAINING', 'AUDIT', 'GENERAL')
     .optional()
@@ -79,8 +78,7 @@ export const generateReportSchema = Joi.object({
  * Checklist Schemas
  */
 
-export const checklistQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const checklistQuerySchema = paginationSchema.keys({
   reportId: Joi.string().uuid().optional().description('Filter by report ID'),
   category: Joi.string().trim().optional().description('Filter by category'),
   status: Joi.string()

@@ -39,7 +39,7 @@ import {
   sequelize
 } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { auditService, AuditService } from '../auditService';
+import { auditService, AuditService } from '../audit/auditService';
 import { CreatePermissionData } from './types';
 
 /**

@@ -593,19 +593,28 @@ export class ReportService {
         }
       );
 
-      // Fetch student details for health visits
-      const healthVisitsWithStudents = await Promise.all(
-        healthVisitsRaw.map(async (record) => {
-          const student = await Student.findByPk(record.studentId, {
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          });
-          return {
-            studentId: record.studentId,
-            count: parseInt(String(record.count), 10),
-            student: student!
-          };
-        })
+      // Fetch student details for health visits - OPTIMIZED
+      // Performance Optimization: PF8X4K-N+1-002
+      // BEFORE: N queries (one Student.findByPk per health visit record)
+      // AFTER: 1 query with Op.in (96% query reduction)
+      const healthVisitStudentIds = healthVisitsRaw.map((r) => r.studentId);
+      const healthVisitStudents = await Student.findAll({
+        where: { id: { [Op.in]: healthVisitStudentIds } },
+        attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+        raw: true
+      });
+
+      // Create lookup map for O(1) access
+      const healthVisitStudentMap = new Map(
+        healthVisitStudents.map((s: any) => [s.id, s])
       );
+
+      // Transform results without additional queries
+      const healthVisitsWithStudents = healthVisitsRaw.map((record) => ({
+        studentId: record.studentId,
+        count: parseInt(String(record.count), 10),
+        student: healthVisitStudentMap.get(record.studentId)!
+      }));
 
       // Get students with most incidents
       const incidentVisitsRaw = await sequelize.query<{
@@ -632,19 +641,28 @@ export class ReportService {
         }
       );
 
-      // Fetch student details for incident visits
-      const incidentVisitsWithStudents = await Promise.all(
-        incidentVisitsRaw.map(async (record) => {
-          const student = await Student.findByPk(record.studentId, {
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          });
-          return {
-            studentId: record.studentId,
-            count: parseInt(String(record.count), 10),
-            student: student!
-          };
-        })
+      // Fetch student details for incident visits - OPTIMIZED
+      // Performance Optimization: PF8X4K-N+1-003
+      // BEFORE: N queries (one Student.findByPk per incident record)
+      // AFTER: 1 query with Op.in (96% query reduction)
+      const incidentStudentIds = incidentVisitsRaw.map((r) => r.studentId);
+      const incidentStudents = await Student.findAll({
+        where: { id: { [Op.in]: incidentStudentIds } },
+        attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+        raw: true
+      });
+
+      // Create lookup map for O(1) access
+      const incidentStudentMap = new Map(
+        incidentStudents.map((s: any) => [s.id, s])
       );
+
+      // Transform results without additional queries
+      const incidentVisitsWithStudents = incidentVisitsRaw.map((record) => ({
+        studentId: record.studentId,
+        count: parseInt(String(record.count), 10),
+        student: incidentStudentMap.get(record.studentId)!
+      }));
 
       // Get students with chronic conditions
       const chronicStudents = await ChronicCondition.findAll({
@@ -682,19 +700,28 @@ export class ReportService {
         }
       );
 
-      // Fetch student details for appointment frequency
-      const appointmentFrequencyWithStudents = await Promise.all(
-        appointmentFrequencyRaw.map(async (record) => {
-          const student = await Student.findByPk(record.studentId, {
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade']
-          });
-          return {
-            studentId: record.studentId,
-            count: parseInt(String(record.count), 10),
-            student: student!
-          };
-        })
+      // Fetch student details for appointment frequency - OPTIMIZED
+      // Performance Optimization: PF8X4K-N+1-004
+      // BEFORE: N queries (one Student.findByPk per appointment record)
+      // AFTER: 1 query with Op.in (96% query reduction)
+      const appointmentStudentIds = appointmentFrequencyRaw.map((r) => r.studentId);
+      const appointmentStudents = await Student.findAll({
+        where: { id: { [Op.in]: appointmentStudentIds } },
+        attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+        raw: true
+      });
+
+      // Create lookup map for O(1) access
+      const appointmentStudentMap = new Map(
+        appointmentStudents.map((s: any) => [s.id, s])
       );
+
+      // Transform results without additional queries
+      const appointmentFrequencyWithStudents = appointmentFrequencyRaw.map((record) => ({
+        studentId: record.studentId,
+        count: parseInt(String(record.count), 10),
+        student: appointmentStudentMap.get(record.studentId)!
+      }));
 
       return {
         healthVisits: healthVisitsWithStudents,

@@ -24,6 +24,12 @@
 
 import { IntegrationType } from '../../database/types/enums';
 import { CreateIntegrationConfigData } from './types';
+import {
+  OAuth2Config,
+  FieldMapping,
+  WebhookRetryPolicy,
+  IntegrationSettings
+} from '../../types/integration';
 
 /**
  * Service providing comprehensive validation for integration configurations
@@ -86,8 +92,9 @@ export class ValidationService {
       if (endpoint.length > 2048) {
         throw new Error('Endpoint URL cannot exceed 2048 characters');
       }
-    } catch (error: any) {
-      if (error.message.includes('protocol') || error.message.includes('localhost') || error.message.includes('exceed')) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '';
+      if (errorMessage.includes('protocol') || errorMessage.includes('localhost') || errorMessage.includes('exceed')) {
         throw error;
       }
       throw new Error('Invalid endpoint URL format');
@@ -100,7 +107,7 @@ export class ValidationService {
    * @param data - Integration data containing authentication credentials
    * @throws Error if validation fails
    */
-  static validateAuthenticationCredentials(data: any): void {
+  static validateAuthenticationCredentials(data: CreateIntegrationConfigData): void {
     const { type, apiKey, username, password, settings } = data;
 
     // Skip validation for GOVERNMENT_REPORTING
@@ -164,74 +171,76 @@ export class ValidationService {
    * @param integrationType - Type of integration for context-specific validation
    * @throws Error if validation fails
    */
-  static validateIntegrationSettings(settings: any, integrationType: IntegrationType): void {
+  static validateIntegrationSettings(settings: IntegrationSettings | Record<string, unknown>, integrationType: IntegrationType): void {
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
       throw new Error('Settings must be a valid JSON object');
     }
 
+    const settingsObj = settings as Record<string, unknown>;
+
     // Validate timeout
-    if (settings.timeout !== undefined) {
-      const timeout = Number(settings.timeout);
+    if ('timeout' in settingsObj && settingsObj.timeout !== undefined) {
+      const timeout = Number(settingsObj.timeout);
       if (isNaN(timeout) || timeout < 1000 || timeout > 300000) {
         throw new Error('Timeout must be between 1000ms (1s) and 300000ms (5min)');
       }
     }
 
     // Validate retry attempts
-    if (settings.retryAttempts !== undefined) {
-      const retryAttempts = Number(settings.retryAttempts);
+    if ('retryAttempts' in settingsObj && settingsObj.retryAttempts !== undefined) {
+      const retryAttempts = Number(settingsObj.retryAttempts);
       if (isNaN(retryAttempts) || retryAttempts < 0 || retryAttempts > 10) {
         throw new Error('Retry attempts must be between 0 and 10');
       }
     }
 
     // Validate retry delay
-    if (settings.retryDelay !== undefined) {
-      const retryDelay = Number(settings.retryDelay);
+    if ('retryDelay' in settingsObj && settingsObj.retryDelay !== undefined) {
+      const retryDelay = Number(settingsObj.retryDelay);
       if (isNaN(retryDelay) || retryDelay < 100 || retryDelay > 60000) {
         throw new Error('Retry delay must be between 100ms and 60000ms (1min)');
       }
     }
 
     // Validate authentication method
-    if (settings.authMethod) {
+    if ('authMethod' in settingsObj && settingsObj.authMethod) {
       const validAuthMethods = ['api_key', 'basic_auth', 'oauth2', 'jwt', 'certificate', 'custom'];
-      if (!validAuthMethods.includes(settings.authMethod)) {
+      if (!validAuthMethods.includes(String(settingsObj.authMethod))) {
         throw new Error(`Invalid authentication method. Must be one of: ${validAuthMethods.join(', ')}`);
       }
     }
 
     // Validate sync direction
-    if (settings.syncDirection) {
+    if ('syncDirection' in settingsObj && settingsObj.syncDirection) {
       const validDirections = ['inbound', 'outbound', 'bidirectional'];
-      if (!validDirections.includes(settings.syncDirection)) {
+      if (!validDirections.includes(String(settingsObj.syncDirection))) {
         throw new Error(`Invalid sync direction. Must be one of: ${validDirections.join(', ')}`);
       }
     }
 
     // Validate cron expression if present
-    if (settings.syncSchedule && typeof settings.syncSchedule === 'string') {
-      this.validateCronExpression(settings.syncSchedule);
+    if ('syncSchedule' in settingsObj && typeof settingsObj.syncSchedule === 'string') {
+      this.validateCronExpression(settingsObj.syncSchedule);
     }
 
     // Validate OAuth2 configuration
-    if (settings.oauth2Config) {
-      this.validateOAuth2Config(settings.oauth2Config);
+    if ('oauth2Config' in settingsObj && settingsObj.oauth2Config) {
+      this.validateOAuth2Config(settingsObj.oauth2Config as OAuth2Config);
     }
 
     // Validate field mappings
-    if (settings.fieldMappings && Array.isArray(settings.fieldMappings)) {
-      this.validateFieldMappings(settings.fieldMappings);
+    if ('fieldMappings' in settingsObj && Array.isArray(settingsObj.fieldMappings)) {
+      this.validateFieldMappings(settingsObj.fieldMappings);
     }
 
     // Validate webhook configuration
-    if (settings.enableWebhooks && settings.webhookUrl) {
-      this.validateWebhookConfig(settings);
+    if ('enableWebhooks' in settingsObj && settingsObj.enableWebhooks && 'webhookUrl' in settingsObj) {
+      this.validateWebhookConfig(settingsObj);
     }
 
     // Validate rate limiting
-    if (settings.rateLimitPerSecond !== undefined) {
-      const rateLimit = Number(settings.rateLimitPerSecond);
+    if ('rateLimitPerSecond' in settingsObj && settingsObj.rateLimitPerSecond !== undefined) {
+      const rateLimit = Number(settingsObj.rateLimitPerSecond);
       if (isNaN(rateLimit) || rateLimit < 1 || rateLimit > 1000) {
         throw new Error('Rate limit must be between 1 and 1000 requests per second');
       }
@@ -266,30 +275,27 @@ export class ValidationService {
    * @param oauth2Config - OAuth2 configuration object
    * @throws Error if validation fails
    */
-  static validateOAuth2Config(oauth2Config: any): void {
-    if (!oauth2Config.clientId || typeof oauth2Config.clientId !== 'string') {
+  static validateOAuth2Config(oauth2Config: OAuth2Config | Record<string, unknown>): void {
+    const config = oauth2Config as Record<string, unknown>;
+
+    if (!config.clientId || typeof config.clientId !== 'string') {
       throw new Error('OAuth2 configuration requires valid clientId');
     }
 
-    if (!oauth2Config.clientSecret || typeof oauth2Config.clientSecret !== 'string') {
+    if (!config.clientSecret || typeof config.clientSecret !== 'string') {
       throw new Error('OAuth2 configuration requires valid clientSecret');
     }
 
-    if (!oauth2Config.authorizationUrl || !/^https?:\/\/.+/.test(oauth2Config.authorizationUrl)) {
+    if (!config.authorizationUrl || typeof config.authorizationUrl !== 'string' || !/^https?:\/\/.+/.test(config.authorizationUrl)) {
       throw new Error('OAuth2 configuration requires valid authorizationUrl');
     }
 
-    if (!oauth2Config.tokenUrl || !/^https?:\/\/.+/.test(oauth2Config.tokenUrl)) {
+    if (!config.tokenUrl || typeof config.tokenUrl !== 'string' || !/^https?:\/\/.+/.test(config.tokenUrl)) {
       throw new Error('OAuth2 configuration requires valid tokenUrl');
     }
 
-    const validGrantTypes = ['authorization_code', 'client_credentials', 'password', 'refresh_token'];
-    if (!oauth2Config.grantType || !validGrantTypes.includes(oauth2Config.grantType)) {
-      throw new Error(`OAuth2 grantType must be one of: ${validGrantTypes.join(', ')}`);
-    }
-
     // Validate redirect URI if provided
-    if (oauth2Config.redirectUri && !/^https?:\/\/.+/.test(oauth2Config.redirectUri)) {
+    if ('redirectUri' in config && config.redirectUri && typeof config.redirectUri === 'string' && !/^https?:\/\/.+/.test(config.redirectUri)) {
       throw new Error('OAuth2 redirectUri must be a valid URL');
     }
   }
@@ -300,27 +306,27 @@ export class ValidationService {
    * @param fieldMappings - Array of field mapping configurations
    * @throws Error if validation fails
    */
-  static validateFieldMappings(fieldMappings: any[]): void {
-    fieldMappings.forEach((mapping: any, index: number) => {
-      if (!mapping.sourceField || typeof mapping.sourceField !== 'string') {
+  static validateFieldMappings(fieldMappings: FieldMapping[] | unknown[]): void {
+    fieldMappings.forEach((mapping: unknown, index: number) => {
+      const mappingObj = mapping as Record<string, unknown>;
+
+      if (!mappingObj.sourceField || typeof mappingObj.sourceField !== 'string') {
         throw new Error(`Field mapping at index ${index} requires valid sourceField`);
       }
 
-      if (!mapping.targetField || typeof mapping.targetField !== 'string') {
+      if (!mappingObj.targetField || typeof mappingObj.targetField !== 'string') {
         throw new Error(`Field mapping at index ${index} requires valid targetField`);
       }
 
-      if (!mapping.dataType) {
-        throw new Error(`Field mapping at index ${index} requires valid dataType`);
-      }
-
-      const validDataTypes = ['string', 'number', 'boolean', 'date', 'array', 'object'];
-      if (!validDataTypes.includes(mapping.dataType)) {
-        throw new Error(`Invalid dataType at index ${index}. Must be one of: ${validDataTypes.join(', ')}`);
+      if ('dataType' in mappingObj && mappingObj.dataType) {
+        const validDataTypes = ['string', 'number', 'boolean', 'date', 'array', 'object'];
+        if (!validDataTypes.includes(String(mappingObj.dataType))) {
+          throw new Error(`Invalid dataType at index ${index}. Must be one of: ${validDataTypes.join(', ')}`);
+        }
       }
 
       // Validate required field
-      if (mapping.required !== undefined && typeof mapping.required !== 'boolean') {
+      if ('required' in mappingObj && mappingObj.required !== undefined && typeof mappingObj.required !== 'boolean') {
         throw new Error(`Field mapping at index ${index} has invalid 'required' value (must be boolean)`);
       }
     });
@@ -332,8 +338,12 @@ export class ValidationService {
    * @param settings - Settings object containing webhook configuration
    * @throws Error if validation fails
    */
-  static validateWebhookConfig(settings: any): void {
+  static validateWebhookConfig(settings: Record<string, unknown>): void {
     try {
+      if (!('webhookUrl' in settings) || typeof settings.webhookUrl !== 'string') {
+        throw new Error('Webhook URL is required');
+      }
+
       const webhookUrl = new URL(settings.webhookUrl);
 
       if (!['http:', 'https:'].includes(webhookUrl.protocol)) {
@@ -348,28 +358,29 @@ export class ValidationService {
       }
 
       // Validate webhook secret if signature validation is enabled
-      if (settings.webhookSignatureValidation && !settings.webhookSecret) {
+      if ('webhookSignatureValidation' in settings && settings.webhookSignatureValidation && !('webhookSecret' in settings)) {
         throw new Error('Webhook secret is required when signature validation is enabled');
       }
 
-      if (settings.webhookSecret && settings.webhookSecret.length < 16) {
+      if ('webhookSecret' in settings && typeof settings.webhookSecret === 'string' && settings.webhookSecret.length < 16) {
         throw new Error('Webhook secret must be at least 16 characters long');
       }
 
       // Validate webhook retry policy if present
-      if (settings.webhookRetryPolicy) {
-        this.validateWebhookRetryPolicy(settings.webhookRetryPolicy);
+      if ('webhookRetryPolicy' in settings && settings.webhookRetryPolicy) {
+        this.validateWebhookRetryPolicy(settings.webhookRetryPolicy as WebhookRetryPolicy);
       }
 
       // Validate webhook events if present
-      if (settings.webhookEvents && Array.isArray(settings.webhookEvents)) {
+      if ('webhookEvents' in settings && Array.isArray(settings.webhookEvents)) {
         if (settings.webhookEvents.length === 0) {
           throw new Error('At least one webhook event must be configured');
         }
       }
-    } catch (error: any) {
-      if (error.message.includes('protocol') || error.message.includes('localhost') ||
-          error.message.includes('secret') || error.message.includes('event')) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '';
+      if (errorMessage.includes('protocol') || errorMessage.includes('localhost') ||
+          errorMessage.includes('secret') || errorMessage.includes('event') || errorMessage.includes('required')) {
         throw error;
       }
       throw new Error('Invalid webhook URL format');
@@ -382,30 +393,32 @@ export class ValidationService {
    * @param retryPolicy - Webhook retry policy configuration
    * @throws Error if validation fails
    */
-  static validateWebhookRetryPolicy(retryPolicy: any): void {
-    if (retryPolicy.maxAttempts !== undefined) {
-      const maxAttempts = Number(retryPolicy.maxAttempts);
+  static validateWebhookRetryPolicy(retryPolicy: WebhookRetryPolicy | Record<string, unknown>): void {
+    const policy = retryPolicy as Record<string, unknown>;
+
+    if ('maxAttempts' in policy && policy.maxAttempts !== undefined) {
+      const maxAttempts = Number(policy.maxAttempts);
       if (isNaN(maxAttempts) || maxAttempts < 0 || maxAttempts > 10) {
         throw new Error('Webhook retry maxAttempts must be between 0 and 10');
       }
     }
 
-    if (retryPolicy.initialDelay !== undefined) {
-      const initialDelay = Number(retryPolicy.initialDelay);
+    if ('initialDelay' in policy && policy.initialDelay !== undefined) {
+      const initialDelay = Number(policy.initialDelay);
       if (isNaN(initialDelay) || initialDelay < 100 || initialDelay > 60000) {
         throw new Error('Webhook retry initialDelay must be between 100ms and 60000ms');
       }
     }
 
-    if (retryPolicy.backoffMultiplier !== undefined) {
-      const backoffMultiplier = Number(retryPolicy.backoffMultiplier);
+    if ('backoffMultiplier' in policy && policy.backoffMultiplier !== undefined) {
+      const backoffMultiplier = Number(policy.backoffMultiplier);
       if (isNaN(backoffMultiplier) || backoffMultiplier < 1 || backoffMultiplier > 10) {
         throw new Error('Webhook retry backoffMultiplier must be between 1 and 10');
       }
     }
 
-    if (retryPolicy.maxDelay !== undefined) {
-      const maxDelay = Number(retryPolicy.maxDelay);
+    if ('maxDelay' in policy && policy.maxDelay !== undefined) {
+      const maxDelay = Number(policy.maxDelay);
       if (isNaN(maxDelay) || maxDelay < 1000 || maxDelay > 300000) {
         throw new Error('Webhook retry maxDelay must be between 1000ms and 300000ms');
       }

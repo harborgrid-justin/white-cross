@@ -10,7 +10,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import { apiInstance } from '../config/api.config';
+import type { ApiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '../../constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
@@ -296,6 +296,7 @@ const configurationSchema = z.object({
 
 // Administration API class
 export class AdministrationApi {
+  constructor(private readonly client: ApiClient) {}
   // ==================== System Settings ====================
 
   /**
@@ -303,7 +304,7 @@ export class AdministrationApi {
    */
   async getSettings(): Promise<SystemSettings> {
     try {
-      const response = await apiInstance.get<ApiResponse<SystemSettings>>(
+      const response = await this.client.get<ApiResponse<SystemSettings>>(
         API_ENDPOINTS.ADMIN.SETTINGS
       );
 
@@ -318,7 +319,7 @@ export class AdministrationApi {
    */
   async updateSettings(settings: any[]): Promise<any[]> {
     try {
-      const response = await apiInstance.put<ApiResponse<any[]>>(
+      const response = await this.client.put<ApiResponse<any[]>>(
         API_ENDPOINTS.ADMIN.SETTINGS,
         { settings }
       );
@@ -349,7 +350,7 @@ export class AdministrationApi {
       if (filters.role) params.append('role', filters.role);
       if (filters.isActive !== undefined) params.append('isActive', String(filters.isActive));
 
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<User>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<User>>>(
         `${API_ENDPOINTS.ADMIN.USERS}?${params.toString()}`
       );
 
@@ -366,7 +367,7 @@ export class AdministrationApi {
     try {
       createUserSchema.parse(userData);
 
-      const response = await apiInstance.post<ApiResponse<{ user: User }>>(
+      const response = await this.client.post<ApiResponse<{ user: User }>>(
         API_ENDPOINTS.ADMIN.USERS,
         userData
       );
@@ -399,7 +400,7 @@ export class AdministrationApi {
 
       updateUserSchema.parse(userData);
 
-      const response = await apiInstance.put<ApiResponse<{ user: User }>>(
+      const response = await this.client.put<ApiResponse<{ user: User }>>(
         API_ENDPOINTS.ADMIN.USER_BY_ID(id),
         userData
       );
@@ -430,7 +431,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('User ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.ADMIN.USER_BY_ID(id)
       );
 
@@ -447,7 +448,7 @@ export class AdministrationApi {
    */
   async getDistricts(page: number = 1, limit: number = 20): Promise<PaginatedResponse<District>> {
     try {
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<District>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<District>>>(
         `${API_ENDPOINTS.ADMIN.DISTRICTS}?page=${page}&limit=${limit}`
       );
 
@@ -464,7 +465,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('District ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ district: District }>>(
+      const response = await this.client.get<ApiResponse<{ district: District }>>(
         API_ENDPOINTS.ADMIN.DISTRICT_BY_ID(id)
       );
 
@@ -481,7 +482,7 @@ export class AdministrationApi {
     try {
       createDistrictSchema.parse(districtData);
 
-      const response = await apiInstance.post<ApiResponse<{ district: District }>>(
+      const response = await this.client.post<ApiResponse<{ district: District }>>(
         API_ENDPOINTS.ADMIN.DISTRICTS,
         districtData
       );
@@ -512,7 +513,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('District ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ district: District }>>(
+      const response = await this.client.put<ApiResponse<{ district: District }>>(
         API_ENDPOINTS.ADMIN.DISTRICT_BY_ID(id),
         districtData
       );
@@ -530,7 +531,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('District ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.ADMIN.DISTRICT_BY_ID(id)
       );
 
@@ -552,7 +553,7 @@ export class AdministrationApi {
       params.append('limit', String(limit));
       if (districtId) params.append('districtId', districtId);
 
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<School>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<School>>>(
         `${API_ENDPOINTS.ADMIN.SCHOOLS}?${params.toString()}`
       );
 
@@ -569,7 +570,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('School ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ school: School }>>(
+      const response = await this.client.get<ApiResponse<{ school: School }>>(
         API_ENDPOINTS.ADMIN.SCHOOL_BY_ID(id)
       );
 
@@ -586,7 +587,7 @@ export class AdministrationApi {
     try {
       createSchoolSchema.parse(schoolData);
 
-      const response = await apiInstance.post<ApiResponse<{ school: School }>>(
+      const response = await this.client.post<ApiResponse<{ school: School }>>(
         API_ENDPOINTS.ADMIN.SCHOOLS,
         schoolData
       );
@@ -617,7 +618,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('School ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ school: School }>>(
+      const response = await this.client.put<ApiResponse<{ school: School }>>(
         API_ENDPOINTS.ADMIN.SCHOOL_BY_ID(id),
         schoolData
       );
@@ -635,7 +636,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('School ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.ADMIN.SCHOOL_BY_ID(id)
       );
 
@@ -652,7 +653,7 @@ export class AdministrationApi {
    */
   async getSystemHealth(): Promise<SystemHealth> {
     try {
-      const response = await apiInstance.get<ApiResponse<SystemHealth>>(
+      const response = await this.client.get<ApiResponse<SystemHealth>>(
         API_ENDPOINTS.ADMIN.SYSTEM_HEALTH
       );
 
@@ -669,7 +670,7 @@ export class AdministrationApi {
    */
   async getBackupLogs(page: number = 1, limit: number = 20): Promise<PaginatedResponse<BackupLog>> {
     try {
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<BackupLog>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<BackupLog>>>(
         `${API_ENDPOINTS.ADMIN.BACKUPS}?page=${page}&limit=${limit}`
       );
 
@@ -684,7 +685,7 @@ export class AdministrationApi {
    */
   async createBackup(): Promise<BackupLog> {
     try {
-      const response = await apiInstance.post<ApiResponse<{ backup: BackupLog }>>(
+      const response = await this.client.post<ApiResponse<{ backup: BackupLog }>>(
         API_ENDPOINTS.ADMIN.BACKUPS
       );
 
@@ -701,7 +702,7 @@ export class AdministrationApi {
    */
   async getLicenses(page: number = 1, limit: number = 20): Promise<PaginatedResponse<License>> {
     try {
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<License>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<License>>>(
         `${API_ENDPOINTS.ADMIN.LICENSES}?page=${page}&limit=${limit}`
       );
 
@@ -718,7 +719,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('License ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ license: License }>>(
+      const response = await this.client.get<ApiResponse<{ license: License }>>(
         API_ENDPOINTS.ADMIN.LICENSE_BY_ID(id)
       );
 
@@ -735,7 +736,7 @@ export class AdministrationApi {
     try {
       createLicenseSchema.parse(licenseData);
 
-      const response = await apiInstance.post<ApiResponse<{ license: License }>>(
+      const response = await this.client.post<ApiResponse<{ license: License }>>(
         API_ENDPOINTS.ADMIN.LICENSES,
         licenseData
       );
@@ -766,7 +767,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('License ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ license: License }>>(
+      const response = await this.client.put<ApiResponse<{ license: License }>>(
         API_ENDPOINTS.ADMIN.LICENSE_BY_ID(id),
         data
       );
@@ -784,7 +785,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('License ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ license: License }>>(
+      const response = await this.client.post<ApiResponse<{ license: License }>>(
         API_ENDPOINTS.ADMIN.LICENSE_DEACTIVATE(id)
       );
 
@@ -804,7 +805,7 @@ export class AdministrationApi {
       const params = new URLSearchParams();
       if (category) params.append('category', category);
 
-      const response = await apiInstance.get<ApiResponse<{ configurations: SystemConfiguration[] }>>(
+      const response = await this.client.get<ApiResponse<{ configurations: SystemConfiguration[] }>>(
         `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}${params.toString() ? '?' + params.toString() : ''}`
       );
 
@@ -821,7 +822,7 @@ export class AdministrationApi {
     try {
       if (!key) throw new Error('Configuration key is required');
 
-      const response = await apiInstance.get<ApiResponse<{ config: SystemConfiguration }>>(
+      const response = await this.client.get<ApiResponse<{ config: SystemConfiguration }>>(
         API_ENDPOINTS.ADMIN.CONFIGURATION_BY_KEY(key)
       );
 
@@ -836,7 +837,7 @@ export class AdministrationApi {
    */
   async setConfiguration(configData: ConfigurationData, changedBy?: string): Promise<SystemConfiguration> {
     try {
-      const response = await apiInstance.post<ApiResponse<{ config: SystemConfiguration }>>(
+      const response = await this.client.post<ApiResponse<{ config: SystemConfiguration }>>(
         API_ENDPOINTS.ADMIN.CONFIGURATIONS,
         { ...configData, changedBy }
       );
@@ -854,7 +855,7 @@ export class AdministrationApi {
     try {
       if (!key) throw new Error('Configuration key is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.ADMIN.CONFIGURATION_BY_KEY(key)
       );
 
@@ -877,7 +878,7 @@ export class AdministrationApi {
       if (filters.endDate) params.append('endDate', typeof filters.endDate === 'string' ? filters.endDate : filters.endDate.toISOString());
       if (filters.limit) params.append('limit', String(filters.limit));
 
-      const response = await apiInstance.get<ApiResponse<{ metrics: PerformanceMetric[] }>>(
+      const response = await this.client.get<ApiResponse<{ metrics: PerformanceMetric[] }>>(
         `${API_ENDPOINTS.ADMIN.METRICS}?${params.toString()}`
       );
 
@@ -892,7 +893,7 @@ export class AdministrationApi {
    */
   async recordMetric(metricData: RecordMetricData): Promise<PerformanceMetric> {
     try {
-      const response = await apiInstance.post<ApiResponse<{ metric: PerformanceMetric }>>(
+      const response = await this.client.post<ApiResponse<{ metric: PerformanceMetric }>>(
         API_ENDPOINTS.ADMIN.METRICS,
         metricData
       );
@@ -913,7 +914,7 @@ export class AdministrationApi {
       const params = new URLSearchParams();
       if (category) params.append('category', category);
 
-      const response = await apiInstance.get<ApiResponse<{ modules: TrainingModule[] }>>(
+      const response = await this.client.get<ApiResponse<{ modules: TrainingModule[] }>>(
         `${API_ENDPOINTS.ADMIN.TRAINING}${params.toString() ? '?' + params.toString() : ''}`
       );
 
@@ -930,7 +931,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('Module ID is required');
 
-      const response = await apiInstance.get<ApiResponse<{ module: TrainingModule }>>(
+      const response = await this.client.get<ApiResponse<{ module: TrainingModule }>>(
         API_ENDPOINTS.ADMIN.TRAINING_BY_ID(id)
       );
 
@@ -947,7 +948,7 @@ export class AdministrationApi {
     try {
       createTrainingModuleSchema.parse(moduleData);
 
-      const response = await apiInstance.post<ApiResponse<{ module: TrainingModule }>>(
+      const response = await this.client.post<ApiResponse<{ module: TrainingModule }>>(
         API_ENDPOINTS.ADMIN.TRAINING,
         moduleData
       );
@@ -978,7 +979,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('Module ID is required');
 
-      const response = await apiInstance.put<ApiResponse<{ module: TrainingModule }>>(
+      const response = await this.client.put<ApiResponse<{ module: TrainingModule }>>(
         API_ENDPOINTS.ADMIN.TRAINING_BY_ID(id),
         moduleData
       );
@@ -996,7 +997,7 @@ export class AdministrationApi {
     try {
       if (!id) throw new Error('Module ID is required');
 
-      const response = await apiInstance.delete<ApiResponse<{ message: string }>>(
+      const response = await this.client.delete<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.ADMIN.TRAINING_BY_ID(id)
       );
 
@@ -1016,7 +1017,7 @@ export class AdministrationApi {
     try {
       if (!moduleId) throw new Error('Module ID is required');
 
-      const response = await apiInstance.post<ApiResponse<{ completion: TrainingCompletion }>>(
+      const response = await this.client.post<ApiResponse<{ completion: TrainingCompletion }>>(
         API_ENDPOINTS.ADMIN.TRAINING_COMPLETE(moduleId),
         completionData
       );
@@ -1034,7 +1035,7 @@ export class AdministrationApi {
     try {
       if (!userId) throw new Error('User ID is required');
 
-      const response = await apiInstance.get<ApiResponse<UserTrainingProgress>>(
+      const response = await this.client.get<ApiResponse<UserTrainingProgress>>(
         API_ENDPOINTS.ADMIN.TRAINING_PROGRESS(userId)
       );
 
@@ -1070,7 +1071,7 @@ export class AdministrationApi {
       if (filters.startDate) params.append('startDate', filters.startDate);
       if (filters.endDate) params.append('endDate', filters.endDate);
 
-      const response = await apiInstance.get<ApiResponse<PaginatedResponse<AuditLog>>>(
+      const response = await this.client.get<ApiResponse<PaginatedResponse<AuditLog>>>(
         `${API_ENDPOINTS.ADMIN.AUDIT_LOGS}?${params.toString()}`
       );
 
@@ -1081,5 +1082,6 @@ export class AdministrationApi {
   }
 }
 
-// Export singleton instance
-export const administrationApi = new AdministrationApi();
+export function createAdministrationApi(client: ApiClient): AdministrationApi {
+  return new AdministrationApi(client);
+}

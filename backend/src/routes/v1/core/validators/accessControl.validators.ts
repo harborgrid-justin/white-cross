@@ -217,8 +217,7 @@ export const updateSecurityIncidentSchema = Joi.object({
   'object.min': 'At least one field must be provided for update'
 });
 
-export const securityIncidentsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const securityIncidentsQuerySchema = paginationSchema.keys({
   type: securityIncidentTypeSchema.optional(),
   severity: securityIncidentSeveritySchema.optional(),
   status: securityIncidentStatusSchema.optional(),

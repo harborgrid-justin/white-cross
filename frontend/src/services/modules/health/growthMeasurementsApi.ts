@@ -13,10 +13,10 @@
  * @module services/modules/health/growthMeasurements
  */
 
-import { apiInstance, API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import { z } from 'zod';
 import { BaseApiService } from '../../core/BaseApiService';
-import { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '../../core/ApiClient';
 import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
 
 // ==========================================
@@ -173,8 +173,7 @@ export class GrowthMeasurementsApiService extends BaseApiService<
   GrowthMeasurementCreate,
   GrowthMeasurementUpdate
 > {
-  constructor() {
-    const client = new ApiClient(apiInstance);
+  constructor(client: ApiClient) {
     super(client, `${API_ENDPOINTS.HEALTH_RECORDS}/growth`, {
       createSchema: growthMeasurementCreateSchema,
       updateSchema: growthMeasurementUpdateSchema
@@ -509,7 +508,9 @@ export class GrowthMeasurementsApiService extends BaseApiService<
 }
 
 // ==========================================
-// SINGLETON EXPORT
+// FACTORY FUNCTION
 // ==========================================
 
-export const growthMeasurementsApi = new GrowthMeasurementsApiService();
+export function createGrowthMeasurementsApi(client: ApiClient): GrowthMeasurementsApiService {
+  return new GrowthMeasurementsApiService(client);
+}

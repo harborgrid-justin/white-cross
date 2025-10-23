@@ -256,19 +256,18 @@ export class ServiceManager {
         const tokenManager = this.get<ITokenManager>('tokenManager');
         const apiConfig = configService.get('api');
 
-        // Create ApiClient with dependency injection
+        // Create ApiClient with dependency injection (including tokenManager to avoid circular dependency)
         const apiClient = new ApiClient({
           baseURL: apiConfig.baseUrl,
           timeout: apiConfig.timeout,
           enableLogging: apiConfig.enableLogging,
           enableRetry: apiConfig.enableRetry,
           maxRetries: apiConfig.maxRetries,
+          tokenManager: tokenManager, // Inject tokenManager via DI to prevent circular dependency
         });
 
-        // Inject dependencies through setter methods (add these to ApiClient)
-        // For now, ApiClient will use the singleton pattern internally
         this.services.set('apiClient', apiClient);
-        this.log('✓ ApiClient initialized');
+        this.log('✓ ApiClient initialized with tokenManager');
       }
 
       // Step 5: Initialize ResilientApiClient (depends on apiClient)

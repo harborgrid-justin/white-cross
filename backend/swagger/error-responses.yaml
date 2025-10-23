@@ -1,0 +1,1025 @@
+# ============================================================================
+# White Cross Healthcare Platform - Error Response Documentation
+# ============================================================================
+#
+# This file defines reusable error response schemas for Swagger/OpenAPI
+# documentation. It provides consistent error structures across all API
+# endpoints.
+#
+# USAGE:
+#   In your OpenAPI/Swagger definitions, reference these components:
+#
+#   responses:
+#     400:
+#       $ref: './error-responses.yaml#/components/responses/ValidationError'
+#     401:
+#       $ref: './error-responses.yaml#/components/responses/AuthenticationError'
+#     403:
+#       $ref: './error-responses.yaml#/components/responses/AuthorizationError'
+#     404:
+#       $ref: './error-responses.yaml#/components/responses/NotFoundError'
+#
+# ERROR SYSTEMS:
+#   This documentation covers three integrated error systems:
+#   1. ErrorCode System (backend/src/shared/errors/ErrorCode.ts)
+#      - 110 typed error codes organized by domain
+#      - AppError class with error chaining and context
+#   2. ServiceError Classes (backend/src/shared/errors/ServiceErrors.ts)
+#      - Retry-aware error classes for service layer
+#   3. HTTP Error Handler (backend/src/middleware/error-handling/handlers/error-handler.middleware.ts)
+#      - HIPAA-compliant error handling with PHI sanitization
+#
+# SECURITY & COMPLIANCE:
+#   - All error messages sanitized for PHI (HIPAA compliant)
+#   - Stack traces only in development environments
+#   - SQL queries and parameters redacted in production
+#   - Client-safe error messages, full details in server logs
+#
+# VERSION: 1.0.0
+# AUTHOR: White Cross Platform Team
+# DATE: 2025-10-23
+# ============================================================================
+
+openapi: 3.0.0
+
+info:
+  title: White Cross Error Response Schemas
+  version: 1.0.0
+  description: |
+    Reusable error response schemas for the White Cross Healthcare Platform API.
+
+    All error responses follow a consistent structure with:
+    - success: Always false for errors
+    - error: Object containing error details
+      - code: Machine-readable error code
+      - message: Human-readable error message (sanitized)
+      - type: Error classification (ErrorType enum)
+      - severity: Error severity level (ErrorSeverity enum)
+      - details: Additional context (development only)
+      - timestamp: ISO 8601 formatted timestamp
+      - requestId: Request identifier for tracing
+      - traceId: Distributed tracing identifier
+
+components:
+  schemas:
+    # ========================================================================
+    # Base Error Response Schema
+    # ========================================================================
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          description: Always false for error responses
+          example: false
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+      description: |
+        Standard error response format used across all endpoints.
+        Provides consistent structure for error handling and debugging.
+
+    # ========================================================================
+    # Error Detail Schema
+    # ========================================================================
+    ErrorDetail:
+      type: object
+      required:
+        - code
+        - message
+        - type
+        - severity
+        - timestamp
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code for programmatic handling
+          example: VAL_VALIDATION_FAILED
+        message:
+          type: string
+          description: Human-readable error message (sanitized, HIPAA-compliant)
+          example: Validation failed for the provided input
+        type:
+          $ref: '#/components/schemas/ErrorType'
+        severity:
+          $ref: '#/components/schemas/ErrorSeverity'
+        details:
+          type: object
+          description: Additional error context (only in development environments)
+          additionalProperties: true
+          example:
+            field: email
+            reason: Invalid email format
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted timestamp of when the error occurred
+          example: '2025-10-23T16:30:00.000Z'
+        requestId:
+          type: string
+          description: Unique request identifier for tracing and debugging
+          example: req-abc123def456
+        traceId:
+          type: string
+          description: Distributed tracing identifier for cross-service tracking
+          example: trace-xyz789uvw012
+
+    # ========================================================================
+    # Error Type Enumeration
+    # ========================================================================
+    ErrorType:
+      type: string
+      enum:
+        - VALIDATION
+        - AUTHENTICATION
+        - AUTHORIZATION
+        - NOT_FOUND
+        - RATE_LIMIT
+        - DATABASE
+        - NETWORK
+        - BUSINESS_LOGIC
+        - SYSTEM
+        - UNKNOWN
+      description: |
+        Error classification for appropriate handling and logging:
+        - VALIDATION: Input validation failures, schema violations
+        - AUTHENTICATION: Authentication failures, invalid credentials
+        - AUTHORIZATION: Permission denied, insufficient access rights
+        - NOT_FOUND: Resource not found errors
+        - RATE_LIMIT: Rate limiting violations
+        - DATABASE: Database connection, query, or constraint errors
+        - NETWORK: Network connectivity or external service errors
+        - BUSINESS_LOGIC: Business rule violations
+        - SYSTEM: Internal system errors, crashes
+        - UNKNOWN: Unclassified errors
+      example: VALIDATION
+
+    # ========================================================================
+    # Error Severity Enumeration
+    # ========================================================================
+    ErrorSeverity:
+      type: string
+      enum:
+        - LOW
+        - MEDIUM
+        - HIGH
+        - CRITICAL
+      description: |
+        Error severity for logging priority and alerting:
+        - LOW: Expected errors, validation failures, not found errors
+        - MEDIUM: Authentication/authorization failures, rate limits
+        - HIGH: Database errors, network failures, data integrity issues
+        - CRITICAL: System failures, security breaches, data loss
+      example: LOW
+
+    # ========================================================================
+    # Validation Error Details
+    # ========================================================================
+    ValidationErrorDetails:
+      type: object
+      properties:
+        fields:
+          type: array
+          description: Array of field-level validation errors
+          items:
+            $ref: '#/components/schemas/FieldValidationError'
+      example:
+        fields:
+          - field: email
+            message: Invalid email format
+            type: format
+            value: not-an-email
+          - field: age
+            message: Age must be between 0 and 120
+            type: range
+            value: 150
+
+    # ========================================================================
+    # Field Validation Error
+    # ========================================================================
+    FieldValidationError:
+      type: object
+      required:
+        - field
+        - message
+        - type
+      properties:
+        field:
+          type: string
+          description: Name of the field that failed validation
+          example: email
+        message:
+          type: string
+          description: Human-readable validation error message
+          example: Invalid email format
+        type:
+          type: string
+          description: Type of validation error
+          enum:
+            - required
+            - format
+            - range
+            - length
+            - pattern
+            - custom
+          example: format
+        value:
+          description: The invalid value that was provided (sanitized)
+          example: not-an-email
+
+    # ========================================================================
+    # Database Error Details
+    # ========================================================================
+    DatabaseErrorDetails:
+      type: object
+      description: Additional details for database errors (development only)
+      properties:
+        operation:
+          type: string
+          description: Database operation that failed
+          example: SELECT
+        table:
+          type: string
+          description: Database table involved in the error
+          example: students
+        constraint:
+          type: string
+          description: Database constraint that was violated
+          example: unique_email
+
+    # ========================================================================
+    # Rate Limit Error Details
+    # ========================================================================
+    RateLimitErrorDetails:
+      type: object
+      properties:
+        retryAfter:
+          type: integer
+          description: Number of seconds to wait before retrying
+          example: 60
+        limit:
+          type: integer
+          description: Maximum number of requests allowed
+          example: 100
+        window:
+          type: string
+          description: Time window for the rate limit
+          example: 1 hour
+        remaining:
+          type: integer
+          description: Number of requests remaining in current window
+          example: 0
+
+  # ==========================================================================
+  # Reusable Response Components
+  # ==========================================================================
+  responses:
+    # ========================================================================
+    # 400 Bad Request - Validation Error
+    # ========================================================================
+    ValidationError:
+      description: |
+        Bad Request - Input validation failed
+
+        Common causes:
+        - Missing required fields
+        - Invalid field formats (email, phone, date, etc.)
+        - Values out of acceptable range
+        - Fields too long or too short
+        - Invalid enum values
+
+        Error codes:
+        - VAL_VALIDATION_FAILED (general validation failure)
+        - VAL_MISSING_FIELD (required field missing)
+        - VAL_INVALID_FORMAT (invalid format)
+        - VAL_OUT_OF_RANGE (value out of range)
+        - VAL_TOO_LONG (value too long)
+        - VAL_TOO_SHORT (value too short)
+
+        HTTP Status: 400
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    allOf:
+                      - $ref: '#/components/schemas/ErrorDetail'
+                      - type: object
+                        properties:
+                          details:
+                            $ref: '#/components/schemas/ValidationErrorDetails'
+          examples:
+            missingField:
+              summary: Missing required field
+              value:
+                success: false
+                error:
+                  code: VAL_MISSING_FIELD
+                  message: Required field 'email' is missing
+                  type: VALIDATION
+                  severity: LOW
+                  details:
+                    field: email
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc123
+            invalidFormat:
+              summary: Invalid field format
+              value:
+                success: false
+                error:
+                  code: VAL_INVALID_FORMAT
+                  message: Invalid email format
+                  type: VALIDATION
+                  severity: LOW
+                  details:
+                    field: email
+                    value: not-an-email
+                    expectedFormat: email
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc124
+            multipleErrors:
+              summary: Multiple validation errors
+              value:
+                success: false
+                error:
+                  code: VAL_VALIDATION_FAILED
+                  message: Validation failed
+                  type: VALIDATION
+                  severity: LOW
+                  details:
+                    fields:
+                      - field: email
+                        message: Invalid email format
+                        type: format
+                      - field: age
+                        message: Age must be between 0 and 120
+                        type: range
+                        value: 150
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc125
+
+    # ========================================================================
+    # 401 Unauthorized - Authentication Error
+    # ========================================================================
+    AuthenticationError:
+      description: |
+        Unauthorized - Authentication required or failed
+
+        Common causes:
+        - Missing authentication token
+        - Invalid authentication token
+        - Expired authentication token
+        - Invalid credentials
+        - Invalid token signature
+        - MFA required but not provided
+
+        Error codes:
+        - AUTH_AUTH_FAILED (general authentication failure)
+        - AUTH_INVALID_TOKEN (invalid token)
+        - AUTH_EXPIRED_TOKEN (expired token)
+        - AUTH_TOKEN_MISSING (no token provided)
+        - AUTH_INVALID_CREDENTIALS (invalid username/password)
+        - AUTH_MFA_REQUIRED (MFA required)
+        - AUTH_MFA_INVALID (invalid MFA code)
+
+        HTTP Status: 401
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidToken:
+              summary: Invalid authentication token
+              value:
+                success: false
+                error:
+                  code: AUTH_INVALID_TOKEN
+                  message: Invalid authentication token
+                  type: AUTHENTICATION
+                  severity: MEDIUM
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc126
+            expiredToken:
+              summary: Expired authentication token
+              value:
+                success: false
+                error:
+                  code: AUTH_EXPIRED_TOKEN
+                  message: Authentication token has expired
+                  type: AUTHENTICATION
+                  severity: MEDIUM
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc127
+            missingToken:
+              summary: Missing authentication token
+              value:
+                success: false
+                error:
+                  code: AUTH_TOKEN_MISSING
+                  message: Authentication token is required
+                  type: AUTHENTICATION
+                  severity: MEDIUM
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc128
+            invalidCredentials:
+              summary: Invalid credentials
+              value:
+                success: false
+                error:
+                  code: AUTH_INVALID_CREDENTIALS
+                  message: Invalid username or password
+                  type: AUTHENTICATION
+                  severity: MEDIUM
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc129
+            mfaRequired:
+              summary: MFA required
+              value:
+                success: false
+                error:
+                  code: AUTH_MFA_REQUIRED
+                  message: Multi-factor authentication is required
+                  type: AUTHENTICATION
+                  severity: MEDIUM
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc130
+
+    # ========================================================================
+    # 403 Forbidden - Authorization Error
+    # ========================================================================
+    AuthorizationError:
+      description: |
+        Forbidden - User authenticated but lacks required permissions
+
+        Common causes:
+        - Insufficient permissions for the action
+        - Insufficient role for the resource
+        - Access denied to specific resource
+        - Permission expired
+        - Invalid permission scope
+
+        Error codes:
+        - AUTH_ACCESS_DENIED (general access denied)
+        - AUTH_INSUFFICIENT_PERMISSIONS (insufficient permissions)
+        - PER_PERMISSION_DENIED (permission denied)
+        - PER_INSUFFICIENT_ROLE (insufficient role)
+        - PER_PERMISSION_EXPIRED (permission expired)
+
+        HTTP Status: 403
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            insufficientPermissions:
+              summary: Insufficient permissions
+              value:
+                success: false
+                error:
+                  code: AUTH_INSUFFICIENT_PERMISSIONS
+                  message: You do not have permission to perform this action
+                  type: AUTHORIZATION
+                  severity: MEDIUM
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc131
+            permissionDenied:
+              summary: Permission denied for specific action
+              value:
+                success: false
+                error:
+                  code: PER_PERMISSION_DENIED
+                  message: Permission denied for action 'delete' on resource 'students'
+                  type: AUTHORIZATION
+                  severity: MEDIUM
+                  details:
+                    action: delete
+                    resource: students
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc132
+            insufficientRole:
+              summary: Insufficient role
+              value:
+                success: false
+                error:
+                  code: PER_INSUFFICIENT_ROLE
+                  message: Administrator role required for this action
+                  type: AUTHORIZATION
+                  severity: MEDIUM
+                  details:
+                    requiredRole: administrator
+                    userRole: nurse
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc133
+
+    # ========================================================================
+    # 404 Not Found - Resource Not Found Error
+    # ========================================================================
+    NotFoundError:
+      description: |
+        Not Found - Requested resource does not exist
+
+        Common causes:
+        - Student not found
+        - Health record not found
+        - Medication not found
+        - Contact not found
+        - User not found
+        - Invalid resource ID
+
+        Error codes:
+        - NOT_NOT_FOUND (general not found)
+        - STU_STUDENT_NOT_FOUND (student not found)
+        - HEA_HEALTH_RECORD_NOT_FOUND (health record not found)
+        - MED_MEDICATION_NOT_FOUND (medication not found)
+        - CON_CONTACT_NOT_FOUND (contact not found)
+
+        HTTP Status: 404
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            studentNotFound:
+              summary: Student not found
+              value:
+                success: false
+                error:
+                  code: STU_STUDENT_NOT_FOUND
+                  message: Student with ID 12345 not found
+                  type: NOT_FOUND
+                  severity: LOW
+                  details:
+                    studentId: '12345'
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc134
+            resourceNotFound:
+              summary: Generic resource not found
+              value:
+                success: false
+                error:
+                  code: NOT_NOT_FOUND
+                  message: Resource not found
+                  type: NOT_FOUND
+                  severity: LOW
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc135
+            healthRecordNotFound:
+              summary: Health record not found
+              value:
+                success: false
+                error:
+                  code: HEA_HEALTH_RECORD_NOT_FOUND
+                  message: Health record with ID hr-789 not found
+                  type: NOT_FOUND
+                  severity: LOW
+                  details:
+                    recordId: hr-789
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc136
+
+    # ========================================================================
+    # 409 Conflict - Resource Conflict Error
+    # ========================================================================
+    ConflictError:
+      description: |
+        Conflict - Resource conflict or duplicate entry
+
+        Common causes:
+        - Duplicate student record
+        - Unique constraint violation
+        - Concurrent modification conflict
+        - Resource already exists
+        - State conflict
+
+        Error codes:
+        - DAT_UNIQUE_CONSTRAINT_VIOLATION (unique constraint violated)
+        - STU_STUDENT_DUPLICATE (duplicate student)
+        - CON_CONTACT_DUPLICATE (duplicate contact)
+        - MED_MEDICATION_ALREADY_ADMINISTERED (medication already given)
+
+        HTTP Status: 409
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            duplicateRecord:
+              summary: Duplicate record
+              value:
+                success: false
+                error:
+                  code: DAT_UNIQUE_CONSTRAINT_VIOLATION
+                  message: A record with the provided email already exists
+                  type: DATABASE
+                  severity: MEDIUM
+                  details:
+                    field: email
+                    value: user@example.com
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc137
+            medicationAlreadyAdministered:
+              summary: Medication already administered
+              value:
+                success: false
+                error:
+                  code: MED_MEDICATION_ALREADY_ADMINISTERED
+                  message: Medication has already been administered
+                  type: BUSINESS_LOGIC
+                  severity: MEDIUM
+                  details:
+                    medicationLogId: med-log-456
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc138
+
+    # ========================================================================
+    # 429 Too Many Requests - Rate Limit Error
+    # ========================================================================
+    RateLimitError:
+      description: |
+        Too Many Requests - Rate limit exceeded
+
+        Common causes:
+        - Too many requests in time window
+        - API quota exceeded
+        - Concurrent request limit exceeded
+
+        Error codes:
+        - RAT_RATE_LIMIT_EXCEEDED
+
+        HTTP Status: 429
+
+        Headers:
+        - Retry-After: Number of seconds to wait before retrying
+        - X-RateLimit-Limit: Maximum requests allowed
+        - X-RateLimit-Remaining: Requests remaining in window
+        - X-RateLimit-Reset: Time when limit resets (Unix timestamp)
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    allOf:
+                      - $ref: '#/components/schemas/ErrorDetail'
+                      - type: object
+                        properties:
+                          details:
+                            $ref: '#/components/schemas/RateLimitErrorDetails'
+          examples:
+            rateLimitExceeded:
+              summary: Rate limit exceeded
+              value:
+                success: false
+                error:
+                  code: RAT_RATE_LIMIT_EXCEEDED
+                  message: Too many requests. Please try again later.
+                  type: RATE_LIMIT
+                  severity: MEDIUM
+                  details:
+                    retryAfter: 60
+                    limit: 100
+                    window: 1 hour
+                    remaining: 0
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc139
+
+    # ========================================================================
+    # 500 Internal Server Error - System Error
+    # ========================================================================
+    InternalServerError:
+      description: |
+        Internal Server Error - Unexpected system error
+
+        Common causes:
+        - Unhandled exceptions
+        - System failures
+        - Configuration errors
+        - Service unavailable
+
+        Error codes:
+        - SYS_SYSTEM_ERROR (general system error)
+        - SYS_INTERNAL_ERROR (internal error)
+
+        HTTP Status: 500
+
+        Note: Detailed error information only provided in development environments.
+        Production responses contain generic messages for security.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            internalServerError:
+              summary: Internal server error
+              value:
+                success: false
+                error:
+                  code: SYS_SYSTEM_ERROR
+                  message: An internal server error occurred
+                  type: SYSTEM
+                  severity: CRITICAL
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc140
+
+    # ========================================================================
+    # 503 Service Unavailable - Database/Network Error
+    # ========================================================================
+    ServiceUnavailableError:
+      description: |
+        Service Unavailable - Database or external service unavailable
+
+        Common causes:
+        - Database connection failure
+        - Database timeout
+        - Network connectivity issues
+        - External service unavailable
+
+        Error codes:
+        - DAT_CONNECTION_ERROR (database connection error)
+        - DAT_TIMEOUT_ERROR (database timeout)
+        - NET_NETWORK_ERROR (network error)
+        - EXT_EXTERNAL_SERVICE_ERROR (external service error)
+
+        HTTP Status: 503
+
+        Note: These errors are typically transient and retryable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            databaseConnectionError:
+              summary: Database connection error
+              value:
+                success: false
+                error:
+                  code: DAT_CONNECTION_ERROR
+                  message: Database connection error. Please try again later.
+                  type: DATABASE
+                  severity: CRITICAL
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc141
+            databaseTimeout:
+              summary: Database timeout
+              value:
+                success: false
+                error:
+                  code: DAT_TIMEOUT_ERROR
+                  message: Request timed out. Please try again.
+                  type: DATABASE
+                  severity: HIGH
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc142
+            externalServiceUnavailable:
+              summary: External service unavailable
+              value:
+                success: false
+                error:
+                  code: EXT_EXTERNAL_SERVICE_ERROR
+                  message: External authentication service is temporarily unavailable
+                  type: NETWORK
+                  severity: HIGH
+                  timestamp: '2025-10-23T16:30:00.000Z'
+                  requestId: req-abc143
+
+# ==============================================================================
+# HTTP Status Code Mapping Guide
+# ==============================================================================
+#
+# This section documents the mapping between HTTP status codes and error types
+# used in the White Cross Healthcare Platform API.
+#
+# STATUS CODE REFERENCE:
+#
+# 400 Bad Request
+#   - ErrorType: VALIDATION
+#   - Severity: LOW
+#   - Use Cases: Input validation failures, invalid formats, missing fields
+#   - Response Component: ValidationError
+#
+# 401 Unauthorized
+#   - ErrorType: AUTHENTICATION
+#   - Severity: MEDIUM
+#   - Use Cases: Missing token, invalid token, expired token, invalid credentials
+#   - Response Component: AuthenticationError
+#
+# 403 Forbidden
+#   - ErrorType: AUTHORIZATION
+#   - Severity: MEDIUM
+#   - Use Cases: Insufficient permissions, permission denied, insufficient role
+#   - Response Component: AuthorizationError
+#
+# 404 Not Found
+#   - ErrorType: NOT_FOUND
+#   - Severity: LOW
+#   - Use Cases: Resource not found, invalid resource ID
+#   - Response Component: NotFoundError
+#
+# 408 Request Timeout
+#   - ErrorType: DATABASE or NETWORK
+#   - Severity: HIGH
+#   - Use Cases: Request timeout, operation timeout
+#
+# 409 Conflict
+#   - ErrorType: DATABASE or BUSINESS_LOGIC
+#   - Severity: MEDIUM
+#   - Use Cases: Duplicate records, unique constraint violations, state conflicts
+#   - Response Component: ConflictError
+#
+# 429 Too Many Requests
+#   - ErrorType: RATE_LIMIT
+#   - Severity: MEDIUM
+#   - Use Cases: Rate limit exceeded, quota exceeded
+#   - Response Component: RateLimitError
+#
+# 500 Internal Server Error
+#   - ErrorType: SYSTEM
+#   - Severity: CRITICAL
+#   - Use Cases: Unhandled exceptions, system failures
+#   - Response Component: InternalServerError
+#
+# 501 Not Implemented
+#   - ErrorType: SYSTEM
+#   - Severity: LOW
+#   - Use Cases: Feature not yet implemented
+#
+# 503 Service Unavailable
+#   - ErrorType: DATABASE or NETWORK
+#   - Severity: HIGH or CRITICAL
+#   - Use Cases: Database connection errors, external service unavailable
+#   - Response Component: ServiceUnavailableError
+#
+# ==============================================================================
+# Error Code Ranges (from ErrorCode.ts)
+# ==============================================================================
+#
+# Generic Errors (0-99):
+#   - ErrUndefined (0)
+#   - ErrInternal (1)
+#   - ErrInvalidInput (2)
+#   - ErrNotFound (3)
+#   - ErrUnauthorized (4)
+#   - ErrForbidden (5)
+#   - ErrTimeout (6)
+#   - ErrConflict (7)
+#   - ErrNotImplemented (8)
+#
+# Authentication Errors (100-199):
+#   - ErrAuthInvalidToken (100)
+#   - ErrAuthExpiredToken (101)
+#   - ErrAuthInvalidCredentials (102)
+#   - ErrAuthInsufficientPermissions (103)
+#   - ErrAuthTokenMissing (104)
+#   - ErrAuthSessionExpired (105)
+#   - ErrAuthInvalidSignature (106)
+#   - ErrAuthMFARequired (107)
+#   - ErrAuthMFAInvalid (108)
+#
+# Medication Errors (200-299):
+#   - ErrMedicationNotFound (200)
+#   - ErrMedicationAlreadyAdministered (201)
+#   - ErrMedicationExpired (202)
+#   - ErrMedicationDosageInvalid (203)
+#   - ErrMedicationInteraction (204)
+#   - ErrMedicationMissingConsent (205)
+#   - ErrMedicationScheduleConflict (206)
+#   - ErrMedicationOutOfStock (207)
+#   - ErrMedicationInvalidRoute (208)
+#   - ErrMedicationTimingViolation (209)
+#
+# Student Errors (300-399):
+#   - ErrStudentNotFound (300)
+#   - ErrStudentInactive (301)
+#   - ErrStudentNoConsent (302)
+#   - ErrStudentDuplicate (303)
+#   - ErrStudentInvalidGrade (304)
+#   - ErrStudentMissingGuardian (305)
+#   - ErrStudentInvalidStatus (306)
+#
+# Health Record Errors (400-499):
+#   - ErrHealthRecordNotFound (400)
+#   - ErrHealthRecordInvalid (401)
+#   - ErrHealthRecordLocked (402)
+#   - ErrHealthRecordMissingData (403)
+#   - ErrHealthRecordAccessDenied (404)
+#   - ErrHealthRecordExpired (405)
+#
+# Contact Errors (500-599):
+#   - ErrContactNotFound (500)
+#   - ErrContactDuplicate (501)
+#   - ErrContactInvalidType (502)
+#   - ErrContactMissingRequired (503)
+#   - ErrContactInvalidRelation (504)
+#
+# Permission Errors (600-699):
+#   - ErrPermissionDenied (600)
+#   - ErrPermissionNotFound (601)
+#   - ErrPermissionInvalidScope (602)
+#   - ErrPermissionExpired (603)
+#   - ErrPermissionInsufficientRole (604)
+#
+# Database Errors (700-799):
+#   - ErrDatabaseConnection (700)
+#   - ErrDatabaseQuery (701)
+#   - ErrDatabaseConstraint (702)
+#   - ErrDatabaseTimeout (703)
+#   - ErrDatabaseLock (704)
+#   - ErrDatabaseMigration (705)
+#
+# Validation Errors (800-899):
+#   - ErrValidationFailed (800)
+#   - ErrValidationMissingField (801)
+#   - ErrValidationInvalidFormat (802)
+#   - ErrValidationOutOfRange (803)
+#   - ErrValidationTooLong (804)
+#   - ErrValidationTooShort (805)
+#
+# Network/External Errors (900-999):
+#   - ErrNetworkTimeout (900)
+#   - ErrNetworkConnection (901)
+#   - ErrExternalService (902)
+#   - ErrExternalAPIFailed (903)
+#   - ErrExternalTimeout (904)
+#
+# ==============================================================================
+# HIPAA Compliance Notes
+# ==============================================================================
+#
+# All error messages are automatically sanitized by the ErrorHandlerMiddleware
+# to remove Protected Health Information (PHI) before being sent to clients:
+#
+# PHI Patterns Sanitized:
+#   - Email addresses
+#   - Phone numbers
+#   - Social Security Numbers (SSN)
+#   - Credit card numbers
+#   - Medical Record Numbers (MRN)
+#   - Sensitive field values (password, ssn, dob, etc.)
+#
+# Production vs Development:
+#   - Production: Generic error messages, no stack traces, SQL redacted
+#   - Development: Detailed messages, stack traces included, full context
+#
+# Logging:
+#   - Client receives sanitized error response
+#   - Server logs contain full error details with PHI for debugging
+#   - Error severity determines logging level and alerting
+#
+# ==============================================================================
+# Integration Examples
+# ==============================================================================
+#
+# Example 1: Reference in OpenAPI path definition
+# -----------------------------------------------
+# paths:
+#   /api/students/{id}:
+#     get:
+#       summary: Get student by ID
+#       responses:
+#         200:
+#           description: Student found
+#           content:
+#             application/json:
+#               schema:
+#                 $ref: '#/components/schemas/Student'
+#         400:
+#           $ref: './error-responses.yaml#/components/responses/ValidationError'
+#         401:
+#           $ref: './error-responses.yaml#/components/responses/AuthenticationError'
+#         403:
+#           $ref: './error-responses.yaml#/components/responses/AuthorizationError'
+#         404:
+#           $ref: './error-responses.yaml#/components/responses/NotFoundError'
+#         500:
+#           $ref: './error-responses.yaml#/components/responses/InternalServerError'
+#
+# Example 2: Handle errors in Express/Hapi controllers
+# ----------------------------------------------------
+# import { ErrorHandlerMiddleware } from './middleware/error-handling/handlers/error-handler.middleware';
+# import { ErrorFactory } from './shared/errors/ErrorCode';
+#
+# const errorHandler = new ErrorHandlerMiddleware();
+#
+# // Validation error
+# const validationError = ErrorFactory.missingField('email');
+# const response = errorHandler.handleError(validationError, {
+#   requestId: req.id,
+#   userId: req.user?.id,
+#   path: req.path,
+#   method: req.method
+# });
+# res.status(400).json(response);
+#
+# // Not found error
+# const notFoundError = ErrorFactory.studentNotFound(studentId);
+# const response = errorHandler.handleError(notFoundError, { requestId: req.id });
+# res.status(404).json(response);
+#
+# ==============================================================================

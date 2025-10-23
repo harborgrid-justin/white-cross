@@ -56,19 +56,19 @@ import {
   NurseAvailabilityData,
   WaitlistEntry,
   RecurrencePattern
-} from '../types/appointment';
+} from '../../types/appointment';
 
 // Import all modular services
-import { AppointmentCrudOperations } from './appointment/crudOperations';
-import { AppointmentAvailabilityService } from './appointment/AppointmentAvailabilityService';
-import { AppointmentReminderService } from './appointment/AppointmentReminderService';
-import { AppointmentWaitlistService } from './appointment/AppointmentWaitlistService';
-import { AppointmentRecurringService } from './appointment/AppointmentRecurringService';
-import { AppointmentStatisticsService } from './appointment/AppointmentStatisticsService';
-import { AppointmentCalendarService } from './appointment/AppointmentCalendarService';
-import { NurseAvailabilityService } from './appointment/NurseAvailabilityService';
-import { AppointmentValidation } from './appointment/validation';
-import { AppointmentStatusTransitions } from './appointment/statusTransitions';
+import { AppointmentCrudOperations } from './crudOperations';
+import { AppointmentAvailabilityService } from './AppointmentAvailabilityService';
+import { AppointmentReminderService } from './AppointmentReminderService';
+import { AppointmentWaitlistService } from './AppointmentWaitlistService';
+import { AppointmentRecurringService } from './AppointmentRecurringService';
+import { AppointmentStatisticsService } from './AppointmentStatisticsService';
+import { AppointmentCalendarService } from './AppointmentCalendarService';
+import { NurseAvailabilityService } from './NurseAvailabilityService';
+import { AppointmentValidation } from './validation';
+import { AppointmentStatusTransitions } from './statusTransitions';
 
 // Import shared time utilities
 import { 

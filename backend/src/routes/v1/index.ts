@@ -8,7 +8,7 @@ import { coreRoutes } from './core';
 import { healthcareRoutes } from './healthcare';
 import { operationsRoutes } from './operations';
 import { documentsRoutes } from './documents';
-import { complianceRoutes } from './compliance';
+import { complianceModuleRoutes } from './compliance';
 import { communicationsRoutes } from './communications';
 import { communicationRoutes } from './communication';
 import { incidentsRoutes } from './incidents';
@@ -34,7 +34,7 @@ export const v1Routes: ServerRoute[] = [
   ...healthcareRoutes,
   ...operationsRoutes,
   ...documentsRoutes,
-  ...complianceRoutes,
+  ...complianceModuleRoutes,
   ...communicationsRoutes,
   ...communicationRoutes,
   ...incidentsRoutes,

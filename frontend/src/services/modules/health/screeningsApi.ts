@@ -13,10 +13,10 @@
  * @module services/modules/health/screenings
  */
 
-import { apiInstance, API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import { z } from 'zod';
 import { BaseApiService } from '../../core/BaseApiService';
-import { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '../../core/ApiClient';
 import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
 
 // ==========================================
@@ -223,8 +223,7 @@ export class ScreeningsApiService extends BaseApiService<
   ScreeningCreate,
   ScreeningUpdate
 > {
-  constructor() {
-    const client = new ApiClient(apiInstance);
+  constructor(client: ApiClient) {
     super(client, `${API_ENDPOINTS.HEALTH_RECORDS}/screenings`, {
       createSchema: screeningCreateSchema,
       updateSchema: screeningUpdateSchema
@@ -528,7 +527,9 @@ export class ScreeningsApiService extends BaseApiService<
 }
 
 // ==========================================
-// SINGLETON EXPORT
+// FACTORY FUNCTION
 // ==========================================
 
-export const screeningsApi = new ScreeningsApiService();
+export function createScreeningsApi(client: ApiClient): ScreeningsApiService {
+  return new ScreeningsApiService(client);
+}

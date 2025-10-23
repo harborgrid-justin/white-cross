@@ -86,7 +86,7 @@ import type {
   ProcessScheduledMessagesResponse,
   CommunicationOptions
 } from '../../types/communication'
-import { apiInstance } from '../config/apiConfig'
+import type { ApiClient } from '../core/ApiClient'
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
@@ -127,6 +127,7 @@ import { extractApiData, handleApiError } from '../utils/apiUtils'
  * ```
  */
 class CommunicationApiImpl implements ICommunicationApi {
+  constructor(private readonly client: ApiClient) {}
   // =====================
   // TEMPLATE OPERATIONS
   // =====================
@@ -142,7 +143,7 @@ class CommunicationApiImpl implements ICommunicationApi {
       if (filters?.category) params.append('category', filters.category)
       if (filters?.isActive !== undefined) params.append('isActive', String(filters.isActive))
 
-      const response = await apiInstance.get(`/communication/templates?${params.toString()}`)
+      const response = await this.client.get(`/communication/templates?${params.toString()}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -154,7 +155,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async getTemplateById(id: string): Promise<{ template: MessageTemplate }> {
     try {
-      const response = await apiInstance.get(`/communication/templates/${id}`)
+      const response = await this.client.get(`/communication/templates/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -166,7 +167,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async createTemplate(data: CreateMessageTemplateData): Promise<{ template: MessageTemplate }> {
     try {
-      const response = await apiInstance.post('/communication/templates', data)
+      const response = await this.client.post('/communication/templates', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -178,7 +179,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async updateTemplate(id: string, data: UpdateMessageTemplateData): Promise<{ template: MessageTemplate }> {
     try {
-      const response = await apiInstance.put(`/communication/templates/${id}`, data)
+      const response = await this.client.put(`/communication/templates/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -190,7 +191,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async deleteTemplate(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await apiInstance.delete(`/communication/templates/${id}`)
+      const response = await this.client.delete(`/communication/templates/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -206,7 +207,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async sendMessage(data: CreateMessageData): Promise<SendMessageResponse> {
     try {
-      const response = await apiInstance.post('/communication/send', data)
+      const response = await this.client.post('/communication/send', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -218,7 +219,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async sendBroadcast(data: BroadcastMessageData): Promise<SendMessageResponse> {
     try {
-      const response = await apiInstance.post('/communication/broadcast', data)
+      const response = await this.client.post('/communication/broadcast', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -241,7 +242,7 @@ class CommunicationApiImpl implements ICommunicationApi {
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom)
       if (filters?.dateTo) params.append('dateTo', filters.dateTo)
 
-      const response = await apiInstance.get(`/communication/messages?${params.toString()}`)
+      const response = await this.client.get(`/communication/messages?${params.toString()}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -253,7 +254,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async getMessageById(id: string): Promise<{ message: Message }> {
     try {
-      const response = await apiInstance.get(`/communication/messages/${id}`)
+      const response = await this.client.get(`/communication/messages/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -265,7 +266,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async getMessageDeliveryStatus(messageId: string): Promise<MessageDeliveryStatusResponse> {
     try {
-      const response = await apiInstance.get(`/communication/messages/${messageId}/delivery`)
+      const response = await this.client.get(`/communication/messages/${messageId}/delivery`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -281,7 +282,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async sendEmergencyAlert(data: EmergencyAlertData): Promise<SendMessageResponse> {
     try {
-      const response = await apiInstance.post('/communication/emergency-alert', data)
+      const response = await this.client.post('/communication/emergency-alert', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -297,7 +298,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async processScheduledMessages(): Promise<ProcessScheduledMessagesResponse> {
     try {
-      const response = await apiInstance.post('/communication/process-scheduled')
+      const response = await this.client.post('/communication/process-scheduled')
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -318,7 +319,7 @@ class CommunicationApiImpl implements ICommunicationApi {
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom)
       if (filters?.dateTo) params.append('dateTo', filters.dateTo)
 
-      const response = await apiInstance.get(`/communication/statistics?${params.toString()}`)
+      const response = await this.client.get(`/communication/statistics?${params.toString()}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -334,7 +335,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async translateMessage(data: TranslationRequest): Promise<TranslationResponse> {
     try {
-      const response = await apiInstance.post('/communication/translate', data)
+      const response = await this.client.post('/communication/translate', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -350,7 +351,7 @@ class CommunicationApiImpl implements ICommunicationApi {
    */
   async getOptions(): Promise<CommunicationOptions> {
     try {
-      const response = await apiInstance.get('/communication/options')
+      const response = await this.client.get('/communication/options')
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -358,5 +359,7 @@ class CommunicationApiImpl implements ICommunicationApi {
   }
 }
 
-export const communicationApi = new CommunicationApiImpl()
 export type { ICommunicationApi }
+export function createCommunicationApi(client: ApiClient): ICommunicationApi {
+  return new CommunicationApiImpl(client);
+}

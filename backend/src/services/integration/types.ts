@@ -22,6 +22,11 @@
  */
 
 import { IntegrationType } from '../../database/types/enums';
+import type {
+  IntegrationSettings,
+  AuthenticationConfig,
+  IntegrationSyncStatus
+} from '../../types/integration';
 
 /**
  * Data structure for creating a new integration configuration
@@ -33,8 +38,9 @@ export interface CreateIntegrationConfigData {
   apiKey?: string;
   username?: string;
   password?: string;
-  settings?: any; // JSON data
+  settings: IntegrationSettings;
   syncFrequency?: number;
+  authentication?: AuthenticationConfig;
 }
 
 /**
@@ -46,9 +52,22 @@ export interface UpdateIntegrationConfigData {
   apiKey?: string;
   username?: string;
   password?: string;
-  settings?: any; // JSON data
+  settings?: IntegrationSettings;
   syncFrequency?: number;
   isActive?: boolean;
+  authentication?: AuthenticationConfig;
+}
+
+/**
+ * Integration test result details
+ */
+export interface IntegrationTestDetails {
+  endpointReachable: boolean;
+  authenticationValid: boolean;
+  dataFormatValid: boolean;
+  latency?: number;
+  serverVersion?: string;
+  capabilities?: string[];
 }
 
 /**
@@ -58,7 +77,7 @@ export interface IntegrationTestResult {
   success: boolean;
   message: string;
   responseTime?: number;
-  details?: any; // JSON data
+  details?: IntegrationTestDetails;
 }
 
 /**
@@ -74,6 +93,27 @@ export interface IntegrationSyncResult {
 }
 
 /**
+ * Integration log details
+ */
+export interface IntegrationLogDetails {
+  request?: {
+    url: string;
+    method: string;
+    headers?: Record<string, string>;
+  };
+  response?: {
+    statusCode: number;
+    headers?: Record<string, string>;
+  };
+  errors?: Array<{
+    code: string;
+    message: string;
+    field?: string;
+  }>;
+  metadata?: Record<string, unknown>;
+}
+
+/**
  * Parameters for creating an integration log entry
  */
 export interface CreateIntegrationLogData {
@@ -86,7 +126,7 @@ export interface CreateIntegrationLogData {
   recordsFailed?: number;
   duration?: number;
   errorMessage?: string;
-  details?: any;
+  details?: IntegrationLogDetails;
 }
 
 /**

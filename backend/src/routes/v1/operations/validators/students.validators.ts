@@ -10,8 +10,7 @@ import { paginationSchema } from '../../../shared/validators';
  * Query Schemas
  */
 
-export const listStudentsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit']),
+export const listStudentsQuerySchema = paginationSchema.keys({
   search: Joi.string()
     .trim()
     .optional()
@@ -223,6 +222,4 @@ export const searchQueryParamSchema = Joi.object({
     })
 });
 
-export const healthRecordsQuerySchema = Joi.object({
-  ...paginationSchema.describe('Pagination parameters').extract(['page', 'limit'])
-});
+export const healthRecordsQuerySchema = paginationSchema;

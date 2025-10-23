@@ -81,3 +81,9 @@ declare global {
     interface User extends AuthUser {}
   }
 }
+
+// Export centralized type definitions
+export * from './health';
+export * from './database';
+export * from './integration';
+export * from './validation';

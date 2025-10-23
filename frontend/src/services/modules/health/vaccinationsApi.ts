@@ -13,10 +13,10 @@
  * @module services/modules/health/vaccinations
  */
 
-import { apiInstance, API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import { z } from 'zod';
 import { BaseApiService } from '../../core/BaseApiService';
-import { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '../../core/ApiClient';
 import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
 
 // ==========================================
@@ -170,8 +170,7 @@ export class VaccinationsApiService extends BaseApiService<
   VaccinationCreate,
   VaccinationUpdate
 > {
-  constructor() {
-    const client = new ApiClient(apiInstance);
+  constructor(client: ApiClient) {
     super(client, `${API_ENDPOINTS.HEALTH_RECORDS}/vaccinations`, {
       createSchema: vaccinationCreateSchema,
       updateSchema: vaccinationUpdateSchema
@@ -444,7 +443,9 @@ export class VaccinationsApiService extends BaseApiService<
 }
 
 // ==========================================
-// SINGLETON EXPORT
+// FACTORY FUNCTION
 // ==========================================
 
-export const vaccinationsApi = new VaccinationsApiService();
+export function createVaccinationsApi(client: ApiClient): VaccinationsApiService {
+  return new VaccinationsApiService(client);
+}

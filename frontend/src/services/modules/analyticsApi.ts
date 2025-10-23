@@ -3,7 +3,7 @@
  * Provides frontend access to analytics and reporting endpoints
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
 
 /**
@@ -111,6 +111,8 @@ export interface CustomReportRequest {
  * Handles all analytics and reporting related API calls
  */
 export class AnalyticsApi {
+  constructor(private readonly client: ApiClient) {}
+
   /**
    * Get health metrics
    */
@@ -119,7 +121,7 @@ export class AnalyticsApi {
     endDate?: string;
     metricType?: string;
   }): Promise<HealthMetrics[]> {
-    const response = await apiInstance.get<ApiResponse<HealthMetrics[]>>(
+    const response = await this.client.get<ApiResponse<HealthMetrics[]>>(
       '/api/v1/analytics/health-metrics',
       { params }
     );
@@ -134,7 +136,7 @@ export class AnalyticsApi {
     endDate?: string;
     period?: 'daily' | 'weekly' | 'monthly';
   }): Promise<HealthTrends> {
-    const response = await apiInstance.get<ApiResponse<HealthTrends>>(
+    const response = await this.client.get<ApiResponse<HealthTrends>>(
       '/api/v1/analytics/health-trends',
       { params }
     );
@@ -148,7 +150,7 @@ export class AnalyticsApi {
     startDate?: string;
     endDate?: string;
   }): Promise<HealthMetrics[]> {
-    const response = await apiInstance.get<ApiResponse<HealthMetrics[]>>(
+    const response = await this.client.get<ApiResponse<HealthMetrics[]>>(
       `/api/v1/analytics/health-metrics/student/${studentId}`,
       { params }
     );
@@ -162,7 +164,7 @@ export class AnalyticsApi {
     startDate?: string;
     endDate?: string;
   }): Promise<HealthMetrics[]> {
-    const response = await apiInstance.get<ApiResponse<HealthMetrics[]>>(
+    const response = await this.client.get<ApiResponse<HealthMetrics[]>>(
       `/api/v1/analytics/health-metrics/school/${schoolId}`,
       { params }
     );
@@ -177,7 +179,7 @@ export class AnalyticsApi {
     endDate?: string;
     period?: 'daily' | 'weekly' | 'monthly';
   }): Promise<IncidentTrends> {
-    const response = await apiInstance.get<ApiResponse<IncidentTrends>>(
+    const response = await this.client.get<ApiResponse<IncidentTrends>>(
       '/api/v1/analytics/incidents/trends',
       { params }
     );
@@ -191,7 +193,7 @@ export class AnalyticsApi {
     startDate?: string;
     endDate?: string;
   }): Promise<IncidentLocationData[]> {
-    const response = await apiInstance.get<ApiResponse<IncidentLocationData[]>>(
+    const response = await this.client.get<ApiResponse<IncidentLocationData[]>>(
       '/api/v1/analytics/incidents/by-location',
       { params }
     );
@@ -206,7 +208,7 @@ export class AnalyticsApi {
     endDate?: string;
     medicationId?: string;
   }): Promise<MedicationUsage[]> {
-    const response = await apiInstance.get<ApiResponse<MedicationUsage[]>>(
+    const response = await this.client.get<ApiResponse<MedicationUsage[]>>(
       '/api/v1/analytics/medications/usage',
       { params }
     );
@@ -221,7 +223,7 @@ export class AnalyticsApi {
     endDate?: string;
     studentId?: string;
   }): Promise<MedicationAdherence[]> {
-    const response = await apiInstance.get<ApiResponse<MedicationAdherence[]>>(
+    const response = await this.client.get<ApiResponse<MedicationAdherence[]>>(
       '/api/v1/analytics/medications/adherence',
       { params }
     );
@@ -236,7 +238,7 @@ export class AnalyticsApi {
     endDate?: string;
     period?: 'daily' | 'weekly' | 'monthly';
   }): Promise<AppointmentTrends> {
-    const response = await apiInstance.get<ApiResponse<AppointmentTrends>>(
+    const response = await this.client.get<ApiResponse<AppointmentTrends>>(
       '/api/v1/analytics/appointments/trends',
       { params }
     );
@@ -250,7 +252,7 @@ export class AnalyticsApi {
     startDate?: string;
     endDate?: string;
   }): Promise<NoShowRate> {
-    const response = await apiInstance.get<ApiResponse<NoShowRate>>(
+    const response = await this.client.get<ApiResponse<NoShowRate>>(
       '/api/v1/analytics/appointments/no-show-rate',
       { params }
     );
@@ -261,7 +263,7 @@ export class AnalyticsApi {
    * Get nurse dashboard data
    */
   async getNurseDashboard(nurseId?: string): Promise<DashboardData> {
-    const response = await apiInstance.get<ApiResponse<DashboardData>>(
+    const response = await this.client.get<ApiResponse<DashboardData>>(
       '/api/v1/analytics/dashboard/nurse',
       { params: { nurseId } }
     );
@@ -272,7 +274,7 @@ export class AnalyticsApi {
    * Get admin dashboard data
    */
   async getAdminDashboard(schoolId?: string): Promise<DashboardData> {
-    const response = await apiInstance.get<ApiResponse<DashboardData>>(
+    const response = await this.client.get<ApiResponse<DashboardData>>(
       '/api/v1/analytics/dashboard/admin',
       { params: { schoolId } }
     );
@@ -286,7 +288,7 @@ export class AnalyticsApi {
     startDate?: string;
     endDate?: string;
   }): Promise<AnalyticsSummary> {
-    const response = await apiInstance.get<ApiResponse<AnalyticsSummary>>(
+    const response = await this.client.get<ApiResponse<AnalyticsSummary>>(
       '/api/v1/analytics/summary',
       { params }
     );
@@ -297,7 +299,7 @@ export class AnalyticsApi {
    * Create custom report
    */
   async createCustomReport(report: CustomReportRequest): Promise<CustomReport> {
-    const response = await apiInstance.post<ApiResponse<CustomReport>>(
+    const response = await this.client.post<ApiResponse<CustomReport>>(
       '/api/v1/analytics/reports/custom',
       report
     );
@@ -308,12 +310,18 @@ export class AnalyticsApi {
    * Get custom report by ID
    */
   async getCustomReport(reportId: string): Promise<CustomReport> {
-    const response = await apiInstance.get<ApiResponse<CustomReport>>(
+    const response = await this.client.get<ApiResponse<CustomReport>>(
       `/api/v1/analytics/reports/${reportId}`
     );
     return response.data.data!;
   }
 }
 
-// Export singleton instance
-export const analyticsApi = new AnalyticsApi();
+/**
+ * Factory function to create Analytics API instance
+ * @param client - ApiClient instance with authentication and resilience patterns
+ * @returns Configured AnalyticsApi instance
+ */
+export function createAnalyticsApi(client: ApiClient): AnalyticsApi {
+  return new AnalyticsApi(client);
+}

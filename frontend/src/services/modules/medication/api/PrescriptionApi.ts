@@ -28,7 +28,7 @@
  * - Student-specific cache keys
  */
 
-import { apiInstance } from '@/services/config/apiConfig';
+import type { ApiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
 import { Medication, AdministrationRoute } from './MedicationFormularyApi';
@@ -199,6 +199,12 @@ const createPrescriptionSchema = z.object({
 
 // API Client
 export class PrescriptionApi {
+  private client: ApiClient;
+
+  constructor(client: ApiClient) {
+    this.client = client;
+  }
+
   /**
    * Create new prescription
    */
@@ -215,7 +221,7 @@ export class PrescriptionApi {
         );
       }
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS,
         data
       );
@@ -250,7 +256,7 @@ export class PrescriptionApi {
     try {
       if (!id) throw new Error('Prescription ID is required');
 
-      const response = await apiInstance.put(
+      const response = await this.client.put(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_BY_ID(id),
         data
       );
@@ -270,7 +276,7 @@ export class PrescriptionApi {
       if (!id) throw new Error('Prescription ID is required');
       if (!reason) throw new Error('Discontinuation reason is required');
 
-      await apiInstance.patch(
+      await this.client.patch(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_DISCONTINUE(id),
         { reason }
       );
@@ -286,7 +292,7 @@ export class PrescriptionApi {
     try {
       if (!id) throw new Error('Prescription ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_BY_ID(id)
       );
 
@@ -311,7 +317,7 @@ export class PrescriptionApi {
         params.append('includeInactive', 'true');
       }
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         `${API_ENDPOINTS.MEDICATIONS.STUDENT_PRESCRIPTIONS(studentId)}?${params.toString()}`
       );
 
@@ -343,7 +349,7 @@ export class PrescriptionApi {
       if (filters?.page) params.append('page', String(filters.page));
       if (filters?.limit) params.append('limit', String(filters.limit));
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         `${API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS}?${params.toString()}`
       );
 
@@ -360,7 +366,7 @@ export class PrescriptionApi {
     try {
       if (!prescriptionId) throw new Error('Prescription ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_HISTORY(prescriptionId)
       );
 
@@ -382,7 +388,7 @@ export class PrescriptionApi {
       if (!prescriptionId) throw new Error('Prescription ID is required');
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_VERIFY(prescriptionId),
         { studentId }
       );
@@ -405,7 +411,7 @@ export class PrescriptionApi {
       if (!studentId) throw new Error('Student ID is required');
       if (!medicationId) throw new Error('Medication ID is required');
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS_CHECK_ALLERGIES,
         { studentId, medicationId }
       );
@@ -423,7 +429,7 @@ export class PrescriptionApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.STUDENT_ALLERGIES(studentId)
       );
 
@@ -438,7 +444,7 @@ export class PrescriptionApi {
    */
   async addStudentAllergy(data: Omit<Allergy, 'id' | 'isActive'>): Promise<Allergy> {
     try {
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         API_ENDPOINTS.MEDICATIONS.STUDENT_ALLERGIES(data.studentId),
         data
       );
@@ -459,7 +465,7 @@ export class PrescriptionApi {
     try {
       if (!allergyId) throw new Error('Allergy ID is required');
 
-      const response = await apiInstance.put(
+      const response = await this.client.put(
         API_ENDPOINTS.MEDICATIONS.ALLERGY_BY_ID(allergyId),
         data
       );
@@ -478,7 +484,7 @@ export class PrescriptionApi {
       if (!allergyId) throw new Error('Allergy ID is required');
       if (!reason) throw new Error('Deactivation reason is required');
 
-      await apiInstance.patch(
+      await this.client.patch(
         API_ENDPOINTS.MEDICATIONS.ALLERGY_DEACTIVATE(allergyId),
         { reason }
       );
@@ -501,7 +507,7 @@ export class PrescriptionApi {
     try {
       if (!prescriptionId) throw new Error('Prescription ID is required');
 
-      const response = await apiInstance.post(
+      const response = await this.client.post(
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_RENEW(prescriptionId),
         data
       );
@@ -517,7 +523,7 @@ export class PrescriptionApi {
    */
   async getExpiringPrescriptions(withinDays: number = 30): Promise<Prescription[]> {
     try {
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         `${API_ENDPOINTS.MEDICATIONS.PRESCRIPTIONS_EXPIRING}?withinDays=${withinDays}`
       );
 
@@ -534,7 +540,7 @@ export class PrescriptionApi {
     try {
       if (!studentId) throw new Error('Student ID is required');
 
-      const response = await apiInstance.get(
+      const response = await this.client.get(
         API_ENDPOINTS.MEDICATIONS.STUDENT_PRESCRIPTIONS_PRN(studentId)
       );
 
@@ -545,5 +551,7 @@ export class PrescriptionApi {
   }
 }
 
-// Export singleton instance
-export const prescriptionApi = new PrescriptionApi();
+// Factory function for creating PrescriptionApi instances
+export function createPrescriptionApi(client: ApiClient): PrescriptionApi {
+  return new PrescriptionApi(client);
+}

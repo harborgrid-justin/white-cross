@@ -35,7 +35,7 @@
  * @requires zod for runtime validation
  */
 
-import { apiInstance } from '../config/apiConfig';
+import type { ApiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '../../constants/api';
 import { z } from 'zod';
 import { createApiError, createValidationError } from '../core/errors';
@@ -110,6 +110,7 @@ const chartDataParamsSchema = z.object({
  * - Proper HTTP status code handling
  */
 export class DashboardApi {
+  constructor(private readonly client: ApiClient) {}
   /**
    * Get comprehensive dashboard statistics with trend analysis
    *
@@ -141,7 +142,7 @@ export class DashboardApi {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const response = await apiInstance.get<BackendApiResponse<DashboardStats>>(
+      const response = await this.client.get<BackendApiResponse<DashboardStats>>(
         API_ENDPOINTS.DASHBOARD.STATS
       );
 
@@ -202,7 +203,7 @@ export class DashboardApi {
         queryParams.append('limit', String(params.limit));
       }
 
-      const response = await apiInstance.get<BackendApiResponse<{ activities: DashboardRecentActivity[] }>>(
+      const response = await this.client.get<BackendApiResponse<{ activities: DashboardRecentActivity[] }>>(
         `${API_ENDPOINTS.DASHBOARD.RECENT_ACTIVITIES}?${queryParams.toString()}`
       );
 
@@ -262,7 +263,7 @@ export class DashboardApi {
         queryParams.append('limit', String(params.limit));
       }
 
-      const response = await apiInstance.get<BackendApiResponse<{ appointments: DashboardUpcomingAppointment[] }>>(
+      const response = await this.client.get<BackendApiResponse<{ appointments: DashboardUpcomingAppointment[] }>>(
         `${API_ENDPOINTS.DASHBOARD.UPCOMING_APPOINTMENTS}?${queryParams.toString()}`
       );
 
@@ -326,7 +327,7 @@ export class DashboardApi {
         queryParams.append('period', params.period);
       }
 
-      const response = await apiInstance.get<BackendApiResponse<DashboardChartData>>(
+      const response = await this.client.get<BackendApiResponse<DashboardChartData>>(
         `${API_ENDPOINTS.DASHBOARD.CHART_DATA}?${queryParams.toString()}`
       );
 
@@ -532,7 +533,7 @@ export class DashboardApi {
 
       // Future enhancement: Backend to implement scope filtering
       // For now, returns general stats
-      const response = await apiInstance.get<BackendApiResponse<DashboardStats>>(
+      const response = await this.client.get<BackendApiResponse<DashboardStats>>(
         `${API_ENDPOINTS.DASHBOARD.STATS}?${queryParams.toString()}`
       );
 
@@ -556,9 +557,10 @@ export class DashboardApi {
  * Use this singleton throughout the application to maintain consistent
  * state and avoid multiple instantiations.
  */
-export const dashboardApi = new DashboardApi();
 
 /**
  * Export class for testing and advanced use cases
  */
-export default dashboardApi;
+export function createDashboardApi(client: ApiClient): DashboardApi {
+  return new DashboardApi(client);
+}
