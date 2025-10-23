@@ -1,0 +1,4 @@
+frontend/src/App.tsx
+frontend/src/bootstrap.ts
+frontend/src/main.tsx
+frontend/src/vite-env.d.ts
