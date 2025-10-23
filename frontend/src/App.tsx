@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { ApolloProvider } from '@apollo/client';
 import { Toaster } from 'react-hot-toast';
 import { Provider } from 'react-redux';
 import { store } from './stores';
@@ -12,6 +13,7 @@ import { BackendConnectionError } from './components/shared/errors';
 import { LoadingSpinner } from './components/ui/feedback';
 import { initializeApp, BootstrapResult } from './bootstrap';
 import { queryClient, setupQueryPersistence } from './config/queryClient';
+import { apolloClient } from './config/apolloClient';
 
 /**
  * Check if the backend API is reachable
@@ -137,44 +139,46 @@ function App() {
   // Backend is available and app is initialized, render the app normally
   return (
     <GlobalErrorBoundary enableAuditLogging>
-      <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
-          <AuthProvider>
-            <BrowserRouter>
-              <AppRoutes />
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: '#363636',
-                    color: '#fff',
-                  },
-                  success: {
-                    duration: 3000,
-                    className: 'success-toast',
-                    iconTheme: {
-                      primary: '#10B981',
-                      secondary: '#fff',
+      <ApolloProvider client={apolloClient}>
+        <QueryClientProvider client={queryClient}>
+          <Provider store={store}>
+            <AuthProvider>
+              <BrowserRouter>
+                <AppRoutes />
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#363636',
+                      color: '#fff',
                     },
-                  },
-                  error: {
-                    duration: 5000,
-                    className: 'error-toast',
-                    iconTheme: {
-                      primary: '#EF4444',
-                      secondary: '#fff',
+                    success: {
+                      duration: 3000,
+                      className: 'success-toast',
+                      iconTheme: {
+                        primary: '#10B981',
+                        secondary: '#fff',
+                      },
                     },
-                  },
-                }}
-              />
-              {import.meta.env.DEV && (
-                <ReactQueryDevtools initialIsOpen={false} />
-              )}
-            </BrowserRouter>
-          </AuthProvider>
-        </Provider>
-      </QueryClientProvider>
+                    error: {
+                      duration: 5000,
+                      className: 'error-toast',
+                      iconTheme: {
+                        primary: '#EF4444',
+                        secondary: '#fff',
+                      },
+                    },
+                  }}
+                />
+                {import.meta.env.DEV && (
+                  <ReactQueryDevtools initialIsOpen={false} />
+                )}
+              </BrowserRouter>
+            </AuthProvider>
+          </Provider>
+        </QueryClientProvider>
+      </ApolloProvider>
     </GlobalErrorBoundary>
   );
 }
