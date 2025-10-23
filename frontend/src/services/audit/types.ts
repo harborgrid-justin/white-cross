@@ -1,14 +1,70 @@
 /**
- * HIPAA-Compliant Audit Logging System - Type Definitions
+ * @fileoverview HIPAA-Compliant Audit Logging System - Type Definitions
+ * 
+ * This module provides comprehensive TypeScript type definitions for a HIPAA-compliant
+ * audit logging system. It defines all interfaces, enums, and types needed to track
+ * Protected Health Information (PHI) access and modifications in healthcare applications.
  *
- * Purpose: Comprehensive type definitions for audit logging system
- * HIPAA Requirements:
- * - Track WHO accessed WHAT and WHEN
- * - Include successful and failed access attempts
- * - Tamper-evident logging with checksums
- * - Complete change tracking for PHI
- *
- * Last Updated: 2025-10-21
+ * @module AuditTypes
+ * @version 1.0.0
+ * @since 2025-10-21
+ * 
+ * @description
+ * The audit logging system ensures HIPAA compliance by capturing:
+ * - **WHO**: User identification and authentication details
+ * - **WHAT**: Specific actions performed on resources
+ * - **WHEN**: Precise timestamps for all operations
+ * - **WHERE**: Device and location context
+ * - **WHY**: Business justification and context
+ * - **HOW**: Method of access and technical details
+ * 
+ * Key Features:
+ * - Comprehensive audit action enumeration covering all PHI operations
+ * - Tamper-evident logging with checksum validation
+ * - Complete change tracking for data modifications
+ * - Configurable severity levels and criticality handling
+ * - Batch processing support for performance optimization
+ * - Local storage backup for offline capability
+ * - Extensive metadata capture for compliance reporting
+ * 
+ * @example Basic Usage
+ * ```typescript
+ * import { AuditEvent, AuditAction, AuditResourceType } from './types';
+ * 
+ * const event: AuditEvent = {
+ *   userId: 'user123',
+ *   action: AuditAction.VIEW_HEALTH_RECORD,
+ *   resourceType: AuditResourceType.HEALTH_RECORD,
+ *   resourceId: 'record456',
+ *   timestamp: new Date().toISOString(),
+ *   status: AuditStatus.SUCCESS,
+ *   isPHI: true,
+ *   isHIPAACompliant: true,
+ *   severity: AuditSeverity.MEDIUM
+ * };
+ * ```
+ * 
+ * @example Change Tracking
+ * ```typescript
+ * const changes: AuditChange[] = [
+ *   {
+ *     field: 'allergies',
+ *     oldValue: ['Peanuts'],
+ *     newValue: ['Peanuts', 'Shellfish'],
+ *     type: 'UPDATE'
+ *   }
+ * ];
+ * ```
+ * 
+ * @author Healthcare Development Team
+ * @copyright 2025 White Cross Health Systems
+ * @license Proprietary - Internal Use Only
+ * 
+ * @requires TypeScript 4.5+
+ * @requires HIPAA Compliance Review
+ * 
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html|HIPAA Security Rule}
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html|HIPAA Privacy Rule}
  */
 
 // ==========================================
@@ -16,7 +72,29 @@
 // ==========================================
 
 /**
- * Comprehensive audit actions covering all PHI operations
+ * @enum {string} AuditAction
+ * @description Comprehensive enumeration of all audit actions covering PHI operations
+ * and system interactions. Each action represents a specific operation that requires
+ * audit logging for HIPAA compliance.
+ * 
+ * Actions are categorized by:
+ * - **CRUD Operations**: CREATE, READ, UPDATE, DELETE
+ * - **Access Control**: VIEW, ACCESS_ATTEMPT, ACCESS_DENIED
+ * - **PHI Specific**: Health records, allergies, medications, etc.
+ * - **Administrative**: Exports, imports, transfers, bulk operations
+ * 
+ * @example
+ * ```typescript
+ * // Log a health record view
+ * await auditService.log({
+ *   action: AuditAction.VIEW_HEALTH_RECORD,
+ *   resourceType: AuditResourceType.HEALTH_RECORD,
+ *   resourceId: 'rec123'
+ * });
+ * ```
+ * 
+ * @since 1.0.0
+ * @readonly
  */
 export enum AuditAction {
   // Health Records
@@ -135,7 +213,25 @@ export enum AuditAction {
 }
 
 /**
- * Resource types for audit logging
+ * @enum {string} AuditResourceType  
+ * @description Enumeration of all resource types that can be audited in the system.
+ * These types correspond to different data entities and are used to categorize
+ * audit events for reporting and compliance tracking.
+ * 
+ * Resource types are automatically mapped to PHI classification based on
+ * the RESOURCE_PHI_MAP configuration. PHI resources require additional
+ * security measures and audit detail.
+ * 
+ * @example
+ * ```typescript
+ * // Check if a resource type contains PHI
+ * const isPHI = isResourcePHI(AuditResourceType.HEALTH_RECORD); // true
+ * const isNotPHI = isResourcePHI(AuditResourceType.INVENTORY); // false
+ * ```
+ * 
+ * @since 1.0.0
+ * @readonly
+ * @see {@link RESOURCE_PHI_MAP} for PHI classification mapping
  */
 export enum AuditResourceType {
   HEALTH_RECORD = 'HEALTH_RECORD',
@@ -158,7 +254,29 @@ export enum AuditResourceType {
 }
 
 /**
- * Audit event severity/criticality levels
+ * @enum {string} AuditSeverity
+ * @description Severity levels for audit events, determining priority and handling.
+ * Higher severity events may trigger immediate alerts, require immediate flush
+ * to backend, or demand manual review.
+ * 
+ * **Severity Levels:**
+ * - **LOW**: Routine operations, bulk logged
+ * - **MEDIUM**: Important operations, normal processing
+ * - **HIGH**: Sensitive operations, priority handling
+ * - **CRITICAL**: Security events, immediate attention required
+ * 
+ * @example
+ * ```typescript
+ * // Critical events are flushed immediately
+ * const isCritical = isCriticalSeverity(AuditSeverity.CRITICAL); // true
+ * 
+ * // Get default severity for an action
+ * const severity = getActionSeverity(AuditAction.DELETE_HEALTH_RECORD); // CRITICAL
+ * ```
+ * 
+ * @since 1.0.0
+ * @readonly
+ * @see {@link ACTION_SEVERITY_MAP} for action-to-severity mapping
  */
 export enum AuditSeverity {
   LOW = 'LOW',
@@ -168,7 +286,33 @@ export enum AuditSeverity {
 }
 
 /**
- * Audit event status
+ * @enum {string} AuditStatus
+ * @description Status values indicating the outcome of an audited operation.
+ * Used to track both successful operations and various failure modes
+ * for compliance reporting and system monitoring.
+ * 
+ * **Status Values:**
+ * - **SUCCESS**: Operation completed successfully
+ * - **FAILURE**: Operation failed due to business logic or validation
+ * - **PENDING**: Operation in progress (async operations)
+ * - **QUEUED**: Operation queued for processing
+ * - **ERROR**: Technical error occurred during operation
+ * 
+ * @example
+ * ```typescript
+ * // Log successful operation
+ * await auditService.logSuccess({
+ *   action: AuditAction.CREATE_ALLERGY,
+ *   resourceType: AuditResourceType.ALLERGY,
+ *   status: AuditStatus.SUCCESS // automatically set by logSuccess
+ * });
+ * 
+ * // Log failed operation
+ * await auditService.logFailure(params, error);
+ * ```
+ * 
+ * @since 1.0.0
+ * @readonly
  */
 export enum AuditStatus {
   SUCCESS = 'SUCCESS',
@@ -183,8 +327,77 @@ export enum AuditStatus {
 // ==========================================
 
 /**
- * Complete audit event structure
- * Captures comprehensive information for HIPAA compliance
+ * @interface AuditEvent
+ * @description Complete audit event structure capturing comprehensive information
+ * for HIPAA compliance. This is the core data structure that represents a single
+ * auditable operation in the healthcare system.
+ * 
+ * The audit event follows the "5 W's and H" framework:
+ * - **WHO**: User identification and role information
+ * - **WHAT**: Action performed and resource affected
+ * - **WHEN**: Precise timestamps for compliance tracking
+ * - **WHERE**: Device, location, and network context
+ * - **WHY**: Business reason and contextual information
+ * - **HOW**: Technical method and implementation details
+ * 
+ * **Key Features:**
+ * - Tamper-evident checksums for data integrity
+ * - Complete change tracking for PHI modifications
+ * - Hierarchical severity classification
+ * - Local caching for offline resilience
+ * - Extensible metadata for custom requirements
+ * 
+ * @example Complete Audit Event
+ * ```typescript
+ * const event: AuditEvent = {
+ *   id: 'audit_1698765432_abc123',
+ *   sessionId: 'session_1698765000_xyz789',
+ *   userId: 'nurse_456',
+ *   userEmail: 'jane.doe@school.edu',
+ *   userName: 'Jane Doe',
+ *   userRole: 'School Nurse',
+ *   action: AuditAction.UPDATE_ALLERGY,
+ *   resourceType: AuditResourceType.ALLERGY,
+ *   resourceId: 'allergy_789',
+ *   resourceIdentifier: 'Peanut Allergy - John Smith',
+ *   timestamp: '2025-10-21T14:30:32.123Z',
+ *   ipAddress: '10.1.2.3',
+ *   userAgent: 'Mozilla/5.0...',
+ *   method: 'UI',
+ *   status: AuditStatus.SUCCESS,
+ *   changes: [{
+ *     field: 'severity',
+ *     oldValue: 'moderate',
+ *     newValue: 'severe',
+ *     type: 'UPDATE'
+ *   }],
+ *   isPHI: true,
+ *   isHIPAACompliant: true,
+ *   severity: AuditSeverity.HIGH,
+ *   studentId: 'student_123',
+ *   checksum: 'abc123def456',
+ *   localTimestamp: 1698765432123,
+ *   isSynced: false
+ * };
+ * ```
+ * 
+ * @example Minimal Event
+ * ```typescript
+ * const minimalEvent: AuditEvent = {
+ *   userId: 'user_123',
+ *   action: AuditAction.VIEW_STUDENT,
+ *   resourceType: AuditResourceType.STUDENT,
+ *   timestamp: new Date().toISOString(),
+ *   status: AuditStatus.SUCCESS,
+ *   isPHI: true,
+ *   isHIPAACompliant: true,
+ *   severity: AuditSeverity.LOW
+ * };
+ * ```
+ * 
+ * @since 1.0.0
+ * @see {@link AuditLogParams} for simplified event creation
+ * @see {@link AuditChange} for change tracking details
  */
 export interface AuditEvent {
   // Event Identity
@@ -257,7 +470,52 @@ export interface AuditEvent {
 }
 
 /**
- * Individual field change tracking
+ * @interface AuditChange
+ * @description Represents a single field change in an audit event, enabling
+ * precise tracking of PHI modifications for compliance and accountability.
+ * 
+ * Change tracking is essential for HIPAA compliance as it provides:
+ * - Detailed modification history
+ * - Before/after values for rollback capability
+ * - Change type classification for reporting
+ * - Field-level granularity for sensitive data
+ * 
+ * @example Basic Change Tracking
+ * ```typescript
+ * const changes: AuditChange[] = [
+ *   {
+ *     field: 'email',
+ *     oldValue: 'old@example.com',
+ *     newValue: 'new@example.com',
+ *     type: 'UPDATE'
+ *   },
+ *   {
+ *     field: 'phoneNumbers',
+ *     oldValue: null,
+ *     newValue: ['+1-555-0123'],
+ *     type: 'ADD'
+ *   },
+ *   {
+ *     field: 'tempAddress',
+ *     oldValue: '123 Old St',
+ *     newValue: null,
+ *     type: 'REMOVE'
+ *   }
+ * ];
+ * ```
+ * 
+ * @example Nested Object Changes
+ * ```typescript
+ * const nestedChange: AuditChange = {
+ *   field: 'vitals.bloodPressure.systolic',
+ *   oldValue: 120,
+ *   newValue: 118,
+ *   type: 'UPDATE'
+ * };
+ * ```
+ * 
+ * @since 1.0.0
+ * @see {@link AuditEvent.changes} for usage in audit events
  */
 export interface AuditChange {
   field: string;
@@ -267,7 +525,78 @@ export interface AuditChange {
 }
 
 /**
- * Simplified audit log parameters for common operations
+ * @interface AuditLogParams
+ * @description Simplified parameters for creating audit log entries. This interface
+ * provides a developer-friendly API for logging operations without requiring
+ * knowledge of the complete AuditEvent structure.
+ * 
+ * The service automatically enhances these parameters with:
+ * - User context from authentication state
+ * - System-generated timestamps and IDs
+ * - Security checksums and signatures
+ * - Default severity levels based on action type
+ * - PHI classification based on resource type
+ * 
+ * **Parameter Categories:**
+ * - **Required**: action, resourceType
+ * - **Identification**: resourceId, resourceIdentifier, studentId
+ * - **Status**: status (defaults to SUCCESS)
+ * - **Change Tracking**: changes, beforeState, afterState
+ * - **Context**: reason, context, metadata, tags
+ * - **Classification**: isPHI, severity
+ * 
+ * @example Basic Logging
+ * ```typescript
+ * await auditService.log({
+ *   action: AuditAction.VIEW_HEALTH_RECORD,
+ *   resourceType: AuditResourceType.HEALTH_RECORD,
+ *   resourceId: 'health_record_456',
+ *   studentId: 'student_123'
+ * });
+ * ```
+ * 
+ * @example Detailed Change Logging
+ * ```typescript
+ * await auditService.log({
+ *   action: AuditAction.UPDATE_MEDICATION,
+ *   resourceType: AuditResourceType.MEDICATION,
+ *   resourceId: 'med_789',
+ *   resourceIdentifier: 'Albuterol Inhaler - Jane Doe',
+ *   studentId: 'student_456',
+ *   status: AuditStatus.SUCCESS,
+ *   changes: [{
+ *     field: 'dosage',
+ *     oldValue: '2 puffs',
+ *     newValue: '1 puff',
+ *     type: 'UPDATE'
+ *   }],
+ *   reason: 'Dosage adjustment per physician orders',
+ *   severity: AuditSeverity.HIGH,
+ *   metadata: {
+ *     physicianId: 'doc_123',
+ *     orderDate: '2025-10-21'
+ *   }
+ * });
+ * ```
+ * 
+ * @example Error Logging
+ * ```typescript
+ * await auditService.log({
+ *   action: AuditAction.DELETE_ALLERGY,
+ *   resourceType: AuditResourceType.ALLERGY,
+ *   resourceId: 'allergy_999',
+ *   status: AuditStatus.FAILURE,
+ *   reason: 'Insufficient permissions',
+ *   context: {
+ *     requiredRole: 'admin',
+ *     userRole: 'viewer'
+ *   }
+ * });
+ * ```
+ * 
+ * @since 1.0.0
+ * @see {@link AuditService.log} for usage
+ * @see {@link AuditEvent} for complete event structure
  */
 export interface AuditLogParams {
   action: AuditAction;
