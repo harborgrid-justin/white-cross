@@ -1,17 +1,60 @@
 /**
- * Enterprise Service Registry
- *
- * Purpose: Central registry and management for all API services
- *
- * Features:
- * - Service registration and discovery
- * - Health monitoring and circuit breaking
- * - Dependency injection support
- * - Version management
- * - Performance metrics collection
- * - Service lifecycle management
- *
+ * @fileoverview Enterprise service registry for API service management and discovery
  * @module services/core/ServiceRegistry
+ * @category Services
+ * 
+ * Central registry providing service registration, discovery, health monitoring,
+ * and lifecycle management for all API services in the application.
+ * 
+ * Key Features:
+ * - Service registration and discovery by name or category
+ * - Health monitoring with circuit breaker integration
+ * - Dependency injection and lazy loading support
+ * - Version management and deprecation tracking
+ * - Performance metrics collection per service
+ * - Service lifecycle management (initialize, destroy)
+ * - Centralized error tracking and reporting
+ * 
+ * Service Categories:
+ * - HEALTH: Health records, allergies, conditions, vaccinations
+ * - STUDENT: Student data, contacts, demographics
+ * - MEDICATION: Medication management, administration
+ * - APPOINTMENT: Appointments, scheduling
+ * - COMMUNICATION: Messages, notifications, alerts
+ * - COMPLIANCE: Audit logs, regulatory compliance
+ * - ADMINISTRATION: Users, schools, districts, settings
+ * - INTEGRATION: External system integrations
+ * - REPORTING: Analytics, reports, exports
+ * - AUDIT: Audit trail, HIPAA compliance logging
+ * 
+ * @example
+ * ```typescript
+ * // Register a service
+ * serviceRegistry.register('students', studentsService, {
+ *   name: 'Students API',
+ *   version: '1.0.0',
+ *   description: 'Student data management',
+ *   endpoint: '/api/students',
+ *   category: 'STUDENT',
+ *   dependencies: ['auth', 'cache']
+ * });
+ * 
+ * // Get a service
+ * const studentsService = serviceRegistry.get('students');
+ * 
+ * // Get all services by category
+ * const healthServices = serviceRegistry.getByCategory('HEALTH');
+ * 
+ * // Check service health
+ * const health = serviceRegistry.getHealth('students');
+ * if (health.status === 'DEGRADED') {
+ *   console.warn('Students service is degraded');
+ * }
+ * 
+ * // Get service metrics
+ * const metrics = serviceRegistry.getMetrics('students');
+ * console.log(`Error rate: ${metrics.failedRequests / metrics.totalRequests}`);
+ * ```
  */
 
 import { BaseApiService } from './BaseApiService';
