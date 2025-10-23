@@ -143,3 +143,8 @@ frontend/cypress/screenshots/
 frontend/cypress/videos/
 frontend/cypress/downloads/
 *.bak
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
