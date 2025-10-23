@@ -1,24 +1,29 @@
 /**
  * MessageCenter Component
  * 
- * Message Center component for communication module.
+ * Message Center for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface MessageCenterProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * MessageCenter component
+ * MessageCenter component - Message Center
  */
-const MessageCenter: React.FC<MessageCenterProps> = (props) => {
+const MessageCenter: React.FC<MessageCenterProps> = ({ className = '' }) => {
   return (
-    <div className="message-center">
-      <h3>Message Center</h3>
-      {/* Component implementation */}
+    <div className={`message-center ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Message Center</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Message Center functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

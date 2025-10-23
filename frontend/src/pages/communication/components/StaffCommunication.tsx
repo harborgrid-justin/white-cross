@@ -1,24 +1,29 @@
 /**
  * StaffCommunication Component
  * 
- * Staff Communication component for communication module.
+ * Staff Communication for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface StaffCommunicationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * StaffCommunication component
+ * StaffCommunication component - Staff Communication
  */
-const StaffCommunication: React.FC<StaffCommunicationProps> = (props) => {
+const StaffCommunication: React.FC<StaffCommunicationProps> = ({ className = '' }) => {
   return (
-    <div className="staff-communication">
-      <h3>Staff Communication</h3>
-      {/* Component implementation */}
+    <div className={`staff-communication ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Staff Communication</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Staff Communication functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

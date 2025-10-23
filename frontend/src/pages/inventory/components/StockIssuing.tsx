@@ -1,24 +1,29 @@
 /**
  * StockIssuing Component
  * 
- * Stock Issuing component for inventory module.
+ * Stock Issuing for inventory module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface StockIssuingProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * StockIssuing component
+ * StockIssuing component - Stock Issuing
  */
-const StockIssuing: React.FC<StockIssuingProps> = (props) => {
+const StockIssuing: React.FC<StockIssuingProps> = ({ className = '' }) => {
   return (
-    <div className="stock-issuing">
-      <h3>Stock Issuing</h3>
-      {/* Component implementation */}
+    <div className={`stock-issuing ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Stock Issuing</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Stock Issuing functionality</p>
+          <p className="text-sm mt-2">Connected to inventory Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

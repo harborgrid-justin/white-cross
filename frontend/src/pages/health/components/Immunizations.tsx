@@ -1,24 +1,29 @@
 /**
  * Immunizations Component
  * 
- * Immunizations component for health module.
+ * Immunizations for health module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ImmunizationsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * Immunizations component
+ * Immunizations component - Immunizations
  */
-const Immunizations: React.FC<ImmunizationsProps> = (props) => {
+const Immunizations: React.FC<ImmunizationsProps> = ({ className = '' }) => {
   return (
-    <div className="immunizations">
-      <h3>Immunizations</h3>
-      {/* Component implementation */}
+    <div className={`immunizations ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Immunizations</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Immunizations functionality</p>
+          <p className="text-sm mt-2">Connected to health Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

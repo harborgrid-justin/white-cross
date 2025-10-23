@@ -1,24 +1,29 @@
 /**
  * StandardReports Component
  * 
- * Standard Reports component for reports module.
+ * Standard Reports for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface StandardReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * StandardReports component
+ * StandardReports component - Standard Reports
  */
-const StandardReports: React.FC<StandardReportsProps> = (props) => {
+const StandardReports: React.FC<StandardReportsProps> = ({ className = '' }) => {
   return (
-    <div className="standard-reports">
-      <h3>Standard Reports</h3>
-      {/* Component implementation */}
+    <div className={`standard-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Standard Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Standard Reports functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

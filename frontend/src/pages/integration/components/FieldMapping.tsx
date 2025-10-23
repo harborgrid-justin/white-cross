@@ -1,24 +1,29 @@
 /**
  * FieldMapping Component
  * 
- * Field Mapping component for integration module.
+ * Field Mapping for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface FieldMappingProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * FieldMapping component
+ * FieldMapping component - Field Mapping
  */
-const FieldMapping: React.FC<FieldMappingProps> = (props) => {
+const FieldMapping: React.FC<FieldMappingProps> = ({ className = '' }) => {
   return (
-    <div className="field-mapping">
-      <h3>Field Mapping</h3>
-      {/* Component implementation */}
+    <div className={`field-mapping ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Field Mapping</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Field Mapping functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

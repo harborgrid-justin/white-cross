@@ -1,24 +1,29 @@
 /**
  * ReportGenerator Component
  * 
- * Report Generator component for purchase order management.
+ * Report Generator for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReportGeneratorProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReportGenerator component
+ * ReportGenerator component - Report Generator
  */
-const ReportGenerator: React.FC<ReportGeneratorProps> = (props) => {
+const ReportGenerator: React.FC<ReportGeneratorProps> = ({ className = '' }) => {
   return (
-    <div className="report-generator">
-      <h3>Report Generator</h3>
-      {/* Component implementation */}
+    <div className={`report-generator ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Generator</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Report Generator functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

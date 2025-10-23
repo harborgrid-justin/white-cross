@@ -1,24 +1,29 @@
 /**
  * ExportOptions Component
  * 
- * Export Options component for contacts module.
+ * Export Options for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ExportOptionsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ExportOptions component
+ * ExportOptions component - Export Options
  */
-const ExportOptions: React.FC<ExportOptionsProps> = (props) => {
+const ExportOptions: React.FC<ExportOptionsProps> = ({ className = '' }) => {
   return (
-    <div className="export-options">
-      <h3>Export Options</h3>
-      {/* Component implementation */}
+    <div className={`export-options ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Options</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Export Options functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

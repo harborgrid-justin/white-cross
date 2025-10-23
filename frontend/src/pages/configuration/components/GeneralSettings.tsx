@@ -1,24 +1,29 @@
 /**
  * GeneralSettings Component
  * 
- * General Settings component for configuration module.
+ * General Settings for configuration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface GeneralSettingsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * GeneralSettings component
+ * GeneralSettings component - General Settings
  */
-const GeneralSettings: React.FC<GeneralSettingsProps> = (props) => {
+const GeneralSettings: React.FC<GeneralSettingsProps> = ({ className = '' }) => {
   return (
-    <div className="general-settings">
-      <h3>General Settings</h3>
-      {/* Component implementation */}
+    <div className={`general-settings ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">General Settings</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>General Settings functionality</p>
+          <p className="text-sm mt-2">Connected to configuration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

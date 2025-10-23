@@ -1,7 +1,55 @@
 /**
- * Resilient API Client
- * Integrates circuit breaker, bulkhead, request deduplication, and health monitoring
- * Provides enterprise-grade fault tolerance for healthcare operations
+ * @fileoverview Resilient API client with circuit breaker, bulkhead, and health monitoring
+ * @module services/core/ResilientApiClient
+ * @category Services
+ * 
+ * Enterprise-grade API client wrapper that adds comprehensive resilience patterns
+ * to prevent cascading failures while ensuring critical healthcare operations complete.
+ * 
+ * Resilience Patterns:
+ * - **Circuit Breaker**: Prevents calls to failing endpoints (fail-fast)
+ * - **Bulkhead**: Limits concurrent requests by priority to prevent resource exhaustion
+ * - **Request Deduplication**: Prevents duplicate in-flight requests
+ * - **Health Monitoring**: Tracks endpoint health and degradation
+ * - **Retry Logic**: Intelligent retry with exponential backoff
+ * - **Timeout Management**: Per-operation timeout configuration
+ * 
+ * Healthcare-Specific Features:
+ * - Critical operations bypass circuit breaker (patient safety first)
+ * - Priority-based request queuing (medication admin > reports)
+ * - Automatic degradation detection
+ * - HIPAA-compliant error logging (no PHI in errors)
+ * 
+ * @example
+ * ```typescript
+ * // Create resilient client
+ * const client = new ResilientApiClient(apiClient, {
+ *   circuitBreaker: {
+ *     failureThreshold: 5,
+ *     resetTimeout: 30000
+ *   },
+ *   bulkhead: {
+ *     maxConcurrent: 10,
+ *     maxQueue: 50
+ *   }
+ * });
+ * 
+ * // Make resilient request
+ * try {
+ *   const data = await client.get<Student>(
+ *     '/students/123',
+ *     'VIEW_STUDENT_DATA' // Operation type for priority
+ *   );
+ * } catch (error) {
+ *   if (error instanceof ResilienceError) {
+ *     if (error.reason === 'CIRCUIT_OPEN') {
+ *       // Circuit breaker is open, endpoint is failing
+ *     } else if (error.reason === 'BULKHEAD_FULL') {
+ *       // Too many concurrent requests
+ *     }
+ *   }
+ * }
+ * ```
  */
 
 import { AxiosRequestConfig } from 'axios';
@@ -27,8 +75,54 @@ import {
 
 /**
  * Resilient API Client
- * Wraps standard ApiClient with comprehensive resilience patterns
- * Prevents cascading failures while ensuring critical operations complete
+ * 
+ * @class
+ * @classdesc Wraps standard ApiClient with comprehensive resilience patterns
+ * to prevent cascading failures while ensuring critical healthcare operations
+ * always complete successfully.
+ * 
+ * Architecture:
+ * - Circuit breaker per endpoint (tracks failures, opens circuit)
+ * - Bulkhead pattern limits concurrent requests by priority
+ * - Request deduplication prevents redundant calls
+ * - Health monitoring tracks endpoint degradation
+ * - Automatic fallback and retry strategies
+ * 
+ * Failure Modes:
+ * - Circuit Open: Endpoint is failing, fast-fail new requests
+ * - Bulkhead Full: Too many concurrent requests, queue or reject
+ * - Timeout: Request exceeded timeout, automatic retry
+ * - Rate Limited: Server rate limiting, exponential backoff
+ * 
+ * Priority Levels (for bulkhead):
+ * - CRITICAL: Medication administration, emergency contacts
+ * - HIGH: View patient data, create incidents
+ * - MEDIUM: Most CRUD operations
+ * - LOW: Reports, analytics, exports
+ * 
+ * @example
+ * ```typescript
+ * const resilientClient = new ResilientApiClient(baseApiClient, {
+ *   circuitBreaker: {
+ *     failureThreshold: 5,     // Open after 5 failures
+ *     successThreshold: 2,     // Close after 2 successes
+ *     resetTimeout: 60000,     // Try again after 60s
+ *     monitoringPeriod: 10000  // Track last 10s
+ *   },
+ *   bulkhead: {
+ *     maxConcurrent: 10,       // Max 10 concurrent requests
+ *     maxQueue: 50,            // Max 50 queued requests
+ *     timeout: 30000           // Max 30s wait time
+ *   }
+ * });
+ * 
+ * // Critical operation (bypasses circuit breaker)
+ * await resilientClient.post(
+ *   '/medications/administer',
+ *   data,
+ *   'ADMINISTER_MEDICATION' // Critical operation type
+ * );
+ * ```
  */
 export class ResilientApiClient {
   private apiClient: ApiClient;

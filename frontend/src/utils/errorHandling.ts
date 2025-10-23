@@ -1,18 +1,66 @@
 /**
- * WF-COMP-339 | errorHandling.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../types/common, ../constants/errors | Dependencies: ../types/common, ../constants/errors
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: functions, interfaces, types | Key Features: component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Unified error handling utilities for the healthcare platform
- * Provides consistent error reporting, logging, and user messaging
+ * @fileoverview Unified error handling utilities with user-friendly messaging
+ * @module utils/errorHandling
+ * @category Utils
+ * 
+ * Provides consistent error processing, classification, and user-facing
+ * messages across the entire healthcare platform.
+ * 
+ * Key Features:
+ * - **Error classification**: Network, auth, validation, server errors
+ * - **User-friendly messages**: Technical errors → readable messages
+ * - **Retry logic**: Automatic determination of retryable errors
+ * - **Error logging**: Structured error data for monitoring
+ * - **HIPAA compliance**: No PHI in error messages
+ * - **Status code mapping**: HTTP status → error type
+ * - **Context preservation**: Additional context for debugging
+ * 
+ * Error Types:
+ * - NETWORK_ERROR: Connection failed, DNS issues, offline
+ * - AUTHENTICATION_ERROR: 401 - Invalid credentials, expired token
+ * - AUTHORIZATION_ERROR: 403 - Insufficient permissions
+ * - VALIDATION_ERROR: 400 - Invalid input data
+ * - SERVER_ERROR: 500-599 - Server-side failures
+ * - CLIENT_ERROR: 400-499 - Client-side issues
+ * - TIMEOUT_ERROR: Request exceeded timeout
+ * - UNKNOWN_ERROR: Unclassified errors
+ * 
+ * Retry Strategy:
+ * - Network errors: Retry (user may have intermittent connection)
+ * - Server errors (5xx): Retry (temporary server issues)
+ * - Auth errors (401): Don't retry (need new credentials)
+ * - Validation errors (400): Don't retry (need different input)
+ * - Forbidden (403): Don't retry (permissions required)
+ * 
+ * @example
+ * ```typescript
+ * // Process any error type
+ * try {
+ *   await api.updateStudent(data);
+ * } catch (error) {
+ *   const processed = processError(error, 'StudentUpdate');
+ *   
+ *   // Show user-friendly message
+ *   showErrorToast(processed.userMessage);
+ *   
+ *   // Log technical details
+ *   logger.error(processed.message, processed.details);
+ *   
+ *   // Retry if applicable
+ *   if (processed.canRetry) {
+ *     setTimeout(() => retryOperation(), 2000);
+ *   }
+ * }
+ * 
+ * // Get user-friendly message
+ * const message = getUserFriendlyMessage(apiError);
+ * // "Unable to save changes. Please try again."
+ * 
+ * // Check if retryable
+ * if (isRetryableError(statusCode)) {
+ *   // Implement retry logic
+ * }
+ * ```
  */
 
 import { ApiError, ValidationError } from '../types/common';

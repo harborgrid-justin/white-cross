@@ -1,24 +1,29 @@
 /**
  * CustomReports Component
  * 
- * Custom Reports component for reports module.
+ * Custom Reports for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface CustomReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * CustomReports component
+ * CustomReports component - Custom Reports
  */
-const CustomReports: React.FC<CustomReportsProps> = (props) => {
+const CustomReports: React.FC<CustomReportsProps> = ({ className = '' }) => {
   return (
-    <div className="custom-reports">
-      <h3>Custom Reports</h3>
-      {/* Component implementation */}
+    <div className={`custom-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Custom Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Custom Reports functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

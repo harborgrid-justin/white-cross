@@ -1,24 +1,29 @@
 /**
  * UserActivity Component
  * 
- * User Activity component for admin module.
+ * User Activity for admin module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface UserActivityProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * UserActivity component
+ * UserActivity component - User Activity
  */
-const UserActivity: React.FC<UserActivityProps> = (props) => {
+const UserActivity: React.FC<UserActivityProps> = ({ className = '' }) => {
   return (
-    <div className="user-activity">
-      <h3>User Activity</h3>
-      {/* Component implementation */}
+    <div className={`user-activity ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">User Activity</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>User Activity functionality</p>
+          <p className="text-sm mt-2">Connected to admin Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

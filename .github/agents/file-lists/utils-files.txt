@@ -1,0 +1,16 @@
+frontend/src/utils/cn.ts
+frontend/src/utils/debug.ts
+frontend/src/utils/documentValidation.ts
+frontend/src/utils/errorHandling.ts
+frontend/src/utils/healthRecords.ts
+frontend/src/utils/lodashUtils.ts
+frontend/src/utils/medications.ts
+frontend/src/utils/navigationUtils.ts
+frontend/src/utils/optimisticHelpers.ts
+frontend/src/utils/optimisticUpdates.examples.ts
+frontend/src/utils/optimisticUpdates.ts
+frontend/src/utils/sanitization.ts
+frontend/src/utils/studentValidation.ts
+frontend/src/utils/toast.ts
+frontend/src/utils/tokenSecurity.ts
+frontend/src/utils/validation/studentValidation.ts

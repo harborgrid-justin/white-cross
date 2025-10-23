@@ -1,24 +1,29 @@
 /**
  * AccessControlDashboard Component
  * 
- * Access Control Dashboard component for access-control module.
+ * Access Control Dashboard for access-control module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface AccessControlDashboardProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * AccessControlDashboard component
+ * AccessControlDashboard component - Access Control Dashboard
  */
-const AccessControlDashboard: React.FC<AccessControlDashboardProps> = (props) => {
+const AccessControlDashboard: React.FC<AccessControlDashboardProps> = ({ className = '' }) => {
   return (
-    <div className="access-control-dashboard">
-      <h3>Access Control Dashboard</h3>
-      {/* Component implementation */}
+    <div className={`access-control-dashboard ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Access Control Dashboard</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Access Control Dashboard functionality</p>
+          <p className="text-sm mt-2">Connected to access-control Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

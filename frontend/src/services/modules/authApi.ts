@@ -1,13 +1,60 @@
 /**
- * WF-COMP-271 | authApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../../constants/config, ../types | Dependencies: ../config/apiConfig, ../../constants/config, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Authentication API service with secure credential validation
+ * @module services/modules/authApi
+ * @category Services
+ * 
+ * Provides authentication and authorization API endpoints including login,
+ * registration, token refresh, and password management with strong security validation.
+ * 
+ * Key Features:
+ * - User authentication (login/logout)
+ * - User registration with role-based access
+ * - Token refresh for session management
+ * - Password validation (12+ chars, uppercase, lowercase, number, special char)
+ * - Email verification
+ * - Password reset flow
+ * - Multi-factor authentication support
+ * - Session management
+ * 
+ * Security:
+ * - Strong password requirements enforced
+ * - Zod schema validation for all inputs
+ * - Secure token storage via tokenUtils
+ * - CSRF protection on state-changing operations
+ * - Rate limiting on login attempts (backend)
+ * - No PHI in authentication data
+ * 
+ * Token Management:
+ * - Access tokens stored in sessionStorage
+ * - Refresh tokens for automatic renewal
+ * - Token expiration handling
+ * - Automatic logout on token expiry
+ * 
+ * @example
+ * ```typescript
+ * // Login
+ * const { user, token } = await authApi.login({
+ *   email: 'nurse@school.edu',
+ *   password: 'SecurePass123!',
+ *   rememberMe: true
+ * });
+ * 
+ * // Register new user
+ * const response = await authApi.register({
+ *   email: 'newuser@school.edu',
+ *   password: 'SecurePass123!',
+ *   firstName: 'Jane',
+ *   lastName: 'Doe',
+ *   role: 'NURSE',
+ *   schoolId: 'school-123'
+ * });
+ * 
+ * // Refresh token
+ * const { token: newToken } = await authApi.refreshToken();
+ * 
+ * // Logout
+ * await authApi.logout();
+ * ```
  */
 
 import { apiInstance, API_ENDPOINTS, tokenUtils } from '../config/apiConfig';

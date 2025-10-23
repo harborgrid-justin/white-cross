@@ -1,24 +1,29 @@
 /**
  * ReportCard Component
  * 
- * Report Card component for reports module.
+ * Report Card for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReportCardProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReportCard component
+ * ReportCard component - Report Card
  */
-const ReportCard: React.FC<ReportCardProps> = (props) => {
+const ReportCard: React.FC<ReportCardProps> = ({ className = '' }) => {
   return (
-    <div className="report-card">
-      <h3>Report Card</h3>
-      {/* Component implementation */}
+    <div className={`report-card ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Card</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Report Card functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

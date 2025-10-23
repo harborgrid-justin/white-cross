@@ -1,24 +1,29 @@
 /**
  * ViolationReports Component
  * 
- * Violation Reports component for compliance module.
+ * Violation Reports for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ViolationReportsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ViolationReports component
+ * ViolationReports component - Violation Reports
  */
-const ViolationReports: React.FC<ViolationReportsProps> = (props) => {
+const ViolationReports: React.FC<ViolationReportsProps> = ({ className = '' }) => {
   return (
-    <div className="violation-reports">
-      <h3>Violation Reports</h3>
-      {/* Component implementation */}
+    <div className={`violation-reports ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Violation Reports</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Violation Reports functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

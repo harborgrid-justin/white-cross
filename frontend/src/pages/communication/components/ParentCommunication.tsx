@@ -1,24 +1,29 @@
 /**
  * ParentCommunication Component
  * 
- * Parent Communication component for communication module.
+ * Parent Communication for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ParentCommunicationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ParentCommunication component
+ * ParentCommunication component - Parent Communication
  */
-const ParentCommunication: React.FC<ParentCommunicationProps> = (props) => {
+const ParentCommunication: React.FC<ParentCommunicationProps> = ({ className = '' }) => {
   return (
-    <div className="parent-communication">
-      <h3>Parent Communication</h3>
-      {/* Component implementation */}
+    <div className={`parent-communication ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Parent Communication</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Parent Communication functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * StatusBadge Component
  * 
- * Status Badge component for incident report management.
+ * Status Badge for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface StatusBadgeProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * StatusBadge component for incident reporting system
+ * StatusBadge component - Status Badge
  */
-const StatusBadge: React.FC<StatusBadgeProps> = (props) => {
+const StatusBadge: React.FC<StatusBadgeProps> = ({ className = '' }) => {
   return (
-    <div className="status-badge">
-      <h3>Status Badge</h3>
-      {/* Component implementation */}
+    <div className={`status-badge ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Badge</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Status Badge functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

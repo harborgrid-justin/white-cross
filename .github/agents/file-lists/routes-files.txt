@@ -1,0 +1,3 @@
+frontend/src/routes/guards.tsx
+frontend/src/routes/index.tsx
+frontend/src/routes/routeUtils.ts

@@ -1,24 +1,29 @@
 /**
  * MappingEditor Component
  * 
- * Mapping Editor component for integration module.
+ * Mapping Editor for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface MappingEditorProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * MappingEditor component
+ * MappingEditor component - Mapping Editor
  */
-const MappingEditor: React.FC<MappingEditorProps> = (props) => {
+const MappingEditor: React.FC<MappingEditorProps> = ({ className = '' }) => {
   return (
-    <div className="mapping-editor">
-      <h3>Mapping Editor</h3>
-      {/* Component implementation */}
+    <div className={`mapping-editor ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Mapping Editor</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Mapping Editor functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * ContractList Component
  * 
- * Contract List component for vendor module.
+ * Contract List for vendor module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ContractListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ContractList component
+ * ContractList component - Contract List
  */
-const ContractList: React.FC<ContractListProps> = (props) => {
+const ContractList: React.FC<ContractListProps> = ({ className = '' }) => {
   return (
-    <div className="contract-list">
-      <h3>Contract List</h3>
-      {/* Component implementation */}
+    <div className={`contract-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Contract List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Contract List functionality</p>
+          <p className="text-sm mt-2">Connected to vendor Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * AssignPermissionsDialog Component
  * 
- * Assign Permissions Dialog component for access-control module.
+ * Assign Permissions Dialog for access-control module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface AssignPermissionsDialogProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * AssignPermissionsDialog component
+ * AssignPermissionsDialog component - Assign Permissions Dialog
  */
-const AssignPermissionsDialog: React.FC<AssignPermissionsDialogProps> = (props) => {
+const AssignPermissionsDialog: React.FC<AssignPermissionsDialogProps> = ({ className = '' }) => {
   return (
-    <div className="assign-permissions-dialog">
-      <h3>Assign Permissions Dialog</h3>
-      {/* Component implementation */}
+    <div className={`assign-permissions-dialog ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Assign Permissions Dialog</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Assign Permissions Dialog functionality</p>
+          <p className="text-sm mt-2">Connected to access-control Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

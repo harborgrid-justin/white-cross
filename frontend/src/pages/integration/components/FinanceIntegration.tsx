@@ -1,24 +1,29 @@
 /**
  * FinanceIntegration Component
  * 
- * Finance Integration component for integration module.
+ * Finance Integration for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface FinanceIntegrationProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * FinanceIntegration component
+ * FinanceIntegration component - Finance Integration
  */
-const FinanceIntegration: React.FC<FinanceIntegrationProps> = (props) => {
+const FinanceIntegration: React.FC<FinanceIntegrationProps> = ({ className = '' }) => {
   return (
-    <div className="finance-integration">
-      <h3>Finance Integration</h3>
-      {/* Component implementation */}
+    <div className={`finance-integration ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Finance Integration</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Finance Integration functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

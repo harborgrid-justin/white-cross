@@ -1,25 +1,122 @@
 /**
- * HIPAA-Compliant Audit Logging Service
+ * @fileoverview HIPAA-Compliant Audit Logging Service
+ * 
+ * This module provides a production-ready audit logging service designed for healthcare
+ * applications requiring HIPAA compliance. The service ensures reliable, secure, and
+ * performant audit trail generation with comprehensive error handling and recovery.
  *
- * Purpose: Production-ready audit logging with batching, retry, and local backup
- *
- * Key Features:
- * - Automatic batching of audit events
- * - Local storage backup when backend unavailable
- * - Exponential backoff retry mechanism
- * - Immediate flush for critical events
- * - Tamper-evident checksums
- * - Never fails primary operations
- * - HIPAA-compliant event tracking
- *
- * Architecture:
- * - Events queued in memory
- * - Periodic batch submission to backend
- * - Failed events stored in localStorage
- * - Automatic retry with backoff
- * - Critical events bypass batching
- *
- * Last Updated: 2025-10-21
+ * @module AuditService
+ * @version 1.0.0
+ * @since 2025-10-21
+ * 
+ * @description
+ * The AuditService implements a sophisticated audit logging system with:
+ * 
+ * **Core Architecture:**
+ * - Event queuing with intelligent batching for performance
+ * - Immediate processing for critical security events
+ * - Local storage backup for offline resilience
+ * - Exponential backoff retry mechanism for reliability
+ * - Tamper-evident checksums for data integrity
+ * - Never-fail design that doesn't block primary operations
+ * 
+ * **HIPAA Compliance Features:**
+ * - Complete audit trail for PHI access and modifications
+ * - User context tracking (WHO accessed WHAT and WHEN)
+ * - Change tracking for data modifications
+ * - Automatic PHI classification and security handling
+ * - Configurable retention and security policies
+ * 
+ * **Performance Optimizations:**
+ * - Batched transmission to reduce network overhead
+ * - Configurable batch sizes and intervals
+ * - Asynchronous processing to avoid UI blocking
+ * - Local caching for offline operation
+ * - Efficient memory management and cleanup
+ * 
+ * **Reliability Features:**
+ * - Robust error handling and recovery
+ * - Exponential backoff retry with jitter
+ * - Local storage fallback for failed transmissions
+ * - Health monitoring and status reporting
+ * - Graceful degradation under system stress
+ * 
+ * @example Basic Service Usage
+ * ```typescript
+ * import { AuditService, AuditAction, AuditResourceType } from './audit';
+ * 
+ * // Initialize service
+ * const auditService = new AuditService();
+ * 
+ * // Set user context after authentication
+ * auditService.setUserContext({
+ *   id: 'user123',
+ *   email: 'nurse@school.edu',
+ *   firstName: 'Jane',
+ *   lastName: 'Doe',
+ *   role: 'School Nurse'
+ * });
+ * 
+ * // Log PHI access
+ * await auditService.logPHIAccess(
+ *   AuditAction.VIEW_HEALTH_RECORD,
+ *   'student456',
+ *   AuditResourceType.HEALTH_RECORD,
+ *   'record789'
+ * );
+ * ```
+ * 
+ * @example Advanced Usage with Change Tracking
+ * ```typescript
+ * // Log data modifications with change tracking
+ * await auditService.log({
+ *   action: AuditAction.UPDATE_ALLERGY,
+ *   resourceType: AuditResourceType.ALLERGY,
+ *   resourceId: 'allergy123',
+ *   studentId: 'student456',
+ *   changes: [{
+ *     field: 'severity',
+ *     oldValue: 'moderate',
+ *     newValue: 'severe',
+ *     type: 'UPDATE'
+ *   }],
+ *   reason: 'Updated based on recent reaction',
+ *   metadata: {
+ *     reviewedBy: 'doctor789',
+ *     reviewDate: '2025-10-21'
+ *   }
+ * });
+ * ```
+ * 
+ * @example Error Handling
+ * ```typescript
+ * try {
+ *   await someHealthcareOperation();
+ *   await auditService.logSuccess({
+ *     action: AuditAction.CREATE_MEDICATION,
+ *     resourceType: AuditResourceType.MEDICATION,
+ *     resourceId: newMedication.id
+ *   });
+ * } catch (error) {
+ *   await auditService.logFailure({
+ *     action: AuditAction.CREATE_MEDICATION,
+ *     resourceType: AuditResourceType.MEDICATION
+ *   }, error);
+ *   throw error; // Re-throw to maintain error flow
+ * }
+ * ```
+ * 
+ * @author Healthcare Development Team
+ * @copyright 2025 White Cross Health Systems
+ * @license Proprietary - Internal Use Only
+ * 
+ * @requires Node.js 18+ or Modern Browser Environment
+ * @requires HIPAA Compliance Review
+ * @requires Security Team Approval
+ * 
+ * @see {@link IAuditService} for interface definition
+ * @see {@link AuditConfig} for configuration options
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html|HIPAA Security Rule}
  */
 
 import { apiInstance } from '../config/apiConfig';
@@ -45,7 +142,49 @@ import {
 } from './config';
 
 /**
- * Generate a simple checksum for tamper detection
+ * @function generateChecksum
+ * @description Generates a simple hash-based checksum for audit event data to enable
+ * tamper detection. This checksum can be used to verify that audit events haven't
+ * been modified after creation, supporting data integrity requirements.
+ * 
+ * **Algorithm Details:**
+ * - Uses a simple hash function (djb2-like algorithm)
+ * - Operates on JSON string representation of data
+ * - Returns base-36 encoded hash for compact representation
+ * - Provides reasonable tamper detection for audit purposes
+ * 
+ * **Security Notes:**
+ * - This is NOT a cryptographic hash function
+ * - Suitable for tamper detection, not cryptographic security
+ * - For high-security environments, consider using SHA-256 or similar
+ * 
+ * @param {unknown} data - The data object to generate checksum for
+ * @returns {string} Base-36 encoded checksum string
+ * 
+ * @example Generate Event Checksum
+ * ```typescript
+ * const eventData = {
+ *   userId: 'user123',
+ *   action: 'VIEW_HEALTH_RECORD',
+ *   timestamp: '2025-10-21T14:30:00Z'
+ * };
+ * 
+ * const checksum = generateChecksum(eventData);
+ * console.log(checksum); // e.g., "1a2b3c4d"
+ * ```
+ * 
+ * @example Verification Usage
+ * ```typescript
+ * const originalChecksum = generateChecksum(originalData);
+ * const currentChecksum = generateChecksum(currentData);
+ * 
+ * if (originalChecksum !== currentChecksum) {
+ *   console.warn('Data may have been tampered with');
+ * }
+ * ```
+ * 
+ * @since 1.0.0
+ * @internal
  */
 function generateChecksum(data: unknown): string {
   const str = JSON.stringify(data);
@@ -59,14 +198,90 @@ function generateChecksum(data: unknown): string {
 }
 
 /**
- * Generate a unique event ID
+ * @function generateEventId
+ * @description Generates a unique identifier for audit events. The ID combines
+ * timestamp and random components to ensure uniqueness across distributed systems
+ * and concurrent operations.
+ * 
+ * **ID Format:** `audit_{timestamp}_{random}`
+ * - **audit**: Fixed prefix for identification
+ * - **timestamp**: Current timestamp in milliseconds
+ * - **random**: Base-36 encoded random string (9 characters)
+ * 
+ * **Uniqueness Guarantees:**
+ * - Timestamp ensures temporal uniqueness
+ * - Random component handles concurrent generation
+ * - Combined approach works across multiple clients
+ * - Extremely low collision probability
+ * 
+ * @returns {string} Unique audit event identifier
+ * 
+ * @example Generated ID Examples
+ * ```typescript
+ * const id1 = generateEventId();
+ * console.log(id1); // "audit_1698765432123_x7k9m2p4q"
+ * 
+ * const id2 = generateEventId();
+ * console.log(id2); // "audit_1698765432124_a3n8r1z5v"
+ * ```
+ * 
+ * @example Usage in Event Creation
+ * ```typescript
+ * const auditEvent = {
+ *   id: generateEventId(),
+ *   action: AuditAction.VIEW_STUDENT,
+ *   timestamp: new Date().toISOString(),
+ *   // ... other fields
+ * };
+ * ```
+ * 
+ * @since 1.0.0
+ * @internal
  */
 function generateEventId(): string {
   return `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
- * Generate a batch ID
+ * @function generateBatchId
+ * @description Generates a unique identifier for audit event batches. Similar to
+ * event IDs but with a different prefix to distinguish batch-level operations
+ * from individual event operations.
+ * 
+ * **ID Format:** `batch_{timestamp}_{random}`
+ * - **batch**: Fixed prefix for batch identification
+ * - **timestamp**: Current timestamp in milliseconds
+ * - **random**: Base-36 encoded random string (9 characters)
+ * 
+ * **Use Cases:**
+ * - Tracking batch submission operations
+ * - Correlating events within a batch
+ * - Debugging batch processing issues
+ * - Backend batch processing identification
+ * 
+ * @returns {string} Unique audit batch identifier
+ * 
+ * @example Generated Batch ID Examples
+ * ```typescript
+ * const batchId1 = generateBatchId();
+ * console.log(batchId1); // "batch_1698765432123_x7k9m2p4q"
+ * 
+ * const batchId2 = generateBatchId();
+ * console.log(batchId2); // "batch_1698765432124_a3n8r1z5v"
+ * ```
+ * 
+ * @example Usage in Batch Creation
+ * ```typescript
+ * const auditBatch = {
+ *   batchId: generateBatchId(),
+ *   timestamp: new Date().toISOString(),
+ *   events: [...auditEvents],
+ *   checksum: generateChecksum(auditEvents)
+ * };
+ * ```
+ * 
+ * @since 1.0.0
+ * @internal
  */
 function generateBatchId(): string {
   return `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

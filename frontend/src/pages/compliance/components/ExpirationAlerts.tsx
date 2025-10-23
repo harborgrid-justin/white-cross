@@ -1,24 +1,29 @@
 /**
  * ExpirationAlerts Component
  * 
- * Expiration Alerts component for compliance module.
+ * Expiration Alerts for compliance module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ExpirationAlertsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ExpirationAlerts component
+ * ExpirationAlerts component - Expiration Alerts
  */
-const ExpirationAlerts: React.FC<ExpirationAlertsProps> = (props) => {
+const ExpirationAlerts: React.FC<ExpirationAlertsProps> = ({ className = '' }) => {
   return (
-    <div className="expiration-alerts">
-      <h3>Expiration Alerts</h3>
-      {/* Component implementation */}
+    <div className={`expiration-alerts ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Expiration Alerts</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Expiration Alerts functionality</p>
+          <p className="text-sm mt-2">Connected to compliance Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

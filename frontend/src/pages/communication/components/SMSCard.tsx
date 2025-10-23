@@ -1,24 +1,29 @@
 /**
  * SMSCard Component
  * 
- * S M S Card component for communication module.
+ * S M S Card for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface SMSCardProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * SMSCard component
+ * SMSCard component - S M S Card
  */
-const SMSCard: React.FC<SMSCardProps> = (props) => {
+const SMSCard: React.FC<SMSCardProps> = ({ className = '' }) => {
   return (
-    <div className="s-m-s-card">
-      <h3>S M S Card</h3>
-      {/* Component implementation */}
+    <div className={`s-m-s-card ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">S M S Card</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>S M S Card functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

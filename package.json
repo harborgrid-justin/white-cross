@@ -10,19 +10,16 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend-only": "npm run dev:backend",
     "dev:frontend-only": "npm run dev:frontend",
-
     "// Production": "========================================",
     "start": "npm run start:backend && npm run start:frontend",
     "start:backend": "cd backend && npm start",
     "start:frontend": "cd frontend && npm run preview",
-
     "// Build": "========================================",
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && npm run build",
     "clean": "rimraf backend/dist frontend/dist node_modules/.cache",
     "clean:all": "npm run clean && rimraf node_modules backend/node_modules frontend/node_modules",
-
     "// Testing": "========================================",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd backend && npm test",
@@ -30,7 +27,11 @@
     "test:e2e": "cd frontend && npm run test:e2e",
     "test:e2e:headed": "cd frontend && npm run test:e2e:headed",
     "test:coverage": "npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
-
+    "test:api-integration": "npx playwright test --config=playwright.config.ts",
+    "test:api-integration:ui": "npx playwright test --config=playwright.config.ts --ui",
+    "test:api-integration:debug": "npx playwright test --config=playwright.config.ts --debug",
+    "test:api-integration:report": "npx playwright show-report playwright-report/api-integration",
+    "test:parallel-verify": "npx playwright test --config=playwright.config.simple.ts",
     "// Linting": "========================================",
     "lint": "npm run lint:backend && npm run lint:frontend",
     "lint:fix": "npm run lint:backend -- --fix && npm run lint:frontend -- --fix",
@@ -39,7 +40,6 @@
     "type-check": "npm run type-check:backend && npm run type-check:frontend",
     "type-check:backend": "cd backend && npm run build",
     "type-check:frontend": "cd frontend && npm run type-check",
-
     "// Database": "========================================",
     "db:migrate": "cd backend && npx sequelize-cli db:migrate",
     "db:migrate:undo": "cd backend && npx sequelize-cli db:migrate:undo",
@@ -48,12 +48,10 @@
     "db:seed:all": "cd backend && npx sequelize-cli db:seed:all",
     "db:seed:undo": "cd backend && npx sequelize-cli db:seed:undo",
     "db:reset": "npm run db:migrate:undo && npm run db:migrate && npm run db:seed",
-
     "// Setup & Install": "========================================",
     "setup": "npm install && npm run install:all",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "postinstall": "echo '\n✅ Dependencies installed! Run npm run dev to start development.\n'",
-
     "// Utilities": "========================================",
     "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
     "check:all": "npm run lint && npm run type-check && npm run test"
@@ -69,6 +67,7 @@
   "author": "HarborGrid",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",
     "concurrently": "9.2.1",

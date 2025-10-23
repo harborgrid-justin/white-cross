@@ -1,12 +1,44 @@
 /**
- * Optimistic Update Manager
- *
- * Advanced optimistic update handling with:
+ * @fileoverview Advanced optimistic update manager with conflict resolution
+ * @module services/cache/OptimisticUpdateManager
+ * @category Services
+ * 
+ * Manages optimistic UI updates with sophisticated conflict detection,
+ * resolution strategies, and automatic rollback capabilities.
+ * 
+ * Key Features:
  * - Queue management for concurrent mutations
- * - Conflict detection and resolution
- * - Three-way merge strategy
- * - Rollback capabilities
- * - Version-based optimistic concurrency control
+ * - Conflict detection using version numbers or timestamps
+ * - Three-way merge strategy (base, local, server)
+ * - Automatic rollback on failure
+ * - Version-based optimistic concurrency control (OCC)
+ * - Race condition handling
+ * 
+ * Conflict Resolution Strategies:
+ * - SERVER_WINS: Discard local changes, use server data
+ * - CLIENT_WINS: Keep local changes, override server
+ * - MERGE: Three-way merge of base, local, and server
+ * - PROMPT: Ask user to resolve (not implemented here)
+ * 
+ * @example
+ * ```typescript
+ * const manager = new OptimisticUpdateManager(queryClient);
+ * 
+ * // Create optimistic update
+ * const updateId = manager.createUpdate({
+ *   queryKey: ['students', 'detail', '123'],
+ *   optimisticData: { ...student, name: 'New Name' },
+ *   previousData: student,
+ *   version: student.version
+ * });
+ * 
+ * try {
+ *   const result = await updateStudentApi(data);
+ *   await manager.commitUpdate(updateId, result);
+ * } catch (error) {
+ *   await manager.rollbackUpdate(updateId);
+ * }
+ * ```
  */
 
 import { QueryClient } from '@tanstack/react-query';
@@ -20,6 +52,36 @@ import type {
 
 /**
  * Optimistic Update Manager Implementation
+ * 
+ * @class
+ * @classdesc Manages optimistic updates with conflict detection and resolution.
+ * Provides a robust system for implementing optimistic UI patterns in React Query
+ * with automatic rollback and merge strategies.
+ * 
+ * Update Lifecycle:
+ * 1. createUpdate() - Apply optimistic data to cache
+ * 2. Mutation executes
+ * 3a. Success → commitUpdate() - Replace with server data
+ * 3b. Failure → rollbackUpdate() - Restore previous data
+ * 
+ * Conflict Handling:
+ * - Detects version mismatches
+ * - Detects concurrent modifications
+ * - Applies configured resolution strategy
+ * - Logs conflicts for debugging
+ * 
+ * @example
+ * ```typescript
+ * const manager = new OptimisticUpdateManager(queryClient);
+ * 
+ * // Queue concurrent mutations
+ * const id1 = manager.createUpdate({ ... });
+ * const id2 = manager.createUpdate({ ... }); // Queued
+ * 
+ * // Manager ensures sequential processing
+ * await manager.commitUpdate(id1, serverData1);
+ * // id2 processes automatically after id1 completes
+ * ```
  */
 export class OptimisticUpdateManager {
   private queryClient: QueryClient;

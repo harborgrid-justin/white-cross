@@ -1,18 +1,56 @@
 /**
- * WF-COMP-255 | ApiClient.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../../constants/config, ../../constants/api | Dependencies: ../../constants/config, ../../constants/api
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Enhanced API Client with enterprise-grade error handling and interceptors
- * Provides type-safe HTTP methods with comprehensive error handling
+ * @fileoverview Enterprise-grade HTTP API client with resilience patterns
+ * @module services/core/ApiClient
+ * @category Services
+ * 
+ * Provides type-safe HTTP client with comprehensive error handling, retry logic,
+ * authentication, CSRF protection, and integration with resilience patterns.
+ * 
+ * Key Features:
+ * - Type-safe HTTP methods (GET, POST, PUT, PATCH, DELETE)
+ * - Automatic authentication token injection
+ * - CSRF protection headers
+ * - Request/response interceptors
+ * - Automatic retry with exponential backoff
+ * - Comprehensive error handling and classification
+ * - Integration with circuit breaker and bulkhead patterns
+ * - Request/response logging for debugging
+ * - Timeout management
+ * - Performance tracking
+ * 
+ * Error Classification:
+ * - Network errors (no response from server)
+ * - Server errors (5xx status codes)
+ * - Client errors (4xx status codes)
+ * - Validation errors (400 with field-specific errors)
+ * 
+ * @example
+ * ```typescript
+ * // Create client with custom config
+ * const client = new ApiClient({
+ *   baseURL: 'https://api.example.com',
+ *   timeout: 30000,
+ *   enableRetry: true,
+ *   maxRetries: 3
+ * });
+ * 
+ * // Make type-safe requests
+ * const user = await client.get<User>('/users/123');
+ * const created = await client.post<User>('/users', { name: 'John' });
+ * 
+ * // Handle errors
+ * try {
+ *   await client.delete('/users/123');
+ * } catch (error) {
+ *   if (error instanceof ApiClientError) {
+ *     if (error.isNetworkError) {
+ *       // Handle network failure
+ *     } else if (error.isValidationError) {
+ *       // Handle validation errors
+ *     }
+ *   }
+ * }
+ * ```
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
@@ -54,6 +92,37 @@ export interface ApiErrorResponse {
   timestamp?: string;
 }
 
+/**
+ * Custom error class for API client errors with error classification
+ * 
+ * @class
+ * @extends Error
+ * @classdesc Wraps API errors with additional metadata and automatic classification
+ * for easier error handling in application code.
+ * 
+ * Error Types:
+ * - isNetworkError: No response from server (connection failed, timeout, etc.)
+ * - isServerError: Server returned 5xx status code
+ * - isValidationError: Client error with validation details (400 status)
+ * 
+ * @example
+ * ```typescript
+ * try {
+ *   await apiClient.post('/endpoint', data);
+ * } catch (error) {
+ *   if (error instanceof ApiClientError) {
+ *     if (error.isNetworkError) {
+ *       showToast('Network error. Please check your connection.');
+ *     } else if (error.isValidationError) {
+ *       displayValidationErrors(error.details);
+ *     } else if (error.isServerError) {
+ *       showToast('Server error. Please try again later.');
+ *       logToMonitoring(error.traceId);
+ *     }
+ *   }
+ * }
+ * ```
+ */
 export class ApiClientError extends Error {
   public readonly code?: string;
   public readonly status?: number;
@@ -128,6 +197,60 @@ export interface ApiClientConfig {
 // API CLIENT CLASS
 // ==========================================
 
+/**
+ * Enterprise HTTP API Client
+ * 
+ * @class
+ * @classdesc Full-featured HTTP client built on Axios with enterprise patterns:
+ * automatic authentication, CSRF protection, retry logic, error handling,
+ * and integration with resilience patterns (circuit breaker, bulkhead).
+ * 
+ * Architecture:
+ * - Axios instance with interceptors
+ * - Request interceptor: Auth tokens, CSRF, logging
+ * - Response interceptor: Error transformation, logging
+ * - Retry logic with exponential backoff
+ * - Resilience hooks for circuit breaker integration
+ * 
+ * Thread Safety:
+ * - Safe for concurrent requests
+ * - Handles race conditions in token refresh
+ * - Queue management for failed requests
+ * 
+ * @example
+ * ```typescript
+ * // Basic usage
+ * const client = new ApiClient();
+ * 
+ * // With custom configuration
+ * const client = new ApiClient({
+ *   baseURL: 'https://api.example.com',
+ *   timeout: 30000,
+ *   enableRetry: true,
+ *   maxRetries: 3,
+ *   resilienceHook: {
+ *     beforeRequest: async (config) => {
+ *       // Check circuit breaker state
+ *     },
+ *     afterFailure: (error) => {
+ *       // Record failure for circuit breaker
+ *     }
+ *   }
+ * });
+ * 
+ * // Add custom interceptors
+ * client.addRequestInterceptor({
+ *   onFulfilled: (config) => {
+ *     config.headers['X-Custom-Header'] = 'value';
+ *     return config;
+ *   }
+ * });
+ * 
+ * // Make requests
+ * const data = await client.get<MyType>('/endpoint');
+ * const result = await client.post<Response>('/endpoint', payload);
+ * ```
+ */
 export class ApiClient {
   private instance: AxiosInstance;
   private enableLogging: boolean;

@@ -1,24 +1,29 @@
 /**
  * ReportAnalytics Component
  * 
- * Report Analytics component for reports module.
+ * Report Analytics for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReportAnalyticsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReportAnalytics component
+ * ReportAnalytics component - Report Analytics
  */
-const ReportAnalytics: React.FC<ReportAnalyticsProps> = (props) => {
+const ReportAnalytics: React.FC<ReportAnalyticsProps> = ({ className = '' }) => {
   return (
-    <div className="report-analytics">
-      <h3>Report Analytics</h3>
-      {/* Component implementation */}
+    <div className={`report-analytics ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Analytics</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Report Analytics functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

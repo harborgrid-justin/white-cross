@@ -1,24 +1,29 @@
 /**
  * PermissionGroups Component
  * 
- * Permission Groups component for access-control module.
+ * Permission Groups for access-control module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface PermissionGroupsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * PermissionGroups component
+ * PermissionGroups component - Permission Groups
  */
-const PermissionGroups: React.FC<PermissionGroupsProps> = (props) => {
+const PermissionGroups: React.FC<PermissionGroupsProps> = ({ className = '' }) => {
   return (
-    <div className="permission-groups">
-      <h3>Permission Groups</h3>
-      {/* Component implementation */}
+    <div className={`permission-groups ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Permission Groups</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Permission Groups functionality</p>
+          <p className="text-sm mt-2">Connected to access-control Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

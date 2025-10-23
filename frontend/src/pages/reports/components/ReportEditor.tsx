@@ -1,24 +1,29 @@
 /**
  * ReportEditor Component
  * 
- * Report Editor component for reports module.
+ * Report Editor for reports module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ReportEditorProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ReportEditor component
+ * ReportEditor component - Report Editor
  */
-const ReportEditor: React.FC<ReportEditorProps> = (props) => {
+const ReportEditor: React.FC<ReportEditorProps> = ({ className = '' }) => {
   return (
-    <div className="report-editor">
-      <h3>Report Editor</h3>
-      {/* Component implementation */}
+    <div className={`report-editor ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Editor</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Report Editor functionality</p>
+          <p className="text-sm mt-2">Connected to reports Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

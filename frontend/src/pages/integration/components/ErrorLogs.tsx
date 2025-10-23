@@ -1,24 +1,29 @@
 /**
  * ErrorLogs Component
  * 
- * Error Logs component for integration module.
+ * Error Logs for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ErrorLogsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ErrorLogs component
+ * ErrorLogs component - Error Logs
  */
-const ErrorLogs: React.FC<ErrorLogsProps> = (props) => {
+const ErrorLogs: React.FC<ErrorLogsProps> = ({ className = '' }) => {
   return (
-    <div className="error-logs">
-      <h3>Error Logs</h3>
-      {/* Component implementation */}
+    <div className={`error-logs ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Error Logs</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Error Logs functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

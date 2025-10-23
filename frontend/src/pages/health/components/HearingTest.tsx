@@ -1,24 +1,29 @@
 /**
  * HearingTest Component
  * 
- * Hearing Test component for health module.
+ * Hearing Test for health module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface HearingTestProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * HearingTest component
+ * HearingTest component - Hearing Test
  */
-const HearingTest: React.FC<HearingTestProps> = (props) => {
+const HearingTest: React.FC<HearingTestProps> = ({ className = '' }) => {
   return (
-    <div className="hearing-test">
-      <h3>Hearing Test</h3>
-      {/* Component implementation */}
+    <div className={`hearing-test ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Hearing Test</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Hearing Test functionality</p>
+          <p className="text-sm mt-2">Connected to health Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

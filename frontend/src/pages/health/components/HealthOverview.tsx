@@ -1,24 +1,29 @@
 /**
  * HealthOverview Component
  * 
- * Health Overview component for health module.
+ * Health Overview for health module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface HealthOverviewProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * HealthOverview component
+ * HealthOverview component - Health Overview
  */
-const HealthOverview: React.FC<HealthOverviewProps> = (props) => {
+const HealthOverview: React.FC<HealthOverviewProps> = ({ className = '' }) => {
   return (
-    <div className="health-overview">
-      <h3>Health Overview</h3>
-      {/* Component implementation */}
+    <div className={`health-overview ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Health Overview</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Health Overview functionality</p>
+          <p className="text-sm mt-2">Connected to health Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

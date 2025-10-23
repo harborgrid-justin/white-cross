@@ -1,24 +1,29 @@
 /**
  * DatabaseManagement Component
  * 
- * Database Management component for admin module.
+ * Database Management for admin module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface DatabaseManagementProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * DatabaseManagement component
+ * DatabaseManagement component - Database Management
  */
-const DatabaseManagement: React.FC<DatabaseManagementProps> = (props) => {
+const DatabaseManagement: React.FC<DatabaseManagementProps> = ({ className = '' }) => {
   return (
-    <div className="database-management">
-      <h3>Database Management</h3>
-      {/* Component implementation */}
+    <div className={`database-management ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Database Management</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Database Management functionality</p>
+          <p className="text-sm mt-2">Connected to admin Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

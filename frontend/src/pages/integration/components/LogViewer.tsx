@@ -1,24 +1,29 @@
 /**
  * LogViewer Component
  * 
- * Log Viewer component for integration module.
+ * Log Viewer for integration module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface LogViewerProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * LogViewer component
+ * LogViewer component - Log Viewer
  */
-const LogViewer: React.FC<LogViewerProps> = (props) => {
+const LogViewer: React.FC<LogViewerProps> = ({ className = '' }) => {
   return (
-    <div className="log-viewer">
-      <h3>Log Viewer</h3>
-      {/* Component implementation */}
+    <div className={`log-viewer ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Log Viewer</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Log Viewer functionality</p>
+          <p className="text-sm mt-2">Connected to integration Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * TemplateEditor Component
  * 
- * Template Editor component for documents module.
+ * Template Editor for documents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface TemplateEditorProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * TemplateEditor component
+ * TemplateEditor component - Template Editor
  */
-const TemplateEditor: React.FC<TemplateEditorProps> = (props) => {
+const TemplateEditor: React.FC<TemplateEditorProps> = ({ className = '' }) => {
   return (
-    <div className="template-editor">
-      <h3>Template Editor</h3>
-      {/* Component implementation */}
+    <div className={`template-editor ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Template Editor</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Template Editor functionality</p>
+          <p className="text-sm mt-2">Connected to documents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

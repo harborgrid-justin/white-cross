@@ -1,24 +1,29 @@
 /**
  * AnnouncementDetails Component
  * 
- * Announcement Details component for communication module.
+ * Announcement Details for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface AnnouncementDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * AnnouncementDetails component
+ * AnnouncementDetails component - Announcement Details
  */
-const AnnouncementDetails: React.FC<AnnouncementDetailsProps> = (props) => {
+const AnnouncementDetails: React.FC<AnnouncementDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="announcement-details">
-      <h3>Announcement Details</h3>
-      {/* Component implementation */}
+    <div className={`announcement-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Announcement Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Announcement Details functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

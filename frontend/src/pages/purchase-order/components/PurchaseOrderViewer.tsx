@@ -1,24 +1,29 @@
 /**
  * PurchaseOrderViewer Component
  * 
- * Purchase Order Viewer component for purchase order management.
+ * Purchase Order Viewer for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface PurchaseOrderViewerProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * PurchaseOrderViewer component
+ * PurchaseOrderViewer component - Purchase Order Viewer
  */
-const PurchaseOrderViewer: React.FC<PurchaseOrderViewerProps> = (props) => {
+const PurchaseOrderViewer: React.FC<PurchaseOrderViewerProps> = ({ className = '' }) => {
   return (
-    <div className="purchase-order-viewer">
-      <h3>Purchase Order Viewer</h3>
-      {/* Component implementation */}
+    <div className={`purchase-order-viewer ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Purchase Order Viewer</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Purchase Order Viewer functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

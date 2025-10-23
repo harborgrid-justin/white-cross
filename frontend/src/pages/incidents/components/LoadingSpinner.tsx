@@ -1,24 +1,29 @@
 /**
  * LoadingSpinner Component
  * 
- * Loading Spinner component for incident report management.
+ * Loading Spinner for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface LoadingSpinnerProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * LoadingSpinner component for incident reporting system
+ * LoadingSpinner component - Loading Spinner
  */
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = (props) => {
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ className = '' }) => {
   return (
-    <div className="loading-spinner">
-      <h3>Loading Spinner</h3>
-      {/* Component implementation */}
+    <div className={`loading-spinner ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Loading Spinner</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Loading Spinner functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

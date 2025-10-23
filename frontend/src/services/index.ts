@@ -116,6 +116,108 @@ export type {
   CreateConfigurationPayload
 } from './configurationApi';
 
+// Analytics API exports
+export { analyticsApi } from './modules/analyticsApi';
+export type {
+  HealthMetrics,
+  HealthTrends,
+  IncidentTrends,
+  IncidentLocationData,
+  MedicationUsage,
+  MedicationAdherence,
+  AppointmentTrends,
+  NoShowRate,
+  DashboardData,
+  AnalyticsSummary,
+  CustomReport,
+  CustomReportRequest,
+  AnalyticsApi
+} from './modules/analyticsApi';
+
+// Audit API exports
+export { auditApi } from './modules/auditApi';
+export type {
+  AuditLog,
+  PHIAccessLog,
+  AuditStatistics,
+  UserActivity,
+  SecurityAnalysis,
+  ComplianceReport,
+  Anomaly,
+  SessionAudit,
+  DataAccessLog,
+  AuditFilters,
+  PHIAccessFilters,
+  AuditApi
+} from './modules/auditApi';
+
+// Users API exports
+export { usersApi } from './modules/usersApi';
+export type {
+  CreateUserRequest,
+  UpdateUserRequest,
+  ChangePasswordRequest,
+  ResetPasswordRequest,
+  UserStatistics,
+  AvailableNurse,
+  UserFilters,
+  UsersApi
+} from './modules/usersApi';
+
+// Messages API exports
+export { messagesApi } from './modules/messagesApi';
+export type {
+  Message,
+  CreateMessageRequest,
+  UpdateMessageRequest,
+  MessageTemplate,
+  CreateTemplateRequest,
+  DeliveryStatus,
+  MessageStatistics,
+  MessageFilters,
+  MessagesApi
+} from './modules/messagesApi';
+
+// Broadcasts API exports
+export { broadcastsApi } from './modules/broadcastsApi';
+export type {
+  Broadcast,
+  CreateBroadcastRequest,
+  UpdateBroadcastRequest,
+  BroadcastDelivery,
+  BroadcastStatistics,
+  BroadcastFilters,
+  BroadcastsApi
+} from './modules/broadcastsApi';
+
+// Student Management API exports
+export { studentManagementApi } from './modules/studentManagementApi';
+export type {
+  StudentPhoto,
+  AcademicTranscript,
+  GradeTransition,
+  BarcodeData,
+  WaitlistEntry,
+  CreateWaitlistRequest,
+  UpdateWaitlistRequest,
+  StudentManagementApi
+} from './modules/studentManagementApi';
+
+// Health Assessments API exports
+export { healthAssessmentsApi } from './modules/healthAssessmentsApi';
+export type {
+  HealthRiskAssessment,
+  CreateRiskAssessmentRequest,
+  HealthScreening,
+  CreateScreeningRequest,
+  GrowthTracking,
+  CreateGrowthTrackingRequest,
+  ImmunizationForecast,
+  EmergencyNotification,
+  CreateEmergencyNotificationRequest,
+  HealthAssessmentsApi
+} from './modules/healthAssessmentsApi';
+
 // Medication module API exports
 export { 
   medicationFormularyApi, 

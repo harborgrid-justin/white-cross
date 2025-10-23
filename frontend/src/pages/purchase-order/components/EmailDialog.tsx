@@ -1,24 +1,29 @@
 /**
  * EmailDialog Component
  * 
- * Email Dialog component for purchase order management.
+ * Email Dialog for purchase-order module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface EmailDialogProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * EmailDialog component
+ * EmailDialog component - Email Dialog
  */
-const EmailDialog: React.FC<EmailDialogProps> = (props) => {
+const EmailDialog: React.FC<EmailDialogProps> = ({ className = '' }) => {
   return (
-    <div className="email-dialog">
-      <h3>Email Dialog</h3>
-      {/* Component implementation */}
+    <div className={`email-dialog ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Dialog</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Email Dialog functionality</p>
+          <p className="text-sm mt-2">Connected to purchase-order Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

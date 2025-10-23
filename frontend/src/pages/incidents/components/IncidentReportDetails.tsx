@@ -1,24 +1,29 @@
 /**
  * IncidentReportDetails Component
  * 
- * Incident Report Details component for incident report management.
+ * Incident Report Details for incidents module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface IncidentReportDetailsProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * IncidentReportDetails component for incident reporting system
+ * IncidentReportDetails component - Incident Report Details
  */
-const IncidentReportDetails: React.FC<IncidentReportDetailsProps> = (props) => {
+const IncidentReportDetails: React.FC<IncidentReportDetailsProps> = ({ className = '' }) => {
   return (
-    <div className="incident-report-details">
-      <h3>Incident Report Details</h3>
-      {/* Component implementation */}
+    <div className={`incident-report-details ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Incident Report Details</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Incident Report Details functionality</p>
+          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

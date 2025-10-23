@@ -1,0 +1,13 @@
+frontend/src/middleware/http/httpInterceptors.middleware.ts
+frontend/src/middleware/http/index.ts
+frontend/src/middleware/index.ts
+frontend/src/middleware/integration/index.ts
+frontend/src/middleware/integration/serviceIntegration.middleware.ts
+frontend/src/middleware/integration/tanstackIntegration.middleware.ts
+frontend/src/middleware/monitoring/index.ts
+frontend/src/middleware/monitoring/monitoring.middleware.ts
+frontend/src/middleware/redux/index.ts
+frontend/src/middleware/redux/stateSyncMiddleware.ts
+frontend/src/middleware/redux/stateSyncMiddleware.types.ts
+frontend/src/middleware/security/index.ts
+frontend/src/middleware/security/security.middleware.ts

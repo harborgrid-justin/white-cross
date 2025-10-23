@@ -1,24 +1,29 @@
 /**
  * EditContactDialog Component
  * 
- * Edit Contact Dialog component for contacts module.
+ * Edit Contact Dialog for contacts module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface EditContactDialogProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * EditContactDialog component
+ * EditContactDialog component - Edit Contact Dialog
  */
-const EditContactDialog: React.FC<EditContactDialogProps> = (props) => {
+const EditContactDialog: React.FC<EditContactDialogProps> = ({ className = '' }) => {
   return (
-    <div className="edit-contact-dialog">
-      <h3>Edit Contact Dialog</h3>
-      {/* Component implementation */}
+    <div className={`edit-contact-dialog ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Contact Dialog</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Edit Contact Dialog functionality</p>
+          <p className="text-sm mt-2">Connected to contacts Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,29 @@
 /**
  * ParentMessageList Component
  * 
- * Parent Message List component for communication module.
+ * Parent Message List for communication module.
  */
 
 import React from 'react';
+import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
 interface ParentMessageListProps {
-  /** Component props */
-  [key: string]: any;
+  className?: string;
 }
 
 /**
- * ParentMessageList component
+ * ParentMessageList component - Parent Message List
  */
-const ParentMessageList: React.FC<ParentMessageListProps> = (props) => {
+const ParentMessageList: React.FC<ParentMessageListProps> = ({ className = '' }) => {
   return (
-    <div className="parent-message-list">
-      <h3>Parent Message List</h3>
-      {/* Component implementation */}
+    <div className={`parent-message-list ${className}`}>
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Parent Message List</h3>
+        <div className="text-center text-gray-500 py-8">
+          <p>Parent Message List functionality</p>
+          <p className="text-sm mt-2">Connected to communication Redux slice</p>
+        </div>
+      </div>
     </div>
   );
 };

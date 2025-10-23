@@ -1,13 +1,71 @@
 /**
- * WF-COMP-270 | appointmentsApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Appointments API service for scheduling and availability management
+ * @module services/modules/appointmentsApi
+ * @category Services
+ * 
+ * Comprehensive appointment management API including scheduling, availability
+ * tracking, waitlist management, and reminder processing for healthcare appointments.
+ * 
+ * Key Features:
+ * - Appointment CRUD operations
+ * - Availability slot management
+ * - Waitlist functionality
+ * - Recurring appointment scheduling
+ * - Conflict detection and resolution
+ * - Appointment reminders (email/SMS)
+ * - Statistics and reporting
+ * - Nurse availability management
+ * 
+ * Healthcare-Specific:
+ * - PHI protection in all appointment data
+ * - HIPAA-compliant logging
+ * - Student-nurse appointment relationships
+ * - Emergency appointment prioritization
+ * - Parent notification integration
+ * 
+ * Scheduling Features:
+ * - Single and recurring appointments
+ * - Availability slot checking
+ * - Conflict detection
+ * - Waitlist with priority ordering
+ * - Automated reminder processing
+ * - Calendar integration
+ * 
+ * @example
+ * ```typescript
+ * // Create appointment
+ * const { appointment } = await appointmentsApi.create({
+ *   studentId: 'student-123',
+ *   nurseId: 'nurse-456',
+ *   type: 'CHECKUP',
+ *   scheduledAt: '2025-01-15T10:00:00Z',
+ *   duration: 30,
+ *   reason: 'Annual checkup',
+ *   priority: 'NORMAL'
+ * });
+ * 
+ * // Get available slots
+ * const slots = await appointmentsApi.getAvailability({
+ *   nurseId: 'nurse-456',
+ *   startDate: '2025-01-15',
+ *   endDate: '2025-01-15',
+ *   duration: 30
+ * });
+ * 
+ * // Add to waitlist
+ * const entry = await appointmentsApi.addToWaitlist({
+ *   studentId: 'student-123',
+ *   appointmentType: 'CHECKUP',
+ *   preferredDate: '2025-01-15',
+ *   priority: 'HIGH'
+ * });
+ * 
+ * // Process reminders
+ * const result = await appointmentsApi.processReminders({
+ *   hoursAhead: 24,
+ *   batchSize: 50
+ * });
+ * ```
  */
 
 import type { IAppointmentsApi } from '../types'
@@ -36,7 +94,38 @@ import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtil
 
 /**
  * Appointments API implementation
- * Handles appointment scheduling, availability management, and waitlist functionality
+ * 
+ * @class
+ * @implements {IAppointmentsApi}
+ * @classdesc Handles appointment scheduling, availability management, waitlist
+ * functionality, and reminder processing for healthcare appointments.
+ * 
+ * API Endpoints:
+ * - GET /appointments - List appointments with filters
+ * - POST /appointments - Create new appointment
+ * - PUT /appointments/:id - Update appointment
+ * - DELETE /appointments/:id - Cancel appointment
+ * - GET /appointments/availability - Check available slots
+ * - POST /appointments/waitlist - Add to waitlist
+ * - POST /appointments/reminders - Process reminders
+ * 
+ * PHI Considerations:
+ * - All appointment data contains PHI (student info, medical reason)
+ * - Audit logging required for all operations
+ * - Access control enforced by backend
+ * - No PHI in query parameters (use POST body)
+ * 
+ * @example
+ * ```typescript
+ * const appointmentsApi = new AppointmentsApiImpl();
+ * 
+ * // List today's appointments
+ * const { data, pagination } = await appointmentsApi.getAll({
+ *   startDate: '2025-01-15',
+ *   endDate: '2025-01-15',
+ *   status: 'SCHEDULED'
+ * });
+ * ```
  */
 class AppointmentsApiImpl implements IAppointmentsApi {
   /**
