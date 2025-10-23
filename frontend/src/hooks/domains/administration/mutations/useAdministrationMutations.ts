@@ -24,7 +24,20 @@ export const useCreateUser = (
 
   return useMutation({
     mutationFn: async (data: Partial<AdminUser>) => {
-      return await administrationApi.createUser(data);
+      // Ensure all required fields are present for createUser
+      if (!data.email || !data.password || !data.firstName || !data.lastName || !data.role) {
+        throw new Error('Missing required fields for user creation');
+      }
+      const createUserData = {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+        schoolId: data.schoolId,
+        districtId: data.districtId,
+      };
+      return await administrationApi.createUser(createUserData);
     },
     onSuccess: (data) => {
       invalidateUserQueries(queryClient);

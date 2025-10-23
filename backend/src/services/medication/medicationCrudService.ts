@@ -38,9 +38,7 @@ export class MedicationCrudService {
       const whereClause: any = {};
       if (search) {
         whereClause[Op.or] = [
-          { name: { [Op.iLike]: `%${search}%` } },
-          { genericName: { [Op.iLike]: `%${search}%` } },
-          { manufacturer: { [Op.iLike]: `%${search}%` } }
+          { medicationName: { [Op.iLike]: `%${search}%` } }
         ];
       }
 
@@ -48,32 +46,14 @@ export class MedicationCrudService {
         where: whereClause,
         offset,
         limit,
-        include: [
-          {
-            model: MedicationInventory,
-            as: 'inventory',
-            attributes: ['id', 'quantity', 'expirationDate', 'reorderLevel', 'supplier']
-          },
-          {
-            model: StudentMedication,
-            as: 'studentMedications',
-            attributes: []
-          }
-        ],
-        attributes: {
-          include: [
-            [
-              sequelize.literal('(SELECT COUNT(*) FROM "StudentMedications" WHERE "StudentMedications"."medicationId" = "Medication"."id")'),
-              'studentMedicationCount'
-            ]
-          ]
-        },
-        order: [['name', 'ASC']],
+        order: [['medicationName', 'ASC']],
         distinct: true
       });
 
       return {
         medications,
+        total,
+        data: medications,
         pagination: {
           page,
           limit,
@@ -92,59 +72,119 @@ export class MedicationCrudService {
    */
   static async createMedication(data: CreateMedicationData) {
     try {
-      // Check if medication with same name and strength exists
+      // Check if medication with same name exists for the student
       const existingMedication = await Medication.findOne({
         where: {
-          name: data.name,
-          strength: data.strength,
-          dosageForm: data.dosageForm
+          medicationName: data.medicationName,
+          studentId: data.studentId
         }
       });
 
       if (existingMedication) {
-        throw new Error('Medication with same name, strength, and dosage form already exists');
-      }
-
-      // Check NDC uniqueness if provided
-      if (data.ndc) {
-        const existingNDC = await Medication.findOne({
-          where: { ndc: data.ndc }
-        });
-
-        if (existingNDC) {
-          throw new Error('Medication with this NDC already exists');
-        }
+        throw new Error('Medication with same name already exists for this student');
       }
 
       const medication = await Medication.create(data);
 
-      // Reload with associations
-      await medication.reload({
-        include: [
-          {
-            model: MedicationInventory,
-            as: 'inventory'
-          },
-          {
-            model: StudentMedication,
-            as: 'studentMedications',
-            attributes: []
-          }
-        ],
-        attributes: {
-          include: [
-            [
-              sequelize.literal('(SELECT COUNT(*) FROM "StudentMedications" WHERE "StudentMedications"."medicationId" = "Medication"."id")'),
-              'studentMedicationCount'
-            ]
-          ]
-        }
-      });
-
-      logger.info(`Medication created: ${medication.name} ${medication.strength}`);
+      logger.info(`Medication created: ${medication.medicationName} for student ${medication.studentId}`);
       return medication;
     } catch (error) {
       logger.error('Error creating medication:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get medication by ID
+   */
+  static async getMedicationById(id: string) {
+    try {
+      const medication = await Medication.findByPk(id);
+
+      if (!medication) {
+        throw new Error('Medication not found');
+      }
+
+      return medication;
+    } catch (error) {
+      logger.error(`Error fetching medication ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get medications by student ID
+   */
+  static async getMedicationsByStudent(studentId: string, page: number = 1, limit: number = 20) {
+    try {
+      const offset = (page - 1) * limit;
+
+      const { rows: medications, count: total } = await Medication.findAndCountAll({
+        where: { studentId },
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
+        distinct: true
+      });
+
+      return {
+        medications,
+        total,
+        data: medications,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      logger.error(`Error fetching medications for student ${studentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update medication
+   */
+  static async updateMedication(id: string, data: Partial<CreateMedicationData>) {
+    try {
+      const medication = await Medication.findByPk(id);
+
+      if (!medication) {
+        throw new Error('Medication not found');
+      }
+
+      await medication.update(data);
+
+      logger.info(`Medication updated: ${id}`);
+      return medication;
+    } catch (error) {
+      logger.error(`Error updating medication ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deactivate medication
+   */
+  static async deactivateMedication(id: string, reason: string, deactivationType: string) {
+    try {
+      const medication = await Medication.findByPk(id);
+
+      if (!medication) {
+        throw new Error('Medication not found');
+      }
+
+      await medication.update({
+        isActive: false,
+        endDate: new Date()
+      });
+
+      logger.info(`Medication deactivated: ${id} - Reason: ${reason} (${deactivationType})`);
+      return medication;
+    } catch (error) {
+      logger.error(`Error deactivating medication ${id}:`, error);
       throw error;
     }
   }

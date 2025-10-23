@@ -56,6 +56,23 @@ const server = Hapi.server({
     cors: {
       origin: [CORS_CONFIG.ORIGIN],
       credentials: CORS_CONFIG.CREDENTIALS
+    },
+    validate: {
+      failAction: async (request, h, err) => {
+        if (process.env.NODE_ENV === 'production') {
+          // In production, log error and return sanitized error
+          logger.error('ValidationError:', err);
+          throw err;
+        }
+        // During development, return full error details
+        throw err;
+      },
+      // Configure Joi as validator with options
+      validator: Joi,
+      options: {
+        abortEarly: false,
+        stripUnknown: true
+      }
     }
   }
 });

@@ -24,7 +24,7 @@ export class AppointmentsController {
       nurseId: { type: 'string' },
       studentId: { type: 'string' },
       status: { type: 'string' },
-      type: { type: 'string' },
+      appointmentType: { type: 'string' },
       dateFrom: { type: 'string' },
       dateTo: { type: 'string' }
     });
@@ -50,12 +50,14 @@ export class AppointmentsController {
 
   /**
    * Create new appointment
+   * @param {AuthenticatedRequest} request - The authenticated request
+   * @param {ResponseToolkit} h - The response toolkit
+   * @returns {Promise<Response>} Created appointment response
    */
   static async create(request: AuthenticatedRequest, h: ResponseToolkit) {
     const appointmentData = {
       ...request.payload,
-      startTime: new Date(request.payload.startTime),
-      endTime: request.payload.endTime ? new Date(request.payload.endTime) : undefined
+      scheduledDate: new Date(request.payload.scheduledDate)
     };
 
     const appointment = await AppointmentService.createAppointment(appointmentData);
@@ -65,16 +67,16 @@ export class AppointmentsController {
 
   /**
    * Update appointment
+   * @param {AuthenticatedRequest} request - The authenticated request
+   * @param {ResponseToolkit} h - The response toolkit
+   * @returns {Promise<Response>} Updated appointment response
    */
   static async update(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
 
     const updateData = { ...request.payload };
-    if (updateData.startTime) {
-      updateData.startTime = new Date(updateData.startTime);
-    }
-    if (updateData.endTime) {
-      updateData.endTime = new Date(updateData.endTime);
+    if (updateData.scheduledDate) {
+      updateData.scheduledDate = new Date(updateData.scheduledDate);
     }
 
     const appointment = await AppointmentService.updateAppointment(id, updateData);
@@ -172,14 +174,16 @@ export class AppointmentsController {
 
   /**
    * Create recurring appointments
+   * @param {AuthenticatedRequest} request - The authenticated request
+   * @param {ResponseToolkit} h - The response toolkit
+   * @returns {Promise<Response>} Created recurring appointments response
    */
   static async createRecurring(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { baseData, recurrencePattern } = request.payload;
 
     const appointmentData = {
       ...baseData,
-      startTime: new Date(baseData.startTime),
-      endTime: baseData.endTime ? new Date(baseData.endTime) : undefined
+      scheduledAt: new Date(baseData.scheduledAt)
     };
 
     const appointments = await AppointmentService.createRecurringAppointments(

@@ -299,7 +299,7 @@ export function withDataGuard<P extends object, T = any>(
 ): (Component: ComponentType<P & { guardData: T }>) => ComponentType<P> {
   return function (Component: ComponentType<P & { guardData: T }>) {
     return function DataGuardedComponent(props: P) {
-      const { user } = useAuthContext();
+      const { user } = useAuth();
       const navigate = useNavigate();
       const location = useLocation();
       const [data, setData] = useState<T | null>(null);

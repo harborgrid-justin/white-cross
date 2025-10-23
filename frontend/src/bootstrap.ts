@@ -85,7 +85,7 @@ async function initializeSecurity(config: BootstrapConfig): Promise<{ success: b
     }
 
     // Setup CSRF protection on API instance
-    setupCsrfProtection(apiInstance);
+    setupCsrfProtection();
 
     // Refresh CSRF token
     csrfProtection.refreshToken();

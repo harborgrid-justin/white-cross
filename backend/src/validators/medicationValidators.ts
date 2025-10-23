@@ -6,7 +6,26 @@
  *   - None (leaf node)
  *
  * DOWNSTREAM (imported by):
- *   - None (not imported)
+ *   - routes/v1/healthcare/validators/medications.validators.ts
+ *
+ * ⚠️ DATABASE SCHEMA NOTE:
+ * This codebase has TWO different medication table schemas:
+ *
+ * 1. LEGACY SCHEMA (migration: 20251011221125-create-complete-healthcare-schema.js):
+ *    - Single `medications` table with fields:
+ *      medicationName, dosage, frequency, route, prescribedBy, startDate, endDate,
+ *      instructions, sideEffects, isActive, studentId
+ *
+ * 2. NEW SCHEMA (migration: 00004-create-medications-extended.ts):
+ *    - Separate tables: `medications` and `student_medications`
+ *    - medications: name, genericName, dosageForm, strength, manufacturer, ndc, isControlled
+ *    - student_medications: studentId, medicationId, dosage, frequency, route, instructions,
+ *      startDate, endDate, isActive, prescribedBy
+ *
+ * THIS FILE validates against the NEW SCHEMA (separate tables).
+ * For LEGACY SCHEMA validation, use: medicationValidators.legacy.ts
+ *
+ * To determine which schema your database uses, check which migration was run.
  */
 
 /**
@@ -16,18 +35,28 @@
  * Downstream: routes/medications.ts, medicationService | Called by: Medication API endpoints
  * Related: medicationService.ts, routes/medications.ts, MedicationInventory.ts
  * Exports: Joi schemas for validation | Key Services: Input validation, safety checks
- * Last Updated: 2025-10-17 | Dependencies: joi, moment-timezone
+ * Last Updated: 2025-10-23 | Dependencies: joi, moment-timezone
  * Critical Path: Request → Schema validation → Type safety → Service call
  * LLM Context: Medication safety validation, prevents dosing errors, HIPAA compliance
  */
 
 /**
- * @fileoverview Medication Validation Schemas
+ * @fileoverview Medication Validation Schemas (NEW SCHEMA - Separate Tables)
  * @module validators/medicationValidators
  * @description Comprehensive Joi validation schemas for medication operations following the Five Rights of Medication Administration
  * @requires joi - Validation library
  * @security Implements Five Rights: Right Patient, Right Medication, Right Dose, Right Route, Right Time
  * @compliance DEA Schedule validation for controlled substances, NDC code validation, dosage safety checks
+ *
+ * @database_schema_new
+ * This validates against the NEW two-table schema:
+ *
+ * Table: medications (formulary)
+ * Fields: id, name, genericName, dosageForm, strength, manufacturer, ndc, isControlled
+ *
+ * Table: student_medications (prescriptions)
+ * Fields: id, studentId, medicationId, dosage, frequency, route, instructions,
+ *         startDate, endDate, isActive, prescribedBy
  */
 
 import Joi from 'joi';

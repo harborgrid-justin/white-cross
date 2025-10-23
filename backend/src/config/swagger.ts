@@ -208,27 +208,9 @@ export const swaggerOptions: ServerRegisterPluginObject<HapiSwagger.RegisterOpti
     swaggerUIPath: SWAGGER_CONFIG.PATHS.SWAGGER_UI,
     jsonPath: SWAGGER_CONFIG.PATHS.JSON,
     basePath: '/',
-    pathPrefixSize: 2,
     cors: true,
     schemes: ['http', 'https'],
-    host: process.env.SWAGGER_HOST || `localhost:${ENVIRONMENT.PORT}`,
-    expanded: 'list',
-    // Custom branding
-    customCss: `
-      .swagger-ui .topbar {
-        background-color: ${SWAGGER_CONFIG.BRANDING.PRIMARY_COLOR};
-      }
-      .swagger-ui .info .title {
-        color: ${SWAGGER_CONFIG.BRANDING.PRIMARY_COLOR};
-      }
-    `,
-    customSiteTitle: SWAGGER_CONFIG.BRANDING.TITLE,
-    customfavIcon: SWAGGER_CONFIG.BRANDING.FAVICON,
-    // Response validation
-    responseValidation: true,
-    // Enable try-it-out by default
-    defaultModelsExpandDepth: 1,
-    defaultModelExpandDepth: 1
+    host: process.env.SWAGGER_HOST || `localhost:${ENVIRONMENT.PORT}`
   }
 };
 

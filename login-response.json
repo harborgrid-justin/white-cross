@@ -1,0 +1,7 @@
+{
+    "success": false,
+    "error": {
+        "message": "Invalid credentials",
+        "code": "UNAUTHORIZED"
+    }
+}

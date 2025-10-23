@@ -87,9 +87,10 @@ export async function configureAuth(server: Server) {
     if (!user) return null;
 
     return {
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role as any,
+      isActive: user.isActive,
       permissions: [] // TODO: Load permissions from database
     };
   };
@@ -104,15 +105,25 @@ export async function configureAuth(server: Server) {
     key: process.env.JWT_SECRET || 'your-secret-key-here',
     validate: async (decoded: any, request: any) => {
       try {
-        const result = await middleware.authenticateRequest(`Bearer ${decoded.token}`);
+        // Decoded contains the JWT payload: {id, email, role, type, iat, exp, aud, iss, jti}
+        // Load user from database using the ID from the token
+        const user = await User.findByPk(decoded.id);
 
-        if (!result.success) {
+        if (!user || !user.isActive) {
           return { isValid: false };
         }
 
+        // Return user credentials
         return {
           isValid: true,
-          credentials: result.user
+          credentials: {
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+            isActive: user.isActive,
+            firstName: user.firstName,
+            lastName: user.lastName
+          }
         };
       } catch (error) {
         logger.error('Authentication error:', error);
@@ -120,7 +131,9 @@ export async function configureAuth(server: Server) {
       }
     },
     verifyOptions: {
-      algorithms: ['HS256']
+      algorithms: ['HS256'],
+      audience: 'white-cross-api',
+      issuer: 'white-cross-healthcare'
     }
   });
 

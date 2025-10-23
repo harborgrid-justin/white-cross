@@ -4,7 +4,8 @@
  */
 
 import { User } from '../../../../database/models/core/User';
-import { hashPassword, comparePassword, generateToken, verifyToken, refreshToken, extractTokenFromHeader, decodeToken } from '../../../../shared';
+import { hashPassword, comparePassword } from '../../../../shared';
+import { generateAccessToken, verifyAccessToken, generateRefreshToken, verifyRefreshToken } from '../../../../utils/jwtUtils';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import { ResponseToolkit } from '@hapi/hapi';
 import {
@@ -29,13 +30,10 @@ export class AuthController {
       return conflictResponse(h, 'User already exists with this email');
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password);
-
-    // Create user
+    // Create user (password will be hashed by beforeCreate hook)
     const user = await User.create({
       email,
-      password: hashedPassword,
+      password, // Don't hash here - let the User model hook handle it
       firstName,
       lastName,
       role
@@ -68,10 +66,11 @@ export class AuthController {
     await user.update({ lastLogin: new Date() });
 
     // Generate JWT token
-    const token = generateToken({
-      userId: user.id,
+    const token = generateAccessToken({
+      id: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      type: 'access'
     });
 
     return successResponse(h, {
@@ -84,17 +83,18 @@ export class AuthController {
    * Verify JWT token validity
    */
   static async verify(request: any, h: ResponseToolkit) {
-    const token = extractTokenFromHeader(request.headers.authorization);
+    const authHeader = request.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
       return unauthorizedResponse(h, 'Access token required');
     }
 
     try {
-      const decoded = verifyToken(token);
+      const decoded = verifyAccessToken(token);
 
       // Verify user still exists and is active
-      const user = await User.findByPk(decoded.userId, {
+      const user = await User.findByPk(decoded.id, {
         attributes: ['id', 'email', 'firstName', 'lastName', 'role', 'isActive']
       });
 
@@ -112,29 +112,37 @@ export class AuthController {
    * Refresh JWT token
    */
   static async refresh(request: any, h: ResponseToolkit) {
-    const token = extractTokenFromHeader(request.headers.authorization);
+    const authHeader = request.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return unauthorizedResponse(h, 'Access token required');
+      return unauthorizedResponse(h, 'Refresh token required');
     }
 
     try {
-      // Refresh token
-      const newToken = refreshToken(token);
-      const decoded = decodeToken(newToken);
+      // Verify refresh token
+      const decoded = verifyRefreshToken(token);
 
-      if (!decoded || !decoded.userId) {
+      if (!decoded || !decoded.id) {
         return unauthorizedResponse(h, 'Invalid token format');
       }
 
       // Verify user still exists and is active
-      const user = await User.findByPk(decoded.userId, {
+      const user = await User.findByPk(decoded.id, {
         attributes: ['id', 'email', 'firstName', 'lastName', 'role', 'isActive']
       });
 
       if (!user || !user.isActive) {
         return unauthorizedResponse(h, 'User not found or inactive');
       }
+
+      // Generate new access token
+      const newToken = generateAccessToken({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        type: 'access'
+      });
 
       return successResponse(h, {
         token: newToken,

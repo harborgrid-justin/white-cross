@@ -7,6 +7,20 @@ import Joi from 'joi';
 import { paginationSchema } from '../../../shared/validators';
 
 /**
+ * Appointment type enum values matching database schema
+ * @enum {string}
+ */
+export const APPOINTMENT_TYPES = [
+  'ROUTINE_CHECKUP',
+  'MEDICATION_ADMINISTRATION',
+  'INJURY_ASSESSMENT',
+  'ILLNESS_EVALUATION',
+  'FOLLOW_UP',
+  'SCREENING',
+  'EMERGENCY'
+] as const;
+
+/**
  * Query Schemas
  */
 
@@ -23,7 +37,8 @@ export const listAppointmentsQuerySchema = paginationSchema.keys({
     .valid('SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED')
     .optional()
     .description('Filter by appointment status'),
-  type: Joi.string()
+  appointmentType: Joi.string()
+    .valid(...APPOINTMENT_TYPES)
     .optional()
     .description('Filter by appointment type'),
   dateFrom: Joi.date()
@@ -80,6 +95,11 @@ export const statisticsQuerySchema = Joi.object({
  * Payload Schemas
  */
 
+/**
+ * Create appointment payload schema
+ * Validates appointment creation data against database schema
+ * @schema
+ */
 export const createAppointmentSchema = Joi.object({
   studentId: Joi.string()
     .uuid()
@@ -97,38 +117,30 @@ export const createAppointmentSchema = Joi.object({
       'any.required': 'Nurse ID is required'
     }),
 
-  type: Joi.string()
-    .trim()
+  appointmentType: Joi.string()
+    .valid(...APPOINTMENT_TYPES)
     .required()
-    .description('Appointment type (e.g., "Checkup", "Medication", "Emergency")')
+    .description('Appointment type from AppointmentType enum: ROUTINE_CHECKUP, MEDICATION_ADMINISTRATION, INJURY_ASSESSMENT, ILLNESS_EVALUATION, FOLLOW_UP, SCREENING, EMERGENCY')
     .messages({
-      'any.required': 'Appointment type is required'
+      'any.required': 'Appointment type is required',
+      'any.only': 'Appointment type must be one of: ROUTINE_CHECKUP, MEDICATION_ADMINISTRATION, INJURY_ASSESSMENT, ILLNESS_EVALUATION, FOLLOW_UP, SCREENING, EMERGENCY'
     }),
 
-  startTime: Joi.date()
+  scheduledDate: Joi.date()
     .iso()
     .min('now')
     .required()
-    .description('Appointment start time (ISO 8601, future date required)')
+    .description('Appointment scheduled date and time (ISO 8601, future date required)')
     .messages({
-      'date.min': 'Start time must be in the future',
-      'any.required': 'Start time is required'
-    }),
-
-  endTime: Joi.date()
-    .iso()
-    .greater(Joi.ref('startTime'))
-    .optional()
-    .description('Appointment end time (ISO 8601, must be after start time)')
-    .messages({
-      'date.greater': 'End time must be after start time'
+      'date.min': 'Scheduled time must be in the future',
+      'any.required': 'Scheduled date is required'
     }),
 
   duration: Joi.number()
     .integer()
     .min(15)
     .max(120)
-    .optional()
+    .default(30)
     .description('Appointment duration in minutes (15-120, default: 30)')
     .messages({
       'number.min': 'Duration must be at least 15 minutes',
@@ -137,9 +149,12 @@ export const createAppointmentSchema = Joi.object({
 
   reason: Joi.string()
     .trim()
-    .max(500)
     .optional()
-    .description('Reason for appointment'),
+    .max(500)
+    .description('Reason for appointment (optional)')
+    .messages({
+      'string.max': 'Reason cannot exceed 500 characters'
+    }),
 
   notes: Joi.string()
     .trim()
@@ -162,38 +177,48 @@ export const createAppointmentSchema = Joi.object({
     .description('Parent appointment UUID if this is a follow-up')
 });
 
+/**
+ * Update appointment payload schema
+ * Validates appointment update data against database schema
+ * @schema
+ */
 export const updateAppointmentSchema = Joi.object({
-  startTime: Joi.date()
+  scheduledDate: Joi.date()
     .iso()
-    .optional(),
-
-  endTime: Joi.date()
-    .iso()
-    .optional(),
+    .optional()
+    .description('New scheduled date and time (ISO 8601)'),
 
   duration: Joi.number()
     .integer()
     .min(15)
     .max(120)
-    .optional(),
+    .optional()
+    .description('Appointment duration in minutes (15-120)'),
 
-  type: Joi.string()
-    .trim()
-    .optional(),
+  appointmentType: Joi.string()
+    .valid(...APPOINTMENT_TYPES)
+    .optional()
+    .description('Appointment type from AppointmentType enum')
+    .messages({
+      'any.only': 'Appointment type must be one of: ROUTINE_CHECKUP, MEDICATION_ADMINISTRATION, INJURY_ASSESSMENT, ILLNESS_EVALUATION, FOLLOW_UP, SCREENING, EMERGENCY'
+    }),
 
   reason: Joi.string()
     .trim()
     .max(500)
-    .optional(),
+    .optional()
+    .description('Reason for appointment'),
 
   notes: Joi.string()
     .trim()
     .max(1000)
-    .optional(),
+    .optional()
+    .description('Additional notes'),
 
   priority: Joi.string()
     .valid('LOW', 'MEDIUM', 'HIGH', 'URGENT')
-    .optional(),
+    .optional()
+    .description('Appointment priority level'),
 
   status: Joi.string()
     .valid('SCHEDULED', 'RESCHEDULED')
@@ -270,17 +295,60 @@ export const waitlistIdParamSchema = Joi.object({
  * Recurring Appointments Schema
  */
 
+/**
+ * Recurring appointments creation schema
+ * Creates multiple appointments based on a recurrence pattern
+ * @schema
+ */
 export const createRecurringAppointmentsSchema = Joi.object({
   baseData: Joi.object({
-    studentId: Joi.string().uuid().required(),
-    nurseId: Joi.string().uuid().required(),
-    type: Joi.string().trim().required(),
-    startTime: Joi.date().iso().min('now').required(),
-    endTime: Joi.date().iso().greater(Joi.ref('startTime')).optional(),
-    duration: Joi.number().integer().min(15).max(120).optional(),
-    reason: Joi.string().trim().max(500).optional(),
-    notes: Joi.string().trim().max(1000).optional(),
-    priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').optional()
+    studentId: Joi.string()
+      .uuid()
+      .required()
+      .description('Student UUID'),
+
+    nurseId: Joi.string()
+      .uuid()
+      .required()
+      .description('Nurse UUID'),
+
+    appointmentType: Joi.string()
+      .valid(...APPOINTMENT_TYPES)
+      .required()
+      .description('Appointment type from AppointmentType enum')
+      .messages({
+        'any.only': 'Appointment type must be one of: ROUTINE_CHECKUP, MEDICATION_ADMINISTRATION, INJURY_ASSESSMENT, ILLNESS_EVALUATION, FOLLOW_UP, SCREENING, EMERGENCY'
+      }),
+
+    scheduledDate: Joi.date()
+      .iso()
+      .min('now')
+      .required()
+      .description('First appointment scheduled date and time (ISO 8601)'),
+
+    duration: Joi.number()
+      .integer()
+      .min(15)
+      .max(120)
+      .default(30)
+      .description('Appointment duration in minutes'),
+
+    reason: Joi.string()
+      .trim()
+      .optional()
+      .max(500)
+      .description('Reason for appointments'),
+
+    notes: Joi.string()
+      .trim()
+      .max(1000)
+      .optional()
+      .description('Additional notes'),
+
+    priority: Joi.string()
+      .valid('LOW', 'MEDIUM', 'HIGH', 'URGENT')
+      .optional()
+      .description('Appointment priority level')
   }).required().description('Base appointment data to be repeated'),
 
   recurrencePattern: Joi.object({
@@ -323,6 +391,11 @@ export const createRecurringAppointmentsSchema = Joi.object({
  * Waitlist Schemas
  */
 
+/**
+ * Add to waitlist schema
+ * Validates waitlist entry creation
+ * @schema
+ */
 export const addToWaitlistSchema = Joi.object({
   studentId: Joi.string()
     .uuid()
@@ -337,12 +410,13 @@ export const addToWaitlistSchema = Joi.object({
     .optional()
     .description('Preferred nurse UUID (optional)'),
 
-  type: Joi.string()
-    .trim()
+  appointmentType: Joi.string()
+    .valid(...APPOINTMENT_TYPES)
     .required()
-    .description('Appointment type needed')
+    .description('Appointment type needed from AppointmentType enum')
     .messages({
-      'any.required': 'Appointment type is required'
+      'any.required': 'Appointment type is required',
+      'any.only': 'Appointment type must be one of: ROUTINE_CHECKUP, MEDICATION_ADMINISTRATION, INJURY_ASSESSMENT, ILLNESS_EVALUATION, FOLLOW_UP, SCREENING, EMERGENCY'
     }),
 
   priority: Joi.string()

@@ -1,6 +1,18 @@
 /**
  * Health Records Validators
  * Validation schemas for comprehensive health record management
+ *
+ * @description Joi validation schemas aligned with health_records database table schema
+ *
+ * Key Schema Alignments:
+ * - recordType: ENUM validation matching HealthRecordType (8 values: CHECKUP, VACCINATION, ILLNESS, INJURY, ALLERGY, CHRONIC_CONDITION, SCREENING, EMERGENCY)
+ * - recordDate: ISO date validation, cannot be in the future (REQUIRED)
+ * - diagnosis: Optional text for medical diagnosis
+ * - treatment: Optional text for treatment information
+ * - notes: Optional additional comments
+ * - provider: Optional healthcare provider name
+ *
+ * All schemas include comprehensive JSDoc documentation with field descriptions
  */
 
 import Joi from 'joi';
@@ -8,42 +20,86 @@ import { paginationSchema } from '../../../shared/validators';
 
 /**
  * General Health Record Schemas
+ * Aligned with health_records database table schema
  */
 
+/**
+ * Query schema for filtering health records
+ * @property {string} recordType - Filter by record type (CHECKUP, VACCINATION, etc.)
+ * @property {Date} dateFrom - Filter records from this date onwards
+ * @property {Date} dateTo - Filter records up to this date
+ * @property {string} provider - Filter by healthcare provider name
+ */
 export const healthRecordQuerySchema = paginationSchema.keys({
-  type: Joi.string()
-    .valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING')
+  recordType: Joi.string()
+    .valid(
+      'CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'ALLERGY',
+      'CHRONIC_CONDITION', 'SCREENING', 'EMERGENCY'
+    )
     .optional()
     .description('Filter by record type'),
-  dateFrom: Joi.date().iso().optional(),
-  dateTo: Joi.date().iso().optional(),
-  provider: Joi.string().trim().optional()
+  dateFrom: Joi.date().iso().optional().description('Start date for filtering'),
+  dateTo: Joi.date().iso().optional().description('End date for filtering'),
+  provider: Joi.string().trim().optional().description('Healthcare provider name filter')
 });
 
+/**
+ * Schema for creating a new health record
+ * Maps to health_records database table columns
+ * @property {string} studentId - Student UUID (required)
+ * @property {string} recordType - Type of health record (required, ENUM)
+ * @property {Date} recordDate - Date when health event occurred (required, cannot be future)
+ * @property {string} diagnosis - Medical diagnosis description (optional)
+ * @property {string} treatment - Treatment provided or recommended (optional)
+ * @property {string} notes - Additional notes (optional)
+ * @property {string} provider - Healthcare provider name (optional)
+ */
 export const createHealthRecordSchema = Joi.object({
-  studentId: Joi.string().uuid().required(),
-  type: Joi.string()
-    .valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING')
-    .required(),
-  date: Joi.date().iso().max('now').required(),
-  description: Joi.string().trim().min(5).max(2000).required(),
-  vital: Joi.object().optional(),
-  provider: Joi.string().trim().optional(),
-  notes: Joi.string().trim().max(5000).optional(),
-  attachments: Joi.array().items(Joi.string()).optional()
-});
+  studentId: Joi.string().uuid().required()
+    .description('Student UUID reference'),
+  recordType: Joi.string()
+    .valid(
+      'CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'ALLERGY',
+      'CHRONIC_CONDITION', 'SCREENING', 'EMERGENCY'
+    )
+    .required()
+    .description('Type of health record'),
+  recordDate: Joi.date().iso().max('now').required()
+    .description('Date when health event occurred'),
+  diagnosis: Joi.string().trim().max(5000).optional()
+    .description('Medical diagnosis description'),
+  treatment: Joi.string().trim().max(5000).optional()
+    .description('Treatment provided or recommended'),
+  notes: Joi.string().trim().max(5000).optional()
+    .description('Additional notes or comments'),
+  provider: Joi.string().trim().max(255).optional()
+    .description('Healthcare provider name')
+}).description('Create new health record with database-aligned fields');
 
+/**
+ * Schema for updating an existing health record
+ * All fields optional except at least one must be provided
+ * Maps to health_records table columns
+ */
 export const updateHealthRecordSchema = Joi.object({
-  type: Joi.string()
-    .valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING')
-    .optional(),
-  date: Joi.date().iso().max('now').optional(),
-  description: Joi.string().trim().min(5).max(2000).optional(),
-  vital: Joi.object().optional(),
-  provider: Joi.string().trim().optional(),
-  notes: Joi.string().trim().max(5000).optional(),
-  attachments: Joi.array().items(Joi.string()).optional()
-}).min(1);
+  recordType: Joi.string()
+    .valid(
+      'CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'ALLERGY',
+      'CHRONIC_CONDITION', 'SCREENING', 'EMERGENCY'
+    )
+    .optional()
+    .description('Type of health record'),
+  recordDate: Joi.date().iso().max('now').optional()
+    .description('Date when health event occurred'),
+  diagnosis: Joi.string().trim().max(5000).optional()
+    .description('Medical diagnosis description'),
+  treatment: Joi.string().trim().max(5000).optional()
+    .description('Treatment provided or recommended'),
+  notes: Joi.string().trim().max(5000).optional()
+    .description('Additional notes or comments'),
+  provider: Joi.string().trim().max(255).optional()
+    .description('Healthcare provider name')
+}).min(1).description('Update health record - at least one field required');
 
 /**
  * Allergy Schemas

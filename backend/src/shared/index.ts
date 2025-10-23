@@ -48,7 +48,12 @@
 export {
   UTILITY_CONSTANTS,
   type UtilityResult,
-  type PaginationOptions
+  type PaginationOptions,
+  hashPassword,
+  comparePassword,
+  validatePasswordComplexity,
+  generateSecurePassword,
+  PASSWORD_CONFIG
 } from './utilities';
 
 // Enterprise security services (consolidated from auth + security)

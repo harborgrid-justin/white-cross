@@ -8,10 +8,14 @@
  *   - enums.ts (database/types/enums.ts)
  *   - validation.ts (services/appointment/validation.ts)
  *   - statusTransitions.ts (services/appointment/statusTransitions.ts)
- *   - ... and 3 more
+ *   - AppointmentAvailabilityService.ts (dynamic)
+ *   - AppointmentReminderService.ts
+ *   - AppointmentWaitlistService.ts (dynamic import only)
  *
  * DOWNSTREAM (imported by):
  *   - appointmentService.ts (services/appointmentService.ts)
+ *   - AppointmentRecurringService.ts
+ *   - AppointmentWaitlistService.ts
  */
 
 /**
@@ -21,9 +25,9 @@
  * Downstream: Routes, services, other modules | Called by: Application components
  * Related: Similar modules, tests, documentation
  * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-10-23 | File Type: .ts
  * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * LLM Context: general utility functions and operations, part of backend architecture, uses dynamic import for waitlist to avoid circular dependency
  */
 
 import { Op } from 'sequelize';
@@ -39,7 +43,6 @@ import { AppointmentValidation } from './validation';
 import { AppointmentStatusTransitions } from './statusTransitions';
 import { AppointmentAvailabilityService } from './AppointmentAvailabilityService';
 import { AppointmentReminderService } from './AppointmentReminderService';
-import { AppointmentWaitlistService } from './AppointmentWaitlistService';
 
 /**
  * Enterprise-grade CRUD operations module for appointments
@@ -372,8 +375,9 @@ export class AppointmentCrudOperations {
 
       logger.info(`Appointment cancelled: ${appointment.type} for ${(appointment as any).student?.firstName} ${(appointment as any).student?.lastName}`);
 
-      // Try to fill the slot from waitlist
+      // Try to fill the slot from waitlist (dynamic import to avoid circular dependency)
       try {
+        const { AppointmentWaitlistService } = await import('./AppointmentWaitlistService');
         await AppointmentWaitlistService.fillSlotFromWaitlist({
           scheduledAt: appointment.scheduledAt,
           duration: appointment.duration,

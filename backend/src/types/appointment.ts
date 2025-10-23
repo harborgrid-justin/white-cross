@@ -49,16 +49,16 @@ export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly';
 export interface CreateAppointmentData {
   studentId: string;
   nurseId: string;
-  type: AppointmentType;
-  scheduledAt: Date;
+  appointmentType: AppointmentType;
+  scheduledDate: Date;
   duration?: number; // minutes, defaults to 30
-  reason: string;
+  reason?: string; // Optional in database
   notes?: string;
 }
 
 export interface UpdateAppointmentData {
-  type?: AppointmentType;
-  scheduledAt?: Date;
+  appointmentType?: AppointmentType;
+  scheduledDate?: Date;
   duration?: number;
   reason?: string;
   notes?: string;
@@ -69,7 +69,7 @@ export interface AppointmentFilters {
   nurseId?: string;
   studentId?: string;
   status?: AppointmentStatus;
-  type?: AppointmentType;
+  appointmentType?: AppointmentType;
   dateFrom?: Date;
   dateTo?: Date;
 }
@@ -106,11 +106,11 @@ export interface NurseAvailabilityData {
 export interface WaitlistEntry {
   studentId: string;
   nurseId?: string;
-  type: AppointmentType;
+  appointmentType: AppointmentType;
   preferredDate?: Date;
   duration?: number;
   priority?: WaitlistPriority;
-  reason: string;
+  reason?: string; // Optional
   notes?: string;
 }
 

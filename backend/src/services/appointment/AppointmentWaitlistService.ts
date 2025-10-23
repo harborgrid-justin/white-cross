@@ -7,10 +7,11 @@
  *   - index.ts (database/models/index.ts)
  *   - appointment.ts (types/appointment.ts)
  *   - enums.ts (database/types/enums.ts)
+ *   - crudOperations.ts (dynamic import only to avoid circular dependency)
  *
  * DOWNSTREAM (imported by):
  *   - AppointmentService.ts (services/appointment/AppointmentService.ts)
- *   - crudOperations.ts (services/appointment/crudOperations.ts)
+ *   - crudOperations.ts (services/appointment/crudOperations.ts - dynamic only)
  *   - appointmentService.ts (services/appointmentService.ts)
  */
 
@@ -21,9 +22,9 @@
  * Downstream: Routes, services, other modules | Called by: Application components
  * Related: Similar modules, tests, documentation
  * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-10-23 | File Type: .ts
  * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * LLM Context: general utility functions and operations, part of backend architecture, uses dynamic import for crudOperations to avoid circular dependency
  */
 
 import { Op } from 'sequelize';
@@ -192,10 +193,9 @@ export class AppointmentWaitlistService {
 
       for (const entry of waitlistEntries) {
         try {
-          // Import here to avoid circular dependency
-          const { AppointmentService } = await import('./AppointmentService');
-
-          const appointment = await AppointmentService.createAppointment({
+          // Use dynamic import to avoid circular dependency with crudOperations
+          const { AppointmentCrudOperations } = await import('./crudOperations');
+          const appointment = await AppointmentCrudOperations.createAppointment({
             studentId: entry.studentId,
             nurseId: cancelledAppointment.nurseId,
             type: entry.type,

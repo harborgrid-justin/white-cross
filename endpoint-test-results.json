@@ -1,0 +1,4325 @@
+{
+  "timestamp": "2025-10-23T18:55:18.949674",
+  "base_url": "http://localhost:3001",
+  "statistics": {
+    "total": 300,
+    "AUTH_REQUIRED": 295,
+    "OTHER": 2,
+    "SERVER_ERROR": 1,
+    "SUCCESS": 2,
+    "NOT_FOUND": 0,
+    "VALIDATION_ERROR": 0,
+    "METHOD_NOT_ALLOWED": 0,
+    "NOT_IMPLEMENTED": 0,
+    "TIMEOUT": 0,
+    "CONNECTION_ERROR": 0,
+    "ERROR": 0
+  },
+  "health_rate": 99.66666666666667,
+  "results": [
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/initialize-roles",
+      "test_path": "/api/v1/access-control/initialize-roles",
+      "tags": [
+        "Access Control",
+        "Utilities",
+        "v1"
+      ],
+      "summary": "Initialize default roles",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/ip-restrictions",
+      "test_path": "/api/v1/access-control/ip-restrictions",
+      "tags": [
+        "Access Control",
+        "IP Restrictions",
+        "v1"
+      ],
+      "summary": "Get IP restrictions",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/ip-restrictions",
+      "test_path": "/api/v1/access-control/ip-restrictions",
+      "tags": [
+        "Access Control",
+        "IP Restrictions",
+        "v1"
+      ],
+      "summary": "Add IP restriction",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/access-control/ip-restrictions/{id}",
+      "test_path": "/api/v1/access-control/ip-restrictions/1",
+      "tags": [
+        "Access Control",
+        "IP Restrictions",
+        "v1"
+      ],
+      "summary": "Remove IP restriction",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/permissions",
+      "test_path": "/api/v1/access-control/permissions",
+      "tags": [
+        "Access Control",
+        "Permissions",
+        "v1"
+      ],
+      "summary": "Get all permissions",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/permissions",
+      "test_path": "/api/v1/access-control/permissions",
+      "tags": [
+        "Access Control",
+        "Permissions",
+        "v1"
+      ],
+      "summary": "Create new permission",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/roles",
+      "test_path": "/api/v1/access-control/roles",
+      "tags": [
+        "Access Control",
+        "Roles",
+        "v1"
+      ],
+      "summary": "Get all roles",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/roles",
+      "test_path": "/api/v1/access-control/roles",
+      "tags": [
+        "Access Control",
+        "Roles",
+        "v1"
+      ],
+      "summary": "Create new role",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/roles/{id}",
+      "test_path": "/api/v1/access-control/roles/1",
+      "tags": [
+        "Access Control",
+        "Roles",
+        "v1"
+      ],
+      "summary": "Get role by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/access-control/roles/{id}",
+      "test_path": "/api/v1/access-control/roles/1",
+      "tags": [
+        "Access Control",
+        "Roles",
+        "v1"
+      ],
+      "summary": "Update role",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/access-control/roles/{id}",
+      "test_path": "/api/v1/access-control/roles/1",
+      "tags": [
+        "Access Control",
+        "Roles",
+        "v1"
+      ],
+      "summary": "Delete role",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/roles/{roleId}/permissions/{permissionId}",
+      "test_path": "/api/v1/access-control/roles/1/permissions/1",
+      "tags": [
+        "Access Control",
+        "Role-Permissions",
+        "v1"
+      ],
+      "summary": "Assign permission to role",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/access-control/roles/{roleId}/permissions/{permissionId}",
+      "test_path": "/api/v1/access-control/roles/1/permissions/1",
+      "tags": [
+        "Access Control",
+        "Role-Permissions",
+        "v1"
+      ],
+      "summary": "Remove permission from role",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/security-incidents",
+      "test_path": "/api/v1/access-control/security-incidents",
+      "tags": [
+        "Access Control",
+        "Security Incidents",
+        "v1"
+      ],
+      "summary": "Get security incidents",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/security-incidents",
+      "test_path": "/api/v1/access-control/security-incidents",
+      "tags": [
+        "Access Control",
+        "Security Incidents",
+        "v1"
+      ],
+      "summary": "Create security incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/access-control/security-incidents/{id}",
+      "test_path": "/api/v1/access-control/security-incidents/1",
+      "tags": [
+        "Access Control",
+        "Security Incidents",
+        "v1"
+      ],
+      "summary": "Update security incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/access-control/sessions/{token}",
+      "test_path": "/api/v1/access-control/sessions/{token}",
+      "tags": [
+        "Access Control",
+        "Sessions",
+        "v1"
+      ],
+      "summary": "Delete session",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/statistics",
+      "test_path": "/api/v1/access-control/statistics",
+      "tags": [
+        "Access Control",
+        "Statistics",
+        "v1"
+      ],
+      "summary": "Get security statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/users/{userId}/check",
+      "test_path": "/api/v1/access-control/users/1/check",
+      "tags": [
+        "Access Control",
+        "User-Permissions",
+        "v1"
+      ],
+      "summary": "Check user permission",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/users/{userId}/permissions",
+      "test_path": "/api/v1/access-control/users/1/permissions",
+      "tags": [
+        "Access Control",
+        "User-Permissions",
+        "v1"
+      ],
+      "summary": "Get user permissions",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/access-control/users/{userId}/roles/{roleId}",
+      "test_path": "/api/v1/access-control/users/1/roles/1",
+      "tags": [
+        "Access Control",
+        "User-Roles",
+        "v1"
+      ],
+      "summary": "Assign role to user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/access-control/users/{userId}/roles/{roleId}",
+      "test_path": "/api/v1/access-control/users/1/roles/1",
+      "tags": [
+        "Access Control",
+        "User-Roles",
+        "v1"
+      ],
+      "summary": "Remove role from user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/access-control/users/{userId}/sessions",
+      "test_path": "/api/v1/access-control/users/1/sessions",
+      "tags": [
+        "Access Control",
+        "Sessions",
+        "v1"
+      ],
+      "summary": "Get user sessions",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/access-control/users/{userId}/sessions",
+      "test_path": "/api/v1/access-control/users/1/sessions",
+      "tags": [
+        "Access Control",
+        "Sessions",
+        "v1"
+      ],
+      "summary": "Delete all user sessions",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/appointments/no-show-rate",
+      "test_path": "/api/v1/analytics/appointments/no-show-rate",
+      "tags": [
+        "Analytics",
+        "Appointments",
+        "No-Show",
+        "v1"
+      ],
+      "summary": "Get appointment no-show statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/appointments/trends",
+      "test_path": "/api/v1/analytics/appointments/trends",
+      "tags": [
+        "Analytics",
+        "Appointments",
+        "Trends",
+        "v1"
+      ],
+      "summary": "Get appointment trends",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/dashboard/admin",
+      "test_path": "/api/v1/analytics/dashboard/admin",
+      "tags": [
+        "Analytics",
+        "Dashboard",
+        "Admin",
+        "v1"
+      ],
+      "summary": "Get admin dashboard data",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/dashboard/nurse",
+      "test_path": "/api/v1/analytics/dashboard/nurse",
+      "tags": [
+        "Analytics",
+        "Dashboard",
+        "Nurse",
+        "v1"
+      ],
+      "summary": "Get nurse dashboard data",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/health-metrics",
+      "test_path": "/api/v1/analytics/health-metrics",
+      "tags": [
+        "Analytics",
+        "Health Metrics",
+        "v1"
+      ],
+      "summary": "Get aggregated health metrics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/health-metrics/school/{schoolId}",
+      "test_path": "/api/v1/analytics/health-metrics/school/1",
+      "tags": [
+        "Analytics",
+        "Health Metrics",
+        "Schools",
+        "v1"
+      ],
+      "summary": "Get school-wide health metrics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/health-metrics/student/{studentId}",
+      "test_path": "/api/v1/analytics/health-metrics/student/1",
+      "tags": [
+        "Analytics",
+        "Health Metrics",
+        "Students",
+        "v1"
+      ],
+      "summary": "Get student health trends",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/health-trends",
+      "test_path": "/api/v1/analytics/health-trends",
+      "tags": [
+        "Analytics",
+        "Health Metrics",
+        "Trends",
+        "v1"
+      ],
+      "summary": "Get health trend analysis",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/incidents/by-location",
+      "test_path": "/api/v1/analytics/incidents/by-location",
+      "tags": [
+        "Analytics",
+        "Incidents",
+        "Location",
+        "v1"
+      ],
+      "summary": "Get incidents by location",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/incidents/trends",
+      "test_path": "/api/v1/analytics/incidents/trends",
+      "tags": [
+        "Analytics",
+        "Incidents",
+        "Trends",
+        "v1"
+      ],
+      "summary": "Get incident trends",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/medications/adherence",
+      "test_path": "/api/v1/analytics/medications/adherence",
+      "tags": [
+        "Analytics",
+        "Medications",
+        "Adherence",
+        "v1"
+      ],
+      "summary": "Get medication adherence rates",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/medications/usage",
+      "test_path": "/api/v1/analytics/medications/usage",
+      "tags": [
+        "Analytics",
+        "Medications",
+        "Usage",
+        "v1"
+      ],
+      "summary": "Get medication usage statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/analytics/reports/custom",
+      "test_path": "/api/v1/analytics/reports/custom",
+      "tags": [
+        "Analytics",
+        "Reports",
+        "Custom",
+        "v1"
+      ],
+      "summary": "Generate custom report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/reports/{id}",
+      "test_path": "/api/v1/analytics/reports/1",
+      "tags": [
+        "Analytics",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Get generated report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/summary",
+      "test_path": "/api/v1/analytics/summary",
+      "tags": [
+        "Analytics",
+        "Summary",
+        "Platform",
+        "v1"
+      ],
+      "summary": "Get overall platform summary",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments",
+      "test_path": "/api/v1/appointments",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get all appointments with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments",
+      "test_path": "/api/v1/appointments",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Create new appointment",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/nurse/{nurseId}/available-slots",
+      "test_path": "/api/v1/appointments/nurse/{nurseId}/available-slots",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Scheduling",
+        "v1"
+      ],
+      "summary": "Get available time slots for a nurse",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/nurse/{nurseId}/calendar",
+      "test_path": "/api/v1/appointments/nurse/{nurseId}/calendar",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Calendar",
+        "v1"
+      ],
+      "summary": "Generate calendar export (iCal format)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/nurse/{nurseId}/upcoming",
+      "test_path": "/api/v1/appointments/nurse/{nurseId}/upcoming",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get upcoming appointments for a nurse",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/recurring",
+      "test_path": "/api/v1/appointments/recurring",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Recurring",
+        "v1"
+      ],
+      "summary": "Create recurring appointments",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/reminders/send",
+      "test_path": "/api/v1/appointments/reminders/send",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Reminders",
+        "v1"
+      ],
+      "summary": "Process and send appointment reminders",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/statistics",
+      "test_path": "/api/v1/appointments/statistics",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Analytics",
+        "v1"
+      ],
+      "summary": "Get appointment statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/waitlist",
+      "test_path": "/api/v1/appointments/waitlist",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Waitlist",
+        "v1"
+      ],
+      "summary": "Get appointment waitlist entries",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/waitlist",
+      "test_path": "/api/v1/appointments/waitlist",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Waitlist",
+        "v1"
+      ],
+      "summary": "Add student to appointment waitlist",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/appointments/waitlist/{id}",
+      "test_path": "/api/v1/appointments/waitlist/1",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "Waitlist",
+        "v1"
+      ],
+      "summary": "Remove student from waitlist",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/{id}",
+      "test_path": "/api/v1/appointments/1",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get appointment by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/appointments/{id}",
+      "test_path": "/api/v1/appointments/1",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Update appointment",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/cancel",
+      "test_path": "/api/v1/appointments/1/cancel",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Cancel appointment",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/complete",
+      "test_path": "/api/v1/appointments/1/complete",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Complete appointment",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/no-show",
+      "test_path": "/api/v1/appointments/1/no-show",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Mark appointment as no-show",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/{id}/start",
+      "test_path": "/api/v1/appointments/1/start",
+      "tags": [
+        "Appointments",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Start appointment (transition to IN_PROGRESS)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/anomalies",
+      "test_path": "/api/v1/audit/anomalies",
+      "tags": [
+        "Audit",
+        "Security",
+        "Anomalies",
+        "v1"
+      ],
+      "summary": "Detect security anomalies",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/compliance-report",
+      "test_path": "/api/v1/audit/compliance-report",
+      "tags": [
+        "Audit",
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Generate HIPAA compliance report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/data-access/{resourceType}/{resourceId}",
+      "test_path": "/api/v1/audit/data-access/{resourceType}/{resourceId}",
+      "tags": [
+        "Audit",
+        "DataAccess",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get resource access history",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/export",
+      "test_path": "/api/v1/audit/export",
+      "tags": [
+        "Audit",
+        "Export",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Export audit logs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/logs",
+      "test_path": "/api/v1/audit/logs",
+      "tags": [
+        "Audit",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "List audit logs with filtering and pagination",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audit/logs",
+      "test_path": "/api/v1/audit/logs",
+      "tags": [
+        "Audit",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Create audit log entry",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/audit/logs/archive",
+      "test_path": "/api/v1/audit/logs/archive",
+      "tags": [
+        "Audit",
+        "Archive",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Archive old audit logs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/logs/{id}",
+      "test_path": "/api/v1/audit/logs/1",
+      "tags": [
+        "Audit",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get audit log by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/phi-access",
+      "test_path": "/api/v1/audit/phi-access",
+      "tags": [
+        "Audit",
+        "PHI",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get PHI access logs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audit/phi-access",
+      "test_path": "/api/v1/audit/phi-access",
+      "tags": [
+        "Audit",
+        "PHI",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Log PHI access",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/security-analysis",
+      "test_path": "/api/v1/audit/security-analysis",
+      "tags": [
+        "Audit",
+        "Security",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get security analysis",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audit/security-analysis/run",
+      "test_path": "/api/v1/audit/security-analysis/run",
+      "tags": [
+        "Audit",
+        "Security",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Run security analysis",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/session/{sessionId}",
+      "test_path": "/api/v1/audit/session/{sessionId}",
+      "tags": [
+        "Audit",
+        "Sessions",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get session audit trail",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/statistics",
+      "test_path": "/api/v1/audit/statistics",
+      "tags": [
+        "Audit",
+        "Statistics",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get audit statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/user/{userId}/activity",
+      "test_path": "/api/v1/audit/user/1/activity",
+      "tags": [
+        "Audit",
+        "Users",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get user activity audit logs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "test_path": "/api/v1/auth/login",
+      "tags": [
+        "Authentication",
+        "v1"
+      ],
+      "summary": "Login user",
+      "status": 400,
+      "result": "OTHER",
+      "error": "Email is required. Password is required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "test_path": "/api/v1/auth/me",
+      "tags": [
+        "Authentication",
+        "v1"
+      ],
+      "summary": "Get current authenticated user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "test_path": "/api/v1/auth/refresh",
+      "tags": [
+        "Authentication",
+        "v1"
+      ],
+      "summary": "Refresh JWT token",
+      "status": 500,
+      "result": "SERVER_ERROR",
+      "error": "Failed to refresh token"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "test_path": "/api/v1/auth/register",
+      "tags": [
+        "Authentication",
+        "v1"
+      ],
+      "summary": "Register a new user",
+      "status": 400,
+      "result": "OTHER",
+      "error": "Email is required. Password is required. First name is required. Last name is required. Role is required"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/verify",
+      "test_path": "/api/v1/auth/verify",
+      "tags": [
+        "Authentication",
+        "v1"
+      ],
+      "summary": "Verify JWT token",
+      "status": 200,
+      "result": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts",
+      "test_path": "/api/v1/communications/broadcasts",
+      "tags": [
+        "Communications",
+        "Broadcasts",
+        "v1"
+      ],
+      "summary": "List broadcast messages",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/communications/broadcasts",
+      "test_path": "/api/v1/communications/broadcasts",
+      "tags": [
+        "Communications",
+        "Broadcasts",
+        "v1"
+      ],
+      "summary": "Create emergency broadcast message",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts/{id}",
+      "test_path": "/api/v1/communications/broadcasts/1",
+      "tags": [
+        "Communications",
+        "Broadcasts",
+        "v1"
+      ],
+      "summary": "Get broadcast by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/communications/broadcasts/{id}/cancel",
+      "test_path": "/api/v1/communications/broadcasts/1/cancel",
+      "tags": [
+        "Communications",
+        "Broadcasts",
+        "v1"
+      ],
+      "summary": "Cancel scheduled broadcast",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts/{id}/delivery-report",
+      "test_path": "/api/v1/communications/broadcasts/1/delivery-report",
+      "tags": [
+        "Communications",
+        "Broadcasts",
+        "v1"
+      ],
+      "summary": "Get broadcast delivery report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/broadcasts/{id}/recipients",
+      "test_path": "/api/v1/communications/broadcasts/1/recipients",
+      "tags": [
+        "Communications",
+        "Broadcasts",
+        "v1"
+      ],
+      "summary": "Get broadcast recipients",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/delivery-status/{messageId}",
+      "test_path": "/api/v1/communications/delivery-status/1",
+      "tags": [
+        "Communications",
+        "Delivery",
+        "v1"
+      ],
+      "summary": "Get message delivery status",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/messages",
+      "test_path": "/api/v1/communications/messages",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "List messages with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/communications/messages",
+      "test_path": "/api/v1/communications/messages",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Send new message to specific recipients",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/messages/inbox",
+      "test_path": "/api/v1/communications/messages/inbox",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Get inbox messages for current user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/messages/sent",
+      "test_path": "/api/v1/communications/messages/sent",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Get sent messages for current user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/messages/{id}",
+      "test_path": "/api/v1/communications/messages/1",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Get message by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/communications/messages/{id}",
+      "test_path": "/api/v1/communications/messages/1",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Update message (draft/scheduled only)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/communications/messages/{id}",
+      "test_path": "/api/v1/communications/messages/1",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Delete message (cancel scheduled)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/communications/messages/{id}/reply",
+      "test_path": "/api/v1/communications/messages/1/reply",
+      "tags": [
+        "Communications",
+        "Messages",
+        "v1"
+      ],
+      "summary": "Reply to a message",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/scheduled",
+      "test_path": "/api/v1/communications/scheduled",
+      "tags": [
+        "Communications",
+        "Scheduled",
+        "v1"
+      ],
+      "summary": "List scheduled messages",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/communications/scheduled",
+      "test_path": "/api/v1/communications/scheduled",
+      "tags": [
+        "Communications",
+        "Scheduled",
+        "v1"
+      ],
+      "summary": "Schedule message for future delivery",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/statistics",
+      "test_path": "/api/v1/communications/statistics",
+      "tags": [
+        "Communications",
+        "Statistics",
+        "v1"
+      ],
+      "summary": "Get messaging statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/communications/templates",
+      "test_path": "/api/v1/communications/templates",
+      "tags": [
+        "Communications",
+        "Templates",
+        "v1"
+      ],
+      "summary": "List message templates",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/communications/templates",
+      "test_path": "/api/v1/communications/templates",
+      "tags": [
+        "Communications",
+        "Templates",
+        "v1"
+      ],
+      "summary": "Create message template",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/checklists",
+      "test_path": "/api/v1/compliance/checklists",
+      "tags": [
+        "Compliance",
+        "Checklists",
+        "v1"
+      ],
+      "summary": "List compliance checklists",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/checklists",
+      "test_path": "/api/v1/compliance/checklists",
+      "tags": [
+        "Compliance",
+        "Checklists",
+        "v1"
+      ],
+      "summary": "Create compliance checklist",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/checklists/{id}",
+      "test_path": "/api/v1/compliance/checklists/1",
+      "tags": [
+        "Compliance",
+        "Checklists",
+        "v1"
+      ],
+      "summary": "Get checklist by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/compliance/checklists/{id}",
+      "test_path": "/api/v1/compliance/checklists/1",
+      "tags": [
+        "Compliance",
+        "Checklists",
+        "v1"
+      ],
+      "summary": "Update compliance checklist",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/compliance/checklists/{id}",
+      "test_path": "/api/v1/compliance/checklists/1",
+      "tags": [
+        "Compliance",
+        "Checklists",
+        "v1"
+      ],
+      "summary": "Delete checklist item",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/consents",
+      "test_path": "/api/v1/compliance/consents",
+      "tags": [
+        "Compliance",
+        "Consents",
+        "v1"
+      ],
+      "summary": "Record consent signature",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/consents/forms",
+      "test_path": "/api/v1/compliance/consents/forms",
+      "tags": [
+        "Compliance",
+        "Consents",
+        "v1"
+      ],
+      "summary": "List consent forms",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/consents/forms",
+      "test_path": "/api/v1/compliance/consents/forms",
+      "tags": [
+        "Compliance",
+        "Consents",
+        "v1"
+      ],
+      "summary": "Create consent form",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/consents/forms/{id}",
+      "test_path": "/api/v1/compliance/consents/forms/1",
+      "tags": [
+        "Compliance",
+        "Consents",
+        "v1"
+      ],
+      "summary": "Get consent form by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/consents/student/{studentId}",
+      "test_path": "/api/v1/compliance/consents/student/1",
+      "tags": [
+        "Compliance",
+        "Consents",
+        "Students",
+        "v1"
+      ],
+      "summary": "Get student consents",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/compliance/consents/{signatureId}/withdraw",
+      "test_path": "/api/v1/compliance/consents/{signatureId}/withdraw",
+      "tags": [
+        "Compliance",
+        "Consents",
+        "v1"
+      ],
+      "summary": "Withdraw consent",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/policies",
+      "test_path": "/api/v1/compliance/policies",
+      "tags": [
+        "Compliance",
+        "Policies",
+        "v1"
+      ],
+      "summary": "List policy documents",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/policies",
+      "test_path": "/api/v1/compliance/policies",
+      "tags": [
+        "Compliance",
+        "Policies",
+        "v1"
+      ],
+      "summary": "Create policy document",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/policies/{policyId}",
+      "test_path": "/api/v1/compliance/policies/{policyId}",
+      "tags": [
+        "Compliance",
+        "Policies",
+        "v1"
+      ],
+      "summary": "Get policy by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/compliance/policies/{policyId}",
+      "test_path": "/api/v1/compliance/policies/{policyId}",
+      "tags": [
+        "Compliance",
+        "Policies",
+        "v1"
+      ],
+      "summary": "Update policy document",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/policies/{policyId}/acknowledge",
+      "test_path": "/api/v1/compliance/policies/{policyId}/acknowledge",
+      "tags": [
+        "Compliance",
+        "Policies",
+        "Training",
+        "v1"
+      ],
+      "summary": "Acknowledge policy",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/reports",
+      "test_path": "/api/v1/compliance/reports",
+      "tags": [
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "List compliance reports",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/reports",
+      "test_path": "/api/v1/compliance/reports",
+      "tags": [
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Create compliance report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/compliance/reports/generate",
+      "test_path": "/api/v1/compliance/reports/generate",
+      "tags": [
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Generate automated compliance report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/reports/{id}",
+      "test_path": "/api/v1/compliance/reports/1",
+      "tags": [
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Get compliance report by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/compliance/reports/{id}",
+      "test_path": "/api/v1/compliance/reports/1",
+      "tags": [
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Update compliance report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/compliance/reports/{id}",
+      "test_path": "/api/v1/compliance/reports/1",
+      "tags": [
+        "Compliance",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Delete compliance report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/compliance/statistics",
+      "test_path": "/api/v1/compliance/statistics",
+      "tags": [
+        "Compliance",
+        "Statistics",
+        "v1"
+      ],
+      "summary": "Get compliance statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/contacts",
+      "test_path": "/api/v1/contacts",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Get all contacts with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/contacts",
+      "test_path": "/api/v1/contacts",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Create new contact",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/contacts/by-relation/{relationTo}",
+      "test_path": "/api/v1/contacts/by-relation/{relationTo}",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Get contacts by relation",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/contacts/search",
+      "test_path": "/api/v1/contacts/search",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Search contacts",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/contacts/stats",
+      "test_path": "/api/v1/contacts/stats",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Get contact statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/contacts/{id}",
+      "test_path": "/api/v1/contacts/1",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Get contact by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/contacts/{id}",
+      "test_path": "/api/v1/contacts/1",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Update contact",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/contacts/{id}",
+      "test_path": "/api/v1/contacts/1",
+      "tags": [
+        "contacts"
+      ],
+      "summary": "Delete contact",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents",
+      "test_path": "/api/v1/documents",
+      "tags": [
+        "Documents",
+        "v1"
+      ],
+      "summary": "Get all documents with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/documents",
+      "test_path": "/api/v1/documents",
+      "tags": [
+        "Documents",
+        "v1"
+      ],
+      "summary": "Upload new document",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/analytics",
+      "test_path": "/api/v1/documents/analytics",
+      "tags": [
+        "Documents",
+        "Analytics",
+        "Reporting",
+        "v1"
+      ],
+      "summary": "Get document analytics and statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/categories",
+      "test_path": "/api/v1/documents/categories",
+      "tags": [
+        "Documents",
+        "Metadata",
+        "v1"
+      ],
+      "summary": "Get document categories with metadata",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/expiring",
+      "test_path": "/api/v1/documents/expiring",
+      "tags": [
+        "Documents",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get expiring documents",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/search",
+      "test_path": "/api/v1/documents/search",
+      "tags": [
+        "Documents",
+        "Search",
+        "v1"
+      ],
+      "summary": "Search documents by query",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/student/{studentId}",
+      "test_path": "/api/v1/documents/student/1",
+      "tags": [
+        "Documents",
+        "Students",
+        "v1"
+      ],
+      "summary": "Get all documents for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/templates",
+      "test_path": "/api/v1/documents/templates",
+      "tags": [
+        "Documents",
+        "Templates",
+        "v1"
+      ],
+      "summary": "List all document templates",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/documents/templates/{templateId}/create",
+      "test_path": "/api/v1/documents/templates/{templateId}/create",
+      "tags": [
+        "Documents",
+        "Templates",
+        "v1"
+      ],
+      "summary": "Create document from template",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/{id}",
+      "test_path": "/api/v1/documents/1",
+      "tags": [
+        "Documents",
+        "v1"
+      ],
+      "summary": "Get document by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/documents/{id}",
+      "test_path": "/api/v1/documents/1",
+      "tags": [
+        "Documents",
+        "v1"
+      ],
+      "summary": "Update document metadata",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/documents/{id}",
+      "test_path": "/api/v1/documents/1",
+      "tags": [
+        "Documents",
+        "v1"
+      ],
+      "summary": "Delete/archive document",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/audit-trail",
+      "test_path": "/api/v1/documents/1/audit-trail",
+      "tags": [
+        "Documents",
+        "Audit",
+        "Compliance",
+        "v1"
+      ],
+      "summary": "Get document audit trail",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/download",
+      "test_path": "/api/v1/documents/1/download",
+      "tags": [
+        "Documents",
+        "FileOperations",
+        "v1"
+      ],
+      "summary": "Download document file",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/documents/{id}/share",
+      "test_path": "/api/v1/documents/1/share",
+      "tags": [
+        "Documents",
+        "Sharing",
+        "v1"
+      ],
+      "summary": "Share document with users",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/documents/{id}/sign",
+      "test_path": "/api/v1/documents/1/sign",
+      "tags": [
+        "Documents",
+        "Signatures",
+        "v1"
+      ],
+      "summary": "E-sign document",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/signatures",
+      "test_path": "/api/v1/documents/1/signatures",
+      "tags": [
+        "Documents",
+        "Signatures",
+        "v1"
+      ],
+      "summary": "Get all signatures for document",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/documents/{id}/versions",
+      "test_path": "/api/v1/documents/1/versions",
+      "tags": [
+        "Documents",
+        "Versioning",
+        "v1"
+      ],
+      "summary": "Get document version history",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts",
+      "test_path": "/api/v1/emergency-contacts",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Create new emergency contact",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/emergency-contacts/statistics",
+      "test_path": "/api/v1/emergency-contacts/statistics",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "Analytics",
+        "v1"
+      ],
+      "summary": "Get emergency contact statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/emergency-contacts/student/{studentId}",
+      "test_path": "/api/v1/emergency-contacts/student/1",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get all emergency contacts for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts/student/{studentId}/notify",
+      "test_path": "/api/v1/emergency-contacts/student/1/notify",
+      "tags": [
+        "EmergencyContacts",
+        "Notifications",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Send emergency notification to all contacts for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/emergency-contacts/{id}",
+      "test_path": "/api/v1/emergency-contacts/1",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get emergency contact by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/emergency-contacts/{id}",
+      "test_path": "/api/v1/emergency-contacts/1",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Update emergency contact",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/emergency-contacts/{id}",
+      "test_path": "/api/v1/emergency-contacts/1",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Delete emergency contact (soft delete)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts/{id}/notify",
+      "test_path": "/api/v1/emergency-contacts/1/notify",
+      "tags": [
+        "EmergencyContacts",
+        "Notifications",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Send notification to specific contact",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/emergency-contacts/{id}/verify",
+      "test_path": "/api/v1/emergency-contacts/1/verify",
+      "tags": [
+        "EmergencyContacts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Verify emergency contact information",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-assessments/emergency/notify",
+      "test_path": "/api/v1/health-assessments/emergency/notify",
+      "tags": [
+        "Health Assessments",
+        "Emergency",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Send emergency health notification",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/emergency/{studentId}",
+      "test_path": "/api/v1/health-assessments/emergency/1",
+      "tags": [
+        "Health Assessments",
+        "Emergency",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get emergency notification history for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-assessments/growth/{studentId}",
+      "test_path": "/api/v1/health-assessments/growth/1",
+      "tags": [
+        "Health Assessments",
+        "Growth",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Record growth measurement for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/growth/{studentId}/analysis",
+      "test_path": "/api/v1/health-assessments/growth/1/analysis",
+      "tags": [
+        "Health Assessments",
+        "Growth",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Analyze growth trends for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/high-risk-students",
+      "test_path": "/api/v1/health-assessments/high-risk-students",
+      "tags": [
+        "Health Assessments",
+        "Healthcare",
+        "Administration",
+        "v1"
+      ],
+      "summary": "Get list of high-risk students",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/immunizations/{studentId}/forecast",
+      "test_path": "/api/v1/health-assessments/immunizations/1/forecast",
+      "tags": [
+        "Health Assessments",
+        "Immunizations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get immunization forecast for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/medication-interactions/{studentId}",
+      "test_path": "/api/v1/health-assessments/medication-interactions/1",
+      "tags": [
+        "Health Assessments",
+        "Medications",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Check comprehensive medication interactions for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-assessments/medication-interactions/{studentId}/check",
+      "test_path": "/api/v1/health-assessments/medication-interactions/1/check",
+      "tags": [
+        "Health Assessments",
+        "Medications",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Check interactions for a potential new medication",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/risk/{studentId}",
+      "test_path": "/api/v1/health-assessments/risk/1",
+      "tags": [
+        "Health Assessments",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Calculate health risk score for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-assessments/screenings",
+      "test_path": "/api/v1/health-assessments/screenings",
+      "tags": [
+        "Health Assessments",
+        "Screenings",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Record health screening results",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-assessments/screenings/{studentId}",
+      "test_path": "/api/v1/health-assessments/screenings/1",
+      "tags": [
+        "Health Assessments",
+        "Screenings",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get screening history for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-records",
+      "test_path": "/api/v1/health-records",
+      "tags": [
+        "HealthRecords",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Create new health record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-records/allergies",
+      "test_path": "/api/v1/health-records/allergies",
+      "tags": [
+        "HealthRecords",
+        "Allergies",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add new allergy",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/allergies/{id}",
+      "test_path": "/api/v1/health-records/allergies/1",
+      "tags": [
+        "HealthRecords",
+        "Allergies",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get allergy by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/health-records/allergies/{id}",
+      "test_path": "/api/v1/health-records/allergies/1",
+      "tags": [
+        "HealthRecords",
+        "Allergies",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Update allergy information",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/health-records/allergies/{id}",
+      "test_path": "/api/v1/health-records/allergies/1",
+      "tags": [
+        "HealthRecords",
+        "Allergies",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Remove allergy record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-records/conditions",
+      "test_path": "/api/v1/health-records/conditions",
+      "tags": [
+        "HealthRecords",
+        "ChronicConditions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add new chronic condition",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/conditions/{id}",
+      "test_path": "/api/v1/health-records/conditions/1",
+      "tags": [
+        "HealthRecords",
+        "ChronicConditions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get chronic condition by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/health-records/conditions/{id}",
+      "test_path": "/api/v1/health-records/conditions/1",
+      "tags": [
+        "HealthRecords",
+        "ChronicConditions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Update chronic condition",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/health-records/conditions/{id}",
+      "test_path": "/api/v1/health-records/conditions/1",
+      "tags": [
+        "HealthRecords",
+        "ChronicConditions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Remove chronic condition",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}",
+      "test_path": "/api/v1/health-records/student/1",
+      "tags": [
+        "HealthRecords",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all health records for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/allergies",
+      "test_path": "/api/v1/health-records/student/1/allergies",
+      "tags": [
+        "HealthRecords",
+        "Allergies",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all allergies for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/conditions",
+      "test_path": "/api/v1/health-records/student/1/conditions",
+      "tags": [
+        "HealthRecords",
+        "ChronicConditions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all chronic conditions for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/immunization-status",
+      "test_path": "/api/v1/health-records/student/1/immunization-status",
+      "tags": [
+        "HealthRecords",
+        "Vaccinations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Check immunization compliance status",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/summary",
+      "test_path": "/api/v1/health-records/student/1/summary",
+      "tags": [
+        "HealthRecords",
+        "Healthcare",
+        "Reports",
+        "v1"
+      ],
+      "summary": "Get comprehensive medical summary",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/vaccinations",
+      "test_path": "/api/v1/health-records/student/1/vaccinations",
+      "tags": [
+        "HealthRecords",
+        "Vaccinations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all vaccinations for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/vitals/history",
+      "test_path": "/api/v1/health-records/student/1/vitals/history",
+      "tags": [
+        "HealthRecords",
+        "Vitals",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get vital signs history",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/student/{studentId}/vitals/latest",
+      "test_path": "/api/v1/health-records/student/1/vitals/latest",
+      "tags": [
+        "HealthRecords",
+        "Vitals",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get latest vital signs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-records/vaccinations",
+      "test_path": "/api/v1/health-records/vaccinations",
+      "tags": [
+        "HealthRecords",
+        "Vaccinations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add new vaccination record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/vaccinations/{id}",
+      "test_path": "/api/v1/health-records/vaccinations/1",
+      "tags": [
+        "HealthRecords",
+        "Vaccinations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get vaccination by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/health-records/vaccinations/{id}",
+      "test_path": "/api/v1/health-records/vaccinations/1",
+      "tags": [
+        "HealthRecords",
+        "Vaccinations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Update vaccination record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/health-records/vaccinations/{id}",
+      "test_path": "/api/v1/health-records/vaccinations/1",
+      "tags": [
+        "HealthRecords",
+        "Vaccinations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Remove vaccination record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/health-records/vitals",
+      "test_path": "/api/v1/health-records/vitals",
+      "tags": [
+        "HealthRecords",
+        "Vitals",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Record vital signs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health-records/{id}",
+      "test_path": "/api/v1/health-records/1",
+      "tags": [
+        "HealthRecords",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get health record by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/health-records/{id}",
+      "test_path": "/api/v1/health-records/1",
+      "tags": [
+        "HealthRecords",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Update health record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/health-records/{id}",
+      "test_path": "/api/v1/health-records/1",
+      "tags": [
+        "HealthRecords",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Delete health record",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents",
+      "test_path": "/api/v1/incidents",
+      "tags": [
+        "Incidents",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "List all incident reports with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/incidents",
+      "test_path": "/api/v1/incidents",
+      "tags": [
+        "Incidents",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Create new incident report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/search",
+      "test_path": "/api/v1/incidents/search",
+      "tags": [
+        "Incidents",
+        "Search",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Search incident reports",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/statistics",
+      "test_path": "/api/v1/incidents/statistics",
+      "tags": [
+        "Incidents",
+        "Statistics",
+        "Analytics",
+        "v1"
+      ],
+      "summary": "Get incident statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/student/{studentId}",
+      "test_path": "/api/v1/incidents/student/1",
+      "tags": [
+        "Incidents",
+        "Students",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all incidents for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}",
+      "test_path": "/api/v1/incidents/1",
+      "tags": [
+        "Incidents",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get incident report by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/incidents/{id}",
+      "test_path": "/api/v1/incidents/1",
+      "tags": [
+        "Incidents",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Update incident report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/incidents/{id}",
+      "test_path": "/api/v1/incidents/1",
+      "tags": [
+        "Incidents",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Archive incident report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}/evidence",
+      "test_path": "/api/v1/incidents/1/evidence",
+      "tags": [
+        "Incidents",
+        "Evidence",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all evidence for an incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/evidence",
+      "test_path": "/api/v1/incidents/1/evidence",
+      "tags": [
+        "Incidents",
+        "Evidence",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add evidence to incident report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}/follow-ups",
+      "test_path": "/api/v1/incidents/1/follow-ups",
+      "tags": [
+        "Incidents",
+        "FollowUp",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all follow-up actions for an incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/follow-ups",
+      "test_path": "/api/v1/incidents/1/follow-ups",
+      "tags": [
+        "Incidents",
+        "FollowUp",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add follow-up action to incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/notify",
+      "test_path": "/api/v1/incidents/1/notify",
+      "tags": [
+        "Incidents",
+        "Notifications",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Send parent notification for incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/incidents/{id}/witnesses",
+      "test_path": "/api/v1/incidents/1/witnesses",
+      "tags": [
+        "Incidents",
+        "Witnesses",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all witness statements for an incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/incidents/{id}/witnesses",
+      "test_path": "/api/v1/incidents/1/witnesses",
+      "tags": [
+        "Incidents",
+        "Witnesses",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add witness statement to incident",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/analytics",
+      "test_path": "/api/v1/inventory/analytics",
+      "tags": [
+        "Inventory",
+        "Analytics",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get inventory analytics and statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/items",
+      "test_path": "/api/v1/inventory/items",
+      "tags": [
+        "Inventory",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get all inventory items with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/inventory/items",
+      "test_path": "/api/v1/inventory/items",
+      "tags": [
+        "Inventory",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Create new inventory item",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/items/{id}",
+      "test_path": "/api/v1/inventory/items/1",
+      "tags": [
+        "Inventory",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get inventory item by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/inventory/items/{id}",
+      "test_path": "/api/v1/inventory/items/1",
+      "tags": [
+        "Inventory",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Update inventory item",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/inventory/items/{id}",
+      "test_path": "/api/v1/inventory/items/1",
+      "tags": [
+        "Inventory",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Delete inventory item (soft delete)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/orders",
+      "test_path": "/api/v1/inventory/orders",
+      "tags": [
+        "Inventory",
+        "Purchase Orders",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get purchase orders with filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/inventory/orders",
+      "test_path": "/api/v1/inventory/orders",
+      "tags": [
+        "Inventory",
+        "Purchase Orders",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Create new purchase order",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/inventory/orders/{id}/receive",
+      "test_path": "/api/v1/inventory/orders/1/receive",
+      "tags": [
+        "Inventory",
+        "Purchase Orders",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Receive purchase order and update stock",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/reports/usage",
+      "test_path": "/api/v1/inventory/reports/usage",
+      "tags": [
+        "Inventory",
+        "Reports",
+        "Analytics",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get usage report for date range",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/stock",
+      "test_path": "/api/v1/inventory/stock",
+      "tags": [
+        "Inventory",
+        "Stock",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get stock levels across all items",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/inventory/stock/adjust",
+      "test_path": "/api/v1/inventory/stock/adjust",
+      "tags": [
+        "Inventory",
+        "Stock",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Adjust stock levels (add/remove)",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/inventory/stock/count",
+      "test_path": "/api/v1/inventory/stock/count",
+      "tags": [
+        "Inventory",
+        "Stock",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Record physical stock count",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/stock/history/{id}",
+      "test_path": "/api/v1/inventory/stock/history/1",
+      "tags": [
+        "Inventory",
+        "Stock",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get stock transaction history for an item",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/stock/low",
+      "test_path": "/api/v1/inventory/stock/low",
+      "tags": [
+        "Inventory",
+        "Stock",
+        "Alerts",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get low stock alerts",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/suppliers",
+      "test_path": "/api/v1/inventory/suppliers",
+      "tags": [
+        "Inventory",
+        "Suppliers",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get all suppliers/vendors",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/inventory/suppliers",
+      "test_path": "/api/v1/inventory/suppliers",
+      "tags": [
+        "Inventory",
+        "Suppliers",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Create new supplier/vendor",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory/suppliers/performance",
+      "test_path": "/api/v1/inventory/suppliers/performance",
+      "tags": [
+        "Inventory",
+        "Suppliers",
+        "Analytics",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get supplier performance analytics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/inventory/suppliers/{id}",
+      "test_path": "/api/v1/inventory/suppliers/1",
+      "tags": [
+        "Inventory",
+        "Suppliers",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Update supplier/vendor",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications",
+      "test_path": "/api/v1/medications",
+      "tags": [
+        "Medications",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get all medications with pagination",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/medications",
+      "test_path": "/api/v1/medications",
+      "tags": [
+        "Medications",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Create a new medication",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/medications/administration",
+      "test_path": "/api/v1/medications/administration",
+      "tags": [
+        "Medications",
+        "Administration",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Log medication administration",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/medications/adverse-reaction",
+      "test_path": "/api/v1/medications/adverse-reaction",
+      "tags": [
+        "Medications",
+        "Safety",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Report an adverse medication reaction",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/adverse-reactions",
+      "test_path": "/api/v1/medications/adverse-reactions",
+      "tags": [
+        "Medications",
+        "Safety",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get adverse reaction reports",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/alerts",
+      "test_path": "/api/v1/medications/alerts",
+      "tags": [
+        "Medications",
+        "Alerts",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication alerts",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/medications/assign",
+      "test_path": "/api/v1/medications/assign",
+      "tags": [
+        "Medications",
+        "Prescriptions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Assign medication to a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/form-options",
+      "test_path": "/api/v1/medications/form-options",
+      "tags": [
+        "Medications",
+        "Utilities",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication form options",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/inventory",
+      "test_path": "/api/v1/medications/inventory",
+      "tags": [
+        "Medications",
+        "Inventory",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication inventory with low stock alerts",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/medications/inventory",
+      "test_path": "/api/v1/medications/inventory",
+      "tags": [
+        "Medications",
+        "Inventory",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Add medication to inventory",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/medications/inventory/{id}",
+      "test_path": "/api/v1/medications/inventory/1",
+      "tags": [
+        "Medications",
+        "Inventory",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Update medication inventory quantity",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/logs/{studentId}",
+      "test_path": "/api/v1/medications/logs/1",
+      "tags": [
+        "Medications",
+        "Administration",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication administration logs for a student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/reminders",
+      "test_path": "/api/v1/medications/reminders",
+      "tags": [
+        "Medications",
+        "Scheduling",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication reminders for a specific date",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/schedule",
+      "test_path": "/api/v1/medications/schedule",
+      "tags": [
+        "Medications",
+        "Scheduling",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication administration schedule",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/medications/stats",
+      "test_path": "/api/v1/medications/stats",
+      "tags": [
+        "Medications",
+        "Statistics",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get medication statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/medications/student-medication/{id}/deactivate",
+      "test_path": "/api/v1/medications/student-medication/1/deactivate",
+      "tags": [
+        "Medications",
+        "Prescriptions",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Deactivate student medication assignment",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/barcode/scan",
+      "test_path": "/api/v1/student-management/barcode/scan",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Barcode",
+        "v1"
+      ],
+      "summary": "Scan and decode barcode for student/medication identification",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/barcode/verify-medication",
+      "test_path": "/api/v1/student-management/barcode/verify-medication",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Barcode",
+        "Medications",
+        "v1"
+      ],
+      "summary": "Verify medication administration using three-point barcode verification",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/grade-transitions/bulk",
+      "test_path": "/api/v1/student-management/grade-transitions/bulk",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Administration",
+        "v1"
+      ],
+      "summary": "Perform bulk grade transition for end of school year",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/student-management/graduating-students",
+      "test_path": "/api/v1/student-management/graduating-students",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Administration",
+        "v1"
+      ],
+      "summary": "Get list of students eligible for graduation",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/photos/search",
+      "test_path": "/api/v1/student-management/photos/search",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Search for student by photo using facial recognition",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/photos/{studentId}",
+      "test_path": "/api/v1/student-management/photos/1",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Upload student photo",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/student-management/transcripts/{studentId}/history",
+      "test_path": "/api/v1/student-management/transcripts/1/history",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Academic Records",
+        "v1"
+      ],
+      "summary": "Get complete academic history for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/transcripts/{studentId}/import",
+      "test_path": "/api/v1/student-management/transcripts/1/import",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Academic Records",
+        "v1"
+      ],
+      "summary": "Import academic transcript for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/student-management/transcripts/{studentId}/trends",
+      "test_path": "/api/v1/student-management/transcripts/1/trends",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Academic Records",
+        "v1"
+      ],
+      "summary": "Analyze academic performance trends for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/student-management/waitlist",
+      "test_path": "/api/v1/student-management/waitlist",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Appointments",
+        "v1"
+      ],
+      "summary": "Add student to appointment waitlist",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/student-management/waitlist/{studentId}",
+      "test_path": "/api/v1/student-management/waitlist/1",
+      "tags": [
+        "Student Management",
+        "Operations",
+        "Appointments",
+        "v1"
+      ],
+      "summary": "Get waitlist status for student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students",
+      "test_path": "/api/v1/students",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get all students with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/students",
+      "test_path": "/api/v1/students",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Create new student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students/assigned",
+      "test_path": "/api/v1/students/assigned",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get students assigned to current nurse",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students/grade/{grade}",
+      "test_path": "/api/v1/students/grade/{grade}",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get students by grade",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students/search/{query}",
+      "test_path": "/api/v1/students/search/{query}",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Search students by name or ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students/{id}",
+      "test_path": "/api/v1/students/1",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Get student by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/students/{id}",
+      "test_path": "/api/v1/students/1",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Update student information",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/students/{id}/deactivate",
+      "test_path": "/api/v1/students/1/deactivate",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Deactivate student",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students/{id}/health-records",
+      "test_path": "/api/v1/students/1/health-records",
+      "tags": [
+        "Students",
+        "Operations",
+        "Healthcare",
+        "v1"
+      ],
+      "summary": "Get student health records",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/students/{id}/mental-health-records",
+      "test_path": "/api/v1/students/1/mental-health-records",
+      "tags": [
+        "Students",
+        "Operations",
+        "Healthcare",
+        "MentalHealth",
+        "v1"
+      ],
+      "summary": "Get student mental health records",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/students/{id}/transfer",
+      "test_path": "/api/v1/students/1/transfer",
+      "tags": [
+        "Students",
+        "Operations",
+        "v1"
+      ],
+      "summary": "Transfer student to different nurse",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/config",
+      "test_path": "/api/v1/system/config",
+      "tags": [
+        "System",
+        "Configuration",
+        "v1"
+      ],
+      "summary": "Get system configuration",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/system/config",
+      "test_path": "/api/v1/system/config",
+      "tags": [
+        "System",
+        "Configuration",
+        "v1"
+      ],
+      "summary": "Update system configuration",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/features",
+      "test_path": "/api/v1/system/features",
+      "tags": [
+        "System",
+        "Features",
+        "v1"
+      ],
+      "summary": "Get enabled features",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/system/features",
+      "test_path": "/api/v1/system/features",
+      "tags": [
+        "System",
+        "Features",
+        "v1"
+      ],
+      "summary": "Update enabled features",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/system/grade-transition",
+      "test_path": "/api/v1/system/grade-transition",
+      "tags": [
+        "System",
+        "Utilities",
+        "v1"
+      ],
+      "summary": "Trigger grade transition",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/health",
+      "test_path": "/api/v1/system/health",
+      "tags": [
+        "System",
+        "Utilities",
+        "v1"
+      ],
+      "summary": "Get system health status",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/integrations",
+      "test_path": "/api/v1/system/integrations",
+      "tags": [
+        "System",
+        "Integrations",
+        "v1"
+      ],
+      "summary": "List configured integrations",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/system/integrations",
+      "test_path": "/api/v1/system/integrations",
+      "tags": [
+        "System",
+        "Integrations",
+        "v1"
+      ],
+      "summary": "Add new integration",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/integrations/{id}",
+      "test_path": "/api/v1/system/integrations/1",
+      "tags": [
+        "System",
+        "Integrations",
+        "v1"
+      ],
+      "summary": "Get integration details",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/system/integrations/{id}",
+      "test_path": "/api/v1/system/integrations/1",
+      "tags": [
+        "System",
+        "Integrations",
+        "v1"
+      ],
+      "summary": "Update integration config",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/system/integrations/{id}",
+      "test_path": "/api/v1/system/integrations/1",
+      "tags": [
+        "System",
+        "Integrations",
+        "v1"
+      ],
+      "summary": "Remove integration",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/system/integrations/{id}/test",
+      "test_path": "/api/v1/system/integrations/1/test",
+      "tags": [
+        "System",
+        "Integrations",
+        "v1"
+      ],
+      "summary": "Test integration connection",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/schools",
+      "test_path": "/api/v1/system/schools",
+      "tags": [
+        "System",
+        "Schools",
+        "v1"
+      ],
+      "summary": "List schools in district",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/schools/{schoolId}",
+      "test_path": "/api/v1/system/schools/1",
+      "tags": [
+        "System",
+        "Schools",
+        "v1"
+      ],
+      "summary": "Get school by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/system/schools/{schoolId}",
+      "test_path": "/api/v1/system/schools/1",
+      "tags": [
+        "System",
+        "Schools",
+        "v1"
+      ],
+      "summary": "Update school settings",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/sync/logs",
+      "test_path": "/api/v1/system/sync/logs",
+      "tags": [
+        "System",
+        "Sync",
+        "Logs",
+        "v1"
+      ],
+      "summary": "Get sync logs",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system/sync/status",
+      "test_path": "/api/v1/system/sync/status",
+      "tags": [
+        "System",
+        "Sync",
+        "v1"
+      ],
+      "summary": "Get sync status",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/system/sync/students",
+      "test_path": "/api/v1/system/sync/students",
+      "tags": [
+        "System",
+        "Sync",
+        "Students",
+        "v1"
+      ],
+      "summary": "Sync student data from SIS",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users",
+      "test_path": "/api/v1/users",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Get all users with pagination and filters",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users",
+      "test_path": "/api/v1/users",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Create new user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/nurses/available",
+      "test_path": "/api/v1/users/nurses/available",
+      "tags": [
+        "Users",
+        "Nurses",
+        "v1"
+      ],
+      "summary": "Get available nurses",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/role/{role}",
+      "test_path": "/api/v1/users/role/{role}",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Get users by role",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/statistics",
+      "test_path": "/api/v1/users/statistics",
+      "tags": [
+        "Users",
+        "Statistics",
+        "v1"
+      ],
+      "summary": "Get user statistics",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/{id}",
+      "test_path": "/api/v1/users/1",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Get user by ID",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/users/{id}",
+      "test_path": "/api/v1/users/1",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Update user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/{id}/change-password",
+      "test_path": "/api/v1/users/1/change-password",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Change user password",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/{id}/deactivate",
+      "test_path": "/api/v1/users/1/deactivate",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Deactivate user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/{id}/reactivate",
+      "test_path": "/api/v1/users/1/reactivate",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Reactivate user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/{id}/reset-password",
+      "test_path": "/api/v1/users/1/reset-password",
+      "tags": [
+        "Users",
+        "v1"
+      ],
+      "summary": "Reset user password",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/graphql",
+      "test_path": "/graphql",
+      "tags": [
+        "graphql"
+      ],
+      "summary": "GraphQL Playground and introspection endpoint",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/graphql",
+      "test_path": "/graphql",
+      "tags": [
+        "graphql"
+      ],
+      "summary": "GraphQL API endpoint",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "test_path": "/health",
+      "tags": [
+        "health"
+      ],
+      "summary": "Health check endpoint",
+      "status": 200,
+      "result": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/communication/bulk-message",
+      "test_path": "/v1/communication/bulk-message",
+      "tags": [
+        "communication",
+        "messaging"
+      ],
+      "summary": "Send bulk message to multiple recipients",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/system/admin/features/report",
+      "test_path": "/v1/system/admin/features/report",
+      "tags": [
+        "system",
+        "monitoring",
+        "reporting"
+      ],
+      "summary": "Generate comprehensive feature integration report",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/system/admin/features/status",
+      "test_path": "/v1/system/admin/features/status",
+      "tags": [
+        "system",
+        "monitoring",
+        "features"
+      ],
+      "summary": "Get status of all integrated system features",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/system/admin/health",
+      "test_path": "/v1/system/admin/health",
+      "tags": [
+        "system",
+        "monitoring",
+        "health"
+      ],
+      "summary": "Get comprehensive system health status",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/system/auth/mfa/setup",
+      "test_path": "/v1/system/auth/mfa/setup",
+      "tags": [
+        "system",
+        "authentication",
+        "mfa"
+      ],
+      "summary": "Setup multi-factor authentication for user",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/system/auth/mfa/verify",
+      "test_path": "/v1/system/auth/mfa/verify",
+      "tags": [
+        "system",
+        "authentication",
+        "mfa"
+      ],
+      "summary": "Verify MFA authentication code",
+      "status": 401,
+      "result": "AUTH_REQUIRED",
+      "error": "Authentication/Authorization required (expected)"
+    }
+  ],
+  "issues": {
+    "METHOD_NOT_ALLOWED": [],
+    "NOT_IMPLEMENTED": [],
+    "SERVER_ERROR": [
+      {
+        "method": "POST",
+        "path": "/api/v1/auth/refresh",
+        "test_path": "/api/v1/auth/refresh",
+        "tags": [
+          "Authentication",
+          "v1"
+        ],
+        "summary": "Refresh JWT token",
+        "status": 500,
+        "result": "SERVER_ERROR",
+        "error": "Failed to refresh token"
+      }
+    ],
+    "TIMEOUT": [],
+    "CONNECTION_ERROR": [],
+    "ERROR": []
+  }
+}

@@ -136,7 +136,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async getAll(filters?: AppointmentFilters): Promise<PaginatedResponse<Appointment>> {
     try {
       const params = filters ? `?${buildUrlParams(filters).toString()}` : ''
-      const response = await this.client.get(`/appointments${params}`)
+      const response = await this.client.get<PaginatedResponse<Appointment>>(`/appointments${params}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -148,7 +148,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
    */
   async create(appointmentData: AppointmentCreateData): Promise<{ appointment: Appointment }> {
     try {
-      const response = await this.client.post('/appointments', appointmentData)
+      const response = await this.client.post<{ appointment: Appointment }>('/appointments', appointmentData)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)

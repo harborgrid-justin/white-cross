@@ -1,8 +1,26 @@
 /**
- * Audit Trail Routes
- * HTTP endpoints for comprehensive audit logging and security monitoring
+ * @module routes/compliance/audit
+ * @description Audit Trail Routes - HTTP endpoints for comprehensive audit logging and security monitoring
+ *
  * All routes prefixed with /api/v1/audit
- * HIPAA Compliance: Required for 45 CFR § 164.308(a)(1)(ii)(D)
+ *
+ * @compliance HIPAA Required - 45 CFR § 164.308(a)(1)(ii)(D) - Audit Controls
+ * @compliance HIPAA Required - 45 CFR § 164.312(b) - Audit Controls
+ *
+ * @security JWT Authentication required for all endpoints
+ * @security Admin/Compliance Officer roles required for most endpoints
+ *
+ * @swagger
+ * tags:
+ *   - name: Audit
+ *     description: Audit trail and security monitoring operations
+ *   - name: PHI
+ *     description: Protected Health Information access tracking
+ *   - name: Security
+ *     description: Security analysis and threat detection
+ *
+ * @audit All access to audit endpoints is logged for compliance
+ * @retention Audit logs must be retained for minimum 6 years per HIPAA
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -28,6 +46,49 @@ import {
  * AUDIT LOG MANAGEMENT ROUTES
  */
 
+/**
+ * @route GET /api/v1/audit/logs
+ * @group Audit - Audit log management operations
+ * @tag Audit
+ * @tag Compliance
+ *
+ * @description List audit logs with comprehensive filtering and pagination
+ *
+ * @security JWT required
+ * @permission Admin, Compliance Officer
+ *
+ * @compliance HIPAA Critical - Essential for compliance audits and security investigations
+ * @audit All access to this endpoint is logged
+ *
+ * @queryparam {string} [userId] - Filter by user UUID (format: uuid v4)
+ * @queryparam {string} [entityType] - Filter by entity type (STUDENT, HEALTH_RECORD, MEDICATION, etc.)
+ * @queryparam {string} [action] - Filter by action (CREATE, READ, VIEW, ACCESS, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, IMPORT, BACKUP, RESTORE, SECURITY_EVENT)
+ * @queryparam {string} [startDate] - Filter start date (ISO 8601 format)
+ * @queryparam {string} [endDate] - Filter end date (ISO 8601 format)
+ * @queryparam {string} [ipAddress] - Filter by IP address (IPv4 or IPv6)
+ * @queryparam {number} [page=1] - Page number for pagination
+ * @queryparam {number} [limit=20] - Records per page (1-100)
+ *
+ * @returns {200} Audit logs retrieved successfully - Returns paginated list with metadata
+ * @returns {401} Unauthorized - Authentication required
+ * @returns {403} Forbidden - Admin or Compliance Officer role required
+ *
+ * @example response - 200 - Success response with audit logs
+ * {
+ *   "data": [{
+ *     "id": "uuid",
+ *     "userId": "uuid",
+ *     "action": "VIEW",
+ *     "entityType": "HEALTH_RECORD",
+ *     "entityId": "uuid",
+ *     "changes": {},
+ *     "ipAddress": "192.168.1.1",
+ *     "userAgent": "Mozilla/5.0...",
+ *     "timestamp": "2025-10-23T10:00:00Z"
+ *   }],
+ *   "pagination": { "page": 1, "limit": 20, "total": 150, "totalPages": 8 }
+ * }
+ */
 const listAuditLogsRoute: ServerRoute = {
   method: 'GET',
   path: '/api/v1/audit/logs',

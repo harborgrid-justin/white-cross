@@ -39,6 +39,50 @@ export class MedicationsController {
   }
 
   /**
+   * Get medication by ID
+   */
+  static async getById(request: AuthenticatedRequest, h: ResponseToolkit) {
+    const { id } = request.params;
+    const medication = await MedicationService.getMedicationById(id);
+    return successResponse(h, { medication });
+  }
+
+  /**
+   * Get medications by student ID
+   */
+  static async getByStudent(request: AuthenticatedRequest, h: ResponseToolkit) {
+    const { studentId } = request.params;
+    const { page, limit } = parsePagination(request.query);
+
+    const result = await MedicationService.getMedicationsByStudent(studentId, page, limit);
+
+    return paginatedResponse(
+      h,
+      result.medications || result.data,
+      buildPaginationMeta(page, limit, result.total)
+    );
+  }
+
+  /**
+   * Update a medication
+   */
+  static async update(request: AuthenticatedRequest, h: ResponseToolkit) {
+    const { id } = request.params;
+    const medication = await MedicationService.updateMedication(id, request.payload);
+    return successResponse(h, { medication });
+  }
+
+  /**
+   * Deactivate a medication
+   */
+  static async deactivate(request: AuthenticatedRequest, h: ResponseToolkit) {
+    const { id } = request.params;
+    const { reason, deactivationType } = request.payload;
+    const medication = await MedicationService.deactivateMedication(id, reason, deactivationType);
+    return successResponse(h, { medication });
+  }
+
+  /**
    * Assign medication to a student
    */
   static async assignToStudent(request: AuthenticatedRequest, h: ResponseToolkit) {

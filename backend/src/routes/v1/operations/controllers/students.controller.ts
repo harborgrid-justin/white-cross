@@ -52,9 +52,12 @@ export class StudentsController {
    * Create new student
    */
   static async create(request: AuthenticatedRequest, h: ResponseToolkit) {
+    // Filter out fields that don't exist in the Student model
+    const { schoolId, districtId, ...studentData } = request.payload as any;
+
     const student = await StudentService.createStudent({
-      ...request.payload,
-      dateOfBirth: new Date(request.payload.dateOfBirth)
+      ...studentData,
+      dateOfBirth: new Date(studentData.dateOfBirth)
     });
 
     return createdResponse(h, { student });

@@ -5,7 +5,7 @@
  * UPSTREAM (imports from):
  *   - logger.ts (utils/logger.ts)
  *   - appointment.ts (types/appointment.ts)
- *   - AppointmentService.ts (services/appointment/AppointmentService.ts)
+ *   - crudOperations.ts (services/appointment/crudOperations.ts)
  *
  * DOWNSTREAM (imported by):
  *   - appointmentService.ts (services/appointmentService.ts)
@@ -14,18 +14,18 @@
 /**
  * WC-GEN-206 | AppointmentRecurringService.ts - General utility functions and operations
  * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../types/appointment, ./AppointmentService | Dependencies: ../../utils/logger, ../../types/appointment, ./AppointmentService
+ * Upstream: ../../utils/logger, ../../types/appointment, ./crudOperations | Dependencies: ../../utils/logger, ../../types/appointment, ./crudOperations
  * Downstream: Routes, services, other modules | Called by: Application components
  * Related: Similar modules, tests, documentation
  * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-10-23 | File Type: .ts
  * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * LLM Context: general utility functions and operations, part of backend architecture, circular dependency fixed
  */
 
 import { logger } from '../../utils/logger';
 import { CreateAppointmentData, RecurrencePattern } from '../../types/appointment';
-import { AppointmentService } from './AppointmentService';
+import { AppointmentCrudOperations } from './crudOperations';
 
 export class AppointmentRecurringService {
   /**
@@ -48,7 +48,7 @@ export class AppointmentRecurringService {
 
         if (shouldCreate) {
           try {
-            const appointment = await AppointmentService.createAppointment({
+            const appointment = await AppointmentCrudOperations.createAppointment({
               ...baseData,
               scheduledAt: new Date(currentDate)
             });

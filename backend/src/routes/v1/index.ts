@@ -51,7 +51,7 @@ export const getV1RouteStats = () => {
     healthcare: healthcareRoutes.length,
     operations: operationsRoutes.length,
     documents: documentsRoutes.length,
-    compliance: complianceRoutes.length,
+    compliance: complianceModuleRoutes.length,
     communications: communicationsRoutes.length,
     communication: communicationRoutes.length,
     incidents: incidentsRoutes.length,

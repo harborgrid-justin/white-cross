@@ -127,7 +127,28 @@ import { TrainingCompletion } from './administration/TrainingCompletion';
  */
 export function setupAssociations() {
   // ============ USER ASSOCIATIONS (lines 22-40 in Prisma) ============
-  User.hasMany(Student, { foreignKey: 'nurseId', as: 'nurseManagedStudents' });
+  // Primary nurse-student relationship
+  User.hasMany(Student, {
+    foreignKey: 'nurseId',
+    as: 'nurseManagedStudents',
+    sourceKey: 'id',
+  });
+
+  // Audit trail associations - students created/updated by this user
+  // constraints: false prevents foreign key constraints (audit fields are optional)
+  User.hasMany(Student, {
+    foreignKey: 'createdBy',
+    as: 'studentsCreated',
+    constraints: false,
+    sourceKey: 'id',
+  });
+  User.hasMany(Student, {
+    foreignKey: 'updatedBy',
+    as: 'studentsUpdated',
+    constraints: false,
+    sourceKey: 'id',
+  });
+
   User.hasMany(Appointment, { foreignKey: 'nurseId', as: 'appointments' });
   User.hasMany(IncidentReport, { foreignKey: 'reportedById', as: 'incidentReports' });
   User.belongsTo(School, { foreignKey: 'schoolId', as: 'school' });
@@ -142,7 +163,28 @@ export function setupAssociations() {
   User.hasMany(AppointmentWaitlist, { foreignKey: 'nurseId', as: 'waitlistEntries' });
 
   // ============ STUDENT ASSOCIATIONS (lines 59-73 in Prisma) - CASCADE DELETES FOR PHI ============
-  Student.belongsTo(User, { foreignKey: 'nurseId', as: 'assignedNurse' });
+  // Primary nurse assignment relationship
+  Student.belongsTo(User, {
+    foreignKey: 'nurseId',
+    as: 'assignedNurse',
+    targetKey: 'id',
+  });
+
+  // Audit field associations for HIPAA compliance tracking
+  // constraints: false prevents foreign key constraints (audit fields are optional)
+  Student.belongsTo(User, {
+    foreignKey: 'createdBy',
+    as: 'creator',
+    constraints: false,
+    targetKey: 'id',
+  });
+  Student.belongsTo(User, {
+    foreignKey: 'updatedBy',
+    as: 'updater',
+    constraints: false,
+    targetKey: 'id',
+  });
+
   Student.hasMany(EmergencyContact, {
     foreignKey: 'studentId',
     as: 'emergencyContacts',

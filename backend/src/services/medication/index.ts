@@ -68,6 +68,34 @@ export class MedicationService {
   }
 
   /**
+   * Get medication by ID
+   */
+  static async getMedicationById(id: string) {
+    return MedicationCrudService.getMedicationById(id);
+  }
+
+  /**
+   * Get medications by student ID
+   */
+  static async getMedicationsByStudent(studentId: string, page?: number, limit?: number) {
+    return MedicationCrudService.getMedicationsByStudent(studentId, page, limit);
+  }
+
+  /**
+   * Update medication
+   */
+  static async updateMedication(id: string, data: any) {
+    return MedicationCrudService.updateMedication(id, data);
+  }
+
+  /**
+   * Deactivate medication
+   */
+  static async deactivateMedication(id: string, reason: string, deactivationType: string) {
+    return MedicationCrudService.deactivateMedication(id, reason, deactivationType);
+  }
+
+  /**
    * Get medication form options
    */
   static async getMedicationFormOptions() {

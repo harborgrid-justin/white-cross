@@ -1,0 +1,27 @@
+{
+    "success": true,
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImM1ZWM2OTQ4LWJjYjgtNDJjOC04YmZiLTEzYmYyNWU5MWM4NyIsImVtYWlsIjoibnVyc2VAZXhhbXBsZS5jb20iLCJyb2xlIjoiTlVSU0UiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzYxMjYwMDM5LCJleHAiOjE3NjEyNjA5MzksImF1ZCI6IndoaXRlLWNyb3NzLWFwaSIsImlzcyI6IndoaXRlLWNyb3NzLWhlYWx0aGNhcmUiLCJqdGkiOiIxNzYxMjYwMDM5ODU4LWt1amQxMmF0cHFiIn0.RPHGALOogRWduZapMOHYDa5cMOAZT5EgSSilgz66pYo",
+        "user": {
+            "id": "c5ec6948-bcb8-42c8-8bfb-13bf25e91c87",
+            "email": "nurse@example.com",
+            "firstName": "Nurse",
+            "lastName": "Test",
+            "role": "NURSE",
+            "isActive": true,
+            "lastLogin": "2025-10-23T22:53:59.851Z",
+            "schoolId": null,
+            "districtId": null,
+            "phone": null,
+            "emailVerified": false,
+            "passwordChangedAt": null,
+            "twoFactorEnabled": false,
+            "failedLoginAttempts": 0,
+            "lockoutUntil": null,
+            "lastPasswordChange": "2025-10-23T22:52:36.844Z",
+            "mustChangePassword": false,
+            "createdAt": "2025-10-23T22:52:36.665Z",
+            "updatedAt": "2025-10-23T22:53:59.852Z"
+        }
+    }
+}

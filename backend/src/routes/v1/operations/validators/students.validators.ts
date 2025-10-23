@@ -75,40 +75,76 @@ export const createStudentSchema = Joi.object({
 
   grade: Joi.string()
     .trim()
-    .optional()
-    .description('Grade level (e.g., "K", "1", "2", etc.)'),
+    .min(1)
+    .max(10)
+    .required()
+    .description('Grade level (e.g., "K", "1", "2", etc.)')
+    .messages({
+      'string.min': 'Grade must be at least 1 character',
+      'string.max': 'Grade cannot exceed 10 characters',
+      'any.required': 'Grade is required'
+    }),
 
-  studentId: Joi.string()
+  studentNumber: Joi.string()
     .trim()
-    .optional()
-    .description('School-assigned student ID number'),
+    .min(4)
+    .max(20)
+    .required()
+    .description('Unique school-assigned student number')
+    .messages({
+      'string.min': 'Student number must be at least 4 characters',
+      'string.max': 'Student number cannot exceed 20 characters',
+      'any.required': 'Student number is required'
+    }),
 
   gender: Joi.string()
-    .valid('Male', 'Female', 'Other', 'Prefer not to say')
-    .optional()
-    .description('Student gender'),
+    .valid('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY')
+    .required()
+    .description('Student gender (MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY)')
+    .messages({
+      'any.only': 'Gender must be one of: MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY',
+      'any.required': 'Gender is required'
+    }),
 
-  bloodType: Joi.string()
-    .valid('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')
+  photo: Joi.string()
+    .uri()
+    .max(500)
     .optional()
-    .description('Blood type'),
+    .description('Student photo URL'),
 
-  primaryContact: Joi.object({
-    name: Joi.string().required(),
-    relationship: Joi.string().required(),
-    phone: Joi.string().required(),
-    email: Joi.string().email().optional()
-  }).optional().description('Primary emergency contact'),
-
-  schoolId: Joi.string()
-    .uuid()
+  medicalRecordNum: Joi.string()
+    .trim()
+    .min(5)
+    .max(20)
     .optional()
-    .description('School UUID'),
+    .description('Medical record number (unique)'),
+
+  enrollmentDate: Joi.date()
+    .iso()
+    .max('now')
+    .optional()
+    .description('Student enrollment date'),
 
   nurseId: Joi.string()
     .uuid()
     .optional()
-    .description('Assigned nurse UUID')
+    .description('Assigned nurse UUID'),
+
+  schoolId: Joi.string()
+    .uuid()
+    .optional()
+    .description('School UUID (optional, for reference only)')
+    .messages({
+      'string.guid': 'School ID must be a valid UUID'
+    }),
+
+  districtId: Joi.string()
+    .uuid()
+    .optional()
+    .description('District UUID (optional, for reference only)')
+    .messages({
+      'string.guid': 'District ID must be a valid UUID'
+    })
 });
 
 export const updateStudentSchema = Joi.object({
@@ -134,29 +170,34 @@ export const updateStudentSchema = Joi.object({
 
   grade: Joi.string()
     .trim()
+    .min(1)
+    .max(10)
     .optional(),
 
-  studentId: Joi.string()
+  studentNumber: Joi.string()
     .trim()
+    .min(4)
+    .max(20)
     .optional(),
 
   gender: Joi.string()
-    .valid('Male', 'Female', 'Other', 'Prefer not to say')
+    .valid('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY')
     .optional(),
 
-  bloodType: Joi.string()
-    .valid('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')
+  photo: Joi.string()
+    .uri()
+    .max(500)
     .optional(),
 
-  primaryContact: Joi.object({
-    name: Joi.string().required(),
-    relationship: Joi.string().required(),
-    phone: Joi.string().required(),
-    email: Joi.string().email().optional()
-  }).optional(),
+  medicalRecordNum: Joi.string()
+    .trim()
+    .min(5)
+    .max(20)
+    .optional(),
 
-  schoolId: Joi.string()
-    .uuid()
+  enrollmentDate: Joi.date()
+    .iso()
+    .max('now')
     .optional(),
 
   nurseId: Joi.string()

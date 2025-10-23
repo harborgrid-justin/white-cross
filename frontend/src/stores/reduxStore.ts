@@ -85,6 +85,8 @@ import { emergencyContactsReducer } from '../pages/students/store/emergencyConta
 import { medicationsReducer } from '../pages/medications/store/medicationsSlice';
 import { appointmentsReducer } from '../pages/appointments/store/appointmentsSlice';
 import dashboardReducer from '../pages/dashboard/store/dashboardSlice';
+import complianceReducer from '../pages/compliance/store/complianceSlice';
+import accessControlReducer from '../pages/access-control/store/accessControlSlice';
 // Phase 3: Advanced enterprise features
 import enterpriseReducer from './shared/enterprise/enterpriseFeatures';
 import orchestrationReducer from './shared/orchestration/crossDomainOrchestration';
@@ -145,18 +147,19 @@ const rootReducer = combineReducers({
   // ============================================================
   inventory: inventoryReducer,                // Medical supplies and equipment
   reports: reportsReducer,                    // Analytics and reporting
-  
+
+  // ============================================================
+  // COMPLIANCE & ACCESS CONTROL
+  // ============================================================
+  compliance: complianceReducer,              // HIPAA compliance and audit tracking
+  accessControl: accessControlReducer,        // Role-based access control and permissions
+
   // ============================================================
   // ADVANCED ENTERPRISE FEATURES
   // ============================================================
   enterprise: enterpriseReducer,              // Bulk operations, audit trails, and data sync
   orchestration: orchestrationReducer,        // Cross-domain workflow orchestration
-  
-  // ============================================================
-  // TODO: COMPLIANCE & AUDIT (FUTURE PHASE)
-  // ============================================================
-  // compliance: complianceSlice,                // HIPAA compliance and audit tracking
-  
+
   // ============================================================
   // TODO: UI & APPLICATION STATE (FUTURE PHASE)
   // ============================================================
