@@ -12,6 +12,9 @@ describe('SagaManager', () => {
   beforeEach(() => {
     sagaManager = SagaManager.getInstance();
     sagaManager.clearHistory();
+    // Clear active sagas by completing them
+    const activeSagas = sagaManager.getActiveSagas();
+    activeSagas.forEach(saga => sagaManager.complete(saga.getSagaId()));
   });
 
   describe('saga creation', () => {
@@ -160,6 +163,9 @@ describe('SagaManager', () => {
 
   describe('saga history', () => {
     it('should track saga history', async () => {
+      // Ensure clean state for this test
+      sagaManager.clearHistory();
+      
       const saga1 = sagaManager.create('Saga1');
       const saga2 = sagaManager.create('Saga2');
       
@@ -176,6 +182,10 @@ describe('SagaManager', () => {
     });
 
     it('should provide statistics', async () => {
+      // Ensure clean state for this test
+      sagaManager.clearHistory();
+      
+
       const saga1 = sagaManager.create('Saga1');
       const saga2 = sagaManager.create('Saga2');
       const saga3 = sagaManager.create('Saga3');
