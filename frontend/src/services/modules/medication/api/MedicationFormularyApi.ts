@@ -30,6 +30,8 @@
 import { apiInstance } from '@/services/config/apiConfig';
 import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
+import axios from 'axios';
+import { createApiError, createValidationError } from '@/services/core/errors';
 
 // Types
 export interface Medication {
@@ -212,8 +214,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to search medication formulary');
+    } catch (error) {
+      throw createApiError(error, 'Failed to search medication formulary');
     }
   }
 
@@ -229,8 +231,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch medication');
     }
   }
 
@@ -250,8 +252,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch medication by NDC');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch medication by NDC');
     }
   }
 
@@ -269,8 +271,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to scan barcode');
+    } catch (error) {
+      throw createApiError(error, 'Failed to scan barcode');
     }
   }
 
@@ -290,8 +292,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to check drug interactions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to check drug interactions');
     }
   }
 
@@ -308,8 +310,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch drug monograph');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch drug monograph');
     }
   }
 
@@ -325,8 +327,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch alternative medications');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch alternative medications');
     }
   }
 
@@ -343,8 +345,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to check LASA medications');
+    } catch (error) {
+      throw createApiError(error, 'Failed to check LASA medications');
     }
   }
 
@@ -358,8 +360,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch medication categories');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch medication categories');
     }
   }
 
@@ -373,8 +375,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch medication forms');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch medication forms');
     }
   }
 
@@ -392,11 +394,22 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      // Handle Zod validation errors
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.message || 'Failed to create medication');
+      throw createApiError(error, 'Failed to create medication');
     }
   }
 
@@ -416,8 +429,8 @@ export class MedicationFormularyApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update medication');
     }
   }
 
@@ -433,8 +446,8 @@ export class MedicationFormularyApi {
         API_ENDPOINTS.MEDICATIONS.FORMULARY_DEACTIVATE(id),
         { reason }
       );
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to deactivate medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to deactivate medication');
     }
   }
 }

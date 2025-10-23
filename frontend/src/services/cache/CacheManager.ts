@@ -73,6 +73,8 @@ import { CACHE_CONFIG, PERFORMANCE_CONFIG } from './cacheConfig';
  */
 export class CacheManager {
   private cache: Map<string, CacheEntry> = new Map();
+  // Tag index for O(1) lookups by tag
+  private tagIndex: Map<string, Set<string>> = new Map();
   private stats: CacheStats = {
     hits: 0,
     misses: 0,
@@ -85,7 +87,8 @@ export class CacheManager {
   };
   private config: CacheConfig;
   private listeners: Map<CacheEventType, Set<CacheEventListener>> = new Map();
-  private accessTimes: number[] = [];
+  // Use running average instead of storing all access times
+  private accessStats = { count: 0, sum: 0, avg: 0 };
 
   constructor(config: Partial<CacheConfig> = {}) {
     this.config = { ...CACHE_CONFIG, ...config };
@@ -215,6 +218,12 @@ export class CacheManager {
     const size = this.estimateSize(data);
     const now = Date.now();
 
+    // Remove old entry's tag index if updating existing key
+    const existingEntry = this.cache.get(key);
+    if (existingEntry) {
+      this.removeFromTagIndex(key, existingEntry.tags);
+    }
+
     const entry: CacheEntry<T> = {
       data,
       timestamp: now,
@@ -241,6 +250,7 @@ export class CacheManager {
     }
 
     this.cache.set(key, entry);
+    this.addToTagIndex(key, tags);
     this.updateMemoryUsage(size);
     this.emitEvent('set', key);
 
@@ -287,6 +297,7 @@ export class CacheManager {
     const entry = this.cache.get(key);
     if (!entry) return false;
 
+    this.removeFromTagIndex(key, entry.tags);
     this.cache.delete(key);
     this.updateMemoryUsage(-entry.size);
     this.emitEvent('invalidate', key);
@@ -314,13 +325,20 @@ export class CacheManager {
     }
 
     if (tags) {
-      // Invalidate by tags
-      for (const [key, entry] of this.cache.entries()) {
-        if (tags.some((tag) => entry.tags.includes(tag))) {
-          this.delete(key);
+      // Optimized tag-based invalidation using reverse index - O(1) lookup
+      const keysToInvalidate = new Set<string>();
+      tags.forEach(tag => {
+        const taggedKeys = this.tagIndex.get(tag);
+        if (taggedKeys) {
+          taggedKeys.forEach(key => keysToInvalidate.add(key));
+        }
+      });
+
+      keysToInvalidate.forEach(key => {
+        if (this.delete(key)) {
           invalidatedCount++;
         }
-      }
+      });
     }
 
     if (pattern) {
@@ -344,6 +362,7 @@ export class CacheManager {
   clear(): void {
     const count = this.cache.size;
     this.cache.clear();
+    this.tagIndex.clear();
     this.stats.memoryUsage = 0;
     this.stats.size = 0;
     this.stats.invalidations += count;
@@ -360,6 +379,7 @@ export class CacheManager {
 
     for (const [key, entry] of this.cache.entries()) {
       if (now - entry.timestamp > entry.ttl) {
+        this.removeFromTagIndex(key, entry.tags);
         this.cache.delete(key);
         this.updateMemoryUsage(-entry.size);
         clearedCount++;
@@ -371,20 +391,14 @@ export class CacheManager {
 
   /**
    * Get All Keys with Tag
+   * Optimized to use tag index for O(1) lookup
    *
    * @param tag - Cache tag
    * @returns Array of keys with this tag
    */
   getKeysWithTag(tag: string): string[] {
-    const keys: string[] = [];
-
-    for (const [key, entry] of this.cache.entries()) {
-      if (entry.tags.includes(tag)) {
-        keys.push(key);
-      }
-    }
-
-    return keys;
+    const taggedKeys = this.tagIndex.get(tag);
+    return taggedKeys ? Array.from(taggedKeys) : [];
   }
 
   /**
@@ -426,7 +440,7 @@ export class CacheManager {
       avgAccessTime: 0,
       invalidations: 0
     };
-    this.accessTimes = [];
+    this.accessStats = { count: 0, sum: 0, avg: 0 };
   }
 
   /**
@@ -557,21 +571,28 @@ export class CacheManager {
   }
 
   /**
-   * Record Access Time
+   * Record Access Time using running average
+   * Prevents memory leak from unbounded array growth
    *
    * @param duration - Access duration in ms
    */
   private recordAccessTime(duration: number): void {
-    this.accessTimes.push(duration);
+    // Update running average without storing all values
+    this.accessStats.count++;
+    this.accessStats.sum += duration;
 
-    // Keep only last 100 access times
-    if (this.accessTimes.length > 100) {
-      this.accessTimes.shift();
+    // Calculate weighted running average (gives more weight to recent values)
+    const weight = Math.min(100, this.accessStats.count); // Cap weight at 100 samples
+    this.accessStats.avg = ((this.accessStats.avg * (weight - 1)) + duration) / weight;
+
+    // Update stats
+    this.stats.avgAccessTime = this.accessStats.avg;
+
+    // Reset periodically to prevent numerical overflow
+    if (this.accessStats.count > 10000) {
+      this.accessStats.count = 100;
+      this.accessStats.sum = this.accessStats.avg * 100;
     }
-
-    // Calculate average
-    const sum = this.accessTimes.reduce((acc, time) => acc + time, 0);
-    this.stats.avgAccessTime = sum / this.accessTimes.length;
   }
 
   /**
@@ -596,6 +617,40 @@ export class CacheManager {
         metric.metadata
       );
     }
+  }
+
+  /**
+   * Add key to tag index for O(1) tag lookups
+   *
+   * @param key - Cache key
+   * @param tags - Array of tags
+   */
+  private addToTagIndex(key: string, tags: string[]): void {
+    tags.forEach(tag => {
+      if (!this.tagIndex.has(tag)) {
+        this.tagIndex.set(tag, new Set());
+      }
+      this.tagIndex.get(tag)!.add(key);
+    });
+  }
+
+  /**
+   * Remove key from tag index
+   *
+   * @param key - Cache key
+   * @param tags - Array of tags
+   */
+  private removeFromTagIndex(key: string, tags: string[]): void {
+    tags.forEach(tag => {
+      const taggedKeys = this.tagIndex.get(tag);
+      if (taggedKeys) {
+        taggedKeys.delete(key);
+        // Clean up empty tag sets to prevent memory bloat
+        if (taggedKeys.size === 0) {
+          this.tagIndex.delete(tag);
+        }
+      }
+    });
   }
 
   /**

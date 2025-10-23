@@ -58,6 +58,7 @@ import { API_CONFIG } from '../../constants/config';
 import { API_ENDPOINTS, HTTP_STATUS } from '../../constants/api';
 import { secureTokenManager } from '../security/SecureTokenManager';
 import { setupCsrfProtection } from '../security/CsrfProtection';
+import { logger } from '../utils/logger';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -178,6 +179,24 @@ export interface ResilienceHook {
   beforeRequest?: (config: { method: string; url: string; data?: unknown }) => Promise<void>;
   afterSuccess?: (result: { method: string; url: string; duration: number }) => void;
   afterFailure?: (error: { method: string; url: string; duration: number; error: unknown }) => void;
+}
+
+/**
+ * Extended AxiosRequestConfig with AbortSignal support for request cancellation
+ *
+ * @example
+ * ```typescript
+ * const { signal, cancel } = createCancellableRequest();
+ *
+ * // Start request with cancellation support
+ * const promise = apiClient.get('/data', { signal });
+ *
+ * // Cancel if needed
+ * cancel('User navigated away');
+ * ```
+ */
+export interface CancellableRequestConfig extends AxiosRequestConfig {
+  signal?: AbortSignal;
 }
 
 export interface ApiClientConfig {
@@ -316,7 +335,7 @@ export class ApiClient {
             secureTokenManager.updateActivity();
           } else {
             // Token expired, clear it
-            console.warn('[ApiClient] Token expired, clearing tokens');
+            logger.warn('ApiClient: Token expired, clearing tokens');
             secureTokenManager.clearTokens();
           }
         }
@@ -332,7 +351,7 @@ export class ApiClient {
 
         // Log request in development
         if (this.enableLogging && import.meta.env.DEV) {
-          console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
+          logger.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, {
             headers: config.headers,
             data: config.data,
           });
@@ -342,7 +361,7 @@ export class ApiClient {
       },
       (error) => {
         if (this.enableLogging && import.meta.env.DEV) {
-          console.error('[API Request Error]', error);
+          logger.error('API Request Error', error as Error);
         }
         return Promise.reject(this.normalizeError(error));
       }
@@ -354,7 +373,7 @@ export class ApiClient {
       (response) => {
         // Log response in development
         if (this.enableLogging && import.meta.env.DEV) {
-          console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+          logger.debug(`API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
             status: response.status,
             data: response.data,
           });
@@ -392,7 +411,7 @@ export class ApiClient {
             await this.sleep(delay);
 
             if (this.enableLogging && import.meta.env.DEV) {
-              console.log(`[API Retry] Attempt ${retryCount + 1}/${this.maxRetries} for ${originalRequest.url}`);
+              logger.debug(`API Retry: Attempt ${retryCount + 1}/${this.maxRetries} for ${originalRequest.url}`);
             }
 
             return this.instance(originalRequest);
@@ -401,7 +420,7 @@ export class ApiClient {
 
         // Log error
         if (this.enableLogging) {
-          console.error('[API Response Error]', {
+          logger.error('API Response Error', error as Error, {
             url: error.config?.url,
             method: error.config?.method,
             status: error.response?.status,
@@ -452,21 +471,61 @@ export class ApiClient {
   // HTTP METHODS
   // ==========================================
 
-  public async get<T = unknown>(
+  /**
+   * Generic request executor that handles all HTTP methods with resilience hooks
+   *
+   * This method consolidates common logic for all HTTP operations:
+   * - Performance tracking (start time, duration)
+   * - Resilience hook execution (beforeRequest, afterSuccess, afterFailure)
+   * - Error handling and propagation
+   *
+   * @private
+   * @template T - The response data type
+   * @param method - HTTP method to execute
+   * @param url - Request URL
+   * @param data - Request body data (optional, used by POST/PUT/PATCH)
+   * @param config - Axios request configuration (optional)
+   * @returns Promise resolving to API response
+   */
+  private async executeRequest<T = unknown>(
+    method: 'get' | 'post' | 'put' | 'patch' | 'delete',
     url: string,
-    config?: AxiosRequestConfig
+    data?: unknown,
+    config?: CancellableRequestConfig
   ): Promise<ApiResponse<T>> {
     const startTime = performance.now();
+    const methodUpper = method.toUpperCase();
+
     try {
+      // Execute beforeRequest hook if configured
       if (this.resilienceHook?.beforeRequest) {
-        await this.resilienceHook.beforeRequest({ method: 'GET', url });
+        await this.resilienceHook.beforeRequest({
+          method: methodUpper,
+          url,
+          data
+        });
       }
 
-      const response = await this.instance.get<ApiResponse<T>>(url, config);
+      // Execute the HTTP request based on method type
+      let response: AxiosResponse<ApiResponse<T>>;
+      switch (method) {
+        case 'get':
+        case 'delete':
+          // GET and DELETE don't accept body data
+          response = await this.instance[method]<ApiResponse<T>>(url, config);
+          break;
+        case 'post':
+        case 'put':
+        case 'patch':
+          // POST, PUT, and PATCH accept body data
+          response = await this.instance[method]<ApiResponse<T>>(url, data, config);
+          break;
+      }
 
+      // Execute afterSuccess hook if configured
       if (this.resilienceHook?.afterSuccess) {
         this.resilienceHook.afterSuccess({
-          method: 'GET',
+          method: methodUpper,
           url,
           duration: performance.now() - startTime
         });
@@ -474,9 +533,10 @@ export class ApiClient {
 
       return response.data;
     } catch (error) {
+      // Execute afterFailure hook if configured
       if (this.resilienceHook?.afterFailure) {
         this.resilienceHook.afterFailure({
-          method: 'GET',
+          method: methodUpper,
           url,
           duration: performance.now() - startTime,
           error
@@ -486,143 +546,80 @@ export class ApiClient {
     }
   }
 
+  /**
+   * Execute GET request
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param config - Request configuration with optional AbortSignal for cancellation
+   * @returns Promise resolving to API response
+   */
+  public async get<T = unknown>(
+    url: string,
+    config?: CancellableRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.executeRequest<T>('get', url, undefined, config);
+  }
+
+  /**
+   * Execute POST request
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param data - Request body data (optional)
+   * @param config - Request configuration with optional AbortSignal for cancellation
+   * @returns Promise resolving to API response
+   */
   public async post<T = unknown>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
+    config?: CancellableRequestConfig
   ): Promise<ApiResponse<T>> {
-    const startTime = performance.now();
-    try {
-      if (this.resilienceHook?.beforeRequest) {
-        await this.resilienceHook.beforeRequest({ method: 'POST', url, data });
-      }
-
-      const response = await this.instance.post<ApiResponse<T>>(url, data, config);
-
-      if (this.resilienceHook?.afterSuccess) {
-        this.resilienceHook.afterSuccess({
-          method: 'POST',
-          url,
-          duration: performance.now() - startTime
-        });
-      }
-
-      return response.data;
-    } catch (error) {
-      if (this.resilienceHook?.afterFailure) {
-        this.resilienceHook.afterFailure({
-          method: 'POST',
-          url,
-          duration: performance.now() - startTime,
-          error
-        });
-      }
-      throw error;
-    }
+    return this.executeRequest<T>('post', url, data, config);
   }
 
+  /**
+   * Execute PUT request
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param data - Request body data (optional)
+   * @param config - Request configuration with optional AbortSignal for cancellation
+   * @returns Promise resolving to API response
+   */
   public async put<T = unknown>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
+    config?: CancellableRequestConfig
   ): Promise<ApiResponse<T>> {
-    const startTime = performance.now();
-    try {
-      if (this.resilienceHook?.beforeRequest) {
-        await this.resilienceHook.beforeRequest({ method: 'PUT', url, data });
-      }
-
-      const response = await this.instance.put<ApiResponse<T>>(url, data, config);
-
-      if (this.resilienceHook?.afterSuccess) {
-        this.resilienceHook.afterSuccess({
-          method: 'PUT',
-          url,
-          duration: performance.now() - startTime
-        });
-      }
-
-      return response.data;
-    } catch (error) {
-      if (this.resilienceHook?.afterFailure) {
-        this.resilienceHook.afterFailure({
-          method: 'PUT',
-          url,
-          duration: performance.now() - startTime,
-          error
-        });
-      }
-      throw error;
-    }
+    return this.executeRequest<T>('put', url, data, config);
   }
 
+  /**
+   * Execute PATCH request
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param data - Request body data (optional)
+   * @param config - Request configuration with optional AbortSignal for cancellation
+   * @returns Promise resolving to API response
+   */
   public async patch<T = unknown>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
+    config?: CancellableRequestConfig
   ): Promise<ApiResponse<T>> {
-    const startTime = performance.now();
-    try {
-      if (this.resilienceHook?.beforeRequest) {
-        await this.resilienceHook.beforeRequest({ method: 'PATCH', url, data });
-      }
-
-      const response = await this.instance.patch<ApiResponse<T>>(url, data, config);
-
-      if (this.resilienceHook?.afterSuccess) {
-        this.resilienceHook.afterSuccess({
-          method: 'PATCH',
-          url,
-          duration: performance.now() - startTime
-        });
-      }
-
-      return response.data;
-    } catch (error) {
-      if (this.resilienceHook?.afterFailure) {
-        this.resilienceHook.afterFailure({
-          method: 'PATCH',
-          url,
-          duration: performance.now() - startTime,
-          error
-        });
-      }
-      throw error;
-    }
+    return this.executeRequest<T>('patch', url, data, config);
   }
 
+  /**
+   * Execute DELETE request
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param config - Request configuration with optional AbortSignal for cancellation
+   * @returns Promise resolving to API response
+   */
   public async delete<T = unknown>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: CancellableRequestConfig
   ): Promise<ApiResponse<T>> {
-    const startTime = performance.now();
-    try {
-      if (this.resilienceHook?.beforeRequest) {
-        await this.resilienceHook.beforeRequest({ method: 'DELETE', url });
-      }
-
-      const response = await this.instance.delete<ApiResponse<T>>(url, config);
-
-      if (this.resilienceHook?.afterSuccess) {
-        this.resilienceHook.afterSuccess({
-          method: 'DELETE',
-          url,
-          duration: performance.now() - startTime
-        });
-      }
-
-      return response.data;
-    } catch (error) {
-      if (this.resilienceHook?.afterFailure) {
-        this.resilienceHook.afterFailure({
-          method: 'DELETE',
-          url,
-          duration: performance.now() - startTime,
-          error
-        });
-      }
-      throw error;
-    }
+    return this.executeRequest<T>('delete', url, undefined, config);
   }
 
   // ==========================================
@@ -757,6 +754,55 @@ export class ApiClient {
   public getResilienceHook(): ResilienceHook | undefined {
     return this.resilienceHook;
   }
+}
+
+// ==========================================
+// REQUEST CANCELLATION UTILITIES
+// ==========================================
+
+/**
+ * Create a cancellable request with AbortController
+ *
+ * Provides easy-to-use request cancellation for long-running operations.
+ * Useful for cleanup in React useEffect hooks or when users navigate away.
+ *
+ * @returns Object with signal for request config and cancel function
+ *
+ * @example
+ * ```typescript
+ * // In a React component
+ * useEffect(() => {
+ *   const { signal, cancel } = createCancellableRequest();
+ *
+ *   const fetchData = async () => {
+ *     try {
+ *       const data = await apiClient.get('/students', { signal });
+ *       setStudents(data.data);
+ *     } catch (error) {
+ *       if (error.name === 'AbortError') {
+ *         console.log('Request was cancelled');
+ *       } else {
+ *         console.error('Request failed:', error);
+ *       }
+ *     }
+ *   };
+ *
+ *   fetchData();
+ *
+ *   // Cleanup: cancel request when component unmounts
+ *   return () => cancel('Component unmounted');
+ * }, []);
+ * ```
+ */
+export function createCancellableRequest() {
+  const controller = new AbortController();
+
+  return {
+    signal: controller.signal,
+    cancel: (reason?: string) => {
+      controller.abort(reason);
+    },
+  };
 }
 
 // ==========================================

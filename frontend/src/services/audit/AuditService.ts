@@ -640,7 +640,7 @@ export class AuditService implements IAuditService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to send audit batch');
       }
-    } catch (error: any) {
+    } catch (error) {
       this.syncErrors++;
       this.lastError = error.message;
 

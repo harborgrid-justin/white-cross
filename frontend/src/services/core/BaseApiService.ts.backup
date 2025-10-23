@@ -1,84 +1,18 @@
 /**
- * WF-COMP-257 | BaseApiService.ts - Base API Service Module
- *
- * @module BaseApiService
- * @description
- * Provides a type-safe, reusable base class for implementing CRUD operations
- * across all API endpoints in the White Cross Healthcare Platform. This module
- * establishes consistent patterns for entity management, reducing code duplication
- * and improving maintainability.
- *
- * @purpose
- * - Standardize CRUD operations across all API services
- * - Provide type-safe generic patterns for entity management
- * - Support bulk operations for efficient data management
- * - Enable validation with Zod schemas
- * - Simplify service implementation with inheritance
- *
- * @upstream ./ApiClient - HTTP client for making API requests
- * @dependencies ./ApiClient, zod
- * @downstream All module-specific API services (medication, student, staff, etc.)
- * @exports BaseApiService class, BaseEntity interface, CRUD interfaces
- *
- * @keyFeatures
- * - Generic type-safe CRUD operations
- * - Bulk create, update, delete operations
- * - Query parameter building with filtering and pagination
- * - Optional Zod schema validation
- * - Search functionality
- * - Consistent error handling
- *
- * @lastUpdated 2025-10-23
- * @fileType TypeScript Service Module
- * @architecture Core service layer providing reusable patterns
+ * WF-COMP-257 | BaseApiService.ts - React component or utility module
+ * Purpose: react component or utility module
+ * Upstream: ./ApiClient | Dependencies: ./ApiClient, zod
+ * Downstream: Components, pages, app routing | Called by: React component tree
+ * Related: Other components, hooks, services, types
+ * Exports: functions, interfaces | Key Features: Standard module
+ * Last Updated: 2025-10-17 | File Type: .ts
+ * Critical Path: Component mount → Render → User interaction → State updates
+ * LLM Context: react component or utility module, part of React frontend architecture
  */
 
 /**
- * Base API Service Class
- *
- * @description
- * Abstract base class providing type-safe CRUD operations for all API endpoints.
- * Extend this class to quickly implement API services with consistent patterns.
- *
- * @typeParam TEntity - The entity type returned from API (must extend BaseEntity)
- * @typeParam TCreateDto - The data transfer object for creating entities (defaults to Partial<TEntity>)
- * @typeParam TUpdateDto - The data transfer object for updating entities (defaults to Partial<TCreateDto>)
- *
- * @example
- * ```typescript
- * // Define your entity types
- * interface Student extends BaseEntity {
- *   name: string;
- *   grade: number;
- *   email: string;
- * }
- *
- * interface CreateStudentDto {
- *   name: string;
- *   grade: number;
- *   email: string;
- * }
- *
- * // Create your API service by extending BaseApiService
- * class StudentApi extends BaseApiService<Student, CreateStudentDto> {
- *   constructor(client: ApiClient) {
- *     super(client, '/api/students', {
- *       createSchema: createStudentSchema,
- *       updateSchema: updateStudentSchema
- *     });
- *   }
- *
- *   // Add custom methods specific to students
- *   async getByGrade(grade: number): Promise<Student[]> {
- *     return this.search('', { grade });
- *   }
- * }
- *
- * // Use the service
- * const studentApi = new StudentApi(apiClient);
- * const students = await studentApi.getAll();
- * const student = await studentApi.create({ name: 'Alice', grade: 5, email: 'alice@example.com' });
- * ```
+ * Base API Service with type-safe CRUD operations
+ * Provides reusable patterns for all API modules
  */
 
 import { ApiClient, ApiResponse, PaginatedResponse } from './ApiClient';
@@ -147,25 +81,6 @@ export abstract class BaseApiService<
 
   /**
    * Get all entities with optional filtering and pagination
-   *
-   * @param {FilterParams} [filters] - Optional filters including pagination, sorting, and custom filters
-   * @returns {Promise<PaginatedResponse<TEntity>>} Paginated list of entities
-   * @throws {Error} When the API request fails or returns an error
-   *
-   * @example
-   * ```typescript
-   * // Get all entities with pagination
-   * const response = await studentApi.getAll({ page: 1, limit: 20 });
-   *
-   * // Get with filtering and sorting
-   * const filtered = await studentApi.getAll({
-   *   page: 1,
-   *   limit: 10,
-   *   sort: 'name',
-   *   order: 'asc',
-   *   grade: 5  // custom filter
-   * });
-   * ```
    */
   public async getAll(filters?: FilterParams): Promise<PaginatedResponse<TEntity>> {
     const params = this.buildQueryParams(filters);
@@ -177,16 +92,6 @@ export abstract class BaseApiService<
 
   /**
    * Get entity by ID
-   *
-   * @param {string} id - The entity ID
-   * @returns {Promise<TEntity>} The requested entity
-   * @throws {Error} When ID is invalid or entity not found
-   *
-   * @example
-   * ```typescript
-   * const student = await studentApi.getById('abc-123');
-   * console.log(student.name);
-   * ```
    */
   public async getById(id: string): Promise<TEntity> {
     this.validateId(id);
@@ -196,20 +101,6 @@ export abstract class BaseApiService<
 
   /**
    * Create new entity
-   *
-   * @param {TCreateDto} data - The entity data to create
-   * @returns {Promise<TEntity>} The created entity with server-assigned fields
-   * @throws {Error} When validation fails or creation is rejected by server
-   *
-   * @example
-   * ```typescript
-   * const newStudent = await studentApi.create({
-   *   name: 'Alice Johnson',
-   *   grade: 5,
-   *   email: 'alice@example.com'
-   * });
-   * console.log(newStudent.id); // Server-assigned ID
-   * ```
    */
   public async create(data: TCreateDto): Promise<TEntity> {
     this.validateCreateData(data);
@@ -218,21 +109,7 @@ export abstract class BaseApiService<
   }
 
   /**
-   * Update existing entity (full update)
-   *
-   * @param {string} id - The entity ID
-   * @param {TUpdateDto} data - The complete update data
-   * @returns {Promise<TEntity>} The updated entity
-   * @throws {Error} When ID is invalid, entity not found, or validation fails
-   *
-   * @example
-   * ```typescript
-   * const updated = await studentApi.update('abc-123', {
-   *   name: 'Alice Johnson',
-   *   grade: 6,
-   *   email: 'alice@example.com'
-   * });
-   * ```
+   * Update existing entity
    */
   public async update(id: string, data: TUpdateDto): Promise<TEntity> {
     this.validateId(id);
@@ -242,18 +119,7 @@ export abstract class BaseApiService<
   }
 
   /**
-   * Partially update entity (only specified fields)
-   *
-   * @param {string} id - The entity ID
-   * @param {Partial<TUpdateDto>} data - The partial update data
-   * @returns {Promise<TEntity>} The updated entity
-   * @throws {Error} When ID is invalid, entity not found, or validation fails
-   *
-   * @example
-   * ```typescript
-   * // Only update the grade field
-   * const updated = await studentApi.patch('abc-123', { grade: 6 });
-   * ```
+   * Partially update entity
    */
   public async patch(id: string, data: Partial<TUpdateDto>): Promise<TEntity> {
     this.validateId(id);
@@ -262,17 +128,7 @@ export abstract class BaseApiService<
   }
 
   /**
-   * Delete entity permanently
-   *
-   * @param {string} id - The entity ID
-   * @returns {Promise<void>} Resolves when entity is deleted
-   * @throws {Error} When ID is invalid, entity not found, or deletion fails
-   *
-   * @example
-   * ```typescript
-   * await studentApi.delete('abc-123');
-   * console.log('Student deleted successfully');
-   * ```
+   * Delete entity
    */
   public async delete(id: string): Promise<void> {
     this.validateId(id);
@@ -284,25 +140,7 @@ export abstract class BaseApiService<
   // ==========================================
 
   /**
-   * Search entities by query string
-   *
-   * @param {string} query - The search query string
-   * @param {FilterParams} [filters] - Optional additional filters
-   * @returns {Promise<PaginatedResponse<TEntity>>} Paginated search results
-   * @throws {Error} When the search request fails
-   *
-   * @example
-   * ```typescript
-   * // Search for students by name
-   * const results = await studentApi.search('Alice');
-   *
-   * // Search with filters
-   * const filtered = await studentApi.search('John', {
-   *   grade: 5,
-   *   page: 1,
-   *   limit: 10
-   * });
-   * ```
+   * Search entities
    */
   public async search(query: string, filters?: FilterParams): Promise<PaginatedResponse<TEntity>> {
     const params = this.buildQueryParams({ ...filters, search: query });
@@ -317,29 +155,7 @@ export abstract class BaseApiService<
   // ==========================================
 
   /**
-   * Create multiple entities in a single request
-   *
-   * @param {TCreateDto[]} data - Array of entity data to create
-   * @returns {Promise<TEntity[]>} Array of created entities with server-assigned fields
-   * @throws {Error} When array is empty or validation fails
-   *
-   * @description
-   * Efficiently creates multiple entities in one API call. This is significantly
-   * faster than creating entities one at a time for bulk imports or migrations.
-   *
-   * The server processes all creates in a transaction, so either all succeed
-   * or all fail (atomic operation).
-   *
-   * @example
-   * ```typescript
-   * const newStudents = await studentApi.bulkCreate([
-   *   { name: 'Alice Johnson', grade: 5 },
-   *   { name: 'Bob Smith', grade: 6 },
-   *   { name: 'Charlie Brown', grade: 5 }
-   * ]);
-   *
-   * console.log(`Created ${newStudents.length} students`);
-   * ```
+   * Bulk create entities
    */
   public async bulkCreate(data: TCreateDto[]): Promise<TEntity[]> {
     const response = await this.client.post<TEntity[]>(`${this.baseEndpoint}/bulk`, { items: data });
@@ -347,28 +163,7 @@ export abstract class BaseApiService<
   }
 
   /**
-   * Update multiple entities in a single request
-   *
-   * @param {Array<{ id: string; data: TUpdateDto }>} updates - Array of entity updates with IDs and data
-   * @returns {Promise<TEntity[]>} Array of updated entities
-   * @throws {Error} When any ID is invalid or validation fails
-   *
-   * @description
-   * Efficiently updates multiple entities in one API call. Each update requires
-   * the entity ID and the data to update.
-   *
-   * Like bulkCreate, this operation is atomic - either all updates succeed or all fail.
-   *
-   * @example
-   * ```typescript
-   * const updatedStudents = await studentApi.bulkUpdate([
-   *   { id: '123', data: { grade: 6 } },
-   *   { id: '456', data: { grade: 7 } },
-   *   { id: '789', data: { grade: 6 } }
-   * ]);
-   *
-   * console.log(`Updated ${updatedStudents.length} students`);
-   * ```
+   * Bulk update entities
    */
   public async bulkUpdate(updates: Array<{ id: string; data: TUpdateDto }>): Promise<TEntity[]> {
     const response = await this.client.put<TEntity[]>(`${this.baseEndpoint}/bulk`, { updates });
@@ -376,23 +171,7 @@ export abstract class BaseApiService<
   }
 
   /**
-   * Delete multiple entities in a single request
-   *
-   * @param {string[]} ids - Array of entity IDs to delete
-   * @returns {Promise<void>} Resolves when all entities are deleted
-   * @throws {Error} When any ID is invalid or deletion fails
-   *
-   * @description
-   * Efficiently deletes multiple entities in one API call. This operation is
-   * atomic - either all deletions succeed or all fail.
-   *
-   * Use with caution as this operation is permanent and cannot be undone.
-   *
-   * @example
-   * ```typescript
-   * await studentApi.bulkDelete(['123', '456', '789']);
-   * console.log('Successfully deleted 3 students');
-   * ```
+   * Bulk delete entities
    */
   public async bulkDelete(ids: string[]): Promise<void> {
     await this.client.post(`${this.baseEndpoint}/bulk-delete`, { ids });
@@ -454,11 +233,8 @@ export abstract class BaseApiService<
         this.createSchema.parse(data);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const issues = error.issues || [];
-          const firstError = issues[0];
-          if (firstError) {
-            throw new Error(`Validation error: ${firstError.message} at ${firstError.path.join('.')}`);
-          }
+          const firstError = error.errors[0];
+          throw new Error(`Validation error: ${firstError.message} at ${firstError.path.join('.')}`);
         }
         throw error;
       }
@@ -474,11 +250,8 @@ export abstract class BaseApiService<
         this.updateSchema.parse(data);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const issues = error.issues || [];
-          const firstError = issues[0];
-          if (firstError) {
-            throw new Error(`Validation error: ${firstError.message} at ${firstError.path.join('.')}`);
-          }
+          const firstError = error.errors[0];
+          throw new Error(`Validation error: ${firstError.message} at ${firstError.path.join('.')}`);
         }
         throw error;
       }

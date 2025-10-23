@@ -8,6 +8,7 @@
  */
 
 import { metricsService } from './MetricsService';
+import { secureTokenManager } from '../security/SecureTokenManager';
 
 export interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -87,8 +88,9 @@ export class HealthCheckService {
       check: async () => {
         try {
           // Check if SecureTokenManager is functioning
-          const hasToken = !!localStorage.getItem('auth_token');
-          const hasRefreshToken = !!localStorage.getItem('refresh_token');
+          // SECURITY FIX: Use secureTokenManager (sessionStorage) instead of localStorage
+          const hasToken = !!secureTokenManager.getToken();
+          const hasRefreshToken = !!secureTokenManager.getRefreshToken();
 
           if (!hasToken && !hasRefreshToken) {
             return {

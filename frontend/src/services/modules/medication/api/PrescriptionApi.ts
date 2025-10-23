@@ -32,6 +32,7 @@ import { apiInstance } from '@/services/config/apiConfig';
 import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
 import { Medication, AdministrationRoute } from './MedicationFormularyApi';
+import { createApiError, createValidationError } from '@/services/core/errors';
 
 // Types
 export interface Prescription {
@@ -220,11 +221,22 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      // Handle Zod validation errors
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.message || 'Failed to create prescription');
+      throw createApiError(error, 'Failed to create prescription');
     }
   }
 
@@ -244,8 +256,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update prescription');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update prescription');
     }
   }
 
@@ -262,8 +274,8 @@ export class PrescriptionApi {
         API_ENDPOINTS.MEDICATIONS.PRESCRIPTION_DISCONTINUE(id),
         { reason }
       );
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to discontinue prescription');
+    } catch (error) {
+      throw createApiError(error, 'Failed to discontinue prescription');
     }
   }
 
@@ -279,8 +291,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch prescription');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch prescription');
     }
   }
 
@@ -304,8 +316,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch student prescriptions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch student prescriptions');
     }
   }
 
@@ -336,8 +348,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch active prescriptions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch active prescriptions');
     }
   }
 
@@ -353,8 +365,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch prescription history');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch prescription history');
     }
   }
 
@@ -376,8 +388,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to verify prescription');
+    } catch (error) {
+      throw createApiError(error, 'Failed to verify prescription');
     }
   }
 
@@ -399,8 +411,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to check allergies');
+    } catch (error) {
+      throw createApiError(error, 'Failed to check allergies');
     }
   }
 
@@ -416,8 +428,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch student allergies');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch student allergies');
     }
   }
 
@@ -432,8 +444,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to add student allergy');
+    } catch (error) {
+      throw createApiError(error, 'Failed to add student allergy');
     }
   }
 
@@ -453,8 +465,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update allergy');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update allergy');
     }
   }
 
@@ -470,8 +482,8 @@ export class PrescriptionApi {
         API_ENDPOINTS.MEDICATIONS.ALLERGY_DEACTIVATE(allergyId),
         { reason }
       );
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to deactivate allergy');
+    } catch (error) {
+      throw createApiError(error, 'Failed to deactivate allergy');
     }
   }
 
@@ -495,8 +507,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to renew prescription');
+    } catch (error) {
+      throw createApiError(error, 'Failed to renew prescription');
     }
   }
 
@@ -510,8 +522,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch expiring prescriptions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch expiring prescriptions');
     }
   }
 
@@ -527,8 +539,8 @@ export class PrescriptionApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch PRN prescriptions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch PRN prescriptions');
     }
   }
 }

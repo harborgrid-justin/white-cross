@@ -14,6 +14,7 @@ import { apiInstance, API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
 import { z } from 'zod';
 import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
+import { createApiError, createValidationError } from '../core/errors';
 import {
   Student,
   CreateStudentData,
@@ -278,7 +279,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -313,7 +314,7 @@ export class StudentsApi {
       );
 
       return student;
-    } catch (error: any) {
+    } catch (error) {
       await auditService.log({
         action: AuditAction.VIEW_STUDENT,
         resourceType: AuditResourceType.STUDENT,
@@ -360,7 +361,7 @@ export class StudentsApi {
       });
 
       return student;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -411,7 +412,7 @@ export class StudentsApi {
       });
 
       return student;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -447,7 +448,7 @@ export class StudentsApi {
         success: true,
         message: response.data.message || 'Student deactivated successfully'
       };
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to deactivate student');
     }
   }
@@ -469,7 +470,7 @@ export class StudentsApi {
       }
 
       return response.data.data.student;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to reactivate student');
     }
   }
@@ -493,7 +494,7 @@ export class StudentsApi {
       }
 
       return response.data.data.student;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to transfer student');
     }
   }
@@ -515,7 +516,7 @@ export class StudentsApi {
       }
 
       return response.data.data.students;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch students by grade');
     }
   }
@@ -537,7 +538,7 @@ export class StudentsApi {
       }
 
       return response.data.data.students;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to search students');
     }
   }
@@ -557,7 +558,7 @@ export class StudentsApi {
       }
 
       return response.data.data.students;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch assigned students');
     }
   }
@@ -579,7 +580,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch student statistics');
     }
   }
@@ -604,7 +605,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to bulk update students');
     }
   }
@@ -626,7 +627,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to delete student');
     }
   }
@@ -646,7 +647,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch grades');
     }
   }
@@ -679,7 +680,7 @@ export class StudentsApi {
       });
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       await auditService.log({
         action: AuditAction.EXPORT_STUDENT_DATA,
         resourceType: AuditResourceType.STUDENT,
@@ -708,7 +709,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch health records');
     }
   }
@@ -729,7 +730,7 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch mental health records');
     }
   }

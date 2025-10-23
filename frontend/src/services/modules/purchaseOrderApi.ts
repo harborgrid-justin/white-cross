@@ -20,6 +20,7 @@ import { apiInstance } from '../config/apiConfig';
 import { API_ENDPOINTS } from '../config/api.config';
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
+import { createApiError } from '../core/errors';
 import {
   PurchaseOrder,
   PurchaseOrderFilters,
@@ -118,8 +119,8 @@ export class PurchaseOrderApi {
       const response = await apiInstance.get<ApiResponse<PurchaseOrdersResponse>>(url);
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch purchase orders');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch purchase orders');
     }
   }
 
@@ -135,8 +136,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch purchase order');
     }
   }
 
@@ -164,11 +165,11 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create purchase order');
+      throw createApiError(error, 'Failed to create purchase order');
     }
   }
 
@@ -203,11 +204,11 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update purchase order');
+      throw createApiError(error, 'Failed to update purchase order');
     }
   }
 
@@ -225,8 +226,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to approve purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to approve purchase order');
     }
   }
 
@@ -247,11 +248,11 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to receive items');
+      throw createApiError(error, 'Failed to receive items');
     }
   }
 
@@ -268,8 +269,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to cancel purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to cancel purchase order');
     }
   }
 
@@ -285,8 +286,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete purchase order');
     }
   }
 
@@ -300,8 +301,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.items;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch reorder items');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch reorder items');
     }
   }
 
@@ -315,8 +316,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch statistics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch statistics');
     }
   }
 
@@ -332,8 +333,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch vendor purchase history');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch vendor purchase history');
     }
   }
 
@@ -348,8 +349,8 @@ export class PurchaseOrderApi {
       });
 
       return response.orders;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch pending orders');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch pending orders');
     }
   }
 
@@ -363,8 +364,8 @@ export class PurchaseOrderApi {
         page,
         limit,
       });
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch orders by status');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch orders by status');
     }
   }
 
@@ -380,8 +381,8 @@ export class PurchaseOrderApi {
       });
 
       return response.orders;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch recent orders');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch recent orders');
     }
   }
 
@@ -400,8 +401,8 @@ export class PurchaseOrderApi {
       });
 
       return response.orders;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch orders requiring receiving');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch orders requiring receiving');
     }
   }
 
@@ -420,8 +421,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to export purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to export purchase order');
     }
   }
 
@@ -440,8 +441,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to print purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to print purchase order');
     }
   }
 
@@ -458,8 +459,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to send order to vendor');
+    } catch (error) {
+      throw createApiError(error, 'Failed to send order to vendor');
     }
   }
 
@@ -475,8 +476,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to duplicate purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to duplicate purchase order');
     }
   }
 
@@ -494,8 +495,8 @@ export class PurchaseOrderApi {
       );
 
       return response.data.data.order;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to add note to order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to add note to order');
     }
   }
 
@@ -524,8 +525,8 @@ export class PurchaseOrderApi {
         pendingItems,
         fulfillmentPercentage,
       };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to get order fulfillment status');
+    } catch (error) {
+      throw createApiError(error, 'Failed to get order fulfillment status');
     }
   }
 }

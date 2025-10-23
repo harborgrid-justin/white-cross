@@ -47,6 +47,7 @@ import {
   Student
 } from '../types';
 import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
+import { createApiError, createValidationError } from '../core/errors';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -837,11 +838,8 @@ export class HealthRecordsApi {
   /**
    * Sanitize error messages to prevent PHI exposure
    */
-  private sanitizeError(error: any): Error {
-    const message = error.response?.data?.message || error.message || 'An error occurred';
-    // Remove any potential PHI from error messages
-    const sanitized = message.replace(/\b[A-Z][a-z]+ [A-Z][a-z]+\b/g, '[Name Redacted]');
-    return new Error(sanitized);
+  private sanitizeError(error: unknown): Error {
+    return createApiError(error, 'An error occurred');
   }
 
   // ==========================================
@@ -870,7 +868,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_HEALTH_RECORDS, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -912,7 +910,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
 
       return record;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -934,9 +932,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_HEALTH_RECORD, data.studentId, AuditResourceType.HEALTH_RECORD, record.id);
 
       return record;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -956,7 +964,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
 
       return record;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -972,7 +980,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_HEALTH_RECORD, record.studentId, AuditResourceType.HEALTH_RECORD, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -993,7 +1001,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_HEALTH_TIMELINE, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1010,7 +1018,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_HEALTH_SUMMARY, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1033,7 +1041,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1051,7 +1059,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.EXPORT_HEALTH_RECORDS, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1077,7 +1085,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.IMPORT_HEALTH_RECORDS, studentId, AuditResourceType.HEALTH_RECORD);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1097,7 +1105,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1118,7 +1126,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_ALLERGIES, studentId, AuditResourceType.ALLERGY);
 
       return response.data.data!.allergies;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1136,7 +1144,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
 
       return allergy;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1158,9 +1166,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_ALLERGY, data.studentId, AuditResourceType.ALLERGY, allergy.id);
 
       return allergy;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -1180,7 +1198,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
 
       return allergy;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1195,7 +1213,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/allergies/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1214,7 +1232,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VERIFY_ALLERGY, allergy.studentId, AuditResourceType.ALLERGY, id);
 
       return allergy;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1231,7 +1249,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_CRITICAL_ALLERGIES, studentId, AuditResourceType.ALLERGY);
 
       return response.data.data!.allergies;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1257,7 +1275,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CHECK_CONTRAINDICATIONS, studentId, AuditResourceType.ALLERGY);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1283,7 +1301,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1304,7 +1322,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_CHRONIC_CONDITIONS, studentId, AuditResourceType.CHRONIC_CONDITION);
 
       return response.data.data!.conditions;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1322,7 +1340,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
 
       return condition;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1344,9 +1362,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_CHRONIC_CONDITION, data.studentId, AuditResourceType.CHRONIC_CONDITION, condition.id);
 
       return condition;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -1366,7 +1394,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
 
       return condition;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1381,7 +1409,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/conditions/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_CHRONIC_CONDITION, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1400,7 +1428,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_CONDITION_STATUS, condition.studentId, AuditResourceType.CHRONIC_CONDITION, id);
 
       return condition;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1417,7 +1445,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_ACTIVE_CONDITIONS, studentId, AuditResourceType.CHRONIC_CONDITION);
 
       return response.data.data!.conditions;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1432,7 +1460,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!.conditions;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1458,7 +1486,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1479,7 +1507,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_VACCINATIONS, studentId, AuditResourceType.VACCINATION);
 
       return response.data.data!.vaccinations;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1497,7 +1525,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
 
       return vaccination;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1519,9 +1547,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_VACCINATION, data.studentId, AuditResourceType.VACCINATION, vaccination.id);
 
       return vaccination;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -1541,7 +1579,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
 
       return vaccination;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1556,7 +1594,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/vaccinations/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_VACCINATION, vaccination.studentId, AuditResourceType.VACCINATION, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1573,7 +1611,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CHECK_VACCINATION_COMPLIANCE, studentId, AuditResourceType.VACCINATION);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1595,7 +1633,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_UPCOMING_VACCINATIONS, studentId, AuditResourceType.VACCINATION);
 
       return response.data.data!.upcoming;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1613,7 +1651,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.GENERATE_VACCINATION_REPORT, studentId, AuditResourceType.VACCINATION);
 
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1638,7 +1676,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1659,7 +1697,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_SCREENINGS, studentId, AuditResourceType.SCREENING);
 
       return response.data.data!.screenings;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1677,7 +1715,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
 
       return screening;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1699,9 +1737,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_SCREENING, data.studentId, AuditResourceType.SCREENING, screening.id);
 
       return screening;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -1721,7 +1769,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
 
       return screening;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1736,7 +1784,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/screenings/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_SCREENING, screening.studentId, AuditResourceType.SCREENING, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1757,7 +1805,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!.screenings;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1789,7 +1837,7 @@ export class HealthRecordsApi {
       );
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1810,7 +1858,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_GROWTH_MEASUREMENTS, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!.measurements;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1828,7 +1876,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
 
       return measurement;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1850,9 +1898,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_GROWTH_MEASUREMENT, data.studentId, AuditResourceType.GROWTH_MEASUREMENT, measurement.id);
 
       return measurement;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -1872,7 +1930,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
 
       return measurement;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1887,7 +1945,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/growth/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_GROWTH_MEASUREMENT, measurement.studentId, AuditResourceType.GROWTH_MEASUREMENT, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1904,7 +1962,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_GROWTH_TRENDS, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1929,7 +1987,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_GROWTH_CONCERNS, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1953,7 +2011,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CALCULATE_PERCENTILES, studentId, AuditResourceType.GROWTH_MEASUREMENT);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -1983,7 +2041,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_VITAL_SIGNS, studentId, AuditResourceType.VITAL_SIGNS);
 
       return response.data.data!.vitals;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -2001,7 +2059,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
 
       return vitals;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -2023,9 +2081,19 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.CREATE_VITAL_SIGNS, data.studentId, AuditResourceType.VITAL_SIGNS, vitals.id);
 
       return vitals;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw this.sanitizeError(error);
     }
@@ -2045,7 +2113,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.UPDATE_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
 
       return vitals;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -2060,7 +2128,7 @@ export class HealthRecordsApi {
       await apiInstance.delete(`${this.baseEndpoint}/vitals/${id}`);
 
       await this.logPHIAccess(AuditAction.DELETE_VITAL_SIGNS, vitals.studentId, AuditResourceType.VITAL_SIGNS, id);
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -2077,7 +2145,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_LATEST_VITALS, studentId, AuditResourceType.VITAL_SIGNS);
 
       return response.data.data!.vitals;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }
@@ -2104,7 +2172,7 @@ export class HealthRecordsApi {
       await this.logPHIAccess(AuditAction.VIEW_VITAL_TRENDS, studentId, AuditResourceType.VITAL_SIGNS);
 
       return response.data.data!;
-    } catch (error: any) {
+    } catch (error) {
       throw this.sanitizeError(error);
     }
   }

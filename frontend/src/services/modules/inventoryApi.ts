@@ -264,8 +264,8 @@ export class InventoryApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch inventory items');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch inventory items');
     }
   }
 
@@ -281,8 +281,8 @@ export class InventoryApi {
       );
 
       return response.data.data.item;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch inventory item');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch inventory item');
     }
   }
 
@@ -299,11 +299,11 @@ export class InventoryApi {
       );
 
       return response.data.data.item;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create inventory item');
+      throw createApiError(error, 'Failed to create inventory item');
     }
   }
 
@@ -320,8 +320,8 @@ export class InventoryApi {
       );
 
       return response.data.data.item;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update inventory item');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update inventory item');
     }
   }
 
@@ -337,8 +337,8 @@ export class InventoryApi {
       );
 
       return { success: true };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete inventory item');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete inventory item');
     }
   }
 
@@ -355,11 +355,11 @@ export class InventoryApi {
       );
 
       return response.data.data.transaction;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create inventory transaction');
+      throw createApiError(error, 'Failed to create inventory transaction');
     }
   }
 
@@ -375,8 +375,8 @@ export class InventoryApi {
       );
 
       return response.data.data.currentStock;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch current stock');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch current stock');
     }
   }
 
@@ -394,11 +394,11 @@ export class InventoryApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to adjust stock');
+      throw createApiError(error, 'Failed to adjust stock');
     }
   }
 
@@ -414,8 +414,8 @@ export class InventoryApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch stock history');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch stock history');
     }
   }
 
@@ -429,8 +429,8 @@ export class InventoryApi {
       );
 
       return response.data.data.alerts;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch inventory alerts');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch inventory alerts');
     }
   }
 
@@ -447,11 +447,11 @@ export class InventoryApi {
       );
 
       return response.data.data.maintenanceLog;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create maintenance log');
+      throw createApiError(error, 'Failed to create maintenance log');
     }
   }
 
@@ -469,8 +469,8 @@ export class InventoryApi {
       );
 
       return response.data.data.schedule;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch maintenance schedule');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch maintenance schedule');
     }
   }
 
@@ -484,8 +484,8 @@ export class InventoryApi {
       );
 
       return response.data.data.valuation;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch inventory valuation');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch inventory valuation');
     }
   }
 
@@ -504,8 +504,8 @@ export class InventoryApi {
       );
 
       return response.data.data.analytics;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch usage analytics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch usage analytics');
     }
   }
 
@@ -519,8 +519,8 @@ export class InventoryApi {
       );
 
       return response.data.data.performance;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch supplier performance');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch supplier performance');
     }
   }
 
@@ -536,8 +536,8 @@ export class InventoryApi {
       );
 
       return response.data.data.items;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to search inventory items');
+    } catch (error) {
+      throw createApiError(error, 'Failed to search inventory items');
     }
   }
 
@@ -551,8 +551,8 @@ export class InventoryApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch inventory statistics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch inventory statistics');
     }
   }
 
@@ -567,8 +567,8 @@ export class InventoryApi {
       );
 
       return response.data.data.purchaseOrder;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to generate purchase order');
+    } catch (error) {
+      throw createApiError(error, 'Failed to generate purchase order');
     }
   }
 
@@ -589,8 +589,8 @@ export class InventoryApi {
       );
 
       return response.data.data.vendors;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch vendors');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch vendors');
     }
   }
 
@@ -607,11 +607,11 @@ export class InventoryApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create vendor');
+      throw createApiError(error, 'Failed to create vendor');
     }
   }
 
@@ -628,8 +628,8 @@ export class InventoryApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update vendor');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update vendor');
     }
   }
 
@@ -651,8 +651,8 @@ export class InventoryApi {
       );
 
       return response.data.data.purchaseOrders;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch purchase orders');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch purchase orders');
     }
   }
 
@@ -669,11 +669,11 @@ export class InventoryApi {
       );
 
       return response.data.data.purchaseOrder;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create purchase order');
+      throw createApiError(error, 'Failed to create purchase order');
     }
   }
 
@@ -694,8 +694,8 @@ export class InventoryApi {
       );
 
       return response.data.data.purchaseOrder;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update purchase order status');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update purchase order status');
     }
   }
 }

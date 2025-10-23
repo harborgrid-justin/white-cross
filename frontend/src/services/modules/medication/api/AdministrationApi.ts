@@ -36,6 +36,7 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
 import { Prescription, AdministrationRoute } from './PrescriptionApi';
 import { Medication } from './MedicationFormularyApi';
+import { createApiError, createValidationError } from '@/services/core/errors';
 
 // Types
 export interface AdministrationSession {
@@ -262,8 +263,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to initiate administration session');
+    } catch (error) {
+      throw createApiError(error, 'Failed to initiate administration session');
     }
   }
 
@@ -285,8 +286,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to verify Five Rights');
+    } catch (error) {
+      throw createApiError(error, 'Failed to verify Five Rights');
     }
   }
 
@@ -305,11 +306,21 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.message || 'Failed to record administration');
+      throw createApiError(error, 'Failed to record administration');
     }
   }
 
@@ -337,8 +348,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to record refusal');
+    } catch (error) {
+      throw createApiError(error, 'Failed to record refusal');
     }
   }
 
@@ -366,8 +377,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to record missed dose');
+    } catch (error) {
+      throw createApiError(error, 'Failed to record missed dose');
     }
   }
 
@@ -396,8 +407,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to record held medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to record held medication');
     }
   }
 
@@ -430,8 +441,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch administration history');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch administration history');
     }
   }
 
@@ -448,8 +459,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch today\'s administrations');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch today\'s administrations');
     }
   }
 
@@ -470,8 +481,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch upcoming reminders');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch upcoming reminders');
     }
   }
 
@@ -485,8 +496,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch overdue administrations');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch overdue administrations');
     }
   }
 
@@ -508,8 +519,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to request witness signature');
+    } catch (error) {
+      throw createApiError(error, 'Failed to request witness signature');
     }
   }
 
@@ -530,8 +541,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to submit witness signature');
+    } catch (error) {
+      throw createApiError(error, 'Failed to submit witness signature');
     }
   }
 
@@ -552,8 +563,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to check allergies');
+    } catch (error) {
+      throw createApiError(error, 'Failed to check allergies');
     }
   }
 
@@ -574,8 +585,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to check interactions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to check interactions');
     }
   }
 
@@ -597,8 +608,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch student schedule');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch student schedule');
     }
   }
 
@@ -623,8 +634,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to calculate dose');
+    } catch (error) {
+      throw createApiError(error, 'Failed to calculate dose');
     }
   }
 
@@ -642,8 +653,8 @@ export class AdministrationApi {
         `${API_ENDPOINTS.MEDICATIONS.REMINDERS}/${reminderId}/status`,
         { status }
       );
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update reminder status');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update reminder status');
     }
   }
 }

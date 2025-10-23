@@ -100,8 +100,8 @@ export class VendorApi {
       const response = await apiInstance.get<ApiResponse<VendorsResponse>>(url);
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch vendors');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch vendors');
     }
   }
 
@@ -117,8 +117,8 @@ export class VendorApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch vendor');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch vendor');
     }
   }
 
@@ -136,11 +136,11 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create vendor');
+      throw createApiError(error, 'Failed to create vendor');
     }
   }
 
@@ -160,11 +160,11 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update vendor');
+      throw createApiError(error, 'Failed to update vendor');
     }
   }
 
@@ -180,8 +180,8 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete vendor');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete vendor');
     }
   }
 
@@ -197,8 +197,8 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to reactivate vendor');
+    } catch (error) {
+      throw createApiError(error, 'Failed to reactivate vendor');
     }
   }
 
@@ -216,8 +216,8 @@ export class VendorApi {
       );
 
       return response.data.data.vendors;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to search vendors');
+    } catch (error) {
+      throw createApiError(error, 'Failed to search vendors');
     }
   }
 
@@ -235,8 +235,8 @@ export class VendorApi {
       );
 
       return response.data.data.comparison;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to compare vendors');
+    } catch (error) {
+      throw createApiError(error, 'Failed to compare vendors');
     }
   }
 
@@ -256,8 +256,8 @@ export class VendorApi {
 
       // If it comes wrapped in vendors property
       return (response.data.data as any).vendors || [];
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch top vendors');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch top vendors');
     }
   }
 
@@ -271,8 +271,8 @@ export class VendorApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch statistics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch statistics');
     }
   }
 
@@ -292,11 +292,11 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update vendor rating');
+      throw createApiError(error, 'Failed to update vendor rating');
     }
   }
 
@@ -322,8 +322,8 @@ export class VendorApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to bulk update ratings');
+    } catch (error) {
+      throw createApiError(error, 'Failed to bulk update ratings');
     }
   }
 
@@ -341,8 +341,8 @@ export class VendorApi {
       );
 
       return response.data.data.vendors;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch vendors by payment terms');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch vendors by payment terms');
     }
   }
 
@@ -358,8 +358,8 @@ export class VendorApi {
       );
 
       return response.data.data.metrics;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch vendor metrics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch vendor metrics');
     }
   }
 
@@ -376,8 +376,8 @@ export class VendorApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to permanently delete vendor');
+    } catch (error) {
+      throw createApiError(error, 'Failed to permanently delete vendor');
     }
   }
 }

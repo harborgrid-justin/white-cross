@@ -61,6 +61,7 @@ import { apiInstance, API_ENDPOINTS, tokenUtils } from '../config/apiConfig';
 import { API_CONFIG } from '../../constants/config';
 import { z } from 'zod';
 import { User } from '../types';
+import { createApiError, createValidationError } from '../core/errors';
 
 export interface LoginCredentials {
   email: string;
@@ -203,11 +204,21 @@ export class AuthApi {
         refreshToken: token, // Placeholder until backend implements refresh tokens
         expiresIn: 86400 // 24 hours in seconds
       };
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || error.response?.data?.message || 'Login failed');
+      throw createApiError(error, 'Login failed');
     }
   }
 
@@ -230,11 +241,21 @@ export class AuthApi {
       tokenUtils.setRefreshToken(refreshToken);
 
       return response.data;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.message || 'Registration failed');
+      throw createApiError(error, 'Registration failed');
     }
   }
 
@@ -248,8 +269,8 @@ export class AuthApi {
       );
 
       return response.data.user;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Token verification failed');
+    } catch (error) {
+      throw createApiError(error, 'Token verification failed');
     }
   }
 
@@ -275,10 +296,10 @@ export class AuthApi {
       tokenUtils.setRefreshToken(newRefreshToken);
 
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       // Clear tokens on refresh failure
       tokenUtils.clearAll();
-      throw new Error(error.response?.data?.message || 'Token refresh failed');
+      throw createApiError(error, 'Token refresh failed');
     }
   }
 
@@ -304,8 +325,8 @@ export class AuthApi {
     try {
       const response = await apiInstance.get(API_ENDPOINTS.AUTH.PROFILE);
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to get current user');
+    } catch (error) {
+      throw createApiError(error, 'Failed to get current user');
     }
   }
 
@@ -336,8 +357,8 @@ export class AuthApi {
       );
 
       return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Password reset request failed');
+    } catch (error) {
+      throw createApiError(error, 'Password reset request failed');
     }
   }
 
@@ -352,8 +373,8 @@ export class AuthApi {
       );
 
       return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Password reset failed');
+    } catch (error) {
+      throw createApiError(error, 'Password reset failed');
     }
   }
 
@@ -416,8 +437,8 @@ export class AuthApi {
       }
 
       return response.data.data.users;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch development users');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch development users');
     }
   }
 }

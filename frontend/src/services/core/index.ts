@@ -27,12 +27,13 @@
 // CORE EXPORTS
 // ==========================================
 
-export { ApiClient, ApiClientError, apiClient } from './ApiClient';
+export { ApiClient, ApiClientError, apiClient, createCancellableRequest } from './ApiClient';
 export type {
   ApiResponse,
   PaginatedResponse,
   ApiErrorResponse,
   ApiClientConfig,
+  CancellableRequestConfig,
   RequestInterceptor,
   ResponseInterceptor,
 } from './ApiClient';
@@ -61,6 +62,24 @@ export type {
   PerformanceStats,
   MonitoringConfig,
 } from './ApiMonitoring';
+
+// ==========================================
+// ERROR HANDLING
+// ==========================================
+
+export {
+  ApiError,
+  ValidationError,
+  NetworkError,
+  AuthenticationError,
+  createApiError,
+  createValidationError,
+  createNetworkError,
+  createAuthenticationError,
+  isRetryableError,
+  getUserFriendlyMessage,
+  getErrorLogData,
+} from './errors';
 
 // ==========================================
 // CONFIGURED INSTANCE

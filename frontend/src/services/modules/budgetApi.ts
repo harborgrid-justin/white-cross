@@ -100,8 +100,8 @@ export class BudgetApi {
       );
 
       return response.data.data.categories;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch budget categories');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch budget categories');
     }
   }
 
@@ -117,8 +117,8 @@ export class BudgetApi {
       );
 
       return response.data.data.category;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch budget category');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch budget category');
     }
   }
 
@@ -135,11 +135,11 @@ export class BudgetApi {
       );
 
       return response.data.data.category;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create budget category');
+      throw createApiError(error, 'Failed to create budget category');
     }
   }
 
@@ -157,11 +157,11 @@ export class BudgetApi {
       );
 
       return response.data.data.category;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update budget category');
+      throw createApiError(error, 'Failed to update budget category');
     }
   }
 
@@ -177,8 +177,8 @@ export class BudgetApi {
       );
 
       return { success: true };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete budget category');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete budget category');
     }
   }
 
@@ -194,8 +194,8 @@ export class BudgetApi {
       );
 
       return response.data.data.summary;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch budget summary');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch budget summary');
     }
   }
 
@@ -222,8 +222,8 @@ export class BudgetApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch budget transactions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch budget transactions');
     }
   }
 
@@ -240,11 +240,11 @@ export class BudgetApi {
       );
 
       return response.data.data.transaction;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create budget transaction');
+      throw createApiError(error, 'Failed to create budget transaction');
     }
   }
 
@@ -265,11 +265,11 @@ export class BudgetApi {
       );
 
       return response.data.data.transaction;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update budget transaction');
+      throw createApiError(error, 'Failed to update budget transaction');
     }
   }
 
@@ -285,8 +285,8 @@ export class BudgetApi {
       );
 
       return { success: true };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete budget transaction');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete budget transaction');
     }
   }
 
@@ -308,8 +308,8 @@ export class BudgetApi {
       );
 
       return response.data.data.trends;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch spending trends');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch spending trends');
     }
   }
 
@@ -330,8 +330,8 @@ export class BudgetApi {
       );
 
       return response.data.data.comparison;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch category year comparison');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch category year comparison');
     }
   }
 
@@ -347,8 +347,8 @@ export class BudgetApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch over-budget categories');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch over-budget categories');
     }
   }
 
@@ -364,8 +364,8 @@ export class BudgetApi {
       );
 
       return response.data.data.recommendations;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch budget recommendations');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch budget recommendations');
     }
   }
 
@@ -381,8 +381,8 @@ export class BudgetApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to export budget data');
+    } catch (error) {
+      throw createApiError(error, 'Failed to export budget data');
     }
   }
 

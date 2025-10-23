@@ -38,6 +38,7 @@
 import { apiInstance } from '../config/apiConfig';
 import { API_ENDPOINTS } from '../../constants/api';
 import { z } from 'zod';
+import { createApiError, createValidationError } from '../core/errors';
 import {
   DashboardStats,
   DashboardRecentActivity,
@@ -149,7 +150,7 @@ export class DashboardApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = error.response?.data?.error?.message
         || error.message
         || 'Failed to fetch dashboard statistics';
@@ -210,7 +211,7 @@ export class DashboardApi {
       }
 
       return response.data.data.activities;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -270,7 +271,7 @@ export class DashboardApi {
       }
 
       return response.data.data.appointments;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -334,7 +335,7 @@ export class DashboardApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -417,7 +418,7 @@ export class DashboardApi {
       result.quickActions = result.quickActions || this.getDefaultQuickActions();
 
       return result;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(error.message || 'Failed to fetch complete dashboard data');
     }
   }
@@ -540,7 +541,7 @@ export class DashboardApi {
       }
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = error.response?.data?.error?.message
         || error.message
         || 'Failed to fetch scoped dashboard statistics';

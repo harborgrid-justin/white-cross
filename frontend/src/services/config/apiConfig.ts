@@ -32,75 +32,9 @@ export const apiInstance: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor for auth tokens
-apiInstance.interceptors.request.use(
-  (config) => {
-    // Retrieve token from SecureTokenManager (sessionStorage-based)
-    const token = secureTokenManager.getToken();
-
-    if (token) {
-      // Validate token before using it
-      if (secureTokenManager.isTokenValid()) {
-        config.headers.Authorization = `Bearer ${token}`;
-      } else {
-        // Token expired, clear it
-        console.warn('[apiConfig] Token expired, clearing tokens');
-        secureTokenManager.clearTokens();
-        // Don't add Authorization header for expired token
-      }
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for error handling
-apiInstance.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Handle token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = secureTokenManager.getRefreshToken();
-        if (refreshToken) {
-          const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
-
-          const { token, refreshToken: newRefreshToken, expiresIn } = response.data;
-
-          // Update token in SecureTokenManager
-          secureTokenManager.setToken(token, newRefreshToken || refreshToken, expiresIn);
-
-          // Retry original request
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiInstance(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh failed, clear auth and redirect to login
-        console.error('[apiConfig] Token refresh failed:', refreshError);
-        secureTokenManager.clearTokens();
-
-        // Only redirect if not already on login page
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
+// Note: Authentication interceptors are handled by ApiClient.ts
+// This basic instance is for simple configurations and backward compatibility
+// For authenticated requests, use ApiClient instance instead
 
 // Setup CSRF protection for apiInstance
 setupCsrfProtection(apiInstance);

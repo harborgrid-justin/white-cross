@@ -420,8 +420,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch integrations');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch integrations');
     }
   }
 
@@ -437,8 +437,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch integration');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch integration');
     }
   }
 
@@ -455,11 +455,11 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create integration');
+      throw createApiError(error, 'Failed to create integration');
     }
   }
 
@@ -478,11 +478,11 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update integration');
+      throw createApiError(error, 'Failed to update integration');
     }
   }
 
@@ -498,8 +498,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete integration');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete integration');
     }
   }
 
@@ -516,8 +516,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Connection test failed');
+    } catch (error) {
+      throw createApiError(error, 'Connection test failed');
     }
   }
 
@@ -534,8 +534,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Synchronization failed');
+    } catch (error) {
+      throw createApiError(error, 'Synchronization failed');
     }
   }
 
@@ -555,8 +555,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch integration logs');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch integration logs');
     }
   }
 
@@ -575,8 +575,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch logs');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch logs');
     }
   }
 
@@ -591,8 +591,8 @@ export class IntegrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch statistics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch statistics');
     }
   }
 
@@ -621,7 +621,7 @@ export class IntegrationApi {
             error: r.reason?.message || 'Unknown error'
           }))
       };
-    } catch (error: any) {
+    } catch (error) {
       throw new Error('Failed to enable integrations');
     }
   }
@@ -651,7 +651,7 @@ export class IntegrationApi {
             error: r.reason?.message || 'Unknown error'
           }))
       };
-    } catch (error: any) {
+    } catch (error) {
       throw new Error('Failed to disable integrations');
     }
   }
@@ -706,7 +706,7 @@ export class IntegrationApi {
           error: errorIntegrations.length
         }
       };
-    } catch (error: any) {
+    } catch (error) {
       throw new Error('Failed to fetch health status');
     }
   }

@@ -160,24 +160,77 @@ export class ResilientApiClient {
   }
 
   /**
+   * Generic request executor that wraps ApiClient methods with resilience patterns
+   *
+   * This method eliminates duplication by centralizing the creation of operation closures
+   * and handling both methods with and without body data uniformly.
+   *
+   * @private
+   * @template T - The response data type
+   * @param method - HTTP method name (uppercase)
+   * @param url - Request URL
+   * @param operationType - Healthcare operation type for priority/resilience configuration
+   * @param config - Axios request configuration
+   * @param data - Request body data (optional, used by POST/PUT/PATCH)
+   * @returns Promise resolving to API response with full resilience patterns applied
+   */
+  private async executeRequest<T = unknown>(
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    url: string,
+    operationType: HealthcareOperationType | undefined,
+    config: AxiosRequestConfig | undefined,
+    data?: unknown
+  ): Promise<ApiResponse<T>> {
+    // Create operation closure based on method type
+    const operation = () => {
+      switch (method) {
+        case 'GET':
+          return this.apiClient.get<T>(url, config);
+        case 'POST':
+          return this.apiClient.post<T>(url, data, config);
+        case 'PUT':
+          return this.apiClient.put<T>(url, data, config);
+        case 'PATCH':
+          return this.apiClient.patch<T>(url, data, config);
+        case 'DELETE':
+          return this.apiClient.delete<T>(url, config);
+      }
+    };
+
+    return this.executeWithResilience(
+      method,
+      url,
+      operation,
+      operationType,
+      config,
+      data
+    );
+  }
+
+  /**
    * GET request with resilience patterns
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param operationType - Healthcare operation type for priority/resilience
+   * @param config - Axios request configuration
+   * @returns Promise resolving to API response
    */
   public async get<T = unknown>(
     url: string,
     operationType?: HealthcareOperationType,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    return this.executeWithResilience(
-      'GET',
-      url,
-      () => this.apiClient.get<T>(url, config),
-      operationType,
-      config
-    );
+    return this.executeRequest<T>('GET', url, operationType, config);
   }
 
   /**
    * POST request with resilience patterns
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param data - Request body data
+   * @param operationType - Healthcare operation type for priority/resilience
+   * @param config - Axios request configuration
+   * @returns Promise resolving to API response
    */
   public async post<T = unknown>(
     url: string,
@@ -185,18 +238,17 @@ export class ResilientApiClient {
     operationType?: HealthcareOperationType,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    return this.executeWithResilience(
-      'POST',
-      url,
-      () => this.apiClient.post<T>(url, data, config),
-      operationType,
-      config,
-      data
-    );
+    return this.executeRequest<T>('POST', url, operationType, config, data);
   }
 
   /**
    * PUT request with resilience patterns
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param data - Request body data
+   * @param operationType - Healthcare operation type for priority/resilience
+   * @param config - Axios request configuration
+   * @returns Promise resolving to API response
    */
   public async put<T = unknown>(
     url: string,
@@ -204,18 +256,17 @@ export class ResilientApiClient {
     operationType?: HealthcareOperationType,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    return this.executeWithResilience(
-      'PUT',
-      url,
-      () => this.apiClient.put<T>(url, data, config),
-      operationType,
-      config,
-      data
-    );
+    return this.executeRequest<T>('PUT', url, operationType, config, data);
   }
 
   /**
    * PATCH request with resilience patterns
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param data - Request body data
+   * @param operationType - Healthcare operation type for priority/resilience
+   * @param config - Axios request configuration
+   * @returns Promise resolving to API response
    */
   public async patch<T = unknown>(
     url: string,
@@ -223,31 +274,23 @@ export class ResilientApiClient {
     operationType?: HealthcareOperationType,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    return this.executeWithResilience(
-      'PATCH',
-      url,
-      () => this.apiClient.patch<T>(url, data, config),
-      operationType,
-      config,
-      data
-    );
+    return this.executeRequest<T>('PATCH', url, operationType, config, data);
   }
 
   /**
    * DELETE request with resilience patterns
+   * @template T - The response data type
+   * @param url - Request URL
+   * @param operationType - Healthcare operation type for priority/resilience
+   * @param config - Axios request configuration
+   * @returns Promise resolving to API response
    */
   public async delete<T = unknown>(
     url: string,
     operationType?: HealthcareOperationType,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    return this.executeWithResilience(
-      'DELETE',
-      url,
-      () => this.apiClient.delete<T>(url, config),
-      operationType,
-      config
-    );
+    return this.executeRequest<T>('DELETE', url, operationType, config);
   }
 
   /**

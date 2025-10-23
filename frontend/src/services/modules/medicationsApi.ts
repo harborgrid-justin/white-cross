@@ -432,7 +432,7 @@ export class MedicationsApi {
       });
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       // Audit log for failed attempt
       await auditService.log({
         action: AuditAction.VIEW_MEDICATIONS,
@@ -440,7 +440,7 @@ export class MedicationsApi {
         status: AuditStatus.FAILURE,
         context: { error: error.message },
       });
-      throw new Error(error.response?.data?.message || 'Failed to fetch medications');
+      throw createApiError(error, 'Failed to fetch medications');
     }
   }
 
@@ -463,7 +463,7 @@ export class MedicationsApi {
       });
 
       return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
       await auditService.log({
         action: AuditAction.VIEW_MEDICATION,
         resourceType: AuditResourceType.MEDICATION,
@@ -471,7 +471,7 @@ export class MedicationsApi {
         status: AuditStatus.FAILURE,
         context: { error: error.message },
       });
-      throw new Error(error.response?.data?.message || 'Failed to fetch medication');
+      throw createApiError(error, 'Failed to fetch medication');
     }
   }
 
@@ -503,7 +503,7 @@ export class MedicationsApi {
       });
 
       return medication;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -513,7 +513,7 @@ export class MedicationsApi {
         status: AuditStatus.FAILURE,
         context: { error: error.message },
       });
-      throw new Error(error.response?.data?.message || 'Failed to create medication');
+      throw createApiError(error, 'Failed to create medication');
     }
   }
 
@@ -530,8 +530,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update medication');
     }
   }
 
@@ -547,8 +547,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to delete medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete medication');
     }
   }
 
@@ -565,11 +565,11 @@ export class MedicationsApi {
       );
 
       return response.data.data.studentMedication;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.message || 'Failed to assign medication');
+      throw createApiError(error, 'Failed to assign medication');
     }
   }
 
@@ -605,7 +605,7 @@ export class MedicationsApi {
       });
 
       return medicationLog;
-    } catch (error: any) {
+    } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
       }
@@ -620,7 +620,7 @@ export class MedicationsApi {
           studentMedicationId: logData.studentMedicationId,
         },
       });
-      throw new Error(error.response?.data?.message || 'Failed to log administration');
+      throw createApiError(error, 'Failed to log administration');
     }
   }
 
@@ -636,8 +636,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch administration logs');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch administration logs');
     }
   }
 
@@ -651,8 +651,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch inventory');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch inventory');
     }
   }
 
@@ -667,8 +667,8 @@ export class MedicationsApi {
       );
 
       return response.data.data.inventory;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to add to inventory');
+    } catch (error) {
+      throw createApiError(error, 'Failed to add to inventory');
     }
   }
 
@@ -685,8 +685,8 @@ export class MedicationsApi {
       );
 
       return response.data.data.inventory;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update inventory');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update inventory');
     }
   }
 
@@ -705,8 +705,8 @@ export class MedicationsApi {
       );
 
       return response.data.data.schedule;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch schedule');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch schedule');
     }
   }
 
@@ -722,8 +722,8 @@ export class MedicationsApi {
       );
 
       return response.data.data.reminders;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch reminders');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch reminders');
     }
   }
 
@@ -756,7 +756,7 @@ export class MedicationsApi {
       });
 
       return report;
-    } catch (error: any) {
+    } catch (error) {
       // CRITICAL: Log failed adverse reaction report
       await auditService.log({
         action: AuditAction.REPORT_ADVERSE_REACTION,
@@ -769,7 +769,7 @@ export class MedicationsApi {
           studentMedicationId: reactionData.studentMedicationId,
         },
       });
-      throw new Error(error.response?.data?.message || 'Failed to report adverse reaction');
+      throw createApiError(error, 'Failed to report adverse reaction');
     }
   }
 
@@ -787,8 +787,8 @@ export class MedicationsApi {
       );
 
       return response.data.data.reactions;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch adverse reactions');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch adverse reactions');
     }
   }
 
@@ -805,8 +805,8 @@ export class MedicationsApi {
       );
 
       return response.data.data.studentMedication;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to deactivate medication');
+    } catch (error) {
+      throw createApiError(error, 'Failed to deactivate medication');
     }
   }
 
@@ -820,8 +820,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch statistics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch statistics');
     }
   }
 
@@ -835,8 +835,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch alerts');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch alerts');
     }
   }
 
@@ -850,8 +850,8 @@ export class MedicationsApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch form options');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch form options');
     }
   }
 }

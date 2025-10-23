@@ -14,6 +14,7 @@ import { apiInstance } from '../config/api.config';
 import { API_ENDPOINTS } from '../../constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
+import { createApiError, createValidationError } from '../core/errors';
 import {
   District,
   School,
@@ -307,8 +308,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch system settings');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch system settings');
     }
   }
 
@@ -323,8 +324,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update system settings');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update system settings');
     }
   }
 
@@ -353,8 +354,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch users');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch users');
     }
   }
 
@@ -371,11 +372,21 @@ export class AdministrationApi {
       );
 
       return response.data.data.user;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create user');
+      throw createApiError(error, 'Failed to create user');
     }
   }
 
@@ -394,11 +405,21 @@ export class AdministrationApi {
       );
 
       return response.data.data.user;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to update user');
+      throw createApiError(error, 'Failed to update user');
     }
   }
 
@@ -414,8 +435,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete user');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete user');
     }
   }
 
@@ -431,8 +452,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch districts');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch districts');
     }
   }
 
@@ -448,8 +469,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.district;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch district');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch district');
     }
   }
 
@@ -466,11 +487,21 @@ export class AdministrationApi {
       );
 
       return response.data.data.district;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create district');
+      throw createApiError(error, 'Failed to create district');
     }
   }
 
@@ -487,8 +518,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.district;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update district');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update district');
     }
   }
 
@@ -504,8 +535,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete district');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete district');
     }
   }
 
@@ -526,8 +557,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch schools');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch schools');
     }
   }
 
@@ -543,8 +574,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.school;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch school');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch school');
     }
   }
 
@@ -561,11 +592,21 @@ export class AdministrationApi {
       );
 
       return response.data.data.school;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create school');
+      throw createApiError(error, 'Failed to create school');
     }
   }
 
@@ -582,8 +623,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.school;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update school');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update school');
     }
   }
 
@@ -599,8 +640,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete school');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete school');
     }
   }
 
@@ -616,8 +657,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch system health');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch system health');
     }
   }
 
@@ -633,8 +674,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch backup logs');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch backup logs');
     }
   }
 
@@ -648,8 +689,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.backup;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to create backup');
+    } catch (error) {
+      throw createApiError(error, 'Failed to create backup');
     }
   }
 
@@ -665,8 +706,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch licenses');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch licenses');
     }
   }
 
@@ -682,8 +723,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.license;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch license');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch license');
     }
   }
 
@@ -700,11 +741,21 @@ export class AdministrationApi {
       );
 
       return response.data.data.license;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create license');
+      throw createApiError(error, 'Failed to create license');
     }
   }
 
@@ -721,8 +772,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.license;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update license');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update license');
     }
   }
 
@@ -738,8 +789,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.license;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to deactivate license');
+    } catch (error) {
+      throw createApiError(error, 'Failed to deactivate license');
     }
   }
 
@@ -758,8 +809,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.configurations;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch configurations');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch configurations');
     }
   }
 
@@ -775,8 +826,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.config;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch configuration');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch configuration');
     }
   }
 
@@ -791,8 +842,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.config;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to set configuration');
+    } catch (error) {
+      throw createApiError(error, 'Failed to set configuration');
     }
   }
 
@@ -808,8 +859,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete configuration');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete configuration');
     }
   }
 
@@ -831,8 +882,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.metrics;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch metrics');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch metrics');
     }
   }
 
@@ -847,8 +898,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.metric;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to record metric');
+    } catch (error) {
+      throw createApiError(error, 'Failed to record metric');
     }
   }
 
@@ -867,8 +918,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.modules;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch training modules');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch training modules');
     }
   }
 
@@ -884,8 +935,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.module;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch training module');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch training module');
     }
   }
 
@@ -902,11 +953,21 @@ export class AdministrationApi {
       );
 
       return response.data.data.module;
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.errors[0]?.message || 'Validation error',
+          error.errors[0]?.path.join('.'),
+          error.errors.reduce((acc, err) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
-      throw new Error(error.response?.data?.error?.message || 'Failed to create training module');
+      throw createApiError(error, 'Failed to create training module');
     }
   }
 
@@ -923,8 +984,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.module;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to update training module');
+    } catch (error) {
+      throw createApiError(error, 'Failed to update training module');
     }
   }
 
@@ -940,8 +1001,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to delete training module');
+    } catch (error) {
+      throw createApiError(error, 'Failed to delete training module');
     }
   }
 
@@ -961,8 +1022,8 @@ export class AdministrationApi {
       );
 
       return response.data.data.completion;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to record training completion');
+    } catch (error) {
+      throw createApiError(error, 'Failed to record training completion');
     }
   }
 
@@ -978,8 +1039,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch user training progress');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch user training progress');
     }
   }
 
@@ -1014,8 +1075,8 @@ export class AdministrationApi {
       );
 
       return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Failed to fetch audit logs');
+    } catch (error) {
+      throw createApiError(error, 'Failed to fetch audit logs');
     }
   }
 }
