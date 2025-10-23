@@ -1,8 +1,56 @@
 /**
- * Core Domain Hooks
+ * @fileoverview Core domain hooks for authentication and user management
+ * @module stores/domains/core/hooks
+ * @category Store
  * 
- * Custom hooks for the core domain that provide convenient access to
- * authentication, user management, and settings functionality.
+ * Custom React hooks providing convenient access to core domain functionality
+ * including authentication, user management, and settings with type-safe Redux integration.
+ * 
+ * Hook Categories:
+ * - **Authentication**: Login, logout, registration, token refresh
+ * - **User Info**: Current user, role, permissions, display name
+ * - **Authorization**: Permission checks, role-based access
+ * - **Settings**: User preferences and system settings
+ * 
+ * Design Pattern:
+ * - Hooks encapsulate Redux dispatch and selector logic
+ * - useCallback for action creators (prevent re-renders)
+ * - Memoized selectors for optimal performance
+ * - Type-safe with full TypeScript support
+ * 
+ * @example
+ * ```typescript
+ * // Authentication hook
+ * function LoginPage() {
+ *   const { login, isLoading, error, isAuthenticated } = useAuth();
+ *   
+ *   const handleLogin = async () => {
+ *     await login({ email, password, rememberMe: true });
+ *   };
+ *   
+ *   if (isAuthenticated) return <Redirect to="/dashboard" />;
+ *   return <LoginForm onSubmit={handleLogin} loading={isLoading} />;
+ * }
+ * 
+ * // User info hook
+ * function UserProfile() {
+ *   const user = useCurrentUser();
+ *   return <div>Welcome, {user?.firstName}!</div>;
+ * }
+ * 
+ * // Role check hook
+ * function AdminPanel() {
+ *   const isAdmin = useIsAdmin();
+ *   if (!isAdmin) return <AccessDenied />;
+ *   return <AdminDashboard />;
+ * }
+ * 
+ * // Permission check hook
+ * function MedicationAdmin() {
+ *   const canAdminister = useHasPermission('administer_medication');
+ *   return canAdminister ? <MedicationForm /> : <AccessDenied />;
+ * }
+ * ```
  */
 
 import { useCallback } from 'react';
@@ -36,6 +84,53 @@ import {
 
 /**
  * Hook for authentication state and actions
+ * 
+ * @hook
+ * @returns {Object} Authentication state and action creators
+ * @returns {User | null} returns.user - Currently authenticated user
+ * @returns {boolean} returns.isAuthenticated - Whether user is logged in
+ * @returns {boolean} returns.isLoading - Loading state for auth operations
+ * @returns {string | null} returns.error - Error message if auth failed
+ * @returns {AuthStatus} returns.status - Current auth status (idle, loading, succeeded, failed)
+ * @returns {Function} returns.login - Login action creator
+ * @returns {Function} returns.register - Registration action creator
+ * @returns {Function} returns.logout - Logout action creator
+ * @returns {Function} returns.refresh - Token refresh action creator
+ * 
+ * @description
+ * Provides complete authentication functionality including login, registration,
+ * logout, and token refresh with loading states and error handling.
+ * 
+ * Action creators are memoized with useCallback to prevent unnecessary re-renders.
+ * All actions return promises that can be awaited for error handling.
+ * 
+ * @example
+ * ```typescript
+ * function LoginPage() {
+ *   const { login, register, isLoading, error, isAuthenticated } = useAuth();
+ *   
+ *   const handleLogin = async (credentials) => {
+ *     try {
+ *       await login(credentials);
+ *       // Redirect on success
+ *       navigate('/dashboard');
+ *     } catch (err) {
+ *       // Error is already in Redux state
+ *       console.error('Login failed:', error);
+ *     }
+ *   };
+ *   
+ *   if (isAuthenticated) return <Navigate to="/dashboard" />;
+ *   
+ *   return (
+ *     <LoginForm
+ *       onSubmit={handleLogin}
+ *       loading={isLoading}
+ *       error={error}
+ *     />
+ *   );
+ * }
+ * ```
  */
 export const useAuth = () => {
   const dispatch = useAppDispatch();
