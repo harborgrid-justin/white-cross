@@ -44,6 +44,7 @@ import { v1Routes, getV1RouteStats } from './routes/v1';
 // Import middleware and plugins
 import { configureAuth, configureSecurity, errorHandler } from './config/server';
 import { swaggerOptions } from './config/swagger';
+import { registerGraphQL } from './api/graphql/server';
 
 dotenv.config();
 
@@ -115,6 +116,9 @@ const init = async () => {
         }
       }
     });
+
+    // Register GraphQL endpoint
+    await registerGraphQL(server);
 
     // Register all v1 API routes
     server.route(v1Routes);
