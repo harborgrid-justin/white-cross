@@ -1,17 +1,34 @@
 /**
- * WF-COMP-353 | toast.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react-hot-toast
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, named exports | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Toast notification utility functions for user feedback
+ * @module toast
+ * @category Utils
+ * 
+ * This module provides wrapper functions around react-hot-toast for
+ * consistent toast notifications across the application with test support.
  */
 
 import toast from 'react-hot-toast'
 
+/**
+ * Displays a success toast notification with a green checkmark icon
+ * 
+ * Automatically adds data-testid attribute for Cypress/Vitest testing.
+ * The toast appears in the top-right corner (configured in App.tsx)
+ * and automatically dismisses after 3 seconds.
+ * 
+ * @param {string} message - Success message to display to the user
+ * @returns {string} Toast ID that can be used to dismiss the toast programmatically
+ * 
+ * @example
+ * ```typescript
+ * // Simple success message
+ * showSuccessToast('Student record updated successfully');
+ * 
+ * // Store toast ID for manual dismissal
+ * const toastId = showSuccessToast('Processing...');
+ * // Later: toast.dismiss(toastId);
+ * ```
+ */
 export const showSuccessToast = (message: string) => {
   const toastId = toast.success(message)
   // Add data-testid after the toast is created
@@ -24,6 +41,30 @@ export const showSuccessToast = (message: string) => {
   return toastId
 }
 
+/**
+ * Displays an error toast notification with a red X icon
+ * 
+ * Automatically adds data-testid attribute for Cypress/Vitest testing.
+ * The toast appears in the top-right corner (configured in App.tsx)
+ * and automatically dismisses after 5 seconds (longer than success).
+ * 
+ * @param {string} message - Error message to display to the user
+ * @returns {string} Toast ID that can be used to dismiss the toast programmatically
+ * 
+ * @example
+ * ```typescript
+ * // Simple error message
+ * showErrorToast('Failed to load student data');
+ * 
+ * // Error from API with fallback
+ * try {
+ *   await api.updateStudent(data);
+ *   showSuccessToast('Student updated');
+ * } catch (error) {
+ *   showErrorToast(error.message || 'An error occurred');
+ * }
+ * ```
+ */
 export const showErrorToast = (message: string) => {
   const toastId = toast.error(message)
   // Add data-testid after the toast is created
@@ -36,4 +77,32 @@ export const showErrorToast = (message: string) => {
   return toastId
 }
 
+/**
+ * Re-export of the react-hot-toast library for advanced usage
+ * 
+ * Use this for:
+ * - Custom toast configurations
+ * - Programmatic toast dismissal: toast.dismiss(toastId)
+ * - Loading toasts: toast.loading()
+ * - Promise-based toasts: toast.promise()
+ * 
+ * @see {@link https://react-hot-toast.com/docs|React Hot Toast Documentation}
+ * 
+ * @example
+ * ```typescript
+ * // Loading toast
+ * const loadingId = toast.loading('Loading...');
+ * // Later: toast.dismiss(loadingId);
+ * 
+ * // Promise toast
+ * toast.promise(
+ *   fetchData(),
+ *   {
+ *     loading: 'Loading...',
+ *     success: 'Data loaded!',
+ *     error: 'Failed to load'
+ *   }
+ * );
+ * ```
+ */
 export { toast }

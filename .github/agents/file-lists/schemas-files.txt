@@ -1,0 +1,2 @@
+frontend/src/schemas/complianceSchemas.ts
+frontend/src/schemas/documentSchemas.ts

@@ -1,12 +1,24 @@
 /**
- * Cache Persistence Layer
- *
- * IndexedDB-based persistence for non-PHI data with:
+ * @fileoverview Cache Persistence Layer for IndexedDB-based non-PHI data storage
+ * @module services/cache/persistence
+ * @category Services
+ * 
+ * Provides IndexedDB-based persistence for non-PHI data with selective
+ * persistence, automatic cleanup, and HIPAA-compliant data handling.
+ * 
+ * Key Features:
  * - Selective persistence (only non-PHI reference data)
- * - Automatic cleanup of stale data
- * - 24-hour max age for persisted cache
- * - Version management
- * - Error handling and fallback
+ * - Automatic cleanup of stale data (24-hour max age)
+ * - Version management for schema migrations
+ * - Error handling with fallback to memory-only caching
+ * - HIPAA compliance - never persists PHI data
+ * 
+ * @example
+ * ```typescript
+ * const manager = getPersistenceManager();
+ * await manager.save('students', 'list', data, 3600000);
+ * const cached = await manager.get('students', 'list');
+ * ```
  */
 
 import type { PersistedCacheEntry } from './types';
