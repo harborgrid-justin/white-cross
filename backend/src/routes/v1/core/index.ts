@@ -7,6 +7,7 @@ import { ServerRoute } from '@hapi/hapi';
 import { authRoutes } from './routes/auth.routes';
 import { usersRoutes } from './routes/users.routes';
 import { accessControlRoutes } from './routes/accessControl.routes';
+import { contactRoutes } from './contacts';
 
 /**
  * All core module routes
@@ -14,5 +15,6 @@ import { accessControlRoutes } from './routes/accessControl.routes';
 export const coreRoutes: ServerRoute[] = [
   ...authRoutes,
   ...usersRoutes,
-  ...accessControlRoutes
+  ...accessControlRoutes,
+  ...contactRoutes
 ];
