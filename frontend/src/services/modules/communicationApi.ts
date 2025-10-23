@@ -1,13 +1,68 @@
 /**
- * WF-COMP-273 | communicationApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Communication API service for messaging and notifications
+ * @module services/modules/communicationApi
+ * @category Services
+ * 
+ * Comprehensive communication API for message templates, direct messaging,
+ * broadcast messages, emergency alerts, and multi-language support.
+ * 
+ * Key Features:
+ * - **Message Templates**: Reusable templates for common communications
+ * - **Direct Messaging**: One-to-one communication with parents/staff
+ * - **Broadcast Messages**: Send to multiple recipients simultaneously
+ * - **Emergency Alerts**: Priority messaging for urgent situations
+ * - **Multi-language**: Translation support for diverse communities
+ * - **Scheduled Messages**: Send messages at specified times
+ * - **Delivery Tracking**: Monitor message delivery status
+ * - **Statistics**: Communication analytics and reporting
+ * 
+ * Message Types:
+ * - EMAIL: Email notifications
+ * - SMS: Text message alerts
+ * - PUSH: Push notifications (mobile app)
+ * - IN_APP: In-application messages
+ * - MULTI: Multiple channels simultaneously
+ * 
+ * Healthcare Context:
+ * - Appointment reminders
+ * - Medication administration notifications
+ * - Health alerts and updates
+ * - Parent-nurse communication
+ * - Emergency contact notifications
+ * - HIPAA-compliant messaging (no PHI in SMS)
+ * 
+ * @example
+ * ```typescript
+ * // Send direct message
+ * const response = await communicationApi.sendMessage({
+ *   recipientId: 'parent-123',
+ *   subject: 'Appointment Reminder',
+ *   body: 'Your child has an appointment tomorrow at 10 AM',
+ *   type: 'EMAIL',
+ *   priority: 'NORMAL'
+ * });
+ * 
+ * // Send broadcast (multiple recipients)
+ * await communicationApi.sendBroadcast({
+ *   recipientIds: ['parent-1', 'parent-2', 'parent-3'],
+ *   templateId: 'template-123',
+ *   variables: { date: '2025-01-15', event: 'Health Fair' },
+ *   type: 'EMAIL'
+ * });
+ * 
+ * // Send emergency alert
+ * await communicationApi.sendEmergencyAlert({
+ *   recipientIds: ['all-parents'],
+ *   subject: 'School Closure',
+ *   body: 'School is closed due to weather',
+ *   type: 'MULTI', // Email + SMS + Push
+ *   priority: 'URGENT'
+ * });
+ * 
+ * // Get message delivery status
+ * const status = await communicationApi.getMessageStatus('msg-123');
+ * console.log(`Delivered: ${status.deliveredCount}/${status.totalRecipients}`);
+ * ```
  */
 
 import type { ICommunicationApi } from '../types'
@@ -36,7 +91,40 @@ import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
  * Communication API implementation
- * Handles templates, messaging, broadcasts, and emergency alerts
+ * 
+ * @class
+ * @implements {ICommunicationApi}
+ * @classdesc Handles message templates, direct messaging, broadcast messages,
+ * emergency alerts, and communication statistics for the healthcare platform.
+ * 
+ * API Endpoints:
+ * - GET /communication/templates - List message templates
+ * - POST /communication/templates - Create template
+ * - POST /communication/messages - Send direct message
+ * - POST /communication/broadcast - Send broadcast message
+ * - POST /communication/emergency - Send emergency alert
+ * - GET /communication/messages/:id/status - Get delivery status
+ * - GET /communication/statistics - Get communication stats
+ * 
+ * PHI Considerations:
+ * - No PHI allowed in SMS messages (HIPAA compliance)
+ * - Email and in-app messages can contain limited PHI
+ * - Parent contact info is PHI - handle securely
+ * - Audit logging required for all communications
+ * 
+ * @example
+ * ```typescript
+ * const communicationApi = new CommunicationApiImpl();
+ * 
+ * // Use template for appointment reminder
+ * const { template } = await communicationApi.getTemplateById('appt-reminder');
+ * await communicationApi.sendMessage({
+ *   recipientId: 'parent-123',
+ *   templateId: template.id,
+ *   variables: { date: '2025-01-15', time: '10:00 AM' },
+ *   type: 'EMAIL'
+ * });
+ * ```
  */
 class CommunicationApiImpl implements ICommunicationApi {
   // =====================
