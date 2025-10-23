@@ -148,3 +148,6 @@ frontend/cypress/downloads/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Generated screenshots
+screenshots/

@@ -54,7 +54,9 @@
     "postinstall": "echo '\n✅ Dependencies installed! Run npm run dev to start development.\n'",
     "// Utilities": "========================================",
     "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
-    "check:all": "npm run lint && npm run type-check && npm run test"
+    "check:all": "npm run lint && npm run type-check && npm run test",
+    "screenshots": "npx tsx scripts/generate-screenshots.ts",
+    "screenshots:help": "echo 'Generate screenshots of all user-accessible pages. Requires backend and frontend to be running. Run: npm run dev (in another terminal) then npm run screenshots'"
   },
   "keywords": [
     "healthcare",
@@ -70,10 +72,14 @@
     "@playwright/test": "^1.56.1",
     "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",
+    "@types/node": "^24.9.1",
     "concurrently": "9.2.1",
     "cross-env": "10.1.0",
     "prettier": "^3.6.2",
     "rimraf": "6.0.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
     "wait-on": "9.0.1"
   },
   "engines": {
