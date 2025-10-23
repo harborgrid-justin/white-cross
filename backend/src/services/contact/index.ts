@@ -14,7 +14,7 @@
 
 import { Op, WhereOptions } from 'sequelize';
 import { Contact, ContactType, ContactAttributes } from '../../database/models/core/Contact';
-import { ErrorFactory } from '../../shared/errors';
+import { ErrorFactory, ErrorCode, AppError } from '../../shared/errors';
 
 /**
  * Contact filter options
@@ -112,16 +112,16 @@ export class ContactService {
   static async createContact(data: Partial<ContactAttributes>, createdBy?: string) {
     // Validate required fields
     if (!data.firstName || !data.lastName) {
-      throw ErrorFactory.invalidInput('First name and last name are required');
+      throw ErrorFactory.validationFailed('firstName/lastName', 'First name and last name are required');
     }
 
     if (!data.type) {
-      throw ErrorFactory.invalidInput('Contact type is required');
+      throw ErrorFactory.missingField('type');
     }
 
     // Validate contact type
     if (!Object.values(ContactType).includes(data.type)) {
-      throw ErrorFactory.invalidInput(`Invalid contact type: ${data.type}`);
+      throw ErrorFactory.validationFailed('type', `Invalid contact type: ${data.type}`);
     }
 
     // Check for duplicate email if provided
@@ -135,10 +135,11 @@ export class ContactService {
       });
 
       if (existingContact) {
-        throw ErrorFactory.duplicateEntry(
-          'Contact',
-          'email',
-          `A ${data.type} contact with this email already exists`
+        throw new AppError(
+          ErrorCode.ErrContactDuplicate,
+          `A ${data.type} contact with this email already exists`,
+          undefined,
+          { email: data.email, type: data.type }
         );
       }
     }
@@ -164,7 +165,7 @@ export class ContactService {
 
     // Validate contact type if being updated
     if (data.type && !Object.values(ContactType).includes(data.type)) {
-      throw ErrorFactory.invalidInput(`Invalid contact type: ${data.type}`);
+      throw ErrorFactory.validationFailed('type', `Invalid contact type: ${data.type}`);
     }
 
     // Check for duplicate email if being updated
@@ -179,10 +180,11 @@ export class ContactService {
       });
 
       if (existingContact) {
-        throw ErrorFactory.duplicateEntry(
-          'Contact',
-          'email',
-          'Another contact with this email already exists'
+        throw new AppError(
+          ErrorCode.ErrContactDuplicate,
+          'Another contact with this email already exists',
+          undefined,
+          { email: data.email, contactId: id }
         );
       }
     }

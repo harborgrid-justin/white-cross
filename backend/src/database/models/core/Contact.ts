@@ -200,6 +200,16 @@ Contact.init(
       primaryKey: true,
       allowNull: false,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
     firstName: {
       type: DataTypes.STRING(100),
       allowNull: false,

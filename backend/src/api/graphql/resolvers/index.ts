@@ -203,16 +203,20 @@ export const resolvers = {
         if (filters.search) studentFilters.search = filters.search;
       }
 
-      const result = await StudentService.getStudents(page, limit, studentFilters);
+      const result: any = await StudentService.getStudents(page, limit, studentFilters);
       
       // Ensure result has the expected structure
+      // Handle different response formats from StudentService
+      const students = result.students || [];
+      const paginationData: any = result.pagination || {};
+      
       return {
-        students: result.students || result.data || [],
+        students,
         pagination: {
-          page: result.page || page || 1,
-          limit: result.limit || limit || 20,
-          total: result.total || 0,
-          totalPages: result.totalPages || 0,
+          page: paginationData.page || page || 1,
+          limit: paginationData.limit || limit || 20,
+          total: paginationData.total || 0,
+          totalPages: paginationData.pages || paginationData.totalPages || 0,
         },
       };
     },
