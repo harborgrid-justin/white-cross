@@ -1,26 +1,69 @@
 /**
- * WF-COMP-307 | reduxStore.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ./slices/authSlice, ./slices/incidentReportsSlice, ../middleware/stateSyncMiddleware | Dependencies: @reduxjs/toolkit, ./slices/authSlice, ./slices/incidentReportsSlice
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants, functions, types | Key Features: component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Redux Store Configuration
- *
- * Enterprise-grade Redux store with:
- * - State synchronization across tabs (BroadcastChannel)
- * - Persistent state (localStorage/sessionStorage)
- * - HIPAA-compliant data exclusion
- * - State hydration on app load
- * - Type-safe configuration
- *
- * @module reduxStore
+ * @fileoverview Redux store configuration with domain-driven architecture
+ * @module stores/reduxStore
+ * @category Store
+ * 
+ * Enterprise-grade Redux store configuration following Domain-Driven Design (DDD)
+ * principles with comprehensive state management features.
+ * 
+ * Architecture:
+ * - **Domain-based organization**: State organized by business domains
+ * - **Type-safe**: Full TypeScript integration with Redux Toolkit
+ * - **Middleware stack**: State sync, monitoring, audit logging
+ * - **Performance**: Selective persistence and memoized selectors
+ * - **HIPAA compliance**: PHI exclusion from persistence
+ * 
+ * State Domains:
+ * - **Core**: Auth, users, settings, dashboard
+ * - **Healthcare**: Health records, medications, appointments
+ * - **Student Management**: Students, emergency contacts
+ * - **Communication**: Messages, notifications, templates
+ * - **Administration**: Districts, schools, inventory, reports
+ * - **Enterprise**: Advanced features, cross-domain orchestration
+ * 
+ * Key Features:
+ * - Cross-tab state synchronization via BroadcastChannel API
+ * - Selective persistence (localStorage for non-PHI, sessionStorage for UI state)
+ * - Automatic state hydration on app load
+ * - State migration support for schema changes
+ * - Conflict resolution for concurrent updates
+ * - Performance monitoring and metrics
+ * - DevTools integration in development
+ * 
+ * HIPAA Compliance:
+ * - PHI fields excluded from localStorage
+ * - Audit logging for sensitive state access
+ * - Automatic data sanitization
+ * - Session-only storage for sensitive data
+ * 
+ * State Persistence Strategy:
+ * - **localStorage**: Settings, UI preferences, filters (non-PHI only)
+ * - **sessionStorage**: None (state reconstructed on load)
+ * - **Memory only**: All PHI data (students, health records, medications)
+ * - **Cross-tab sync**: Real-time via BroadcastChannel (memory only)
+ * 
+ * @example
+ * ```typescript
+ * // Access store in components
+ * import { useAppSelector, useAppDispatch } from '@/stores';
+ * 
+ * function MyComponent() {
+ *   const user = useAppSelector(state => state.auth.user);
+ *   const dispatch = useAppDispatch();
+ *   
+ *   // Dispatch actions
+ *   dispatch(loginUser(credentials));
+ * }
+ * 
+ * // Access store outside React
+ * import { store } from '@/stores';
+ * 
+ * const currentState = store.getState();
+ * store.dispatch(someAction());
+ * ```
+ * 
+ * @see {@link https://redux-toolkit.js.org/|Redux Toolkit Documentation}
+ * @see {@link https://redux.js.org/tutorials/fundamentals/part-6-async-logic|Redux Async Logic}
  */
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';

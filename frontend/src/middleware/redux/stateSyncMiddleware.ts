@@ -1,33 +1,70 @@
 /**
- * WF-COMP-153 | stateSyncMiddleware.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: @reduxjs/toolkit, pako
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants, functions, interfaces, types | Key Features: arrow component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * State Synchronization Middleware
- *
- * Production-grade Redux middleware for synchronizing application state across
- * multiple storage mechanisms (localStorage, sessionStorage, URL params) and
- * browser tabs using BroadcastChannel API.
- *
- * Features:
- * - Multi-storage sync (localStorage, sessionStorage, URL)
- * - Cross-tab synchronization via BroadcastChannel
- * - Multiple sync strategies (immediate, debounced, throttled, scheduled)
- * - Custom serializers for complex types
- * - State versioning and migration
- * - Conflict resolution strategies
- * - HIPAA-compliant data exclusion
- *
- * @module stateSyncMiddleware
- * @see https://redux.js.org/understanding/history-and-design/middleware
+ * @fileoverview Production-grade Redux state synchronization middleware
+ * @module middleware/redux/stateSyncMiddleware
+ * @category Middleware
+ * 
+ * Redux middleware for synchronizing application state across multiple storage
+ * mechanisms and browser tabs with HIPAA-compliant data handling.
+ * 
+ * Key Features:
+ * - **Multi-storage sync**: localStorage, sessionStorage, URL parameters
+ * - **Cross-tab sync**: BroadcastChannel API for real-time tab synchronization
+ * - **Sync strategies**: immediate, debounced, throttled, scheduled, manual
+ * - **Custom serializers**: Handle complex types (Date, Map, Set)
+ * - **State versioning**: Migration support for schema changes
+ * - **Conflict resolution**: Multiple strategies for concurrent updates
+ * - **HIPAA compliance**: Automatic PHI exclusion from persistence
+ * - **Selective sync**: Fine-grained control over what gets synchronized
+ * - **Compression**: Optional compression for large state objects
+ * - **Error resilience**: Graceful degradation on storage errors
+ * 
+ * Storage Behavior:
+ * - localStorage: Persistent across sessions (non-PHI only)
+ * - sessionStorage: Cleared on tab close (can contain filtered PHI)
+ * - URL params: For shareable state (no PHI ever)
+ * - BroadcastChannel: In-memory cross-tab sync (no persistence)
+ * 
+ * HIPAA Compliance:
+ * - Never persists PHI to localStorage
+ * - PHI only in sessionStorage with explicit opt-in
+ * - Automatic PHI field detection and exclusion
+ * - Audit logging for state access
+ * 
+ * @example
+ * ```typescript
+ * // Configure middleware
+ * const syncMiddleware = createStateSyncMiddleware({
+ *   // Persist to localStorage
+ *   storage: 'localStorage',
+ *   
+ *   // Debounce writes for performance
+ *   strategy: SyncStrategy.DEBOUNCED,
+ *   debounceMs: 1000,
+ *   
+ *   // Sync specific slices
+ *   paths: ['settings', 'ui', 'filters'],
+ *   
+ *   // Exclude PHI
+ *   excludePaths: ['students.entities', 'healthRecords'],
+ *   
+ *   // Cross-tab sync
+ *   enableCrossTab: true,
+ *   channelName: 'app-state-sync',
+ *   
+ *   // Conflict resolution
+ *   conflictStrategy: ConflictStrategy.LAST_WRITE_WINS
+ * });
+ * 
+ * // Add to store
+ * const store = configureStore({
+ *   reducer: rootReducer,
+ *   middleware: (getDefaultMiddleware) =>
+ *     getDefaultMiddleware().concat(syncMiddleware)
+ * });
+ * ```
+ * 
+ * @see {@link https://redux.js.org/understanding/history-and-design/middleware|Redux Middleware}
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API|BroadcastChannel API}
  */
 
 import { Middleware, AnyAction } from '@reduxjs/toolkit';
