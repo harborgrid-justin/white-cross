@@ -678,6 +678,39 @@ export class CacheManager {
 
     return persistable;
   }
+
+  /**
+   * Cleanup Resources
+   *
+   * Clears all cache entries, resets statistics, and performs cleanup.
+   * CRITICAL for HIPAA compliance - must be called on user logout to prevent
+   * PHI data from being accessible to the next user session.
+   *
+   * @returns Promise that resolves when cleanup is complete
+   *
+   * @example
+   * ```typescript
+   * // On user logout
+   * const cacheManager = getCacheManager();
+   * await cacheManager.cleanup();
+   * ```
+   */
+  async cleanup(): Promise<void> {
+    // Clear all cache entries
+    this.clear();
+
+    // Reset statistics
+    this.resetStats();
+
+    // Emit cleanup event
+    this.emitEvent({
+      type: 'clear',
+      timestamp: Date.now()
+    });
+
+    // Allow event handlers to complete
+    await Promise.resolve();
+  }
 }
 
 // Singleton instance

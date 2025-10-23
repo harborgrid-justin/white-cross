@@ -56,7 +56,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { API_CONFIG } from '../../constants/config';
 import { API_ENDPOINTS, HTTP_STATUS } from '../../constants/api';
-import { secureTokenManager } from '../security/SecureTokenManager';
+import type { ITokenManager } from './interfaces/ITokenManager';
 import { setupCsrfProtection } from '../security/CsrfProtection';
 import { logger } from '../utils/logger';
 
@@ -210,6 +210,7 @@ export interface ApiClientConfig {
   requestInterceptors?: RequestInterceptor[];
   responseInterceptors?: ResponseInterceptor[];
   resilienceHook?: ResilienceHook;
+  tokenManager?: ITokenManager;
 }
 
 // ==========================================
@@ -279,8 +280,10 @@ export class ApiClient {
   private requestInterceptorIds: number[] = [];
   private responseInterceptorIds: number[] = [];
   private resilienceHook?: ResilienceHook;
+  private tokenManager?: ITokenManager;
 
   constructor(config: ApiClientConfig = {}) {
+    this.tokenManager = config.tokenManager;
     this.resilienceHook = config.resilienceHook;
     this.enableLogging = config.enableLogging ?? true;
     this.enableRetry = config.enableRetry ?? true;
@@ -328,15 +331,15 @@ export class ApiClient {
         const token = this.getAuthToken();
         if (token) {
           // Validate token before using it
-          if (secureTokenManager.isTokenValid()) {
+          if (this.tokenManager?.isTokenValid()) {
             config.headers = config.headers || {};
             config.headers.Authorization = `Bearer ${token}`;
             // Update activity on token use
-            secureTokenManager.updateActivity();
+            this.tokenManager.updateActivity();
           } else {
             // Token expired, clear it
             logger.warn('ApiClient: Token expired, clearing tokens');
-            secureTokenManager.clearTokens();
+            this.tokenManager?.clearTokens();
           }
         }
 
@@ -627,12 +630,12 @@ export class ApiClient {
   // ==========================================
 
   private getAuthToken(): string | null {
-    // Use SecureTokenManager (sessionStorage-based)
-    return secureTokenManager.getToken();
+    // Use TokenManager (sessionStorage-based)
+    return this.tokenManager?.getToken() ?? null;
   }
 
   private async refreshAuthToken(): Promise<string | null> {
-    const refreshToken = secureTokenManager.getRefreshToken();
+    const refreshToken = this.tokenManager?.getRefreshToken();
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -645,8 +648,8 @@ export class ApiClient {
 
       const { token, refreshToken: newRefreshToken, expiresIn } = response.data;
 
-      // Update token in SecureTokenManager
-      secureTokenManager.setToken(token, newRefreshToken || refreshToken, expiresIn);
+      // Update token in TokenManager
+      this.tokenManager?.setToken(token, newRefreshToken || refreshToken, expiresIn);
 
       return token;
     } catch (error) {
@@ -656,8 +659,8 @@ export class ApiClient {
   }
 
   private handleAuthFailure(): void {
-    // Clear all tokens using SecureTokenManager
-    secureTokenManager.clearTokens();
+    // Clear all tokens using TokenManager
+    this.tokenManager?.clearTokens();
 
     // Redirect to login if not already there
     if (window.location.pathname !== '/login') {
@@ -809,7 +812,12 @@ export function createCancellableRequest() {
 // SINGLETON INSTANCE
 // ==========================================
 
+// Import secureTokenManager here to avoid circular dependency
+// (ApiClient no longer imports it directly, only via dependency injection)
+import { secureTokenManager } from '../security/SecureTokenManager';
+
 export const apiClient = new ApiClient({
   enableLogging: import.meta.env.DEV,
   enableRetry: true,
+  tokenManager: secureTokenManager,
 });

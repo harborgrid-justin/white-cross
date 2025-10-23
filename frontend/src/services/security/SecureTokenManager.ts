@@ -12,6 +12,7 @@
  */
 
 import { SECURITY_CONFIG } from '../../constants/config';
+import type { ITokenManager } from '../core/interfaces/ITokenManager';
 
 /**
  * Token metadata stored alongside the token
@@ -70,7 +71,7 @@ interface ZustandAuthStorage {
  * tokenManager.clearTokens();
  * ```
  */
-export class SecureTokenManager {
+export class SecureTokenManager implements ITokenManager {
   private static instance: SecureTokenManager | null = null;
   private readonly TOKEN_KEY = 'secure_auth_token';
   private readonly REFRESH_TOKEN_KEY = 'secure_refresh_token';
