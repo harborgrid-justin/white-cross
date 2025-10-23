@@ -1,25 +1,36 @@
 /**
  * CategoryCard Component
  * 
- * Category Card component for budget module.
+ * Display card for a budget category (reuses BudgetCard functionality).
  */
 
 import React from 'react';
+import { BudgetCategoryWithMetrics } from '../../../types/budget';
+import BudgetCard from './BudgetCard';
 
 interface CategoryCardProps {
-  /** Component props */
-  [key: string]: any;
+  category: BudgetCategoryWithMetrics;
+  onClick?: () => void;
+  viewMode?: 'grid' | 'list';
+  className?: string;
 }
 
 /**
- * CategoryCard component
+ * CategoryCard component - Wraps BudgetCard for category display
  */
-const CategoryCard: React.FC<CategoryCardProps> = (props) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  category,
+  onClick,
+  viewMode = 'grid',
+  className = ''
+}) => {
+  // CategoryCard is essentially a BudgetCard with specific styling for category views
   return (
-    <div className="category-card">
-      <h3>Category Card</h3>
-      {/* Component implementation */}
-    </div>
+    <BudgetCard
+      category={category}
+      onClick={onClick}
+      className={className}
+    />
   );
 };
 
