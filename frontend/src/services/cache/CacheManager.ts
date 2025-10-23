@@ -1,13 +1,30 @@
 /**
- * Enterprise Cache Manager
- *
- * Advanced in-memory caching with:
- * - LRU eviction policy (max 100 items)
- * - TTL-based expiration
- * - Tag-based invalidation
- * - Size tracking and memory management
- * - Performance monitoring
- * - Event system for cache operations
+ * @fileoverview Enterprise-grade in-memory cache manager with LRU eviction and HIPAA compliance
+ * @module services/cache/CacheManager
+ * @category Services
+ * 
+ * Advanced in-memory caching system providing:
+ * - LRU (Least Recently Used) eviction policy with configurable max size
+ * - TTL-based expiration for automatic cleanup
+ * - Tag-based invalidation for granular cache control
+ * - Memory usage tracking and management
+ * - Performance monitoring with hit/miss rates
+ * - Event system for cache operation observation
+ * - HIPAA compliance - PHI data flagging and handling
+ * 
+ * @example
+ * ```typescript
+ * const manager = getCacheManager();
+ * 
+ * // Cache data with TTL
+ * manager.set('user:123', userData, { ttl: 300000, tags: ['users'] });
+ * 
+ * // Retrieve cached data
+ * const cached = manager.get('user:123');
+ * 
+ * // Invalidate by tag
+ * manager.invalidateByTags(['users']);
+ * ```
  */
 
 import type {
@@ -24,6 +41,35 @@ import { CACHE_CONFIG, PERFORMANCE_CONFIG } from './cacheConfig';
 
 /**
  * Cache Manager Implementation
+ * 
+ * @class
+ * @classdesc Enterprise cache manager providing LRU-based in-memory caching
+ * with TTL expiration, tag-based invalidation, and performance tracking.
+ * Designed for healthcare applications with HIPAA compliance considerations.
+ * 
+ * Performance Characteristics:
+ * - O(1) get/set operations
+ * - O(n) tag-based invalidation (n = number of cached items)
+ * - O(1) LRU eviction when max size reached
+ * 
+ * Memory Management:
+ * - Tracks approximate memory usage per entry
+ * - Automatic eviction when max size exceeded
+ * - Configurable size limits
+ * 
+ * @example
+ * ```typescript
+ * // Create with custom config
+ * const cache = new CacheManager({
+ *   maxSize: 200,
+ *   defaultTTL: 600000
+ * });
+ * 
+ * // Listen to cache events
+ * cache.on('evict', (event) => {
+ *   console.log('Evicted:', event.key);
+ * });
+ * ```
  */
 export class CacheManager {
   private cache: Map<string, CacheEntry> = new Map();
@@ -61,10 +107,28 @@ export class CacheManager {
   }
 
   /**
-   * Get Value from Cache
-   *
-   * @param key - Cache key
-   * @returns Cached value or undefined if not found/expired
+   * Retrieves a value from the cache
+   * 
+   * @template T - Type of the cached value
+   * @param {string} key - Unique cache key identifier
+   * @returns {T | undefined} Cached value if found and not expired, undefined otherwise
+   * 
+   * @description
+   * Performs cache lookup with automatic expiration checking:
+   * - Returns undefined if key doesn't exist
+   * - Returns undefined if entry has expired (and removes it)
+   * - Updates LRU tracking (access count and timestamp)
+   * - Records performance metrics (hit/miss, access time)
+   * 
+   * @example
+   * ```typescript
+   * const user = manager.get<User>('user:123');
+   * if (user) {
+   *   console.log('Cache hit:', user);
+   * } else {
+   *   console.log('Cache miss, fetch from API');
+   * }
+   * ```
    */
   get<T>(key: string): T | undefined {
     const startTime = performance.now();
@@ -99,11 +163,37 @@ export class CacheManager {
   }
 
   /**
-   * Set Value in Cache
-   *
-   * @param key - Cache key
-   * @param data - Data to cache
-   * @param options - Cache options
+   * Stores a value in the cache with optional TTL and tags
+   * 
+   * @template T - Type of the value to cache
+   * @param {string} key - Unique cache key identifier
+   * @param {T} data - Data to store in cache
+   * @param {Object} options - Cache storage options
+   * @param {number} [options.ttl] - Time-to-live in milliseconds (default: config.defaultTTL)
+   * @param {string[]} [options.tags] - Tags for tag-based invalidation
+   * @param {number} [options.version] - Version number for cache versioning
+   * @param {boolean} [options.containsPHI] - HIPAA flag indicating if data contains PHI
+   * @returns {void}
+   * 
+   * @description
+   * Stores data with automatic LRU eviction when max size is reached:
+   * - Calculates approximate memory size
+   * - Evicts least recently used items if necessary
+   * - Updates statistics and triggers events
+   * - Marks PHI data appropriately for compliance
+   * 
+   * @example
+   * ```typescript
+   * // Basic usage
+   * manager.set('user:123', userData);
+   * 
+   * // With TTL and tags
+   * manager.set('student:456', studentData, {
+   *   ttl: 300000, // 5 minutes
+   *   tags: ['students', 'active'],
+   *   containsPHI: true // HIPAA compliance
+   * });
+   * ```
    */
   set<T>(
     key: string,

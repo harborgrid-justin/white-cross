@@ -1,19 +1,72 @@
 /**
- * Query Key Factory
- *
- * Standardized query key generation across all modules with:
- * - Hierarchical key structure
- * - Normalized filters for consistent cache hits
- * - Type-safe key creation
+ * @fileoverview Standardized query key factory for consistent cache key generation
+ * @module services/cache/QueryKeyFactory
+ * @category Services
+ * 
+ * Provides type-safe, consistent query key generation across all API modules
+ * with normalized filters for optimal cache hit rates.
+ * 
+ * Key Features:
+ * - Hierarchical key structure [entity, operation, id?, filters?, context?]
+ * - Filter normalization (sorted keys, null handling, type coercion)
+ * - Type-safe key creation with IntelliSense support
+ * - Consistent cache hits for equivalent queries
+ * - Pre-built key factories for common entities
+ * 
+ * Cache Key Structure:
+ * - Level 1: Entity type (e.g., 'students', 'medications')
+ * - Level 2: Operation (e.g., 'list', 'detail', 'search')
+ * - Level 3: ID (optional, for specific resources)
+ * - Level 4: Filters (optional, normalized object)
+ * - Level 5: Context (optional, additional metadata)
+ * 
+ * @example
+ * ```typescript
+ * // Basic list query
+ * const key1 = QueryKeyFactory.create({
+ *   entity: 'students',
+ *   operation: 'list'
+ * });
+ * // Result: ['students', 'list']
+ * 
+ * // Filtered query (normalized for cache hits)
+ * const key2 = QueryKeyFactory.create({
+ *   entity: 'students',
+ *   operation: 'list',
+ *   filters: { grade: '5', active: true }
+ * });
+ * // Result: ['students', 'list', { active: true, grade: '5' }]
+ * 
+ * // Detail query
+ * const key3 = studentKeys.detail('123');
+ * // Result: ['students', 'detail', '123']
+ * ```
  */
 
 import type { QueryKey, NormalizedQueryKey } from './types';
 
 /**
  * Query Key Factory Class
- *
- * Provides consistent, normalized query key generation
- * for optimal cache hit rates.
+ * 
+ * @class
+ * @classdesc Provides consistent, normalized query key generation for
+ * React Query cache keys, ensuring optimal cache hit rates through
+ * deterministic key creation.
+ * 
+ * Key Normalization Rules:
+ * - Filters are sorted alphabetically by key
+ * - Null and undefined are treated as equivalent (omitted)
+ * - Empty strings are omitted
+ * - Booleans and numbers are preserved
+ * - Arrays are compared element-wise
+ * 
+ * @example
+ * ```typescript
+ * // These produce identical keys (normalized):
+ * QueryKeyFactory.create({ entity: 'students', operation: 'list', filters: { grade: '5', active: true } });
+ * QueryKeyFactory.create({ entity: 'students', operation: 'list', filters: { active: true, grade: '5' } });
+ * // Both result in: ['students', 'list', { active: true, grade: '5' }]
+ * ```
  */
 export class QueryKeyFactory {
   /**
