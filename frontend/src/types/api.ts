@@ -1,18 +1,58 @@
 /**
- * WF-COMP-316 | api.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: React ecosystem
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: interfaces, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Unified API response types and interfaces
- * This file standardizes all API interactions across the application
+ * @fileoverview Unified API types and interfaces for all API interactions
+ * @module types/api
+ * @category Types
+ * 
+ * Standardized TypeScript interfaces for all API request/response payloads
+ * across the healthcare platform, ensuring type safety and consistency.
+ * 
+ * Type Organization:
+ * - **Medications**: Medication entities, inventory, administration logs
+ * - **Students**: Student profiles, demographics, relationships
+ * - **Health Records**: Medical history, allergies, conditions, vaccinations
+ * - **Appointments**: Appointment scheduling and management
+ * - **Incidents**: Incident reporting and tracking
+ * - **Communication**: Messages, notifications, templates
+ * - **Administration**: Users, schools, districts, settings
+ * 
+ * Design Principles:
+ * - Extends BaseEntity for common fields (id, createdAt, updatedAt)
+ * - Optional fields use ? operator
+ * - Related entities use optional composition
+ * - Enums for fixed value sets (imported from common.ts)
+ * - PHI fields clearly marked in documentation
+ * 
+ * HIPAA Considerations:
+ * - All patient data interfaces contain PHI
+ * - Medication interfaces contain PHI when linked to students
+ * - Audit logging required for all PHI access
+ * - No PHI in error messages or logs
+ * 
+ * @example
+ * ```typescript
+ * // Type-safe API calls
+ * const medication: Medication = await api.get<Medication>('/medications/123');
+ * 
+ * // Type-safe request payloads
+ * const createData: CreateMedicationRequest = {
+ *   name: 'Ibuprofen',
+ *   dosageForm: 'tablet',
+ *   strength: '200mg'
+ * };
+ * const created = await api.post<Medication>('/medications', createData);
+ * 
+ * // Type-safe with relations
+ * const studentMed: StudentMedication = {
+ *   studentId: 'student-123',
+ *   medicationId: 'med-456',
+ *   dosage: '200mg',
+ *   frequency: 'twice daily',
+ *   route: MedicationRoute.ORAL,
+ *   startDate: '2025-01-01',
+ *   prescribedBy: 'Dr. Smith',
+ *   isActive: true
+ * };
+ * ```
  */
 
 import type {
