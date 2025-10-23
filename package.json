@@ -30,6 +30,10 @@
     "test:e2e": "cd frontend && npm run test:e2e",
     "test:e2e:headed": "cd frontend && npm run test:e2e:headed",
     "test:coverage": "npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
+    "test:api-integration": "playwright test --config=playwright.config.ts",
+    "test:api-integration:ui": "playwright test --config=playwright.config.ts --ui",
+    "test:api-integration:debug": "playwright test --config=playwright.config.ts --debug",
+    "test:api-integration:report": "playwright show-report test-results/html",
 
     "// Linting": "========================================",
     "lint": "npm run lint:backend && npm run lint:frontend",
