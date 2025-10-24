@@ -1,5 +1,5 @@
 # =============================================================================
-# Docker Ignore - Root Level
+# Docker Ignore - Backend
 # Excludes unnecessary files from Docker build context
 # =============================================================================
 
@@ -7,7 +7,6 @@
 .git
 .gitignore
 .gitattributes
-.github
 
 # IDE and Editor
 .vscode
@@ -22,54 +21,69 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
 
 # Build Artifacts
 dist
-build
 *.log
-logs
 
-# Test Artifacts
+# Logs
+logs
+*.log
+
+# Test Files and Coverage
+__tests__
+**/__tests__/**
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
 coverage
 .nyc_output
 test-results
-playwright-report
-cypress/videos
-cypress/screenshots
-
-# Environment Files
-.env
-.env.local
-.env.*.local
-.env.production
 
 # Documentation
 *.md
 !README.md
 docs
-.migration-backup
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
 
 # Temporary Files
 tmp
 temp
 *.tmp
-.temp
+
+# Database Files (local dev)
+*.sqlite
+*.sqlite3
 
 # Docker Files
 Dockerfile*
-docker-compose*.yml
 .dockerignore
+
+# TypeScript Config (not needed in runtime)
+tsconfig.json
+tsconfig.*.json
+
+# Linting and Formatting
+.eslintrc*
+.prettierrc*
+.eslintcache
+eslint.config.js
 
 # CI/CD
 .circleci
 .travis.yml
 .gitlab-ci.yml
-azure-pipelines.yml
+
+# Development Scripts
+nodemon.json
 
 # Miscellaneous
 .cache
 .npm
-.eslintcache
-.prettierignore
