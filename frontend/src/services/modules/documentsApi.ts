@@ -7,11 +7,11 @@
  * Features: Signing, versioning, search, bulk download with progress tracking
  */
 
-import type { ApiClient } from '../../../frontend/src/services/core/ApiClient';
-import { API_ENDPOINTS } from '../../../frontend/src/services/config/apiConfig';
-import { extractApiData } from '../../../frontend/src/services/utils/apiUtils';
-import { buildUrlParams } from '../../../frontend/src/services/utils/apiUtils';
-import type { ApiResponse } from '../../../frontend/src/services/types';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../config/apiConfig';
+import { extractApiData } from '../utils/apiUtils';
+import { buildUrlParams } from '../utils/apiUtils';
+import type { ApiResponse } from '../types';
 
 // Import types
 import type {
@@ -44,23 +44,24 @@ import type {
   VersionComparisonRequest,
   SignatureVerificationResult,
   SignatureType,
-} from './types';
+} from '../types';
 
-// Import validation schemas
+// Import validation schemas from documentSchemas
 import {
   signDocumentSchema,
   createDocumentVersionSchema,
-  versionComparisonSchema,
-  advancedSearchFiltersSchema,
-  searchDocumentsRequestSchema,
-  bulkDownloadRequestSchema,
+  // TODO: Add these schemas to documentSchemas.ts
+  // versionComparisonSchema,
+  // advancedSearchFiltersSchema,
+  // searchDocumentsRequestSchema,
+  // bulkDownloadRequestSchema,
   type SignDocumentInput,
   type CreateDocumentVersionInput,
-  type VersionComparisonInput,
-  type AdvancedSearchFiltersInput,
-  type SearchDocumentsRequestInput,
-  type BulkDownloadRequestInput,
-} from './validation';
+  // type VersionComparisonInput,
+  // type AdvancedSearchFiltersInput,
+  // type SearchDocumentsRequestInput,
+  // type BulkDownloadRequestInput,
+} from '../../schemas/documentSchemas';
 
 // Import existing schemas for backward compatibility
 import {
@@ -76,7 +77,7 @@ import {
   type ShareDocumentInput,
   type BulkDeleteDocumentsInput,
   type DocumentFiltersInput,
-} from '../../../frontend/src/schemas/documentSchemas';
+} from '../../schemas/documentSchemas';
 
 // ============================================================================
 // API Interface
@@ -885,3 +886,7 @@ export type {
   VersionComparison,
   SignatureType,
 };
+
+// Create and export a default instance for backward compatibility
+import { apiClient } from '../core/ApiClient';
+export const documentsApi = createDocumentsApi(apiClient);

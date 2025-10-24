@@ -454,3 +454,7 @@ export class AuthApi {
 export function createAuthApi(client: ApiClient): AuthApi {
   return new AuthApi(client);
 }
+
+// Create and export a default instance for backward compatibility
+import { apiClient } from '../core/ApiClient';
+export const authApi = createAuthApi(apiClient);

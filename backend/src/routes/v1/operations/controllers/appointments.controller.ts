@@ -4,7 +4,7 @@
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
-import { AppointmentService } from '../../../../services/appointment/appointmentService';
+import { AppointmentService } from '../../../../services/appointment/AppointmentService';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,

@@ -32,7 +32,7 @@ export * from './modules/dashboardApi';
 export * from './modules/documentsApi';
 export * from './modules/emergencyContactsApi';
 export * from './modules/healthAssessmentsApi';
-export * from './modules/incidentReportsApi';
+export * from './modules/incidentsApi';
 export * from './modules/integrationApi';
 export * from './modules/inventoryApi';
 export * from './modules/messagesApi';

@@ -55,7 +55,7 @@ import { documentsApi } from '../modules/documentsApi';
 import { emergencyContactsApi } from '../modules/emergencyContactsApi';
 import { healthAssessmentsApi } from '../modules/healthAssessmentsApi';
 import { healthRecordsApi } from '../modules/healthRecordsApi';
-import { incidentReportsApi } from '../modules/incidentReportsApi';
+import { incidentsApi } from '../modules/incidentsApi';
 import { integrationApi } from '../modules/integrationApi';
 import { messagesApi } from '../modules/messagesApi';
 import { reportsApi } from '../modules/reportsApi';
@@ -89,7 +89,7 @@ import type { DocumentsApi } from '../modules/documentsApi';
 import type { IEmergencyContactsApi } from '../modules/emergencyContactsApi';
 import type { HealthAssessmentsApi } from '../modules/healthAssessmentsApi';
 import type { HealthRecordsApi } from '../modules/healthRecordsApi';
-import type { IIncidentReportsApi } from '../modules/incidentReportsApi';
+import type { IIncidentsApi } from '../modules/incidentsApi';
 import type { IntegrationApi } from '../modules/integrationApi';
 import type { MessagesApi } from '../modules/messagesApi';
 import type { ReportsApi } from '../modules/reportsApi';
@@ -221,11 +221,11 @@ class ApiServiceRegistry {
   }
 
   /**
-   * Incident Reports API
+   * Incidents API
    * Incident reporting and tracking
    */
-  get incidentReportsApi(): IIncidentReportsApi {
-    return incidentReportsApi;
+  get incidentsApi(): IIncidentsApi {
+    return incidentsApi;
   }
 
   /**

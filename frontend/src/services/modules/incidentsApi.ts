@@ -48,6 +48,7 @@ import type {
   ActionStatus
 } from '../types'
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtils'
 
 /**
@@ -932,5 +933,8 @@ class IncidentsApiImpl implements IIncidentsApi {
 export function createIncidentsApi(client: ApiClient): IIncidentsApi {
   return new IncidentsApiImpl(client);
 }
+
+// Export singleton instance for backward compatibility
+export const incidentsApi = createIncidentsApi(apiClient);
 
 export type { IIncidentsApi }

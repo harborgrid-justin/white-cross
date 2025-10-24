@@ -1,7 +1,7 @@
 /**
  * WF-COMP-311 | incidentReportsSlice.ts - React component or utility module
  * Purpose: react component or utility module
- * Upstream: ../../services/modules/incidentReportsApi | Dependencies: @reduxjs/toolkit, ../../services/modules/incidentReportsApi, react-hot-toast
+ * Upstream: ../../services/modules/incidentsApi | Dependencies: @reduxjs/toolkit, ../../services/modules/incidentsApi, react-hot-toast
  * Downstream: Components, pages, app routing | Called by: React component tree
  * Related: Other components, hooks, services, types
  * Exports: default export, constants | Key Features: arrow component
@@ -78,7 +78,7 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { incidentReportsApi } from '../../../services/modules/incidentReportsApi';
+import { incidentsApi } from '../../../services/modules/incidentsApi';
 import {
   IncidentSeverity,
 } from '../../../types/incidents';
@@ -264,7 +264,7 @@ export const fetchIncidentReports = createAsyncThunk(
   async (filters: IncidentReportFilters | undefined, { rejectWithValue }) => {
     try {
       log('Fetching incident reports with filters:', filters);
-      const response = await incidentReportsApi.getAll(filters);
+      const response = await incidentsApi.getAll(filters);
       return response;
     } catch (error: any) {
       log('Error fetching incident reports:', error);
@@ -282,7 +282,7 @@ export const fetchIncidentReportById = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       log('Fetching incident report by ID:', id);
-      const response = await incidentReportsApi.getById(id);
+      const response = await incidentsApi.getById(id);
       return response.report;
     } catch (error: any) {
       log('Error fetching incident report:', error);
@@ -301,7 +301,7 @@ export const createIncidentReport = createAsyncThunk(
   async (data: CreateIncidentReportRequest, { rejectWithValue }) => {
     try {
       log('Creating incident report:', data);
-      const response = await incidentReportsApi.create(data);
+      const response = await incidentsApi.create(data);
       toast.success('Incident report created successfully');
       return response.report;
     } catch (error: any) {
@@ -324,7 +324,7 @@ export const updateIncidentReport = createAsyncThunk(
   ) => {
     try {
       log('Updating incident report:', id, data);
-      const response = await incidentReportsApi.update(id, data);
+      const response = await incidentsApi.update(id, data);
       toast.success('Incident report updated successfully');
       return response.report;
     } catch (error: any) {
@@ -344,7 +344,7 @@ export const deleteIncidentReport = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       log('Deleting incident report:', id);
-      await incidentReportsApi.delete(id);
+      await incidentsApi.delete(id);
       toast.success('Incident report deleted successfully');
       return id;
     } catch (error: any) {
@@ -364,7 +364,7 @@ export const searchIncidentReports = createAsyncThunk(
   async (params: IncidentSearchParams, { rejectWithValue }) => {
     try {
       log('Searching incident reports:', params);
-      const response = await incidentReportsApi.search(params);
+      const response = await incidentsApi.search(params);
       return response;
     } catch (error: any) {
       log('Error searching incident reports:', error);
@@ -382,7 +382,7 @@ export const fetchWitnessStatements = createAsyncThunk(
   async (incidentReportId: string, { rejectWithValue }) => {
     try {
       log('Fetching witness statements for incident:', incidentReportId);
-      const response = await incidentReportsApi.getWitnessStatements(incidentReportId);
+      const response = await incidentsApi.getWitnessStatements(incidentReportId);
       return response.statements;
     } catch (error: any) {
       log('Error fetching witness statements:', error);
@@ -400,7 +400,7 @@ export const createWitnessStatement = createAsyncThunk(
   async (data: CreateWitnessStatementRequest, { rejectWithValue }) => {
     try {
       log('Creating witness statement:', data);
-      const response = await incidentReportsApi.addWitnessStatement(data);
+      const response = await incidentsApi.addWitnessStatement(data);
       toast.success('Witness statement added successfully');
       return response.statement;
     } catch (error: any) {
@@ -420,7 +420,7 @@ export const fetchFollowUpActions = createAsyncThunk(
   async (incidentReportId: string, { rejectWithValue }) => {
     try {
       log('Fetching follow-up actions for incident:', incidentReportId);
-      const response = await incidentReportsApi.getFollowUpActions(incidentReportId);
+      const response = await incidentsApi.getFollowUpActions(incidentReportId);
       return response.actions;
     } catch (error: any) {
       log('Error fetching follow-up actions:', error);
@@ -438,7 +438,7 @@ export const createFollowUpAction = createAsyncThunk(
   async (data: CreateFollowUpActionRequest, { rejectWithValue }) => {
     try {
       log('Creating follow-up action:', data);
-      const response = await incidentReportsApi.addFollowUpAction(data);
+      const response = await incidentsApi.addFollowUpAction(data);
       toast.success('Follow-up action created successfully');
       return response.action;
     } catch (error: any) {
