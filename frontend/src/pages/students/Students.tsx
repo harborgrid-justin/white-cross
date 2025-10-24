@@ -21,7 +21,7 @@ import {
   Calendar,
   Phone
 } from 'lucide-react'
-import { useAuthContext } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 /**
  * Student Interface
@@ -53,7 +53,7 @@ interface Student {
  * - Role-based permissions
  */
 const Students: React.FC = () => {
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')

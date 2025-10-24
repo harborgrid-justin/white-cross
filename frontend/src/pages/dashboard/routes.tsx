@@ -1,14 +1,14 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '../../routes';
-
-// Placeholder components - will be replaced with actual components
-const DashboardOverview = () => <div>Dashboard Overview</div>
-const DashboardStats = () => <div>Dashboard Statistics</div>
-const DashboardCharts = () => <div>Dashboard Charts</div>
-const DashboardActivities = () => <div>Dashboard Activities</div>
-const DashboardAppointments = () => <div>Dashboard Appointments</div>
-const DashboardAlerts = () => <div>Dashboard Health Alerts</div>
+import {
+  DashboardOverview,
+  DashboardStats,
+  DashboardCharts,
+  RecentActivities,
+  UpcomingAppointments,
+  HealthAlerts
+} from './components';
 
 export const dashboardRoutes: RouteObject[] = [
   {
@@ -42,7 +42,7 @@ export const dashboardRoutes: RouteObject[] = [
         path: 'activities',
         element: (
           <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'STAFF']}>
-            <DashboardActivities />
+            <RecentActivities />
           </ProtectedRoute>
         ),
       },
@@ -50,7 +50,7 @@ export const dashboardRoutes: RouteObject[] = [
         path: 'appointments',
         element: (
           <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'STAFF']}>
-            <DashboardAppointments />
+            <UpcomingAppointments />
           </ProtectedRoute>
         ),
       },
@@ -58,7 +58,7 @@ export const dashboardRoutes: RouteObject[] = [
         path: 'alerts',
         element: (
           <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
-            <DashboardAlerts />
+            <HealthAlerts />
           </ProtectedRoute>
         ),
       },

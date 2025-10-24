@@ -1,7 +1,9 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '../../routes';
-import { Appointments, HealthRecords, Medications } from './components';
+import Appointments from './Appointments';
+import HealthRecords from './HealthRecords';
+import Medications from './Medications';
 
 export const healthRoutes: RouteObject[] = [
   {

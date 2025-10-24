@@ -18,10 +18,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { Calendar, Clock, Users, Plus, Download, CheckCircle, XCircle, Filter } from 'lucide-react'
-import { appointmentsApi } from '../../services/api'
+import { appointmentsApi } from '../../services'
 import toast from 'react-hot-toast'
-import AppointmentFormModal from '../../components/features/appointments/components/AppointmentFormModal'
-import { useAuthContext } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 import {
   APPOINTMENT_TYPE_OPTIONS,
   APPOINTMENT_STATUS_OPTIONS,
@@ -34,7 +33,7 @@ import { useAppointmentsData } from './hooks/useAppointmentsData'
 import type { ViewMode, AppointmentFilters, AppointmentSortColumn } from './types'
 
 export default function Appointments() {
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showWaitlistModal, setShowWaitlistModal] = useState(false)

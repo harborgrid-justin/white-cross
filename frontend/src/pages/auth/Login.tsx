@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuthContext } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 import { LoginForm } from './components/LoginForm'
 import toast from 'react-hot-toast'
 
@@ -26,7 +26,7 @@ import toast from 'react-hot-toast'
 const Login: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loading, user } = useAuthContext()
+  const { login, isLoading, user } = useAuth()
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
@@ -85,7 +85,7 @@ const Login: React.FC = () => {
         {/* Login Form */}
         <LoginForm
           loginData={loginData}
-          loading={loading}
+          loading={isLoading}
           onSubmit={handleLogin}
           onInputChange={handleInputChange}
         />

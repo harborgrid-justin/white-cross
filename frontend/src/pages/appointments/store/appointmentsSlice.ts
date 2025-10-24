@@ -7,7 +7,7 @@
 
 import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
 import { Appointment } from '../../../types/student.types';
-import { appointmentsApi } from '../../../services/api';
+import { appointmentsApi } from '../../../services';
 
 // Appointment creation data
 interface CreateAppointmentData {

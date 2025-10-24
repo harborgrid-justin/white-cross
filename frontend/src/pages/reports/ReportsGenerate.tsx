@@ -12,7 +12,7 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ReportConfig {
   reportType: string;
@@ -29,7 +29,7 @@ interface ReportConfig {
 }
 
 const ReportsGenerate: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [generating, setGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<string | null>(null);
 

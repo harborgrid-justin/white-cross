@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Search, 
-  Filter, 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Lock, 
+import {
+  User as UserIcon,
+  Search,
+  Filter,
+  Plus,
+  Edit2,
+  Trash2,
+  Lock,
   Unlock,
   UserCheck,
   UserX,
@@ -14,37 +14,10 @@ import {
   Phone,
   Calendar
 } from 'lucide-react';
-
-// Types
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role: string;
-  department: string;
-  status: 'active' | 'inactive' | 'suspended';
-  lastLogin?: Date;
-  createdAt: Date;
-  permissions: string[];
-}
-
-interface UserFormData {
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role: string;
-  department: string;
-  status: 'active' | 'inactive' | 'suspended';
-  permissions: string[];
-}
+import type { UserData, UserFormData } from './types';
 
 // Mock data
-const mockUsers: User[] = [
+const mockUsers: UserData[] = [
   {
     id: '1',
     username: 'john.doe',
@@ -112,14 +85,14 @@ const availablePermissions = [
 ];
 
 export const Users: React.FC = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<UserData[]>(mockUsers);
+  const [filteredUsers, setFilteredUsers] = useState<UserData[]>(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
   const [showUserModal, setShowUserModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -142,7 +115,7 @@ export const Users: React.FC = () => {
     setFilteredUsers(filtered);
   }, [users, searchTerm, statusFilter, roleFilter, departmentFilter]);
 
-  const getStatusBadge = (status: User['status']) => {
+  const getStatusBadge = (status: UserData['status']) => {
     const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
     switch (status) {
       case 'active':
@@ -161,7 +134,7 @@ export const Users: React.FC = () => {
     setShowUserModal(true);
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: UserData) => {
     setEditingUser(user);
     setShowUserModal(true);
   };
@@ -181,7 +154,7 @@ export const Users: React.FC = () => {
     }
   };
 
-  const handleToggleStatus = async (userId: string, newStatus: User['status']) => {
+  const handleToggleStatus = async (userId: string, newStatus: UserData['status']) => {
     setLoading(true);
     try {
       // Simulate API call
@@ -235,7 +208,7 @@ export const Users: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow border">
           <div className="flex items-center">
-            <User className="w-8 h-8 text-blue-600" />
+            <UserIcon className="w-8 h-8 text-blue-600" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Total Users</p>
               <p className="text-2xl font-bold text-gray-900">{users.length}</p>
@@ -354,7 +327,7 @@ export const Users: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-blue-600" />
+                        <UserIcon className="w-6 h-6 text-blue-600" />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">

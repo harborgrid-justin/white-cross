@@ -13,7 +13,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Calendar, Clock, User, FileText, Edit, ArrowLeft, Save } from 'lucide-react';
 import { appointmentsApi } from '../../services';
 import { PROTECTED_ROUTES, buildAppointmentEditRoute } from '../../constants/routes';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AppointmentDetail {
   id: string;
@@ -33,7 +33,7 @@ interface AppointmentDetail {
 const AppointmentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [appointment, setAppointment] = useState<AppointmentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

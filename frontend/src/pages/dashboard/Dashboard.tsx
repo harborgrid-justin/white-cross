@@ -19,7 +19,7 @@ import {
   Clock,
   Shield
 } from 'lucide-react'
-import { useAuthContext } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 /**
  * Dashboard Statistics Interface
@@ -56,7 +56,7 @@ interface QuickAction {
  * - Role-based content
  */
 const Dashboard: React.FC = () => {
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     activeAppointments: 0,

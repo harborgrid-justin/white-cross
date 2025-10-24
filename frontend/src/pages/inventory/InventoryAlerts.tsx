@@ -13,7 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isAfter, isBefore, addDays } from 'date-fns';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { PROTECTED_ROUTES } from '../../constants/routes';
 
 // ============================================================================
@@ -57,7 +57,7 @@ interface AlertFilters {
 const InventoryAlerts: React.FC = () => {
   // Navigation and auth
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
 
   // State management
   const [alerts, setAlerts] = useState<InventoryAlert[]>([]);

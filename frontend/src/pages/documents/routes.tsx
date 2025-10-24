@@ -1,7 +1,7 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '../../routes';
-import { Documents } from './components';
+import Documents from './Documents';
 
 export const documentsRoutes: RouteObject[] = [
   {

@@ -24,7 +24,7 @@ import {
   ChevronDown,
   X
 } from 'lucide-react'
-import { useAuthContext } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 /**
  * Incident Report Interface
@@ -80,7 +80,7 @@ interface FilterState {
  * - Loading and error states
  */
 const IncidentReports: React.FC = () => {
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   // State management

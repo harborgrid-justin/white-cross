@@ -742,7 +742,7 @@ export default incidentReportsSlice.reducer;
 // SELECTORS
 // =====================
 
-import type { RootState } from '../reduxStore';
+import type { RootState } from '../../../stores/reduxStore';
 
 /**
  * Select all incident reports

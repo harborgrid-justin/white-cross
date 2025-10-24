@@ -1,10 +1,28 @@
 /**
- * Configuration Module Components
- * 
- * Component exports for configuration functionality.
+ * WF-COMP-279 | index.ts - Configuration Module Components Exports
+ * Purpose: Centralized exports for configuration functionality components
+ * Last Updated: 2025-10-24 | File Type: .ts
  */
 
+// =====================================================
+// CORE CONFIGURATION COMPONENTS (used in routes)
+// =====================================================
+
 export { default as ConfigurationDashboard } from './ConfigurationDashboard';
+export { default as ConfigurationList } from './ConfigurationList';
+export { default as ConfigurationEditor } from './ConfigurationEditor';
+export { default as ConfigurationHistory } from './ConfigurationHistory';
+export { default as ConfigurationImportExport } from './ConfigurationImportExport';
+export { default as PublicConfigurationViewer } from './PublicConfigurationViewer';
+export { default as ConfigurationTemplates } from './ConfigurationTemplates';
+export { default as ConfigurationValidator } from './ConfigurationValidator';
+export { default as ConfigurationBackup } from './ConfigurationBackup';
+export { default as SecurityAudit } from './SecurityAudit';
+
+// =====================================================
+// SYSTEM & APPLICATION SETTINGS
+// =====================================================
+
 export { default as SystemConfiguration } from './SystemConfiguration';
 export { default as GeneralSettings } from './GeneralSettings';
 export { default as ApplicationSettings } from './ApplicationSettings';

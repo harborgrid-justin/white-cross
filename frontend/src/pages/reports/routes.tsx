@@ -1,7 +1,8 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '../../routes';
-import { ReportsGenerate, ScheduledReports } from './components';
+import ReportsGenerate from './ReportsGenerate';
+import ScheduledReports from './ScheduledReports';
 
 export const reportsRoutes: RouteObject[] = [
   {

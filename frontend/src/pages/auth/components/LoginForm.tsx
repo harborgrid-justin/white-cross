@@ -1,122 +1,160 @@
 /**
- * WF-COMP-220 | LoginForm.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, react-hook-form, lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * WF-COMP-220 | LoginForm.tsx - Login Form Component
+ * Purpose: Login form component for authentication
+ * Upstream: React, external libs | Dependencies: react, lucide-react
+ * Downstream: Login page | Called by: Login component
+ * Related: AuthContext, Login page
+ * Exports: LoginForm component | Key Features: State-based form, password toggle, validation
+ * Last Updated: 2025-10-24 | File Type: .tsx
+ * Critical Path: User input → State update → Form submission → Authentication
+ * LLM Context: Login form component with simple state management, part of auth system
  */
 
-import React from 'react'
-import { UseFormRegister, FieldErrors } from 'react-hook-form'
+import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import type { LoginForm as LoginFormData } from '../types'
 
+/**
+ * Props for LoginForm component
+ */
 interface LoginFormProps {
-  register: UseFormRegister<LoginFormData>
-  errors: FieldErrors<LoginFormData>
+  /** Current login form data */
+  loginData: LoginFormData
+  /** Loading state during authentication */
   loading: boolean
-  showPassword: boolean
-  onTogglePassword: () => void
-  onSubmit: () => void
-  authError: string
+  /** Form submission handler */
+  onSubmit: (e: React.FormEvent) => void
+  /** Input change handler */
+  onInputChange: (field: string, value: string | boolean) => void
 }
 
-export const LoginFormFields: React.FC<LoginFormProps> = ({
-  register,
-  errors,
+/**
+ * LoginForm Component
+ *
+ * Provides a secure login form with:
+ * - Email and password validation
+ * - Password visibility toggle
+ * - Remember me functionality
+ * - Loading states during authentication
+ * - Accessibility support (ARIA labels, keyboard navigation)
+ * - Responsive design
+ *
+ * @param props - LoginForm props
+ * @returns React component
+ *
+ * @example
+ * ```tsx
+ * <LoginForm
+ *   loginData={{ email: '', password: '', rememberMe: false }}
+ *   loading={false}
+ *   onSubmit={handleSubmit}
+ *   onInputChange={handleChange}
+ * />
+ * ```
+ */
+export const LoginForm: React.FC<LoginFormProps> = ({
+  loginData,
   loading,
-  showPassword,
-  onTogglePassword,
   onSubmit,
-  authError
+  onInputChange
 }) => {
-  return (
-    <form className="space-y-6" onSubmit={onSubmit} data-cy="login-form" role="form">
-      {authError && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3" data-cy="error-message" role="alert">
-          <p className="text-sm text-red-600">{authError}</p>
-        </div>
-      )}
+  const [showPassword, setShowPassword] = useState(false)
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email address
-        </label>
-        <div className="mt-1">
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev)
+  }
+
+  return (
+    <form
+      className="mt-8 space-y-6"
+      onSubmit={onSubmit}
+      data-cy="login-form"
+      role="form"
+      aria-label="Login form"
+    >
+      <div className="space-y-4 rounded-md shadow-sm">
+        {/* Email Field */}
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Email address
+          </label>
           <input
-            {...register('email', {
-              required: 'Email is required',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email format'
-              }
-            })}
             id="email"
             name="email"
             type="email"
             autoComplete="email"
-            className="input-field"
+            required
+            value={loginData.email}
+            onChange={(e) => onInputChange('email', e.target.value)}
+            className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             placeholder="Enter your email"
             data-cy="email-input"
             aria-label="Email address"
+            aria-required="true"
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600" data-cy="email-error" role="alert">{errors.email.message}</p>
-          )}
         </div>
-      </div>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-          Password
-        </label>
-        <div className="mt-1 relative">
-          <input
-            {...register('password', {
-              required: 'Password is required',
-              minLength: {
-                value: 6,
-                message: 'Password must be at least 6 characters'
-              }
-            })}
-            id="password"
-            name="password"
-            type={showPassword ? 'text' : 'password'}
-            autoComplete="current-password"
-            className="input-field pr-10"
-            placeholder="Enter your password"
-            data-cy="password-input"
-            aria-label="Password"
-          />
-          <button
-            type="button"
-            onClick={onTogglePassword}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-            data-cy="password-toggle"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+        {/* Password Field */}
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 mb-1"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-          </button>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600" data-cy="password-error" role="alert">{errors.password.message}</p>
-          )}
+            Password
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              required
+              value={loginData.password}
+              onChange={(e) => onInputChange('password', e.target.value)}
+              className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              placeholder="Enter your password"
+              data-cy="password-input"
+              aria-label="Password"
+              aria-required="true"
+            />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+              data-cy="password-toggle"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              tabIndex={0}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Eye className="h-5 w-5" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Remember Me and Forgot Password */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <input
-            {...register('rememberMe')}
             id="remember-me"
+            name="remember-me"
             type="checkbox"
-            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            checked={loginData.rememberMe || false}
+            onChange={(e) => onInputChange('rememberMe', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
             data-cy="remember-me-checkbox"
+            aria-label="Remember me"
           />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+          <label
+            htmlFor="remember-me"
+            className="ml-2 block text-sm text-gray-900 cursor-pointer"
+          >
             Remember me
           </label>
         </div>
@@ -124,7 +162,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
         <div className="text-sm">
           <a
             href="/forgot-password"
-            className="font-medium text-primary-600 hover:text-primary-500"
+            className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
             data-cy="forgot-password-link"
           >
             Forgot your password?
@@ -132,13 +170,15 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
         </div>
       </div>
 
+      {/* Submit Button */}
       <div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           data-cy="login-button"
           aria-busy={loading}
+          aria-label={loading ? 'Signing in...' : 'Sign in'}
         >
           {loading ? (
             <>
@@ -148,6 +188,7 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
                 fill="none"
                 viewBox="0 0 24 24"
                 data-cy="loading-spinner"
+                aria-hidden="true"
               >
                 <circle
                   className="opacity-25"
@@ -156,21 +197,23 @@ export const LoginFormFields: React.FC<LoginFormProps> = ({
                   r="10"
                   stroke="currentColor"
                   strokeWidth="4"
-                ></circle>
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                />
               </svg>
-              Signing in...
+              <span>Signing in...</span>
             </>
           ) : (
-            'Sign in'
+            <span>Sign in</span>
           )}
         </button>
       </div>
     </form>
   )
 }
+
+export default LoginForm
 

@@ -11,6 +11,7 @@
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
+import { apiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import { extractApiData } from '../utils/apiUtils';
 import { buildUrlParams } from '../utils/apiUtils';
@@ -354,3 +355,9 @@ class ReportsApiImpl implements ReportsApi {
 export function createReportsApi(client: ApiClient): ReportsApi {
   return new ReportsApiImpl(client);
 }
+
+/**
+ * Singleton instance of ReportsApi
+ * Pre-configured with the default apiClient
+ */
+export const reportsApi = createReportsApi(apiClient);

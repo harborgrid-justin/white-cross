@@ -11,6 +11,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
 import { createApiError, createValidationError } from '../core/errors';
@@ -1092,3 +1093,9 @@ export class AdministrationApi {
 export function createAdministrationApi(client: ApiClient): AdministrationApi {
   return new AdministrationApi(client);
 }
+
+/**
+ * Singleton instance of AdministrationApi
+ * Pre-configured with the default apiClient
+ */
+export const administrationApi = createAdministrationApi(apiClient);

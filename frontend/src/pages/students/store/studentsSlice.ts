@@ -6,14 +6,17 @@
  */
 
 import { createSlice, createEntitySlice, EntityApiService, PayloadAction } from '@reduxjs/toolkit';
-import { Student, CreateStudentData, UpdateStudentData, StudentFilters } from '../../../types/student.types';
+import { Student, CreateStudentData, UpdateStudentData, StudentFilters as StudentFiltersType } from '../../../types/student.types';
 import { studentsApi } from '../../../services/api';
+
+// Re-export StudentFilters type for external use
+export type { StudentFiltersType as StudentFilters };
 
 // UI State types
 export interface StudentUIState {
   selectedIds: string[];
   viewMode: 'grid' | 'list' | 'table';
-  filters: StudentFilters;
+  filters: StudentFiltersType;
   sortBy: 'name' | 'grade' | 'enrollmentDate' | 'lastVisit';
   sortOrder: 'asc' | 'desc';
   searchQuery: string;
@@ -26,7 +29,7 @@ export interface StudentUIState {
 
 // Create API service adapter for students
 const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStudentData> = {
-  async getAll(params?: StudentFilters) {
+  async getAll(params?: StudentFiltersType) {
     const response = await studentsApi.getAll(params);
     return {
       data: response.data?.students || [],
@@ -128,7 +131,7 @@ const studentUISlice = createSlice({
     },
 
     // Filter management
-    setFilters: (state, action: PayloadAction<Partial<StudentFilters>>) => {
+    setFilters: (state, action: PayloadAction<Partial<StudentFiltersType>>) => {
       state.filters = { ...state.filters, ...action.payload };
       state.currentPage = 1; // Reset to first page when filters change
     },
@@ -220,7 +223,7 @@ export const studentsThunks = studentsSliceFactory.thunks;
 export const selectStudentUIState = (state: any): StudentUIState => state.students.ui;
 export const selectSelectedStudentIds = (state: any): string[] => state.students.ui.selectedIds;
 export const selectStudentViewMode = (state: any): StudentUIState['viewMode'] => state.students.ui.viewMode;
-export const selectStudentFilters = (state: any): StudentFilters => state.students.ui.filters;
+export const selectStudentFilters = (state: any): StudentFiltersType => state.students.ui.filters;
 export const selectStudentSort = (state: any) => ({
   sortBy: state.students.ui.sortBy,
   sortOrder: state.students.ui.sortOrder,
