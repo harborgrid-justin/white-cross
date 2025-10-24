@@ -18,6 +18,7 @@
 
 import type { ApiClient } from '@/services/core/ApiClient';
 import { ApiResponse } from '../utils/apiUtils';
+import { createApiError } from '../core/errors';
 import { z } from 'zod';
 import {
   Vendor,

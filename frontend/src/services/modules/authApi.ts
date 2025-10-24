@@ -75,7 +75,7 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'READ_ONLY' | 'COUNSELOR';
+  role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'VIEWER' | 'COUNSELOR';
   schoolId?: string;
 }
 

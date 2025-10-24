@@ -299,7 +299,7 @@ export function FilteredNavigationExample() {
       name: 'Dashboard',
       path: '/dashboard',
       icon: 'Home',
-      roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'READ_ONLY'],
+      roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'VIEWER'],
     },
     {
       id: 'students',
@@ -322,7 +322,7 @@ export function FilteredNavigationExample() {
       name: 'Reports',
       path: '/reports',
       icon: 'BarChart',
-      roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'READ_ONLY'],
+      roles: ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'VIEWER'],
       permissions: [{ resource: 'reports', action: 'read' }],
     },
     {
