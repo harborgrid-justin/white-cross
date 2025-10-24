@@ -77,9 +77,11 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
   }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeIndex, setActiveIndex] = useState(-1);
     const selectRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+    const listboxId = `${selectId}-listbox`;
     const hasError = !!error;
 
     const selectedValues = Array.isArray(value) ? value : value !== undefined ? [value] : [];
@@ -146,11 +148,12 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
       <div className="w-full">
         {label && (
           <label
+            id={`${selectId}-label`}
             htmlFor={selectId}
             className={cn(
               'block text-sm font-medium mb-1',
-              hasError ? 'text-red-700' : 'text-gray-700',
-              disabled && 'text-gray-400'
+              hasError ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-gray-300',
+              disabled && 'text-gray-400 dark:text-gray-500'
             )}
           >
             {label}
@@ -161,14 +164,22 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
         <div className="relative" ref={selectRef}>
           <div
             id={selectId}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-haspopup="listbox"
+            aria-controls={listboxId}
+            aria-labelledby={label ? `${selectId}-label` : undefined}
+            aria-invalid={hasError}
+            aria-describedby={error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
             className={cn(
               'relative w-full cursor-pointer rounded-md border shadow-sm transition-colors',
               'focus:outline-none focus:ring-1',
-              'disabled:cursor-not-allowed disabled:bg-gray-50',
+              'disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800',
+              'dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200',
               selectVariants[variant],
               selectSizes[size],
               hasError && 'border-red-300 focus:border-red-500 focus:ring-red-500',
-              disabled && 'bg-gray-50 text-gray-500',
+              disabled && 'bg-gray-50 text-gray-500 dark:text-gray-400',
               className
             )}
             onClick={handleToggle}
@@ -177,12 +188,20 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handleToggle();
+              } else if (e.key === 'ArrowDown' && isOpen && activeIndex < filteredOptions.length - 1) {
+                e.preventDefault();
+                setActiveIndex(activeIndex + 1);
+              } else if (e.key === 'ArrowUp' && isOpen && activeIndex > 0) {
+                e.preventDefault();
+                setActiveIndex(activeIndex - 1);
+              } else if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false);
               }
             }}
           >
             <span className={cn(
               'block truncate',
-              selectedLabels.length === 0 && 'text-gray-400'
+              selectedLabels.length === 0 && 'text-gray-400 dark:text-gray-500'
             )}>
               {displayValue}
             </span>
@@ -217,17 +236,24 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
           </div>
 
           {isOpen && (
-            <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+            <div
+              id={listboxId}
+              role="listbox"
+              aria-label={label || 'Select options'}
+              aria-multiselectable={multiple}
+              className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg"
+            >
               {searchable && (
-                <div className="p-2 border-b border-gray-200">
+                <div className="p-2 border-b border-gray-200 dark:border-gray-700">
                   <input
                     ref={searchInputRef}
                     type="text"
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="Search options..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label="Search options"
                   />
                 </div>
               )}
@@ -237,18 +263,23 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
                 style={{ maxHeight }}
               >
                 {filteredOptions.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-gray-500">
+                  <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                     {searchTerm ? 'No options found' : 'No options available'}
                   </div>
                 ) : (
-                  filteredOptions.map((option) => {
+                  filteredOptions.map((option, index) => {
                     const isSelected = selectedValues.includes(option.value);
                     return (
                       <div
                         key={option.value}
+                        role="option"
+                        aria-selected={isSelected}
+                        aria-disabled={option.disabled}
                         className={cn(
                           'relative cursor-pointer select-none py-2 pl-3 pr-9 text-sm',
-                          isSelected ? 'bg-blue-100 text-blue-900' : 'text-gray-900 hover:bg-gray-100',
+                          isSelected
+                            ? 'bg-primary-100 text-primary-900 dark:bg-primary-900 dark:text-primary-100'
+                            : 'text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700',
                           option.disabled && 'cursor-not-allowed opacity-50'
                         )}
                         onClick={() => !option.disabled && handleOptionClick(option.value)}
@@ -261,8 +292,8 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
                         </span>
                         
                         {isSelected && (
-                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-blue-600">
-                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary-600 dark:text-primary-400">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                           </span>
