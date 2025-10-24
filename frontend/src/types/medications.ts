@@ -15,6 +15,12 @@
 // Main Types
 export type MedicationTab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions'
 
+/**
+ * Dosage form types for medications (UI-specific)
+ * Note: Backend Medication.dosageForm is a free STRING field, not enum-validated.
+ * This type provides standardized options for UI dropdowns, but backend accepts any string value.
+ * @see backend/src/database/models/core/Medication.ts
+ */
 export type DosageForm =
   | 'Tablet'
   | 'Capsule'
@@ -32,6 +38,14 @@ export type DosageForm =
   | 'Lozenge'
   | 'Topical'
 
+/**
+ * Administration route types for medications (UI-specific detailed list)
+ * Note: Backend StudentMedication.route is a free STRING field, not enum-validated.
+ * Backend has AdministrationRoute enum with UPPERCASE values, but it's used for vaccines, not student medications.
+ * This frontend type provides detailed UI options; backend accepts any string for StudentMedication.route.
+ * @see backend/src/database/models/medications/StudentMedication.ts (route: STRING field)
+ * @see backend/src/database/types/enums.ts:AdministrationRoute (vaccine-specific enum)
+ */
 export type AdministrationRoute =
   | 'Oral'
   | 'Sublingual'
@@ -46,18 +60,30 @@ export type AdministrationRoute =
   | 'Rectal'
   | 'Transdermal'
 
+/**
+ * Severity level for medication-related incidents
+ * Similar to IncidentSeverity enum
+ */
 export type SeverityLevel =
   | 'LOW'
   | 'MEDIUM'
   | 'HIGH'
   | 'CRITICAL'
 
+/**
+ * Adverse reaction severity levels
+ * @aligned_with backend/src/database/types/enums.ts:AllergySeverity
+ */
 export type AdverseReactionSeverity =
   | 'MILD'
   | 'MODERATE'
   | 'SEVERE'
   | 'LIFE_THREATENING'
 
+/**
+ * Medication log status types (UI-specific)
+ * Note: Used for UI display. Backend MedicationLog tracks administration records without status enum.
+ */
 export type MedicationLogStatus =
   | 'administered'
   | 'missed'
@@ -78,7 +104,39 @@ import type {
   InventoryTransaction
 } from './api'
 
-// Medication-specific interface that extends base
+/**
+ * Medication administration log
+ * @aligned_with backend/src/database/models/medications/MedicationLog.ts
+ *
+ * HIPAA: Contains PHI - Student medication administration records
+ *
+ * Records each instance of medication administration to students.
+ * Provides complete audit trail for medication dispensing with timestamps,
+ * dosage information, and nurse documentation. Critical for HIPAA compliance
+ * and medication error prevention.
+ *
+ * Five Rights of Medication Administration:
+ * - Right Patient (patientVerified: true)
+ * - Right Medication (linked via studentMedicationId)
+ * - Right Dose (dosageGiven must match prescription)
+ * - Right Route (inherited from StudentMedication)
+ * - Right Time (timeGiven timestamp)
+ *
+ * @property {string} dosageGiven - Actual dosage administered (may differ from prescribed)
+ * @property {string} timeGiven - Exact date and time medication was administered
+ * @property {string} administeredBy - Name of person who administered the medication
+ * @property {string} notes - Additional notes about administration
+ * @property {string} sideEffects - Any observed side effects or adverse reactions
+ * @property {string} deviceId - Device ID used for administration (for idempotency)
+ * @property {string} witnessId - Witness user ID (required for controlled substances Schedule I-II)
+ * @property {string} witnessName - Name of witness who verified administration
+ * @property {boolean} patientVerified - Whether patient identity was verified (Right Patient)
+ * @property {boolean} allergyChecked - Whether allergies were checked before administration
+ * @property {string} createdBy - User who created this log entry (audit trail)
+ * @property {string} updatedBy - User who last updated this log (audit trail)
+ *
+ * Note: Backend model has timestamps: false for updatedAt, only createdAt is tracked
+ */
 export interface MedicationLog {
   id: string
   studentMedicationId: string
@@ -88,6 +146,11 @@ export interface MedicationLog {
   timeGiven: string
   notes?: string
   sideEffects?: string
+  deviceId?: string
+  witnessId?: string
+  witnessName?: string
+  patientVerified: boolean
+  allergyChecked: boolean
   nurse?: {
     id: string
     firstName: string
@@ -96,7 +159,10 @@ export interface MedicationLog {
   }
   studentMedication?: StudentMedication
   createdAt: string
-  updatedAt: string
+
+  // Audit fields
+  createdBy?: string
+  updatedBy?: string
 }
 
 // Form Data Interfaces (medication-specific extensions)

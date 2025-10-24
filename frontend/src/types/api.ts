@@ -73,34 +73,80 @@ import type {
 // MEDICATIONS MODULE
 // =====================
 
+/**
+ * Medication entity representing a medication in the formulary
+ * @aligned_with backend/src/database/models/core/Medication.ts
+ */
 export interface Medication extends BaseEntity {
   name: string;
   genericName?: string;
   dosageForm: string;
   strength: string;
   manufacturer?: string;
-  ndc?: string;
+  ndc?: string; // National Drug Code
   isControlled: boolean;
+  deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V'; // DEA Schedule for controlled substances
+  requiresWitness: boolean; // Whether administration requires witness (typically Schedule I-II)
   category?: string;
   description?: string;
   sideEffects?: string[];
   contraindications?: string[];
 }
 
+/**
+ * Medication inventory tracking
+ * @aligned_with backend/src/database/models/medications/MedicationInventory.ts
+ *
+ * Tracks medication stock levels with batch numbers, expiration dates, and costs.
+ * Critical for DEA controlled substance requirements, FDA batch tracking, and recall management.
+ *
+ * @property {string} batchNumber - Manufacturer batch/lot number (required for FDA recalls)
+ * @property {number} quantity - Current stock quantity (updated on dispensing/receiving)
+ * @property {number} reorderLevel - Minimum threshold for reorder alerts (default: 10)
+ * @property {string} expirationDate - Cannot dispense after this date (regulatory violation)
+ * @property {number} costPerUnit - Cost per unit for budget tracking (DECIMAL(10,2))
+ * @property {string} supplier - Supplier/pharmacy name (must have DEA registration for controlled substances)
+ * @property {string} createdBy - User who created the inventory record (audit trail)
+ * @property {string} updatedBy - User who last updated the record (tracks quantity adjustments)
+ */
 export interface MedicationInventory extends BaseEntity {
   medicationId: string;
   medication?: Medication;
   batchNumber: string;
   quantity: number;
   reorderLevel: number;
-  reorderQuantity?: number;
   expirationDate: string;
   costPerUnit?: number;
   supplier?: string;
-  location?: string;
-  notes?: string;
+
+  // Audit fields
+  createdBy?: string;
+  updatedBy?: string;
 }
 
+/**
+ * Student medication assignment (prescription)
+ * @aligned_with backend/src/database/models/medications/StudentMedication.ts
+ *
+ * HIPAA: Contains PHI - Student medication information
+ *
+ * Manages medication prescriptions assigned to individual students.
+ * Links students with specific medications and tracks prescription details.
+ * HIPAA-compliant with audit trail for all prescription changes.
+ *
+ * @property {string} dosage - Medication dosage (e.g., "10mg", "2 tablets")
+ * @property {string} frequency - Administration frequency (e.g., "Once daily", "Twice daily", "As needed")
+ * @property {MedicationRoute} route - Administration route (backend: string, frontend: enum for type safety)
+ * @property {string} startDate - Date when medication regimen begins
+ * @property {string} endDate - Date when medication regimen ends (null for ongoing)
+ * @property {string} instructions - Special instructions for medication administration
+ * @property {string} prescribedBy - Name of prescribing healthcare provider
+ * @property {string} prescriptionNumber - Prescription number for tracking and verification
+ * @property {number} refillsRemaining - Number of refills remaining (0-12)
+ * @property {boolean} isActive - Whether this prescription is currently active
+ * @property {string} createdBy - User who created the prescription (audit trail)
+ * @property {string} updatedBy - User who last updated the prescription
+ */
 export interface StudentMedication extends BaseEntity {
   studentId: string;
   medicationId: string;
@@ -112,10 +158,15 @@ export interface StudentMedication extends BaseEntity {
   instructions?: string;
   prescribedBy: string;
   prescriptionNumber?: string;
+  refillsRemaining?: number;
   isActive: boolean;
   student?: Student;
   medication?: Medication;
   administrationLogs?: MedicationAdministration[];
+
+  // Audit fields
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface MedicationAdministration extends BaseEntity {

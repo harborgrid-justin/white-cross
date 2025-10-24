@@ -53,14 +53,28 @@ export interface SearchParams {
   order?: 'asc' | 'desc';
 }
 
+/**
+ * User interface
+ * @aligned_with backend/src/database/models/core/User.ts
+ *
+ * Note: Sensitive fields excluded for security (password, tokens, secrets, failedLoginAttempts)
+ */
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
-  active: boolean;
-  lastLogin?: string;
+  role: string; // UserRole enum
+  isActive: boolean; // Account active status
+  lastLogin?: string; // Date from backend
+  schoolId?: string; // Associated school UUID
+  districtId?: string; // Associated district UUID
+  phone?: string; // Phone number
+  emailVerified: boolean; // Email verification status
+  twoFactorEnabled: boolean; // 2FA enabled status
+  lockoutUntil?: string; // Account lockout expiration (Date from backend)
+  lastPasswordChange?: string; // Last password change timestamp (Date from backend)
+  mustChangePassword: boolean; // Force password change flag
   createdAt: string;
   updatedAt: string;
 }
@@ -72,32 +86,129 @@ export interface PaginationParams {
 }
 
 // Application-specific common types
-export type UserRole = 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'READ_ONLY' | 'COUNSELOR';
+// All type unions aligned with backend enums for API compatibility
 
+/**
+ * User role enumeration
+ * @aligned_with backend/src/database/types/enums.ts:UserRole
+ */
+export type UserRole = 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'VIEWER' | 'COUNSELOR';
+
+/**
+ * Gender enumeration
+ * @aligned_with backend/src/database/types/enums.ts:Gender
+ */
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
 
+/**
+ * Generic priority type
+ * @deprecated Use specific priority types instead: MessagePriority, ActionPriority, WaitlistPriority
+ * This generic type doesn't map to a specific backend enum and may cause confusion.
+ */
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | 'CRITICAL';
 
+/**
+ * Generic status type (UI-specific)
+ * Note: Not a backend enum. Various models have their own specific status enums.
+ */
 export type Status = 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED' | 'ARCHIVED';
 
+/**
+ * Contact priority enumeration
+ * @aligned_with backend/src/database/types/enums.ts:ContactPriority
+ */
 export type ContactPriority = 'PRIMARY' | 'SECONDARY' | 'EMERGENCY_ONLY';
 
+/**
+ * Allergy severity enumeration
+ * @aligned_with backend/src/database/types/enums.ts:AllergySeverity
+ */
 export type AllergySeverity = 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
 
+/**
+ * Medication route enumeration (UI-specific detailed list)
+ * Note: Backend StudentMedication.route is a free STRING field, not enum-validated.
+ * This type provides standardized options for UI dropdowns but backend accepts any string.
+ */
 export type MedicationRoute = 'ORAL' | 'TOPICAL' | 'INJECTION' | 'INHALATION' | 'SUBLINGUAL' | 'RECTAL' | 'OTHER';
 
+/**
+ * Appointment type enumeration
+ * @aligned_with backend/src/database/types/enums.ts:AppointmentType
+ */
 export type AppointmentType = 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
 
+/**
+ * Appointment status enumeration
+ * @aligned_with backend/src/database/types/enums.ts:AppointmentStatus
+ */
 export type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 
+/**
+ * Incident type enumeration
+ * @aligned_with backend/src/database/types/enums.ts:IncidentType
+ */
 export type IncidentType = 'INJURY' | 'ILLNESS' | 'BEHAVIORAL' | 'MEDICATION_ERROR' | 'ALLERGIC_REACTION' | 'EMERGENCY' | 'OTHER';
 
+/**
+ * Inventory transaction type enumeration
+ * @aligned_with backend/src/database/types/enums.ts:InventoryTransactionType
+ */
 export type InventoryTransactionType = 'PURCHASE' | 'USAGE' | 'ADJUSTMENT' | 'TRANSFER' | 'DISPOSAL';
 
+/**
+ * Purchase order status enumeration
+ * @aligned_with backend/src/database/types/enums.ts:PurchaseOrderStatus
+ */
 export type PurchaseOrderStatus = 'PENDING' | 'APPROVED' | 'ORDERED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
 
+/**
+ * Compliance status enumeration
+ * @aligned_with backend/src/database/types/enums.ts:ComplianceStatus
+ */
 export type ComplianceStatus = 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDER_REVIEW';
 
+/**
+ * Message type enumeration for communication channels
+ * @aligned_with backend/src/database/types/enums.ts:MessageType
+ */
+export type MessageType = 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION' | 'VOICE';
+
+/**
+ * Message priority enumeration
+ * @aligned_with backend/src/database/types/enums.ts:MessagePriority
+ */
+export type MessagePriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+
+/**
+ * Message category enumeration
+ * @aligned_with backend/src/database/types/enums.ts:MessageCategory
+ */
+export type MessageCategory =
+  | 'EMERGENCY'
+  | 'HEALTH_UPDATE'
+  | 'APPOINTMENT_REMINDER'
+  | 'MEDICATION_REMINDER'
+  | 'GENERAL'
+  | 'INCIDENT_NOTIFICATION'
+  | 'COMPLIANCE';
+
+/**
+ * Delivery status enumeration for message delivery tracking
+ * @aligned_with backend/src/database/types/enums.ts:DeliveryStatus
+ */
+export type DeliveryStatus = 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED' | 'BOUNCED';
+
+/**
+ * Recipient type enumeration for message recipients
+ * @aligned_with backend/src/database/types/enums.ts:RecipientType
+ */
+export type RecipientType = 'STUDENT' | 'EMERGENCY_CONTACT' | 'PARENT' | 'NURSE' | 'ADMIN';
+
+/**
+ * Notification method (UI-specific)
+ * @deprecated Consider using MessageType for better backend alignment
+ */
 export type NotificationMethod = 'SMS' | 'EMAIL' | 'PHONE' | 'PUSH' | 'IN_APP';
 
 // Base interfaces that can be extended

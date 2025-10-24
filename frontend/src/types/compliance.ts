@@ -135,6 +135,7 @@ export enum AuditAction {
 
 /**
  * Compliance report with associated checklist items
+ * @aligned_with backend/src/database/models/compliance/ComplianceReport.ts
  */
 export interface ComplianceReport {
   id: string;
@@ -158,6 +159,7 @@ export interface ComplianceReport {
 
 /**
  * Individual checklist item for compliance tracking
+ * @aligned_with backend/src/database/models/compliance/ComplianceChecklistItem.ts
  */
 export interface ComplianceChecklistItem {
   id: string;
@@ -199,6 +201,7 @@ export interface ComplianceStatistics {
 
 /**
  * Consent form template
+ * @aligned_with backend/src/database/models/compliance/ConsentForm.ts
  */
 export interface ConsentForm {
   id: string;
@@ -216,6 +219,9 @@ export interface ConsentForm {
 
 /**
  * Consent signature record
+ * @aligned_with backend/src/database/models/compliance/ConsentSignature.ts
+ *
+ * Note: Backend has timestamps: false, so no createdAt/updatedAt fields
  */
 export interface ConsentSignature {
   id: string;
@@ -228,8 +234,6 @@ export interface ConsentSignature {
   ipAddress?: string;
   withdrawnAt?: string;
   withdrawnBy?: string;
-  createdAt: string;
-  updatedAt: string;
   consentForm?: ConsentForm;
   student?: {
     id: string;
@@ -245,6 +249,7 @@ export interface ConsentSignature {
 
 /**
  * Policy document with versioning
+ * @aligned_with backend/src/database/models/compliance/PolicyDocument.ts
  */
 export interface PolicyDocument {
   id: string;
@@ -264,6 +269,9 @@ export interface PolicyDocument {
 
 /**
  * Policy acknowledgment by users
+ * @aligned_with backend/src/database/models/compliance/PolicyAcknowledgment.ts
+ *
+ * Note: Backend has timestamps: false, so no createdAt/updatedAt fields
  */
 export interface PolicyAcknowledgment {
   id: string;
@@ -271,8 +279,6 @@ export interface PolicyAcknowledgment {
   userId: string;
   acknowledgedAt: string;
   ipAddress?: string;
-  createdAt: string;
-  updatedAt: string;
   policy?: PolicyDocument;
   user?: {
     id: string;
@@ -289,6 +295,9 @@ export interface PolicyAcknowledgment {
 
 /**
  * Audit log entry for HIPAA compliance tracking
+ * @aligned_with backend/src/database/models/compliance/AuditLog.ts
+ *
+ * HIPAA Compliance: Immutable audit trail for 6-year retention requirement
  */
 export interface AuditLog {
   id: string;

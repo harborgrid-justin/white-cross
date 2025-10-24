@@ -42,6 +42,10 @@ export enum OrderPriority {
 // PURCHASE ORDER ENTITIES
 // =====================
 
+/**
+ * Purchase Order
+ * @aligned_with backend/src/database/models/inventory/PurchaseOrder.ts
+ */
 export interface PurchaseOrder extends BaseEntity {
   orderNumber: string;
   vendorId: string;
@@ -61,13 +65,19 @@ export interface PurchaseOrder extends BaseEntity {
   // Relations
   items?: PurchaseOrderItem[];
 
-  // Computed fields
+  // Computed fields (UI-specific)
   totalItems?: number;
   receivedItems?: number;
   pendingItems?: number;
   fulfillmentPercentage?: number;
 }
 
+/**
+ * Purchase Order Item (Line Item)
+ * @aligned_with backend/src/database/models/inventory/PurchaseOrderItem.ts
+ *
+ * Note: Backend model has timestamps: false (only createdAt, no updatedAt)
+ */
 export interface PurchaseOrderItem extends BaseEntity {
   purchaseOrderId: string;
   inventoryItemId: string;
@@ -81,7 +91,7 @@ export interface PurchaseOrderItem extends BaseEntity {
   purchaseOrder?: PurchaseOrder;
   inventoryItem?: InventoryItemDetail;
 
-  // Computed fields
+  // Computed fields (UI-specific)
   pendingQty?: number;
   isFullyReceived?: boolean;
 }

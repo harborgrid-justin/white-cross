@@ -65,6 +65,7 @@ export type InventoryAlertSeverity =
 
 /**
  * Inventory Item - Represents a trackable item in the inventory system
+ * @aligned_with backend/src/database/models/inventory/InventoryItem.ts
  */
 export interface InventoryItem extends BaseEntity {
   name: string;
@@ -92,6 +93,10 @@ export interface InventoryItem extends BaseEntity {
 
 /**
  * Inventory Transaction - Tracks all inventory movements
+ * @aligned_with backend/src/database/models/inventory/InventoryTransaction.ts
+ *
+ * Note: Backend model has timestamps: false (only createdAt, no updatedAt)
+ * Transactions are immutable once created.
  */
 export interface InventoryTransaction extends BaseEntity {
   inventoryItemId: string;
@@ -142,6 +147,7 @@ export interface MaintenanceLog extends BaseEntity {
 
 /**
  * Vendor - Supplier information for inventory items
+ * @aligned_with backend/src/database/models/inventory/Vendor.ts
  */
 export interface Vendor extends BaseEntity {
   name: string;
@@ -159,6 +165,7 @@ export interface Vendor extends BaseEntity {
 
 /**
  * Purchase Order - Tracks purchase orders for inventory items
+ * @aligned_with backend/src/database/models/inventory/PurchaseOrder.ts
  */
 export interface PurchaseOrder extends BaseEntity {
   orderNumber: string;
@@ -172,6 +179,8 @@ export interface PurchaseOrder extends BaseEntity {
   shipping: number;
   total: number;
   status: PurchaseOrderStatus;
+  approvedBy?: string;
+  approvedAt?: string;
 
   // Associations
   vendor?: Vendor;
@@ -180,6 +189,9 @@ export interface PurchaseOrder extends BaseEntity {
 
 /**
  * Purchase Order Item - Line items in a purchase order
+ * @aligned_with backend/src/database/models/inventory/PurchaseOrderItem.ts
+ *
+ * Note: Backend model has timestamps: false (only createdAt, no updatedAt)
  */
 export interface PurchaseOrderItem extends BaseEntity {
   purchaseOrderId: string;
@@ -187,6 +199,8 @@ export interface PurchaseOrderItem extends BaseEntity {
   quantity: number;
   unitCost: number;
   totalCost: number;
+  receivedQty: number;
+  notes?: string;
 
   // Associations
   inventoryItem?: InventoryItem;

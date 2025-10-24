@@ -47,6 +47,7 @@ export enum BudgetRecommendation {
 
 /**
  * Budget Category - Represents a spending category for fiscal tracking
+ * @aligned_with backend/src/database/models/inventory/BudgetCategory.ts
  */
 export interface BudgetCategory extends BaseEntity {
   name: string;
@@ -56,7 +57,7 @@ export interface BudgetCategory extends BaseEntity {
   spentAmount: number;
   isActive: boolean;
 
-  // Calculated fields (from service/query)
+  // Calculated fields (from service/query, UI-specific)
   remainingAmount?: number;
   utilizationPercentage?: number;
   status?: BudgetStatus;
@@ -67,6 +68,10 @@ export interface BudgetCategory extends BaseEntity {
 
 /**
  * Budget Transaction - Tracks individual spending transactions
+ * @aligned_with backend/src/database/models/inventory/BudgetTransaction.ts
+ *
+ * Note: Backend model has timestamps: false (only createdAt, no updatedAt)
+ * Transactions are immutable once created.
  */
 export interface BudgetTransaction extends BaseEntity {
   categoryId: string;

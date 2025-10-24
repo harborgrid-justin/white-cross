@@ -69,5 +69,138 @@ function useDashboardStatistics(filters?: { dateFrom?: string; dateTo?: string }
         
         totalStudents: studentCount.total || 0,
         studentsTrend: studentCount.trend || 0,
-        
-        criticalAlerts: inventoryAlerts.filter((alert: any) => 
+
+        criticalAlerts: inventoryAlerts.filter((alert: any) => alert.severity === 'critical').length || 0
+      };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // Refetch every minute
+  });
+}
+
+/**
+ * Real Data Dashboard Component
+ */
+export function RealDataIntegrationExample({ className, nurseId, dateRange }: RealDataDashboardProps) {
+  const { data: stats, isLoading, error, refetch } = useDashboardStatistics({
+    dateFrom: dateRange?.startDate,
+    dateTo: dateRange?.endDate,
+  });
+
+  const { data: upcomingAppointments } = useUpcomingAppointments({
+    limit: 5,
+    nurseId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={cn('p-6 space-y-4', className)}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded-lg"></div>
+          <div className="h-32 bg-gray-200 rounded-lg"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn('p-6', className)}>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+          Error loading dashboard data. Please try again.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('p-6 space-y-6', className)}>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Appointments"
+          value={stats?.totalAppointments ?? 0}
+          trend={stats?.appointmentsTrend ?? 0}
+          icon={Calendar}
+          color="blue"
+        />
+        <StatCard
+          title="Total Students"
+          value={stats?.totalStudents ?? 0}
+          trend={stats?.studentsTrend ?? 0}
+          icon={Users}
+          color="green"
+        />
+        <StatCard
+          title="Completed Today"
+          value={stats?.completedToday ?? 0}
+          icon={CheckCircle}
+          color="emerald"
+        />
+        <StatCard
+          title="Critical Alerts"
+          value={stats?.criticalAlerts ?? 0}
+          icon={AlertTriangle}
+          color="red"
+        />
+      </div>
+
+      {/* Upcoming Appointments */}
+      {upcomingAppointments && upcomingAppointments.length > 0 && (
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold mb-4">Upcoming Appointments</h3>
+          <div className="space-y-2">
+            {upcomingAppointments.slice(0, 5).map((appointment: any) => (
+              <div key={appointment.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                <div>
+                  <p className="font-medium">{appointment.studentName}</p>
+                  <p className="text-sm text-gray-500">{appointment.appointmentType}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm">{new Date(appointment.scheduledAt).toLocaleTimeString()}</p>
+                  <p className="text-xs text-gray-500">{appointment.status}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  trend?: number;
+  icon: React.ElementType;
+  color: 'blue' | 'green' | 'emerald' | 'red';
+}
+
+function StatCard({ title, value, trend, icon: Icon, color }: StatCardProps) {
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600',
+    green: 'bg-green-50 text-green-600',
+    emerald: 'bg-emerald-50 text-emerald-600',
+    red: 'bg-red-50 text-red-600',
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-600">{title}</p>
+          <p className="text-2xl font-bold mt-1">{value}</p>
+          {trend !== undefined && (
+            <p className={cn('text-sm mt-1', trend >= 0 ? 'text-green-600' : 'text-red-600')}>
+              {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+            </p>
+          )}
+        </div>
+        <div className={cn('p-3 rounded-full', colorClasses[color])}>
+          <Icon className="w-6 h-6" />
+        </div>
+      </div>
+    </div>
+  );
+}
