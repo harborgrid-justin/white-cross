@@ -78,6 +78,7 @@ export enum SessionStatus {
 
 /**
  * Role - Represents a user role with associated permissions
+ * @aligned_with backend/src/database/models/security/Role.ts
  */
 export interface Role {
   id: string;
@@ -92,6 +93,9 @@ export interface Role {
 
 /**
  * Permission - Represents a specific permission for a resource action
+ * @aligned_with backend/src/database/models/security/Permission.ts
+ *
+ * Note: Backend Permission model does not have updatedAt field (timestamps: false in backend)
  */
 export interface Permission {
   id: string;
@@ -99,11 +103,13 @@ export interface Permission {
   action: string;
   description?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 /**
  * RolePermission - Junction table linking roles to permissions
+ * @aligned_with backend/src/database/models/security/RolePermission.ts
+ *
+ * Note: Backend has timestamps: false, so no updatedAt field
  */
 export interface RolePermission {
   id: string;
@@ -112,20 +118,21 @@ export interface RolePermission {
   role?: Role;
   permission?: Permission;
   createdAt: string;
-  updatedAt: string;
 }
 
 /**
  * UserRoleAssignment - Assigns roles to users
+ * @aligned_with backend/src/database/models/security/UserRoleAssignment.ts
+ *
+ * Note: Backend has timestamps: false, so no updatedAt field
+ * Note: assignedAt is redundant with createdAt (removed)
  */
 export interface UserRoleAssignment {
   id: string;
   userId: string;
   roleId: string;
   role?: Role;
-  assignedAt?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 // ============================================================================
@@ -134,6 +141,9 @@ export interface UserRoleAssignment {
 
 /**
  * Session - Represents an active user session
+ * @aligned_with backend/src/database/models/security/Session.ts
+ *
+ * Note: Backend has timestamps: false, so no updatedAt field
  */
 export interface Session {
   id: string;
@@ -144,11 +154,13 @@ export interface Session {
   expiresAt: string;
   lastActivity: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 /**
  * LoginAttempt - Tracks login attempts for security monitoring
+ * @aligned_with backend/src/database/models/security/LoginAttempt.ts
+ *
+ * Note: Backend has timestamps: false, so no updatedAt field
  */
 export interface LoginAttempt {
   id: string;
@@ -158,7 +170,6 @@ export interface LoginAttempt {
   userAgent?: string;
   failureReason?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 // ============================================================================
@@ -167,6 +178,7 @@ export interface LoginAttempt {
 
 /**
  * SecurityIncident - Represents a security incident or breach
+ * @aligned_with backend/src/database/models/security/SecurityIncident.ts
  */
 export interface SecurityIncident {
   id: string;

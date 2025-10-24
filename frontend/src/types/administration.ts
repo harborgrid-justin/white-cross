@@ -172,6 +172,8 @@ export enum UserRole {
 
 /**
  * District entity
+ *
+ * @aligned_with backend/src/database/models/administration/District.ts
  */
 export interface District {
   id: string;
@@ -183,16 +185,19 @@ export interface District {
   zipCode?: string;
   phone?: string;
   email?: string;
-  website?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+
+  // Frontend-only relationship fields
   schools?: School[];
   licenses?: License[];
 }
 
 /**
  * School entity
+ *
+ * @aligned_with backend/src/database/models/administration/School.ts
  */
 export interface School {
   id: string;
@@ -210,6 +215,8 @@ export interface School {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+
+  // Frontend-only relationship field
   district?: {
     id: string;
     name: string;
@@ -284,28 +291,36 @@ export interface UpdateSchoolData {
 
 /**
  * System configuration entity
+ *
+ * @aligned_with backend/src/database/models/administration/SystemConfiguration.ts
  */
 export interface SystemConfiguration {
   id: string;
   key: string;
   value: string;
-  category: ConfigCategory;
   valueType: ConfigValueType;
+  category: ConfigCategory;
   subCategory?: string;
   description?: string;
+  defaultValue?: string;
+  validValues: string[];
+  minValue?: number;
+  maxValue?: number;
   isPublic: boolean;
   isEditable: boolean;
   requiresRestart: boolean;
   scope: ConfigScope;
   scopeId?: string;
-  tags?: string[];
-  sortOrder?: number;
+  tags: string[];
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
 
 /**
  * Configuration history tracking
+ *
+ * @aligned_with backend/src/database/models/administration/ConfigurationHistory.ts
  */
 export interface ConfigurationHistory {
   id: string;
@@ -314,6 +329,10 @@ export interface ConfigurationHistory {
   oldValue?: string;
   newValue: string;
   changedBy: string;
+  changedByName?: string;
+  changeReason?: string;
+  ipAddress?: string;
+  userAgent?: string;
   createdAt: string;
 }
 
@@ -364,6 +383,8 @@ export interface SystemSettingItem {
 
 /**
  * License entity
+ *
+ * @aligned_with backend/src/database/models/administration/License.ts
  */
 export interface License {
   id: string;
@@ -378,10 +399,12 @@ export interface License {
   expiresAt?: string;
   activatedAt?: string;
   deactivatedAt?: string;
-  districtId?: string;
   notes?: string;
+  districtId?: string;
   createdAt: string;
   updatedAt: string;
+
+  // Frontend-only relationship field
   district?: {
     id: string;
     name: string;
@@ -424,6 +447,9 @@ export interface UpdateLicenseData {
 
 /**
  * Backup log entity
+ *
+ * @aligned_with backend/src/database/models/administration/BackupLog.ts
+ * @note Backend has timestamps: false, so no updatedAt field
  */
 export interface BackupLog {
   id: string;
@@ -437,7 +463,6 @@ export interface BackupLog {
   error?: string;
   triggeredBy?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 /**
@@ -452,6 +477,9 @@ export interface CreateBackupData {
 
 /**
  * Performance metric entity
+ *
+ * @aligned_with backend/src/database/models/administration/PerformanceMetric.ts
+ * @note Backend has timestamps: false, so no createdAt field
  */
 export interface PerformanceMetric {
   id: string;
@@ -460,7 +488,6 @@ export interface PerformanceMetric {
   unit?: string;
   context?: Record<string, any>;
   recordedAt: string;
-  createdAt: string;
 }
 
 /**
@@ -514,6 +541,8 @@ export interface RecordMetricData {
 
 /**
  * Training module entity
+ *
+ * @aligned_with backend/src/database/models/administration/TrainingModule.ts
  */
 export interface TrainingModule {
   id: string;
@@ -524,24 +553,33 @@ export interface TrainingModule {
   category: TrainingCategory;
   isRequired: boolean;
   order: number;
-  attachments?: string[];
+  attachments: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+
+  // Frontend-only relationship field
   completions?: TrainingCompletion[];
 }
 
 /**
  * Training completion tracking
+ *
+ * @aligned_with backend/src/database/models/administration/TrainingCompletion.ts
+ * @note Backend has timestamps: false, so no updatedAt field
  */
 export interface TrainingCompletion {
   id: string;
-  moduleId: string;
   userId: string;
+  moduleId: string;
   score?: number;
   completedAt: string;
+  expiresAt?: string;
+  certificateUrl?: string;
+  notes?: string;
   createdAt: string;
-  updatedAt: string;
+
+  // Frontend-only relationship field
   module?: TrainingModule;
 }
 

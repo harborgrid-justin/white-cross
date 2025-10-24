@@ -195,6 +195,8 @@ export interface AppointmentReminder extends BaseEntity {
 
 /**
  * Appointment Waitlist Entity
+ * @aligned_with backend/src/database/models/healthcare/AppointmentWaitlist.ts
+ *
  * Represents students waiting for an available appointment slot
  */
 export interface AppointmentWaitlist extends BaseEntity {
@@ -217,6 +219,8 @@ export interface AppointmentWaitlist extends BaseEntity {
 
 /**
  * Nurse Availability Entity
+ * @aligned_with backend/src/database/models/healthcare/NurseAvailability.ts
+ *
  * Defines when nurses are available for appointments
  */
 export interface NurseAvailability extends BaseEntity {

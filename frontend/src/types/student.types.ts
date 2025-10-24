@@ -70,6 +70,9 @@ export type ContactRelationship =
 
 /**
  * Emergency contact interface matching backend EmergencyContact model
+ * @aligned_with backend/src/database/models/core/EmergencyContact.ts
+ *
+ * PHI: firstName, lastName, phoneNumber, email, address
  */
 export interface EmergencyContact {
   id: string
@@ -367,6 +370,9 @@ export interface NurseReference {
 
 /**
  * Complete student interface matching backend Student model with associations
+ * @aligned_with backend/src/database/models/core/Student.ts
+ *
+ * PHI: firstName, lastName, dateOfBirth, photo, medicalRecordNum
  */
 export interface Student {
   id: string

@@ -52,6 +52,12 @@ export enum VendorRating {
 // VENDOR ENTITY
 // =====================
 
+/**
+ * Vendor/Supplier
+ * @aligned_with backend/src/database/models/inventory/Vendor.ts
+ *
+ * Note: accountNumber is UI-specific field not present in backend model
+ */
 export interface Vendor extends BaseEntity {
   name: string;
   contactName?: string;
@@ -61,15 +67,17 @@ export interface Vendor extends BaseEntity {
   website?: string;
   taxId?: string;
   paymentTerms?: string | PaymentTerms;
-  accountNumber?: string;
   notes?: string;
   rating?: number | null;
   isActive: boolean;
 
+  // UI-specific fields
+  accountNumber?: string;
+
   // Relations
   purchaseOrders?: any[]; // Will be typed in purchaseOrders.ts to avoid circular dependency
 
-  // Computed fields
+  // Computed fields (UI-specific)
   orderCount?: number;
   totalSpent?: number;
   lastOrderDate?: string;

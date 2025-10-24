@@ -24,7 +24,7 @@ import type { BaseEntity, Student, User, Priority } from './common';
 
 /**
  * Incident type classification
- * Matches backend IncidentType enum
+ * @aligned_with backend/src/database/types/enums.ts:IncidentType
  */
 export enum IncidentType {
   INJURY = 'INJURY',
@@ -38,7 +38,7 @@ export enum IncidentType {
 
 /**
  * Incident severity levels
- * Matches backend IncidentSeverity enum
+ * @aligned_with backend/src/database/types/enums.ts:IncidentSeverity
  */
 export enum IncidentSeverity {
   LOW = 'LOW',
@@ -48,7 +48,8 @@ export enum IncidentSeverity {
 }
 
 /**
- * Incident status tracking
+ * Incident status tracking (UI-specific)
+ * Note: Used for frontend workflow states. Backend tracks status via other fields.
  */
 export enum IncidentStatus {
   OPEN = 'OPEN',
@@ -59,7 +60,7 @@ export enum IncidentStatus {
 
 /**
  * Witness type classification
- * Matches backend WitnessType enum
+ * @aligned_with backend/src/database/types/enums.ts:WitnessType
  */
 export enum WitnessType {
   STUDENT = 'STUDENT',
@@ -70,7 +71,7 @@ export enum WitnessType {
 
 /**
  * Follow-up action priority levels
- * Matches backend ActionPriority enum
+ * @aligned_with backend/src/database/types/enums.ts:ActionPriority
  */
 export enum ActionPriority {
   LOW = 'LOW',
@@ -81,7 +82,7 @@ export enum ActionPriority {
 
 /**
  * Follow-up action status
- * Matches backend ActionStatus enum
+ * @aligned_with backend/src/database/types/enums.ts:ActionStatus
  */
 export enum ActionStatus {
   PENDING = 'PENDING',
@@ -92,7 +93,7 @@ export enum ActionStatus {
 
 /**
  * Insurance claim status tracking
- * Matches backend InsuranceClaimStatus enum
+ * @aligned_with backend/src/database/types/enums.ts:InsuranceClaimStatus
  */
 export enum InsuranceClaimStatus {
   NOT_FILED = 'NOT_FILED',
@@ -105,7 +106,7 @@ export enum InsuranceClaimStatus {
 
 /**
  * Legal compliance status
- * Matches backend ComplianceStatus enum
+ * @aligned_with backend/src/database/types/enums.ts:ComplianceStatus
  */
 export enum ComplianceStatus {
   PENDING = 'PENDING',
@@ -115,7 +116,8 @@ export enum ComplianceStatus {
 }
 
 /**
- * Parent notification methods
+ * Parent notification methods (UI-specific)
+ * Note: Used for tracking notification methods in UI. Not a backend enum.
  */
 export enum ParentNotificationMethod {
   EMAIL = 'email',
@@ -126,7 +128,8 @@ export enum ParentNotificationMethod {
 }
 
 /**
- * Evidence file types
+ * Evidence file types (UI-specific)
+ * Note: Used for UI file type classification. Not a backend enum.
  */
 export enum EvidenceType {
   PHOTO = 'photo',
@@ -142,48 +145,62 @@ export enum EvidenceType {
 /**
  * Main Incident Report entity
  * Contains all information about a safety or health incident
+ *
+ * @aligned_with backend/src/database/models/incidents/IncidentReport.ts
+ *
+ * PHI/PII Fields:
+ * - studentId: Student identifier involved in incident (PII)
+ * - reportedById: User identifier who reported the incident (PII)
+ * - description: Detailed incident description may contain health information (PHI)
+ * - actionsTaken: Medical actions and interventions (PHI)
+ * - witnesses: Array of witness identifiers (PII)
+ * - parentNotifiedBy: User identifier who notified parent (PII)
+ * - followUpNotes: May contain medical follow-up information (PHI)
+ * - evidencePhotos/evidenceVideos: May contain images/videos of injuries (PHI)
+ *
+ * Note: status, discoveredAt, and reportedAt are UI-specific fields not in backend model
  */
 export interface IncidentReport extends BaseEntity {
   // Student and Reporter Information
-  studentId: string;
+  studentId: string; // PII - Student identifier
   student?: Student;
-  reportedById: string;
+  reportedById: string; // PII - Reporter identifier
   reportedBy?: User;
 
   // Incident Classification
   type: IncidentType;
   severity: IncidentSeverity;
-  status?: IncidentStatus;
+  status?: IncidentStatus; // UI-specific field (not in backend)
 
   // Incident Details
-  description: string;
+  description: string; // PHI - May contain health information
   location: string;
   occurredAt: string;
-  discoveredAt?: string;
-  reportedAt?: string;
+  discoveredAt?: string; // UI-specific field (not in backend)
+  reportedAt?: string; // UI-specific field (not in backend)
 
   // Witness Information
-  witnesses?: string[];
+  witnesses?: string[]; // PII - Witness identifiers
   witnessStatements?: WitnessStatement[];
 
   // Actions and Response
-  actionsTaken: string;
+  actionsTaken: string; // PHI - Medical actions and interventions
 
   // Follow-up Tracking
   followUpRequired?: boolean;
-  followUpNotes?: string;
+  followUpNotes?: string; // PHI - Medical follow-up information
   followUpActions?: FollowUpAction[];
 
   // Parent/Guardian Notification
   parentNotified?: boolean;
   parentNotificationMethod?: string;
   parentNotifiedAt?: string;
-  parentNotifiedBy?: string;
+  parentNotifiedBy?: string; // PII - User identifier
 
   // Evidence and Documentation
-  attachments?: string[];
-  evidencePhotos?: string[];
-  evidenceVideos?: string[];
+  attachments?: string[]; // May contain PHI
+  evidencePhotos?: string[]; // PHI - Images of injuries
+  evidenceVideos?: string[]; // PHI - Videos of incidents
 
   // Insurance and Compliance
   insuranceClaimNumber?: string;
@@ -194,6 +211,14 @@ export interface IncidentReport extends BaseEntity {
 /**
  * Witness Statement entity
  * Records statements from witnesses of an incident
+ *
+ * @aligned_with backend/src/database/models/incidents/WitnessStatement.ts
+ *
+ * PHI/PII Fields:
+ * - witnessName: Full name of the witness (PII)
+ * - witnessContact: Contact information (email/phone) (PII)
+ * - statement: Witness testimony may contain health information (PHI)
+ * - verifiedBy: User identifier who verified the statement (PII)
  */
 export interface WitnessStatement extends BaseEntity {
   // Reference
@@ -201,22 +226,30 @@ export interface WitnessStatement extends BaseEntity {
   incidentReport?: IncidentReport;
 
   // Witness Information
-  witnessName: string;
+  witnessName: string; // PII - Witness full name
   witnessType: WitnessType;
-  witnessContact?: string;
+  witnessContact?: string; // PII - Contact information
 
   // Statement Details
-  statement: string;
+  statement: string; // May contain PHI
 
   // Verification
   verified: boolean;
-  verifiedBy?: string;
+  verifiedBy?: string; // PII - User identifier
   verifiedAt?: string;
 }
 
 /**
  * Follow-up Action entity
  * Tracks required actions and follow-up tasks for incidents
+ *
+ * @aligned_with backend/src/database/models/incidents/FollowUpAction.ts
+ *
+ * PHI/PII Fields:
+ * - action: Description of follow-up action may reference medical care (PHI)
+ * - assignedTo: User identifier assigned to the action (PII)
+ * - completedBy: User identifier who completed the action (PII)
+ * - notes: Completion notes may contain health information (PHI)
  */
 export interface FollowUpAction extends BaseEntity {
   // Reference
@@ -224,12 +257,12 @@ export interface FollowUpAction extends BaseEntity {
   incidentReport?: IncidentReport;
 
   // Action Details
-  action: string;
+  action: string; // May contain PHI
   priority: ActionPriority;
   status: ActionStatus;
 
   // Assignment
-  assignedTo?: string;
+  assignedTo?: string; // PII - User identifier
   assignedToUser?: User;
 
   // Scheduling
@@ -237,8 +270,8 @@ export interface FollowUpAction extends BaseEntity {
 
   // Completion
   completedAt?: string;
-  completedBy?: string;
-  notes?: string;
+  completedBy?: string; // PII - User identifier
+  notes?: string; // PHI - May contain health information
 }
 
 // =====================
