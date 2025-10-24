@@ -363,3 +363,7 @@ export type { ICommunicationApi }
 export function createCommunicationApi(client: ApiClient): ICommunicationApi {
   return new CommunicationApiImpl(client);
 }
+
+// Create and export a default instance for backward compatibility
+import { apiClient } from '../core/ApiClient';
+export const communicationApi = createCommunicationApi(apiClient);

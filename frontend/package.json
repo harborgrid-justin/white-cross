@@ -19,7 +19,16 @@
     "cypress:run:students": "cypress run --spec 'cypress/e2e/*students*.cy.ts'",
     "test:e2e": "npm run cypress:run",
     "test:e2e:headed": "cypress run --headed",
-    "test:e2e:dev": "cypress open --e2e --browser chrome"
+    "test:e2e:dev": "cypress open --e2e --browser chrome",
+    "playwright": "playwright test",
+    "playwright:headed": "playwright test --headed",
+    "playwright:ui": "playwright test --ui",
+    "playwright:debug": "playwright test --debug",
+    "playwright:chromium": "playwright test --project=chromium",
+    "playwright:firefox": "playwright test --project=firefox",
+    "playwright:webkit": "playwright test --project=webkit",
+    "playwright:report": "playwright show-report",
+    "playwright:codegen": "playwright codegen http://localhost:5173"
   },
   "dependencies": {
     "@apollo/client": "^4.0.7",
@@ -59,6 +68,7 @@
   },
   "devDependencies": {
     "@cypress/vite-dev-server": "^7.0.0",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "16.3.0",
     "@types/jest": "^30.0.0",

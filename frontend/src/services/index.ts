@@ -142,8 +142,8 @@ export type { IComplianceApi } from './modules/complianceApi';
 export { emergencyContactsApi } from './modules/emergencyContactsApi';
 export type { IEmergencyContactsApi } from './modules/emergencyContactsApi';
 
-export { incidentReportsApi } from './modules/incidentReportsApi';
-export type { IIncidentReportsApi } from './modules/incidentReportsApi';
+export { incidentsApi } from './modules/incidentsApi';
+export type { IIncidentsApi } from './modules/incidentsApi';
 
 export { integrationApi } from './modules/integrationApi';
 export type {
