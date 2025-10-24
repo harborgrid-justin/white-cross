@@ -320,7 +320,7 @@ export const Navigation = memo(({ className = '' }: NavigationProps) => {
             onClick={toggleMobileMenu}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
-            data-cy="mobile-menu"
+            data-testid="mobile-menu"
           >
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
@@ -419,7 +419,7 @@ export const Navigation = memo(({ className = '' }: NavigationProps) => {
               aria-label="User menu"
               aria-expanded={userMenuOpen}
               id="user-menu-button"
-              data-cy="user-menu"
+              data-testid="user-menu"
             >
               <div className="hidden sm:block text-right">
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">

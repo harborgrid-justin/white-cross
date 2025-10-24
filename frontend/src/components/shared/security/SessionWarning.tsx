@@ -31,7 +31,7 @@ export const SessionWarning: React.FC<SessionWarningProps> = ({
   return (
     <div 
       className="fixed top-4 right-4 z-50 bg-yellow-50 border-l-4 border-yellow-400 shadow-lg rounded-lg p-4 max-w-md"
-      data-cy="session-warning"
+      data-testid="session-warning"
       role="alert"
       aria-live="assertive"
     >
@@ -51,7 +51,7 @@ export const SessionWarning: React.FC<SessionWarningProps> = ({
             <button
               onClick={onExtend}
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-              data-cy="extend-session-button"
+              data-testid="extend-session-button"
             >
               Extend Session
             </button>

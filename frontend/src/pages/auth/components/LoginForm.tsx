@@ -68,7 +68,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     <form
       className="mt-8 space-y-6"
       onSubmit={onSubmit}
-      data-cy="login-form"
+      data-testid="login-form"
       role="form"
       aria-label="Login form"
     >
@@ -91,7 +91,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             onChange={(e) => onInputChange('email', e.target.value)}
             className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             placeholder="Enter your email"
-            data-cy="email-input"
+            data-testid="email-input"
             aria-label="Email address"
             aria-required="true"
           />
@@ -116,7 +116,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
               onChange={(e) => onInputChange('password', e.target.value)}
               className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="Enter your password"
-              data-cy="password-input"
+              data-testid="password-input"
               aria-label="Password"
               aria-required="true"
             />
@@ -124,7 +124,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
               type="button"
               onClick={togglePasswordVisibility}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-              data-cy="password-toggle"
+              data-testid="toggle-password-visibility"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               tabIndex={0}
             >
@@ -148,7 +148,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             checked={loginData.rememberMe || false}
             onChange={(e) => onInputChange('rememberMe', e.target.checked)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-            data-cy="remember-me-checkbox"
+            data-testid="remember-me-checkbox"
             aria-label="Remember me"
           />
           <label
@@ -163,7 +163,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <a
             href="/forgot-password"
             className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
-            data-cy="forgot-password-link"
+            data-testid="forgot-password-link"
           >
             Forgot your password?
           </a>
@@ -176,7 +176,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           type="submit"
           disabled={loading}
           className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          data-cy="login-button"
+          data-testid="login-button"
           aria-busy={loading}
           aria-label={loading ? 'Signing in...' : 'Sign in'}
         >
@@ -187,7 +187,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                data-cy="loading-spinner"
+                data-testid="loading-spinner"
                 aria-hidden="true"
               >
                 <circle

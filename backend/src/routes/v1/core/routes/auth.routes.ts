@@ -347,5 +347,54 @@ Returns complete user profile including:
         }
       }
     }
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/test-login',
+    handler: asyncHandler(AuthController.testLogin),
+    options: {
+      auth: false,
+      tags: ['api', 'Authentication', 'Testing'],
+      description: 'Test login endpoint for E2E testing (Development/Test only)',
+      notes: `Quick login endpoint for E2E testing. Only available in non-production environments.
+
+**Query Parameters:**
+- role: User role to login as (admin, nurse, counselor, viewer, doctor)
+
+**Available Test Users:**
+- admin: Full system access
+- nurse: Student health management
+- counselor: School administrator
+- viewer: Read-only access
+- doctor: Medical professional
+
+**Response:**
+Returns JWT token and user profile, same as regular login endpoint.
+
+**Security:**
+- Only available when NODE_ENV is not 'production'
+- Automatically creates test users if they don't exist
+- Uses standard test password for all test users`,
+      validate: {
+        query: Joi.object({
+          role: Joi.string().valid('admin', 'nurse', 'counselor', 'viewer', 'doctor').default('nurse').description('Role to login as')
+        })
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Test login successful',
+              schema: AuthSuccessResponseSchema
+            },
+            '401': {
+              description: 'Not available in production',
+              schema: ErrorResponseSchema
+            }
+          },
+          security: []
+        }
+      }
+    }
   }
 ];

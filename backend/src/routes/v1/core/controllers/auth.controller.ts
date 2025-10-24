@@ -165,4 +165,76 @@ export class AuthController {
       return unauthorizedResponse(h, 'Not authenticated');
     }
   }
+
+  /**
+   * Test login endpoint for E2E testing
+   * Only available in test/development environments
+   * Allows quick login with predefined test users
+   */
+  static async testLogin(request: any, h: ResponseToolkit) {
+    // Only allow in test/development environments
+    if (process.env.NODE_ENV === 'production') {
+      return unauthorizedResponse(h, 'Test login not available in production');
+    }
+
+    const { role } = request.query;
+
+    // Map role to test user email
+    const testUserMap: Record<string, string> = {
+      'admin': 'admin@school.edu',
+      'nurse': 'nurse@school.edu',
+      'counselor': 'counselor@school.edu',
+      'viewer': 'readonly@school.edu',
+      'doctor': 'doctor@school.edu'
+    };
+
+    const email = testUserMap[role?.toLowerCase()] || testUserMap['nurse'];
+
+    // Find or create test user
+    let user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      // Create test user if it doesn't exist
+      const roleMap: Record<string, string> = {
+        'admin@school.edu': 'ADMIN',
+        'nurse@school.edu': 'NURSE',
+        'counselor@school.edu': 'SCHOOL_ADMIN',
+        'readonly@school.edu': 'NURSE',
+        'doctor@school.edu': 'DOCTOR'
+      };
+
+      const nameMap: Record<string, { firstName: string, lastName: string }> = {
+        'admin@school.edu': { firstName: 'Test', lastName: 'Administrator' },
+        'nurse@school.edu': { firstName: 'Test', lastName: 'Nurse' },
+        'counselor@school.edu': { firstName: 'Test', lastName: 'Counselor' },
+        'readonly@school.edu': { firstName: 'Test', lastName: 'ReadOnly' },
+        'doctor@school.edu': { firstName: 'Test', lastName: 'Johnson' }
+      };
+
+      user = await User.create({
+        email,
+        password: 'TestPassword123!', // Standard test password
+        firstName: nameMap[email]?.firstName || 'Test',
+        lastName: nameMap[email]?.lastName || 'User',
+        role: roleMap[email] || 'NURSE',
+        isActive: true
+      });
+    }
+
+    // Update last login
+    await user.update({ lastLogin: new Date() });
+
+    // Generate JWT token
+    const token = generateAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      type: 'access'
+    });
+
+    return successResponse(h, {
+      token,
+      user: user.toSafeObject()
+    });
+  }
 }

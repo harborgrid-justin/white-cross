@@ -131,7 +131,7 @@ const NavItem = memo(({ item, depth = 0, onClick }: NavItemProps) => {
           active:scale-[0.98]
           motion-reduce:transition-none motion-reduce:transform-none
         `}
-        data-cy={item.dataTestId}
+        data-testid={item.dataTestId}
         aria-label={`${item.name}${item.isActive ? ' (current page)' : ''}`}
         aria-disabled={!item.hasAccess}
         aria-current={item.isActive ? 'page' : undefined}
