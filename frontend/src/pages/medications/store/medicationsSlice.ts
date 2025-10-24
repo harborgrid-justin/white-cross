@@ -5,9 +5,9 @@
  * Handles CRUD operations for medication management and administration.
  */
 
-import { createEntitySlice, EntityApiService } from '../sliceFactory';
-import { StudentMedication } from '../../types/student.types';
-import { medicationsApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
+import { StudentMedication } from '../../../types/student.types';
+import { medicationsApi } from '../../../services/api';
 
 // Medication creation data
 interface CreateMedicationData {

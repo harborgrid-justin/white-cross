@@ -20,7 +20,7 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { optimisticUpdateManager } from '@/utils/optimisticUpdates';
 import { rollbackUpdate } from '@/utils/optimisticHelpers';
@@ -81,7 +81,8 @@ export interface RollbackButtonProps {
  * />
  * ```
  */
-export const RollbackButton: React.FC<RollbackButtonProps> = ({
+// Memoized RollbackButton component
+export const RollbackButton = React.memo<RollbackButtonProps>(({
   updateId,
   variant = 'secondary',
   size = 'md',
@@ -98,7 +99,8 @@ export const RollbackButton: React.FC<RollbackButtonProps> = ({
   const [isRollingBack, setIsRollingBack] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const handleRollback = async () => {
+  // Memoize rollback handler
+  const handleRollback = useCallback(async () => {
     if (confirmBeforeRollback && !showConfirm) {
       setShowConfirm(true);
       return;
@@ -118,37 +120,52 @@ export const RollbackButton: React.FC<RollbackButtonProps> = ({
       setIsRollingBack(false);
       setShowConfirm(false);
     }
-  };
+  }, [confirmBeforeRollback, showConfirm, queryClient, updateId, onRollback]);
 
-  const handleCancel = () => {
+  // Memoize cancel handler
+  const handleCancel = useCallback(() => {
     setShowConfirm(false);
-  };
+  }, []);
 
-  // Variant classes
-  const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    ghost: 'bg-transparent hover:bg-gray-100 text-gray-700',
-  };
+  // Memoize button classes
+  const buttonClass = useMemo(() => {
+    const variantClasses = {
+      primary: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm hover:shadow-md dark:bg-blue-500 dark:hover:bg-blue-600',
+      secondary: 'bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200',
+      danger: 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm hover:shadow-md dark:bg-red-500 dark:hover:bg-red-600',
+      ghost: 'bg-transparent hover:bg-gray-100 active:bg-gray-200 text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:active:bg-gray-700',
+    };
 
-  // Size classes
-  const sizeClasses = {
-    sm: 'px-2 py-1 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
-  };
+    const sizeClasses = {
+      sm: 'px-2 py-1 text-xs',
+      md: 'px-4 py-2 text-sm',
+      lg: 'px-6 py-3 text-base',
+    };
 
-  const buttonClass = `
-    inline-flex items-center justify-center gap-2
-    font-medium rounded-lg
-    transition-colors duration-200
-    disabled:opacity-50 disabled:cursor-not-allowed
-    ${variantClasses[variant]}
-    ${sizeClasses[size]}
-    ${fullWidth ? 'w-full' : ''}
-    ${className}
-  `.trim();
+    return `
+      inline-flex items-center justify-center gap-2
+      font-medium rounded-lg
+      transition-all duration-200 ease-in-out
+      transform active:scale-[0.98]
+      disabled:opacity-50 disabled:cursor-not-allowed
+      motion-reduce:transition-none motion-reduce:transform-none
+      ${variantClasses[variant]}
+      ${sizeClasses[size]}
+      ${fullWidth ? 'w-full' : ''}
+      ${className}
+    `.trim();
+  }, [variant, size, fullWidth, className]);
+
+  // Memoize danger variant classes
+  const dangerVariantClasses = useMemo(() =>
+    'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm hover:shadow-md dark:bg-red-500 dark:hover:bg-red-600',
+    []
+  );
+
+  const ghostVariantClasses = useMemo(() =>
+    'bg-transparent hover:bg-gray-100 active:bg-gray-200 text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:active:bg-gray-700',
+    []
+  );
 
   if (showConfirm) {
     return (
@@ -156,13 +173,13 @@ export const RollbackButton: React.FC<RollbackButtonProps> = ({
         <button
           onClick={handleRollback}
           disabled={isRollingBack}
-          className={`${buttonClass} ${variantClasses.danger}`}
+          className={`${buttonClass} ${dangerVariantClasses}`}
         >
           {isRollingBack ? 'Undoing...' : 'Confirm Undo'}
         </button>
         <button
           onClick={handleCancel}
-          className={`${buttonClass} ${variantClasses.ghost}`}
+          className={`${buttonClass} ${ghostVariantClasses}`}
         >
           Cancel
         </button>
@@ -176,6 +193,8 @@ export const RollbackButton: React.FC<RollbackButtonProps> = ({
       disabled={disabled || isRollingBack}
       className={buttonClass}
       title="Undo this change"
+      aria-busy={isRollingBack}
+      aria-disabled={disabled || isRollingBack}
     >
       {showIcon && (
         <UndoIcon className={size === 'sm' ? 'w-3 h-3' : size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} />
@@ -183,7 +202,9 @@ export const RollbackButton: React.FC<RollbackButtonProps> = ({
       <span>{isRollingBack ? 'Undoing...' : text}</span>
     </button>
   );
-};
+});
+
+RollbackButton.displayName = 'RollbackButton';
 
 // =====================
 // BATCH ROLLBACK BUTTON

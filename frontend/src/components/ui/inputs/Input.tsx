@@ -30,9 +30,9 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 }
 
 const inputVariants = {
-  default: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-  filled: 'bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500',
-  outlined: 'border-2 border-gray-300 focus:border-blue-500 focus:ring-0'
+  default: 'border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white',
+  filled: 'bg-gray-50 border-gray-200 focus:bg-white focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-700 dark:focus:bg-gray-800',
+  outlined: 'border-2 border-gray-300 focus:border-primary-500 focus:ring-0 dark:bg-gray-800 dark:border-gray-600 dark:text-white'
 };
 
 const inputSizes = {
@@ -68,12 +68,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             htmlFor={inputId}
             className={cn(
               'block text-sm font-medium mb-1',
-              hasError ? 'text-red-700' : 'text-gray-700',
-              isDisabled && 'text-gray-400'
+              hasError ? 'text-danger-700 dark:text-danger-400' : 'text-gray-700 dark:text-gray-300',
+              isDisabled && 'text-gray-400 dark:text-gray-600'
             )}
           >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-danger-500 ml-1">*</span>}
           </label>
         )}
         
@@ -93,12 +93,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'block w-full rounded-md border shadow-sm transition-colors',
-              'focus:outline-none focus:ring-1',
-              'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500',
+              'block w-full rounded-lg border shadow-sm transition-all duration-200',
+              'focus:outline-none focus:ring-2',
+              'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-900 dark:disabled:text-gray-600',
               inputVariants[variant],
               inputSizes[size],
-              hasError && 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500',
+              hasError && 'border-danger-300 text-danger-900 placeholder-danger-300 focus:border-danger-500 focus:ring-danger-500 dark:border-danger-500 dark:text-danger-400',
               icon && iconPosition === 'left' && 'pl-10',
               icon && iconPosition === 'right' && 'pr-10',
               loading && 'pr-10',
@@ -106,6 +106,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             )}
             disabled={isDisabled}
             aria-invalid={hasError ? 'true' : 'false'}
+            aria-required={required ? 'true' : undefined}
             aria-describedby={
               error ? `${inputId}-error` :
               helperText ? `${inputId}-helper` : undefined
@@ -114,12 +115,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
           
           {loading && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center" aria-live="polite" aria-busy="true">
               <svg
                 className="animate-spin h-4 w-4 text-gray-400"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <circle
                   className="opacity-25"
@@ -135,6 +137,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
+              <span className="sr-only">Loading</span>
             </div>
           )}
           
@@ -151,13 +154,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
         
         {error && (
-          <p className="mt-1 text-sm text-red-600" id={`${inputId}-error`}>
+          <p className="mt-1 text-sm text-danger-600 dark:text-danger-400" id={`${inputId}-error`}>
             {error}
           </p>
         )}
-        
+
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500" id={`${inputId}-helper`}>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400" id={`${inputId}-helper`}>
             {helperText}
           </p>
         )}

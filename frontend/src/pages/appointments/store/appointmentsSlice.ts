@@ -5,9 +5,9 @@
  * Handles CRUD operations for appointment scheduling and management.
  */
 
-import { createEntitySlice, EntityApiService } from '../sliceFactory';
-import { Appointment } from '../../types/student.types';
-import { appointmentsApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
+import { Appointment } from '../../../types/student.types';
+import { appointmentsApi } from '../../../services/api';
 
 // Appointment creation data
 interface CreateAppointmentData {

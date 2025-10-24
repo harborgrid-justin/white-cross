@@ -1,14 +1,11 @@
 /**
- * WF-COMP-084 | LoadingSpinner.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: React ecosystem
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * WF-COMP-084 | LoadingSpinner.tsx - Optimized Loading Spinner Component
+ * Purpose: Display loading indicator with configurable size, color, and message
+ * Performance: React.memo with useMemo for class computation
+ * Last Updated: 2025-10-24 | File Type: .tsx
  */
+
+import React, { useMemo } from 'react';
 
 interface LoadingSpinnerProps {
   size?: 'small' | 'medium' | 'large'
@@ -19,7 +16,8 @@ interface LoadingSpinnerProps {
   overlay?: boolean
 }
 
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+// Memoized component to prevent unnecessary re-renders
+export const LoadingSpinner = React.memo<LoadingSpinnerProps>(({
   size = 'medium',
   color = 'blue',
   message,
@@ -27,7 +25,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   testId,
   overlay = false
 }) => {
-  const getSizeClasses = () => {
+  // Memoize size classes to avoid recalculation on every render
+  const sizeClasses = useMemo(() => {
     switch (size) {
       case 'small':
         return 'h-4 w-4'
@@ -37,9 +36,10 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       default:
         return 'h-8 w-8'
     }
-  }
+  }, [size]);
 
-  const getColorClasses = () => {
+  // Memoize color classes to avoid recalculation on every render
+  const colorClasses = useMemo(() => {
     switch (color) {
       case 'gray':
         return 'text-gray-600'
@@ -49,10 +49,10 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       default:
         return 'text-blue-600'
     }
-  }
+  }, [color]);
 
   const spinner = (
-    <div 
+    <div
       data-testid={testId}
       className={`flex items-center justify-center ${className}`}
       role="status"
@@ -60,7 +60,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     >
       <div className="flex flex-col items-center space-y-2">
         <svg
-          className={`animate-spin ${getSizeClasses()} ${getColorClasses()}`}
+          className={`animate-spin ${sizeClasses} ${colorClasses}`}
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -80,21 +80,24 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           />
         </svg>
         {message && (
-          <span className={`text-sm font-medium ${getColorClasses()}`}>
+          <span className={`text-sm font-medium ${colorClasses}`}>
             {message}
           </span>
         )}
       </div>
     </div>
-  )
+  );
 
   if (overlay) {
     return (
       <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
         {spinner}
       </div>
-    )
+    );
   }
 
-  return spinner
-}
+  return spinner;
+});
+
+// Display name for debugging
+LoadingSpinner.displayName = 'LoadingSpinner';

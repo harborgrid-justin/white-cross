@@ -61,7 +61,8 @@ const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
             aria-describedby={
               description ? `${props.id}-description` : error ? `${props.id}-error` : undefined
             }
-            aria-invalid={error ? true : false}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-required={props.required ? 'true' : undefined}
             {...props}
           />
         </div>

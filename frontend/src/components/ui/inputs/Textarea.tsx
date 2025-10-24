@@ -118,7 +118,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             id={textareaId}
             className={cn(
               'block w-full rounded-md border shadow-sm transition-colors resize-none',
-              'focus:outline-none focus:ring-1',
+              'focus:outline-none focus:ring-2 focus:ring-offset-1',
               'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500',
               textareaVariants[variant],
               textareaSizes[size],
@@ -128,6 +128,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             )}
             disabled={disabled}
             aria-invalid={hasError ? 'true' : 'false'}
+            aria-required={required ? 'true' : undefined}
             aria-describedby={
               error ? `${textareaId}-error` :
               helperText ? `${textareaId}-helper` : undefined

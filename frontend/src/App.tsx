@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -85,12 +85,12 @@ function App() {
     initializeApplication();
   }, []);
 
-  // Handle retry
-  const handleRetry = async () => {
+  // Handle retry - memoized to prevent recreation on every render
+  const handleRetry = useCallback(async () => {
     setBackendStatus('checking');
     const isHealthy = await checkBackendHealth();
     setBackendStatus(isHealthy ? 'available' : 'unavailable');
-  };
+  }, []);
 
   // Show loading spinner while initializing or checking backend
   if (bootstrapStatus === 'initializing' || backendStatus === 'checking') {
@@ -136,6 +136,31 @@ function App() {
     return <BackendConnectionError onRetry={handleRetry} />;
   }
 
+  // Memoize Toaster options to prevent recreation on every render
+  const toasterOptions = useMemo(() => ({
+    duration: 4000,
+    style: {
+      background: '#363636',
+      color: '#fff',
+    },
+    success: {
+      duration: 3000,
+      className: 'success-toast',
+      iconTheme: {
+        primary: '#10B981',
+        secondary: '#fff',
+      },
+    },
+    error: {
+      duration: 5000,
+      className: 'error-toast',
+      iconTheme: {
+        primary: '#EF4444',
+        secondary: '#fff',
+      },
+    },
+  }), []);
+
   // Backend is available and app is initialized, render the app normally
   return (
     <GlobalErrorBoundary enableAuditLogging>
@@ -147,29 +172,7 @@ function App() {
                 <AppRoutes />
                 <Toaster
                   position="top-right"
-                  toastOptions={{
-                    duration: 4000,
-                    style: {
-                      background: '#363636',
-                      color: '#fff',
-                    },
-                    success: {
-                      duration: 3000,
-                      className: 'success-toast',
-                      iconTheme: {
-                        primary: '#10B981',
-                        secondary: '#fff',
-                      },
-                    },
-                    error: {
-                      duration: 5000,
-                      className: 'error-toast',
-                      iconTheme: {
-                        primary: '#EF4444',
-                        secondary: '#fff',
-                      },
-                    },
-                  }}
+                  toastOptions={toasterOptions}
                 />
                 {import.meta.env.DEV && (
                   <ReactQueryDevtools initialIsOpen={false} />

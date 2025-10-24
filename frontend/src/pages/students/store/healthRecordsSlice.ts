@@ -5,9 +5,9 @@
  * Handles CRUD operations for health records with HIPAA compliance.
  */
 
-import { createEntitySlice, EntityApiService } from '../sliceFactory';
-import { HealthRecord } from '../../types/student.types';
-import { healthRecordsApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
+import { HealthRecord } from '../../../types/student.types';
+import { healthRecordsApi } from '../../../services/api';
 
 // Health record creation data
 interface CreateHealthRecordData {

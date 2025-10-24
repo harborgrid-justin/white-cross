@@ -92,9 +92,10 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
         className={cn(
           'transition-colors',
           selected && 'bg-blue-50',
-          clickable && 'hover:bg-gray-50 cursor-pointer',
+          clickable && 'hover:bg-gray-50 cursor-pointer focus-within:bg-gray-50',
           className
         )}
+        aria-selected={clickable ? (selected ? 'true' : 'false') : undefined}
         {...props}
       />
     );
@@ -105,9 +106,9 @@ const TableHead = React.forwardRef<HTMLTableHeaderCellElement, TableHeadProps>(
   ({ className, sortable = false, sortDirection = null, onSort, children, ...props }, ref) => {
     const SortIcon = ({ direction }: { direction: 'asc' | 'desc' | null }) => {
       if (!sortable) return null;
-      
+
       return (
-        <span className="ml-2 inline-flex flex-col">
+        <span className="ml-2 inline-flex flex-col" aria-hidden="true">
           <svg
             className={cn(
               'h-3 w-3 -mb-0.5',
@@ -132,15 +133,26 @@ const TableHead = React.forwardRef<HTMLTableHeaderCellElement, TableHeadProps>(
       );
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTableCellElement>) => {
+      if (sortable && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        onSort?.();
+      }
+    };
+
     return (
       <th
         ref={ref}
+        scope="col"
         className={cn(
           'text-left text-xs font-semibold text-gray-900 uppercase tracking-wider',
-          sortable && 'cursor-pointer select-none hover:bg-gray-100',
+          sortable && 'cursor-pointer select-none hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500',
           className
         )}
         onClick={sortable ? onSort : undefined}
+        onKeyDown={sortable ? handleKeyDown : undefined}
+        tabIndex={sortable ? 0 : undefined}
+        aria-sort={sortable && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
         {...props}
       >
         <div className="flex items-center">

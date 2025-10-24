@@ -19,7 +19,7 @@
  * @module components/BackButton
  */
 
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import { useNavigationState } from '../../../hooks/utilities/useRouteState';
 
@@ -78,7 +78,8 @@ interface BackButtonProps {
  * <BackButton onClick={() => handleCustomBack()} />
  * ```
  */
-export default function BackButton({
+// Memoized BackButton component for optimized rendering
+const BackButton = React.memo<BackButtonProps>(({
   fallbackPath = '/',
   label = 'Back',
   variant = 'default',
@@ -88,11 +89,11 @@ export default function BackButton({
   onClick,
   disabled = false,
   dataTestId = 'back-button',
-}: BackButtonProps) {
+}) => {
   const { navigateBack, previousPath, canGoBack } = useNavigationState();
 
-  // Handle back navigation
-  const handleBack = () => {
+  // Memoize back navigation handler to prevent recreation on every render
+  const handleBack = useCallback(() => {
     if (onClick) {
       onClick();
     } else if (canGoBack) {
@@ -100,32 +101,39 @@ export default function BackButton({
     } else {
       navigateBack(fallbackPath);
     }
-  };
+  }, [onClick, canGoBack, navigateBack, fallbackPath]);
 
-  // Select icon based on variant
-  const IconComponent = iconVariant === 'chevron' ? ChevronLeft : ArrowLeft;
+  // Memoize icon component selection
+  const IconComponent = useMemo(() =>
+    iconVariant === 'chevron' ? ChevronLeft : ArrowLeft,
+    [iconVariant]
+  );
 
-  // Get button classes based on variant
-  const getVariantClasses = () => {
+  // Memoize button classes based on variant
+  const variantClasses = useMemo(() => {
     const baseClasses = `
       inline-flex items-center gap-2
-      transition-all duration-150
-      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+      transition-all duration-200 ease-in-out
+      transform active:scale-[0.98]
+      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900
       disabled:opacity-50 disabled:cursor-not-allowed
+      motion-reduce:transition-none motion-reduce:transform-none
       rounded-md
     `;
 
     switch (variant) {
       case 'ghost':
         return `${baseClasses}
-          text-gray-700 hover:text-gray-900
-          hover:bg-gray-100
+          text-gray-700 hover:text-gray-900 active:text-gray-950
+          hover:bg-gray-100 active:bg-gray-200
+          dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700
           px-2 py-1.5
         `;
       case 'link':
         return `${baseClasses}
-          text-primary-600 hover:text-primary-700
+          text-primary-600 hover:text-primary-700 active:text-primary-800
           hover:underline
+          dark:text-primary-400 dark:hover:text-primary-300
           px-0 py-0
         `;
       case 'default':
@@ -133,12 +141,13 @@ export default function BackButton({
         return `${baseClasses}
           bg-white text-gray-700
           border border-gray-300
-          hover:bg-gray-50 hover:border-gray-400
+          hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100
+          dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 dark:active:bg-gray-600
           px-3 py-2
-          shadow-sm
+          shadow-sm hover:shadow-md
         `;
     }
-  };
+  }, [variant]);
 
   return (
     <button
@@ -146,10 +155,11 @@ export default function BackButton({
       onClick={handleBack}
       disabled={disabled}
       className={`
-        ${getVariantClasses()}
+        ${variantClasses}
         ${className}
       `}
-      aria-label={`Navigate back to ${previousPath || 'previous page'}`}
+      aria-label={previousPath ? `Navigate back to ${previousPath}` : 'Navigate to previous page'}
+      aria-disabled={disabled}
       data-testid={dataTestId}
     >
       <IconComponent
@@ -166,7 +176,11 @@ export default function BackButton({
       </span>
     </button>
   );
-}
+});
+
+BackButton.displayName = 'BackButton';
+
+export default BackButton;
 
 // ============================================================================
 // ICON-ONLY BACK BUTTON COMPONENT
@@ -197,7 +211,8 @@ interface IconBackButtonProps {
  * <IconBackButton title="Go back" />
  * ```
  */
-export function IconBackButton({
+// Memoized IconBackButton component
+export const IconBackButton = React.memo<IconBackButtonProps>(({
   fallbackPath = '/',
   size = 'md',
   onClick,
@@ -205,18 +220,20 @@ export function IconBackButton({
   className = '',
   title = 'Go back',
   dataTestId = 'icon-back-button',
-}: IconBackButtonProps) {
+}) => {
   const { navigateBack } = useNavigationState();
 
-  const handleBack = () => {
+  // Memoize back handler
+  const handleBack = useCallback(() => {
     if (onClick) {
       onClick();
     } else {
       navigateBack(fallbackPath);
     }
-  };
+  }, [onClick, navigateBack, fallbackPath]);
 
-  const getSizeClasses = () => {
+  // Memoize size classes
+  const sizeClasses = useMemo(() => {
     switch (size) {
       case 'sm':
         return 'h-8 w-8 p-1.5';
@@ -226,9 +243,10 @@ export function IconBackButton({
       default:
         return 'h-10 w-10 p-2';
     }
-  };
+  }, [size]);
 
-  const getIconSize = () => {
+  // Memoize icon size
+  const iconSize = useMemo(() => {
     switch (size) {
       case 'sm':
         return 'h-4 w-4';
@@ -238,7 +256,7 @@ export function IconBackButton({
       default:
         return 'h-5 w-5';
     }
-  };
+  }, [size]);
 
   return (
     <button
@@ -246,7 +264,7 @@ export function IconBackButton({
       onClick={handleBack}
       disabled={disabled}
       className={`
-        ${getSizeClasses()}
+        ${sizeClasses}
         inline-flex items-center justify-center
         text-gray-700 hover:text-gray-900
         hover:bg-gray-100
@@ -261,12 +279,14 @@ export function IconBackButton({
       data-testid={dataTestId}
     >
       <ArrowLeft
-        className={`${getIconSize()} flex-shrink-0`}
+        className={`${iconSize} flex-shrink-0`}
         aria-hidden="true"
       />
     </button>
   );
-}
+});
+
+IconBackButton.displayName = 'IconBackButton';
 
 // ============================================================================
 // BACK BUTTON WITH CONFIRMATION
@@ -290,13 +310,15 @@ interface BackButtonWithConfirmationProps extends BackButtonProps {
  * />
  * ```
  */
-export function BackButtonWithConfirmation({
+// Memoized BackButtonWithConfirmation component
+export const BackButtonWithConfirmation = React.memo<BackButtonWithConfirmationProps>(({
   requireConfirmation = false,
   confirmMessage = 'Are you sure you want to go back? Any unsaved changes will be lost.',
   onClick,
   ...props
-}: BackButtonWithConfirmationProps) {
-  const handleClick = () => {
+}) => {
+  // Memoize click handler
+  const handleClick = useCallback(() => {
     if (requireConfirmation) {
       const confirmed = window.confirm(confirmMessage);
       if (confirmed && onClick) {
@@ -307,7 +329,7 @@ export function BackButtonWithConfirmation({
     } else if (onClick) {
       onClick();
     }
-  };
+  }, [requireConfirmation, confirmMessage, onClick]);
 
   return (
     <BackButton
@@ -315,7 +337,9 @@ export function BackButtonWithConfirmation({
       onClick={handleClick}
     />
   );
-}
+});
+
+BackButtonWithConfirmation.displayName = 'BackButtonWithConfirmation';
 
 // ============================================================================
 // EXPORT TYPES

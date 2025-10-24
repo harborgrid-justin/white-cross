@@ -15,7 +15,7 @@ import {
   BarChart3, TrendingUp, FileText, Download, Activity, Heart, AlertTriangle, Users, Pill, Calendar, Shield, RefreshCw, Filter, Settings
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { reportsApi } from '../../services/reportsApi'
+import { reportsApi } from '../../services/modules/reportsApi'
 import toast from 'react-hot-toast'
 import { DATE_CALCULATIONS, QUERY_INTERVALS } from '../../constants'
 import type { TabType, DateRange } from './types'

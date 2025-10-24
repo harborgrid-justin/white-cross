@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '../../../utils/cn';
 
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
   dismissible?: boolean;
   onDismiss?: () => void;
@@ -27,11 +27,13 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     ...props 
   }, ref) => {
     const variantClasses = {
-      default: 'bg-gray-50 border-gray-200 text-gray-800',
-      success: 'bg-green-50 border-green-200 text-green-800',
-      warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-      error: 'bg-red-50 border-red-200 text-red-800',
-      info: 'bg-blue-50 border-blue-200 text-blue-800'
+      default: 'bg-gray-50 border-gray-200 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200',
+      primary: 'bg-primary-50 border-primary-200 text-primary-800 dark:bg-primary-950 dark:border-primary-800 dark:text-primary-200',
+      success: 'bg-success-50 border-success-200 text-success-800 dark:bg-success-950 dark:border-success-800 dark:text-success-200',
+      warning: 'bg-warning-50 border-warning-200 text-warning-800 dark:bg-warning-950 dark:border-warning-800 dark:text-warning-200',
+      error: 'bg-danger-50 border-danger-200 text-danger-800 dark:bg-danger-950 dark:border-danger-800 dark:text-danger-200',
+      danger: 'bg-danger-50 border-danger-200 text-danger-800 dark:bg-danger-950 dark:border-danger-800 dark:text-danger-200',
+      info: 'bg-info-50 border-info-200 text-info-800 dark:bg-info-950 dark:border-info-800 dark:text-info-200'
     };
 
     const sizeClasses = {
@@ -41,17 +43,24 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     };
 
     const iconClasses = {
-      default: 'text-gray-400',
-      success: 'text-green-400',
-      warning: 'text-yellow-400',
-      error: 'text-red-400',
-      info: 'text-blue-400'
+      default: 'text-gray-400 dark:text-gray-500',
+      primary: 'text-primary-400 dark:text-primary-500',
+      success: 'text-success-400 dark:text-success-500',
+      warning: 'text-warning-400 dark:text-warning-500',
+      error: 'text-danger-400 dark:text-danger-500',
+      danger: 'text-danger-400 dark:text-danger-500',
+      info: 'text-info-400 dark:text-info-500'
     };
 
     const defaultIcons = {
       default: (
         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+        </svg>
+      ),
+      primary: (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
         </svg>
       ),
       success: (
@@ -69,6 +78,11 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
         </svg>
       ),
+      danger: (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+        </svg>
+      ),
       info: (
         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -81,7 +95,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         ref={ref}
         role="alert"
         className={cn(
-          'relative rounded-lg border',
+          'relative rounded-lg border transition-all duration-200',
           variantClasses[variant],
           sizeClasses[size],
           className
