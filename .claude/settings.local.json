@@ -50,7 +50,8 @@
       "Bash(then echo \"Missing: $component.tsx\")",
       "Bash(fi)",
       "Bash(git restore:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

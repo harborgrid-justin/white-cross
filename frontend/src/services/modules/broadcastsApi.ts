@@ -254,3 +254,7 @@ export class BroadcastsApi {
 export function createBroadcastsApi(client: ApiClient): BroadcastsApi {
   return new BroadcastsApi(client);
 }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient'
+export const broadcastsApi = createBroadcastsApi(apiClient)

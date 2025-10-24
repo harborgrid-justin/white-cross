@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Base Image with Common Dependencies
 # -----------------------------------------------------------------------------
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install security updates and system dependencies
 RUN apk update && \
@@ -33,7 +33,7 @@ FROM base AS deps
 COPY package*.json ./
 
 # Install ALL dependencies (including devDependencies)
-RUN npm ci && \
+RUN npm install && \
     npm cache clean --force
 
 # -----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ FROM base AS prod-deps
 COPY package*.json ./
 
 # Install ONLY production dependencies
-RUN npm ci --only=production && \
+RUN npm install --only=production && \
     npm cache clean --force
 
 # -----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ LABEL description="White Cross Healthcare Platform - Development Backend"
 COPY package*.json ./
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN npm install
 
 # Copy source code (will be mounted as volume in docker-compose)
 COPY . .

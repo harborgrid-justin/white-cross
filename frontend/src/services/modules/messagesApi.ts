@@ -275,9 +275,11 @@ export class MessagesApi {
   }
 }
 
-// Export singleton instance
-
 // Factory function for creating MessagesApi instances
 export function createMessagesApi(client: ApiClient): MessagesApi {
   return new MessagesApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../core';
+export const messagesApi = createMessagesApi(apiClient);

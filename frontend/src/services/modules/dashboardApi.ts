@@ -564,3 +564,7 @@ export class DashboardApi {
 export function createDashboardApi(client: ApiClient): DashboardApi {
   return new DashboardApi(client);
 }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient'
+export const dashboardApi = createDashboardApi(apiClient)

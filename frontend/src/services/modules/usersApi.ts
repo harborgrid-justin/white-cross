@@ -222,3 +222,7 @@ export class UsersApi {
 export function createUsersApi(client: ApiClient): UsersApi {
   return new UsersApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../core';
+export const usersApi = createUsersApi(apiClient);

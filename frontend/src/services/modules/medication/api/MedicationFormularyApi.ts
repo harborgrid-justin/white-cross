@@ -462,3 +462,7 @@ export class MedicationFormularyApi {
 export function createMedicationFormularyApi(client: ApiClient): MedicationFormularyApi {
   return new MedicationFormularyApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../../../core';
+export const medicationFormularyApi = createMedicationFormularyApi(apiClient);

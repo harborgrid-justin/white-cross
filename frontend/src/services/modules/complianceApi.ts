@@ -324,3 +324,7 @@ export type { IComplianceApi }
 export function createComplianceApi(client: ApiClient): IComplianceApi {
   return new ComplianceApiImpl(client);
 }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient'
+export const complianceApi = createComplianceApi(apiClient)

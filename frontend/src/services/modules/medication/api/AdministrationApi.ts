@@ -669,3 +669,7 @@ export class AdministrationApi {
 export function createAdministrationApi(client: ApiClient): AdministrationApi {
   return new AdministrationApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../../../core';
+export const administrationApi = createAdministrationApi(apiClient);

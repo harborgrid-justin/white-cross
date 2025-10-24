@@ -3,8 +3,6 @@
 # Optimized for local development with hot-reload and development tools
 # =============================================================================
 
-version: '3.9'
-
 services:
   # ---------------------------------------------------------------------------
   # PostgreSQL Database
@@ -38,7 +36,7 @@ services:
     image: redis:7-alpine
     container_name: white-cross-redis-dev
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-} --appendonly yes
+    command: redis-server --appendonly yes
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -57,7 +55,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.new
+      dockerfile: Dockerfile
       target: development
       args:
         NODE_ENV: development
@@ -74,6 +72,7 @@ services:
       HOST: 0.0.0.0
 
       # Database Configuration
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/white_cross_dev
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-white_cross_dev}
@@ -140,7 +139,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.new
+      dockerfile: Dockerfile
       target: development
     container_name: white-cross-frontend-dev
     restart: unless-stopped

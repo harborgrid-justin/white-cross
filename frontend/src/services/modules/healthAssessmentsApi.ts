@@ -1179,5 +1179,9 @@ export function createHealthAssessmentsApi(client: ApiClient): HealthAssessments
   return new HealthAssessmentsApi(client);
 }
 
+// Export singleton instance
+import { apiClient } from '../core/ApiClient'
+export const healthAssessmentsApi = createHealthAssessmentsApi(apiClient)
+
 // Default export
 export default HealthAssessmentsApi;

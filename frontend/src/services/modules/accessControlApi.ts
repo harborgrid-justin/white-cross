@@ -405,3 +405,7 @@ export function createAccessControlApi(client: ApiClient): AccessControlApiImpl 
 // Export class and interface for direct usage
 export { AccessControlApiImpl }
 export type { IAccessControlApi }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient'
+export const accessControlApi = createAccessControlApi(apiClient)

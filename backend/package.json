@@ -58,7 +58,7 @@
     "hapi-auth-jwt2": "^11.0.0",
     "hapi-swagger": "^17.3.2",
     "helmet": "^8.1.0",
-    "joi": "^18.0.1",
+    "joi": "^17.13.3",
     "joi-to-json-schema": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
@@ -106,7 +106,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=8.0.0"
   }
 }

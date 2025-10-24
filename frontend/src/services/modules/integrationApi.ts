@@ -719,3 +719,7 @@ export class IntegrationApi {
 export function createIntegrationApi(client: ApiClient): IntegrationApi {
   return new IntegrationApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../core';
+export const integrationApi = createIntegrationApi(apiClient);

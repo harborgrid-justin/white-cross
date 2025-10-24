@@ -284,9 +284,11 @@ export class StudentManagementApi {
   }
 }
 
-// Export singleton instance
-
 // Factory function for creating StudentManagementApi instances
 export function createStudentManagementApi(client: ApiClient): StudentManagementApi {
   return new StudentManagementApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../core';
+export const studentManagementApi = createStudentManagementApi(apiClient);

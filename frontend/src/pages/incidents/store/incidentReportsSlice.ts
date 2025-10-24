@@ -786,6 +786,9 @@ export const {
   optimisticUpdateReport,
 } = incidentReportsSlice.actions;
 
+// Export actions object for compatibility
+export const incidentReportsActions = incidentReportsSlice.actions;
+
 export default incidentReportsSlice.reducer;
 
 // =====================

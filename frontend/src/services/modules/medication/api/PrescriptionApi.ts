@@ -555,3 +555,7 @@ export class PrescriptionApi {
 export function createPrescriptionApi(client: ApiClient): PrescriptionApi {
   return new PrescriptionApi(client);
 }
+
+// Export singleton instance for registry
+import { apiClient } from '../../../core';
+export const prescriptionApi = createPrescriptionApi(apiClient);

@@ -36,6 +36,9 @@ export {
   invalidateCache,
   optimisticUpdateReport,
   
+  // Actions object for compatibility
+  incidentReportsActions,
+  
   // Selectors
   selectIncidentReports,
   selectCurrentIncident,

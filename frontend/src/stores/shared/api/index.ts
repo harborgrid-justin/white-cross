@@ -7,4 +7,4 @@
 export * from './advancedApiIntegration';
 export * from './serviceIntegration';
 export * from './tanstackIntegration';
-export * from './verifyIntegration';
+// Note: verifyIntegration is a test file and should not be exported
