@@ -68,29 +68,130 @@
  * ```
  */
 
-import type { IAppointmentsApi } from '../types'
 import type {
   Appointment,
   AppointmentFilters,
-  AppointmentCreateData,
-  AppointmentUpdateData,
   AppointmentStatistics,
   NurseAvailability,
   NurseAvailabilityData,
-  WaitlistEntry,
+  AppointmentWaitlist,
   WaitlistFilters,
   RecurringAppointmentData,
   AvailabilitySlot,
-  PaginatedResponse
-} from '../types'
-import type {
   ReminderProcessingResult,
   ConflictCheckResult,
   AppointmentReminder,
-  WaitlistEntryData
+  WaitlistEntryData,
+  CreateAppointmentData,
+  UpdateAppointmentData
 } from '../../types/appointments'
+import type { PaginatedResponse } from '../../types/common'
 import type { ApiClient } from '../core/ApiClient'
 import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtils'
+
+/**
+ * Appointments API Interface
+ * Defines all appointment scheduling and management operations
+ */
+export interface IAppointmentsApi {
+  // Core Appointment Operations
+  getAll(filters?: AppointmentFilters): Promise<PaginatedResponse<Appointment>>;
+  getById(id: string): Promise<{ appointment: Appointment }>;
+  create(appointmentData: CreateAppointmentData): Promise<{ appointment: Appointment }>;
+  update(id: string, data: UpdateAppointmentData): Promise<{ appointment: Appointment }>;
+  cancel(id: string, reason?: string): Promise<{ appointment: Appointment }>;
+  markNoShow(id: string): Promise<{ appointment: Appointment }>;
+  complete(id: string, data?: {
+    notes?: string;
+    outcomes?: string;
+    followUpRequired?: boolean;
+    followUpDate?: string;
+  }): Promise<{ appointment: Appointment }>;
+  start(id: string): Promise<{ appointment: Appointment }>;
+  reschedule(id: string, newScheduledAt: string, reason?: string): Promise<{ appointment: Appointment }>;
+
+  // Availability Management
+  getAvailability(nurseId: string, date?: string, duration?: number): Promise<{ slots: AvailabilitySlot[] }>;
+  getUpcoming(nurseId: string, limit?: number): Promise<{ appointments: Appointment[] }>;
+  getStatistics(filters?: {
+    nurseId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<AppointmentStatistics>;
+
+  // Recurring Appointments
+  createRecurring(data: RecurringAppointmentData): Promise<{ appointments: Appointment[]; count: number }>;
+
+  // Nurse Availability
+  setAvailability(data: NurseAvailabilityData): Promise<{ availability: NurseAvailability }>;
+  getNurseAvailability(nurseId: string, date?: string): Promise<{ availability: NurseAvailability[] }>;
+  updateAvailability(id: string, data: Partial<NurseAvailabilityData>): Promise<{ availability: NurseAvailability }>;
+  deleteAvailability(id: string): Promise<void>;
+
+  // Waitlist Management
+  addToWaitlist(data: {
+    studentId: string;
+    nurseId?: string;
+    type: string;
+    reason: string;
+    priority?: string;
+    preferredDate?: string;
+    duration?: number;
+    notes?: string;
+  }): Promise<{ entry: AppointmentWaitlist }>;
+  getWaitlist(filters?: WaitlistFilters): Promise<{ waitlist: AppointmentWaitlist[] }>;
+  removeFromWaitlist(id: string, reason?: string): Promise<{ entry: AppointmentWaitlist }>;
+  addToWaitlistFull(data: WaitlistEntryData): Promise<{ entry: AppointmentWaitlist }>;
+  updateWaitlistPriority(id: string, priority: string): Promise<{ entry: AppointmentWaitlist }>;
+  getWaitlistPosition(waitlistEntryId: string): Promise<{ position: number; total: number }>;
+  notifyWaitlistEntry(id: string, message?: string): Promise<{ entry: AppointmentWaitlist; notification: any }>;
+
+  // Calendar Export
+  exportCalendar(nurseId: string, dateFrom?: string, dateTo?: string): Promise<Blob>;
+
+  // Reminder Management
+  processPendingReminders(): Promise<ReminderProcessingResult>;
+  getAppointmentReminders(appointmentId: string): Promise<{ reminders: AppointmentReminder[] }>;
+  scheduleReminder(data: {
+    appointmentId: string;
+    type: string;
+    scheduleTime: string;
+    message?: string;
+  }): Promise<{ reminder: AppointmentReminder }>;
+  cancelReminder(reminderId: string): Promise<{ reminder: AppointmentReminder }>;
+
+  // Conflict Detection
+  checkConflicts(
+    nurseId: string,
+    startTime: string,
+    duration: number,
+    excludeAppointmentId?: string
+  ): Promise<ConflictCheckResult>;
+
+  // Bulk Operations
+  cancelMultiple(appointmentIds: string[], reason?: string): Promise<{ cancelled: number; failed: number }>;
+  getForStudents(studentIds: string[], filters?: Partial<AppointmentFilters>): Promise<{ appointments: Appointment[] }>;
+
+  // Advanced Filtering
+  getByDateRange(dateFrom: string, dateTo: string, nurseId?: string): Promise<{ appointments: Appointment[] }>;
+  search(query: string, filters?: Partial<AppointmentFilters>): Promise<PaginatedResponse<Appointment>>;
+
+  // Analytics
+  getTrends(dateFrom: string, dateTo: string, groupBy?: 'day' | 'week' | 'month'): Promise<{ trends: any[] }>;
+  getNoShowStats(nurseId?: string, dateFrom?: string, dateTo?: string): Promise<{
+    rate: number;
+    total: number;
+    noShows: number;
+    byStudent: any[];
+  }>;
+  getUtilizationStats(nurseId: string, dateFrom: string, dateTo: string): Promise<{
+    utilizationRate: number;
+    totalSlots: number;
+    bookedSlots: number;
+    availableSlots: number;
+    byDay: any[];
+  }>;
+}
 
 /**
  * Appointments API implementation
@@ -311,7 +412,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     preferredDate?: string
     duration?: number
     notes?: string
-  }): Promise<{ entry: WaitlistEntry }> {
+  }): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.post('/appointments/waitlist', data)
       return extractApiData(response)
@@ -323,7 +424,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   /**
    * Get appointment waitlist
    */
-  async getWaitlist(filters?: WaitlistFilters): Promise<{ waitlist: WaitlistEntry[] }> {
+  async getWaitlist(filters?: WaitlistFilters): Promise<{ waitlist: AppointmentWaitlist[] }> {
     try {
       const params = filters ? `?${buildUrlParams(filters).toString()}` : ''
       const response = await this.client.get(`/appointments/waitlist${params}`)
@@ -336,7 +437,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   /**
    * Remove student from waitlist
    */
-  async removeFromWaitlist(id: string, reason?: string): Promise<{ entry: WaitlistEntry }> {
+  async removeFromWaitlist(id: string, reason?: string): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.delete(`/appointments/waitlist/${id}`, {
         data: { reason }
@@ -452,7 +553,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   /**
    * Add to waitlist with full entry data
    */
-  async addToWaitlistFull(data: WaitlistEntryData): Promise<{ entry: WaitlistEntry }> {
+  async addToWaitlistFull(data: WaitlistEntryData): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.post('/appointments/waitlist', data)
       return extractApiData(response)
@@ -467,7 +568,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async updateWaitlistPriority(
     id: string,
     priority: string
-  ): Promise<{ entry: WaitlistEntry }> {
+  ): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.patch(`/appointments/waitlist/${id}`, { priority })
       return extractApiData(response)
@@ -494,7 +595,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async notifyWaitlistEntry(
     id: string,
     message?: string
-  ): Promise<{ entry: WaitlistEntry; notification: any }> {
+  ): Promise<{ entry: AppointmentWaitlist; notification: any }> {
     try {
       const response = await this.client.post(`/appointments/waitlist/${id}/notify`, { message })
       return extractApiData(response)
@@ -705,3 +806,7 @@ export function createAppointmentsApi(client: ApiClient): AppointmentsApiImpl {
 
 export { AppointmentsApiImpl }
 export type { IAppointmentsApi }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient'
+export const appointmentsApi = createAppointmentsApi(apiClient)

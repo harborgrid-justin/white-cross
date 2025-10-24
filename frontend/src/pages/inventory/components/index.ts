@@ -72,3 +72,7 @@ export { default as InventorySettings } from './InventorySettings';
 export { default as UnitSettings } from './UnitSettings';
 export { default as AlertSettings } from './AlertSettings';
 export { default as ReorderSettings } from './ReorderSettings';
+
+// Aliases for route compatibility
+export { default as InventoryItems } from './ItemManagement';
+export { default as InventoryVendors } from './VendorManagement';

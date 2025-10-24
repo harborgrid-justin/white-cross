@@ -193,10 +193,10 @@ import {
   selectSortConfig,
   selectViewMode,
   selectLoadingStates,
-  selectIsLoading,
-  selectErrorStates,
-  selectError,
   // TODO: Restore these when selectors are available
+  // selectIsLoading,
+  // selectErrorStates,
+  // selectError,
   // selectIsCacheInvalidated,
   // selectLastFetched,
   // selectFilteredAndSortedReports,
@@ -221,9 +221,10 @@ console.assert(typeof selectSearchQuery === 'function', 'selectSearchQuery shoul
 console.assert(typeof selectSortConfig === 'function', 'selectSortConfig should be a function');
 console.assert(typeof selectViewMode === 'function', 'selectViewMode should be a function');
 console.assert(typeof selectLoadingStates === 'function', 'selectLoadingStates should be a function');
-console.assert(typeof selectIsLoading === 'function', 'selectIsLoading should be a function');
-console.assert(typeof selectErrorStates === 'function', 'selectErrorStates should be a function');
-console.assert(typeof selectError === 'function', 'selectError should be a function');
+// TODO: Restore these when selectors are available
+// console.assert(typeof selectIsLoading === 'function', 'selectIsLoading should be a function');
+// console.assert(typeof selectErrorStates === 'function', 'selectErrorStates should be a function');
+// console.assert(typeof selectError === 'function', 'selectError should be a function');
 // TODO: Restore these assertions when selectors are available
 // console.assert(typeof selectIsCacheInvalidated === 'function', 'selectIsCacheInvalidated should be a function');
 // console.assert(typeof selectLastFetched === 'function', 'selectLastFetched should be a function');

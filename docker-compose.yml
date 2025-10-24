@@ -33,12 +33,14 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: development
     container_name: white-cross-backend
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://white_cross_user:white_cross_password@postgres:5432/white_cross
       REDIS_URL: redis://redis:6379
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      SESSION_SECRET: your-super-secret-session-key-change-in-production
       PORT: 3001
     ports:
       - "3001:3001"
@@ -56,6 +58,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     container_name: white-cross-frontend
     environment:
       VITE_API_URL: http://localhost:3001

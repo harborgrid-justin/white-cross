@@ -4,7 +4,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
-import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
+import { ApiResponse, PaginatedResponse } from '../utils/apiUtils';
 
 /**
  * Audit API interfaces
@@ -166,8 +166,11 @@ export class AuditApi {
    * Get audit logs with filters
    */
   async getLogs(filters?: AuditFilters): Promise<PaginatedResponse<AuditLog>> {
-    const params = buildPaginationParams(filters?.page, filters?.limit);
-    const allParams = filters ? Object.assign({}, params, filters) : params;
+    const paginationParams = {
+      page: filters?.page ?? 1,
+      limit: filters?.limit ?? 10,
+    };
+    const allParams = filters ? { ...paginationParams, ...filters } : paginationParams;
     const response = await this.client.get<PaginatedResponse<AuditLog>>(
       '/api/v1/audit/logs',
       { params: allParams }
@@ -200,8 +203,11 @@ export class AuditApi {
    * Get PHI access logs
    */
   async getPHIAccessLogs(filters?: PHIAccessFilters): Promise<PaginatedResponse<PHIAccessLog>> {
-    const params = buildPaginationParams(filters?.page, filters?.limit);
-    const allParams = filters ? Object.assign({}, params, filters) : params;
+    const paginationParams = {
+      page: filters?.page ?? 1,
+      limit: filters?.limit ?? 10,
+    };
+    const allParams = filters ? { ...paginationParams, ...filters } : paginationParams;
     const response = await this.client.get<PaginatedResponse<PHIAccessLog>>(
       '/api/v1/audit/phi-access',
       { params: allParams }
@@ -259,14 +265,16 @@ export class AuditApi {
     format?: 'CSV' | 'PDF' | 'JSON';
     filters?: AuditFilters;
   }): Promise<Blob> {
-    const response = await this.client.get(
+    const response = await this.client.get<Blob>(
       '/api/v1/audit/export',
-      { 
+      {
         params,
         responseType: 'blob'
       }
     );
-    return response.data;
+    // When responseType is 'blob', the response.data contains the Blob directly
+    // However, ApiClient wraps it in ApiResponse, so we need to extract it
+    return response.data as unknown as Blob;
   }
 
   /**
@@ -377,3 +385,7 @@ export class AuditApi {
 export function createAuditApi(client: ApiClient): AuditApi {
   return new AuditApi(client);
 }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient';
+export const auditApi = createAuditApi(apiClient);

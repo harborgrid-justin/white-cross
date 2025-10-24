@@ -20,10 +20,14 @@ export interface MedicationQueryParams {
 
 export interface MedicationFormData {
   name: string;
-  dosage: string;
-  frequency: string;
-  studentId: string;
-  startDate: string;
+  dosageForm?: string;
+  strength?: string;
+  genericName?: string;
+  manufacturer?: string;
+  dosage?: string;
+  frequency?: string;
+  studentId?: string;
+  startDate?: string;
   endDate?: string;
   notes?: string;
 }

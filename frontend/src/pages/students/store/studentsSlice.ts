@@ -5,7 +5,8 @@
  * Handles CRUD operations for students with health records integration and UI concerns.
  */
 
-import { createSlice, createEntitySlice, EntityApiService, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
 import { Student, CreateStudentData, UpdateStudentData, StudentFilters as StudentFiltersType } from '../../../types/student.types';
 import { studentsApi } from '../../../services/api';
 

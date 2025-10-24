@@ -40,6 +40,9 @@ export * from './reports'
 // Re-export dashboard types
 export * from './dashboard'
 
+// Re-export analytics types
+export * from './analytics'
+
 // Re-export access control types
 export * from './accessControl'
 

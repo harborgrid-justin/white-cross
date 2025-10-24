@@ -10,20 +10,24 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import type { ApiClient } from '@/services/core/ApiClient';
-import { API_ENDPOINTS } from '@/constants/api';
+import type { ApiClient } from '../core/ApiClient';
+import { API_ENDPOINTS } from '../../constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
+import { createApiError } from '../core/errors';
 import { z } from 'zod';
 import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
 import {
   Medication,
   StudentMedication,
-  MedicationLog,
   InventoryItem,
   MedicationReminder,
   AdverseReaction,
   MedicationFormData,
   StudentMedicationFormData,
+  AdverseReactionFormData
+} from '../../types/api';
+import {
+  MedicationLog,
   MedicationAdministrationData,
   AdverseReactionData,
   MedicationsResponse,
@@ -176,7 +180,7 @@ const createMedicationSchema = z.object({
     .optional(),
 
   dosageForm: z.enum(dosageForms, {
-    errorMap: () => ({ message: 'Please select a valid dosage form' })
+    message: 'Please select a valid dosage form'
   }),
 
   strength: z.string()
@@ -198,18 +202,20 @@ const createMedicationSchema = z.object({
 
   deaSchedule: z.enum(deaSchedules)
     .optional()
-    .nullable()
-    .refine(
-      (val, ctx) => {
-        const parent = ctx as any;
-        if (parent?.isControlled && !val) {
-          return false;
-        }
-        return true;
-      },
-      { message: 'DEA Schedule is required for controlled substances' }
-    ),
-});
+    .nullable(),
+}).refine(
+  (data) => {
+    // Cross-field validation: DEA Schedule required for controlled substances
+    if (data.isControlled && !data.deaSchedule) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'DEA Schedule is required for controlled substances',
+    path: ['deaSchedule']
+  }
+);
 
 /**
  * Schema for assigning medication to student (prescription)
@@ -238,7 +244,7 @@ const assignMedicationSchema = z.object({
     ),
 
   route: z.enum(administrationRoutes, {
-    errorMap: () => ({ message: 'Route is required (Right Route)' })
+    message: 'Route is required (Right Route)'
   }),
 
   instructions: z.string()
@@ -254,17 +260,7 @@ const assignMedicationSchema = z.object({
     ),
 
   endDate: z.string()
-    .optional()
-    .refine(
-      (date, ctx) => {
-        if (!date) return true;
-        const parent = ctx as any;
-        const startDate = parent?.startDate ? new Date(parent.startDate) : null;
-        const endDate = new Date(date);
-        return !startDate || endDate >= startDate;
-      },
-      'End date must be after start date'
-    ),
+    .optional(),
 
   prescribedBy: z.string()
     .min(3, 'Prescribing physician name must be at least 3 characters')
@@ -282,7 +278,19 @@ const assignMedicationSchema = z.object({
     .max(12, 'Refills remaining cannot exceed 12')
     .optional()
     .default(0),
-});
+}).refine(
+  (data) => {
+    // Cross-field validation: endDate must be after startDate
+    if (data.endDate && data.startDate) {
+      return new Date(data.endDate) >= new Date(data.startDate);
+    }
+    return true;
+  },
+  {
+    message: 'End date must be after start date',
+    path: ['endDate']
+  }
+);
 
 /**
  * Schema for logging medication administration
@@ -384,7 +392,7 @@ const reportAdverseReactionSchema = z.object({
     .min(1, 'Student medication ID is required'),
 
   severity: z.enum(['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING'], {
-    errorMap: () => ({ message: 'Severity must be MILD, MODERATE, SEVERE, or LIFE_THREATENING' })
+    message: 'Severity must be MILD, MODERATE, SEVERE, or LIFE_THREATENING'
   }),
 
   reaction: z.string()
@@ -600,7 +608,7 @@ export class MedicationsApi {
         action: AuditAction.ADMINISTER_MEDICATION,
         resourceType: AuditResourceType.MEDICATION_LOG,
         resourceId: medicationLog.id,
-        studentId: medicationLog.studentId,
+        // Note: studentId is available through medicationLog.studentMedication relation if needed
         status: AuditStatus.SUCCESS,
         isPHI: true,
         metadata: {
@@ -863,9 +871,11 @@ export class MedicationsApi {
   }
 }
 
-// Export singleton instance
-
 // Factory function for creating MedicationsApi instances
 export function createMedicationsApi(client: ApiClient): MedicationsApi {
   return new MedicationsApi(client);
 }
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient';
+export const medicationsApi = createMedicationsApi(apiClient);

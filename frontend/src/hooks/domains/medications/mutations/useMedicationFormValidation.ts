@@ -52,7 +52,7 @@ import type {
  *     onSubmit(data);
  *   };
  *
- *   return <form>{/* form fields */}</form>;
+ *   return <form>...</form>;
  * }
  * ```
  *
