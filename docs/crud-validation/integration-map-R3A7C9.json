@@ -1,0 +1,158 @@
+{
+  "agentId": "react-component-architect",
+  "taskId": "crud-pattern-analysis-R3A7C9",
+  "analysisDate": "2025-10-24",
+  "referencedWork": [],
+  "componentPatterns": [
+    {
+      "pattern": "Modal/Dialog",
+      "occurrences": 345,
+      "files": 52,
+      "examples": [
+        "/home/user/white-cross/frontend/src/components/features/health-records/components/modals/AllergyModal.tsx",
+        "/home/user/white-cross/frontend/src/components/features/health-records/components/modals/VaccinationModal.tsx",
+        "/home/user/white-cross/frontend/src/components/features/health-records/components/modals/ConditionModal.tsx"
+      ],
+      "issues": [
+        "Duplicate backdrop code (fixed inset-0 bg-black bg-opacity-50)",
+        "No portal-based rendering",
+        "No focus management",
+        "No accessibility features (ARIA attributes)",
+        "No animation/transition support"
+      ],
+      "recommendation": "Create shared Modal component with portal rendering"
+    },
+    {
+      "pattern": "Form Handling",
+      "approach": "Mixed (FormData + Controlled State)",
+      "examples": [
+        {
+          "file": "/home/user/white-cross/frontend/src/components/features/health-records/components/modals/AllergyModal.tsx",
+          "approach": "Uncontrolled with FormData",
+          "validation": "Server-side only"
+        },
+        {
+          "file": "/home/user/white-cross/frontend/src/components/features/settings/components/tabs/UsersTab.tsx",
+          "approach": "Controlled with useState",
+          "validation": "HTML5 required attribute"
+        }
+      ],
+      "issues": [
+        "No form validation library",
+        "Inconsistent patterns across codebase",
+        "No real-time validation",
+        "Type safety lost with FormData"
+      ],
+      "recommendation": "Standardize on React Hook Form with Zod validation"
+    },
+    {
+      "pattern": "Table/List with CRUD",
+      "occurrences": "Multiple (Users, Schools, Districts, etc)",
+      "examples": [
+        "/home/user/white-cross/frontend/src/components/features/settings/components/tabs/UsersTab.tsx",
+        "/home/user/white-cross/frontend/src/components/features/settings/components/tabs/SchoolsTab.tsx"
+      ],
+      "duplicate_features": [
+        "Pagination logic (identical across components)",
+        "Sorting logic (field-based with asc/desc)",
+        "Filtering logic (search + multiple filters)",
+        "Bulk selection (checkbox state management)",
+        "Export to CSV functionality"
+      ],
+      "issues": [
+        "600+ lines of duplicate logic per table",
+        "No virtualization for long lists",
+        "No memoization of filtered/sorted data",
+        "Inline row rendering (performance issue)"
+      ],
+      "recommendation": "Create shared DataTable component with TanStack Table"
+    },
+    {
+      "pattern": "Data Fetching",
+      "approaches": ["TanStack Query", "Raw Fetch API"],
+      "examples": [
+        {
+          "file": "/home/user/white-cross/frontend/src/hooks/domains/health/queries/useHealthQueries.ts",
+          "approach": "TanStack Query",
+          "quality": "Excellent - proper caching, query keys, optimistic updates"
+        },
+        {
+          "file": "/home/user/white-cross/frontend/src/components/features/settings/components/tabs/UsersTab.tsx",
+          "approach": "Raw fetch with useEffect",
+          "quality": "Poor - manual loading state, no caching, no error handling"
+        }
+      ],
+      "issues": [
+        "Inconsistent patterns across codebase",
+        "UsersTab/SchoolsTab should use React Query",
+        "Manual cache invalidation in some places"
+      ],
+      "recommendation": "Migrate all data fetching to TanStack Query hooks"
+    },
+    {
+      "pattern": "Custom Hooks",
+      "structure": "Domain-organized (queries, mutations, composites)",
+      "examples": [
+        "/home/user/white-cross/frontend/src/hooks/domains/students/mutations/useStudentMutations.ts",
+        "/home/user/white-cross/frontend/src/hooks/domains/health/queries/useHealthQueries.ts"
+      ],
+      "quality": "Good",
+      "coverage": "93+ hooks",
+      "issues": [
+        "Not consistently used across all CRUD operations",
+        "Some components bypass hooks and use direct API calls"
+      ],
+      "recommendation": "Enforce hook usage via code review/linting"
+    }
+  ],
+  "performanceIssues": [
+    {
+      "type": "Missing Memoization",
+      "severity": "High",
+      "components": ["UsersTab", "SchoolsTab", "AllergiesTab"],
+      "impact": "Unnecessary re-renders on every state change"
+    },
+    {
+      "type": "No Virtualization",
+      "severity": "Medium",
+      "components": ["UsersTab", "SchoolsTab"],
+      "impact": "Poor performance with 100+ items"
+    },
+    {
+      "type": "Inline Functions",
+      "severity": "Medium",
+      "components": "All table components",
+      "impact": "New function instances on every render"
+    }
+  ],
+  "typeIssues": [
+    {
+      "type": "any[] usage",
+      "files": [
+        "/home/user/white-cross/frontend/src/components/features/settings/components/tabs/UsersTab.tsx",
+        "/home/user/white-cross/frontend/src/components/features/settings/components/tabs/SchoolsTab.tsx"
+      ],
+      "recommendation": "Define proper interfaces for User, School types"
+    }
+  ],
+  "recommendations": {
+    "sharedComponents": [
+      "Modal/Dialog component",
+      "DataTable with pagination/sorting/filtering",
+      "Form components (Input, Select, TextArea)",
+      "ConfirmationDialog component",
+      "EmptyState component"
+    ],
+    "sharedHooks": [
+      "useTableState (pagination, sorting, filtering)",
+      "useFormValidation",
+      "useCRUDModal (open, close, edit state)"
+    ],
+    "libraries": [
+      "React Hook Form (form state management)",
+      "Zod (schema validation)",
+      "TanStack Table (advanced table features)",
+      "Radix UI (accessible modal/dialog primitives)"
+    ]
+  }
+}
