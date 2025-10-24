@@ -1,0 +1,237 @@
+{
+  "timestamp": "2025-10-24T15:45:00.000Z",
+  "project": "White Cross Healthcare Platform",
+  "baseUrl": "http://localhost:5173",
+  "status": "Routes identified - Screenshots blocked by network restrictions",
+  "issue": "Network restrictions (403 Forbidden) prevent Playwright/Puppeteer browser downloads from cdn.playwright.dev and storage.googleapis.com",
+  "totalRoutes": 18,
+  "routes": {
+    "public": [
+      {
+        "path": "/login",
+        "name": "login",
+        "component": "Login",
+        "description": "User authentication page",
+        "requiresAuth": false,
+        "expectedScreenshot": "login.png"
+      }
+    ],
+    "protected": [
+      {
+        "path": "/dashboard",
+        "name": "dashboard",
+        "component": "Dashboard",
+        "description": "Main dashboard with metrics and quick actions",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE", "COUNSELOR", "READ_ONLY", "SCHOOL_ADMIN", "DISTRICT_ADMIN"],
+        "expectedScreenshot": "dashboard.png"
+      },
+      {
+        "path": "/health-records",
+        "name": "health-records",
+        "component": "HealthRecords",
+        "description": "Student health records management",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE", "COUNSELOR", "READ_ONLY", "SCHOOL_ADMIN", "DISTRICT_ADMIN"],
+        "expectedScreenshot": "health-records.png"
+      },
+      {
+        "path": "/appointments/schedule",
+        "name": "appointments-schedule",
+        "component": "AppointmentSchedule",
+        "description": "Appointment scheduling calendar",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "appointments-schedule.png"
+      },
+      {
+        "path": "/inventory/items",
+        "name": "inventory-items",
+        "component": "InventoryItems",
+        "description": "Inventory items management",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "inventory-items.png"
+      },
+      {
+        "path": "/inventory/alerts",
+        "name": "inventory-alerts",
+        "component": "InventoryAlerts",
+        "description": "Low stock and expiration alerts",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "inventory-alerts.png"
+      },
+      {
+        "path": "/inventory/transactions",
+        "name": "inventory-transactions",
+        "component": "InventoryTransactions",
+        "description": "Inventory transaction history",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "inventory-transactions.png"
+      },
+      {
+        "path": "/inventory/vendors",
+        "name": "inventory-vendors",
+        "component": "InventoryVendors",
+        "description": "Vendor management",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "inventory-vendors.png"
+      },
+      {
+        "path": "/reports/generate",
+        "name": "reports-generate",
+        "component": "ReportsGenerate",
+        "description": "Report generation interface",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "reports-generate.png"
+      },
+      {
+        "path": "/reports/scheduled",
+        "name": "reports-scheduled",
+        "component": "ScheduledReports",
+        "description": "Scheduled reports management",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "NURSE"],
+        "expectedScreenshot": "reports-scheduled.png"
+      },
+      {
+        "path": "/admin/users",
+        "name": "admin-users",
+        "component": "Users",
+        "description": "User management",
+        "requiresAuth": true,
+        "roles": ["ADMIN"],
+        "expectedScreenshot": "admin-users.png"
+      },
+      {
+        "path": "/admin/roles",
+        "name": "admin-roles",
+        "component": "Roles",
+        "description": "Role management",
+        "requiresAuth": true,
+        "roles": ["ADMIN"],
+        "expectedScreenshot": "admin-roles.png"
+      },
+      {
+        "path": "/admin/permissions",
+        "name": "admin-permissions",
+        "component": "Permissions",
+        "description": "Permissions management",
+        "requiresAuth": true,
+        "roles": ["ADMIN"],
+        "expectedScreenshot": "admin-permissions.png"
+      },
+      {
+        "path": "/budget/overview",
+        "name": "budget-overview",
+        "component": "BudgetOverview",
+        "description": "Budget overview and summary",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "MANAGER"],
+        "expectedScreenshot": "budget-overview.png"
+      },
+      {
+        "path": "/budget/planning",
+        "name": "budget-planning",
+        "component": "BudgetPlanning",
+        "description": "Budget planning interface",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "MANAGER"],
+        "expectedScreenshot": "budget-planning.png"
+      },
+      {
+        "path": "/budget/tracking",
+        "name": "budget-tracking",
+        "component": "BudgetTracking",
+        "description": "Budget tracking and monitoring",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "MANAGER"],
+        "expectedScreenshot": "budget-tracking.png"
+      },
+      {
+        "path": "/budget/reports",
+        "name": "budget-reports",
+        "component": "BudgetReports",
+        "description": "Budget reports",
+        "requiresAuth": true,
+        "roles": ["ADMIN", "MANAGER"],
+        "expectedScreenshot": "budget-reports.png"
+      },
+      {
+        "path": "/access-denied",
+        "name": "access-denied",
+        "component": "AccessDenied",
+        "description": "Access denied error page",
+        "requiresAuth": true,
+        "roles": ["ALL"],
+        "expectedScreenshot": "access-denied.png"
+      },
+      {
+        "path": "*",
+        "name": "404-not-found",
+        "component": "404 Page",
+        "description": "404 Not Found error page",
+        "requiresAuth": true,
+        "roles": ["ALL"],
+        "expectedScreenshot": "404-not-found.png"
+      }
+    ]
+  },
+  "additionalRoutesDefinedButNotImplemented": {
+    "note": "The following routes are defined in constants/routes.ts but not implemented in the routes/index.tsx configuration",
+    "routes": [
+      "/students",
+      "/medications",
+      "/incident-reports",
+      "/emergency-contacts",
+      "/communication",
+      "/documents",
+      "/compliance",
+      "/settings",
+      "/profile"
+    ]
+  },
+  "screenshotScript": {
+    "location": "/home/user/white-cross/.screenshots/capture-all-pages.ts",
+    "status": "Ready to execute when browsers are available",
+    "features": [
+      "Automatic login with admin credentials",
+      "Navigate to all routes",
+      "Capture full-page screenshots",
+      "Handle errors gracefully",
+      "Generate detailed manifest"
+    ]
+  },
+  "workaroundInstructions": {
+    "option1": {
+      "title": "Run in environment with internet access",
+      "steps": [
+        "Copy the script to a machine with internet access",
+        "Run: npm install",
+        "Run: npx playwright install chromium",
+        "Run: npx tsx .screenshots/capture-all-pages.ts"
+      ]
+    },
+    "option2": {
+      "title": "Use Docker with pre-installed browsers",
+      "steps": [
+        "Use playwright Docker image: mcr.microsoft.com/playwright:latest",
+        "Mount project directory",
+        "Run script inside container"
+      ]
+    },
+    "option3": {
+      "title": "Manual browser automation",
+      "steps": [
+        "Open browser manually",
+        "Log in with admin@whitecross.com / Admin123!",
+        "Visit each route listed above",
+        "Take screenshots manually"
+      ]
+    }
+  }
+}
