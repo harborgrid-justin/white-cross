@@ -1,3 +1,25 @@
+/**
+ * Purchase Order Composite Hooks
+ *
+ * Provides high-level composite hooks that orchestrate multiple queries and mutations
+ * into complete workflows. These hooks combine data fetching with business logic to
+ * simplify complex purchase order operations.
+ *
+ * Composite Workflows:
+ * - **usePurchaseOrderWorkflow**: Complete PO data + workflow state logic
+ * - **useCreatePurchaseOrderWorkflow**: Create PO + auto-submit for approval
+ * - **useApprovalWorkflow**: Approve/reject with automatic status progression
+ * - **useReceivingWorkflow**: Create receipt + auto-close PO when complete
+ * - **usePurchaseOrderDashboard**: Aggregated dashboard data
+ * - **usePurchaseOrderSearch**: Advanced search with facets
+ * - **usePurchaseOrderAnalytics**: Comprehensive analytics and insights
+ *
+ * These hooks abstract complexity and provide a clean API for components,
+ * handling cache invalidation, error handling, and business logic automatically.
+ *
+ * @module hooks/domains/purchase-orders/composites
+ */
+
 import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import {
@@ -24,7 +46,21 @@ import {
   purchaseOrderKeys,
 } from '../config';
 
-// Interfaces for composite workflows
+/**
+ * Comprehensive purchase order workflow data and capabilities.
+ *
+ * @interface PurchaseOrderWorkflowData
+ * @property {PurchaseOrder} [purchaseOrder] - Purchase order details
+ * @property {POLineItem[]} [lineItems] - Order line items
+ * @property {POReceipt[]} [receipts] - Receiving receipts
+ * @property {any} analytics - Order analytics data
+ * @property {boolean} isLoading - Loading state across all queries
+ * @property {Error | null} error - Error from any query
+ * @property {boolean} canEdit - Whether PO can be edited (DRAFT or PENDING_APPROVAL)
+ * @property {boolean} canApprove - Whether PO can be approved (PENDING_APPROVAL)
+ * @property {boolean} canReceive - Whether items can be received (ACKNOWLEDGED/PARTIALLY_RECEIVED)
+ * @property {boolean} canCancel - Whether PO can be cancelled
+ */
 interface PurchaseOrderWorkflowData {
   purchaseOrder: PurchaseOrder | undefined;
   lineItems: POLineItem[] | undefined;
@@ -100,7 +136,46 @@ interface ReceivingWorkflowInput {
   autoClose?: boolean;
 }
 
-// Purchase Order Workflow Composite Hook
+/**
+ * Comprehensive purchase order workflow hook.
+ *
+ * Fetches complete PO data (order, line items, receipts, analytics) and provides
+ * business logic for determining what actions are available based on current state.
+ *
+ * Workflow State Rules:
+ * - **canEdit**: DRAFT or PENDING_APPROVAL (before approval/sending)
+ * - **canApprove**: PENDING_APPROVAL (submitted for approval)
+ * - **canReceive**: ACKNOWLEDGED or PARTIALLY_RECEIVED (vendor confirmed, awaiting items)
+ * - **canCancel**: Any state except RECEIVED, CLOSED, or CANCELLED
+ *
+ * @param {string} purchaseOrderId - Purchase order ID to fetch
+ * @param {object} [options] - Configuration options
+ * @param {boolean} [options.includeAnalytics] - Whether to fetch analytics data
+ * @param {boolean} [options.enableRealTimeUpdates] - Enable 30s auto-refresh
+ * @returns {PurchaseOrderWorkflowData} Complete workflow data and capabilities
+ *
+ * @example
+ * ```tsx
+ * const {
+ *   purchaseOrder,
+ *   lineItems,
+ *   receipts,
+ *   canEdit,
+ *   canApprove,
+ *   canReceive,
+ *   isLoading
+ * } = usePurchaseOrderWorkflow(poId, { includeAnalytics: true });
+ *
+ * return (
+ *   <div>
+ *     <POHeader purchaseOrder={purchaseOrder} />
+ *     <LineItemsTable items={lineItems} editable={canEdit} />
+ *     {canApprove && <ApprovalSection poId={poId} />}
+ *     {canReceive && <ReceivingSection poId={poId} receipts={receipts} />}
+ *   </div>
+ * );
+ * ```
+ */
 export const usePurchaseOrderWorkflow = (
   purchaseOrderId: string,
   options?: {

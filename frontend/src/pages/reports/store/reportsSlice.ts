@@ -1,14 +1,56 @@
 /**
- * Reports Slice
- * 
- * Redux slice for managing reports and analytics using the slice factory.
- * Handles CRUD operations for report generation and management.
+ * Reports Redux Slice
+ *
+ * Redux slice for managing reports and analytics using the entity slice factory.
+ * Handles CRUD operations for report generation, scheduling, and management.
+ *
+ * @module pages/reports/store/reportsSlice
+ *
+ * @remarks
+ * - Uses entity adapter pattern for normalized state
+ * - Integrates with reportsApi service layer
+ * - Supports filtering by type, status, format, and date range
+ * - Manages scheduled reports and report history
+ * - Provides selectors for common report queries
+ *
+ * @example
+ * ```typescript
+ * // Dispatch actions
+ * dispatch(reportsThunks.fetchAll({ type: 'incident' }));
+ * dispatch(reportsThunks.create({ name: 'Monthly Report', type: 'health', format: 'PDF' }));
+ *
+ * // Use selectors
+ * const reports = reportsSelectors.selectAll(state);
+ * const report = reportsSelectors.selectById(state, reportId);
+ * ```
  */
 
 import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
 import { reportsApi } from '../../../services';
 
-// Report interface
+/**
+ * Report entity interface.
+ *
+ * Represents a generated or scheduled report with metadata, parameters,
+ * and file information.
+ *
+ * @property id - Unique report identifier
+ * @property name - Human-readable report name
+ * @property type - Report category (student, health, medication, etc.)
+ * @property description - Optional detailed description
+ * @property parameters - Report-specific filter and configuration parameters
+ * @property status - Current status of the report
+ * @property generatedAt - Timestamp when report was generated
+ * @property generatedBy - User ID who generated the report
+ * @property fileUrl - URL to download the generated report file
+ * @property fileSize - Size of the generated file in bytes
+ * @property format - Output format (PDF, Excel, CSV)
+ * @property expiresAt - Optional expiration timestamp for temporary reports
+ * @property isScheduled - Whether this is a scheduled recurring report
+ * @property scheduleConfig - Cron expression and scheduling configuration
+ * @property createdAt - Entity creation timestamp
+ * @property updatedAt - Entity last update timestamp
+ */
 interface Report {
   id: string;
   name: string;
@@ -28,7 +70,19 @@ interface Report {
   updatedAt: string;
 }
 
-// Report creation data
+/**
+ * Report creation payload.
+ *
+ * Data required to create a new report or schedule a recurring report.
+ *
+ * @property name - Report name
+ * @property type - Report category
+ * @property description - Optional description
+ * @property parameters - Filters and configuration
+ * @property format - Output format
+ * @property isScheduled - Enable scheduling
+ * @property scheduleConfig - Scheduling configuration (cron, timezone)
+ */
 interface CreateReportData {
   name: string;
   type: string;
@@ -50,7 +104,22 @@ interface UpdateReportData {
   scheduleConfig?: Record<string, any>;
 }
 
-// Report filters
+/**
+ * Report query filters.
+ *
+ * Supports filtering reports by various criteria including type, status,
+ * creator, format, scheduling status, and date range.
+ *
+ * @property type - Filter by report type
+ * @property status - Filter by generation status
+ * @property generatedBy - Filter by creator user ID
+ * @property format - Filter by output format
+ * @property isScheduled - Filter scheduled vs. on-demand reports
+ * @property startDate - Filter by creation date (start)
+ * @property endDate - Filter by creation date (end)
+ * @property page - Pagination page number
+ * @property limit - Pagination results per page
+ */
 interface ReportFilters {
   type?: string;
   status?: string;

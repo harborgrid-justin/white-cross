@@ -15,10 +15,51 @@ import { Heart } from 'lucide-react'
 // MAIN FOOTER COMPONENT
 // ============================================================================
 
+/**
+ * Props for the Footer component.
+ *
+ * @property {string} [className] - Optional CSS classes for the footer element
+ */
 interface FooterProps {
   className?: string
 }
 
+/**
+ * Application footer component with links and copyright information.
+ *
+ * Displays a consistent footer across the application including:
+ * - Copyright notice with current year
+ * - "Made with love" message
+ * - Navigation links (Help, Privacy, Terms)
+ * - Version information
+ *
+ * Layout:
+ * - Desktop: Horizontal layout with copyright left, links right
+ * - Mobile: Stacked vertical layout
+ * - Sticky to bottom via flex layout (mt-auto)
+ *
+ * Features:
+ * - Automatic year update
+ * - Responsive layout
+ * - Dark mode support
+ * - Accessible navigation with semantic HTML
+ * - Hover effects on links
+ * - Bordered top for visual separation
+ *
+ * @param props - Component props
+ * @param props.className - Optional CSS classes
+ * @returns JSX element representing the application footer
+ *
+ * @example
+ * ```tsx
+ * <Footer />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * <Footer className="shadow-lg" />
+ * ```
+ */
 export const Footer = memo(({ className = '' }: FooterProps) => {
   const currentYear = new Date().getFullYear()
 

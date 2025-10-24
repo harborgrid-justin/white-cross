@@ -1,11 +1,33 @@
+/**
+ * Permissions Page Component
+ *
+ * Comprehensive permission management interface for defining granular
+ * access controls within the RBAC (Role-Based Access Control) system.
+ *
+ * RBAC: Requires 'admin' or 'user.permissions' permission to access.
+ * Audit: All permission modifications are logged for compliance.
+ * Security: System permissions are protected from modification and deletion.
+ *
+ * Features:
+ * - Permission CRUD operations
+ * - Permission categorization and grouping
+ * - Resource and action-based permission structure
+ * - Role assignment tracking per permission
+ * - System permission protection (read-only for critical permissions)
+ * - Category-based organization and filtering
+ * - Permission usage analytics
+ *
+ * @module admin/Permissions
+ */
+
 import React, { useState, useEffect } from 'react';
-import { 
-  Key, 
-  Search, 
-  Filter, 
-  Plus, 
-  Edit2, 
-  Trash2, 
+import {
+  Key,
+  Search,
+  Filter,
+  Plus,
+  Edit2,
+  Trash2,
   Shield,
   Users,
   CheckCircle,
@@ -15,7 +37,23 @@ import {
   Lock
 } from 'lucide-react';
 
-// Types
+/**
+ * Permission data structure for RBAC system.
+ * Represents a granular access control permission.
+ *
+ * @interface Permission
+ * @property {string} id - Unique permission identifier (e.g., 'user.manage')
+ * @property {string} name - Human-readable permission name
+ * @property {string} description - Detailed description of what the permission allows
+ * @property {string} category - Permission category grouping (e.g., 'User Management')
+ * @property {string} resource - The resource this permission applies to (e.g., 'user')
+ * @property {string} action - The action this permission allows (e.g., 'view', 'manage')
+ * @property {boolean} isSystem - Whether this is a system-protected permission
+ * @property {Date} createdAt - Permission creation timestamp
+ * @property {Date} updatedAt - Last modification timestamp
+ * @property {string[]} assignedRoles - Array of role names that have this permission
+ * @property {number} assignedUsers - Total number of users with this permission
+ */
 interface Permission {
   id: string;
   name: string;
@@ -30,6 +68,16 @@ interface Permission {
   assignedUsers: number;
 }
 
+/**
+ * Permission category metadata for grouping and organizing permissions.
+ *
+ * @interface PermissionCategory
+ * @property {string} id - Unique category identifier
+ * @property {string} name - Category display name
+ * @property {string} description - Category description
+ * @property {string} icon - Icon identifier for UI display
+ * @property {string} color - Color theme for category
+ */
 interface PermissionCategory {
   id: string;
   name: string;
@@ -38,7 +86,11 @@ interface PermissionCategory {
   color: string;
 }
 
-// Mock data
+/**
+ * Mock permission categories for demonstration.
+ * TODO: Replace with API integration.
+ * @private
+ */
 const mockCategories: PermissionCategory[] = [
   { id: 'user', name: 'User Management', description: 'User account and profile management', icon: 'users', color: 'blue' },
   { id: 'system', name: 'System Administration', description: 'System configuration and maintenance', icon: 'settings', color: 'purple' },
@@ -49,6 +101,12 @@ const mockCategories: PermissionCategory[] = [
   { id: 'billing', name: 'Billing & Finance', description: 'Financial operations and billing', icon: 'dollar', color: 'emerald' }
 ];
 
+/**
+ * Mock permissions data for demonstration.
+ * Organized by category with system and custom permissions.
+ * TODO: Replace with API integration.
+ * @private
+ */
 const mockPermissions: Permission[] = [
   // User Management
   {
@@ -286,6 +344,23 @@ const mockPermissions: Permission[] = [
   }
 ];
 
+/**
+ * Permissions Page Component
+ *
+ * Manages granular permissions in the RBAC system. Allows administrators
+ * to create, edit, and manage individual permissions that can be assigned to roles.
+ *
+ * RBAC: Requires 'admin' or 'user.permissions' permission.
+ * Audit: All permission operations are logged.
+ * Security: System permissions cannot be modified or deleted.
+ *
+ * @returns {JSX.Element} The rendered permissions management page
+ *
+ * @example
+ * ```tsx
+ * <Permissions />
+ * ```
+ */
 export const Permissions: React.FC = () => {
   const [permissions, setPermissions] = useState<Permission[]>(mockPermissions);
   const [filteredPermissions, setFilteredPermissions] = useState<Permission[]>(mockPermissions);

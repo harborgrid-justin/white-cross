@@ -16,11 +16,57 @@ import { useNavigation } from '../../contexts/NavigationContext'
 // MAIN BREADCRUMBS COMPONENT
 // ============================================================================
 
+/**
+ * Props for the Breadcrumbs component.
+ *
+ * @property {string} [className] - Optional CSS classes for the breadcrumb container
+ * @property {number} [maxItems=5] - Maximum number of breadcrumb items before truncation
+ */
 interface BreadcrumbsProps {
   className?: string
   maxItems?: number
 }
 
+/**
+ * Breadcrumb navigation component showing hierarchical page location.
+ *
+ * Displays a breadcrumb trail automatically generated from the current route,
+ * showing the user's location in the application hierarchy. Breadcrumbs are
+ * managed by NavigationContext and updated on route changes.
+ *
+ * Features:
+ * - Auto-generation from current path
+ * - Home icon for root level
+ * - ChevronRight separators
+ * - Clickable links for navigation
+ * - Active page indication
+ * - Smart truncation for long paths
+ * - Responsive design
+ * - Dark mode support
+ * - Accessible with ARIA labels
+ *
+ * Truncation:
+ * - When items exceed maxItems, shows: Home > ... > Recent Items
+ * - Keeps first item (home) and last N-2 items visible
+ * - Uses ellipsis to indicate hidden items
+ *
+ * @param props - Component props
+ * @param props.className - Optional CSS classes
+ * @param props.maxItems - Maximum breadcrumb items before truncation (default: 5)
+ * @returns JSX element representing breadcrumb navigation, or null if no breadcrumbs
+ *
+ * @example
+ * ```tsx
+ * // Automatic breadcrumbs from NavigationContext
+ * <Breadcrumbs />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Custom truncation limit
+ * <Breadcrumbs maxItems={3} className="mb-4" />
+ * ```
+ */
 export const Breadcrumbs = memo(({ className = '', maxItems = 5 }: BreadcrumbsProps) => {
   const { breadcrumbs } = useNavigation()
 

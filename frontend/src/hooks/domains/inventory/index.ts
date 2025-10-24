@@ -1,8 +1,14 @@
 /**
- * Inventory Domain - Central Export Hub  
- * 
- * Enterprise hook architecture for inventory management
- * with supply chain tracking and compliance.
+ * Inventory Domain Hooks - Central Export Hub
+ *
+ * Provides comprehensive hooks for inventory management including:
+ * - Stock level tracking and alerts
+ * - CRUD operations for inventory items
+ * - Stock adjustments and history
+ * - Medication inventory with batch/expiration tracking
+ * - Real-time statistics and metrics
+ *
+ * @module hooks/domains/inventory
  */
 
 // Inventory Management Hooks

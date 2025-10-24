@@ -1,15 +1,33 @@
 /**
- * Student Validation Schemas
- * Zod schemas for student management matching backend Joi validators
+ * Student Validation Schemas Module
  *
- * Backend Reference: /backend/src/routes/v1/operations/validators/students.validators.ts
+ * Comprehensive Zod validation schemas for student management operations.
+ * Ensures data integrity and type safety aligned with backend Joi validators.
  *
- * Validates:
- *   - Student creation
- *   - Student updates
- *   - Student deactivation
- *   - Student transfers
- *   - Search and filtering
+ * **Validation Coverage**:
+ * - Student CRUD operations (create, update, deactivate)
+ * - Student transfers between nurses
+ * - Bulk operations (update, deactivate)
+ * - Import/export operations
+ * - Search and filtering
+ *
+ * **Backend Alignment**: Schemas match backend validators for API compatibility
+ *
+ * @module validation/studentSchemas
+ * @category Validation
+ * @see {@link backend/src/routes/v1/operations/validators/students.validators.ts} Backend validators
+ *
+ * @example
+ * ```typescript
+ * import { createStudentSchema } from './validation/studentSchemas';
+ *
+ * const result = createStudentSchema.safeParse(formData);
+ * if (!result.success) {
+ *   console.error('Validation errors:', result.error.errors);
+ * } else {
+ *   await createStudent(result.data);
+ * }
+ * ```
  */
 
 import { z } from 'zod';
@@ -19,7 +37,10 @@ import { z } from 'zod';
 // ============================================================================
 
 /**
- * Gender options
+ * Valid gender options for student profiles.
+ *
+ * Readonly tuple ensuring only valid values are accepted.
+ * Matches backend Gender enum.
  */
 const GENDER_OPTIONS = ['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'] as const;
 
@@ -28,12 +49,32 @@ const GENDER_OPTIONS = ['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'] as const
 // ============================================================================
 
 /**
- * UUID validation schema
+ * UUID v4 validation schema.
+ *
+ * Validates string is properly formatted UUID v4 identifier.
+ * Used for all entity ID validations (students, nurses, schools, etc.).
+ *
+ * **Error Message**: "Must be a valid UUID"
  */
 const uuidSchema = z.string().uuid({ message: 'Must be a valid UUID' });
 
 /**
- * Past date validation (cannot be in future)
+ * Past date validation schema.
+ *
+ * Validates date is in ISO 8601 format and not in the future.
+ * Used for birth dates, enrollment dates, and historical events.
+ *
+ * **Constraints**:
+ * - Must be valid ISO 8601 datetime string
+ * - Cannot be in the future
+ *
+ * **Error Message**: "Date cannot be in the future"
+ *
+ * @example
+ * ```typescript
+ * pastDateSchema.parse('2025-01-01T00:00:00Z'); // ✅ Valid
+ * pastDateSchema.parse('2030-01-01T00:00:00Z'); // ❌ Fails - future date
+ * ```
  */
 const pastDateSchema = z
   .string()
@@ -45,10 +86,70 @@ const pastDateSchema = z
 // ============================================================================
 
 /**
- * Create Student Schema
- * For registering a new student
+ * Create Student Validation Schema
  *
- * Backend Reference: createStudentSchema
+ * Validates student registration data with comprehensive field-level constraints.
+ * All required fields must be provided; optional fields can be null or undefined.
+ *
+ * **Validation Rules**:
+ *
+ * Required Fields:
+ * - `firstName`: 1-100 characters, trimmed, required
+ * - `lastName`: 1-100 characters, trimmed, required
+ * - `dateOfBirth`: ISO 8601 datetime, must be in past, required
+ * - `grade`: 1-10 characters (e.g., "K", "1", "12"), trimmed, required
+ * - `studentNumber`: 4-20 characters, unique identifier, trimmed, required
+ * - `gender`: One of MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY, required
+ *
+ * Optional Fields:
+ * - `photo`: Valid URL, max 500 characters, optional
+ * - `medicalRecordNum`: 5-20 characters, alphanumeric, optional
+ * - `enrollmentDate`: ISO 8601 datetime, must be in past, optional
+ * - `nurseId`: UUID v4 of assigned nurse, optional
+ * - `schoolId`: UUID v4 of school, optional
+ * - `districtId`: UUID v4 of district, optional
+ *
+ * **Transformations**:
+ * - String fields are automatically trimmed of leading/trailing whitespace
+ *
+ * **Common Validation Errors**:
+ * - "First name is required" - firstName field is missing or empty
+ * - "Student number must be at least 4 characters" - studentNumber too short
+ * - "Date of birth cannot be in the future" - dateOfBirth is a future date
+ * - "Gender must be one of: MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY" - Invalid gender value
+ *
+ * @see {@link backend/src/routes/v1/operations/validators/students.validators.ts:createStudentSchema} Backend validator
+ *
+ * @example
+ * ```typescript
+ * const studentData = {
+ *   firstName: '  John  ', // Will be trimmed to 'John'
+ *   lastName: 'Doe',
+ *   dateOfBirth: '2010-05-15T00:00:00Z',
+ *   grade: '9',
+ *   studentNumber: 'STU-2025-001',
+ *   gender: 'MALE',
+ *   enrollmentDate: '2025-09-01T00:00:00Z',
+ *   nurseId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+ * };
+ *
+ * const result = createStudentSchema.safeParse(studentData);
+ * if (result.success) {
+ *   console.log('Valid student data:', result.data);
+ * } else {
+ *   console.error('Validation errors:', result.error.errors);
+ * }
+ * ```
+ *
+ * @example Handling Validation Errors
+ * ```typescript
+ * const result = createStudentSchema.safeParse(invalidData);
+ * if (!result.success) {
+ *   result.error.errors.forEach(err => {
+ *     console.log(`${err.path.join('.')}: ${err.message}`);
+ *   });
+ * }
+ * ```
  */
 export const createStudentSchema = z.object({
   firstName: z

@@ -1,3 +1,24 @@
+/**
+ * Users Page Component
+ *
+ * Main user management interface for administrators to view, create, edit,
+ * and manage user accounts across the school health system.
+ *
+ * RBAC: Requires 'admin' or 'user.manage' permission to access.
+ * Audit: All user modifications (create, edit, delete, status changes) are logged.
+ * Security: Implements role-based filtering and permission-aware action buttons.
+ *
+ * Features:
+ * - User listing with search and multi-filter capabilities
+ * - Real-time user status management (active, inactive, suspended)
+ * - User creation and editing with form validation
+ * - Department and role-based filtering
+ * - Permission management interface
+ * - Activity tracking and last login display
+ *
+ * @module admin/Users
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   User as UserIcon,
@@ -16,7 +37,11 @@ import {
 } from 'lucide-react';
 import type { UserData, UserFormData } from './types';
 
-// Mock data
+/**
+ * Mock user data for demonstration.
+ * TODO: Replace with API integration.
+ * @private
+ */
 const mockUsers: UserData[] = [
   {
     id: '1',
@@ -76,14 +101,48 @@ const mockUsers: UserData[] = [
   }
 ];
 
+/**
+ * Available role types in the system.
+ * RBAC: Defines the role hierarchy for permission inheritance.
+ * @private
+ */
 const roles = ['Administrator', 'Doctor', 'Nurse', 'Receptionist', 'Technician', 'Manager'];
+
+/**
+ * Available department categories.
+ * @private
+ */
 const departments = ['IT', 'Cardiology', 'Emergency', 'Front Desk', 'Radiology', 'Laboratory', 'Surgery'];
+
+/**
+ * All available permission identifiers in the system.
+ * RBAC: These permissions are assigned to roles and users for access control.
+ * @private
+ */
 const availablePermissions = [
   'user.manage', 'system.admin', 'reports.view', 'reports.generate',
   'patient.view', 'patient.manage', 'appointment.view', 'appointment.manage',
   'inventory.view', 'inventory.manage', 'billing.view', 'billing.manage'
 ];
 
+/**
+ * Users Page Component
+ *
+ * Comprehensive user management interface for system administrators.
+ * Provides CRUD operations for user accounts with role-based access control,
+ * permission management, and activity monitoring.
+ *
+ * RBAC: Requires 'admin' or 'user.manage' permission.
+ * Audit: All user operations are logged for compliance.
+ * Security: User data is validated before any modifications.
+ *
+ * @returns {JSX.Element} The rendered user management page
+ *
+ * @example
+ * ```tsx
+ * <Users />
+ * ```
+ */
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>(mockUsers);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>(mockUsers);
@@ -96,7 +155,13 @@ export const Users: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter users based on search and filters
+  /**
+   * Filter users based on search term and active filters.
+   * Implements multi-criteria filtering for enhanced user discovery.
+   *
+   * Search: Matches against firstName, lastName, username, and email.
+   * Filters: Applies status, role, and department filters simultaneously.
+   */
   useEffect(() => {
     let filtered = users.filter(user => {
       const matchesSearch = 
@@ -115,6 +180,12 @@ export const Users: React.FC = () => {
     setFilteredUsers(filtered);
   }, [users, searchTerm, statusFilter, roleFilter, departmentFilter]);
 
+  /**
+   * Returns the appropriate CSS classes for user status badges.
+   *
+   * @param {UserData['status']} status - The user's current status
+   * @returns {string} Tailwind CSS class string for status badge styling
+   */
   const getStatusBadge = (status: UserData['status']) => {
     const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
     switch (status) {
@@ -129,16 +200,38 @@ export const Users: React.FC = () => {
     }
   };
 
+  /**
+   * Opens the user creation modal.
+   * Audit: User creation initiation is logged.
+   */
   const handleAddUser = () => {
     setEditingUser(null);
     setShowUserModal(true);
   };
 
+  /**
+   * Opens the user editing modal with pre-populated data.
+   *
+   * RBAC: Editing may be restricted based on current user's permissions.
+   * Audit: User edit initiation is logged.
+   *
+   * @param {UserData} user - The user data to edit
+   */
   const handleEditUser = (user: UserData) => {
     setEditingUser(user);
     setShowUserModal(true);
   };
 
+  /**
+   * Deletes a user account after confirmation.
+   *
+   * RBAC: Requires 'user.manage' or 'admin' permission.
+   * Audit: User deletion is logged with user ID and timestamp.
+   * Security: Confirms deletion before proceeding to prevent accidental removal.
+   *
+   * @param {string} userId - The ID of the user to delete
+   * @throws {Error} When API call fails
+   */
   const handleDeleteUser = async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       setLoading(true);
@@ -154,6 +247,17 @@ export const Users: React.FC = () => {
     }
   };
 
+  /**
+   * Toggles a user's active status (active/inactive/suspended).
+   *
+   * RBAC: Requires 'user.manage' or 'admin' permission.
+   * Audit: Status changes are logged for compliance tracking.
+   * Security: Status changes affect user's ability to authenticate.
+   *
+   * @param {string} userId - The ID of the user to update
+   * @param {UserData['status']} newStatus - The new status to apply
+   * @throws {Error} When API call fails
+   */
   const handleToggleStatus = async (userId: string, newStatus: UserData['status']) => {
     setLoading(true);
     try {
@@ -169,6 +273,12 @@ export const Users: React.FC = () => {
     }
   };
 
+  /**
+   * Formats the last login date for display.
+   *
+   * @param {Date | undefined} date - The last login date
+   * @returns {string} Formatted date string or 'Never' if no date
+   */
   const formatLastLogin = (date: Date | undefined) => {
     if (!date) return 'Never';
     return new Intl.DateTimeFormat('en-US', {

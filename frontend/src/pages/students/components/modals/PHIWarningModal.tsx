@@ -1,29 +1,132 @@
 /**
- * WF-COMP-095 | PHIWarningModal.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * PHI Warning Modal Component
- * HIPAA compliance warning for accessing protected health information
+ * PHI Warning Modal Component - HIPAA Compliance Warning
+ *
+ * @fileoverview HIPAA-compliant warning modal for accessing Protected Health Information
+ * @module pages/students/components/modals/PHIWarningModal
+ * @version 1.0.0
+ *
+ * @remarks
+ * HIPAA Compliance: This modal serves as a critical control point for PHI access.
+ * It ensures users acknowledge HIPAA requirements before viewing protected health information.
+ * All acceptances should be logged for audit purposes.
  */
 
 import React from 'react'
 import { AlertTriangle } from 'lucide-react'
 
+/**
+ * Props for the PHI Warning Modal component.
+ *
+ * @interface PHIWarningModalProps
+ * @property {boolean} show - Controls modal visibility
+ * @property {() => void} onCancel - Callback when user cancels PHI access
+ * @property {() => void} onAccept - Callback when user acknowledges and proceeds
+ *
+ * @remarks
+ * Security: The onAccept callback should trigger audit logging before granting access.
+ */
 interface PHIWarningModalProps {
   show: boolean
   onCancel: () => void
   onAccept: () => void
 }
 
+/**
+ * PHI (Protected Health Information) Warning Modal Component.
+ *
+ * Displays a HIPAA-compliant warning before users access protected health information.
+ * Ensures users understand the legal implications and that their access will be logged.
+ *
+ * @component
+ * @param {PHIWarningModalProps} props - Component props
+ * @returns {React.ReactElement | null} Rendered modal or null when not shown
+ *
+ * @remarks
+ * HIPAA Compliance:
+ * - Warns users that PHI access is monitored and logged
+ * - Informs users of legal consequences of unauthorized access
+ * - Requires explicit acknowledgment before proceeding
+ * - All "Accept" actions should be logged with user ID, timestamp, and context
+ *
+ * Audit Requirements:
+ * - Log user identity when onAccept is called
+ * - Record timestamp of access
+ * - Capture what PHI resource is being accessed
+ * - Store IP address and session information
+ * - Maintain audit trail for minimum 6 years (HIPAA requirement)
+ *
+ * Security:
+ * - Modal overlay prevents accidental PHI exposure
+ * - Clear Cancel option for users to withdraw access request
+ * - Warning text emphasizes legal accountability
+ * - Visual indicator (yellow warning icon) draws attention
+ *
+ * Accessibility:
+ * - High contrast warning colors for visibility
+ * - Clear, unambiguous action buttons
+ * - Test IDs for automated testing and verification
+ *
+ * @example
+ * ```tsx
+ * import { PHIWarningModal } from './components/modals/PHIWarningModal';
+ *
+ * function HealthRecordView() {
+ *   const [showWarning, setShowWarning] = useState(true);
+ *
+ *   const handleAccept = () => {
+ *     // Log the PHI access
+ *     auditLog.record({
+ *       action: 'PHI_ACCESS',
+ *       userId: currentUser.id,
+ *       resource: 'health_record',
+ *       timestamp: new Date().toISOString()
+ *     });
+ *
+ *     setShowWarning(false);
+ *     // Proceed to show PHI
+ *   };
+ *
+ *   return (
+ *     <>
+ *       <PHIWarningModal
+ *         show={showWarning}
+ *         onCancel={() => router.back()}
+ *         onAccept={handleAccept}
+ *       />
+ *       {!showWarning && <HealthRecordContent />}
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // With Redux for audit logging
+ * function SecureHealthData() {
+ *   const dispatch = useDispatch();
+ *   const [acknowledged, setAcknowledged] = useState(false);
+ *
+ *   const handlePHIAccept = () => {
+ *     dispatch(logPHIAccess({
+ *       userId: user.id,
+ *       resource: 'student_health_records',
+ *       action: 'VIEW'
+ *     }));
+ *     setAcknowledged(true);
+ *   };
+ *
+ *   return (
+ *     <PHIWarningModal
+ *       show={!acknowledged}
+ *       onCancel={() => navigate('/dashboard')}
+ *       onAccept={handlePHIAccept}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html} HIPAA Privacy Rule
+ */
 export const PHIWarningModal: React.FC<PHIWarningModalProps> = ({
   show,
   onCancel,

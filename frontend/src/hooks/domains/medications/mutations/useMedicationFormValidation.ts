@@ -1,13 +1,21 @@
 /**
- * WF-COMP-136 | useMedicationFormValidation.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: useState, arrow component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Medication Form Validation Hook
+ *
+ * Provides comprehensive client-side validation for medication-related forms including:
+ * - Medication master data forms (drug information)
+ * - Adverse reaction reporting forms
+ * - Inventory management forms
+ *
+ * Validation Features:
+ * - Required field enforcement
+ * - Field length constraints
+ * - Format validation (dosage units, dates, etc.)
+ * - Logical validation (quantity > reorder level, dates in valid ranges)
+ * - Real-time error display in DOM
+ *
+ * @module useMedicationFormValidation
+ * @safety Validation rules enforce data quality for medication safety. However,
+ * this is CLIENT-SIDE validation only. Server-side validation is still REQUIRED.
  */
 
 import { useState } from 'react'
@@ -21,9 +29,87 @@ import type {
   AdverseReactionFormData
 } from '../types/medications'
 
+/**
+ * Hook for validating medication-related forms.
+ *
+ * Provides validation functions for medication data entry, adverse reaction
+ * reporting, and inventory management. All validation is performed client-side
+ * for immediate user feedback.
+ *
+ * @returns {UseFormValidationReturn} Validation functions and error state
+ *
+ * @example
+ * ```tsx
+ * function MedicationForm({ onSubmit }) {
+ *   const { validateMedicationForm, errors } = useMedicationFormValidation();
+ *
+ *   const handleSubmit = (data: MedicationFormData) => {
+ *     const validationErrors = validateMedicationForm(data);
+ *     if (Object.keys(validationErrors).length > 0) {
+ *       // Show errors to user
+ *       return;
+ *     }
+ *     onSubmit(data);
+ *   };
+ *
+ *   return <form>{/* form fields */}</form>;
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Validate adverse reaction form
+ * const { validateAdverseReactionForm } = useMedicationFormValidation();
+ *
+ * const errors = validateAdverseReactionForm({
+ *   studentId: 'student-123',
+ *   medicationId: 'med-456',
+ *   severity: 'moderate',
+ *   description: 'Patient developed rash on arms and torso',
+ *   actionsTaken: 'Medication discontinued, physician notified',
+ *   occurredAt: '2025-10-24T14:30:00Z'
+ * });
+ * ```
+ */
 export const useMedicationFormValidation = (): UseFormValidationReturn => {
   const [errors, setErrors] = useState<FormErrors>({})
 
+  /**
+   * Validates medication master data form.
+   *
+   * Validates drug information including name, dosage form, strength, and related fields.
+   * Ensures data quality for medication database entries.
+   *
+   * @param {MedicationFormData} data - Medication form data to validate
+   * @returns {FormErrors} Object mapping field names to error messages (empty if valid)
+   *
+   * @validates
+   * - Required: name, dosageForm, strength
+   * - Length: name ≤ 100, genericName ≤ 100, manufacturer ≤ 100
+   * - Format: strength must include valid unit (mg, g, ml, mcg, units, iu, %)
+   *
+   * @example
+   * ```ts
+   * const errors = validateMedicationForm({
+   *   name: 'Amoxicillin',
+   *   dosageForm: 'Capsule',
+   *   strength: '500mg', // Valid format
+   *   genericName: 'Amoxicillin',
+   *   manufacturer: 'Generic Pharma'
+   * });
+   * // errors = {} (no errors)
+   *
+   * const invalidErrors = validateMedicationForm({
+   *   name: '',
+   *   dosageForm: 'Tablet',
+   *   strength: '500' // Missing unit - INVALID
+   * });
+   * // invalidErrors = { name: 'Medication name is required', strength: '...' }
+   * ```
+   *
+   * @safety Strength validation ensures dosage units are always specified,
+   * preventing ambiguous medication orders.
+   */
   const validateMedicationForm = (data: MedicationFormData): FormErrors => {
     const newErrors: FormErrors = {}
 
@@ -62,6 +148,48 @@ export const useMedicationFormValidation = (): UseFormValidationReturn => {
     return newErrors
   }
 
+  /**
+   * Validates adverse reaction reporting form.
+   *
+   * Validates safety reporting data for documenting medication adverse reactions.
+   * Ensures comprehensive documentation of patient safety incidents.
+   *
+   * @param {AdverseReactionFormData} data - Adverse reaction form data to validate
+   * @returns {FormErrors} Object mapping field names to error messages (empty if valid)
+   *
+   * @validates
+   * - Required: studentId, medicationId, severity, description, actionsTaken, occurredAt
+   * - Length: description (10-1000 chars), actionsTaken (5-500 chars)
+   * - Date: occurredAt must be valid date, not in future
+   *
+   * @safety This validation ensures complete documentation of adverse reactions,
+   * which is critical for patient safety, regulatory compliance, and pharmacovigilance.
+   *
+   * @example
+   * ```ts
+   * const errors = validateAdverseReactionForm({
+   *   studentId: 'student-123',
+   *   medicationId: 'med-456',
+   *   severity: 'moderate',
+   *   description: 'Patient developed urticarial rash on torso and arms within 2 hours',
+   *   actionsTaken: 'Medication discontinued immediately, antihistamine administered',
+   *   occurredAt: '2025-10-24T14:30:00Z'
+   * });
+   * // errors = {} (valid)
+   *
+   * const invalidErrors = validateAdverseReactionForm({
+   *   studentId: 'student-123',
+   *   medicationId: 'med-456',
+   *   severity: 'moderate',
+   *   description: 'Rash', // Too short - INVALID
+   *   actionsTaken: 'Stop', // Too short - INVALID
+   *   occurredAt: '2026-01-01T00:00:00Z' // Future date - INVALID
+   * });
+   * ```
+   *
+   * @remarks Minimum lengths ensure sufficient detail for clinical review and
+   * regulatory reporting requirements.
+   */
   const validateAdverseReactionForm = (data: AdverseReactionFormData): FormErrors => {
     const newErrors: FormErrors = {}
 
@@ -123,6 +251,51 @@ export const useMedicationFormValidation = (): UseFormValidationReturn => {
     return newErrors
   }
 
+  /**
+   * Validates medication inventory form.
+   *
+   * Validates inventory management data including quantities, batch tracking,
+   * expiration dates, and reorder levels. Ensures accurate medication stock tracking.
+   *
+   * @param {InventoryFormData} data - Inventory form data to validate
+   * @returns {FormErrors} Object mapping field names to error messages (empty if valid)
+   *
+   * @validates
+   * - Required: medicationId, batchNumber, quantity, reorderLevel, expirationDate
+   * - Numeric: quantity (0-99,999), reorderLevel (0-999)
+   * - Logical: reorderLevel ≤ quantity
+   * - Date: expirationDate must be valid and in future
+   * - Length: batchNumber ≤ 50, supplier ≤ 100
+   *
+   * @safety This validation helps prevent:
+   * - Stock shortages (via reorder level validation)
+   * - Dispensing expired medications (via expiration date validation)
+   * - Inventory tracking errors (via batch number validation)
+   *
+   * @example
+   * ```ts
+   * const errors = validateInventoryForm({
+   *   medicationId: 'med-789',
+   *   batchNumber: 'BATCH-2025-001',
+   *   quantity: 500,
+   *   reorderLevel: 100,
+   *   expirationDate: '2026-12-31',
+   *   supplier: 'Generic Pharma Distributors'
+   * });
+   * // errors = {} (valid)
+   *
+   * const invalidErrors = validateInventoryForm({
+   *   medicationId: 'med-789',
+   *   batchNumber: 'BATCH-2025-001',
+   *   quantity: 50,
+   *   reorderLevel: 100, // Greater than quantity - INVALID
+   *   expirationDate: '2024-01-01' // Past date - INVALID
+   * });
+   * ```
+   *
+   * @remarks Reorder level validation prevents illogical inventory configurations
+   * that could lead to unnecessary reorder alerts.
+   */
   const validateInventoryForm = (data: InventoryFormData): FormErrors => {
     const newErrors: FormErrors = {}
 
@@ -193,10 +366,45 @@ export const useMedicationFormValidation = (): UseFormValidationReturn => {
     return newErrors
   }
 
+  /**
+   * Clears all validation errors.
+   *
+   * Resets error state to empty object. Useful when clearing form or
+   * starting new validation cycle.
+   *
+   * @example
+   * ```tsx
+   * const { clearErrors } = useMedicationFormValidation();
+   *
+   * const handleReset = () => {
+   *   clearErrors();
+   *   resetForm();
+   * };
+   * ```
+   */
   const clearErrors = () => {
     setErrors({})
   }
 
+  /**
+   * Sets error message for a specific field.
+   *
+   * Allows programmatic error setting, useful for server-side validation errors
+   * or custom validation logic.
+   *
+   * @param {string} field - Field name to set error for
+   * @param {string} error - Error message to display
+   *
+   * @example
+   * ```tsx
+   * const { setFieldError } = useMedicationFormValidation();
+   *
+   * // Set custom error from server response
+   * if (serverError.code === 'DUPLICATE_NDC') {
+   *   setFieldError('ndc', 'This NDC is already registered in the system');
+   * }
+   * ```
+   */
   const setFieldError = (field: string, error: string) => {
     setErrors(prev => ({
       ...prev,
@@ -204,6 +412,32 @@ export const useMedicationFormValidation = (): UseFormValidationReturn => {
     }))
   }
 
+  /**
+   * Displays validation errors in DOM elements.
+   *
+   * Automatically finds and updates DOM elements with matching data-testid attributes.
+   * Shows errors by removing 'hidden' class and setting textContent.
+   * Hides errors no longer present by adding 'hidden' class.
+   *
+   * @param {FormErrors} validationErrors - Errors to display
+   * @param {string} [prefix=''] - Prefix for data-testid attributes (e.g., 'medication-')
+   *
+   * @remarks This function directly manipulates the DOM. It expects elements with
+   * data-testid attributes in format: `${prefix}${fieldName}-error`
+   *
+   * @example
+   * ```tsx
+   * const { displayValidationErrors, validateMedicationForm } = useMedicationFormValidation();
+   *
+   * const handleValidate = (data: MedicationFormData) => {
+   *   const errors = validateMedicationForm(data);
+   *   displayValidationErrors(errors, 'medication-');
+   * };
+   *
+   * // In JSX, error elements should have:
+   * // <span data-testid="medication-name-error" className="hidden text-red-500"></span>
+   * ```
+   */
   const displayValidationErrors = (validationErrors: FormErrors, prefix = '') => {
     // Display errors in DOM elements with data-testid attributes
     Object.keys(validationErrors).forEach(key => {

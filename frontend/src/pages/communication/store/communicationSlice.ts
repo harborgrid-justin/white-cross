@@ -1,8 +1,40 @@
 /**
- * Communication Slice
- * 
- * Redux slice for managing communication messages using the slice factory.
- * Handles CRUD operations for messages, notifications, and templates.
+ * Communication Redux Slice
+ *
+ * Redux slice for managing communication messages, notifications, and templates
+ * using the entity slice factory pattern.
+ *
+ * @module pages/communication/store/communicationSlice
+ *
+ * @remarks
+ * - Supports email, SMS, and in-app messaging
+ * - Handles scheduled and emergency messages
+ * - Provides filtering by category, sender, priority
+ * - Manages message delivery status and tracking
+ * - Integrates with communicationApi service layer
+ *
+ * State Structure:
+ * - Normalized message entities using EntityAdapter
+ * - Loading and error states for async operations
+ * - Filter and pagination metadata
+ *
+ * @example
+ * ```typescript
+ * // Fetch messages
+ * dispatch(communicationThunks.fetchAll({ category: 'ANNOUNCEMENT' }));
+ *
+ * // Send a message
+ * dispatch(communicationThunks.create({
+ *   recipients: ['parent123'],
+ *   subject: 'School Update',
+ *   content: 'Important information...',
+ *   category: 'ANNOUNCEMENT'
+ * }));
+ *
+ * // Select messages
+ * const messages = communicationSelectors.selectAll(state);
+ * const emergencyMessages = selectEmergencyMessages(state);
+ * ```
  */
 
 import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
@@ -13,7 +45,16 @@ import type {
   MessageFilters
 } from '../../../types/communication';
 
-// Message update data (local interface for partial updates)
+/**
+ * Message update payload.
+ *
+ * Partial update data for modifying existing messages.
+ *
+ * @property subject - Updated message subject
+ * @property content - Updated message body
+ * @property status - Updated delivery status
+ * @property priority - Updated priority level
+ */
 interface UpdateMessageData {
   subject?: string;
   content?: string;
@@ -71,7 +112,18 @@ export const communicationActions = communicationSliceFactory.actions;
 export const communicationSelectors = communicationSliceFactory.adapter.getSelectors((state: any) => state.communication);
 export const communicationThunks = communicationSliceFactory.thunks;
 
-// Export custom selectors
+/**
+ * Custom selector: Filter messages by category.
+ *
+ * @param state - Redux root state
+ * @param category - Message category (ANNOUNCEMENT, EMERGENCY, GENERAL, etc.)
+ * @returns Filtered array of messages
+ *
+ * @example
+ * ```typescript
+ * const announcements = selectMessagesByCategory(state, 'ANNOUNCEMENT');
+ * ```
+ */
 export const selectMessagesByCategory = (state: any, category: string): Message[] => {
   const allMessages = communicationSelectors.selectAll(state) as Message[];
   return allMessages.filter(message => message.category === category);
@@ -87,11 +139,27 @@ export const selectMessagesByPriority = (state: any, priority: string): Message[
   return allMessages.filter(message => message.priority === priority);
 };
 
+/**
+ * Custom selector: Get all scheduled (future) messages.
+ *
+ * Returns messages with scheduledAt timestamp in the future.
+ *
+ * @param state - Redux root state
+ * @returns Array of scheduled messages not yet sent
+ */
 export const selectScheduledMessages = (state: any): Message[] => {
   const allMessages = communicationSelectors.selectAll(state) as Message[];
   return allMessages.filter(message => message.scheduledAt && new Date(message.scheduledAt) > new Date());
 };
 
+/**
+ * Custom selector: Get all emergency messages.
+ *
+ * Filters messages with EMERGENCY category for quick access to critical communications.
+ *
+ * @param state - Redux root state
+ * @returns Array of emergency messages
+ */
 export const selectEmergencyMessages = (state: any): Message[] => {
   const allMessages = communicationSelectors.selectAll(state) as Message[];
   return allMessages.filter(message => message.category === 'EMERGENCY');

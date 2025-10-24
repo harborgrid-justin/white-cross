@@ -19,6 +19,17 @@ import { useNavigation } from '../../contexts/NavigationContext'
 // NOTIFICATION TYPES
 // ============================================================================
 
+/**
+ * Notification item structure.
+ *
+ * @property {string} id - Unique identifier for the notification
+ * @property {string} title - Notification title/heading
+ * @property {string} message - Detailed notification message
+ * @property {'info' | 'success' | 'warning' | 'error'} type - Notification severity type
+ * @property {number} timestamp - Unix timestamp of notification creation
+ * @property {boolean} read - Whether the notification has been read
+ * @property {string} [actionUrl] - Optional URL to navigate to when clicked
+ */
 interface Notification {
   id: string
   title: string
@@ -33,6 +44,24 @@ interface Notification {
 // HELPER FUNCTIONS
 // ============================================================================
 
+/**
+ * Converts a timestamp to a relative time string.
+ *
+ * Formats timestamps as human-readable relative time:
+ * - Less than 1 minute: "Just now"
+ * - Less than 1 hour: "Xm ago"
+ * - Less than 1 day: "Xh ago"
+ * - 1+ days: "Xd ago"
+ *
+ * @param timestamp - Unix timestamp in milliseconds
+ * @returns Formatted relative time string
+ *
+ * @example
+ * ```ts
+ * getRelativeTime(Date.now() - 300000) // "5m ago"
+ * getRelativeTime(Date.now() - 3600000) // "1h ago"
+ * ```
+ */
 function getRelativeTime(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
 
@@ -46,6 +75,52 @@ function getRelativeTime(timestamp: number): string {
 // MAIN NOTIFICATION CENTER COMPONENT
 // ============================================================================
 
+/**
+ * Notification center dropdown component.
+ *
+ * Displays a dropdown panel with application notifications including:
+ * - Real-time notifications
+ * - Read/unread status
+ * - Filter by all or unread
+ * - Mark individual or all as read
+ * - Relative timestamps
+ * - Type-based icons (info, success, warning, error)
+ * - Click to navigate to related content
+ *
+ * Features:
+ * - Dropdown positioned at top-right of screen
+ * - Filter tabs for all/unread notifications
+ * - Unread count badge
+ * - Mark all as read action
+ * - Individual notification click handling
+ * - Type-based color coding and icons
+ * - Relative time display (e.g., "5m ago")
+ * - Click outside to close
+ * - Scrollable list for many notifications
+ * - Empty state for no notifications
+ * - Dark mode support
+ * - Accessible with ARIA labels
+ * - Smooth animations
+ *
+ * Notification Types:
+ * - info: Blue icon, general information
+ * - success: Green icon, successful actions
+ * - warning: Yellow icon, warnings/alerts
+ * - error: Red icon, errors/critical issues
+ *
+ * State Management:
+ * - Open/close state managed by NavigationContext
+ * - Notifications managed locally (would be from API in production)
+ * - Read/unread state persisted in component
+ *
+ * @returns JSX element representing the notification dropdown, or null if closed
+ *
+ * @example
+ * ```tsx
+ * // Used in AppLayout
+ * <NotificationCenter />
+ * ```
+ */
 export const NotificationCenter = memo(() => {
   const navigate = useNavigate()
   const { notificationOpen, setNotificationOpen } = useNavigation()

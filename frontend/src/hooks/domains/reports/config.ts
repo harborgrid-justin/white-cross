@@ -9,7 +9,30 @@
  */
 
 /**
- * Reports query keys for TanStack Query
+ * Reports query keys for TanStack Query.
+ *
+ * Provides a structured, type-safe approach to cache key management for all
+ * reports-related queries. Keys are hierarchical to enable efficient cache
+ * invalidation and granular control over data freshness.
+ *
+ * @remarks
+ * - Uses const assertions for type safety
+ * - Supports hierarchical cache invalidation
+ * - Keys include filters as part of cache identity
+ * - Enables precise query matching and invalidation
+ *
+ * @example
+ * ```typescript
+ * // Invalidate all report lists
+ * queryClient.invalidateQueries({
+ *   queryKey: reportsQueryKeys.lists.all()
+ * });
+ *
+ * // Invalidate specific filtered list
+ * queryClient.invalidateQueries({
+ *   queryKey: reportsQueryKeys.lists.filtered({ type: 'student' })
+ * });
+ * ```
  */
 export const reportsQueryKeys = {
   // Base keys
@@ -47,7 +70,28 @@ export const reportsQueryKeys = {
 } as const;
 
 /**
- * Reports cache configuration
+ * Reports cache configuration for TanStack Query.
+ *
+ * Defines staleTime and gcTime (garbage collection time) for different
+ * types of reports data to optimize performance and data freshness.
+ *
+ * @remarks
+ * - staleTime: How long data is considered fresh before refetching
+ * - gcTime: How long unused data stays in cache before cleanup
+ * - Lists are refreshed more frequently than templates
+ * - Generation status always fetches fresh data
+ * - Longer cache times for rarely-changing data (templates)
+ *
+ * @example
+ * ```typescript
+ * // Used in query hooks
+ * useQuery({
+ *   queryKey: reportsQueryKeys.lists.all(),
+ *   queryFn: fetchReports,
+ *   staleTime: REPORTS_CACHE_CONFIG.lists.staleTime, // 5 minutes
+ *   gcTime: REPORTS_CACHE_CONFIG.lists.gcTime, // 10 minutes
+ * });
+ * ```
  */
 export const REPORTS_CACHE_CONFIG = {
   lists: {
@@ -72,7 +116,18 @@ export const REPORTS_CACHE_CONFIG = {
 } as const;
 
 /**
- * Reports operation constants
+ * Reports operation identifiers for mutation tracking.
+ *
+ * Used as mutation keys and operation identifiers for error handling
+ * and analytics tracking.
+ *
+ * @example
+ * ```typescript
+ * useMutation({
+ *   mutationKey: [REPORTS_OPERATIONS.GENERATE],
+ *   mutationFn: generateReport,
+ * });
+ * ```
  */
 export const REPORTS_OPERATIONS = {
   GENERATE: 'generate_report',
@@ -82,7 +137,29 @@ export const REPORTS_OPERATIONS = {
 } as const;
 
 /**
- * Local type definitions
+ * Filter criteria for querying reports lists.
+ *
+ * Supports filtering by report type, date range, generation status,
+ * and creator. All filters are optional and can be combined.
+ *
+ * @property type - Report category (student, health, medication, etc.)
+ * @property dateRange - Filter by report creation date range
+ * @property dateRange.startDate - ISO 8601 date string for range start
+ * @property dateRange.endDate - ISO 8601 date string for range end
+ * @property status - Report generation status filter
+ * @property createdBy - Filter by user ID who created the report
+ *
+ * @example
+ * ```typescript
+ * const filters: ReportsFilters = {
+ *   type: 'incident',
+ *   dateRange: {
+ *     startDate: '2025-01-01',
+ *     endDate: '2025-01-31'
+ *   },
+ *   status: 'generated'
+ * };
+ * ```
  */
 export interface ReportsFilters {
   type?: 'student' | 'health' | 'medication' | 'inventory' | 'incident' | 'appointment';
@@ -94,6 +171,33 @@ export interface ReportsFilters {
   createdBy?: string;
 }
 
+/**
+ * Request payload for generating a new report.
+ *
+ * Defines all parameters needed to generate a report from a template,
+ * including output format and delivery options.
+ *
+ * @property templateId - Unique identifier of the report template to use
+ * @property parameters - Template-specific parameters (filters, date ranges, etc.)
+ * @property format - Output format for the generated report
+ * @property deliveryMethod - How to deliver the report (download or email)
+ * @property emailRecipients - Email addresses if deliveryMethod is 'email'
+ *
+ * @example
+ * ```typescript
+ * const request: ReportGenerationRequest = {
+ *   templateId: 'incident-summary-monthly',
+ *   parameters: {
+ *     month: '2025-01',
+ *     severity: ['high', 'critical'],
+ *     includeResolutions: true
+ *   },
+ *   format: 'pdf',
+ *   deliveryMethod: 'email',
+ *   emailRecipients: ['admin@school.edu', 'principal@school.edu']
+ * };
+ * ```
+ */
 export interface ReportGenerationRequest {
   templateId: string;
   parameters: Record<string, any>;

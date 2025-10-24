@@ -16,6 +16,16 @@ import { useNavigation } from '../../contexts/NavigationContext'
 // SEARCH RESULT TYPES
 // ============================================================================
 
+/**
+ * Search result item structure.
+ *
+ * @property {string} id - Unique identifier for the result
+ * @property {string} title - Primary display text for the result
+ * @property {string} [subtitle] - Secondary descriptive text
+ * @property {'student' | 'medication' | 'appointment' | 'document' | 'health-record'} type - Type of search result
+ * @property {string} path - Navigation path for the result
+ * @property {string} icon - Icon identifier for the result type
+ */
 interface SearchResult {
   id: string
   title: string
@@ -29,10 +39,62 @@ interface SearchResult {
 // MAIN SEARCH BAR COMPONENT
 // ============================================================================
 
+/**
+ * Props for the SearchBar component.
+ *
+ * @property {string} [className] - Optional CSS classes for the modal container
+ */
 interface SearchBarProps {
   className?: string
 }
 
+/**
+ * Global search modal component with keyboard shortcuts and recent searches.
+ *
+ * Provides application-wide search functionality for:
+ * - Students
+ * - Medications
+ * - Appointments
+ * - Documents
+ * - Health Records
+ *
+ * Features:
+ * - Keyboard shortcut: Cmd/Ctrl+K to open
+ * - ESC to close
+ * - Debounced search (300ms delay)
+ * - Recent searches history (stored in localStorage, max 5)
+ * - Popular searches section
+ * - Click outside to close
+ * - Auto-focus on open
+ * - Real-time results display
+ * - Type-ahead search
+ * - Responsive modal design
+ * - Dark mode support
+ * - Accessible with ARIA labels
+ * - Keyboard navigation hints
+ *
+ * Search Flow:
+ * 1. User opens search via button or Cmd/Ctrl+K
+ * 2. Input is debounced for 300ms
+ * 3. Results fetched and displayed
+ * 4. User selects result -> navigates to path
+ * 5. Search query added to recent searches
+ *
+ * State Management:
+ * - Modal open/close state managed by NavigationContext
+ * - Recent searches persisted in localStorage
+ * - Search results managed locally
+ *
+ * @param props - Component props
+ * @param props.className - Optional CSS classes
+ * @returns JSX element representing the search modal, or null if closed
+ *
+ * @example
+ * ```tsx
+ * // Used in AppLayout
+ * <SearchBar />
+ * ```
+ */
 export const SearchBar = memo(({ className = '' }: SearchBarProps) => {
   const navigate = useNavigate()
   const { searchOpen, setSearchOpen } = useNavigation()
