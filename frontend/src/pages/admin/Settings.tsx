@@ -1,22 +1,41 @@
 /**
- * WF-IDX-232 | index.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export | Key Features: component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Settings Page - System Administration
- * Admin-only access for system configuration
+ * Settings Page Component
+ *
+ * System administration settings page for configuring application-wide
+ * preferences and system parameters.
+ *
+ * RBAC: Requires 'admin' or 'system.config' permission to access.
+ * Audit: All settings changes are logged for compliance tracking.
+ * Security: Settings modifications require elevated admin privileges.
+ *
+ * Features:
+ * - System configuration management
+ * - Application-wide settings control
+ * - Configuration validation and persistence
+ * - Settings change history tracking
+ *
+ * @module admin/Settings
+ * @returns {JSX.Element} The rendered settings page
+ *
+ * @example
+ * ```tsx
+ * <Settings />
+ * ```
  */
 
 import React from 'react'
 
+/**
+ * Settings Page - System Administration
+ *
+ * Admin-only access for system configuration management.
+ * Provides centralized control over system-wide settings and preferences.
+ *
+ * RBAC: Requires 'admin' or 'system.config' permission.
+ * Audit: All configuration changes are logged.
+ *
+ * @returns {JSX.Element} The settings administration interface
+ */
 export default function Settings() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">

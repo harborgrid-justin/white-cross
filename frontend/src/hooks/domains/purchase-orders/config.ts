@@ -1,6 +1,40 @@
+/**
+ * Purchase Orders Configuration and Type Definitions
+ *
+ * Provides centralized configuration, type definitions, query key factory,
+ * and utility functions for the purchase orders domain.
+ *
+ * Includes:
+ * - React Query key factory for cache management
+ * - Cache configuration constants
+ * - TypeScript interfaces for all PO entities
+ * - Utility functions for PO operations
+ * - Status workflow helpers
+ *
+ * @module hooks/domains/purchase-orders/config
+ */
+
 import { QueryClient } from '@tanstack/react-query';
 
-// Query Keys Factory for Purchase Orders Domain
+/**
+ * Query keys factory for purchase orders domain.
+ *
+ * Provides hierarchical query keys for React Query cache management.
+ * Keys are structured to enable granular invalidation and efficient caching.
+ *
+ * @constant purchaseOrderKeys
+ * @example
+ * ```ts
+ * // Invalidate all purchase order queries
+ * queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.all });
+ *
+ * // Invalidate specific PO details
+ * queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.purchaseOrderDetails('po-123') });
+ *
+ * // Fetch pending approvals for user
+ * useQuery({ queryKey: purchaseOrderKeys.pendingApprovals(userId), ... });
+ * ```
+ */
 export const purchaseOrderKeys = {
   all: ['purchase-orders'] as const,
   
@@ -36,15 +70,37 @@ export const purchaseOrderKeys = {
   documents: (poId: string) => [...purchaseOrderKeys.all, 'documents', poId] as const,
 } as const;
 
-// Cache Configuration
+/**
+ * Cache configuration for purchase order queries.
+ *
+ * Stale times determine how long data remains fresh before refetching:
+ * - Approvals: 2min (time-sensitive, needs frequent updates)
+ * - PO details: 10min (moderate update frequency)
+ * - Receipts: 15min (infrequent changes after creation)
+ * - Default: 5min (general queries)
+ *
+ * @constant PURCHASE_ORDERS_CACHE_CONFIG
+ */
 export const PURCHASE_ORDERS_CACHE_CONFIG = {
   DEFAULT_STALE_TIME: 5 * 60 * 1000, // 5 minutes
   PO_STALE_TIME: 10 * 60 * 1000, // 10 minutes
-  APPROVALS_STALE_TIME: 2 * 60 * 1000, // 2 minutes
+  APPROVALS_STALE_TIME: 2 * 60 * 1000, // 2 minutes - critical for workflow
   RECEIPTS_STALE_TIME: 15 * 60 * 1000, // 15 minutes
 } as const;
 
-// TypeScript Interfaces
+/**
+ * Complete purchase order entity.
+ *
+ * Represents a purchase order through its entire lifecycle from draft to closed.
+ *
+ * Status Workflow:
+ * DRAFT → PENDING_APPROVAL → APPROVED → SENT → ACKNOWLEDGED →
+ * PARTIALLY_RECEIVED / RECEIVED → CLOSED
+ *
+ * Can transition to CANCELLED from any non-terminal state.
+ *
+ * @interface PurchaseOrder
+ */
 export interface PurchaseOrder {
   id: string;
   poNumber: string;
@@ -320,7 +376,24 @@ export interface POAnalytics {
   };
 }
 
-// Utility Functions
+/**
+ * Invalidates all purchase order related queries in React Query cache.
+ *
+ * If poId is provided, invalidates specific PO queries. Otherwise invalidates
+ * all PO queries globally.
+ *
+ * @param {QueryClient} queryClient - React Query client instance
+ * @param {string} [poId] - Optional specific PO ID to invalidate
+ *
+ * @example
+ * ```ts
+ * // Invalidate specific PO after update
+ * invalidatePOQueries(queryClient, 'po-123');
+ *
+ * // Invalidate all PO queries after bulk operation
+ * invalidatePOQueries(queryClient);
+ * ```
+ */
 export const invalidatePOQueries = (queryClient: QueryClient, poId?: string) => {
   if (poId) {
     queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.purchaseOrderDetails(poId) });
@@ -330,6 +403,20 @@ export const invalidatePOQueries = (queryClient: QueryClient, poId?: string) => 
   queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.all });
 };
 
+/**
+ * Calculates purchase order totals from line items.
+ *
+ * Formula: subtotal = sum of all line totals
+ *
+ * @param {POLineItem[]} lineItems - Array of line items to calculate
+ * @returns Object with subtotal, item count, and total quantity
+ *
+ * @example
+ * ```ts
+ * const totals = calculatePOTotals(lineItems);
+ * // { subtotal: 15000, itemCount: 5, totalQuantity: 250 }
+ * ```
+ */
 export const calculatePOTotals = (lineItems: POLineItem[]) => {
   const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
   return {
@@ -362,6 +449,24 @@ export const canCancelPO = (status: PurchaseOrder['status']): boolean => {
   return !['RECEIVED', 'CLOSED', 'CANCELLED'].includes(status);
 };
 
+/**
+ * Determines the next status in the purchase order workflow.
+ *
+ * Workflow progression:
+ * DRAFT → PENDING_APPROVAL → APPROVED → SENT → ACKNOWLEDGED →
+ * PARTIALLY_RECEIVED → RECEIVED → CLOSED
+ *
+ * Returns null for terminal states (CLOSED, CANCELLED) or invalid states.
+ *
+ * @param {PurchaseOrder['status']} currentStatus - Current PO status
+ * @returns {PurchaseOrder['status'] | null} Next status or null if terminal
+ *
+ * @example
+ * ```ts
+ * const next = getNextPOStatus('APPROVED'); // Returns 'SENT'
+ * const terminal = getNextPOStatus('CLOSED'); // Returns null
+ * ```
+ */
 export const getNextPOStatus = (currentStatus: PurchaseOrder['status']): PurchaseOrder['status'] | null => {
   const statusFlow: Record<PurchaseOrder['status'], PurchaseOrder['status'] | null> = {
     DRAFT: 'PENDING_APPROVAL',

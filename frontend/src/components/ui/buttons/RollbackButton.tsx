@@ -29,6 +29,27 @@ import { rollbackUpdate } from '@/utils/optimisticHelpers';
 // TYPES
 // =====================
 
+/**
+ * Props for the RollbackButton component.
+ *
+ * @interface RollbackButtonProps
+ *
+ * @property {string} updateId - Unique identifier of the optimistic update to rollback
+ * @property {('primary' | 'secondary' | 'danger' | 'ghost')} [variant='secondary'] - Visual style variant
+ *   - primary: Blue action button
+ *   - secondary: Gray neutral button
+ *   - danger: Red warning button (recommended for rollback actions)
+ *   - ghost: Transparent minimal button
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Button size affecting padding and text
+ * @property {boolean} [confirmBeforeRollback=true] - Whether to show inline confirmation before rollback
+ * @property {string} [confirmMessage='Are you sure you want to undo this change?'] - Confirmation prompt text
+ * @property {() => void} [onRollback] - Callback function executed after successful rollback
+ * @property {string} [text='Undo'] - Button label text
+ * @property {boolean} [showIcon=true] - Whether to display the undo icon
+ * @property {boolean} [disabled=false] - Whether the button is disabled
+ * @property {boolean} [fullWidth=false] - Whether to expand button to full container width
+ * @property {string} [className=''] - Additional CSS classes to apply
+ */
 export interface RollbackButtonProps {
   /** Update ID to rollback */
   updateId: string;
@@ -210,6 +231,18 @@ RollbackButton.displayName = 'RollbackButton';
 // BATCH ROLLBACK BUTTON
 // =====================
 
+/**
+ * Props for the BatchRollbackButton component.
+ *
+ * @interface BatchRollbackButtonProps
+ *
+ * @property {string[]} updateIds - Array of update IDs to rollback in batch
+ * @property {('primary' | 'secondary' | 'danger' | 'ghost')} [variant='danger'] - Visual style variant
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Button size
+ * @property {boolean} [confirmBeforeRollback=true] - Whether to show inline confirmation before batch rollback
+ * @property {() => void} [onRollback] - Callback function executed after successful batch rollback
+ * @property {string} [className=''] - Additional CSS classes to apply
+ */
 export interface BatchRollbackButtonProps {
   /** Update IDs to rollback */
   updateIds: string[];
@@ -231,7 +264,49 @@ export interface BatchRollbackButtonProps {
 }
 
 /**
- * Rollback multiple updates at once
+ * Batch rollback button for undoing multiple optimistic updates at once.
+ *
+ * Provides bulk rollback functionality with confirmation and progress feedback.
+ * Useful for scenarios where multiple related updates need to be undone together.
+ *
+ * **Features:**
+ * - Batch rollback of multiple updates
+ * - Shows count of updates being rolled back
+ * - Inline confirmation step
+ * - Loading state during rollback
+ * - Automatic disable when no updates
+ *
+ * **Performance:**
+ * - Uses Promise.all for parallel rollback
+ * - Efficient bulk cache invalidation
+ * - Single callback after all complete
+ *
+ * @component
+ * @param {BatchRollbackButtonProps} props - Batch rollback button props
+ * @returns {JSX.Element} Rendered batch rollback button with confirmation
+ *
+ * @example
+ * ```tsx
+ * // Rollback multiple failed updates
+ * const failedUpdateIds = ['update-1', 'update-2', 'update-3'];
+ *
+ * <BatchRollbackButton
+ *   updateIds={failedUpdateIds}
+ *   variant="danger"
+ *   onRollback={() => toast.success('All changes undone')}
+ * />
+ *
+ * // Conditional rendering based on update count
+ * {pendingUpdates.length > 0 && (
+ *   <BatchRollbackButton
+ *     updateIds={pendingUpdates.map(u => u.id)}
+ *     confirmBeforeRollback={true}
+ *   />
+ * )}
+ * ```
+ *
+ * @see {@link RollbackButton} for single update rollback
+ * @see {@link useRollback} for programmatic rollback
  */
 export const BatchRollbackButton: React.FC<BatchRollbackButtonProps> = ({
   updateIds,
@@ -330,6 +405,16 @@ export const BatchRollbackButton: React.FC<BatchRollbackButtonProps> = ({
 // ICON COMPONENT
 // =====================
 
+/**
+ * Undo icon component for rollback buttons.
+ * Displays a curved arrow pointing left, standard undo symbol.
+ *
+ * @param props - Icon props
+ * @param {string} [props.className='w-4 h-4'] - CSS classes for icon sizing
+ * @returns {JSX.Element} SVG undo icon
+ *
+ * @internal
+ */
 const UndoIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -352,7 +437,63 @@ const UndoIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =
 // =====================
 
 /**
- * Hook for rollback functionality in components
+ * Custom React hook for programmatic rollback functionality.
+ *
+ * Provides rollback and batch rollback functions with loading state management.
+ * Useful for implementing custom rollback UI or integrating rollback into
+ * complex workflows without using the button components.
+ *
+ * **Features:**
+ * - Single update rollback
+ * - Batch update rollback
+ * - Loading state tracking
+ * - Success/error callbacks
+ * - Automatic cache invalidation
+ *
+ * **Integration:**
+ * - Works with optimisticUpdateManager
+ * - Integrates with React Query cache
+ * - Handles error recovery
+ *
+ * @returns {Object} Rollback utilities
+ * @returns {(updateId: string, options?: {onSuccess?: () => void; onError?: (error: Error) => void}) => Promise<void>} rollback - Function to rollback single update
+ * @returns {(updateIds: string[], options?: {onSuccess?: () => void; onError?: (error: Error) => void}) => Promise<void>} batchRollback - Function to rollback multiple updates
+ * @returns {boolean} isRollingBack - Whether rollback operation is in progress
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const { rollback, batchRollback, isRollingBack } = useRollback();
+ *
+ *   const handleUndo = async () => {
+ *     await rollback('update-123', {
+ *       onSuccess: () => toast.success('Change undone'),
+ *       onError: (err) => toast.error(`Failed: ${err.message}`)
+ *     });
+ *   };
+ *
+ *   const handleUndoAll = async () => {
+ *     await batchRollback(['update-1', 'update-2', 'update-3'], {
+ *       onSuccess: () => console.log('All changes undone')
+ *     });
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleUndo} disabled={isRollingBack}>
+ *         Undo Last Change
+ *       </button>
+ *       <button onClick={handleUndoAll} disabled={isRollingBack}>
+ *         Undo All Changes
+ *       </button>
+ *       {isRollingBack && <LoadingSpinner />}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link RollbackButton} for pre-built rollback UI
+ * @see {@link BatchRollbackButton} for batch rollback UI
  */
 export function useRollback() {
   const queryClient = useQueryClient();

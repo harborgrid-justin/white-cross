@@ -21,10 +21,41 @@ import { PROTECTED_ROUTES } from '../../constants/routes'
 // SUB-COMPONENTS
 // ============================================================================
 
+/**
+ * Props for the UserMenu component.
+ *
+ * @property {() => void} onClose - Callback function to close the user menu
+ */
 interface UserMenuProps {
   onClose: () => void
 }
 
+/**
+ * User menu dropdown component.
+ *
+ * Displays a dropdown menu with user information and actions including:
+ * - User name and email
+ * - Role badge with color coding
+ * - Profile link
+ * - Settings link
+ * - Sign out button
+ *
+ * Features:
+ * - Click outside to close functionality
+ * - Role-based badge styling
+ * - Accessible menu structure with ARIA attributes
+ * - Smooth animations
+ * - Dark mode support
+ *
+ * @param props - Component props
+ * @param props.onClose - Callback to close the menu
+ * @returns JSX element representing the user menu dropdown
+ *
+ * @example
+ * ```tsx
+ * <UserMenu onClose={() => setMenuOpen(false)} />
+ * ```
+ */
 const UserMenu = memo(({ onClose }: UserMenuProps) => {
   const { user, logout } = useAuthContext()
   const menuRef = useRef<HTMLDivElement>(null)
@@ -137,6 +168,26 @@ UserMenu.displayName = 'UserMenu'
 // DARK MODE TOGGLE COMPONENT
 // ============================================================================
 
+/**
+ * Dark mode toggle button component.
+ *
+ * Provides a button to toggle between light and dark mode themes.
+ * The state is managed by NavigationContext and persisted across sessions.
+ *
+ * Features:
+ * - Smooth icon transition between sun and moon
+ * - Accessible with ARIA labels
+ * - Keyboard accessible
+ * - Visual feedback on hover and active states
+ * - Respects prefers-reduced-motion for animations
+ *
+ * @returns JSX element representing the dark mode toggle button
+ *
+ * @example
+ * ```tsx
+ * <DarkModeToggle />
+ * ```
+ */
 const DarkModeToggle = memo(() => {
   const { darkMode, setDarkMode } = useNavigation()
 
@@ -170,10 +221,54 @@ DarkModeToggle.displayName = 'DarkModeToggle'
 // MAIN NAVIGATION COMPONENT
 // ============================================================================
 
+/**
+ * Props for the Navigation component.
+ *
+ * @property {string} [className] - Optional CSS classes to apply to the navigation container
+ */
 interface NavigationProps {
   className?: string
 }
 
+/**
+ * Top navigation bar component.
+ *
+ * Provides the main navigation header for the application including:
+ * - Mobile menu toggle
+ * - Application logo
+ * - Global search (desktop and mobile)
+ * - Dark mode toggle
+ * - Notifications with badge indicator
+ * - User menu with profile and settings
+ *
+ * Layout:
+ * - Sticky positioning at top of viewport
+ * - Responsive design with mobile and desktop layouts
+ * - Desktop: Logo hidden, search bar visible, full user info
+ * - Mobile: Hamburger menu, logo visible, search icon only
+ *
+ * Features:
+ * - Keyboard shortcuts (⌘K for search)
+ * - Notification badge indicator
+ * - Role-based user information display
+ * - Accessible with ARIA labels and semantic HTML
+ * - Dark mode support
+ * - Smooth transitions and hover states
+ *
+ * @param props - Component props
+ * @param props.className - Optional CSS classes for the navigation container
+ * @returns JSX element representing the top navigation bar
+ *
+ * @example
+ * ```tsx
+ * <Navigation />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * <Navigation className="custom-shadow" />
+ * ```
+ */
 export const Navigation = memo(({ className = '' }: NavigationProps) => {
   const { user } = useAuthContext()
   const {

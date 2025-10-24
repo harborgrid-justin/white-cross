@@ -1,18 +1,49 @@
 /**
  * ReportFilters Component
- * 
- * Report Filters for reports module.
+ *
+ * Advanced filtering interface for reports with support for date ranges,
+ * categories, status, format, and custom filter criteria.
+ *
+ * @module pages/reports/components/ReportFilters
  */
 
 import React from 'react';
 import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
+/**
+ * Props for ReportFilters component.
+ *
+ * @property className - Optional CSS class names for styling
+ */
 interface ReportFiltersProps {
   className?: string;
 }
 
 /**
- * ReportFilters component - Report Filters
+ * ReportFilters component for filtering report lists and search results.
+ *
+ * Provides filtering controls for:
+ * - Report type (student, health, incident, etc.)
+ * - Generation status (pending, completed, failed)
+ * - Date range (created date, generated date)
+ * - Format (PDF, Excel, CSV)
+ * - Creator/author
+ * - Scheduled vs. on-demand reports
+ *
+ * @param props - Component properties
+ * @returns JSX element rendering filter controls
+ *
+ * @remarks
+ * - Updates Redux state with selected filters
+ * - Supports filter presets and saved filter combinations
+ * - Provides clear/reset functionality
+ * - Shows active filter count badge
+ * - Debounces filter changes to reduce API calls
+ *
+ * @example
+ * ```tsx
+ * <ReportFilters className="sidebar-filters" />
+ * ```
  */
 const ReportFilters: React.FC<ReportFiltersProps> = ({ className = '' }) => {
   return (

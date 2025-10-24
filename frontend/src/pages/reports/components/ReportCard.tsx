@@ -1,18 +1,50 @@
 /**
  * ReportCard Component
- * 
- * Report Card for reports module.
+ *
+ * Card component displaying summary information for a report including
+ * metadata, status, actions, and preview capabilities.
+ *
+ * @module pages/reports/components/ReportCard
  */
 
 import React from 'react';
 import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
+/**
+ * Props for ReportCard component.
+ *
+ * @property className - Optional CSS class names for styling
+ */
 interface ReportCardProps {
   className?: string;
 }
 
 /**
- * ReportCard component - Report Card
+ * ReportCard component for displaying report summary in list/grid views.
+ *
+ * Displays:
+ * - Report name and type
+ * - Generation status and timestamp
+ * - Creator information
+ * - File format and size
+ * - Quick action buttons (view, download, delete, share)
+ * - Status indicators and badges
+ *
+ * @param props - Component properties
+ * @returns JSX element rendering report card
+ *
+ * @remarks
+ * - Supports both list and grid layout modes
+ * - Shows status badges (pending, completed, failed, scheduled)
+ * - Provides quick actions menu
+ * - Displays file size and expiration info
+ * - Supports click to view full report details
+ * - Integrates with reports Redux selectors
+ *
+ * @example
+ * ```tsx
+ * <ReportCard className="grid-item" />
+ * ```
  */
 const ReportCard: React.FC<ReportCardProps> = ({ className = '' }) => {
   return (

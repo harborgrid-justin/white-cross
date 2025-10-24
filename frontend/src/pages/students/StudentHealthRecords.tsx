@@ -1,22 +1,66 @@
+/**
+ * Student Health Records Page - White Cross Healthcare Platform
+ *
+ * @fileoverview Comprehensive health records management with HIPAA compliance
+ * @module pages/students/StudentHealthRecords
+ * @version 1.0.0
+ */
+
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  FileText, 
-  Calendar, 
-  AlertTriangle, 
-  Shield, 
-  User, 
-  Heart, 
-  Pill, 
-  Activity, 
-  Clock, 
-  Eye, 
+import {
+  Search,
+  Filter,
+  Plus,
+  FileText,
+  Calendar,
+  AlertTriangle,
+  Shield,
+  User,
+  Heart,
+  Pill,
+  Activity,
+  Clock,
+  Eye,
   Edit,
   Download
 } from 'lucide-react';
 
+/**
+ * Health record data interface representing a student's health record entry.
+ *
+ * @interface HealthRecord
+ * @property {string} id - Unique identifier for the health record
+ * @property {string} studentId - Associated student identifier
+ * @property {string} studentName - Student's full name for display
+ * @property {('medical_history'|'allergy'|'medication'|'immunization'|'physical_exam'|'incident'|'other')} recordType - Type of health record
+ * @property {string} title - Brief title/summary of the health record
+ * @property {string} description - Detailed description of the health record
+ * @property {string} date - Date of the health record in ISO format
+ * @property {string} [provider] - Healthcare provider name (optional)
+ * @property {string} [diagnosis] - Medical diagnosis if applicable (optional)
+ * @property {string} [treatment] - Treatment plan or action taken (optional)
+ * @property {string[]} [medications] - List of medications (optional)
+ * @property {string[]} [allergies] - List of allergies noted (optional)
+ * @property {string[]} [restrictions] - Activity or dietary restrictions (optional)
+ * @property {boolean} followUpRequired - Whether follow-up is needed
+ * @property {string} [followUpDate] - Scheduled follow-up date (optional)
+ * @property {('standard'|'confidential'|'restricted')} confidentialityLevel - Access control level
+ * @property {string[]} [attachments] - File attachments (optional)
+ * @property {string} createdBy - User who created the record
+ * @property {string} createdAt - Creation timestamp in ISO format
+ * @property {string} lastUpdated - Last update timestamp in ISO format
+ * @property {('active'|'resolved'|'ongoing'|'archived')} status - Current status of the record
+ *
+ * @remarks
+ * HIPAA Compliance: This interface represents Protected Health Information (PHI).
+ * All fields containing medical data must be encrypted at rest and in transit.
+ * Access to records must be logged for audit purposes.
+ *
+ * Confidentiality Levels:
+ * - standard: General health information, accessible to authorized health staff
+ * - confidential: Sensitive health data, requires elevated permissions
+ * - restricted: Highly sensitive data, limited to specific authorized personnel only
+ */
 interface HealthRecord {
   id: string;
   studentId: string;
@@ -41,6 +85,16 @@ interface HealthRecord {
   status: 'active' | 'resolved' | 'ongoing' | 'archived';
 }
 
+/**
+ * Filter criteria interface for health records.
+ *
+ * @interface HealthRecordFilters
+ * @property {string} recordType - Filter by record type (empty string for all)
+ * @property {string} status - Filter by status (empty string for all)
+ * @property {string} confidentialityLevel - Filter by confidentiality level (empty string for all)
+ * @property {string} followUpRequired - Filter by follow-up requirement ('true', 'false', or empty)
+ * @property {string} dateRange - Filter by date range preset
+ */
 interface HealthRecordFilters {
   recordType: string;
   status: string;
@@ -49,6 +103,60 @@ interface HealthRecordFilters {
   dateRange: string;
 }
 
+/**
+ * Student Health Records management component with comprehensive filtering and HIPAA compliance.
+ *
+ * Provides a secure interface for viewing, searching, and managing student health records
+ * with multi-level confidentiality controls and audit-ready design.
+ *
+ * @component
+ * @returns {React.FC} Rendered health records management page
+ *
+ * @remarks
+ * HIPAA Compliance:
+ * - All health record access should be logged for audit trails
+ * - Records display confidentiality level badges
+ * - Restricted records require elevated authentication
+ * - PHI (Protected Health Information) is clearly marked
+ * - Implements minimum necessary access principle
+ *
+ * Security:
+ * - Role-based access control for viewing/editing records
+ * - Confidentiality levels enforce data segregation
+ * - All record views should trigger audit log entries
+ * - Attachments should be served via secure, authenticated endpoints
+ *
+ * Data Privacy:
+ * - Follows FERPA and HIPAA regulations
+ * - Student data anonymization for reporting
+ * - Export restrictions on confidential and restricted records
+ * - Follow-up tracking with automated reminders
+ *
+ * @example
+ * ```tsx
+ * import StudentHealthRecords from './pages/students/StudentHealthRecords';
+ *
+ * function HealthSection() {
+ *   return (
+ *     <ProtectedRoute requiredRole={['NURSE', 'ADMIN', 'COUNSELOR']}>
+ *       <StudentHealthRecords />
+ *     </ProtectedRoute>
+ *   );
+ * }
+ * ```
+ *
+ * @features
+ * - Multi-field search (name, title, provider, diagnosis)
+ * - Advanced filtering by type, status, confidentiality, follow-up
+ * - Confidentiality level badges (Standard, Confidential, Restricted)
+ * - Record type icons for quick visual identification
+ * - Follow-up date tracking with visual indicators
+ * - Attachment management
+ * - Status workflow (Active, Ongoing, Resolved, Archived)
+ * - Responsive card-based layout
+ * - Allergy, medication, and restriction highlights
+ * - Audit trail display (created by, created at, last updated)
+ */
 const StudentHealthRecords: React.FC = () => {
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<HealthRecord[]>([]);

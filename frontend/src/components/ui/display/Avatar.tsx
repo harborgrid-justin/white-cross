@@ -1,6 +1,35 @@
+/**
+ * Avatar Component Module
+ *
+ * User avatar display with image loading, fallback initials, status indicators,
+ * and avatar group functionality for showing multiple users.
+ *
+ * @module components/ui/display/Avatar
+ */
+
 import React from 'react';
 import { cn } from '../../../utils/cn';
 
+/**
+ * Props for the Avatar component.
+ *
+ * @interface AvatarProps
+ * @extends {React.HTMLAttributes<HTMLDivElement>}
+ *
+ * @property {string} [src] - Image URL for avatar
+ * @property {string} [alt] - Alt text for image and fallback initials source
+ * @property {string} [fallback] - Custom fallback text (defaults to alt or '??')
+ * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl')} [size='md'] - Avatar size
+ *   - xs: 24px (1.5rem)
+ *   - sm: 32px (2rem)
+ *   - md: 40px (2.5rem) - default
+ *   - lg: 48px (3rem)
+ *   - xl: 64px (4rem)
+ *   - 2xl: 80px (5rem)
+ * @property {('circle' | 'square')} [shape='circle'] - Avatar shape
+ * @property {('online' | 'offline' | 'away' | 'busy')} [status] - User status for indicator
+ * @property {boolean} [showStatus=false] - Whether to show status indicator dot
+ */
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
   alt?: string;
@@ -11,17 +40,67 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   showStatus?: boolean;
 }
 
+/**
+ * Avatar component for displaying user profile images with fallbacks.
+ *
+ * Displays user avatars with automatic image loading, fallback to initials,
+ * customizable sizes and shapes, and optional online status indicators.
+ * Handles image load errors gracefully by falling back to initials.
+ *
+ * **Features:**
+ * - Image loading with error handling
+ * - Automatic initials generation from alt/fallback text
+ * - 6 size options (xs to 2xl)
+ * - Circle or square shapes
+ * - Status indicator (online, offline, away, busy)
+ * - Responsive and accessible
+ * - Forward ref support
+ *
+ * **Accessibility:**
+ * - Alt text for images
+ * - Semantic HTML structure
+ * - High contrast status indicators
+ *
+ * @component
+ * @param {AvatarProps} props - Avatar component props
+ * @param {React.Ref<HTMLDivElement>} ref - Forwarded ref
+ * @returns {JSX.Element} Rendered avatar with image or initials
+ *
+ * @example
+ * ```tsx
+ * // Avatar with image
+ * <Avatar
+ *   src="/images/user.jpg"
+ *   alt="John Doe"
+ *   size="lg"
+ *   status="online"
+ *   showStatus
+ * />
+ *
+ * // Avatar with fallback initials
+ * <Avatar alt="Jane Smith" size="md" shape="circle" />
+ *
+ * // Square avatar with custom fallback
+ * <Avatar
+ *   fallback="Admin"
+ *   shape="square"
+ *   size="xl"
+ * />
+ * ```
+ *
+ * @see {@link AvatarGroup} for displaying multiple avatars
+ */
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ 
-    className, 
-    src, 
-    alt, 
+  ({
+    className,
+    src,
+    alt,
     fallback,
-    size = 'md', 
+    size = 'md',
     shape = 'circle',
     status,
     showStatus = false,
-    ...props 
+    ...props
   }, ref) => {
     const [imageError, setImageError] = React.useState(false);
 
@@ -106,12 +185,67 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   }
 );
 
-const AvatarGroup: React.FC<{
+/**
+ * AvatarGroup component props.
+ *
+ * @interface AvatarGroupProps
+ *
+ * @property {React.ReactNode} children - Avatar components to display
+ * @property {number} [max] - Maximum number of avatars to show before "+N" indicator
+ * @property {AvatarProps['size']} [size='md'] - Size for all avatars and overflow indicator
+ * @property {string} [className] - Additional CSS classes
+ */
+interface AvatarGroupProps {
   children: React.ReactNode;
   max?: number;
   size?: AvatarProps['size'];
   className?: string;
-}> = ({ children, max, size = 'md', className }) => {
+}
+
+/**
+ * AvatarGroup component for displaying multiple avatars in an overlapping row.
+ *
+ * Groups multiple Avatar components with overlapping layout and optional
+ * overflow indicator showing "+N" for additional hidden avatars.
+ *
+ * **Features:**
+ * - Overlapping avatar layout
+ * - Configurable maximum visible avatars
+ * - "+N" overflow indicator for remaining avatars
+ * - Consistent sizing across all avatars
+ * - Responsive spacing based on size
+ *
+ * **Layout:**
+ * Avatars overlap by approximately 25% for compact visual grouping.
+ *
+ * @component
+ * @param {AvatarGroupProps} props - Avatar group props
+ * @returns {JSX.Element} Rendered group of overlapping avatars
+ *
+ * @example
+ * ```tsx
+ * // Show up to 4 avatars, rest shown as "+N"
+ * <AvatarGroup max={4} size="md">
+ *   <Avatar src="/user1.jpg" alt="User 1" />
+ *   <Avatar src="/user2.jpg" alt="User 2" />
+ *   <Avatar src="/user3.jpg" alt="User 3" />
+ *   <Avatar src="/user4.jpg" alt="User 4" />
+ *   <Avatar src="/user5.jpg" alt="User 5" />
+ *   <Avatar src="/user6.jpg" alt="User 6" />
+ * </AvatarGroup>
+ * // Renders: [Avatar1][Avatar2][Avatar3][Avatar4][+2]
+ *
+ * // Show all avatars without limit
+ * <AvatarGroup size="sm">
+ *   <Avatar alt="John" />
+ *   <Avatar alt="Jane" />
+ *   <Avatar alt="Bob" />
+ * </AvatarGroup>
+ * ```
+ *
+ * @see {@link Avatar} for individual avatar component
+ */
+const AvatarGroup: React.FC<AvatarGroupProps> = ({ children, max, size = 'md', className }) => {
   const childArray = React.Children.toArray(children);
   const visibleChildren = max ? childArray.slice(0, max) : childArray;
   const remainingCount = max ? Math.max(0, childArray.length - max) : 0;

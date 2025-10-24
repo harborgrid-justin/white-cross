@@ -14,9 +14,37 @@ import React from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Utility function for merging class names
+/**
+ * Utility function for merging Tailwind CSS class names.
+ * Combines clsx for conditional classes with tailwind-merge for deduplication.
+ *
+ * @param inputs - Array of class name strings or undefined values
+ * @returns Merged and deduplicated class name string
+ *
+ * @example
+ * ```typescript
+ * cn('bg-blue-500', 'bg-red-500') // Returns 'bg-red-500' (last wins)
+ * cn('px-4', undefined, 'py-2') // Returns 'px-4 py-2' (filters undefined)
+ * ```
+ */
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
+/**
+ * Button component props extending native HTML button attributes.
+ *
+ * @interface ButtonProps
+ * @extends {React.ButtonHTMLAttributes<HTMLButtonElement>}
+ *
+ * @property {('primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info')} [variant='primary'] - Visual style variant
+ * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl')} [size='md'] - Button size (affects padding and text size)
+ * @property {boolean} [loading=false] - Loading state showing spinner animation
+ * @property {React.ReactNode} [icon] - Icon element to display (use with iconPosition)
+ * @property {('left' | 'right')} [iconPosition='left'] - Icon placement relative to text
+ * @property {React.ReactNode} [leftIcon] - Left-aligned icon (backward compatibility)
+ * @property {React.ReactNode} [rightIcon] - Right-aligned icon (backward compatibility)
+ * @property {boolean} [fullWidth=false] - Expand button to full container width
+ * @property {boolean} [asChild=false] - Render as child component (composition pattern)
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -29,6 +57,24 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   asChild?: boolean;
 }
 
+/**
+ * Button variant style configurations.
+ * Each variant includes colors, hover states, active states, focus rings, and dark mode support.
+ *
+ * Variants:
+ * - primary: Main action color (brand blue)
+ * - secondary: Alternative action color
+ * - outline: Bordered transparent background
+ * - outline-primary: Primary colored border
+ * - ghost: Minimal style with hover state
+ * - link: Text-only link appearance
+ * - destructive/danger: Warning for destructive actions (red)
+ * - success: Positive confirmation actions (green)
+ * - warning: Caution actions (yellow/orange)
+ * - info: Informational actions (blue)
+ *
+ * @constant
+ */
 const buttonVariants = {
   primary: 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white focus:ring-primary-500 shadow-sm hover:shadow-md dark:bg-primary-500 dark:hover:bg-primary-600',
   secondary: 'bg-secondary-600 hover:bg-secondary-700 active:bg-secondary-800 text-white focus:ring-secondary-500 shadow-sm hover:shadow-md dark:bg-secondary-500 dark:hover:bg-secondary-600',
@@ -43,6 +89,19 @@ const buttonVariants = {
   info: 'bg-info-600 hover:bg-info-700 active:bg-info-800 text-white focus:ring-info-500 shadow-sm hover:shadow-md dark:bg-info-500 dark:hover:bg-info-600'
 };
 
+/**
+ * Button size configurations.
+ * Defines padding, text size, and border radius for each size variant.
+ *
+ * Sizes:
+ * - xs: Extra small (compact UI elements)
+ * - sm: Small (dense layouts)
+ * - md: Medium (default, most common)
+ * - lg: Large (prominent actions)
+ * - xl: Extra large (hero sections, call-to-action)
+ *
+ * @constant
+ */
 const buttonSizes = {
   xs: 'px-2 py-1 text-xs rounded',
   sm: 'px-3 py-1.5 text-sm rounded-md',
@@ -51,6 +110,72 @@ const buttonSizes = {
   xl: 'px-8 py-4 text-lg rounded-xl'
 };
 
+/**
+ * Primary button component with extensive variant and state support.
+ *
+ * A highly flexible, accessible button component with multiple visual variants,
+ * sizes, loading states, and icon support. Optimized with React.memo to prevent
+ * unnecessary re-renders.
+ *
+ * **Features:**
+ * - 11 visual variants (primary, secondary, outline, ghost, link, danger, success, warning, info)
+ * - 5 size options (xs, sm, md, lg, xl)
+ * - Loading state with animated spinner
+ * - Icon support (left or right positioned)
+ * - Full-width layout option
+ * - Dark mode support
+ * - Keyboard accessible (focus rings, disabled states)
+ * - Respects reduced motion preferences
+ * - Active state animations (scale effect)
+ * - Forward ref support for DOM access
+ *
+ * **Accessibility:**
+ * - aria-busy attribute during loading
+ * - aria-disabled attribute when disabled
+ * - Proper focus management with visible focus rings
+ * - Disabled state prevents interaction
+ * - Motion-reduce support for animations
+ *
+ * @component
+ * @param {ButtonProps} props - Button component props
+ * @param {React.Ref<HTMLButtonElement>} ref - Forwarded ref to button element
+ * @returns {JSX.Element} Rendered button element
+ *
+ * @example
+ * ```tsx
+ * // Primary button (default)
+ * <Button onClick={handleSave}>Save Changes</Button>
+ *
+ * // Danger variant with loading state
+ * <Button variant="danger" loading={isDeleting} onClick={handleDelete}>
+ *   Delete Account
+ * </Button>
+ *
+ * // Outline variant with left icon
+ * <Button variant="outline" icon={<PlusIcon />} iconPosition="left">
+ *   Add Item
+ * </Button>
+ *
+ * // Large size, full width, success variant
+ * <Button variant="success" size="lg" fullWidth>
+ *   Complete Registration
+ * </Button>
+ *
+ * // Ghost variant with right icon
+ * <Button variant="ghost" icon={<ChevronRightIcon />} iconPosition="right">
+ *   Continue
+ * </Button>
+ *
+ * // Disabled state
+ * <Button disabled>Cannot Submit</Button>
+ *
+ * // With ref for DOM manipulation
+ * const buttonRef = useRef<HTMLButtonElement>(null);
+ * <Button ref={buttonRef}>Focus Me</Button>
+ * ```
+ *
+ * @see {@link ButtonProps} for detailed prop documentation
+ */
 // Memoized button component to prevent unnecessary re-renders
 export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({

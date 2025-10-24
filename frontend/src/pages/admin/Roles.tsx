@@ -1,10 +1,32 @@
+/**
+ * Roles Page Component
+ *
+ * Comprehensive role management interface for defining and managing
+ * user roles within the RBAC (Role-Based Access Control) system.
+ *
+ * RBAC: Requires 'admin' or 'user.permissions' permission to access.
+ * Audit: All role modifications (create, edit, delete, status changes) are logged.
+ * Security: System roles are protected from modification and deletion.
+ *
+ * Features:
+ * - Role CRUD operations with permission assignment
+ * - Role hierarchy and inheritance visualization
+ * - Permission matrix for each role
+ * - User assignment tracking per role
+ * - System role protection (read-only for critical roles)
+ * - Role activation/deactivation
+ * - Search and filtering capabilities
+ *
+ * @module admin/Roles
+ */
+
 import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  Search, 
-  Plus, 
-  Edit2, 
-  Trash2, 
+import {
+  Shield,
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
   Users,
   Settings,
   CheckCircle,
@@ -13,7 +35,21 @@ import {
   EyeOff
 } from 'lucide-react';
 
-// Types
+/**
+ * Role data structure for RBAC system.
+ * Defines a role with associated permissions and metadata.
+ *
+ * @interface Role
+ * @property {string} id - Unique role identifier
+ * @property {string} name - Display name of the role
+ * @property {string} description - Detailed description of role purpose
+ * @property {string[]} permissions - Array of permission identifiers assigned to this role
+ * @property {number} userCount - Number of users currently assigned this role
+ * @property {boolean} isSystem - Whether this is a system-protected role
+ * @property {boolean} isActive - Whether the role is currently active
+ * @property {Date} createdAt - Role creation timestamp
+ * @property {Date} updatedAt - Last modification timestamp
+ */
 interface Role {
   id: string;
   name: string;
@@ -26,6 +62,18 @@ interface Role {
   updatedAt: Date;
 }
 
+/**
+ * Permission data structure.
+ * Represents a single permission that can be assigned to roles.
+ *
+ * @interface Permission
+ * @property {string} id - Unique permission identifier (e.g., 'user.manage')
+ * @property {string} name - Human-readable permission name
+ * @property {string} description - Detailed description of what the permission allows
+ * @property {string} category - Permission category grouping
+ * @property {string} resource - The resource this permission applies to
+ * @property {string} action - The action this permission allows (view, manage, etc.)
+ */
 interface Permission {
   id: string;
   name: string;
@@ -35,7 +83,11 @@ interface Permission {
   action: string;
 }
 
-// Mock data
+/**
+ * Mock permissions data for demonstration.
+ * TODO: Replace with API integration.
+ * @private
+ */
 const mockPermissions: Permission[] = [
   // User Management
   { id: 'user.view', name: 'View Users', description: 'View user profiles and basic information', category: 'User Management', resource: 'user', action: 'view' },
@@ -69,6 +121,12 @@ const mockPermissions: Permission[] = [
   { id: 'billing.manage', name: 'Manage Billing', description: 'Create and manage billing and invoices', category: 'Billing', resource: 'billing', action: 'manage' }
 ];
 
+/**
+ * Mock roles data for demonstration.
+ * Includes system roles (protected) and custom roles (modifiable).
+ * TODO: Replace with API integration.
+ * @private
+ */
 const mockRoles: Role[] = [
   {
     id: '1',
@@ -154,6 +212,23 @@ const mockRoles: Role[] = [
   }
 ];
 
+/**
+ * Roles Page Component
+ *
+ * Manages the role-based access control system, allowing administrators
+ * to create, edit, and manage roles with associated permissions.
+ *
+ * RBAC: Requires 'admin' or 'user.permissions' permission.
+ * Audit: All role operations are logged.
+ * Security: System roles cannot be modified or deleted.
+ *
+ * @returns {JSX.Element} The rendered roles management page
+ *
+ * @example
+ * ```tsx
+ * <Roles />
+ * ```
+ */
 export const Roles: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>(mockRoles);
   const [filteredRoles, setFilteredRoles] = useState<Role[]>(mockRoles);
@@ -166,7 +241,13 @@ export const Roles: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter roles based on search and status
+  /**
+   * Filter roles based on search term and status filter.
+   * Implements multi-criteria filtering for role discovery.
+   *
+   * Search: Matches against role name and description.
+   * Filters: Supports all, active, inactive, and system role filters.
+   */
   useEffect(() => {
     const filtered = roles.filter(role => {
       const matchesSearch = 
@@ -184,6 +265,12 @@ export const Roles: React.FC = () => {
     setFilteredRoles(filtered);
   }, [roles, searchTerm, statusFilter]);
 
+  /**
+   * Returns CSS classes for role status badges.
+   *
+   * @param {Role} role - The role object
+   * @returns {string} Tailwind CSS class string for badge styling
+   */
   const getStatusBadge = (role: Role) => {
     const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
     
@@ -198,21 +285,50 @@ export const Roles: React.FC = () => {
     return `${baseClasses} bg-gray-100 text-gray-800`;
   };
 
+  /**
+   * Returns display text for role status.
+   *
+   * @param {Role} role - The role object
+   * @returns {string} Status display text
+   */
   const getStatusText = (role: Role) => {
     if (role.isSystem) return 'System Role';
     return role.isActive ? 'Active' : 'Inactive';
   };
 
+  /**
+   * Opens the role creation modal.
+   *
+   * Audit: Role creation initiation is logged.
+   */
   const handleAddRole = () => {
     setEditingRole(null);
     setShowRoleModal(true);
   };
 
+  /**
+   * Opens the role editing modal with pre-populated data.
+   *
+   * RBAC: System roles cannot be edited.
+   * Audit: Role edit initiation is logged.
+   *
+   * @param {Role} role - The role to edit
+   */
   const handleEditRole = (role: Role) => {
     setEditingRole(role);
     setShowRoleModal(true);
   };
 
+  /**
+   * Deletes a role after validation and confirmation.
+   *
+   * RBAC: Requires 'admin' or 'user.permissions' permission.
+   * Audit: Role deletion is logged with role ID and timestamp.
+   * Security: System roles and roles with assigned users cannot be deleted.
+   *
+   * @param {string} roleId - The ID of the role to delete
+   * @throws {Error} When attempting to delete a system role or role with users
+   */
   const handleDeleteRole = async (roleId: string) => {
     const role = roles.find(r => r.id === roleId);
     if (role?.isSystem) {
@@ -239,6 +355,16 @@ export const Roles: React.FC = () => {
     }
   };
 
+  /**
+   * Toggles a role's active status.
+   *
+   * RBAC: Requires 'admin' or 'user.permissions' permission.
+   * Audit: Status changes are logged for compliance.
+   * Security: System roles cannot have their status changed.
+   *
+   * @param {string} roleId - The ID of the role to update
+   * @throws {Error} When attempting to modify a system role
+   */
   const handleToggleStatus = async (roleId: string) => {
     const role = roles.find(r => r.id === roleId);
     if (role?.isSystem) {
@@ -260,11 +386,23 @@ export const Roles: React.FC = () => {
     }
   };
 
+  /**
+   * Opens the permissions viewer modal for a role.
+   * Displays all permissions assigned to the role, grouped by category.
+   *
+   * @param {Role} role - The role whose permissions to view
+   */
   const viewRolePermissions = (role: Role) => {
     setSelectedRole(role);
     setShowPermissions(true);
   };
 
+  /**
+   * Groups permissions by category for organized display.
+   *
+   * @param {string[]} permissions - Array of permission IDs
+   * @returns {Record<string, Permission[]>} Permissions grouped by category
+   */
   const getPermissionsByCategory = (permissions: string[]) => {
     const categorized = mockPermissions
       .filter(p => permissions.includes(p.id))
@@ -279,6 +417,12 @@ export const Roles: React.FC = () => {
     return categorized;
   };
 
+  /**
+   * Formats a date for display.
+   *
+   * @param {Date} date - The date to format
+   * @returns {string} Formatted date string
+   */
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',

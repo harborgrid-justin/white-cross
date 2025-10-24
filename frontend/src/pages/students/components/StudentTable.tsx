@@ -1,24 +1,35 @@
 /**
- * WF-COMP-101 | StudentTable.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react, @/types/student.types
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Student Table Component
- * Displays student data in a tabular format with action buttons
+ * Student Table Component - Tabular Student Data Display
+ *
+ * @fileoverview Comprehensive student table with role-based actions and medical alerts
+ * @module pages/students/components/StudentTable
+ * @version 1.0.0
  */
 
 import React from 'react'
 import { Edit, Trash2, AlertTriangle, Pill } from 'lucide-react'
 import { Student, getPrimaryContact } from '@/types/student.types'
 
+/**
+ * Props for the Student Table component.
+ *
+ * @interface StudentTableProps
+ * @property {Student[]} students - Array of student records to display
+ * @property {boolean} loading - Loading state indicator
+ * @property {boolean} showArchived - Whether displaying archived students
+ * @property {string[]} selectedStudents - Array of selected student IDs
+ * @property {boolean} canEdit - Whether current user can edit students
+ * @property {boolean} canDelete - Whether current user can delete students
+ * @property {(student: Student) => void} onViewDetails - Callback when student row is clicked
+ * @property {(student: Student, e: React.MouseEvent) => void} onEdit - Callback for edit action
+ * @property {(studentId: string, e: React.MouseEvent) => void} onDelete - Callback for delete action
+ * @property {(studentId: string, e: React.MouseEvent) => void} onRestore - Callback for restore action
+ * @property {(studentId: string) => void} onSelectStudent - Callback for student selection
+ *
+ * @remarks
+ * Security: Role-based actions controlled by canEdit and canDelete props.
+ * HIPAA Compliance: Medical alerts (allergies, medications) are displayed with visual indicators.
+ */
 interface StudentTableProps {
   students: Student[]
   loading: boolean
@@ -33,6 +44,74 @@ interface StudentTableProps {
   onSelectStudent: (studentId: string) => void
 }
 
+/**
+ * Student Table Component.
+ *
+ * Displays student data in a comprehensive table format with medical alerts,
+ * emergency contacts, and role-based action buttons.
+ *
+ * @component
+ * @param {StudentTableProps} props - Component props
+ * @returns {React.ReactElement} Rendered table component
+ *
+ * @remarks
+ * HIPAA Compliance:
+ * - Displays Protected Health Information (allergies, medications)
+ * - Medical alerts shown with color-coded badges
+ * - All PHI visibility should be logged
+ *
+ * Accessibility:
+ * - Keyboard navigation support (Enter/Space to view details)
+ * - ARIA labels on action buttons
+ * - Proper table semantics for screen readers
+ * - Test IDs for automated testing
+ *
+ * Features:
+ * - Avatar initials for quick identification
+ * - Date of birth display
+ * - Medical alert badges (allergies, medications)
+ * - Emergency contact quick view
+ * - Active/Inactive status indicators
+ * - Bulk selection checkboxes
+ * - Clickable rows for detail view
+ * - Edit/Delete actions with event propagation control
+ * - Restore functionality for archived students
+ * - Loading spinner during data fetch
+ * - Empty state message
+ *
+ * @example
+ * ```tsx
+ * import { StudentTable } from './components/StudentTable';
+ *
+ * function StudentsList() {
+ *   const { students, loading } = useStudents();
+ *   const { user } = useAuth();
+ *   const [selected, setSelected] = useState<string[]>([]);
+ *
+ *   return (
+ *     <StudentTable
+ *       students={students}
+ *       loading={loading}
+ *       showArchived={false}
+ *       selectedStudents={selected}
+ *       canEdit={user.role === 'ADMIN' || user.role === 'NURSE'}
+ *       canDelete={user.role === 'ADMIN'}
+ *       onViewDetails={(student) => navigate(`/students/${student.id}`)}
+ *       onEdit={(student, e) => {
+ *         e.stopPropagation();
+ *         openEditModal(student);
+ *       }}
+ *       onDelete={(id, e) => {
+ *         e.stopPropagation();
+ *         confirmDelete(id);
+ *       }}
+ *       onRestore={(id) => restoreStudent(id)}
+ *       onSelectStudent={(id) => toggleSelection(id)}
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export const StudentTable: React.FC<StudentTableProps> = ({
   students,
   loading,

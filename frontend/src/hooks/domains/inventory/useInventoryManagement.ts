@@ -1,19 +1,27 @@
 /**
- * WF-COMP-134 | useInventoryManagement.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../services/api, ./useMedicationToast | Dependencies: @tanstack/react-query, ../services/api, ./useMedicationToast
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Medication Inventory Management Hook
+ *
+ * Provides mutation functions for managing medication inventory with
+ * batch tracking, expiration dates, and supplier information. Integrates
+ * with React Query for cache management and optimistic updates.
+ *
+ * @module hooks/domains/inventory/useInventoryManagement
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { medicationsApi } from '@/services';
 import { useMedicationToast } from '../utilities/useMedicationToast';
 
+/**
+ * Data required for updating medication inventory.
+ *
+ * @interface UpdateInventoryData
+ * @property {string} inventoryId - Unique identifier for the inventory record
+ * @property {number} quantity - New stock quantity (must be non-negative)
+ * @property {string} batchNumber - Batch/lot number for traceability
+ * @property {string} expirationDate - Expiration date in ISO format (YYYY-MM-DD)
+ * @property {string} [supplier] - Optional supplier/vendor identifier
+ */
 export interface UpdateInventoryData {
   inventoryId: string;
   quantity: number;
@@ -22,14 +30,58 @@ export interface UpdateInventoryData {
   supplier?: string;
 }
 
+/**
+ * Return type for useInventoryManagement hook.
+ *
+ * @interface UseInventoryManagementReturn
+ * @property {Function} updateInventory - Function to update inventory with new data
+ * @property {boolean} isUpdating - Loading state during inventory update
+ */
 export interface UseInventoryManagementReturn {
   updateInventory: (data: UpdateInventoryData) => Promise<void>;
   isUpdating: boolean;
 }
 
 /**
- * Hook for managing medication inventory operations
- * Handles stock updates and integrates with the API
+ * Hook for managing medication inventory operations.
+ *
+ * Handles stock updates with batch tracking and expiration date management.
+ * Automatically invalidates related React Query caches on success to ensure
+ * UI stays synchronized with latest data.
+ *
+ * Business Rules:
+ * - Quantity must be non-negative
+ * - Batch number is required for traceability
+ * - Expiration date must be in future
+ * - Updates invalidate both medication-inventory and medications caches
+ *
+ * @returns {UseInventoryManagementReturn} Object containing update function and loading state
+ *
+ * @example
+ * ```tsx
+ * const { updateInventory, isUpdating } = useInventoryManagement();
+ *
+ * const handleStockUpdate = async () => {
+ *   try {
+ *     await updateInventory({
+ *       inventoryId: 'inv-123',
+ *       quantity: 250,
+ *       batchNumber: 'BATCH-2025-001',
+ *       expirationDate: '2026-12-31',
+ *       supplier: 'supplier-456'
+ *     });
+ *     console.log('Inventory updated successfully');
+ *   } catch (error) {
+ *     console.error('Update failed:', error);
+ *   }
+ * };
+ *
+ * return (
+ *   <Button onClick={handleStockUpdate} disabled={isUpdating}>
+ *     {isUpdating ? 'Updating...' : 'Update Stock'}
+ *   </Button>
+ * );
+ * ```
  */
 export const useInventoryManagement = (): UseInventoryManagementReturn => {
   const queryClient = useQueryClient();

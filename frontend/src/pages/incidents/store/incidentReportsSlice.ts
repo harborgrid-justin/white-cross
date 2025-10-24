@@ -12,19 +12,69 @@
 
 /**
  * Incident Reports Redux Slice
- * Production-grade state management for incident reporting system
  *
+ * Production-grade state management for the incident reporting system.
+ * Manages incidents, witness statements, and follow-up actions with
+ * comprehensive CRUD operations and advanced filtering capabilities.
+ *
+ * @module pages/incidents/store/incidentReportsSlice
+ *
+ * @remarks
  * Features:
  * - Complete CRUD operations for incident reports
- * - Witness statements management
- * - Follow-up actions tracking
- * - Advanced filtering and search
- * - Optimistic updates
- * - Normalized state structure
- * - Comprehensive error handling
- * - Multiple loading states
+ * - Witness statements management with verification workflow
+ * - Follow-up actions tracking with priority and status
+ * - Advanced filtering by student, type, severity, status, date range
+ * - Full-text search across incident descriptions
+ * - Optimistic UI updates for better user experience
+ * - Normalized state structure for efficient updates
+ * - Granular loading states for each operation
+ * - Comprehensive error handling with user-friendly messages
+ * - Cache invalidation and refresh logic
+ * - Pagination support for large datasets
  *
- * @module incidentReportsSlice
+ * State Structure:
+ * - reports: Array of incident report entities
+ * - selectedReport: Currently viewed incident (detail view)
+ * - witnessStatements: Statements for selected incident
+ * - followUpActions: Actions for selected incident
+ * - searchResults: Search query results
+ * - filters: Active filter criteria
+ * - pagination: Page metadata
+ * - loading: Operation-specific loading flags
+ * - errors: Operation-specific error messages
+ *
+ * @example
+ * ```typescript
+ * // Fetch incident reports with filters
+ * dispatch(fetchIncidentReports({
+ *   severity: [IncidentSeverity.HIGH, IncidentSeverity.CRITICAL],
+ *   status: [IncidentStatus.UNDER_REVIEW],
+ *   startDate: '2025-01-01',
+ *   page: 1,
+ *   limit: 20
+ * }));
+ *
+ * // Create new incident
+ * dispatch(createIncidentReport({
+ *   studentId: 'student-123',
+ *   type: IncidentType.INJURY,
+ *   severity: IncidentSeverity.MEDIUM,
+ *   description: 'Student injured during recess',
+ *   occurredAt: '2025-01-15T10:30:00Z'
+ * }));
+ *
+ * // Add witness statement
+ * dispatch(addWitnessStatement({
+ *   incidentReportId: 'incident-456',
+ *   witnessName: 'Teacher Jane',
+ *   statement: 'I witnessed the incident...'
+ * }));
+ *
+ * // Access state in selectors
+ * const reports = useSelector(state => state.incidentReports.reports);
+ * const isLoading = useSelector(state => state.incidentReports.loading.list);
+ * ```
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';

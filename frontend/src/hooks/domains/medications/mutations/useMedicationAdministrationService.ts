@@ -11,25 +11,42 @@
  */
 
 /**
- * Medication Administration Hook
+ * Medication Administration Service Hook
  *
- * SAFETY-CRITICAL HOOK
+ * SAFETY-CRITICAL HOOK - DO NOT MODIFY WITHOUT CLINICAL REVIEW
  *
- * Purpose: Manages medication administration workflow with Five Rights verification
+ * Purpose: Manages complete medication administration workflow with mandatory Five Rights verification.
+ *
+ * This hook implements the "Five Rights of Medication Administration" - the gold standard
+ * for safe medication administration in healthcare settings. Every administration MUST
+ * pass Five Rights verification before being recorded.
  *
  * CRITICAL SAFETY REQUIREMENTS:
- * - NO caching for administration records
- * - NO optimistic updates (too risky)
- * - Mandatory Five Rights verification
- * - All operations audited
- * - Offline queue support
+ * - NO caching for administration records (must be fresh data)
+ * - NO optimistic updates (too risky for medication records)
+ * - Mandatory Five Rights verification (cannot be bypassed)
+ * - All operations audited with timestamps and user identification
+ * - Offline queue support with sync verification on reconnection
+ * - Session recovery for interrupted administrations
+ * - No automatic retries on administration errors
  *
- * Five Rights:
- * 1. Right Patient
- * 2. Right Medication
- * 3. Right Dose
- * 4. Right Route
- * 5. Right Time
+ * Five Rights of Medication Administration:
+ * 1. Right Patient - Verified via barcode scan and photo confirmation
+ * 2. Right Medication - Verified via NDC (National Drug Code) matching
+ * 3. Right Dose - Verified via barcode scan and prescription matching
+ * 4. Right Route - Verified against prescription (oral, IV, topical, etc.)
+ * 5. Right Time - Verified within administration window (±30 minutes typical)
+ *
+ * Additional Safety Checks:
+ * - LASA (Look-Alike Sound-Alike) medication warnings
+ * - Patient allergy verification
+ * - Drug interaction checking
+ * - Maximum dose validation
+ * - Administration window enforcement
+ *
+ * @module useMedicationAdministrationService
+ * @safety CRITICAL - This hook controls medication administration. All changes must be
+ * reviewed by clinical staff and undergo thorough testing before deployment.
  */
 
 import { useState, useCallback } from 'react';
@@ -47,24 +64,71 @@ import type {
 import { useOfflineQueue } from './useOfflineQueue';
 import { useMedicationSafety } from './useMedicationSafety';
 
-// Query Keys
+/**
+ * React Query cache keys for medication administration queries.
+ *
+ * Provides centralized, type-safe query key management for all medication
+ * administration-related queries. Keys are hierarchical to enable efficient
+ * cache invalidation.
+ *
+ * @constant
+ * @example
+ * ```ts
+ * // Invalidate all administration queries
+ * queryClient.invalidateQueries({ queryKey: administrationKeys.all });
+ *
+ * // Invalidate only today's administrations for specific nurse
+ * queryClient.invalidateQueries({ queryKey: administrationKeys.today('nurse-123') });
+ * ```
+ */
 export const administrationKeys = {
+  /** Base key for all medication administration queries */
   all: ['medication-administration'] as const,
+  /** All session-related queries */
   sessions: () => [...administrationKeys.all, 'session'] as const,
+  /** Specific session by ID */
   session: (id: string) => [...administrationKeys.sessions(), id] as const,
+  /** All administration history queries */
   history: () => [...administrationKeys.all, 'history'] as const,
+  /** Filtered administration history */
   historyFiltered: (filters?: AdministrationHistoryFilters) =>
     [...administrationKeys.history(), filters] as const,
+  /** Today's administrations, optionally filtered by nurse */
   today: (nurseId?: string) => [...administrationKeys.all, 'today', nurseId] as const,
+  /** All reminder queries */
   reminders: () => [...administrationKeys.all, 'reminders'] as const,
+  /** Upcoming reminders within specified hours */
   upcoming: (nurseId?: string, hours?: number) =>
     [...administrationKeys.reminders(), 'upcoming', nurseId, hours] as const,
+  /** Overdue administrations requiring immediate attention */
   overdue: () => [...administrationKeys.reminders(), 'overdue'] as const,
+  /** Student's medication schedule for specific date */
   schedule: (studentId: string, date?: string) =>
     [...administrationKeys.all, 'schedule', studentId, date] as const,
 } as const;
 
-// Custom Errors
+/**
+ * Error thrown when medication safety verification fails.
+ *
+ * Indicates that one or more of the Five Rights verifications failed,
+ * or other critical safety checks did not pass. This error should
+ * HALT the administration process.
+ *
+ * @class MedicationSafetyError
+ * @extends Error
+ *
+ * @property {string} name - Always 'MedicationSafetyError'
+ * @property {string} message - Human-readable error summary
+ * @property {string[]} errors - Array of specific safety violations
+ *
+ * @example
+ * ```ts
+ * throw new MedicationSafetyError(
+ *   'Five Rights verification failed',
+ *   ['Wrong patient barcode', 'Dose mismatch']
+ * );
+ * ```
+ */
 export class MedicationSafetyError extends Error {
   constructor(message: string, public errors: string[]) {
     super(message);
@@ -72,6 +136,31 @@ export class MedicationSafetyError extends Error {
   }
 }
 
+/**
+ * Error thrown when patient has allergy to medication but warning not acknowledged.
+ *
+ * Indicates patient has documented allergies to the medication or its components,
+ * and the healthcare provider has not properly acknowledged the allergy warning.
+ * This error should HALT the administration process.
+ *
+ * @class AllergyWarningError
+ * @extends Error
+ *
+ * @property {string} name - Always 'AllergyWarningError'
+ * @property {string} message - Human-readable error summary
+ * @property {any[]} allergies - Array of patient's relevant allergies
+ *
+ * @safety This error indicates a CRITICAL safety issue. Administration must not
+ * proceed without explicit physician override and documented clinical rationale.
+ *
+ * @example
+ * ```ts
+ * throw new AllergyWarningError(
+ *   'Patient is allergic to Penicillin',
+ *   [{ allergen: 'Penicillin', severity: 'severe', reaction: 'anaphylaxis' }]
+ * );
+ * ```
+ */
 export class AllergyWarningError extends Error {
   constructor(message: string, public allergies: any[]) {
     super(message);
@@ -79,42 +168,146 @@ export class AllergyWarningError extends Error {
   }
 }
 
-// Hook Return Type
+/**
+ * Return type for the useMedicationAdministration hook.
+ *
+ * Provides comprehensive medication administration workflow management including
+ * session management, Five Rights verification, and administration recording.
+ *
+ * @interface UseMedicationAdministrationReturn
+ */
 export interface UseMedicationAdministrationReturn {
   // Session management
+  /** Current active administration session data, null if no active session */
   sessionData: AdministrationSession | null;
+  /** Mutation to initialize a new administration session for a prescription */
   initSession: ReturnType<typeof useMutation<AdministrationSession, Error, string>>;
 
   // Five Rights verification
+  /** Client-side Five Rights verification (immediate, no network call) */
   verifyFiveRights: (data: FiveRightsData) => FiveRightsVerificationResult;
+  /** Server-side Five Rights verification (authoritative, requires network) */
   serverVerifyFiveRights: ReturnType<
     typeof useMutation<FiveRightsVerificationResult, Error, FiveRightsData>
   >;
 
   // Administration recording
+  /** Records successful medication administration (NO OPTIMISTIC UPDATE) */
   recordAdministration: ReturnType<typeof useMutation<AdministrationLog, Error, AdministrationRecord>>;
+  /** Records patient refusal to take medication */
   recordRefusal: ReturnType<
     typeof useMutation<AdministrationLog, Error, { prescriptionId: string; scheduledTime: string; reason: string; notes?: string }>
   >;
+  /** Records missed medication dose */
   recordMissed: ReturnType<
     typeof useMutation<AdministrationLog, Error, { prescriptionId: string; scheduledTime: string; reason: string; notes?: string }>
   >;
+  /** Records medication held by clinical decision */
   recordHeld: ReturnType<
     typeof useMutation<AdministrationLog, Error, { prescriptionId: string; scheduledTime: string; reason: string; clinicalRationale: string }>
   >;
 
   // Queries
+  /** Today's administrations for the nurse (auto-refreshes every minute) */
   todayAdministrations: ReturnType<typeof useQuery<AdministrationLog[]>>;
+  /** Upcoming medication reminders within 4 hours (auto-refreshes every minute) */
   upcomingReminders: ReturnType<typeof useQuery<MedicationReminder[]>>;
+  /** Overdue administrations requiring immediate attention (auto-refreshes every minute) */
   overdueAdministrations: ReturnType<typeof useQuery<MedicationReminder[]>>;
 
   // Helpers
+  /** Clears the current administration session */
   clearSession: () => void;
+  /** True if there is an active administration session */
   isSessionActive: boolean;
 }
 
 /**
- * Medication Administration Hook
+ * Hook for managing medication administration with Five Rights verification.
+ *
+ * This hook provides complete medication administration workflow management including:
+ * - Session initialization and recovery
+ * - Client and server-side Five Rights verification
+ * - Administration recording with comprehensive safety checks
+ * - Refusal, missed, and held medication tracking
+ * - Real-time reminders and overdue tracking
+ *
+ * @param {string} [nurseId] - Optional nurse ID for filtering administrations and reminders
+ * @returns {UseMedicationAdministrationReturn} Administration management interface
+ *
+ * @safety This hook implements CRITICAL patient safety features:
+ * - No caching of administration records (always fresh data)
+ * - No optimistic updates (confirmation required)
+ * - No automatic retries (explicit user action required)
+ * - Mandatory Five Rights verification
+ * - Session recovery for interrupted workflows
+ * - Offline queue with sync verification
+ *
+ * @example
+ * ```tsx
+ * function MedicationAdministrationPage() {
+ *   const nurseId = useCurrentNurseId();
+ *   const {
+ *     initSession,
+ *     sessionData,
+ *     verifyFiveRights,
+ *     recordAdministration,
+ *     upcomingReminders
+ *   } = useMedicationAdministration(nurseId);
+ *
+ *   // 1. Initialize session when nurse scans prescription
+ *   const handleScanPrescription = async (prescriptionId: string) => {
+ *     await initSession.mutateAsync(prescriptionId);
+ *   };
+ *
+ *   // 2. Verify Five Rights
+ *   const handleVerification = () => {
+ *     const fiveRightsData = {
+ *       studentBarcode: scannedStudentBarcode,
+ *       medicationNDC: scannedMedicationNDC,
+ *       scannedDose: scannedDose,
+ *       route: selectedRoute,
+ *       administrationTime: new Date().toISOString(),
+ *       patientPhotoConfirmed: true,
+ *       allergyAcknowledged: true,
+ *     };
+ *
+ *     const result = verifyFiveRights(fiveRightsData);
+ *     if (!result.valid) {
+ *       alert(`Cannot proceed: ${result.errors.join(', ')}`);
+ *       return;
+ *     }
+ *   };
+ *
+ *   // 3. Record administration
+ *   const handleAdminister = async () => {
+ *     await recordAdministration.mutateAsync({
+ *       studentId: sessionData.studentId,
+ *       medicationId: sessionData.medicationId,
+ *       fiveRightsData,
+ *       // ... other fields
+ *     });
+ *   };
+ *
+ *   return <div>{/* UI */}</div>;
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Recording refusal
+ * const handleRefusal = async () => {
+ *   await recordRefusal.mutateAsync({
+ *     prescriptionId: prescription.id,
+ *     scheduledTime: scheduledTime,
+ *     reason: 'patient_refused',
+ *     notes: 'Patient stated feeling nauseous'
+ *   });
+ * };
+ * ```
+ *
+ * @see {@link MedicationSafetyError} for safety verification failures
+ * @see {@link AllergyWarningError} for allergy-related errors
  */
 export function useMedicationAdministration(nurseId?: string): UseMedicationAdministrationReturn {
   const queryClient = useQueryClient();

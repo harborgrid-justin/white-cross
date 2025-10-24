@@ -1,6 +1,26 @@
+/**
+ * Badge Component Module
+ *
+ * Status badges and labels for displaying categories, statuses, and metadata.
+ * Supports multiple variants, sizes, shapes, and optional dot indicators.
+ *
+ * @module components/ui/display/Badge
+ */
+
 import React from 'react';
 import { cn } from '../../../utils/cn';
 
+/**
+ * Props for the Badge component.
+ *
+ * @interface BadgeProps
+ * @extends {React.HTMLAttributes<HTMLSpanElement>}
+ *
+ * @property {('default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'danger' | 'info')} [variant='default'] - Color variant
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Badge size
+ * @property {('rounded' | 'pill' | 'square')} [shape='rounded'] - Border radius shape
+ * @property {boolean} [dot=false] - Show as status dot instead of filled badge
+ */
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
@@ -8,6 +28,53 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   dot?: boolean;
 }
 
+/**
+ * Badge component for status indicators, labels, and categorical information.
+ *
+ * Flexible badge component with multiple visual variants, sizes, and shapes.
+ * Can display as filled badge or minimal dot indicator.
+ *
+ * **Features:**
+ * - 8 semantic color variants
+ * - 3 size options (sm, md, lg)
+ * - 3 shape options (rounded, pill, square)
+ * - Dot mode for minimal status indicators
+ * - Dark mode support
+ * - Smooth transitions
+ *
+ * **Use Cases:**
+ * - Status indicators (active, pending, error)
+ * - Category tags
+ * - Count badges
+ * - User roles
+ * - Priority levels
+ *
+ * @component
+ * @param {BadgeProps} props - Badge component props
+ * @param {React.Ref<HTMLSpanElement>} ref - Forwarded ref
+ * @returns {JSX.Element} Rendered badge or dot indicator
+ *
+ * @example
+ * ```tsx
+ * // Success status badge
+ * <Badge variant="success">Active</Badge>
+ *
+ * // Warning badge with pill shape
+ * <Badge variant="warning" shape="pill">Pending</Badge>
+ *
+ * // Error badge, large size
+ * <Badge variant="error" size="lg">Failed</Badge>
+ *
+ * // Dot indicator for online status
+ * <Badge variant="success" dot>Online</Badge>
+ *
+ * // Info badge with square corners
+ * <Badge variant="info" shape="square">Beta</Badge>
+ *
+ * // Count badge
+ * <Badge variant="primary" shape="pill" size="sm">5</Badge>
+ * ```
+ */
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({
     className,

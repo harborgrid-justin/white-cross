@@ -20,7 +20,10 @@ import {
 import toast from 'react-hot-toast';
 
 /**
- * Reports mutation options interface
+ * Options for configuring reports mutation behavior.
+ *
+ * @property onSuccess - Callback invoked when mutation succeeds
+ * @property onError - Callback invoked when mutation fails
  */
 export interface ReportsMutationOptions {
   onSuccess?: (data: any) => void;
@@ -28,7 +31,37 @@ export interface ReportsMutationOptions {
 }
 
 /**
- * Main reports mutations hook
+ * Hook providing all reports mutation operations (generate, delete).
+ *
+ * Centralizes report mutation logic with automatic cache invalidation,
+ * error handling, and user feedback via toast notifications.
+ *
+ * @param options - Configuration options for mutation callbacks
+ * @returns Object containing mutation methods for report operations
+ *
+ * @remarks
+ * - Automatically invalidates relevant query caches after mutations
+ * - Shows toast notifications for user feedback
+ * - Uses optimistic error handling via useApiError hook
+ * - All mutations include loading, error, and success states
+ *
+ * @example
+ * ```typescript
+ * const { generate, delete: deleteReport } = useReportsMutations({
+ *   onSuccess: (data) => console.log('Operation succeeded', data),
+ *   onError: (error) => console.error('Operation failed', error)
+ * });
+ *
+ * // Generate a report
+ * generate.mutate({
+ *   templateId: 'monthly-incident-summary',
+ *   parameters: { month: '2025-01' },
+ *   format: 'pdf'
+ * });
+ *
+ * // Delete a report
+ * deleteReport.mutate('report-id-123');
+ * ```
  */
 export function useReportsMutations(options: ReportsMutationOptions = {}) {
   const queryClient = useQueryClient();
@@ -104,13 +137,92 @@ export function useReportsMutations(options: ReportsMutationOptions = {}) {
 }
 
 /**
- * Individual mutation hooks for convenience
+ * Hook for generating reports from templates.
+ *
+ * Convenience wrapper around useReportsMutations providing only the
+ * generate mutation. Supports multiple output formats (PDF, Excel, CSV)
+ * and delivery methods (download or email).
+ *
+ * @param options - Configuration options for mutation callbacks
+ * @returns Generate mutation object with mutate, mutateAsync, and state
+ *
+ * @remarks
+ * - Report generation is asynchronous - use generation status to monitor
+ * - Automatically invalidates reports list cache on success
+ * - Shows toast notification on success/failure
+ * - Supports both download and email delivery
+ *
+ * @example
+ * ```typescript
+ * const { mutate, isLoading, error } = useGenerateReport({
+ *   onSuccess: (result) => {
+ *     // result contains jobId for tracking generation status
+ *     console.log('Generation started:', result.jobId);
+ *   }
+ * });
+ *
+ * // Generate PDF report for download
+ * mutate({
+ *   templateId: 'student-health-summary',
+ *   parameters: {
+ *     studentId: '12345',
+ *     dateRange: { startDate: '2025-01-01', endDate: '2025-01-31' }
+ *   },
+ *   format: 'pdf',
+ *   deliveryMethod: 'download'
+ * });
+ *
+ * // Generate Excel report and email it
+ * mutate({
+ *   templateId: 'medication-log',
+ *   parameters: { month: '2025-01' },
+ *   format: 'excel',
+ *   deliveryMethod: 'email',
+ *   emailRecipients: ['nurse@school.edu']
+ * });
+ * ```
  */
 export function useGenerateReport(options: ReportsMutationOptions = {}) {
   const { generate } = useReportsMutations(options);
   return generate;
 }
 
+/**
+ * Hook for deleting generated reports.
+ *
+ * Convenience wrapper around useReportsMutations providing only the
+ * delete mutation. Removes report from cache and invalidates lists.
+ *
+ * @param options - Configuration options for mutation callbacks
+ * @returns Delete mutation object with mutate, mutateAsync, and state
+ *
+ * @remarks
+ * - Removes report from details cache immediately
+ * - Invalidates all report lists to reflect deletion
+ * - Shows toast notification on success/failure
+ * - Permanent deletion - no undo functionality
+ *
+ * @example
+ * ```typescript
+ * const { mutate: deleteReport, isLoading } = useDeleteReport({
+ *   onSuccess: () => {
+ *     navigate('/reports'); // Navigate away after deletion
+ *   }
+ * });
+ *
+ * // Delete a report
+ * deleteReport('report-id-123');
+ *
+ * // With async/await
+ * const { mutateAsync: deleteReportAsync } = useDeleteReport();
+ * try {
+ *   await deleteReportAsync('report-id-456');
+ *   console.log('Report deleted successfully');
+ * } catch (error) {
+ *   console.error('Failed to delete report:', error);
+ * }
+ * ```
+ */
 export function useDeleteReport(options: ReportsMutationOptions = {}) {
   const { delete: deleteReport } = useReportsMutations(options);
   return deleteReport;

@@ -37,12 +37,61 @@ const iconMap: Record<string, any> = {
 // SUB-COMPONENTS
 // ============================================================================
 
+/**
+ * Props for the NavItem component.
+ *
+ * @property {NavigationItem & { hasAccess?: boolean; isActive?: boolean }} item - Navigation item with access and active state
+ * @property {number} [depth=0] - Nesting depth for visual indentation
+ * @property {() => void} [onClick] - Optional callback when item is clicked
+ */
 interface NavItemProps {
   item: NavigationItem & { hasAccess?: boolean; isActive?: boolean }
   depth?: number
   onClick?: () => void
 }
 
+/**
+ * Navigation item component with support for nested children.
+ *
+ * Renders a single navigation link with:
+ * - Icon and label
+ * - Active state highlighting
+ * - Access control (disabled if no access)
+ * - Badge indicators (counts, alerts)
+ * - Expandable/collapsible children
+ * - Visual depth indication through indentation
+ *
+ * Features:
+ * - Hierarchical navigation with expand/collapse
+ * - Visual feedback for active routes
+ * - Badge support with color variants (error, warning, success)
+ * - Accessibility with ARIA attributes
+ * - Keyboard navigation support
+ * - Dark mode support
+ * - Smooth animations
+ *
+ * @param props - Component props
+ * @param props.item - Navigation item data including path, icon, name, and children
+ * @param props.depth - Nesting level for indentation (0 = top level)
+ * @param props.onClick - Callback when navigation occurs
+ * @returns JSX element representing the navigation item
+ *
+ * @example
+ * ```tsx
+ * <NavItem
+ *   item={{
+ *     id: 'students',
+ *     name: 'Students',
+ *     path: '/students',
+ *     icon: 'Users',
+ *     isActive: true,
+ *     hasAccess: true
+ *   }}
+ *   depth={0}
+ *   onClick={() => console.log('Navigated')}
+ * />
+ * ```
+ */
 const NavItem = memo(({ item, depth = 0, onClick }: NavItemProps) => {
   const [expanded, setExpanded] = useState(false)
   const Icon = iconMap[item.icon] || Home
@@ -138,11 +187,52 @@ NavItem.displayName = 'NavItem'
 // SIDEBAR SECTION COMPONENT
 // ============================================================================
 
+/**
+ * Props for the SidebarSection component.
+ *
+ * @property {NavigationSection} section - Section configuration with title and navigation items
+ * @property {() => void} [onItemClick] - Optional callback when any item in section is clicked
+ */
 interface SidebarSectionProps {
   section: NavigationSection
   onItemClick?: () => void
 }
 
+/**
+ * Sidebar section component for grouping related navigation items.
+ *
+ * Groups navigation items under a common section heading with:
+ * - Section title header
+ * - Optional collapse/expand functionality
+ * - Role-based access filtering
+ * - Active route highlighting
+ * - Automatic hiding if no accessible items
+ *
+ * Features:
+ * - Collapsible sections to manage navigation density
+ * - Automatic filtering based on user permissions
+ * - Active state management for items
+ * - Smooth expand/collapse animations
+ * - Accessible section headers
+ *
+ * @param props - Component props
+ * @param props.section - Section configuration including title, items, and collapse settings
+ * @param props.onItemClick - Callback when any navigation item is clicked
+ * @returns JSX element representing the navigation section, or null if no accessible items
+ *
+ * @example
+ * ```tsx
+ * <SidebarSection
+ *   section={{
+ *     title: 'Clinical',
+ *     items: [...],
+ *     collapsible: true,
+ *     defaultCollapsed: false
+ *   }}
+ *   onItemClick={() => setMobileMenuOpen(false)}
+ * />
+ * ```
+ */
 const SidebarSection = memo(({ section, onItemClick }: SidebarSectionProps) => {
   const { user } = useAuthContext()
   const location = useLocation()
@@ -210,11 +300,67 @@ SidebarSection.displayName = 'SidebarSection'
 // MAIN SIDEBAR COMPONENT
 // ============================================================================
 
+/**
+ * Props for the Sidebar component.
+ *
+ * @property {string} [className] - Optional CSS classes for the sidebar container
+ * @property {() => void} [onNavigate] - Optional callback when navigation occurs
+ */
 interface SidebarProps {
   className?: string
   onNavigate?: () => void
 }
 
+/**
+ * Main application sidebar component.
+ *
+ * Provides comprehensive navigation for all 21 domains in the application:
+ * - Clinical: Students, Health Records, Medications, Appointments
+ * - Operations: Billing, Inventory, Purchasing, Vendors
+ * - Communication: Messages, Documents, Reports, Incidents
+ * - Security & Compliance: Permissions, Roles, Audits
+ * - System: Settings, Integrations
+ *
+ * Layout Structure:
+ * - Application logo and branding at top
+ * - Quick Actions grid for common tasks
+ * - Categorized navigation sections
+ * - Recent items footer
+ *
+ * Features:
+ * - Role-based access control for all navigation items
+ * - Active route highlighting across nested items
+ * - Collapsible navigation sections
+ * - Quick action buttons for common workflows
+ * - Recent items tracking (max 5)
+ * - Icon-based visual hierarchy
+ * - Badge indicators for alerts and counts
+ * - Responsive design (desktop sidebar, mobile overlay)
+ * - Dark mode support
+ * - Smooth animations and transitions
+ * - Keyboard navigation support
+ * - ARIA labels for accessibility
+ *
+ * @param props - Component props
+ * @param props.className - Optional CSS classes for styling
+ * @param props.onNavigate - Callback triggered on navigation (e.g., to close mobile menu)
+ * @returns JSX element representing the sidebar navigation, or null if collapsed
+ *
+ * @example
+ * ```tsx
+ * // Desktop sidebar
+ * <Sidebar className="flex-1 h-full" />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Mobile sidebar with close on navigate
+ * <Sidebar
+ *   className="flex-1 h-full overflow-y-auto"
+ *   onNavigate={() => setMobileMenuOpen(false)}
+ * />
+ * ```
+ */
 export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
   const { user } = useAuthContext()
   const { recentItems, clearRecentItems, sidebarCollapsed } = useNavigation()

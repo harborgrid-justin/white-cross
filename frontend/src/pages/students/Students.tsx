@@ -1,21 +1,21 @@
 /**
  * Students Page - White Cross Healthcare Platform
  * Student management and overview
- * 
- * @fileoverview Students management page component
+ *
+ * @fileoverview Students management page component with role-based access control
  * @module pages/students/Students
  * @version 1.0.0
  */
 
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { 
-  Search, 
-  Plus, 
-  Filter, 
-  Download, 
-  Users, 
-  Edit, 
+import {
+  Search,
+  Plus,
+  Filter,
+  Download,
+  Users,
+  Edit,
   Eye,
   FileText,
   Calendar,
@@ -24,7 +24,26 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 
 /**
- * Student Interface
+ * Student data interface representing a student record in the system.
+ *
+ * @interface Student
+ * @property {string} id - Unique identifier for the student
+ * @property {string} firstName - Student's first name
+ * @property {string} lastName - Student's last name
+ * @property {string} studentNumber - School-assigned student identification number
+ * @property {string} grade - Current grade level (e.g., "9th", "10th")
+ * @property {string} dateOfBirth - Student's date of birth in ISO format
+ * @property {string} guardianName - Primary guardian/parent name
+ * @property {string} guardianPhone - Primary guardian contact phone number
+ * @property {string} emergencyContact - Emergency contact phone number
+ * @property {string[]} medicalConditions - Array of known medical conditions
+ * @property {string[]} allergies - Array of known allergies
+ * @property {boolean} isActive - Whether the student is currently active in the system
+ * @property {string} [lastVisit] - Date of last health office visit (optional)
+ *
+ * @remarks
+ * Security: Contains personally identifiable information (PII). Handle with care.
+ * HIPAA Compliance: Medical conditions and allergies are Protected Health Information (PHI).
  */
 interface Student {
   id: string
@@ -43,14 +62,48 @@ interface Student {
 }
 
 /**
- * Students Page Component
- * 
- * Features:
- * - Student search and filtering
- * - Student list with pagination
- * - Quick actions (add, edit, view)
- * - Export functionality
- * - Role-based permissions
+ * Students management page component with comprehensive student data management.
+ *
+ * Provides a centralized interface for viewing, searching, filtering, and managing
+ * student records with role-based access controls and quick actions for health
+ * records, appointments, and emergency contacts.
+ *
+ * @component
+ * @returns {React.FC} Rendered students management page
+ *
+ * @remarks
+ * Security: Implements role-based access control (RBAC) for different actions.
+ * HIPAA Compliance: Displays PHI (medical conditions, allergies) with appropriate
+ * access controls. Health record access requires NURSE, ADMIN, or COUNSELOR role.
+ *
+ * Permissions:
+ * - Create/Edit: Requires ADMIN or NURSE role
+ * - View Health Records: Requires ADMIN, NURSE, or COUNSELOR role
+ * - Export: Available to all authenticated users (should implement PHI filtering)
+ *
+ * Data Privacy:
+ * - All student data displayed is subject to FERPA regulations
+ * - Medical information visible requires appropriate role authorization
+ * - Export functionality should include PHI warning and audit logging
+ *
+ * @example
+ * ```tsx
+ * import Students from './pages/students/Students';
+ *
+ * function App() {
+ *   return <Students />;
+ * }
+ * ```
+ *
+ * @features
+ * - Real-time search across name and student number
+ * - Grade-level filtering
+ * - Pagination for large datasets (20 items per page)
+ * - Quick access to health records, appointments, emergency contacts
+ * - Role-based action visibility
+ * - Responsive table layout with mobile pagination
+ * - Medical condition and allergy indicators
+ * - Last visit date tracking
  */
 const Students: React.FC = () => {
   const { user } = useAuth()

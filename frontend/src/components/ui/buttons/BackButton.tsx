@@ -27,6 +27,26 @@ import { useNavigationState } from '../../../hooks/utilities/useRouteState';
 // COMPONENT PROPS
 // ============================================================================
 
+/**
+ * Props for the BackButton component.
+ *
+ * @interface BackButtonProps
+ *
+ * @property {string} [fallbackPath='/'] - Path to navigate to if browser history is unavailable
+ * @property {string} [label='Back'] - Text displayed next to the icon
+ * @property {('default' | 'ghost' | 'link')} [variant='default'] - Visual style variant
+ *   - default: Bordered button with background
+ *   - ghost: Transparent with hover background
+ *   - link: Text-only link appearance
+ * @property {('arrow' | 'chevron')} [iconVariant='arrow'] - Icon type to display
+ *   - arrow: Left arrow icon (ArrowLeft from lucide-react)
+ *   - chevron: Left chevron icon (ChevronLeft from lucide-react)
+ * @property {string} [className=''] - Additional CSS classes to apply
+ * @property {boolean} [showLabelOnMobile=false] - Whether to show label text on mobile screens
+ * @property {() => void} [onClick] - Custom click handler that overrides default navigation behavior
+ * @property {boolean} [disabled=false] - Whether the button is disabled
+ * @property {string} [dataTestId='back-button'] - Test identifier for automated testing
+ */
 interface BackButtonProps {
   /** Fallback path if no history available */
   fallbackPath?: string;
@@ -186,6 +206,22 @@ export default BackButton;
 // ICON-ONLY BACK BUTTON COMPONENT
 // ============================================================================
 
+/**
+ * Props for the IconBackButton component.
+ *
+ * @interface IconBackButtonProps
+ *
+ * @property {string} [fallbackPath='/'] - Path to navigate to if browser history is unavailable
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Button and icon size
+ *   - sm: 32px button, 16px icon
+ *   - md: 40px button, 20px icon
+ *   - lg: 48px button, 24px icon
+ * @property {() => void} [onClick] - Custom click handler that overrides default navigation behavior
+ * @property {boolean} [disabled=false] - Whether the button is disabled
+ * @property {string} [className=''] - Additional CSS classes to apply
+ * @property {string} [title='Go back'] - Tooltip text and aria-label for accessibility
+ * @property {string} [dataTestId='icon-back-button'] - Test identifier for automated testing
+ */
 interface IconBackButtonProps {
   /** Fallback path if no history available */
   fallbackPath?: string;
@@ -204,12 +240,47 @@ interface IconBackButtonProps {
 }
 
 /**
- * Icon-only back button for compact spaces.
+ * Icon-only back button for compact spaces and toolbar usage.
+ *
+ * A circular button with just an arrow icon, ideal for headers, toolbars,
+ * and space-constrained layouts. Provides the same navigation functionality
+ * as BackButton but in a more compact form factor.
+ *
+ * **Features:**
+ * - Circular design with arrow icon
+ * - Three size options (sm, md, lg)
+ * - State restoration on navigation
+ * - Accessible with title/aria-label
+ * - Focus ring for keyboard navigation
+ * - Hover state with background
+ *
+ * **Accessibility:**
+ * - title attribute for tooltip
+ * - aria-label for screen readers
+ * - Visible focus ring
+ * - Disabled state support
+ *
+ * @component
+ * @param {IconBackButtonProps} props - Icon back button props
+ * @returns {JSX.Element} Rendered circular back button
  *
  * @example
  * ```tsx
+ * // Default medium size
  * <IconBackButton title="Go back" />
+ *
+ * // Small size for compact header
+ * <IconBackButton size="sm" fallbackPath="/dashboard" />
+ *
+ * // Large size with custom handler
+ * <IconBackButton
+ *   size="lg"
+ *   onClick={handleCustomBack}
+ *   title="Return to previous page"
+ * />
  * ```
+ *
+ * @see {@link BackButton} for full-featured back button with label
  */
 // Memoized IconBackButton component
 export const IconBackButton = React.memo<IconBackButtonProps>(({
@@ -292,6 +363,15 @@ IconBackButton.displayName = 'IconBackButton';
 // BACK BUTTON WITH CONFIRMATION
 // ============================================================================
 
+/**
+ * Props for the BackButtonWithConfirmation component.
+ *
+ * @interface BackButtonWithConfirmationProps
+ * @extends {BackButtonProps}
+ *
+ * @property {string} [confirmMessage='Are you sure you want to go back? Any unsaved changes will be lost.'] - Message displayed in confirmation dialog
+ * @property {boolean} [requireConfirmation=false] - Whether to show confirmation dialog before navigating
+ */
 interface BackButtonWithConfirmationProps extends BackButtonProps {
   /** Confirmation message */
   confirmMessage?: string;
@@ -300,15 +380,57 @@ interface BackButtonWithConfirmationProps extends BackButtonProps {
 }
 
 /**
- * BackButton with optional confirmation for unsaved changes.
+ * BackButton with optional confirmation dialog for unsaved changes.
+ *
+ * Extends BackButton with conditional confirmation prompt to prevent
+ * accidental navigation away from forms or pages with unsaved data.
+ * Uses native browser confirm() dialog for immediate user feedback.
+ *
+ * **Features:**
+ * - Conditional confirmation based on requireConfirmation prop
+ * - Customizable confirmation message
+ * - All standard BackButton features
+ * - Native browser dialog (no additional components needed)
+ *
+ * **Use Cases:**
+ * - Forms with unsaved changes
+ * - Multi-step processes
+ * - Data entry workflows
+ * - Draft content editing
+ *
+ * @component
+ * @param {BackButtonWithConfirmationProps} props - Back button with confirmation props
+ * @returns {JSX.Element} Rendered back button with confirmation capability
  *
  * @example
  * ```tsx
+ * // Conditional confirmation based on form state
+ * const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+ *
  * <BackButtonWithConfirmation
  *   requireConfirmation={hasUnsavedChanges}
  *   confirmMessage="You have unsaved changes. Are you sure you want to go back?"
+ *   fallbackPath="/students"
+ * />
+ *
+ * // Always require confirmation
+ * <BackButtonWithConfirmation
+ *   requireConfirmation={true}
+ *   confirmMessage="Exit without saving?"
+ *   variant="ghost"
+ * />
+ *
+ * // Custom handler after confirmation
+ * <BackButtonWithConfirmation
+ *   requireConfirmation={isDirty}
+ *   onClick={() => {
+ *     // Custom cleanup before navigation
+ *     clearForm();
+ *   }}
  * />
  * ```
+ *
+ * @see {@link BackButton} for base back button component
  */
 // Memoized BackButtonWithConfirmation component
 export const BackButtonWithConfirmation = React.memo<BackButtonWithConfirmationProps>(({

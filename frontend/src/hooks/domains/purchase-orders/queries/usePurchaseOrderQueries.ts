@@ -1,3 +1,21 @@
+/**
+ * Purchase Order Query Hooks
+ *
+ * Provides comprehensive React Query hooks for fetching purchase order data including:
+ * - Purchase orders with filtering and pagination
+ * - Line items and order details
+ * - Approval workflows and pending approvals
+ * - Receipts and receiving history
+ * - Vendor quotes and comparisons
+ * - Analytics and performance metrics
+ * - Dashboard aggregations and reports
+ *
+ * All queries leverage React Query's caching and automatic revalidation.
+ * Cache configuration is defined in PURCHASE_ORDERS_CACHE_CONFIG.
+ *
+ * @module hooks/domains/purchase-orders/queries
+ */
+
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import {
   purchaseOrderKeys,
@@ -9,7 +27,23 @@ import {
   POAnalytics,
 } from '../config';
 
-// Additional interfaces needed for queries
+/**
+ * Vendor quote data structure for purchase order comparisons.
+ *
+ * @interface POVendorQuote
+ * @property {string} id - Unique quote identifier
+ * @property {string} purchaseOrderId - Associated purchase order ID
+ * @property {string} vendorId - Vendor identifier
+ * @property {string} vendorName - Vendor display name
+ * @property {string} quoteNumber - Vendor's quote/proposal number
+ * @property {number} totalAmount - Total quoted amount
+ * @property {string} validUntil - Quote expiration date (ISO format)
+ * @property {string} status - Quote status (PENDING, ACCEPTED, REJECTED, EXPIRED)
+ * @property {POLineItem[]} lineItems - Quoted line items with pricing
+ * @property {string} [notes] - Additional quote notes or terms
+ * @property {string} createdAt - Quote creation timestamp
+ * @property {string} updatedAt - Last update timestamp
+ */
 interface POVendorQuote {
   id: string;
   purchaseOrderId: string;
@@ -193,6 +227,49 @@ export const useApprovalWorkflowDetails = (
   });
 };
 
+/**
+ * Hook for fetching pending approvals assigned to a specific user.
+ *
+ * Automatically refetches every 30 seconds to ensure real-time approval visibility.
+ * Critical for approval workflows where timely action is required.
+ *
+ * Purchase Order Workflow States:
+ * - DRAFT → PENDING_APPROVAL (via submitForApproval)
+ * - PENDING_APPROVAL → APPROVED (via approve)
+ * - PENDING_APPROVAL → REJECTED (via reject)
+ * - APPROVED → SENT (via sendToVendor)
+ * - SENT → ACKNOWLEDGED (vendor confirms)
+ * - ACKNOWLEDGED → RECEIVED (items received)
+ * - RECEIVED → CLOSED (order complete)
+ *
+ * Approval Levels:
+ * - Level 1: Manager approval (typically < $5,000)
+ * - Level 2: Director approval (typically $5,000 - $25,000)
+ * - Level 3: VP approval (typically > $25,000)
+ *
+ * @param {string} userId - User ID to fetch pending approvals for
+ * @param {UseQueryOptions} [options] - React Query options for customization
+ * @returns React Query result with pending approval workflows
+ *
+ * @example
+ * ```tsx
+ * const { data: pendingApprovals, isLoading } = usePendingApprovals(currentUserId);
+ *
+ * return (
+ *   <div>
+ *     <h2>Pending Approvals ({pendingApprovals?.length || 0})</h2>
+ *     {pendingApprovals?.map(approval => (
+ *       <ApprovalCard
+ *         key={approval.id}
+ *         approval={approval}
+ *         onApprove={handleApprove}
+ *         onReject={handleReject}
+ *       />
+ *     ))}
+ *   </div>
+ * );
+ * ```
+ */
 export const usePendingApprovals = (
   userId: string,
   options?: UseQueryOptions<POApprovalWorkflow[], Error>
