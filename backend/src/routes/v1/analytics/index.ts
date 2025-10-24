@@ -39,6 +39,7 @@ export const metadata = {
     'Appointment analytics',
     'Real-time dashboards',
     'Custom report generation',
-    'Compliance reporting'
+    'Compliance reporting',
+    'Module metadata endpoint'
   ]
 };

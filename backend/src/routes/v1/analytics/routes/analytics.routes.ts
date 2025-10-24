@@ -30,6 +30,87 @@ import {
 } from '../validators/analytics.validators';
 
 /**
+ * BASE METADATA ROUTE
+ */
+
+const getAnalyticsMetadataRoute: ServerRoute = {
+  method: 'GET',
+  path: '/api/v1/analytics',
+  handler: async (request, h) => {
+    return h.response({
+      success: true,
+      data: {
+        module: 'Analytics',
+        version: '1.0.0',
+        description: 'Comprehensive health metrics, analytics, and reporting for school healthcare operations',
+        endpoints: 17,
+        categories: [
+          {
+            name: 'Health Metrics & Trends',
+            endpoints: 4,
+            description: 'Aggregated health data and trend analysis'
+          },
+          {
+            name: 'Incident Analytics',
+            endpoints: 2,
+            description: 'Safety incident patterns and location-based analysis'
+          },
+          {
+            name: 'Medication Analytics',
+            endpoints: 2,
+            description: 'Medication usage and adherence tracking'
+          },
+          {
+            name: 'Appointment Analytics',
+            endpoints: 2,
+            description: 'Appointment trends and no-show rate analysis'
+          },
+          {
+            name: 'Dashboards',
+            endpoints: 3,
+            description: 'Real-time operational dashboards for nurses and admins'
+          },
+          {
+            name: 'Custom Reports',
+            endpoints: 2,
+            description: 'Flexible custom report generation and retrieval'
+          }
+        ],
+        capabilities: [
+          'Health metrics aggregation',
+          'Time-series trend analysis',
+          'Incident pattern identification',
+          'Medication usage tracking',
+          'Adherence monitoring',
+          'Appointment analytics',
+          'Real-time dashboards',
+          'Custom report generation',
+          'Compliance reporting',
+          'Predictive insights'
+        ],
+        authentication: 'JWT required for all endpoints',
+        compliance: 'HIPAA-compliant with PHI protection'
+      }
+    }).code(200);
+  },
+  options: {
+    auth: false,
+    tags: ['api', 'Analytics', 'Metadata', 'v1'],
+    description: 'Get analytics module metadata and available endpoints',
+    notes: 'Returns information about the analytics module including available endpoint categories, capabilities, and authentication requirements. No authentication required for metadata access.',
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '200': {
+            description: 'Analytics module metadata retrieved successfully'
+          }
+        }
+      }
+    }
+  }
+};
+
+/**
  * HEALTH METRICS & TRENDS ROUTES
  */
 
@@ -428,6 +509,9 @@ const getGeneratedReportRoute: ServerRoute = {
  */
 
 export const analyticsRoutes: ServerRoute[] = [
+  // Base metadata (1 route)
+  getAnalyticsMetadataRoute,
+
   // Health metrics & trends (4 routes)
   getHealthMetricsRoute,
   getHealthTrendsRoute,

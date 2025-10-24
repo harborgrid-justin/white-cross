@@ -29,6 +29,26 @@ import {
   policyIdParamSchema,
   signatureIdParamSchema
 } from '../validators/compliance.validators';
+import {
+  ComplianceReportListResponseSchema,
+  ComplianceReportResponseSchema,
+  GeneratedComplianceReportResponseSchema,
+  ChecklistListResponseSchema,
+  ChecklistResponseSchema,
+  PolicyListResponseSchema,
+  PolicyResponseSchema,
+  PolicyAcknowledgmentResponseSchema,
+  ConsentFormListResponseSchema,
+  ConsentFormResponseSchema,
+  ConsentRecordedResponseSchema,
+  StudentConsentsResponseSchema,
+  ConsentWithdrawalResponseSchema,
+  ComplianceStatisticsResponseSchema,
+  ErrorResponseSchema,
+  ValidationErrorResponseSchema,
+  DeleteSuccessResponseSchema,
+  UpdateSuccessResponseSchema
+} from '../schemas/compliance.response.schemas';
 
 /**
  * COMPLIANCE REPORT ROUTES
@@ -49,9 +69,18 @@ const listComplianceReportsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Compliance reports retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Compliance Officer or Admin only' }
+          '200': {
+            description: 'Compliance reports retrieved successfully with pagination',
+            schema: ComplianceReportListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Compliance Officer or Admin role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -73,9 +102,18 @@ const getComplianceReportByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Compliance report retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Compliance report not found' }
+          '200': {
+            description: 'Compliance report retrieved successfully',
+            schema: ComplianceReportResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Compliance report not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -97,10 +135,22 @@ const createComplianceReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Compliance report created successfully' },
-          '400': { description: 'Validation error - Invalid report data' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Compliance Officer only' }
+          '201': {
+            description: 'Compliance report created successfully',
+            schema: ComplianceReportResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid report data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Compliance Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -123,10 +173,22 @@ const updateComplianceReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Compliance report updated successfully' },
-          '400': { description: 'Validation error - Invalid update data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Compliance report not found' }
+          '200': {
+            description: 'Compliance report updated successfully',
+            schema: UpdateSuccessResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Compliance report not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -148,11 +210,26 @@ const deleteComplianceReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Compliance report deleted successfully' },
-          '400': { description: 'Cannot delete submitted report - archive instead' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin only' },
-          '404': { description: 'Compliance report not found' }
+          '200': {
+            description: 'Compliance report deleted successfully',
+            schema: DeleteSuccessResponseSchema
+          },
+          '400': {
+            description: 'Cannot delete submitted report - archive instead',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin role required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Compliance report not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -174,10 +251,22 @@ const generateComplianceReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Compliance report generated successfully' },
-          '400': { description: 'Validation error - Invalid generation parameters' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Compliance Officer only' }
+          '201': {
+            description: 'Compliance report generated successfully',
+            schema: GeneratedComplianceReportResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid generation parameters',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Compliance Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -203,8 +292,14 @@ const listChecklistsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Compliance checklists retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' }
+          '200': {
+            description: 'Compliance checklists retrieved successfully with pagination',
+            schema: ChecklistListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -226,9 +321,18 @@ const getChecklistByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Checklist item retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Checklist item not found' }
+          '200': {
+            description: 'Checklist item retrieved successfully',
+            schema: ChecklistResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Checklist item not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -250,10 +354,22 @@ const createChecklistRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Checklist item created successfully' },
-          '400': { description: 'Validation error - Invalid checklist data' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Compliance Officer only' }
+          '201': {
+            description: 'Checklist item created successfully',
+            schema: ChecklistResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid checklist data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Compliance Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -276,10 +392,22 @@ const updateChecklistRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Checklist item updated successfully' },
-          '400': { description: 'Validation error - Invalid update data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Checklist item not found' }
+          '200': {
+            description: 'Checklist item updated successfully',
+            schema: UpdateSuccessResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Checklist item not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -301,11 +429,26 @@ const deleteChecklistRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Checklist item deleted successfully' },
-          '400': { description: 'Cannot delete completed checklist item' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Compliance Officer or Admin only' },
-          '404': { description: 'Checklist item not found' }
+          '200': {
+            description: 'Checklist item deleted successfully',
+            schema: DeleteSuccessResponseSchema
+          },
+          '400': {
+            description: 'Cannot delete completed checklist item',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Compliance Officer or Admin role required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Checklist item not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }

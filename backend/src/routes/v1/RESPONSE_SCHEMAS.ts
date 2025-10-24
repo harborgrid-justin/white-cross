@@ -615,6 +615,331 @@ export const CustomReportResponseSchema = Joi.object({
 
 /**
  * ============================================================================
+ * COMMUNICATIONS MODULE SCHEMAS
+ * ============================================================================
+ */
+
+/**
+ * Message Object Schema
+ */
+export const MessageSchema = Joi.object({
+  id: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174009').description('Message UUID'),
+  subject: Joi.string().optional().example('Medication Reminder').description('Message subject'),
+  content: Joi.string().example('Please remember to administer asthma medication at 2 PM').description('Message content'),
+  priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').example('HIGH').description('Message priority'),
+  category: Joi.string()
+    .valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE')
+    .example('MEDICATION_REMINDER')
+    .description('Message category'),
+  status: Joi.string().valid('DRAFT', 'SCHEDULED', 'SENT', 'DELIVERED', 'FAILED', 'CANCELLED').example('SENT').description('Message status'),
+  channels: Joi.array().items(Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE')).example(['EMAIL', 'SMS']).description('Communication channels'),
+  senderId: Joi.string().uuid().description('Sender user ID'),
+  senderName: Joi.string().optional().example('Nurse Jane').description('Sender name'),
+  recipientCount: Joi.number().integer().example(1).description('Total recipient count'),
+  deliveryStatus: Joi.object({
+    sent: Joi.number().integer().example(1).description('Messages sent'),
+    delivered: Joi.number().integer().example(1).description('Messages delivered'),
+    failed: Joi.number().integer().example(0).description('Messages failed'),
+    pending: Joi.number().integer().example(0).description('Messages pending')
+  }).optional().description('Delivery status summary'),
+  templateId: Joi.string().uuid().optional().description('Template ID used'),
+  scheduledAt: Joi.date().iso().optional().example('2025-10-23T14:00:00Z').description('Scheduled delivery time'),
+  sentAt: Joi.date().iso().optional().example('2025-10-23T14:00:05Z').description('Actual send time'),
+  attachments: Joi.array().items(Joi.object({
+    filename: Joi.string().example('report.pdf'),
+    url: Joi.string().uri().example('https://storage.example.com/attachments/report.pdf'),
+    mimeType: Joi.string().example('application/pdf'),
+    size: Joi.number().integer().example(245760).description('Size in bytes')
+  })).optional().description('Message attachments'),
+  createdAt: Joi.date().iso().example('2025-10-23T13:55:00Z').description('Creation timestamp'),
+  updatedAt: Joi.date().iso().example('2025-10-23T14:00:00Z').description('Last update timestamp')
+}).label('Message');
+
+/**
+ * Message Template Schema
+ */
+export const MessageTemplateSchema = Joi.object({
+  id: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174010').description('Template UUID'),
+  name: Joi.string().example('Medication Reminder Template').description('Template name'),
+  subject: Joi.string().optional().example('Medication Administration Reminder').description('Template subject'),
+  content: Joi.string().example('Please remember to administer {{medicationName}} to {{studentName}} at {{time}}').description('Template content with variables'),
+  type: Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE').example('EMAIL').description('Primary message type'),
+  category: Joi.string()
+    .valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE')
+    .example('MEDICATION_REMINDER')
+    .description('Template category'),
+  variables: Joi.array().items(Joi.string()).example(['medicationName', 'studentName', 'time']).description('Template variables'),
+  isActive: Joi.boolean().example(true).description('Template active status'),
+  usageCount: Joi.number().integer().optional().example(145).description('Times template has been used'),
+  createdBy: Joi.string().uuid().optional().description('Creator user ID'),
+  createdAt: Joi.date().iso().example('2025-09-01T10:00:00Z').description('Creation timestamp'),
+  updatedAt: Joi.date().iso().example('2025-10-15T14:30:00Z').description('Last update timestamp')
+}).label('MessageTemplate');
+
+/**
+ * Broadcast Message Schema
+ */
+export const BroadcastSchema = Joi.object({
+  id: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174011').description('Broadcast UUID'),
+  subject: Joi.string().optional().example('Emergency Weather Alert').description('Broadcast subject'),
+  content: Joi.string().example('School will close at 1 PM today due to severe weather conditions').description('Broadcast content'),
+  priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').example('URGENT').description('Broadcast priority'),
+  category: Joi.string()
+    .valid('EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE')
+    .example('EMERGENCY')
+    .description('Broadcast category'),
+  status: Joi.string().valid('DRAFT', 'SCHEDULED', 'SENDING', 'SENT', 'FAILED', 'CANCELLED').example('SENT').description('Broadcast status'),
+  channels: Joi.array().items(Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE')).example(['EMAIL', 'SMS', 'PUSH_NOTIFICATION']).description('Communication channels'),
+  audience: Joi.object({
+    grades: Joi.array().items(Joi.string()).optional().example(['6', '7', '8']).description('Target grade levels'),
+    nurseIds: Joi.array().items(Joi.string().uuid()).optional().description('Target nurse IDs'),
+    studentIds: Joi.array().items(Joi.string().uuid()).optional().description('Specific student IDs'),
+    includeEmergencyContacts: Joi.boolean().optional().example(true).description('Include emergency contacts'),
+    includeParents: Joi.boolean().optional().example(true).description('Include parents'),
+    schoolIds: Joi.array().items(Joi.string().uuid()).optional().description('Target school IDs')
+  }).description('Audience targeting criteria'),
+  senderId: Joi.string().uuid().description('Sender user ID'),
+  senderName: Joi.string().optional().example('District Administrator').description('Sender name'),
+  recipientCount: Joi.number().integer().example(450).description('Total recipient count'),
+  deliveryStatus: Joi.object({
+    sent: Joi.number().integer().example(450).description('Messages sent'),
+    delivered: Joi.number().integer().example(438).description('Messages delivered'),
+    failed: Joi.number().integer().example(12).description('Messages failed'),
+    pending: Joi.number().integer().example(0).description('Messages pending')
+  }).description('Delivery status summary'),
+  templateId: Joi.string().uuid().optional().description('Template ID used'),
+  scheduledAt: Joi.date().iso().optional().description('Scheduled delivery time'),
+  sentAt: Joi.date().iso().optional().example('2025-10-23T12:30:00Z').description('Actual send time'),
+  createdAt: Joi.date().iso().example('2025-10-23T12:25:00Z').description('Creation timestamp'),
+  updatedAt: Joi.date().iso().example('2025-10-23T12:35:00Z').description('Last update timestamp')
+}).label('Broadcast');
+
+/**
+ * Delivery Record Schema
+ */
+export const DeliveryRecordSchema = Joi.object({
+  id: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174012').description('Delivery record UUID'),
+  messageId: Joi.string().uuid().description('Message UUID'),
+  recipientId: Joi.string().uuid().description('Recipient user ID'),
+  recipientName: Joi.string().optional().example('John Doe').description('Recipient name'),
+  recipientType: Joi.string().valid('STUDENT', 'EMERGENCY_CONTACT', 'PARENT', 'NURSE', 'ADMIN').example('PARENT').description('Recipient type'),
+  channel: Joi.string().valid('EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE').example('EMAIL').description('Delivery channel'),
+  status: Joi.string().valid('PENDING', 'SENT', 'DELIVERED', 'FAILED', 'BOUNCED').example('DELIVERED').description('Delivery status'),
+  contactInfo: Joi.string().optional().example('parent@example.com').description('Contact information used'),
+  sentAt: Joi.date().iso().optional().example('2025-10-23T14:00:05Z').description('Send timestamp'),
+  deliveredAt: Joi.date().iso().optional().example('2025-10-23T14:00:08Z').description('Delivery timestamp'),
+  failureReason: Joi.string().optional().description('Failure reason if status is FAILED'),
+  externalId: Joi.string().optional().example('ext-msg-12345').description('External provider message ID'),
+  retryCount: Joi.number().integer().optional().example(0).description('Retry attempt count')
+}).label('DeliveryRecord');
+
+/**
+ * Scheduled Message Schema
+ */
+export const ScheduledMessageSchema = Joi.object({
+  id: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174013').description('Scheduled message UUID'),
+  subject: Joi.string().example('Weekly Health Reminder').description('Message subject'),
+  body: Joi.string().example('Remember to update immunization records by Friday').description('Message body'),
+  recipientType: Joi.string()
+    .valid('ALL_PARENTS', 'SPECIFIC_USERS', 'STUDENT_PARENTS', 'GRADE_LEVEL', 'CUSTOM_GROUP')
+    .example('ALL_PARENTS')
+    .description('Recipient type'),
+  recipientCount: Joi.number().integer().example(325).description('Estimated recipient count'),
+  channels: Joi.array().items(Joi.string().valid('EMAIL', 'SMS', 'PUSH', 'PORTAL')).example(['EMAIL']).description('Delivery channels'),
+  scheduledFor: Joi.date().iso().example('2025-10-25T09:00:00Z').description('Scheduled delivery time'),
+  timezone: Joi.string().example('America/New_York').description('Timezone'),
+  priority: Joi.string().valid('LOW', 'NORMAL', 'HIGH').example('NORMAL').description('Message priority'),
+  status: Joi.string().valid('PENDING', 'PROCESSING', 'SENT', 'FAILED', 'CANCELLED', 'PAUSED').example('PENDING').description('Schedule status'),
+  scheduleType: Joi.string().valid('ONE_TIME', 'RECURRING', 'CAMPAIGN').example('ONE_TIME').description('Schedule type'),
+  recurrence: Joi.object({
+    pattern: Joi.string().valid('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'CUSTOM').example('WEEKLY'),
+    interval: Joi.number().integer().example(1).description('Repeat every N units'),
+    endDate: Joi.date().iso().optional(),
+    endAfterOccurrences: Joi.number().integer().optional()
+  }).optional().description('Recurrence pattern'),
+  templateId: Joi.string().uuid().optional().description('Template ID'),
+  templateVariables: Joi.object().pattern(Joi.string(), Joi.string()).optional().description('Template variables'),
+  throttle: Joi.object({
+    maxPerMinute: Joi.number().integer().example(100),
+    maxPerHour: Joi.number().integer().example(1000)
+  }).optional().description('Rate limiting'),
+  createdBy: Joi.string().uuid().description('Creator user ID'),
+  createdAt: Joi.date().iso().example('2025-10-23T10:00:00Z').description('Creation timestamp'),
+  updatedAt: Joi.date().iso().example('2025-10-23T10:00:00Z').description('Last update timestamp')
+}).label('ScheduledMessage');
+
+/**
+ * Communication Statistics Schema
+ */
+export const CommunicationStatisticsSchema = Joi.object({
+  totalMessages: Joi.number().integer().example(1847).description('Total messages sent'),
+  byCategory: Joi.object().pattern(Joi.string(), Joi.number()).example({
+    'EMERGENCY': 12,
+    'HEALTH_UPDATE': 245,
+    'APPOINTMENT_REMINDER': 520,
+    'MEDICATION_REMINDER': 680,
+    'GENERAL': 290,
+    'INCIDENT_NOTIFICATION': 85,
+    'COMPLIANCE': 15
+  }).description('Messages by category'),
+  byPriority: Joi.object().pattern(Joi.string(), Joi.number()).example({
+    'LOW': 450,
+    'MEDIUM': 920,
+    'HIGH': 397,
+    'URGENT': 80
+  }).description('Messages by priority'),
+  byChannel: Joi.object().pattern(Joi.string(), Joi.number()).example({
+    'EMAIL': 1650,
+    'SMS': 890,
+    'PUSH_NOTIFICATION': 425,
+    'VOICE': 12
+  }).description('Messages by channel'),
+  deliverySuccessRate: Joi.number().example(96.8).description('Overall delivery success rate percentage'),
+  averageDeliveryTimeSeconds: Joi.number().example(3.2).description('Average delivery time in seconds'),
+  failureRate: Joi.number().example(3.2).description('Overall failure rate percentage'),
+  bounceRate: Joi.number().example(1.5).description('Overall bounce rate percentage'),
+  period: Joi.object({
+    startDate: Joi.date().iso().example('2025-10-01T00:00:00Z'),
+    endDate: Joi.date().iso().example('2025-10-23T23:59:59Z')
+  }).description('Statistics period'),
+  trends: Joi.object({
+    messageTrend: Joi.string().valid('INCREASING', 'DECREASING', 'STABLE').example('STABLE'),
+    changePercent: Joi.number().example(2.5).description('Change percentage from previous period')
+  }).optional().description('Trend analysis')
+}).label('CommunicationStatistics');
+
+/**
+ * Bulk Message Result Schema
+ */
+export const BulkMessageResultSchema = Joi.object({
+  messageId: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174014').description('Bulk message UUID'),
+  recipientsProcessed: Joi.number().integer().example(150).description('Total recipients processed'),
+  recipientsSuccessful: Joi.number().integer().example(147).description('Successful deliveries'),
+  recipientsFailed: Joi.number().integer().example(3).description('Failed deliveries'),
+  status: Joi.string().valid('QUEUED', 'PROCESSING', 'COMPLETED', 'PARTIAL_FAILURE', 'FAILED').example('COMPLETED').description('Overall status'),
+  failedRecipients: Joi.array().items(Joi.object({
+    recipientId: Joi.string().uuid(),
+    recipientType: Joi.string(),
+    contactMethod: Joi.string(),
+    error: Joi.string()
+  })).optional().description('Failed recipient details'),
+  estimatedCompletionTime: Joi.date().iso().optional().description('Estimated completion time'),
+  createdAt: Joi.date().iso().example('2025-10-23T14:00:00Z').description('Creation timestamp')
+}).label('BulkMessageResult');
+
+/**
+ * Communications Response Schemas
+ */
+export const MessageResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    message: MessageSchema
+  })
+}).label('MessageResponse');
+
+export const MessageListResponseSchema = createPaginatedResponseSchema(MessageSchema, 'MessageListResponse');
+
+export const MessageTemplateResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    template: MessageTemplateSchema
+  })
+}).label('MessageTemplateResponse');
+
+export const MessageTemplateListResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    templates: Joi.array().items(MessageTemplateSchema)
+  })
+}).label('MessageTemplateListResponse');
+
+export const BroadcastResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    broadcast: BroadcastSchema
+  })
+}).label('BroadcastResponse');
+
+export const BroadcastListResponseSchema = createPaginatedResponseSchema(BroadcastSchema, 'BroadcastListResponse');
+
+export const DeliveryStatusResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    messageId: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174009'),
+    summary: Joi.object({
+      total: Joi.number().integer().example(5),
+      sent: Joi.number().integer().example(5),
+      delivered: Joi.number().integer().example(4),
+      failed: Joi.number().integer().example(1),
+      pending: Joi.number().integer().example(0)
+    }),
+    byChannel: Joi.object().pattern(Joi.string(), Joi.object({
+      sent: Joi.number().integer(),
+      delivered: Joi.number().integer(),
+      failed: Joi.number().integer()
+    })).optional(),
+    deliveries: Joi.array().items(DeliveryRecordSchema)
+  })
+}).label('DeliveryStatusResponse');
+
+export const BroadcastRecipientsResponseSchema = createPaginatedResponseSchema(DeliveryRecordSchema, 'BroadcastRecipientsResponse');
+
+export const BroadcastDeliveryReportResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    broadcastId: Joi.string().uuid().example('123e4567-e89b-12d3-a456-426614174011'),
+    summary: Joi.object({
+      total: Joi.number().integer().example(450),
+      sent: Joi.number().integer().example(450),
+      delivered: Joi.number().integer().example(438),
+      failed: Joi.number().integer().example(12),
+      pending: Joi.number().integer().example(0)
+    }),
+    byChannel: Joi.object().pattern(Joi.string(), Joi.object({
+      sent: Joi.number().integer(),
+      delivered: Joi.number().integer(),
+      failed: Joi.number().integer()
+    })),
+    byRecipientType: Joi.object().pattern(Joi.string(), Joi.object({
+      count: Joi.number().integer(),
+      delivered: Joi.number().integer(),
+      failed: Joi.number().integer()
+    })),
+    deliveries: Joi.array().items(DeliveryRecordSchema).description('Individual delivery records')
+  })
+}).label('BroadcastDeliveryReportResponse');
+
+export const ScheduledMessageResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    scheduledMessage: ScheduledMessageSchema
+  })
+}).label('ScheduledMessageResponse');
+
+export const ScheduledMessageListResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    scheduledMessages: Joi.array().items(ScheduledMessageSchema),
+    count: Joi.number().integer().example(15).description('Total count')
+  })
+}).label('ScheduledMessageListResponse');
+
+export const CommunicationStatisticsResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    statistics: CommunicationStatisticsSchema
+  })
+}).label('CommunicationStatisticsResponse');
+
+export const BulkMessageResponseSchema = Joi.object({
+  success: Joi.boolean().example(true),
+  data: Joi.object({
+    result: BulkMessageResultSchema
+  })
+}).label('BulkMessageResponse');
+
+/**
+ * ============================================================================
  * USAGE EXAMPLE
  * ============================================================================
  *

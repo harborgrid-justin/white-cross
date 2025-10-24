@@ -1,10 +1,17 @@
 /**
- * Health Records Routes
+ * Health Records Routes - Enhanced with Comprehensive Swagger Documentation
  * HTTP endpoints for comprehensive health record management
  * All routes prefixed with /api/v1/health-records
+ *
+ * Swagger/OpenAPI Documentation:
+ * - Complete request/response schemas for all 27 health record endpoints
+ * - HIPAA compliance notes for all PHI-protected endpoints
+ * - Comprehensive error responses and status codes
+ * - Detailed examples for allergies, conditions, vaccinations, and vitals
  */
 
 import { ServerRoute } from '@hapi/hapi';
+import Joi from 'joi';
 import { asyncHandler } from '../../../shared/utils';
 import { HealthRecordsController } from '../controllers/healthRecords.controller';
 import {
@@ -21,6 +28,137 @@ import {
   studentIdParamSchema,
   recordIdParamSchema
 } from '../validators/healthRecords.validators';
+import {
+  HealthRecordResponseSchema,
+  HealthRecordListResponseSchema,
+  AllergyResponseSchema,
+  AllergyListResponseSchema,
+  ChronicConditionResponseSchema,
+  ChronicConditionListResponseSchema,
+  VaccinationResponseSchema,
+  VaccinationListResponseSchema,
+  VitalsResponseSchema,
+  VitalsHistoryResponseSchema,
+  MedicalSummaryResponseSchema,
+  ImmunizationStatusResponseSchema,
+  DeleteSuccessResponseSchema,
+  ErrorResponseSchema,
+  ValidationErrorResponseSchema,
+  UnauthorizedResponseSchema,
+  ForbiddenResponseSchema,
+  NotFoundResponseSchema
+} from '../schemas/healthRecords.response.schemas';
+
+/**
+ * SWAGGER SCHEMA COMPONENTS
+ * Reusable response schemas for comprehensive health records documentation
+ */
+
+const healthRecordObjectSchema = Joi.object({
+  id: Joi.string().uuid().example('750e8400-e29b-41d4-a716-446655440000'),
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  recordType: Joi.string().valid('CHECKUP', 'VACCINATION', 'ILLNESS', 'INJURY', 'SCREENING', 'PHYSICAL_EXAM', 'MENTAL_HEALTH', 'DENTAL', 'VISION', 'HEARING').example('CHECKUP'),
+  recordDate: Joi.date().iso().example('2025-10-23'),
+  provider: Joi.string().example('Dr. Jane Smith'),
+  providerType: Joi.string().example('Nurse Practitioner'),
+  chiefComplaint: Joi.string().allow(null, '').example('Routine checkup'),
+  diagnosis: Joi.string().allow(null, '').example('Healthy'),
+  treatment: Joi.string().allow(null, '').example('None required'),
+  notes: Joi.string().allow(null, '').example('Annual wellness exam completed'),
+  followUpRequired: Joi.boolean().example(false),
+  followUpDate: Joi.date().iso().allow(null).example(null),
+  createdAt: Joi.date().iso(),
+  updatedAt: Joi.date().iso()
+}).label('HealthRecordObject');
+
+const allergyObjectSchema = Joi.object({
+  id: Joi.string().uuid().example('850e8400-e29b-41d4-a716-446655440000'),
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  allergen: Joi.string().example('Peanuts'),
+  allergyType: Joi.string().valid('FOOD', 'MEDICATION', 'ENVIRONMENTAL', 'INSECT', 'OTHER').example('FOOD'),
+  severity: Joi.string().valid('MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING').example('SEVERE'),
+  reaction: Joi.string().example('Anaphylaxis, hives, difficulty breathing'),
+  treatment: Joi.string().allow(null, '').example('EpiPen auto-injector, Benadryl'),
+  diagnosedDate: Joi.date().iso().allow(null).example('2020-05-15'),
+  verifiedByMD: Joi.boolean().example(true),
+  notes: Joi.string().allow(null, '').example('Carries EpiPen at all times'),
+  createdAt: Joi.date().iso(),
+  updatedAt: Joi.date().iso()
+}).label('AllergyObject');
+
+const chronicConditionObjectSchema = Joi.object({
+  id: Joi.string().uuid().example('950e8400-e29b-41d4-a716-446655440000'),
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  conditionName: Joi.string().example('Asthma'),
+  icdCode: Joi.string().allow(null, '').example('J45.909'),
+  diagnosisDate: Joi.date().iso().example('2018-03-20'),
+  severity: Joi.string().valid('MILD', 'MODERATE', 'SEVERE').example('MODERATE'),
+  status: Joi.string().valid('ACTIVE', 'CONTROLLED', 'IN_REMISSION', 'CURED').example('CONTROLLED'),
+  carePlan: Joi.string().allow(null, '').example('Inhaler as needed, avoid cold air triggers'),
+  medications: Joi.string().allow(null, '').example('Albuterol inhaler'),
+  restrictions: Joi.string().allow(null, '').example('May need breaks during intense physical activity'),
+  triggers: Joi.string().allow(null, '').example('Cold air, exercise, allergens'),
+  reviewDate: Joi.date().iso().allow(null).example('2026-03-20'),
+  notes: Joi.string().allow(null, '').example('Well-controlled with medication'),
+  createdAt: Joi.date().iso(),
+  updatedAt: Joi.date().iso()
+}).label('ChronicConditionObject');
+
+const vaccinationObjectSchema = Joi.object({
+  id: Joi.string().uuid().example('a50e8400-e29b-41d4-a716-446655440000'),
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  vaccineName: Joi.string().example('DTaP (Diphtheria, Tetanus, Pertussis)'),
+  cvxCode: Joi.string().allow(null, '').example('106'),
+  ndcCode: Joi.string().allow(null, '').example('00006-4898-00'),
+  lotNumber: Joi.string().allow(null, '').example('12345ABC'),
+  manufacturer: Joi.string().allow(null, '').example('Sanofi Pasteur'),
+  administrationDate: Joi.date().iso().example('2025-10-23'),
+  doseNumber: Joi.number().integer().allow(null).example(4),
+  totalDosesRequired: Joi.number().integer().allow(null).example(5),
+  route: Joi.string().allow(null, '').example('Intramuscular'),
+  site: Joi.string().allow(null, '').example('Left deltoid'),
+  administeredBy: Joi.string().example('Nurse Johnson'),
+  adverseReaction: Joi.string().allow(null, '').example(null),
+  nextDueDate: Joi.date().iso().allow(null).example('2030-10-23'),
+  notes: Joi.string().allow(null, '').example('No adverse reactions observed'),
+  createdAt: Joi.date().iso(),
+  updatedAt: Joi.date().iso()
+}).label('VaccinationObject');
+
+const vitalsObjectSchema = Joi.object({
+  id: Joi.string().uuid().example('b50e8400-e29b-41d4-a716-446655440000'),
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  recordDate: Joi.date().iso().example('2025-10-23T10:30:00Z'),
+  temperature: Joi.number().allow(null).example(98.6).description('Temperature in Fahrenheit'),
+  bloodPressureSystolic: Joi.number().integer().allow(null).example(110),
+  bloodPressureDiastolic: Joi.number().integer().allow(null).example(70),
+  heartRate: Joi.number().integer().allow(null).example(72).description('Beats per minute'),
+  respiratoryRate: Joi.number().integer().allow(null).example(16).description('Breaths per minute'),
+  oxygenSaturation: Joi.number().allow(null).example(98).description('Percentage'),
+  height: Joi.number().allow(null).example(150.5).description('Height in cm'),
+  weight: Joi.number().allow(null).example(45.2).description('Weight in kg'),
+  bmi: Joi.number().allow(null).example(20.1).description('Body Mass Index (auto-calculated)'),
+  notes: Joi.string().allow(null, '').example('Normal vitals'),
+  recordedBy: Joi.string().example('Nurse Williams'),
+  createdAt: Joi.date().iso(),
+  updatedAt: Joi.date().iso()
+}).label('VitalsObject');
+
+const paginationObjectSchema = Joi.object({
+  page: Joi.number().integer().example(1),
+  limit: Joi.number().integer().example(20),
+  total: Joi.number().integer().example(87),
+  pages: Joi.number().integer().example(5)
+}).label('PaginationObject');
+
+const errorResponseSchema = Joi.object({
+  success: Joi.boolean().example(false),
+  error: Joi.object({
+    message: Joi.string().example('Health record not found'),
+    code: Joi.string().optional().example('HEALTH_RECORD_NOT_FOUND'),
+    details: Joi.any().optional()
+  })
+}).label('ErrorResponse');
 
 /**
  * GENERAL HEALTH RECORDS ROUTES
@@ -42,10 +180,26 @@ const listStudentRecordsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Health records retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Must be assigned nurse or admin' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Health records retrieved successfully with pagination',
+            schema: HealthRecordListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Must be assigned nurse or admin for this student',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found - Invalid student ID',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -164,16 +318,24 @@ const listAllergiesRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'HealthRecords', 'Allergies', 'Healthcare', 'v1'],
     description: 'Get all allergies for a student',
-    notes: '**CRITICAL PHI ENDPOINT** - Returns all known allergies for a student including severity levels (MILD, MODERATE, SEVERE, LIFE_THREATENING). Critical for medication administration and emergency response. Displayed prominently in student profile.',
+    notes: '**CRITICAL PHI ENDPOINT** - Returns all known allergies for a student including severity levels (MILD, MODERATE, SEVERE, LIFE_THREATENING). Critical for medication administration and emergency response. Displayed prominently in student profile. HIPAA Compliance: All access is logged.',
     validate: {
       params: studentIdParamSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Allergies retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Allergies retrieved successfully',
+            schema: Joi.object({
+              success: Joi.boolean().example(true),
+              data: Joi.object({
+                allergies: Joi.array().items(allergyObjectSchema).description('Array of allergy records with severity levels')
+              })
+            }).label('ListAllergiesResponse')
+          },
+          '401': { description: 'Unauthorized', schema: errorResponseSchema },
+          '404': { description: 'Student not found', schema: errorResponseSchema }
         }
       }
     }
@@ -420,16 +582,24 @@ const listVaccinationsRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'HealthRecords', 'Vaccinations', 'Healthcare', 'v1'],
     description: 'Get all vaccinations for a student',
-    notes: '**PHI Protected Endpoint** - Returns immunization history with vaccine names, dates, lot numbers, and dose tracking. Used for compliance verification, school enrollment, and planning boosters. Includes CVX codes for standardized reporting.',
+    notes: '**PHI Protected Endpoint** - Returns immunization history with vaccine names, dates, lot numbers, and dose tracking. Used for compliance verification, school enrollment, and planning boosters. Includes CVX codes for standardized reporting. HIPAA Compliance: All access is logged.',
     validate: {
       params: studentIdParamSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Vaccinations retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Vaccinations retrieved successfully',
+            schema: Joi.object({
+              success: Joi.boolean().example(true),
+              data: Joi.object({
+                vaccinations: Joi.array().items(vaccinationObjectSchema).description('Array of vaccination/immunization records')
+              })
+            }).label('ListVaccinationsResponse')
+          },
+          '401': { description: 'Unauthorized', schema: errorResponseSchema },
+          '404': { description: 'Student not found', schema: errorResponseSchema }
         }
       }
     }

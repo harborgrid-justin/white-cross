@@ -29,7 +29,10 @@
       "Bash(powershell -Command \"npm run type-check 2>&1 | Select-String ''error TS'' | ForEach-Object { if ($_-match ''error (TS\\d+):'') { $matches[1] } } | Group-Object | Sort-Object Count -Descending | Select-Object -First 15 | Format-Table Count, Name -AutoSize\")",
       "Bash(powershell -ExecutionPolicy Bypass -File \"F:\\temp\\white-cross\\frontend\\.temp\\analyze-errors.ps1\")",
       "Bash(git checkout:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(Select-Object -First 10)",
+      "Bash(dir:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

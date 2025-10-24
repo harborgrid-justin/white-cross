@@ -20,6 +20,15 @@ import {
   replyToMessageSchema,
   createTemplateSchema
 } from '../validators/messages.validators';
+import {
+  MessageListResponseSchema,
+  MessageResponseSchema,
+  MessageTemplateListResponseSchema,
+  MessageTemplateResponseSchema,
+  DeliveryStatusResponseSchema,
+  CommunicationStatisticsResponseSchema,
+  ErrorResponseSchema
+} from '../../RESPONSE_SCHEMAS';
 
 /**
  * MESSAGE CRUD ROUTES
@@ -40,9 +49,9 @@ const listMessagesRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Messages retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Messages retrieved successfully with pagination', schema: MessageListResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -64,9 +73,9 @@ const getMessageByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Message retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Message not found' }
+          '200': { description: 'Message retrieved successfully', schema: MessageResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Message not found', schema: ErrorResponseSchema }
         }
       }
     }
@@ -88,10 +97,10 @@ const sendMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Message sent successfully' },
-          '400': { description: 'Validation error - Invalid message data or HIPAA violation' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Insufficient permissions' }
+          '201': { description: 'Message sent successfully', schema: MessageResponseSchema },
+          '400': { description: 'Validation error - Invalid message data or HIPAA violation', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Insufficient permissions', schema: ErrorResponseSchema }
         }
       }
     }
@@ -114,11 +123,11 @@ const updateMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Message updated successfully' },
-          '400': { description: 'Validation error or message already sent' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Not message owner' },
-          '404': { description: 'Message not found' }
+          '200': { description: 'Message updated successfully', schema: MessageResponseSchema },
+          '400': { description: 'Validation error or message already sent', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Not message owner', schema: ErrorResponseSchema },
+          '404': { description: 'Message not found', schema: ErrorResponseSchema }
         }
       }
     }
@@ -140,11 +149,11 @@ const deleteMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Message cancelled successfully' },
-          '400': { description: 'Message already sent or cannot be deleted' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Not message owner' },
-          '404': { description: 'Message not found' }
+          '200': { description: 'Message cancelled successfully', schema: MessageResponseSchema },
+          '400': { description: 'Message already sent or cannot be deleted', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Not message owner', schema: ErrorResponseSchema },
+          '404': { description: 'Message not found', schema: ErrorResponseSchema }
         }
       }
     }
@@ -167,10 +176,10 @@ const replyToMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Reply sent successfully' },
-          '400': { description: 'Validation error' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Original message not found' }
+          '201': { description: 'Reply sent successfully', schema: MessageResponseSchema },
+          '400': { description: 'Validation error', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Original message not found', schema: ErrorResponseSchema }
         }
       }
     }
@@ -196,9 +205,9 @@ const getInboxRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Inbox messages retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Inbox messages retrieved successfully', schema: MessageListResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -220,9 +229,9 @@ const getSentRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Sent messages retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Sent messages retrieved successfully', schema: MessageListResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -248,9 +257,9 @@ const listTemplatesRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Templates retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Templates retrieved successfully', schema: MessageTemplateListResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -272,10 +281,10 @@ const createTemplateRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Template created successfully' },
-          '400': { description: 'Validation error - Invalid template data' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Requires NURSE or ADMIN role' }
+          '201': { description: 'Template created successfully', schema: MessageTemplateResponseSchema },
+          '400': { description: 'Validation error - Invalid template data', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Requires NURSE or ADMIN role', schema: ErrorResponseSchema }
         }
       }
     }
@@ -301,10 +310,10 @@ const getDeliveryStatusRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Delivery status retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Message not found' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Delivery status retrieved successfully', schema: DeliveryStatusResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Message not found', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -330,9 +339,9 @@ const getStatisticsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Statistics retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Statistics retrieved successfully', schema: CommunicationStatisticsResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }

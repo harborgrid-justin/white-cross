@@ -5,9 +5,13 @@
 
 import { ServerRoute } from '@hapi/hapi';
 import { sendBulkMessage } from '../controllers/messaging.controller';
-import { 
+import {
   validateBulkMessage
 } from '../validators/messaging.validators';
+import {
+  BulkMessageResponseSchema,
+  ErrorResponseSchema
+} from '../../RESPONSE_SCHEMAS';
 
 /**
  * BULK MESSAGING ROUTES
@@ -29,11 +33,11 @@ export const messagingRoutes: ServerRoute[] = [
       plugins: {
         'hapi-swagger': {
           responses: {
-            200: { description: 'Bulk message sent successfully' },
-            400: { description: 'Invalid message data' },
-            401: { description: 'Authentication required' },
-            403: { description: 'Insufficient permissions' },
-            500: { description: 'Server error sending messages' }
+            200: { description: 'Bulk message sent successfully', schema: BulkMessageResponseSchema },
+            400: { description: 'Invalid message data', schema: ErrorResponseSchema },
+            401: { description: 'Authentication required', schema: ErrorResponseSchema },
+            403: { description: 'Insufficient permissions', schema: ErrorResponseSchema },
+            500: { description: 'Server error sending messages', schema: ErrorResponseSchema }
           },
           security: [{ jwt: [] }]
         }

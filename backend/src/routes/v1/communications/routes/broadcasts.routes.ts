@@ -15,6 +15,15 @@ import {
   createBroadcastSchema,
   scheduleMessageSchema
 } from '../validators/broadcasts.validators';
+import {
+  BroadcastResponseSchema,
+  BroadcastListResponseSchema,
+  BroadcastRecipientsResponseSchema,
+  BroadcastDeliveryReportResponseSchema,
+  ScheduledMessageResponseSchema,
+  ScheduledMessageListResponseSchema,
+  ErrorResponseSchema
+} from '../../RESPONSE_SCHEMAS';
 
 /**
  * BROADCAST ROUTES
@@ -35,10 +44,10 @@ const createBroadcastRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Broadcast created and sent/scheduled successfully' },
-          '400': { description: 'Validation error - Invalid audience criteria, HIPAA violation, or recipient limit exceeded' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Insufficient permissions for broadcast messaging' }
+          '201': { description: 'Broadcast created and sent/scheduled successfully', schema: BroadcastResponseSchema },
+          '400': { description: 'Validation error - Invalid audience criteria, HIPAA violation, or recipient limit exceeded', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Insufficient permissions for broadcast messaging', schema: ErrorResponseSchema }
         }
       }
     }
@@ -60,9 +69,9 @@ const listBroadcastsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Broadcasts retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Broadcasts retrieved successfully with pagination', schema: BroadcastListResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -84,10 +93,10 @@ const getBroadcastByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Broadcast retrieved successfully' },
-          '400': { description: 'Not a broadcast message (single recipient)' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Broadcast not found' }
+          '200': { description: 'Broadcast retrieved successfully', schema: BroadcastResponseSchema },
+          '400': { description: 'Not a broadcast message (single recipient)', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Broadcast not found', schema: ErrorResponseSchema }
         }
       }
     }
@@ -109,11 +118,11 @@ const cancelBroadcastRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Broadcast cancelled successfully' },
-          '400': { description: 'Broadcast already sent or cannot be cancelled' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Not broadcast owner' },
-          '404': { description: 'Broadcast not found' }
+          '200': { description: 'Broadcast cancelled successfully', schema: BroadcastResponseSchema },
+          '400': { description: 'Broadcast already sent or cannot be cancelled', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Not broadcast owner', schema: ErrorResponseSchema },
+          '404': { description: 'Broadcast not found', schema: ErrorResponseSchema }
         }
       }
     }
@@ -136,10 +145,10 @@ const getBroadcastRecipientsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Recipients retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Broadcast not found' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Recipients retrieved successfully with pagination', schema: BroadcastRecipientsResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Broadcast not found', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -161,10 +170,10 @@ const getBroadcastDeliveryReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Delivery report retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Broadcast not found' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Delivery report retrieved successfully', schema: BroadcastDeliveryReportResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Broadcast not found', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
@@ -190,10 +199,10 @@ const scheduleMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Message scheduled successfully' },
-          '400': { description: 'Validation error - Invalid schedule time or recipient configuration' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Insufficient permissions for scheduled messaging' }
+          '201': { description: 'Message scheduled successfully', schema: ScheduledMessageResponseSchema },
+          '400': { description: 'Validation error - Invalid schedule time or recipient configuration', schema: ErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '403': { description: 'Forbidden - Insufficient permissions for scheduled messaging', schema: ErrorResponseSchema }
         }
       }
     }
@@ -215,9 +224,9 @@ const listScheduledMessagesRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Scheduled messages retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Scheduled messages retrieved successfully', schema: ScheduledMessageListResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }

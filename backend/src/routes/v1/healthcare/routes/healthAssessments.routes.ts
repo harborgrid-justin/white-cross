@@ -1,10 +1,16 @@
 /**
- * Health Assessments Routes
+ * Health Assessments Routes - Enhanced with Comprehensive Swagger Documentation
  * HTTP endpoints for health risk assessments, screenings, growth tracking, and emergency notifications
  * All routes prefixed with /api/v1/health-assessments
+ *
+ * Swagger/OpenAPI Documentation:
+ * - Complete request/response schemas for all 11 assessment endpoints
+ * - HIPAA compliance notes for all PHI-protected endpoints
+ * - Detailed schemas for risk assessments, screenings, growth analysis, and immunization forecasts
  */
 
 import { ServerRoute } from '@hapi/hapi';
+import Joi from 'joi';
 import { asyncHandler } from '../../../shared/utils';
 import { HealthAssessmentsController } from '../controllers/healthAssessments.controller';
 import {
@@ -18,6 +24,92 @@ import {
 } from '../validators/healthAssessments.validators';
 
 /**
+ * SWAGGER SCHEMA COMPONENTS
+ * Reusable response schemas for health assessments documentation
+ */
+
+const healthRiskAssessmentSchema = Joi.object({
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  studentName: Joi.string().example('John Doe'),
+  riskScore: Joi.number().integer().min(0).max(100).example(35).description('Overall health risk score (0-100, higher = more risk)'),
+  riskLevel: Joi.string().valid('LOW', 'MODERATE', 'HIGH', 'CRITICAL').example('MODERATE'),
+  riskFactors: Joi.array().items(
+    Joi.object({
+      factor: Joi.string().example('Chronic asthma'),
+      severity: Joi.string().valid('LOW', 'MODERATE', 'HIGH', 'CRITICAL').example('MODERATE'),
+      impact: Joi.number().integer().example(15).description('Impact on overall risk score')
+    })
+  ).description('Array of identified risk factors'),
+  activeConditions: Joi.number().integer().example(2).description('Number of active chronic conditions'),
+  severeAllergies: Joi.number().integer().example(1).description('Number of severe/life-threatening allergies'),
+  medicationCount: Joi.number().integer().example(3).description('Number of active medications'),
+  recentIncidents: Joi.number().integer().example(1).description('Health incidents in last 90 days'),
+  recommendations: Joi.array().items(Joi.string()).example(['Monitor asthma symptoms closely', 'Ensure EpiPen is always available', 'Schedule follow-up in 30 days']),
+  lastAssessmentDate: Joi.date().iso().example('2025-10-23T10:00:00Z'),
+  nextReviewDate: Joi.date().iso().allow(null).example('2025-11-23')
+}).label('HealthRiskAssessment');
+
+const screeningResultSchema = Joi.object({
+  id: Joi.string().uuid().example('c50e8400-e29b-41d4-a716-446655440000'),
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  screeningType: Joi.string().valid('VISION', 'HEARING', 'SCOLIOSIS', 'DENTAL', 'BMI', 'BLOOD_PRESSURE', 'DEVELOPMENTAL').example('VISION'),
+  screeningDate: Joi.date().iso().example('2025-10-23'),
+  result: Joi.string().valid('PASS', 'FAIL', 'REFER', 'INCOMPLETE').example('REFER'),
+  detailedResults: Joi.object().description('Screening-specific results').example({
+    leftEye: '20/40',
+    rightEye: '20/60',
+    colorVision: 'Normal'
+  }),
+  followUpRequired: Joi.boolean().example(true),
+  followUpNotes: Joi.string().allow(null, '').example('Refer to optometrist for comprehensive eye exam'),
+  parentNotified: Joi.boolean().example(true),
+  screenedBy: Joi.string().example('Nurse Williams'),
+  createdAt: Joi.date().iso(),
+  updatedAt: Joi.date().iso()
+}).label('ScreeningResult');
+
+const growthAnalysisSchema = Joi.object({
+  studentId: Joi.string().uuid().example('660e8400-e29b-41d4-a716-446655440000'),
+  studentName: Joi.string().example('Sarah Johnson'),
+  ageYears: Joi.number().example(12.5).description('Current age in years'),
+  currentMeasurements: Joi.object({
+    height: Joi.number().example(155.5).description('Height in cm'),
+    weight: Joi.number().example(48.2).description('Weight in kg'),
+    bmi: Joi.number().example(20.0).description('Body Mass Index'),
+    measurementDate: Joi.date().iso().example('2025-10-23')
+  }),
+  percentiles: Joi.object({
+    heightPercentile: Joi.number().integer().min(0).max(100).example(65).description('Height percentile for age'),
+    weightPercentile: Joi.number().integer().min(0).max(100).example(55).description('Weight percentile for age'),
+    bmiPercentile: Joi.number().integer().min(0).max(100).example(60).description('BMI percentile for age')
+  }),
+  trends: Joi.object({
+    heightVelocity: Joi.string().example('Normal growth velocity').description('Growth rate assessment'),
+    weightTrend: Joi.string().example('Steady, appropriate weight gain'),
+    concerns: Joi.array().items(Joi.string()).example([])
+  }),
+  clinicalInterpretation: Joi.string().example('Healthy weight, normal growth pattern for age'),
+  recommendations: Joi.array().items(Joi.string()).example(['Continue regular monitoring', 'Encourage balanced diet and physical activity']),
+  measurementHistory: Joi.array().items(
+    Joi.object({
+      date: Joi.date().iso(),
+      height: Joi.number(),
+      weight: Joi.number(),
+      bmi: Joi.number()
+    })
+  ).description('Historical growth measurements')
+}).label('GrowthAnalysis');
+
+const errorResponseSchema = Joi.object({
+  success: Joi.boolean().example(false),
+  error: Joi.object({
+    message: Joi.string().example('Student not found'),
+    code: Joi.string().optional().example('STUDENT_NOT_FOUND'),
+    details: Joi.any().optional()
+  })
+}).label('ErrorResponse');
+
+/**
  * HEALTH RISK ASSESSMENT ROUTES
  */
 
@@ -29,17 +121,25 @@ const getHealthRiskRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Health Assessments', 'Healthcare', 'v1'],
     description: 'Calculate health risk score for a student',
-    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns comprehensive health risk assessment including risk factors, chronic conditions impact, medication interactions, and recommendations. Used for care planning and intervention prioritization.',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns comprehensive health risk assessment including risk factors, chronic conditions impact, medication interactions, and recommendations. Used for care planning and intervention prioritization. HIPAA Compliance: All access is logged.',
     validate: {
       params: healthRiskParamSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Health risk assessment calculated successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' },
-          '500': { description: 'Internal server error' }
+          '200': {
+            description: 'Health risk assessment calculated successfully',
+            schema: Joi.object({
+              success: Joi.boolean().example(true),
+              data: Joi.object({
+                assessment: healthRiskAssessmentSchema
+              })
+            }).label('GetHealthRiskResponse')
+          },
+          '401': { description: 'Unauthorized', schema: errorResponseSchema },
+          '404': { description: 'Student not found', schema: errorResponseSchema },
+          '500': { description: 'Internal server error', schema: errorResponseSchema }
         }
       }
     }

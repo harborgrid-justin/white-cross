@@ -1,5 +1,5 @@
 /**
- * Medications Routes - Legacy Schema
+ * Medications Routes - Legacy Schema with Enhanced Swagger Documentation
  * HTTP endpoints for medication management using the legacy database schema
  * All routes prefixed with /api/v1/medications
  *
@@ -7,12 +7,15 @@
  * Database table: medications (single table with medicationName, dosage, frequency, route, prescribedBy)
  * Migration: 20251011221125-create-complete-healthcare-schema.js
  *
- * Many routes from the NEW schema have been disabled because they require tables
- * that don't exist in the legacy schema (medication_inventory, medication_logs,
- * student_medications, adverse_reactions, etc.)
+ * Swagger/OpenAPI Documentation:
+ * - Complete request/response schemas for all medication endpoints
+ * - HIPAA compliance notes for PHI-protected endpoints
+ * - Comprehensive error responses and status codes
+ * - Request body examples and validation rules
  */
 
 import { ServerRoute } from '@hapi/hapi';
+import Joi from 'joi';
 import { asyncHandler } from '../../../shared/utils';
 import { MedicationsController } from '../controllers/medications.controller';
 import {
@@ -23,6 +26,56 @@ import {
   medicationIdParamSchema,
   studentIdParamSchema,
 } from '../validators/medications.validators';
+import {
+  MedicationResponseSchema,
+  MedicationListResponseSchema,
+  MedicationDeactivatedResponseSchema,
+  ErrorResponseSchema,
+  ValidationErrorResponseSchema,
+  UnauthorizedResponseSchema,
+  ForbiddenResponseSchema,
+  NotFoundResponseSchema,
+  InternalErrorResponseSchema
+} from '../schemas/medications.response.schemas';
+
+/**
+ * SWAGGER SCHEMA COMPONENTS
+ * Reusable response schemas for documentation
+ */
+
+const medicationObjectSchema = Joi.object({
+  id: Joi.string().uuid().description('Medication unique identifier').example('550e8400-e29b-41d4-a716-446655440000'),
+  medicationName: Joi.string().description('Name of the medication').example('Ibuprofen 200mg'),
+  dosage: Joi.string().description('Dosage amount and unit').example('200mg'),
+  frequency: Joi.string().description('How often to administer').example('Every 6 hours as needed'),
+  route: Joi.string().description('Administration route').example('Oral'),
+  prescribedBy: Joi.string().description('Prescribing physician name').example('Dr. Smith'),
+  startDate: Joi.date().iso().description('Medication start date').example('2025-10-01'),
+  endDate: Joi.date().iso().allow(null).description('Medication end date (null if ongoing)').example('2025-10-15'),
+  instructions: Joi.string().allow(null, '').description('Special instructions for administration').example('Take with food'),
+  sideEffects: Joi.string().allow(null, '').description('Known side effects').example('May cause drowsiness'),
+  isActive: Joi.boolean().description('Whether medication is currently active').example(true),
+  studentId: Joi.string().uuid().description('Student UUID').example('660e8400-e29b-41d4-a716-446655440000'),
+  studentName: Joi.string().optional().description('Student full name (if included)').example('John Doe'),
+  createdAt: Joi.date().iso().example('2025-10-01T08:00:00Z'),
+  updatedAt: Joi.date().iso().example('2025-10-01T08:00:00Z')
+}).label('MedicationObject');
+
+const paginationObjectSchema = Joi.object({
+  page: Joi.number().integer().description('Current page number').example(1),
+  limit: Joi.number().integer().description('Items per page').example(10),
+  total: Joi.number().integer().description('Total number of items').example(45),
+  pages: Joi.number().integer().description('Total number of pages').example(5)
+}).label('PaginationObject');
+
+const errorResponseSchema = Joi.object({
+  success: Joi.boolean().example(false),
+  error: Joi.object({
+    message: Joi.string().example('Medication not found'),
+    code: Joi.string().optional().example('MEDICATION_NOT_FOUND'),
+    details: Joi.any().optional()
+  })
+}).label('ErrorResponse');
 
 // The following schemas are NOT available in legacy validators
 // because they require tables that don't exist in the legacy schema:
@@ -50,16 +103,39 @@ const listMedicationsRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1'],
     description: 'Get all medications with pagination',
-    notes: 'Returns a paginated list of medications in the system. Supports search functionality. **PHI Protected Endpoint** - Access is audited.',
+    notes: [
+      '**PHI Protected Endpoint** - Returns a paginated list of medications in the system.',
+      '',
+      'Supports filtering by:',
+      '- `search`: Search medication names',
+      '- `studentId`: Filter by student UUID',
+      '- `isActive`: Filter by active status (true/false)',
+      '',
+      'HIPAA Compliance: All access is logged for audit trail.',
+      '',
+      '**Example Request:**',
+      '```',
+      'GET /api/v1/medications?page=1&limit=20&isActive=true&search=ibuprofen',
+      '```'
+    ].join('\n'),
     validate: {
       query: listMedicationsQuerySchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Medications retrieved successfully with pagination' },
-          '401': { description: 'Authentication required' },
-          '500': { description: 'Internal server error' }
+          '200': {
+            description: 'Medications retrieved successfully with pagination',
+            schema: MedicationListResponseSchema
+          },
+          '401': {
+            description: 'Authentication required - Missing or invalid JWT token',
+            schema: UnauthorizedResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
         }
       }
     }
@@ -74,17 +150,59 @@ const createMedicationRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
     description: 'Create a new medication (Legacy Schema)',
-    notes: 'Creates a medication record in the legacy medications table. **PHI Protected Endpoint**. Fields: medicationName, dosage, frequency, route, prescribedBy, startDate, endDate, instructions, sideEffects, isActive, studentId. Requires NURSE or ADMIN role. This uses the legacy single-table schema.',
+    notes: [
+      '**PHI Protected Endpoint** - Creates a medication record in the legacy medications table.',
+      '',
+      'Required fields: medicationName, dosage, frequency, route, prescribedBy, startDate, studentId',
+      'Optional fields: endDate, instructions, sideEffects, isActive',
+      '',
+      'Authorization: Requires NURSE or ADMIN role',
+      'HIPAA Compliance: All creations are logged for audit trail',
+      '',
+      '**Example Request:**',
+      '```json',
+      '{',
+      '  "medicationName": "Ibuprofen 200mg",',
+      '  "dosage": "200mg",',
+      '  "frequency": "Every 6 hours as needed",',
+      '  "route": "Oral",',
+      '  "prescribedBy": "Dr. Smith",',
+      '  "startDate": "2025-10-23",',
+      '  "instructions": "Take with food",',
+      '  "studentId": "660e8400-e29b-41d4-a716-446655440000"',
+      '}',
+      '```'
+    ].join('\n'),
     validate: {
       payload: createMedicationSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Medication created successfully' },
-          '400': { description: 'Validation error - Invalid medication data' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Requires NURSE or ADMIN role' }
+          '201': {
+            description: 'Medication created successfully',
+            schema: MedicationResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid medication data (missing required fields or invalid format)',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required (missing or invalid JWT token)',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found - Cannot create medication for non-existent student',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
         }
       }
     }
@@ -99,7 +217,7 @@ const updateMedicationRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
     description: 'Update a medication (Legacy Schema)',
-    notes: '**PHI Protected Endpoint** - Updates a medication record. At least one field must be provided. Requires NURSE or ADMIN role.',
+    notes: '**PHI Protected Endpoint** - Updates a medication record. At least one field must be provided. Requires NURSE or ADMIN role. HIPAA Compliance: All updates are logged.',
     validate: {
       params: medicationIdParamSchema,
       payload: updateMedicationSchema
@@ -107,11 +225,30 @@ const updateMedicationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Medication updated successfully' },
-          '400': { description: 'Validation error' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Requires NURSE or ADMIN role' },
-          '404': { description: 'Medication not found' }
+          '200': {
+            description: 'Medication updated successfully',
+            schema: MedicationResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data or at least one field must be provided',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Medication not found - Cannot update non-existent medication',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
         }
       }
     }
@@ -126,7 +263,7 @@ const deactivateMedicationRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
     description: 'Deactivate a medication (Legacy Schema)',
-    notes: '**PHI Protected Endpoint** - Deactivates a medication. Requires detailed reason and deactivation type for audit trail. Does not delete historical records.',
+    notes: '**PHI Protected Endpoint** - Deactivates a medication. Requires detailed reason and deactivation type for audit trail. Does not delete historical records. HIPAA Compliance: All deactivations are logged.',
     validate: {
       params: medicationIdParamSchema,
       payload: deactivateMedicationSchema
@@ -134,11 +271,30 @@ const deactivateMedicationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Medication deactivated successfully' },
-          '400': { description: 'Validation error' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Requires NURSE or ADMIN role' },
-          '404': { description: 'Medication not found' }
+          '200': {
+            description: 'Medication deactivated successfully - Historical record preserved',
+            schema: MedicationDeactivatedResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Deactivation reason and type required',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Medication not found - Cannot deactivate non-existent medication',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
         }
       }
     }
@@ -153,16 +309,29 @@ const getMedicationByIdRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
     description: 'Get medication by ID (Legacy Schema)',
-    notes: '**PHI Protected Endpoint** - Returns a single medication record by ID.',
+    notes: '**PHI Protected Endpoint** - Returns a single medication record by ID. HIPAA Compliance: Access is logged.',
     validate: {
       params: medicationIdParamSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Medication retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Medication not found' }
+          '200': {
+            description: 'Medication retrieved successfully',
+            schema: MedicationResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Medication not found - Invalid medication ID',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
         }
       }
     }
@@ -177,7 +346,7 @@ const getMedicationsByStudentRoute: ServerRoute = {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
     description: 'Get all medications for a student (Legacy Schema)',
-    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns all medication records for a specific student.',
+    notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Returns all medication records for a specific student. HIPAA Compliance: All access is logged for audit trail.',
     validate: {
       params: studentIdParamSchema,
       query: listMedicationsQuerySchema
@@ -185,9 +354,26 @@ const getMedicationsByStudentRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Medications retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Student medications retrieved successfully with pagination',
+            schema: MedicationListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Cannot view medications for students outside your scope',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found - Invalid student ID',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
         }
       }
     }

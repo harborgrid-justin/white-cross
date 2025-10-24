@@ -41,6 +41,22 @@ import {
   sessionIdParamSchema,
   resourceParamSchema
 } from '../validators/audit.validators';
+import {
+  AuditLogListResponseSchema,
+  AuditLogResponseSchema,
+  PHIAccessLogListResponseSchema,
+  PHIAccessCreatedResponseSchema,
+  AuditStatisticsResponseSchema,
+  SecurityAnalysisResponseSchema,
+  ComplianceReportResponseSchema,
+  AnomalyDetectionResponseSchema,
+  SessionAuditTrailResponseSchema,
+  DataAccessHistoryResponseSchema,
+  AuditExportResponseSchema,
+  ArchiveLogsResponseSchema,
+  ErrorResponseSchema,
+  ValidationErrorResponseSchema
+} from '../schemas/audit.response.schemas';
 
 /**
  * AUDIT LOG MANAGEMENT ROUTES
@@ -104,9 +120,18 @@ const listAuditLogsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Audit logs retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin or Compliance Officer only' }
+          '200': {
+            description: 'Audit logs retrieved successfully with pagination',
+            schema: AuditLogListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin or Compliance Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -128,9 +153,18 @@ const getAuditLogByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Audit log retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Audit log not found' }
+          '200': {
+            description: 'Audit log retrieved successfully',
+            schema: AuditLogResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Audit log not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -152,9 +186,18 @@ const createAuditLogRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Audit log created successfully' },
-          '400': { description: 'Validation error - Invalid audit data' },
-          '401': { description: 'Unauthorized' }
+          '201': {
+            description: 'Audit log created successfully',
+            schema: AuditLogResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid audit data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -180,9 +223,18 @@ const getPhiAccessLogsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'PHI access logs retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin or Compliance Officer only' }
+          '200': {
+            description: 'PHI access logs retrieved successfully with pagination',
+            schema: PHIAccessLogListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin or Compliance Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -204,9 +256,18 @@ const logPhiAccessRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'PHI access logged successfully' },
-          '400': { description: 'Validation error - Invalid access log data' },
-          '401': { description: 'Unauthorized' }
+          '201': {
+            description: 'PHI access logged successfully',
+            schema: PHIAccessCreatedResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid access log data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -232,9 +293,18 @@ const getAuditStatisticsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Audit statistics retrieved successfully' },
-          '400': { description: 'Validation error - Invalid date range' },
-          '401': { description: 'Unauthorized' }
+          '200': {
+            description: 'Audit statistics retrieved successfully',
+            schema: AuditStatisticsResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid date range',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -257,9 +327,18 @@ const getUserActivityRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'User activity retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'User not found' }
+          '200': {
+            description: 'User activity retrieved successfully with pagination',
+            schema: AuditLogListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'User not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -281,10 +360,22 @@ const exportAuditLogsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Audit logs exported successfully' },
-          '400': { description: 'Validation error - Invalid export parameters' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin only' }
+          '200': {
+            description: 'Audit logs exported successfully',
+            schema: AuditExportResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid export parameters',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -310,10 +401,22 @@ const getSecurityAnalysisRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Security analysis completed successfully' },
-          '400': { description: 'Validation error - Invalid analysis parameters' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin or Security Officer only' }
+          '200': {
+            description: 'Security analysis completed successfully',
+            schema: SecurityAnalysisResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid analysis parameters',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin or Security Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -335,10 +438,22 @@ const runSecurityAnalysisRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Security analysis completed and report generated' },
-          '400': { description: 'Validation error - Invalid analysis parameters' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin or Security Officer only' }
+          '201': {
+            description: 'Security analysis completed and report generated',
+            schema: SecurityAnalysisResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid analysis parameters',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin or Security Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -364,10 +479,22 @@ const generateComplianceReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Compliance report generated successfully' },
-          '400': { description: 'Validation error - Invalid date range' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Compliance Officer only' }
+          '200': {
+            description: 'Compliance report generated successfully',
+            schema: ComplianceReportResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid date range',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Compliance Officer role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -393,10 +520,22 @@ const detectAnomaliesRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Anomalies detected and analyzed' },
-          '400': { description: 'Validation error - Invalid date range' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Security Officer or Admin only' }
+          '200': {
+            description: 'Anomalies detected and analyzed',
+            schema: AnomalyDetectionResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid date range',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Security Officer or Admin role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -422,9 +561,18 @@ const getSessionAuditTrailRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Session audit trail retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Session not found' }
+          '200': {
+            description: 'Session audit trail retrieved successfully',
+            schema: SessionAuditTrailResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Session not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -451,9 +599,18 @@ const getDataAccessHistoryRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Data access history retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Resource not found' }
+          '200': {
+            description: 'Data access history retrieved successfully with pagination',
+            schema: DataAccessHistoryResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '404': {
+            description: 'Resource not found',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -479,10 +636,22 @@ const archiveOldLogsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Audit logs archived successfully' },
-          '400': { description: 'Validation error - Invalid archive parameters or retention violation' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin only' }
+          '200': {
+            description: 'Audit logs archived successfully',
+            schema: ArchiveLogsResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid archive parameters or retention violation',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: ErrorResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin role required',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
