@@ -58,7 +58,7 @@ export const DarkModeToggle: React.FC = () => {
       className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
       aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-      data-cy="dark-mode-toggle"
+      data-testid="dark-mode-toggle"
     >
       {darkMode ? (
         <Sun className="h-5 w-5 text-yellow-500" aria-hidden="true" />
