@@ -18,34 +18,41 @@ import { twMerge } from 'tailwind-merge';
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'success';
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  variant?: 'primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
   leftIcon?: React.ReactNode; // Backward compatibility
-  rightIcon?: React.ReactNode; // Backward compatibility  
+  rightIcon?: React.ReactNode; // Backward compatibility
   fullWidth?: boolean;
   asChild?: boolean;
 }
 
 const buttonVariants = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
-  ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-500',
-  destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+  primary: 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white focus:ring-primary-500 shadow-sm hover:shadow-md dark:bg-primary-500 dark:hover:bg-primary-600',
+  secondary: 'bg-secondary-600 hover:bg-secondary-700 active:bg-secondary-800 text-white focus:ring-secondary-500 shadow-sm hover:shadow-md dark:bg-secondary-500 dark:hover:bg-secondary-600',
+  outline: 'border-2 border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 active:bg-gray-100 focus:ring-gray-500 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+  'outline-primary': 'border-2 border-primary-600 bg-transparent text-primary-600 hover:bg-primary-50 active:bg-primary-100 focus:ring-primary-500 dark:border-primary-500 dark:text-primary-400 dark:hover:bg-primary-950',
+  ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800',
+  link: 'bg-transparent text-primary-600 hover:text-primary-700 hover:underline focus:ring-primary-500 dark:text-primary-400 dark:hover:text-primary-300',
+  destructive: 'bg-danger-600 hover:bg-danger-700 active:bg-danger-800 text-white focus:ring-danger-500 shadow-sm hover:shadow-md dark:bg-danger-500 dark:hover:bg-danger-600',
+  danger: 'bg-danger-600 hover:bg-danger-700 active:bg-danger-800 text-white focus:ring-danger-500 shadow-sm hover:shadow-md dark:bg-danger-500 dark:hover:bg-danger-600',
+  success: 'bg-success-600 hover:bg-success-700 active:bg-success-800 text-white focus:ring-success-500 shadow-sm hover:shadow-md dark:bg-success-500 dark:hover:bg-success-600',
+  warning: 'bg-warning-600 hover:bg-warning-700 active:bg-warning-800 text-white focus:ring-warning-500 shadow-sm hover:shadow-md dark:bg-warning-500 dark:hover:bg-warning-600',
+  info: 'bg-info-600 hover:bg-info-700 active:bg-info-800 text-white focus:ring-info-500 shadow-sm hover:shadow-md dark:bg-info-500 dark:hover:bg-info-600'
 };
 
 const buttonSizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
-  xl: 'px-8 py-4 text-lg'
+  xs: 'px-2 py-1 text-xs rounded',
+  sm: 'px-3 py-1.5 text-sm rounded-md',
+  md: 'px-4 py-2 text-sm rounded-lg',
+  lg: 'px-6 py-3 text-base rounded-lg',
+  xl: 'px-8 py-4 text-lg rounded-xl'
 };
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+// Memoized button component to prevent unnecessary re-renders
+export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({
     className,
     variant = 'primary',
@@ -70,15 +77,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2',
-          'disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center font-medium transition-all duration-200 ease-in-out',
+          'transform active:scale-[0.98]',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+          'motion-reduce:transition-none motion-reduce:transform-none',
           buttonVariants[variant],
           buttonSizes[size],
           fullWidth && 'w-full',
           className
         )}
         disabled={isDisabled}
+        aria-busy={loading}
+        aria-disabled={isDisabled}
         {...props}
       >
         {loading && (
@@ -106,15 +117,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             />
           </svg>
         )}
-        
+
         {!loading && finalIcon && finalIconPosition === 'left' && (
           <span className={cn(children && 'mr-2')}>
             {finalIcon}
           </span>
         )}
-        
+
         {children}
-        
+
         {!loading && finalIcon && finalIconPosition === 'right' && (
           <span className={cn(children && 'ml-2')}>
             {finalIcon}
@@ -123,7 +134,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       </button>
     );
   }
-);
+));
 
 Button.displayName = 'Button';
 

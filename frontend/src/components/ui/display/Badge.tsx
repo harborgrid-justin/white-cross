@@ -2,29 +2,31 @@ import React from 'react';
 import { cn } from '../../../utils/cn';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'info' | 'secondary';
+  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
   shape?: 'rounded' | 'pill' | 'square';
   dot?: boolean;
 }
 
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ 
-    className, 
-    variant = 'default', 
-    size = 'md', 
+  ({
+    className,
+    variant = 'default',
+    size = 'md',
     shape = 'rounded',
     dot = false,
-    children, 
-    ...props 
+    children,
+    ...props
   }, ref) => {
     const variantClasses = {
-      default: 'bg-gray-100 text-gray-800 border-gray-200',
-      success: 'bg-green-100 text-green-800 border-green-200',
-      warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      error: 'bg-red-100 text-red-800 border-red-200',
-      info: 'bg-blue-100 text-blue-800 border-blue-200',
-      secondary: 'bg-purple-100 text-purple-800 border-purple-200'
+      default: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700',
+      primary: 'bg-primary-100 text-primary-800 border-primary-200 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-800',
+      secondary: 'bg-secondary-100 text-secondary-800 border-secondary-200 dark:bg-secondary-900 dark:text-secondary-200 dark:border-secondary-800',
+      success: 'bg-success-100 text-success-800 border-success-200 dark:bg-success-900 dark:text-success-200 dark:border-success-800',
+      warning: 'bg-warning-100 text-warning-800 border-warning-200 dark:bg-warning-900 dark:text-warning-200 dark:border-warning-800',
+      error: 'bg-danger-100 text-danger-800 border-danger-200 dark:bg-danger-900 dark:text-danger-200 dark:border-danger-800',
+      danger: 'bg-danger-100 text-danger-800 border-danger-200 dark:bg-danger-900 dark:text-danger-200 dark:border-danger-800',
+      info: 'bg-info-100 text-info-800 border-info-200 dark:bg-info-900 dark:text-info-200 dark:border-info-800'
     };
 
     const sizeClasses = {
@@ -76,7 +78,7 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex items-center font-medium border',
+          'inline-flex items-center font-medium border transition-colors duration-200',
           variantClasses[variant],
           sizeClasses[size],
           shapeClasses[shape],

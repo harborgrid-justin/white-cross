@@ -28,10 +28,10 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { incidentReportsApi } from '../../services/modules/incidentReportsApi';
+import { incidentReportsApi } from '../../../services/modules/incidentReportsApi';
 import {
   IncidentSeverity,
-} from '../../types/incidents';
+} from '../../../types/incidents';
 import type {
   IncidentReport,
   WitnessStatement,
@@ -44,7 +44,7 @@ import type {
   IncidentStatus,
   CreateWitnessStatementRequest,
   CreateFollowUpActionRequest,
-} from '../../types/incidents';
+} from '../../../types/incidents';
 import toast from 'react-hot-toast';
 import debug from 'debug';
 

@@ -54,13 +54,13 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       return () => document.removeEventListener('keydown', handleEscape);
     }, [closeOnEscapeKey, open, onClose]);
 
-    // Focus management
+    // Focus trap and management
     React.useEffect(() => {
       if (!open) return;
-      
+
       const previousActiveElement = document.activeElement as HTMLElement;
       const modal = modalRef.current;
-      
+
       if (modal) {
         // Focus the modal or first focusable element
         const focusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])') as HTMLElement;
@@ -69,8 +69,37 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         } else {
           modal.focus();
         }
+
+        // Focus trap implementation
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key !== 'Tab') return;
+
+          const focusableElements = modal.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+          );
+          const firstFocusable = focusableElements[0];
+          const lastFocusable = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey && document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+          } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+          }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+          document.removeEventListener('keydown', handleKeyDown);
+          // Restore focus when modal closes
+          if (previousActiveElement) {
+            previousActiveElement.focus();
+          }
+        };
       }
-      
+
       return () => {
         // Restore focus when modal closes
         if (previousActiveElement) {

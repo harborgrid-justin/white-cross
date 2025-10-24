@@ -1,26 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { AlertTriangle, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface BackendConnectionErrorProps {
-  onRetry?: () => void;
+  onRetry?: () => void | Promise<void>;
   apiUrl?: string;
 }
 
 /**
  * BackendConnectionError Component
- * 
+ *
  * Displays a user-friendly error message when the backend API is unreachable.
  * Provides clear troubleshooting steps and retry functionality.
- * 
+ * Performance: React.memo with useCallback for handlers and useMemo for computed values
+ *
  * This addresses the blank page issue when the backend cannot connect to the database.
  */
-export default function BackendConnectionError({ 
+const BackendConnectionError = React.memo<BackendConnectionErrorProps>(({
   onRetry,
   apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
-}: BackendConnectionErrorProps) {
+}) => {
   const [isRetrying, setIsRetrying] = useState(false);
 
-  const handleRetry = async () => {
+  // Memoize computed URLs to avoid recalculation on every render
+  const { backendUrl, healthUrl } = useMemo(() => ({
+    backendUrl: apiUrl.replace('/api', ''),
+    healthUrl: `${apiUrl.replace('/api', '')}/health`
+  }), [apiUrl]);
+
+  // Memoize retry handler to prevent recreation on every render
+  const handleRetry = useCallback(async () => {
     if (!onRetry) {
       window.location.reload();
       return;
@@ -33,10 +41,12 @@ export default function BackendConnectionError({
       // Keep the spinner for a moment to show activity
       setTimeout(() => setIsRetrying(false), 500);
     }
-  };
+  }, [onRetry]);
 
-  const backendUrl = apiUrl.replace('/api', '');
-  const healthUrl = `${backendUrl}/health`;
+  // Memoize reload handler
+  const handleReload = useCallback(() => {
+    window.location.reload();
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -188,7 +198,7 @@ export default function BackendConnectionError({
             )}
           </button>
           <button
-            onClick={() => window.location.reload()}
+            onClick={handleReload}
             className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-3 px-4 rounded-md transition duration-150 ease-in-out"
           >
             Reload Page
@@ -212,4 +222,9 @@ export default function BackendConnectionError({
       </div>
     </div>
   );
-}
+});
+
+// Display name for debugging
+BackendConnectionError.displayName = 'BackendConnectionError';
+
+export default BackendConnectionError;

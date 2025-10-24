@@ -71,9 +71,12 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         <input
           type="checkbox"
           ref={ref}
+          role="switch"
           className="sr-only"
           disabled={disabled}
           checked={checked}
+          aria-checked={checked ? 'true' : 'false'}
+          aria-required={props.required ? 'true' : undefined}
           aria-describedby={description ? `${props.id}-description` : undefined}
           {...props}
         />

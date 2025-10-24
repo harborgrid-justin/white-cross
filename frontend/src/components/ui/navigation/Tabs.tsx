@@ -95,14 +95,64 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
     const { value: selectedValue, onValueChange, orientation } = useTabs();
     const isSelected = selectedValue === value;
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (disabled) return;
+
+      const tablist = e.currentTarget.parentElement;
+      if (!tablist) return;
+
+      const tabs = Array.from(tablist.querySelectorAll('[role="tab"]:not([disabled])')) as HTMLButtonElement[];
+      const currentIndex = tabs.indexOf(e.currentTarget);
+
+      let nextIndex = currentIndex;
+
+      if (orientation === 'horizontal') {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          nextIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          nextIndex = currentIndex === tabs.length - 1 ? 0 : currentIndex + 1;
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          nextIndex = 0;
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          nextIndex = tabs.length - 1;
+        }
+      } else {
+        // vertical orientation
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          nextIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          nextIndex = currentIndex === tabs.length - 1 ? 0 : currentIndex + 1;
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          nextIndex = 0;
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          nextIndex = tabs.length - 1;
+        }
+      }
+
+      if (nextIndex !== currentIndex && tabs[nextIndex]) {
+        tabs[nextIndex].focus();
+        tabs[nextIndex].click();
+      }
+    };
+
     return (
       <button
         ref={ref}
         role="tab"
         aria-selected={isSelected ? 'true' : 'false'}
         aria-controls={`content-${value}`}
+        id={`trigger-${value}`}
         data-state={isSelected ? 'active' : 'inactive'}
         disabled={disabled}
+        tabIndex={isSelected ? 0 : -1}
         className={cn(
           'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
           orientation === 'vertical' ? 'w-full justify-start' : '',
@@ -112,6 +162,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
           className
         )}
         onClick={() => !disabled && onValueChange?.(value)}
+        onKeyDown={handleKeyDown}
         {...props}
       >
         {children}

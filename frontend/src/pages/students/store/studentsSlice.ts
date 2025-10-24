@@ -6,8 +6,8 @@
  */
 
 import { createSlice, createEntitySlice, EntityApiService, PayloadAction } from '@reduxjs/toolkit';
-import { Student, CreateStudentData, UpdateStudentData, StudentFilters } from '../../types/student.types';
-import { studentsApi } from '../../services/api';
+import { Student, CreateStudentData, UpdateStudentData, StudentFilters } from '../../../types/student.types';
+import { studentsApi } from '../../../services/api';
 
 // UI State types
 export interface StudentUIState {

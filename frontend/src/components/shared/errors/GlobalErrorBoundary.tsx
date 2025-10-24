@@ -47,11 +47,12 @@ interface State {
 // DEFAULT ERROR UI
 // ==========================================
 
-const DefaultErrorFallback: React.FC<{
+// Memoized error fallback component to prevent unnecessary re-renders
+const DefaultErrorFallback = React.memo<{
   error: Error;
   errorInfo: ErrorInfo;
   onReset: () => void;
-}> = ({ error, errorInfo, onReset }) => {
+}>(({ error, errorInfo, onReset }) => {
   const isDev = import.meta.env.DEV;
 
   return (
@@ -148,7 +149,9 @@ const DefaultErrorFallback: React.FC<{
       </div>
     </div>
   );
-};
+});
+
+DefaultErrorFallback.displayName = 'DefaultErrorFallback';
 
 // ==========================================
 // ERROR BOUNDARY COMPONENT

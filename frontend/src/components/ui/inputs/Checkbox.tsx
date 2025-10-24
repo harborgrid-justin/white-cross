@@ -68,6 +68,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               description ? `${props.id}-description` : error ? `${props.id}-error` : undefined
             }
             aria-invalid={error ? 'true' : 'false'}
+            aria-required={props.required ? 'true' : undefined}
             {...props}
           />
         </div>

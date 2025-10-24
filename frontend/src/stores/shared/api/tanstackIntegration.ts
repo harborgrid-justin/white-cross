@@ -347,7 +347,7 @@ export const prefetchUtils = {
   prefetchStudent: (queryClient: QueryClient, studentId: string) => {
     queryClient.prefetchQuery({
       queryKey: queryKeys.students.detail(studentId),
-      queryFn: () => import('../../../../../services/api').then(api => api.studentsApi.getById(studentId)),
+      queryFn: () => import('../../../services/api').then(api => api.studentsApi.getById(studentId)),
       staleTime: 5 * 60 * 1000, // 5 minutes
     });
   },

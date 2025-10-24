@@ -5,9 +5,9 @@
  * Handles CRUD operations for student emergency contact management.
  */
 
-import { createEntitySlice, EntityApiService } from '../sliceFactory';
-import { EmergencyContact, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../types/student.types';
-import { emergencyContactsApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
+import { EmergencyContact, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../../types/student.types';
+import { emergencyContactsApi } from '../../../services/api';
 
 // Emergency contact filters
 interface EmergencyContactFilters {

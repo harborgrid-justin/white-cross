@@ -13,9 +13,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, startOfWeek, addDays, isSameDay, parseISO, addWeeks, subWeeks } from 'date-fns';
-import { appointmentsApi } from '../../services/modules/health/appointmentsApi';
-import { studentsApi } from '../../services/modules/health/studentsApi';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { appointmentsApi } from '../../services/modules/appointmentsApi';
+import { studentsApi } from '../../services/modules/studentsApi';
+import { useAuthContext } from '../../hooks/utilities/AuthContext';
 import { PROTECTED_ROUTES } from '../../constants/routes';
 import type { Appointment, AppointmentStatus, Student } from '../../types';
 
