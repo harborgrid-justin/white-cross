@@ -14,7 +14,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should successfully login as admin', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -24,7 +24,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should successfully login as nurse', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.nurse.email)
@@ -34,7 +34,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should successfully login as counselor', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.counselor.email)
@@ -44,7 +44,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should successfully login as viewer', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.viewer.email)
@@ -54,7 +54,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should store authentication token after login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -68,7 +68,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should store user information after login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -81,7 +81,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should display user name after login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -92,7 +92,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should display user role badge after login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -103,7 +103,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should redirect to dashboard after successful login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -114,7 +114,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should redirect to intended page after login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.goto('/students')
@@ -127,7 +127,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should remember user when remember me is checked', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -141,7 +141,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should set session cookie after login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -155,7 +155,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should clear login form after successful login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email)
@@ -169,7 +169,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should create audit log entry for login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.route('**/api/audit**', (route) => route.fulfill({ status: 200 }))
@@ -183,7 +183,7 @@ test.describe('Authentication - Successful Login', () => {
   })
 
   test('should handle case-insensitive email login', async ({ page }) => {
-    const usersPath = path.join(__dirname, '../../../cypress/fixtures/users.json')
+    const usersPath = path.join(__dirname, '../../../../../../tests/fixtures/users.json')
     const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
 
     await page.getByTestId('email-input').fill(users.admin.email.toUpperCase())
