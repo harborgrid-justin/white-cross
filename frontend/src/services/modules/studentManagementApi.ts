@@ -103,7 +103,7 @@ export class StudentManagementApi {
     formData.append('photo', photoFile);
     
     const response = await this.client.post<ApiResponse<StudentPhoto>>(
-      `/api/v1/operations/student-management/${studentId}/photo`,
+      `/api/v1/student-management/${studentId}/photo`,
       formData,
       {
         headers: {
@@ -119,7 +119,7 @@ export class StudentManagementApi {
    */
   async getPhoto(studentId: string): Promise<StudentPhoto> {
     const response = await this.client.get<ApiResponse<StudentPhoto>>(
-      `/api/v1/operations/student-management/${studentId}/photo`
+      `/api/v1/student-management/${studentId}/photo`
     );
     return response.data.data!;
   }
@@ -135,7 +135,7 @@ export class StudentManagementApi {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
     const response = await this.client.get<PaginatedResponse<AcademicTranscript>>(
-      `/api/v1/operations/student-management/${studentId}/transcripts`,
+      `/api/v1/student-management/${studentId}/transcripts`,
       { params: allParams }
     );
     return response.data;
@@ -149,7 +149,7 @@ export class StudentManagementApi {
     transcriptData: Omit<AcademicTranscript, 'id' | 'studentId' | 'createdAt' | 'updatedAt'>
   ): Promise<AcademicTranscript> {
     const response = await this.client.post<ApiResponse<AcademicTranscript>>(
-      `/api/v1/operations/student-management/${studentId}/transcripts`,
+      `/api/v1/student-management/${studentId}/transcripts`,
       transcriptData
     );
     return response.data.data!;
@@ -164,7 +164,7 @@ export class StudentManagementApi {
     transcriptData: Partial<AcademicTranscript>
   ): Promise<AcademicTranscript> {
     const response = await this.client.put<ApiResponse<AcademicTranscript>>(
-      `/api/v1/operations/student-management/${studentId}/transcripts/${transcriptId}`,
+      `/api/v1/student-management/${studentId}/transcripts/${transcriptId}`,
       transcriptData
     );
     return response.data.data!;
@@ -175,7 +175,7 @@ export class StudentManagementApi {
    */
   async getGradeTransitions(studentId: string): Promise<GradeTransition[]> {
     const response = await this.client.get<ApiResponse<GradeTransition[]>>(
-      `/api/v1/operations/student-management/${studentId}/grade-transitions`
+      `/api/v1/student-management/${studentId}/grade-transitions`
     );
     return response.data.data || [];
   }
@@ -193,7 +193,7 @@ export class StudentManagementApi {
     }
   ): Promise<GradeTransition> {
     const response = await this.client.post<ApiResponse<GradeTransition>>(
-      `/api/v1/operations/student-management/${studentId}/grade-transitions`,
+      `/api/v1/student-management/${studentId}/grade-transitions`,
       transitionData
     );
     return response.data.data!;
@@ -204,7 +204,7 @@ export class StudentManagementApi {
    */
   async scanBarcode(barcode: string): Promise<BarcodeData> {
     const response = await this.client.get<ApiResponse<BarcodeData>>(
-      `/api/v1/operations/student-management/barcode/${barcode}`
+      `/api/v1/student-management/barcode/${barcode}`
     );
     return response.data.data!;
   }
@@ -214,7 +214,7 @@ export class StudentManagementApi {
    */
   async generateBarcode(studentId: string): Promise<{ barcodeUrl: string; barcodeValue: string }> {
     const response = await this.client.post<ApiResponse<{ barcodeUrl: string; barcodeValue: string }>>(
-      `/api/v1/operations/student-management/${studentId}/barcode`
+      `/api/v1/student-management/${studentId}/barcode`
     );
     return response.data.data!;
   }
@@ -232,7 +232,7 @@ export class StudentManagementApi {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
     const response = await this.client.get<PaginatedResponse<WaitlistEntry>>(
-      '/api/v1/operations/student-management/waitlist',
+      '/api/v1/student-management/waitlist',
       { params: allParams }
     );
     return response.data;
@@ -243,7 +243,7 @@ export class StudentManagementApi {
    */
   async addToWaitlist(waitlistData: CreateWaitlistRequest): Promise<WaitlistEntry> {
     const response = await this.client.post<ApiResponse<WaitlistEntry>>(
-      '/api/v1/operations/student-management/waitlist',
+      '/api/v1/student-management/waitlist',
       waitlistData
     );
     return response.data.data!;
@@ -257,7 +257,7 @@ export class StudentManagementApi {
     updateData: UpdateWaitlistRequest
   ): Promise<WaitlistEntry> {
     const response = await this.client.put<ApiResponse<WaitlistEntry>>(
-      `/api/v1/operations/student-management/waitlist/${entryId}`,
+      `/api/v1/student-management/waitlist/${entryId}`,
       updateData
     );
     return response.data.data!;
@@ -268,7 +268,7 @@ export class StudentManagementApi {
    */
   async removeFromWaitlist(entryId: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
-      `/api/v1/operations/student-management/waitlist/${entryId}`
+      `/api/v1/student-management/waitlist/${entryId}`
     );
     return response.data.data!;
   }
@@ -278,7 +278,7 @@ export class StudentManagementApi {
    */
   async getStudentWaitlistEntries(studentId: string): Promise<WaitlistEntry[]> {
     const response = await this.client.get<ApiResponse<WaitlistEntry[]>>(
-      `/api/v1/operations/student-management/${studentId}/waitlist`
+      `/api/v1/student-management/${studentId}/waitlist`
     );
     return response.data.data || [];
   }
