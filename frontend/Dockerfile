@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Build Stage with Node.js and Vite
 # -----------------------------------------------------------------------------
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 
 LABEL maintainer="White Cross DevOps <devops@whitecross.com>"
 LABEL description="White Cross Healthcare Platform - Frontend Build Stage"
@@ -87,7 +87,7 @@ CMD ["nginx", "-g", "daemon off;"]
 # -----------------------------------------------------------------------------
 # Stage 3: Development Runtime with Vite Dev Server
 # -----------------------------------------------------------------------------
-FROM node:18-alpine AS development
+FROM node:20-alpine AS development
 
 LABEL maintainer="White Cross DevOps <devops@whitecross.com>"
 LABEL description="White Cross Healthcare Platform - Development Frontend"

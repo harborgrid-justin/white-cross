@@ -33,7 +33,17 @@
       "Bash(Select-Object -First 10)",
       "Bash(dir:*)",
       "Bash(python:*)",
-      "Bash(Select-Object -First 50)"
+      "Bash(Select-Object -First 50)",
+      "Bash(while read file)",
+      "Bash(do rel_path=\"$file#./\")",
+      "Bash(done)",
+      "Bash(tree:*)",
+      "Bash(mkdir:*)",
+      "Bash(docker --version:*)",
+      "Bash(docker-compose:*)",
+      "Bash(npm install:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker inspect:*)"
     ],
     "deny": [],
     "ask": []
