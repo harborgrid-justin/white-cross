@@ -21,7 +21,7 @@ export interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   checkPermission: (permission: string) => boolean;
@@ -33,11 +33,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string, rememberMe?: boolean) => {
     setIsLoading(true);
     try {
       // TODO: Implement actual login logic
-      console.warn('AuthContext: login() is a stub implementation');
+      console.warn('AuthContext: login() is a stub implementation', { rememberMe });
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       setUser({
@@ -100,5 +100,8 @@ export const useAuth = (): AuthContextValue => {
   }
   return context;
 };
+
+// Alias for backward compatibility
+export const useAuthContext = useAuth;
 
 export default AuthContext;

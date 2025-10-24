@@ -289,7 +289,7 @@ export interface UseMedicationAdministrationReturn {
  *     });
  *   };
  *
- *   return <div>{/* UI */}</div>;
+ *   return <div>...</div>;
  * }
  * ```
  *

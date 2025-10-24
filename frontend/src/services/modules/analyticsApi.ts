@@ -144,7 +144,8 @@ export class AnalyticsApi {
     }
 
     const keysToDelete: string[] = [];
-    for (const key of this.cache.keys()) {
+    const cacheKeys = Array.from(this.cache.keys());
+    for (const key of cacheKeys) {
       if (key.includes(pattern)) {
         keysToDelete.push(key);
       }
@@ -683,7 +684,7 @@ export class AnalyticsApi {
    * Get real-time dashboard updates using polling or WebSocket
    * This method demonstrates how to set up real-time updates
    */
-  async subscribeToRealTimeUpdates(
+  subscribeToRealTimeUpdates(
     dashboardType: 'nurse' | 'admin' | 'school',
     params: any,
     callback: (data: any) => void,
@@ -733,7 +734,7 @@ export class AnalyticsApi {
     reportId: string,
     format: ReportExportFormat
   ): Promise<Blob> {
-    const response = await this.client.get(
+    const response = await this.client.get<Blob>(
       `/api/v1/analytics/reports/${reportId}/export`,
       {
         params: { format },
@@ -777,7 +778,7 @@ export class AnalyticsApi {
     filters: Record<string, any>,
     level: 'summary' | 'detail' | 'record'
   ): Promise<any> {
-    const response = await this.client.get(
+    const response = await this.client.get<ApiResponse<any>>(
       '/api/v1/analytics/drill-down',
       {
         params: {
@@ -800,7 +801,7 @@ export class AnalyticsApi {
     forecastPeriod: number;
     schoolId?: string;
   }): Promise<any> {
-    const response = await this.client.get(
+    const response = await this.client.get<ApiResponse<any>>(
       '/api/v1/analytics/forecast',
       { params }
     );
@@ -828,3 +829,7 @@ export function createAnalyticsApi(client: ApiClient): AnalyticsApi {
 
 // Types are exported from ../types
 // export * from './validation'; // TODO: Restore when validation module is available
+
+// Export singleton instance
+import { apiClient } from '../core/ApiClient';
+export const analyticsApi = createAnalyticsApi(apiClient);
