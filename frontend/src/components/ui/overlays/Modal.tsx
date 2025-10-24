@@ -147,7 +147,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         {/* Backdrop */}
         <div
           className={cn(
-            'fixed inset-0 bg-black bg-opacity-50 transition-opacity',
+            'fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 transition-opacity',
             centered ? 'flex items-center justify-center p-4' : 'pt-16 pb-4'
           )}
           onClick={handleBackdropClick}
@@ -156,7 +156,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           <div
             ref={ref || modalRef}
             className={cn(
-              'relative bg-white rounded-lg shadow-xl transform transition-all w-full',
+              'relative bg-white dark:bg-gray-800 rounded-lg shadow-xl transform transition-all w-full',
               sizeClasses[size],
               !centered && 'mx-auto',
               className
@@ -168,7 +168,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
             {showCloseButton && (
               <button
                 type="button"
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded-md p-1"
                 onClick={onClose}
                 aria-label="Close modal"
               >
@@ -206,7 +206,7 @@ const ModalHeader = React.forwardRef<HTMLDivElement, ModalHeaderProps>(
         ref={ref}
         className={cn(
           'px-6 py-4',
-          divider && 'border-b border-gray-200',
+          divider && 'border-b border-gray-200 dark:border-gray-700',
           className
         )}
         {...props}
@@ -238,7 +238,7 @@ const ModalFooter = React.forwardRef<HTMLDivElement, ModalFooterProps>(
         ref={ref}
         className={cn(
           'px-6 py-4 flex items-center justify-end space-x-3',
-          divider && 'border-t border-gray-200',
+          divider && 'border-t border-gray-200 dark:border-gray-700',
           className
         )}
         {...props}
@@ -255,7 +255,7 @@ const ModalTitle = React.forwardRef<HTMLHeadingElement, ModalTitleProps>(
       <h2
         ref={ref}
         id="modal-title"
-        className={cn('text-lg font-semibold text-gray-900', className)}
+        className={cn('text-lg font-semibold text-gray-900 dark:text-gray-100', className)}
         {...props}
       >
         {children}

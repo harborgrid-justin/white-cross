@@ -90,10 +90,17 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       )
     };
 
+    // Determine aria-live based on variant severity
+    const ariaLive = variant === 'error' || variant === 'danger' || variant === 'warning'
+      ? 'assertive'
+      : 'polite';
+
     return (
       <div
         ref={ref}
         role="alert"
+        aria-live={ariaLive}
+        aria-atomic="true"
         className={cn(
           'relative rounded-lg border transition-all duration-200',
           variantClasses[variant],
