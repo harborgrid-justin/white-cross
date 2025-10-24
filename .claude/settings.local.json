@@ -32,7 +32,8 @@
       "Bash(powershell:*)",
       "Bash(Select-Object -First 10)",
       "Bash(dir:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(Select-Object -First 50)"
     ],
     "deny": [],
     "ask": []
