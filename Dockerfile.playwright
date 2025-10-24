@@ -1,0 +1,67 @@
+# =============================================================================
+# White Cross Healthcare Platform - Playwright Test Container
+# Dedicated container for running E2E tests with all browsers pre-installed
+# =============================================================================
+
+FROM mcr.microsoft.com/playwright:v1.56.1-jammy
+
+LABEL maintainer="White Cross DevOps <devops@whitecross.com>"
+LABEL description="White Cross Healthcare Platform - Playwright E2E Test Runner"
+LABEL version="1.0.0"
+
+# Install additional dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r pwuser && \
+    useradd -r -g pwuser -G audio,video pwuser && \
+    mkdir -p /home/pwuser/Downloads /app && \
+    chown -R pwuser:pwuser /home/pwuser && \
+    chown -R pwuser:pwuser /app
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies as root
+RUN npm ci && \
+    npm cache clean --force
+
+# Copy test configuration and source
+COPY playwright.config.ts ./
+COPY frontend/playwright.config.ts ./frontend/
+COPY frontend/tests ./frontend/tests
+COPY tests ./tests
+
+# Create directories for test artifacts
+RUN mkdir -p \
+    playwright-report \
+    test-results \
+    frontend/playwright-report \
+    frontend/test-results && \
+    chown -R pwuser:pwuser playwright-report test-results frontend
+
+# Switch to non-root user
+USER pwuser
+
+# Environment variables
+ENV CI=true
+ENV PLAYWRIGHT_BASE_URL=http://frontend:8080
+ENV API_BASE_URL=http://backend:3001
+ENV NODE_ENV=test
+
+# Default command - run all tests
+CMD ["npx", "playwright", "test", "--config=frontend/playwright.config.ts"]
+
+# Alternative commands (can be overridden in docker-compose):
+# Run with UI: CMD ["npx", "playwright", "test", "--ui-host=0.0.0.0"]
+# Run specific project: CMD ["npx", "playwright", "test", "--project=chromium"]
+# Run with headed: CMD ["npx", "playwright", "test", "--headed"]
+# Show report: CMD ["npx", "playwright", "show-report", "--host=0.0.0.0"]

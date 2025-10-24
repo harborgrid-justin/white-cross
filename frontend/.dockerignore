@@ -1,5 +1,5 @@
 # =============================================================================
-# Docker Ignore - Root Level
+# Docker Ignore - Frontend
 # Excludes unnecessary files from Docker build context
 # =============================================================================
 
@@ -7,7 +7,6 @@
 .git
 .gitignore
 .gitattributes
-.github
 
 # IDE and Editor
 .vscode
@@ -22,22 +21,31 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
 
 # Build Artifacts
 dist
 build
 *.log
-logs
 
-# Test Artifacts
+# Test Files and Coverage
+tests
+cypress
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
 coverage
 .nyc_output
 test-results
 playwright-report
 cypress/videos
 cypress/screenshots
+e2e
+
+# Documentation
+*.md
+!README.md
+docs
 
 # Environment Files
 .env
@@ -45,31 +53,47 @@ cypress/screenshots
 .env.*.local
 .env.production
 
-# Documentation
-*.md
-!README.md
-docs
-.migration-backup
-
 # Temporary Files
 tmp
 temp
 *.tmp
-.temp
 
 # Docker Files
 Dockerfile*
-docker-compose*.yml
 .dockerignore
+nginx.conf
+
+# TypeScript Config
+tsconfig.json
+tsconfig.*.json
+
+# Vite Config
+vite.config.ts
+vitest.config.ts
+
+# Linting and Formatting
+.eslintrc*
+.prettierrc*
+.eslintcache
+eslint.config.js
+
+# Tailwind Config
+tailwind.config.js
+postcss.config.js
+
+# Playwright Config
+playwright.config.ts
+playwright.config.*.ts
+
+# Cypress Config
+cypress.config.ts
 
 # CI/CD
 .circleci
 .travis.yml
 .gitlab-ci.yml
-azure-pipelines.yml
 
 # Miscellaneous
 .cache
 .npm
-.eslintcache
-.prettierignore
+public/*.map
