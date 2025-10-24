@@ -115,21 +115,27 @@ export enum EmergencyAlertAudience {
 /**
  * Message Template entity
  *
+ * @aligned_with backend/src/database/models/communication/MessageTemplate.ts
+ *
  * Validation constraints:
  * - name: 3-100 characters, required
  * - subject: 0-255 characters, optional
  * - content: 1-50000 characters, required
  * - variables: Array of strings (alphanumeric + underscore only), max 50 items
+ *
+ * PHI/PII Fields:
+ * - createdById: User identifier who created the template (PII)
+ * - content: Template content may reference PHI through variables
  */
 export interface MessageTemplate extends BaseEntity {
   name: string;
   subject?: string;
-  content: string;
+  content: string; // May contain PHI variable references
   type: MessageType;
   category: MessageCategory;
   variables?: string[];
   isActive: boolean;
-  createdById: string;
+  createdById: string; // PII - User identifier
   createdBy?: User;
 }
 
@@ -175,6 +181,8 @@ export interface MessageTemplateFilters {
 /**
  * Message entity
  *
+ * @aligned_with backend/src/database/models/communication/Message.ts
+ *
  * Validation constraints:
  * - subject: 0-255 characters, optional
  * - content: 1-50000 characters, required (SMS: max 1600, Email: max 100000)
@@ -182,16 +190,22 @@ export interface MessageTemplateFilters {
  * - recipientCount: 0-10000
  * - attachments: Max 10 URLs, each max 2048 characters
  * - Emergency category requires URGENT priority
+ *
+ * PHI/PII Fields:
+ * - content: Message content may contain health information (PHI)
+ * - subject: May contain patient/student information (PHI/PII)
+ * - senderId: User identifier who sent the message (PII)
+ * - attachments: May contain documents with PHI
  */
 export interface Message extends BaseEntity {
-  subject?: string;
-  content: string;
+  subject?: string; // May contain PHI/PII
+  content: string; // May contain PHI
   priority: MessagePriority;
   category: MessageCategory;
   templateId?: string;
   scheduledAt?: string;
-  attachments?: string[];
-  senderId: string;
+  attachments?: string[]; // May contain PHI
+  senderId: string; // PII - User identifier
   recipientCount: number;
   sender?: User;
   template?: MessageTemplate;
@@ -259,19 +273,28 @@ export interface MessageFilters extends PaginationParams, DateRangeFilter {
 
 /**
  * Message Delivery entity - tracks individual delivery attempts
+ *
+ * @aligned_with backend/src/database/models/communication/MessageDelivery.ts
+ *
+ * PHI/PII Fields:
+ * - recipientId: Identifier of message recipient (PII)
+ * - contactInfo: Email, phone number, or push token (PII)
+ * - failureReason: May contain delivery details with PHI
+ *
+ * Note: readAt field is UI-specific and not present in backend model
  */
 export interface MessageDelivery extends BaseEntity {
   messageId: string;
-  recipientId: string;
+  recipientId: string; // PII - Recipient identifier
   recipientType: RecipientType;
   channel: MessageType;
   status: DeliveryStatus;
-  contactInfo?: string;
+  contactInfo?: string; // PII - Email/phone/push token
   sentAt?: string;
   deliveredAt?: string;
-  failureReason?: string;
+  failureReason?: string; // May contain PHI
   externalId?: string;
-  readAt?: string;
+  readAt?: string; // UI-specific field (not in backend)
   message?: Message;
 }
 

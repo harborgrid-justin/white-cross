@@ -109,6 +109,10 @@ export enum IntegrationHealth {
 /**
  * Integration Configuration
  * Main entity representing an external system integration
+ *
+ * @aligned_with backend/src/database/models/integration/IntegrationConfig.ts
+ * @security Sensitive fields (apiKey, username, password) should be masked in API responses
+ * @note Backend stores these fields encrypted; frontend should never log or expose them
  */
 export interface IntegrationConfig {
   id: string;
@@ -116,9 +120,9 @@ export interface IntegrationConfig {
   type: IntegrationType;
   status: IntegrationStatus;
   endpoint?: string;
-  apiKey?: string; // Masked in responses for security
+  apiKey?: string; // SECURITY: Encrypted in backend, should be masked in responses
   username?: string;
-  password?: string; // Masked in responses for security
+  password?: string; // SECURITY: Encrypted in backend, should be masked in responses
   settings?: IntegrationSettings;
   isActive: boolean;
   lastSyncAt?: string;
@@ -126,6 +130,8 @@ export interface IntegrationConfig {
   syncFrequency?: number; // In minutes
   createdAt: string;
   updatedAt: string;
+
+  // Frontend-only relationship field
   logs?: IntegrationLog[];
 }
 
@@ -172,6 +178,8 @@ export interface IntegrationSettings {
 /**
  * Integration Log
  * Records all integration operations and their outcomes
+ *
+ * @aligned_with backend/src/database/models/integration/IntegrationLog.ts
  */
 export interface IntegrationLog {
   id: string;
@@ -188,6 +196,8 @@ export interface IntegrationLog {
   errorMessage?: string;
   details?: LogDetails;
   createdAt: string;
+
+  // Frontend-only relationship field
   integration?: {
     name: string;
     type: IntegrationType;

@@ -13,9 +13,23 @@
 /**
  * Validation Schemas Barrel Export
  * Central export point for all validation schemas
+ *
+ * Backend Synchronized: These schemas match backend Joi validators
+ * Last Sync: 2025-10-24
  */
 
-export * from './incidentReportValidation';
-export * from './emergencyContactSchemas';
+// Critical healthcare validation schemas
+export * from './medicationSchemas';
+export * from './healthRecordSchemas';
+
+// User and student management
+export * from './userSchemas';
+export * from './studentSchemas';
+
+// Security and compliance
 export * from './accessControlSchemas';
+
+// Operations and communications
+export * from './emergencyContactSchemas';
 export * from './communicationSchemas';
+export * from './incidentReportValidation';
