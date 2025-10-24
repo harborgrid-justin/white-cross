@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Vendor {
   id: string;
@@ -27,7 +27,7 @@ interface Vendor {
 }
 
 const InventoryVendors: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
 

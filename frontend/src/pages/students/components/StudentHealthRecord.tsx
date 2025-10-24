@@ -13,14 +13,14 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shield, AlertTriangle, ArrowLeft } from 'lucide-react'
-import { useAuthContext } from '../../../../contexts/AuthContext'
+import { useAuth } from '../../../../contexts/AuthContext'
 import { healthRecordsApi } from '../../../../services/api'
 
 interface StudentHealthRecordProps {}
 
 export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
   const { studentId } = useParams<{ studentId: string }>()
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [showSensitiveWarning, setShowSensitiveWarning] = useState(false)
   const [hasConfirmedAccess, setHasConfirmedAccess] = useState(false)

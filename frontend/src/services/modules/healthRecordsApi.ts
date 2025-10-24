@@ -39,6 +39,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
 import { z } from 'zod';
 import {
@@ -2262,3 +2263,9 @@ export type CreateVaccinationRequest = VaccinationCreate;
 export function createHealthRecordsApi(client: ApiClient): HealthRecordsApi {
   return new HealthRecordsApi(client);
 }
+
+/**
+ * Singleton instance of HealthRecordsApi
+ * Pre-configured with the default apiClient
+ */
+export const healthRecordsApi = createHealthRecordsApi(apiClient);

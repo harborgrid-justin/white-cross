@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ScheduledReport {
   id: string;
@@ -29,7 +29,7 @@ interface ScheduledReport {
 }
 
 const ScheduledReports: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [schedules, setSchedules] = useState<ScheduledReport[]>([]);
   const [loading, setLoading] = useState(true);
 

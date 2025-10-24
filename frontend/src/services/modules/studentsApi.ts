@@ -11,6 +11,7 @@
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
 import { z } from 'zod';
@@ -751,9 +752,10 @@ export class StudentsApi {
   }
 }
 
-// Export singleton instance
-
 // Factory function for creating StudentsApi instances
 export function createStudentsApi(client: ApiClient): StudentsApi {
   return new StudentsApi(client);
 }
+
+// Export singleton instance
+export const studentsApi = createStudentsApi(apiClient);

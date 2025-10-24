@@ -1,13 +1,42 @@
 /**
  * Integration Module Components
- * 
+ *
  * Component exports for integration functionality.
  */
 
+// Main Dashboard and Overview
 export { default as IntegrationDashboard } from './IntegrationDashboard';
 export { default as IntegrationOverview } from './IntegrationOverview';
 export { default as IntegrationStatus } from './IntegrationStatus';
 export { default as IntegrationMetrics } from './IntegrationMetrics';
+
+// Integration Management
+export { default as IntegrationsList } from './IntegrationsList';
+export { default as IntegrationDetails } from './IntegrationDetails';
+export { default as IntegrationForm } from './IntegrationForm';
+
+// Statistics and Analytics
+export { default as StatisticsCharts } from './StatisticsCharts';
+
+// Testing and Diagnostics
+export { default as ConnectionTest } from './ConnectionTest';
+export { default as IntegrationWizard } from './IntegrationWizard';
+export { default as Diagnostics } from './Diagnostics';
+
+// Sync and Controls
+export { default as SyncControls } from './SyncControls';
+export { default as BatchActions } from './BatchActions';
+export { default as WebhookConfiguration } from './WebhookConfiguration';
+
+// Type-Specific Setup
+export { default as SISIntegrationSetup } from './SISIntegrationSetup';
+export { default as EHRIntegrationSetup } from './EHRIntegrationSetup';
+export { default as PharmacyIntegrationSetup } from './PharmacyIntegrationSetup';
+export { default as LaboratoryIntegrationSetup } from './LaboratoryIntegrationSetup';
+export { default as InsuranceIntegrationSetup } from './InsuranceIntegrationSetup';
+
+// Health Status (Integration-specific)
+export { default as HealthStatus } from './HealthStatus';
 export { default as APIIntegrations } from './APIIntegrations';
 export { default as APIList } from './APIList';
 export { default as APICard } from './APICard';

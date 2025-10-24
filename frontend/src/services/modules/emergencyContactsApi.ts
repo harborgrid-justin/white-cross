@@ -51,6 +51,7 @@ export interface UpdateEmergencyContactData {
   notes?: string
 }
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
@@ -178,5 +179,11 @@ class EmergencyContactsApiImpl implements IEmergencyContactsApi {
 export function createEmergencyContactsApi(client: ApiClient): IEmergencyContactsApi {
   return new EmergencyContactsApiImpl(client);
 }
+
+/**
+ * Singleton instance of EmergencyContactsApi
+ * Pre-configured with the default apiClient
+ */
+export const emergencyContactsApi = createEmergencyContactsApi(apiClient);
 
 export type { IEmergencyContactsApi }

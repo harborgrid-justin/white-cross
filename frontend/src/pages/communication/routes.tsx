@@ -1,7 +1,7 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '../../routes';
-import { Communication } from './components';
+import Communication from './Communication';
 
 export const communicationRoutes: RouteObject[] = [
   {

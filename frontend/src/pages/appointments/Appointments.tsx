@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Plus, Search, Filter, Clock, User, FileText } from 'lucide-react';
 import { appointmentsApi } from '../../services';
 import { PROTECTED_ROUTES, buildAppointmentRoute } from '../../constants/routes';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Appointment {
   id: string;
@@ -40,7 +40,7 @@ interface AppointmentFilters {
 }
 
 const Appointments: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

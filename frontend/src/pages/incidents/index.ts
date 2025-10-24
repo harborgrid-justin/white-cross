@@ -5,7 +5,8 @@
  */
 
 // Page Components
-export { default as Incidents } from './Incidents';
+export { default as IncidentReports } from './IncidentReports';
+export { default as IncidentReportDetail } from './IncidentReportDetail';
 
 // Page-specific Components
 export * from './components';

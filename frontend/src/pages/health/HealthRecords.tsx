@@ -12,13 +12,13 @@
 
 import React, { useState } from 'react';
 import { FileText, AlertTriangle, Activity } from 'lucide-react';
-import { useAuthContext } from '../../hooks/utilities/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Health Records Page Component
  */
 export default function HealthRecords() {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
 
   return (

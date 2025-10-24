@@ -162,6 +162,7 @@ export interface InventoryFilters {
   lowStock?: boolean;
   needsMaintenance?: boolean;
   isActive?: boolean;
+  search?: string;
 }
 
 // Inventory API Service Adapter

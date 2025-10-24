@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface InventoryTransaction {
   id: string;
@@ -32,7 +32,7 @@ interface InventoryTransaction {
 }
 
 const InventoryTransactions: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
   const [loading, setLoading] = useState(true);
 

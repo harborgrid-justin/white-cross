@@ -8,12 +8,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from '../../routes';
-import {
-  BudgetOverview,
-  BudgetPlanning,
-  BudgetReports,
-  BudgetTracking,
-} from './components';
+import { BudgetOverview } from './BudgetOverview';
+import { BudgetPlanning } from './BudgetPlanning';
+import { BudgetReports } from './BudgetReports';
+import { BudgetTracking } from './BudgetTracking';
 
 export const BudgetRoutes: React.FC = () => {
   return (

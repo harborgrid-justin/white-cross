@@ -84,7 +84,7 @@ export default function Medications() {
       defaultFilters: {
         searchTerm: '',
         dosageForm: '',
-        controlledStatus: '',
+        controlledStatus: 'all' as 'all' | 'controlled' | 'non-controlled',
       },
       syncWithUrl: true,
       debounceMs: 300,

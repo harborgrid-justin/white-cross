@@ -210,6 +210,12 @@ export const buildAppointmentRoute = (appointmentId: string | number) =>
   buildRoute(PROTECTED_ROUTES.APPOINTMENTS_DETAIL, { id: appointmentId });
 
 /**
+ * Build appointment edit route
+ */
+export const buildAppointmentEditRoute = (appointmentId: string | number) =>
+  buildRoute(PROTECTED_ROUTES.APPOINTMENTS_EDIT, { id: appointmentId });
+
+/**
  * Build incident report detail route
  */
 export const buildIncidentReportRoute = (reportId: string | number) =>

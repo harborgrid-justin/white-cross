@@ -16,6 +16,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse } from '../types';
 import { z } from 'zod';
@@ -486,3 +487,9 @@ export class BudgetApi {
 export function createBudgetApi(client: ApiClient): BudgetApi {
   return new BudgetApi(client);
 }
+
+/**
+ * Singleton instance of BudgetApi
+ * Pre-configured with the default apiClient
+ */
+export const budgetApi = createBudgetApi(apiClient);
