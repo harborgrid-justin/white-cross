@@ -42,6 +42,7 @@ import { sequelize } from '../config/sequelize';
 import { User } from './core/User';
 import { Student } from './core/Student';
 import { EmergencyContact } from './core/EmergencyContact';
+import { Contact } from './core/Contact';
 import { Medication } from './core/Medication';
 
 // ============ MEDICATIONS MODELS ============
@@ -455,6 +456,7 @@ export {
   User,
   Student,
   EmergencyContact,
+  Contact,
   Medication,
   // Medications models
   StudentMedication,
