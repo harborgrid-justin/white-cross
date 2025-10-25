@@ -1,3 +1,31 @@
+/**
+ * LOC: USER-SVC-001
+ * WC-SVC-USER-001 | User Service Main
+ *
+ * UPSTREAM (imports from):
+ *   - logger.ts (utils/logger.ts)
+ *   - shared utilities (password hashing, validation)
+ *   - database models (User, Student, Appointment, etc.)
+ *   - user.repository.ts (data access layer)
+ *
+ * DOWNSTREAM (imported by):
+ *   - routes/v1/core/users.ts
+ *   - routes/v1/core/auth.ts
+ */
+
+/**
+ * WC-SVC-USER-001 | User Service Main
+ * Purpose: Core user management service for authentication, authorization, and user lifecycle
+ * Upstream: database/models/User, user.repository, shared utilities | Dependencies: Sequelize, bcrypt
+ * Downstream: User routes, Auth routes | Called by: API routes
+ * Related: RBACService, AuditService, StudentService
+ * Exports: UserService class, user-related types
+ * Last Updated: 2025-10-25 | File Type: .ts
+ * Critical Path: Authentication → User management → Role-based access control
+ * LLM Context: HIPAA-compliant user management with comprehensive audit logging for PHI access
+ *
+ * @module services/user
+ */
 
 import { Op, QueryTypes } from 'sequelize';
 import { logger } from '../../utils/logger';
@@ -14,6 +42,15 @@ import {
 import { UserRole } from '../../database/types/enums';
 import { userRepository } from './user.repository';
 
+/**
+ * Data structure for creating a new user
+ *
+ * @property {string} email - User's email address (unique identifier)
+ * @property {string} password - Plain text password (will be hashed before storage)
+ * @property {string} firstName - User's first name
+ * @property {string} lastName - User's last name
+ * @property {UserRole} role - User's role (ADMIN, NURSE, SCHOOL_ADMIN, etc.)
+ */
 export interface CreateUserData {
   email: string;
   password: string;
@@ -22,6 +59,16 @@ export interface CreateUserData {
   role: UserRole;
 }
 
+/**
+ * Data structure for updating user information
+ * All fields are optional to support partial updates
+ *
+ * @property {string} [email] - Updated email address
+ * @property {string} [firstName] - Updated first name
+ * @property {string} [lastName] - Updated last name
+ * @property {UserRole} [role] - Updated user role
+ * @property {boolean} [isActive] - Active status (for deactivation/reactivation)
+ */
 export interface UpdateUserData {
   email?: string;
   firstName?: string;
@@ -30,17 +77,39 @@ export interface UpdateUserData {
   isActive?: boolean;
 }
 
+/**
+ * Data structure for password change operations
+ *
+ * @property {string} currentPassword - Current password for verification
+ * @property {string} newPassword - New password to set
+ */
 export interface ChangePasswordData {
   currentPassword: string;
   newPassword: string;
 }
 
+/**
+ * Filters for user queries
+ *
+ * @property {string} [search] - Search term for name or email
+ * @property {UserRole} [role] - Filter by specific role
+ * @property {boolean} [isActive] - Filter by active status
+ */
 export interface UserFilters {
   search?: string;
   role?: UserRole;
   isActive?: boolean;
 }
 
+/**
+ * User statistics aggregation
+ *
+ * @property {number} total - Total number of users
+ * @property {number} active - Number of active users
+ * @property {number} inactive - Number of inactive users
+ * @property {Record<string, number>} byRole - User count by role
+ * @property {number} recentLogins - Users logged in within last 30 days
+ */
 export interface UserStatistics {
   total: number;
   active: number;
@@ -49,9 +118,77 @@ export interface UserStatistics {
   recentLogins: number; // users logged in within last 30 days
 }
 
+/**
+ * User Service
+ *
+ * Comprehensive user management service for the White Cross healthcare platform.
+ * Handles user lifecycle operations including creation, authentication, role management,
+ * and activity tracking. All operations include audit logging for HIPAA compliance.
+ *
+ * Key Responsibilities:
+ * - User CRUD operations with validation
+ * - Password management with secure hashing (bcrypt)
+ * - Role-based access control integration
+ * - User search and filtering
+ * - Activity statistics and reporting
+ * - Nurse assignment and availability tracking
+ *
+ * Security Features:
+ * - Bcrypt password hashing with salt
+ * - Email uniqueness validation
+ * - Secure password reset workflow
+ * - Comprehensive audit logging
+ *
+ * @example
+ * ```typescript
+ * // Create a new nurse user
+ * const newUser = await UserService.createUser({
+ *   email: 'nurse@school.edu',
+ *   password: 'SecurePass123!',
+ *   firstName: 'Jane',
+ *   lastName: 'Doe',
+ *   role: UserRole.NURSE
+ * });
+ *
+ * // Get paginated users with search
+ * const result = await UserService.getUsers(1, 20, {
+ *   search: 'jane',
+ *   role: UserRole.NURSE,
+ *   isActive: true
+ * });
+ * ```
+ *
+ * @since 1.0.0
+ */
 export class UserService {
   /**
    * Get paginated list of users with optional filters
+   *
+   * Retrieves users with pagination, search, and role-based filtering.
+   * Includes related entity counts (students, appointments, incident reports)
+   * for each user to provide comprehensive user activity overview.
+   *
+   * @param {number} [page=1] - Page number for pagination (1-indexed)
+   * @param {number} [limit=20] - Number of users per page
+   * @param {UserFilters} [filters={}] - Optional filters (search, role, isActive)
+   * @returns {Promise<{users: User[], pagination: {total: number, page: number, limit: number, pages: number}}>} Paginated user list with metadata
+   * @throws {Error} Database query errors
+   *
+   * @example
+   * ```typescript
+   * // Get first page of active nurses
+   * const result = await UserService.getUsers(1, 20, {
+   *   role: UserRole.NURSE,
+   *   isActive: true
+   * });
+   *
+   * // Search for users by name or email
+   * const searchResults = await UserService.getUsers(1, 10, {
+   *   search: 'john'
+   * });
+   * ```
+   *
+   * @since 1.0.0
    */
   static async getUsers(
     page: number = 1,
@@ -159,7 +296,24 @@ export class UserService {
   }
 
   /**
-   * Get user by ID
+   * Get user by ID with complete activity profile
+   *
+   * Retrieves a single user with comprehensive activity counts including
+   * appointments, incident reports, medication logs, and inventory transactions.
+   * Useful for user detail views and activity monitoring.
+   *
+   * @param {string} id - User UUID
+   * @returns {Promise<User & {_count: object}>} User with activity counts
+   * @throws {Error} If user not found or database error occurs
+   *
+   * @example
+   * ```typescript
+   * const user = await UserService.getUserById('uuid-here');
+   * console.log(user._count.appointments); // Number of appointments
+   * console.log(user._count.medicationLogs); // Number of medication administrations
+   * ```
+   *
+   * @since 1.0.0
    */
   static async getUserById(id: string) {
     try {
@@ -194,6 +348,26 @@ export class UserService {
 
   /**
    * Create new user
+   *
+   * Creates a new user with secure password hashing (bcrypt) and email uniqueness
+   * validation. Automatically sets user as active. Logs creation for audit trail.
+   *
+   * @param {CreateUserData} data - User creation data (email, password, firstName, lastName, role)
+   * @returns {Promise<{id: string, email: string, firstName: string, lastName: string, role: UserRole, isActive: boolean, createdAt: Date}>} Created user (password excluded)
+   * @throws {Error} If email already exists or validation fails
+   *
+   * @example
+   * ```typescript
+   * const newNurse = await UserService.createUser({
+   *   email: 'jane.doe@school.edu',
+   *   password: 'SecurePass123!',
+   *   firstName: 'Jane',
+   *   lastName: 'Doe',
+   *   role: UserRole.NURSE
+   * });
+   * ```
+   *
+   * @since 1.0.0
    */
   static async createUser(data: CreateUserData) {
     try {
@@ -233,6 +407,30 @@ export class UserService {
 
   /**
    * Update user
+   *
+   * Updates user information with partial data support. Validates email uniqueness
+   * if email is being changed. Excludes password updates (use changePassword instead).
+   *
+   * @param {string} id - User UUID
+   * @param {UpdateUserData} data - Partial user data to update
+   * @returns {Promise<{id: string, email: string, firstName: string, lastName: string, role: UserRole, isActive: boolean, updatedAt: Date}>} Updated user
+   * @throws {Error} If user not found, email already in use, or validation fails
+   *
+   * @example
+   * ```typescript
+   * // Update user role
+   * const updated = await UserService.updateUser('user-uuid', {
+   *   role: UserRole.SCHOOL_ADMIN
+   * });
+   *
+   * // Update multiple fields
+   * const updated = await UserService.updateUser('user-uuid', {
+   *   firstName: 'Jane',
+   *   email: 'jane.new@school.edu'
+   * });
+   * ```
+   *
+   * @since 1.0.0
    */
   static async updateUser(id: string, data: UpdateUserData) {
     try {
@@ -277,6 +475,25 @@ export class UserService {
 
   /**
    * Change user password
+   *
+   * Allows users to change their password with current password verification.
+   * Uses bcrypt for secure password comparison and hashing. Recommended for
+   * user-initiated password changes (not admin resets).
+   *
+   * @param {string} id - User UUID
+   * @param {ChangePasswordData} data - Current and new password
+   * @returns {Promise<{success: boolean}>} Success indicator
+   * @throws {Error} If user not found or current password is incorrect
+   *
+   * @example
+   * ```typescript
+   * await UserService.changePassword('user-uuid', {
+   *   currentPassword: 'OldPass123!',
+   *   newPassword: 'NewSecurePass456!'
+   * });
+   * ```
+   *
+   * @since 1.0.0
    */
   static async changePassword(id: string, data: ChangePasswordData) {
     try {
@@ -307,6 +524,22 @@ export class UserService {
 
   /**
    * Deactivate user (soft delete)
+   *
+   * Marks user as inactive without deleting data. Deactivated users cannot
+   * log in but their historical data remains for audit and compliance purposes.
+   * Preferred over hard deletion for HIPAA compliance.
+   *
+   * @param {string} id - User UUID
+   * @returns {Promise<{id: string, firstName: string, lastName: string, email: string, isActive: boolean}>} Deactivated user
+   * @throws {Error} If user not found
+   *
+   * @example
+   * ```typescript
+   * const deactivated = await UserService.deactivateUser('user-uuid');
+   * console.log(deactivated.isActive); // false
+   * ```
+   *
+   * @since 1.0.0
    */
   static async deactivateUser(id: string) {
     try {
@@ -337,6 +570,21 @@ export class UserService {
 
   /**
    * Reactivate user
+   *
+   * Reactivates a previously deactivated user, allowing them to log in again.
+   * All historical data and settings are preserved from before deactivation.
+   *
+   * @param {string} id - User UUID
+   * @returns {Promise<{id: string, firstName: string, lastName: string, email: string, isActive: boolean}>} Reactivated user
+   * @throws {Error} If user not found
+   *
+   * @example
+   * ```typescript
+   * const reactivated = await UserService.reactivateUser('user-uuid');
+   * console.log(reactivated.isActive); // true
+   * ```
+   *
+   * @since 1.0.0
    */
   static async reactivateUser(id: string) {
     try {
@@ -367,6 +615,23 @@ export class UserService {
 
   /**
    * Get user statistics
+   *
+   * Provides comprehensive user statistics including total counts, active/inactive
+   * breakdown, role distribution, and recent activity metrics. Useful for
+   * admin dashboards and system monitoring.
+   *
+   * @returns {Promise<UserStatistics>} User statistics object
+   * @throws {Error} Database query errors
+   *
+   * @example
+   * ```typescript
+   * const stats = await UserService.getUserStatistics();
+   * console.log(`Total users: ${stats.total}`);
+   * console.log(`Active nurses: ${stats.byRole.NURSE}`);
+   * console.log(`Recent logins: ${stats.recentLogins}`);
+   * ```
+   *
+   * @since 1.0.0
    */
   static async getUserStatistics(): Promise<UserStatistics> {
     try {
@@ -411,6 +676,24 @@ export class UserService {
 
   /**
    * Get users by role
+   *
+   * Retrieves all active users with a specific role. Useful for populating
+   * dropdowns, assignment lists, and role-specific operations.
+   *
+   * @param {UserRole} role - User role to filter by
+   * @returns {Promise<User[]>} List of users with the specified role
+   * @throws {Error} Database query errors
+   *
+   * @example
+   * ```typescript
+   * // Get all nurses for student assignment
+   * const nurses = await UserService.getUsersByRole(UserRole.NURSE);
+   *
+   * // Get all admins
+   * const admins = await UserService.getUsersByRole(UserRole.ADMIN);
+   * ```
+   *
+   * @since 1.0.0
    */
   static async getUsersByRole(role: UserRole) {
     try {
@@ -425,6 +708,24 @@ export class UserService {
 
   /**
    * Reset user password (admin function)
+   *
+   * Administrative password reset without requiring current password verification.
+   * Should only be called by administrators. Does not validate current password.
+   * User should be prompted to change password on next login.
+   *
+   * @param {string} id - User UUID
+   * @param {string} newPassword - New password to set (will be hashed)
+   * @returns {Promise<{success: boolean}>} Success indicator
+   * @throws {Error} If user not found
+   *
+   * @example
+   * ```typescript
+   * // Admin resets forgotten password
+   * await UserService.resetUserPassword('user-uuid', 'TempPassword123!');
+   * // User should be notified to change password on next login
+   * ```
+   *
+   * @since 1.0.0
    */
   static async resetUserPassword(id: string, newPassword: string) {
     try {
@@ -449,6 +750,23 @@ export class UserService {
 
   /**
    * Get nurses available for student assignment
+   *
+   * Retrieves all active nurses with their current student assignment counts.
+   * Useful for load balancing when assigning students to nurses and for
+   * displaying nurse availability in assignment interfaces.
+   *
+   * @returns {Promise<Array<User & {_count: {nurseManagedStudents: number}, currentStudentCount: number}>>} Nurses with student counts
+   * @throws {Error} Database query errors
+   *
+   * @example
+   * ```typescript
+   * const nurses = await UserService.getAvailableNurses();
+   * const leastBusyNurse = nurses.reduce((min, nurse) =>
+   *   nurse.currentStudentCount < min.currentStudentCount ? nurse : min
+   * );
+   * ```
+   *
+   * @since 1.0.0
    */
   static async getAvailableNurses() {
     try {
