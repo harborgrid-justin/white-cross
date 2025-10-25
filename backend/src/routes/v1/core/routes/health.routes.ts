@@ -5,29 +5,54 @@
 
 import { ServerRoute } from '@hapi/hapi';
 import Joi from 'joi';
+import { sequelize } from '../../../../database/models';
 
 /**
  * Basic health check endpoint
  * No authentication required - used by monitoring systems
+ * Actually verifies database connectivity before returning status
  */
 export const healthRoutes: ServerRoute[] = [
   {
     method: 'GET',
     path: '/api/v1/health',
-    handler: (_request, h) => {
-      return h.response({
-        status: 'OK',
-        message: 'White Cross Healthcare Platform API is operational',
+    handler: async (_request, h) => {
+      let dbStatus = 'disconnected';
+      let overallStatus = 'OK';
+      let statusCode = 200;
+
+      // Actually check database connection
+      try {
+        await sequelize.authenticate();
+        dbStatus = 'connected';
+      } catch (error) {
+        dbStatus = 'error';
+        overallStatus = 'DEGRADED';
+        statusCode = 503; // Service Unavailable
+      }
+
+      const response = {
+        status: overallStatus,
+        message: overallStatus === 'OK'
+          ? 'White Cross Healthcare Platform API is operational'
+          : 'API is experiencing issues with database connectivity',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        version: '1.0.0',
+        version: process.env.npm_package_version || '1.0.0',
         environment: process.env.NODE_ENV || 'development',
         services: {
           api: 'healthy',
-          database: 'connected',
+          database: dbStatus,
           authentication: 'active'
+        },
+        memory: {
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          unit: 'MB'
         }
-      }).code(200);
+      };
+
+      return h.response(response).code(statusCode);
     },
     options: {
       auth: false,
@@ -71,10 +96,36 @@ export const healthRoutes: ServerRoute[] = [
                 environment: Joi.string().valid('development', 'staging', 'production').example('production').description('Deployment environment'),
                 services: Joi.object({
                   api: Joi.string().valid('healthy', 'degraded', 'down').example('healthy').description('API service status'),
-                  database: Joi.string().valid('connected', 'disconnected', 'error').example('connected').description('Database connection status'),
+                  database: Joi.string().valid('connected', 'disconnected', 'error').example('connected').description('Database connection status (verified)'),
                   authentication: Joi.string().valid('active', 'inactive', 'error').example('active').description('Authentication service status')
-                }).description('Individual service health indicators')
+                }).description('Individual service health indicators'),
+                memory: Joi.object({
+                  total: Joi.number().min(0).example(256).description('Total heap memory in MB'),
+                  used: Joi.number().min(0).example(128).description('Used heap memory in MB'),
+                  unit: Joi.string().valid('MB').example('MB').description('Memory unit')
+                }).description('Memory usage statistics')
               }).label('HealthCheckResponse')
+            },
+            '503': {
+              description: 'Service degraded - Database connection failed',
+              schema: Joi.object({
+                status: Joi.string().valid('DEGRADED').example('DEGRADED'),
+                message: Joi.string().example('API is experiencing issues with database connectivity'),
+                timestamp: Joi.string().isoDate(),
+                uptime: Joi.number().min(0),
+                version: Joi.string(),
+                environment: Joi.string(),
+                services: Joi.object({
+                  api: Joi.string().valid('healthy'),
+                  database: Joi.string().valid('error', 'disconnected'),
+                  authentication: Joi.string()
+                }),
+                memory: Joi.object({
+                  total: Joi.number(),
+                  used: Joi.number(),
+                  unit: Joi.string()
+                })
+              }).label('HealthCheckDegradedResponse')
             }
           },
           security: []  // Explicitly no security required

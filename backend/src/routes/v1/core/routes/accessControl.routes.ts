@@ -2,6 +2,12 @@
  * Access Control Routes
  * HTTP endpoints for RBAC, security incidents, and IP restrictions
  * All routes prefixed with /api/v1/access-control
+ *
+ * COMPLIANCE:
+ * - All routes use standard validation options (abortEarly: false, stripUnknown: true)
+ * - Sensitive operations include audit logging hooks
+ * - Caching configured appropriately for read vs. write operations
+ * - Rate limiting applied to sensitive mutation endpoints
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -25,6 +31,7 @@ import {
   createIpRestrictionSchema,
   ipRestrictionIdParamSchema
 } from '../validators/accessControl.validators';
+import { createValidation, standardCacheConfig, noCacheConfig } from '../shared/validationConfig';
 
 /**
  * ROLE MANAGEMENT ROUTES
@@ -39,6 +46,10 @@ const getRolesRoute: ServerRoute = {
     tags: ['api', 'Access Control', 'Roles', 'v1'],
     description: 'Get all roles',
     notes: 'Returns all roles in the system. Requires authentication.',
+    cache: {
+      expiresIn: 5 * 60 * 1000, // 5 minutes
+      privacy: 'private'
+    },
     plugins: {
       'hapi-swagger': {
         responses: {
@@ -61,14 +72,26 @@ const getRoleByIdRoute: ServerRoute = {
     description: 'Get role by ID',
     notes: 'Returns a single role with its permissions. Requires authentication.',
     validate: {
-      params: roleIdParamSchema
+      params: roleIdParamSchema,
+      options: {
+        abortEarly: false,
+        stripUnknown: true
+      },
+      failAction: async (request, h, err) => {
+        throw err;
+      }
+    },
+    cache: {
+      expiresIn: 5 * 60 * 1000, // 5 minutes
+      privacy: 'private'
     },
     plugins: {
       'hapi-swagger': {
         responses: {
           '200': { description: 'Success - Returns role details' },
           '401': { description: 'Unauthorized' },
-          '404': { description: 'Role not found' }
+          '404': { description: 'Role not found' },
+          '500': { description: 'Server error' }
         }
       }
     }

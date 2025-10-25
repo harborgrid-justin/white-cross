@@ -30,6 +30,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'GET',
     path: '/api/v1/contacts',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -87,6 +88,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'GET',
     path: '/api/v1/contacts/{id}',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -124,6 +126,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'POST',
     path: '/api/v1/contacts',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -178,6 +181,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'PUT',
     path: '/api/v1/contacts/{id}',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -235,6 +239,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'POST',
     path: '/api/v1/contacts/{id}/deactivate',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -265,7 +270,7 @@ export const contactRoutes: ServerRoute[] = [
       const { id } = request.params;
       const user = request.auth.credentials as any;
       await ContactService.deactivateContact(id, user?.id);
-      return h.response({ success: true, message: 'Contact deactivated successfully' }).code(200);
+      return h.response().code(204);
     },
   },
 
@@ -274,6 +279,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'POST',
     path: '/api/v1/contacts/{id}/activate',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -303,7 +309,7 @@ export const contactRoutes: ServerRoute[] = [
     handler: async (request, h) => {
       const { id } = request.params;
       await ContactService.activateContact(id);
-      return h.response({ success: true, message: 'Contact activated successfully' }).code(200);
+      return h.response().code(204);
     },
   },
 
@@ -312,6 +318,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'GET',
     path: '/api/v1/contacts/search',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -349,6 +356,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'GET',
     path: '/api/v1/contacts/by-relation/{relationTo}',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,
@@ -389,6 +397,7 @@ export const contactRoutes: ServerRoute[] = [
     method: 'GET',
     path: '/api/v1/contacts/stats',
     options: {
+      auth: 'jwt',
       pre: [
         requirePermission({
           resource: Resource.Contact,

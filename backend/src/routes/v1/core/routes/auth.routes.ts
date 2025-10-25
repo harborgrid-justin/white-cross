@@ -350,11 +350,11 @@ Returns complete user profile including:
   },
   {
     method: 'GET',
-    path: '/api/auth/test-login',
+    path: '/api/v1/auth/test-login',
     handler: asyncHandler(AuthController.testLogin),
     options: {
       auth: false,
-      tags: ['api', 'Authentication', 'Testing'],
+      tags: ['api', 'Authentication', 'Testing', 'v1'],
       description: 'Test login endpoint for E2E testing (Development/Test only)',
       notes: `Quick login endpoint for E2E testing. Only available in non-production environments.
 
