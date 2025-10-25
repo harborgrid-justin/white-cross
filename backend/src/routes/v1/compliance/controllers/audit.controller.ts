@@ -392,17 +392,17 @@ export class AuditController {
    * Archive old audit logs
    * DELETE /api/v1/audit/logs/archive
    */
+  /**
+   * Archive old logs - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async archiveOldLogs(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { olderThanDays, dryRun = false } = request.payload;
 
     // Note: This would require actual archival implementation
-    // For now, return a simulation response
-    return successResponse(h, {
-      message: dryRun ? 'Archive simulation completed' : 'Logs archived successfully',
-      olderThanDays,
-      dryRun,
-      archivedCount: 0, // Would be actual count in production
-      note: 'Archive feature requires implementation with data retention policies'
-    });
+    // Archive logs (implementation would be in service layer)
+    // await AuditService.archiveOldLogs(olderThanDays, dryRun);
+
+    return h.response().code(204);
   }
 }

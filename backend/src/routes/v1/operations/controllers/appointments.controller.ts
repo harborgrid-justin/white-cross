@@ -221,13 +221,17 @@ export class AppointmentsController {
   /**
    * Remove student from waitlist
    */
+  /**
+   * Remove from waitlist - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async removeFromWaitlist(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const { reason } = request.payload;
 
-    const result = await AppointmentService.removeFromWaitlist(id, reason);
+    await AppointmentService.removeFromWaitlist(id, reason);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**

@@ -86,18 +86,19 @@ export class IncidentsController {
     return successResponse(h, { incident });
   }
 
+  /**
+   * Delete (archive) incident - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async delete(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
 
     // Soft delete by updating status to ARCHIVED
-    const incident = await IncidentCoreService.updateIncidentReport(id, {
+    await IncidentCoreService.updateIncidentReport(id, {
       status: 'ARCHIVED'
     });
 
-    return successResponse(h, {
-      message: 'Incident report archived successfully',
-      incident
-    });
+    return h.response().code(204);
   }
 
   /**

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  Edit, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  User, 
+import {
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  Phone,
+  Mail,
+  MapPin,
+  User,
   Users,
   Shield,
   AlertTriangle,
@@ -15,6 +15,7 @@ import {
   Clock,
   Trash2
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { contactsApi } from '../../services';
 
 interface EmergencyContact {
@@ -170,9 +171,143 @@ const EmergencyContacts: React.FC = () => {
   };
 
   const handleEditContact = (contact: EmergencyContact) => {
-    setSelectedContact(contact);
-    setShowContactModal(true);
-  };
+    setSelectedContact(contact)
+    setEditFormData({
+      contactName: contact.contactName,
+      relationship: contact.relationship,
+      primaryPhone: contact.primaryPhone,
+      secondaryPhone: contact.secondaryPhone || '',
+      email: contact.email || '',
+      street: contact.address?.street || '',
+      city: contact.address?.city || '',
+      state: contact.address?.state || '',
+      zipCode: contact.address?.zipCode || '',
+      isPrimary: contact.isPrimary,
+      canPickup: contact.canPickup,
+      emergencyOnly: contact.emergencyOnly || false,
+      notes: contact.notes || ''
+    })
+    setShowEditModal(true)
+  }
+
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    contactName: '',
+    relationship: '',
+    primaryPhone: '',
+    secondaryPhone: '',
+    email: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    isPrimary: false,
+    canPickup: false,
+    emergencyOnly: false,
+    notes: ''
+  })
+
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/
+    return phoneRegex.test(phone)
+  }
+
+  const validateEmail = (email: string): boolean => {
+    if (!email) return true // Email is optional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const handleUpdateContact = async () => {
+    if (!selectedContact) return
+
+    // Validate required fields
+    if (!editFormData.contactName.trim()) {
+      toast.error('Contact name is required')
+      return
+    }
+    if (!editFormData.relationship.trim()) {
+      toast.error('Relationship is required')
+      return
+    }
+    if (!editFormData.primaryPhone.trim()) {
+      toast.error('Primary phone is required')
+      return
+    }
+
+    // Validate phone format
+    if (!validatePhone(editFormData.primaryPhone)) {
+      toast.error('Primary phone number format is invalid')
+      return
+    }
+    if (editFormData.secondaryPhone && !validatePhone(editFormData.secondaryPhone)) {
+      toast.error('Secondary phone number format is invalid')
+      return
+    }
+
+    // Validate email format
+    if (!validateEmail(editFormData.email)) {
+      toast.error('Email format is invalid')
+      return
+    }
+
+    try {
+      setEditLoading(true)
+
+      // Prepare update data matching backend API expectations
+      const updateData = {
+        contactName: editFormData.contactName.trim(),
+        relationship: editFormData.relationship.trim(),
+        primaryPhone: editFormData.primaryPhone.trim(),
+        secondaryPhone: editFormData.secondaryPhone.trim() || undefined,
+        email: editFormData.email.trim() || undefined,
+        address: {
+          street: editFormData.street.trim(),
+          city: editFormData.city.trim(),
+          state: editFormData.state.trim(),
+          zipCode: editFormData.zipCode.trim()
+        },
+        isPrimary: editFormData.isPrimary,
+        canPickup: editFormData.canPickup,
+        emergencyOnly: editFormData.emergencyOnly,
+        notes: editFormData.notes.trim() || undefined
+      }
+
+      await contactsApi.update(selectedContact.id, updateData)
+
+      // Update local state
+      setContacts(prevContacts =>
+        prevContacts.map(c =>
+          c.id === selectedContact.id
+            ? {
+                ...c,
+                contactName: updateData.contactName,
+                relationship: updateData.relationship,
+                primaryPhone: updateData.primaryPhone,
+                secondaryPhone: updateData.secondaryPhone,
+                email: updateData.email,
+                address: updateData.address,
+                isPrimary: updateData.isPrimary,
+                canPickup: updateData.canPickup,
+                emergencyOnly: updateData.emergencyOnly,
+                notes: updateData.notes,
+                lastUpdated: new Date().toISOString()
+              }
+            : c
+        )
+      )
+
+      toast.success('Contact updated successfully')
+      setShowEditModal(false)
+      setSelectedContact(null)
+    } catch (err) {
+      console.error('Failed to update contact:', err)
+      toast.error(err instanceof Error ? err.message : 'Failed to update contact. Please try again.')
+    } finally {
+      setEditLoading(false)
+    }
+  }
 
   const handleAddContact = () => {
     setSelectedContact(null);
@@ -192,12 +327,13 @@ const EmergencyContacts: React.FC = () => {
     try {
       setDeleteLoading(true);
       await contactsApi.delete(selectedContact.id);
-      
+
       // Remove from local state
       setContacts(prevContacts => prevContacts.filter(c => c.id !== selectedContact.id));
+      toast.success('Contact deleted successfully');
     } catch (err) {
       console.error('Failed to delete contact:', err);
-      alert('Failed to delete contact. Please try again.');
+      toast.error('Failed to delete contact. Please try again.');
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);
@@ -589,6 +725,266 @@ const EmergencyContacts: React.FC = () => {
                     setSelectedContact(null);
                   }}
                   disabled={deleteLoading}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contact Modal */}
+      {showEditModal && selectedContact && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => {
+                if (!editLoading) {
+                  setShowEditModal(false);
+                  setSelectedContact(null);
+                }
+              }}
+            ></div>
+
+            {/* Center modal */}
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            {/* Modal panel */}
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <Edit className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Edit Emergency Contact
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Update contact information for {selectedContact.studentName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <form className="space-y-4">
+                  {/* Contact Name and Relationship */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="edit-contact-name" className="block text-sm font-medium text-gray-700">
+                        Contact Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-contact-name"
+                        value={editFormData.contactName}
+                        onChange={(e) => setEditFormData({ ...editFormData, contactName: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Full name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-relationship" className="block text-sm font-medium text-gray-700">
+                        Relationship <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="edit-relationship"
+                        value={editFormData.relationship}
+                        onChange={(e) => setEditFormData({ ...editFormData, relationship: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        required
+                      >
+                        <option value="">Select Relationship</option>
+                        <option value="Mother">Mother</option>
+                        <option value="Father">Father</option>
+                        <option value="Guardian">Guardian</option>
+                        <option value="Grandparent">Grandparent</option>
+                        <option value="Grandmother">Grandmother</option>
+                        <option value="Grandfather">Grandfather</option>
+                        <option value="Sibling">Sibling</option>
+                        <option value="Brother">Brother</option>
+                        <option value="Sister">Sister</option>
+                        <option value="Aunt">Aunt</option>
+                        <option value="Uncle">Uncle</option>
+                        <option value="Family Friend">Family Friend</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Phone Numbers */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="edit-primary-phone" className="block text-sm font-medium text-gray-700">
+                        Primary Phone <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        id="edit-primary-phone"
+                        value={editFormData.primaryPhone}
+                        onChange={(e) => setEditFormData({ ...editFormData, primaryPhone: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="(555) 123-4567"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-secondary-phone" className="block text-sm font-medium text-gray-700">
+                        Secondary Phone
+                      </label>
+                      <input
+                        type="tel"
+                        id="edit-secondary-phone"
+                        value={editFormData.secondaryPhone}
+                        onChange={(e) => setEditFormData({ ...editFormData, secondaryPhone: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="(555) 987-6543"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="edit-email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="contact@example.com"
+                    />
+                  </div>
+
+                  {/* Address */}
+                  <div>
+                    <label htmlFor="edit-street" className="block text-sm font-medium text-gray-700">
+                      Street Address
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-street"
+                      value={editFormData.street}
+                      onChange={(e) => setEditFormData({ ...editFormData, street: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="123 Main Street"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label htmlFor="edit-city" className="block text-sm font-medium text-gray-700">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-city"
+                        value={editFormData.city}
+                        onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Springfield"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-state" className="block text-sm font-medium text-gray-700">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-state"
+                        value={editFormData.state}
+                        onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="IL"
+                        maxLength={2}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-zip" className="block text-sm font-medium text-gray-700">
+                        ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-zip"
+                        value={editFormData.zipCode}
+                        onChange={(e) => setEditFormData({ ...editFormData, zipCode: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="62701"
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Checkboxes */}
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editFormData.isPrimary}
+                        onChange={(e) => setEditFormData({ ...editFormData, isPrimary: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Primary Contact</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editFormData.canPickup}
+                        onChange={(e) => setEditFormData({ ...editFormData, canPickup: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Authorized to Pick Up Student</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editFormData.emergencyOnly}
+                        onChange={(e) => setEditFormData({ ...editFormData, emergencyOnly: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">Emergency Contact Only</span>
+                    </label>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label htmlFor="edit-notes" className="block text-sm font-medium text-gray-700">
+                      Notes
+                    </label>
+                    <textarea
+                      id="edit-notes"
+                      rows={3}
+                      value={editFormData.notes}
+                      onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Additional notes about availability, restrictions, etc."
+                    />
+                  </div>
+                </form>
+              </div>
+
+              <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleUpdateContact}
+                  disabled={editLoading || !editFormData.contactName.trim() || !editFormData.relationship || !editFormData.primaryPhone.trim()}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editLoading ? 'Updating...' : 'Update Contact'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedContact(null);
+                  }}
+                  disabled={editLoading}
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
                 >
                   Cancel

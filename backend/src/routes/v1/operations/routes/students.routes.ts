@@ -141,11 +141,12 @@ const deactivateStudentRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Student deactivated successfully' },
+          '204': { description: 'Student deactivated successfully (no content)' },
           '400': { description: 'Validation error - Reason required' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin only' },
-          '404': { description: 'Student not found' }
+          '404': { description: 'Student not found' },
+          '500': { description: 'Internal server error' }
         }
       }
     }

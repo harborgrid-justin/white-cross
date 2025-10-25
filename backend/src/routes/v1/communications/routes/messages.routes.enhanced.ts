@@ -436,8 +436,8 @@ const deleteMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': {
-            description: 'Message cancelled successfully',
+          '204': {
+            description: 'Message cancelled successfully (no content)',
             schema: Joi.object({
               success: Joi.boolean().example(true),
               data: Joi.object({

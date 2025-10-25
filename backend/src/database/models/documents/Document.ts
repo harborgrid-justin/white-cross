@@ -73,6 +73,9 @@ interface DocumentAttributes {
   requiresSignature: boolean;
   lastAccessedAt?: Date;
   accessCount: number;
+  isActive: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,6 +103,9 @@ interface DocumentCreationAttributes
     | 'requiresSignature'
     | 'lastAccessedAt'
     | 'accessCount'
+    | 'isActive'
+    | 'deletedAt'
+    | 'deletedBy'
     | 'createdAt'
     | 'updatedAt'
   > {}
@@ -206,6 +212,9 @@ export class Document extends Model<DocumentAttributes, DocumentCreationAttribut
   public requiresSignature!: boolean;
   public lastAccessedAt?: Date;
   public accessCount!: number;
+  public isActive!: boolean;
+  public deletedAt?: Date;
+  public deletedBy?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -348,6 +357,33 @@ Document.init(
         },
       },
     },
+    /**
+     * File URL for accessing the document
+     *
+     * @type {string}
+     * @description URL pointing to the document file location (cloud storage, CDN, etc.)
+     *
+     * Validation:
+     * - Must be a valid URL format
+     * - Cannot be null or empty
+     * - HIPAA Requirement: PHI documents MUST use HTTPS protocol
+     *
+     * @security HIPAA Compliance: PHI documents must be transmitted over secure channels
+     * @security All PHI document URLs must start with 'https://'
+     * @security Non-HTTPS URLs for PHI documents will be rejected at model validation
+     *
+     * @example
+     * ```typescript
+     * // Valid PHI document URL
+     * fileUrl: "https://secure-storage.example.com/documents/patient-123/record.pdf"
+     *
+     * // Invalid PHI document URL (will throw validation error)
+     * fileUrl: "http://storage.example.com/documents/patient-123/record.pdf"
+     *
+     * // Valid non-PHI document URL
+     * fileUrl: "http://storage.example.com/documents/public/form.pdf"
+     * ```
+     */
     fileUrl: {
       type: DataTypes.STRING(500),
       allowNull: false,
@@ -360,6 +396,12 @@ Document.init(
         },
         isUrl: {
           msg: 'File URL must be a valid URL',
+        },
+        httpsForPHI(value: string) {
+          // HIPAA Compliance: PHI documents must use HTTPS for secure transmission
+          if ((this as any).containsPHI && !value.startsWith('https://')) {
+            throw new Error('PHI documents must use HTTPS protocol for secure transmission (HIPAA requirement)');
+          }
         },
       },
     },
@@ -498,25 +540,53 @@ Document.init(
         },
       },
     },
+    /**
+     * Foreign key reference to User who uploaded this document
+     *
+     * @type {string|null}
+     * @description Links to the user who uploaded/created this document. Preserves audit trail even if user is deleted.
+     * @foreignKey references users(id) ON DELETE SET NULL
+     * @security Maintains audit trail and document ownership history even after user account deletion
+     * @security Critical for compliance and forensic tracking of document sources
+     * @compliance HIPAA - Audit trail preservation required for PHI documents
+     */
     uploadedBy: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'Foreign key to users table - document uploader (nullable for audit trail)',
       validate: {
-        notNull: {
-          msg: 'Uploader ID is required',
-        },
-        notEmpty: {
-          msg: 'Uploader ID cannot be empty',
-        },
         isUUID: {
           args: 4,
           msg: 'Uploader ID must be a valid UUID',
         },
       },
     },
+    /**
+     * Foreign key reference to Student this document belongs to
+     *
+     * @type {string|null}
+     * @description Links document to specific student. When student is deleted, all their documents are removed.
+     * @foreignKey references students(id) ON DELETE CASCADE
+     * @security Student documents automatically removed when student record is deleted
+     * @compliance FERPA - Student educational records tied to student lifecycle
+     * @compliance HIPAA - Student health documents removed with student record
+     */
     studentId: {
       type: DataTypes.STRING,
       allowNull: true,
+      references: {
+        model: 'students',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to students table - document owner (nullable for non-student documents)',
       validate: {
         isUUID: {
           args: 4,
@@ -570,6 +640,28 @@ Document.init(
         },
       },
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      comment: 'Soft delete flag - whether document is currently active (not archived)',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Soft delete timestamp - when document was archived/deactivated',
+    },
+    deletedBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'User who archived/deactivated this document (for audit trail)',
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   },
@@ -588,6 +680,10 @@ Document.init(
       { fields: ['containsPHI'] },
       { fields: ['requiresSignature'] },
       { fields: ['lastAccessedAt'] },
+      { fields: ['isActive'] },
+      { fields: ['isActive', 'createdAt'] },
+      { fields: ['deletedAt'] },
+      { fields: ['deletedBy'] },
     ],
     validate: {
       // Cross-field validation

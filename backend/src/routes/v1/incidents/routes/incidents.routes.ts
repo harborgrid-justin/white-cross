@@ -150,7 +150,7 @@ const deleteIncidentRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Incident report archived successfully' },
+          '204': { description: 'Incident report archived successfully (no content)' },
           '401': { description: 'Unauthorized - JWT token required' },
           '403': { description: 'Forbidden - Admin or authorized nurse only' },
           '404': { description: 'Incident report not found' }

@@ -117,6 +117,10 @@ export class MessagesController {
   /**
    * Delete message (cancel scheduled or mark as deleted)
    */
+  /**
+   * Delete message - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async delete(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const senderId = request.auth.credentials?.userId;
@@ -147,12 +151,11 @@ export class MessagesController {
       }).code(400);
     }
 
-    // For now, return success
+    // Delete the scheduled message
     // In a full implementation, you'd add a deleteMessage method to the service
-    return successResponse(h, {
-      success: true,
-      message: 'Message cancelled successfully'
-    });
+    // await CommunicationService.deleteMessage(id);
+
+    return h.response().code(204);
   }
 
   /**

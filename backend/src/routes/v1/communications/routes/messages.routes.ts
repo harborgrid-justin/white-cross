@@ -149,7 +149,7 @@ const deleteMessageRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Message cancelled successfully', schema: MessageResponseSchema },
+          '204': { description: 'Message cancelled successfully (no content)', schema: MessageResponseSchema },
           '400': { description: 'Message already sent or cannot be deleted', schema: ErrorResponseSchema },
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
           '403': { description: 'Forbidden - Not message owner', schema: ErrorResponseSchema },

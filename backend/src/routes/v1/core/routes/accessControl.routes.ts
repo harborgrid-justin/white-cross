@@ -143,7 +143,7 @@ const deleteRoleRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Success - Role deleted' },
+          '204': { description: 'Success - Role deleted (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin only' },
           '404': { description: 'Role not found' },
@@ -249,7 +249,7 @@ const removePermissionFromRoleRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Success - Permission removed from role' },
+          '204': { description: 'Success - Permission removed from role (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin only' },
           '404': { description: 'Role, permission, or assignment not found' }
@@ -304,7 +304,7 @@ const removeRoleFromUserRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Success - Role removed from user' },
+          '204': { description: 'Success - Role removed from user (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin only' },
           '404': { description: 'User, role, or assignment not found' }
@@ -413,7 +413,7 @@ const deleteSessionRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Success - Session deleted' },
+          '204': { description: 'Success - Session deleted (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Can only delete own sessions unless admin' },
           '404': { description: 'Session not found' }
@@ -438,7 +438,7 @@ const deleteAllUserSessionsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Success - All sessions deleted' },
+          '204': { description: 'Success - All sessions deleted (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Can only delete own sessions unless admin' },
           '404': { description: 'User not found' }
@@ -593,7 +593,7 @@ const removeIpRestrictionRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Success - IP restriction removed' },
+          '204': { description: 'Success - IP restriction removed (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin only' },
           '404': { description: 'IP restriction not found' }

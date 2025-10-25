@@ -48,6 +48,9 @@ interface MedicationAttributes {
   isControlled: boolean;
   deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V';
   requiresWitness: boolean;
+  isActive: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,7 +61,7 @@ interface MedicationAttributes {
  * Extends MedicationAttributes with optional fields that have defaults or are auto-generated.
  */
 interface MedicationCreationAttributes
-  extends Optional<MedicationAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isControlled' | 'genericName' | 'manufacturer' | 'ndc' | 'deaSchedule' | 'requiresWitness'> {}
+  extends Optional<MedicationAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isControlled' | 'isActive' | 'deletedAt' | 'deletedBy' | 'genericName' | 'manufacturer' | 'ndc' | 'deaSchedule' | 'requiresWitness'> {}
 
 /**
  * @class Medication
@@ -114,6 +117,9 @@ export class Medication extends Model<MedicationAttributes, MedicationCreationAt
   public isControlled!: boolean;
   public deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V';
   public requiresWitness!: boolean;
+  public isActive!: boolean;
+  public deletedAt?: Date;
+  public deletedBy?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -169,6 +175,28 @@ Medication.init(
       defaultValue: false,
       comment: 'Whether medication administration requires a witness (typically Schedule I-II)',
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      comment: 'Soft delete flag - whether medication is currently active',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Soft delete timestamp - when medication was deactivated',
+    },
+    deletedBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'User who deactivated this medication (for audit trail)',
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   },
@@ -180,7 +208,10 @@ Medication.init(
       { fields: ['name'] },
       { fields: ['ndc'] },
       { fields: ['isControlled'] },
-      { fields: ['deaSchedule'] }
+      { fields: ['deaSchedule'] },
+      { fields: ['isActive'] },
+      { fields: ['deletedAt'] },
+      { fields: ['deletedBy'] }
     ],
   }
 );

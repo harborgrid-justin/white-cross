@@ -40,10 +40,14 @@ export class AccessControlController {
     return successResponse(h, { role });
   }
 
+  /**
+   * Delete role - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteRole(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     await AccessControlService.deleteRole(id);
-    return successResponse(h, { message: 'Role deleted successfully' });
+    return h.response().code(204);
   }
 
   /**
@@ -70,10 +74,14 @@ export class AccessControlController {
     return createdResponse(h, { rolePermission });
   }
 
+  /**
+   * Remove permission from role - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async removePermissionFromRole(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { roleId, permissionId } = request.params;
     await AccessControlService.removePermissionFromRole(roleId, permissionId);
-    return successResponse(h, { message: 'Permission removed from role' });
+    return h.response().code(204);
   }
 
   /**
@@ -86,10 +94,14 @@ export class AccessControlController {
     return createdResponse(h, { userRole });
   }
 
+  /**
+   * Remove role from user - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async removeRoleFromUser(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { userId, roleId } = request.params;
     await AccessControlService.removeRoleFromUser(userId, roleId);
-    return successResponse(h, { message: 'Role removed from user' });
+    return h.response().code(204);
   }
 
   /**
@@ -125,16 +137,24 @@ export class AccessControlController {
     return successResponse(h, { sessions });
   }
 
+  /**
+   * Delete session - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteSession(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { token } = request.params;
     await AccessControlService.deleteSession(token);
-    return successResponse(h, { message: 'Session deleted' });
+    return h.response().code(204);
   }
 
+  /**
+   * Delete all user sessions - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteAllUserSessions(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { userId } = request.params;
-    const result = await AccessControlService.deleteAllUserSessions(userId);
-    return successResponse(h, result);
+    await AccessControlService.deleteAllUserSessions(userId);
+    return h.response().code(204);
   }
 
   /**
@@ -196,10 +216,14 @@ export class AccessControlController {
     return createdResponse(h, { restriction });
   }
 
+  /**
+   * Remove IP restriction - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async removeIpRestriction(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     await AccessControlService.removeIpRestriction(id);
-    return successResponse(h, { message: 'IP restriction removed' });
+    return h.response().code(204);
   }
 
   /**

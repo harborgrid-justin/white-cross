@@ -76,15 +76,13 @@ export class InventoryController {
   }
 
   /**
-   * Delete inventory item (soft delete)
+   * Delete inventory item (soft delete) - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
    */
   static async deleteItem(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const item = await ItemOperations.deleteInventoryItem(id);
-    return successResponse(h, {
-      item,
-      message: 'Inventory item archived successfully'
-    });
+    await ItemOperations.deleteInventoryItem(id);
+    return h.response().code(204);
   }
 
   /**

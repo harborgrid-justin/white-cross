@@ -290,9 +290,21 @@ export class InventoryQueriesService {
 
   /**
    * Get items expiring soon
+   *
+   * @param {number} days - Number of days to look ahead for expiring items (default: 30)
+   * @returns {Promise<Array>} List of items expiring within the specified timeframe
+   * @throws {Error} If days parameter is invalid
+   *
+   * @security SQL injection vulnerability fixed - uses parameterized query
+   * @security Input validation ensures days is a valid number between 1 and 365
    */
   static async getItemsExpiringSoon(days: number = 30) {
     try {
+      // Input validation to prevent SQL injection
+      if (typeof days !== 'number' || days < 1 || days > 365 || !Number.isInteger(days)) {
+        throw new Error('Invalid days parameter: must be an integer between 1 and 365');
+      }
+
       const items = await sequelize.query(`
         SELECT
           i.id,
@@ -307,10 +319,11 @@ export class InventoryQueriesService {
         INNER JOIN inventory_transactions t ON i.id = t."inventoryItemId"
         WHERE i."isActive" = true
         AND t."expirationDate" IS NOT NULL
-        AND t."expirationDate" <= NOW() + INTERVAL '${days} days'
+        AND t."expirationDate" <= NOW() + INTERVAL '1 day' * :days
         AND t.quantity > 0
         ORDER BY t."expirationDate" ASC
       `, {
+        replacements: { days },
         type: QueryTypes.SELECT
       });
 

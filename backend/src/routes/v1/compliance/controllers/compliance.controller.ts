@@ -89,11 +89,15 @@ export class ComplianceController {
    * Delete compliance report
    * DELETE /api/v1/compliance/reports/{id}
    */
+  /**
+   * Delete compliance report - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteComplianceReport(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await ComplianceReportService.deleteComplianceReport(id);
+    await ComplianceReportService.deleteComplianceReport(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**
@@ -193,11 +197,15 @@ export class ComplianceController {
    * Delete checklist
    * DELETE /api/v1/compliance/checklists/{id}
    */
+  /**
+   * Delete checklist - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteChecklist(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await ChecklistService.deleteChecklistItem(id);
+    await ChecklistService.deleteChecklistItem(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**

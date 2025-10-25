@@ -418,7 +418,7 @@ const removeFromWaitlistRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Student removed from waitlist successfully' },
+          '204': { description: 'Student removed from waitlist successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '404': { description: 'Waitlist entry not found' }
         }

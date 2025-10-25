@@ -109,14 +109,16 @@ export class IntegrationsController {
    * Delete integration
    * DELETE /api/v1/system/integrations/{id}
    */
+  /**
+   * Delete integration - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteIntegration(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
 
     await ConfigManager.deleteIntegration(id);
 
-    return successResponse(h, {
-      message: 'Integration deleted successfully'
-    });
+    return h.response().code(204);
   }
 
   /**

@@ -293,9 +293,21 @@ export class AnalyticsService {
 
   /**
    * Get top 10 most used items by usage count
+   *
+   * @param {number} days - Number of days to analyze (default: 30)
+   * @returns {Promise<Array>} Top 10 most used items with usage statistics
+   * @throws {Error} If days parameter is invalid
+   *
+   * @security SQL injection vulnerability fixed - uses parameterized query
+   * @security Input validation ensures days is a valid number between 1 and 365
    */
   static async getTopUsedItems(days: number = 30) {
     try {
+      // Input validation to prevent SQL injection
+      if (typeof days !== 'number' || days < 1 || days > 365 || !Number.isInteger(days)) {
+        throw new Error('Invalid days parameter: must be an integer between 1 and 365');
+      }
+
       const topItems = await sequelize.query(`
         SELECT
           i.id,
@@ -307,11 +319,12 @@ export class AnalyticsService {
         INNER JOIN inventory_transactions t ON i.id = t."inventoryItemId"
         WHERE i."isActive" = true
         AND t.type = 'USAGE'
-        AND t."createdAt" >= NOW() - INTERVAL '${days} days'
+        AND t."createdAt" >= NOW() - INTERVAL '1 day' * :days
         GROUP BY i.id, i.name, i.category
         ORDER BY "totalUsed" DESC
         LIMIT 10
       `, {
+        replacements: { days },
         type: QueryTypes.SELECT
       });
 
@@ -403,9 +416,21 @@ export class AnalyticsService {
 
   /**
    * Get monthly transaction trends
+   *
+   * @param {number} months - Number of months to analyze (default: 12)
+   * @returns {Promise<Array>} Monthly transaction trends by type
+   * @throws {Error} If months parameter is invalid
+   *
+   * @security SQL injection vulnerability fixed - uses parameterized query
+   * @security Input validation ensures months is a valid number between 1 and 24
    */
   static async getMonthlyTransactionTrends(months: number = 12) {
     try {
+      // Input validation to prevent SQL injection
+      if (typeof months !== 'number' || months < 1 || months > 24 || !Number.isInteger(months)) {
+        throw new Error('Invalid months parameter: must be an integer between 1 and 24');
+      }
+
       const trends = await sequelize.query(`
         SELECT
           DATE_TRUNC('month', t."createdAt") as month,
@@ -413,10 +438,11 @@ export class AnalyticsService {
           COUNT(t.id)::integer as "transactionCount",
           SUM(ABS(t.quantity))::integer as "totalQuantity"
         FROM inventory_transactions t
-        WHERE t."createdAt" >= NOW() - INTERVAL '${months} months'
+        WHERE t."createdAt" >= NOW() - INTERVAL '1 month' * :months
         GROUP BY DATE_TRUNC('month', t."createdAt"), t.type
         ORDER BY month DESC, t.type
       `, {
+        replacements: { months },
         type: QueryTypes.SELECT
       });
 

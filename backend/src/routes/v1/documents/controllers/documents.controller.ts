@@ -88,13 +88,17 @@ export class DocumentsController {
   /**
    * Delete/archive document
    */
+  /**
+   * Delete document - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteDocument(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const deletedBy = request.auth.credentials.userId as string;
 
-    const result = await DocumentService.deleteDocument(id, deletedBy);
+    await DocumentService.deleteDocument(id, deletedBy);
 
-    return successResponse(h, { message: 'Document deleted successfully', result });
+    return h.response().code(204);
   }
 
   /**

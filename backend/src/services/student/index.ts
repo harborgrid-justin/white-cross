@@ -134,30 +134,30 @@ export class StudentService {
 
   /**
    * Bulk update students
+   * @param studentIds - Array of student IDs to update
+   * @param updateData - Data to apply to all students
+   * @returns Number of updated records
    */
-  static async bulkUpdateStudents(updates: any[]) {
-    // MonolithicStudentService.bulkUpdateStudents expects (studentIds, updateData)
-    // This signature doesn't match - would need restructuring
-    throw new Error('Method signature mismatch - needs implementation');
+  static async bulkUpdateStudents(studentIds: string[], updateData: any) {
+    return MonolithicStudentService.bulkUpdateStudents(studentIds, updateData);
   }
 
   /**
    * Get student statistics
+   * @param studentId - Student ID to get statistics for
+   * @returns Object containing various counts (health records, allergies, medications, etc.)
    */
-  static async getStudentStatistics() {
-    // MonolithicStudentService.getStudentStatistics requires studentId parameter
-    throw new Error('Method signature mismatch - requires studentId parameter');
+  static async getStudentStatistics(studentId: string) {
+    return MonolithicStudentService.getStudentStatistics(studentId);
   }
 
   /**
-   * Export student data
+   * Export student data for reporting or compliance
+   * @param studentId - Student ID to export
+   * @returns Complete student data export with statistics
    */
-  static async exportStudentData(studentIds?: string[]) {
-    // MonolithicStudentService.exportStudentData expects single studentId
-    if (studentIds && studentIds.length === 1) {
-      return MonolithicStudentService.exportStudentData(studentIds[0]);
-    }
-    throw new Error('Method signature mismatch - supports single studentId only');
+  static async exportStudentData(studentId: string) {
+    return MonolithicStudentService.exportStudentData(studentId);
   }
 }
 

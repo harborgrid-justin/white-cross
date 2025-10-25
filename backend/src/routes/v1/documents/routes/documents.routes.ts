@@ -147,7 +147,7 @@ const deleteDocumentRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Document deleted successfully' },
+          '204': { description: 'Document deleted successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Insufficient permissions or undeletable category' },
           '404': { description: 'Document not found' },

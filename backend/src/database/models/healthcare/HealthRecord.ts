@@ -86,6 +86,9 @@ interface HealthRecordAttributes {
   metadata?: any;
   isConfidential: boolean;
   notes?: string;
+  isActive: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
   createdBy?: string;
   updatedBy?: string;
   createdAt: Date;
@@ -106,6 +109,9 @@ interface HealthRecordCreationAttributes
     | 'followUpRequired'
     | 'followUpCompleted'
     | 'isConfidential'
+    | 'isActive'
+    | 'deletedAt'
+    | 'deletedBy'
     | 'attachments'
     | 'provider'
     | 'providerNpi'
@@ -199,6 +205,9 @@ export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCrea
   public metadata?: any;
   public isConfidential!: boolean;
   public notes?: string;
+  public isActive!: boolean;
+  public deletedAt?: Date;
+  public deletedBy?: string;
   public createdBy?: string;
   public updatedBy?: string;
   public readonly createdAt!: Date;
@@ -212,9 +221,26 @@ HealthRecord.init(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
+    /**
+     * Foreign key reference to Student this health record belongs to
+     *
+     * @type {string}
+     * @description Links health record to specific student. When student is deleted, all their health records are removed.
+     * @foreignKey references students(id) ON DELETE CASCADE
+     * @security Health records are student-specific PHI and removed when student record is deleted
+     * @compliance HIPAA - Protected Health Information tied to patient (student) lifecycle
+     * @compliance FERPA - Educational health records removed with student record
+     */
     studentId: {
       type: DataTypes.STRING,
       allowNull: false,
+      references: {
+        model: 'students',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to students table - health record owner',
     },
     recordType: {
       type: DataTypes.ENUM(...Object.values(HealthRecordType)),
@@ -292,6 +318,28 @@ HealthRecord.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      comment: 'Soft delete flag - whether health record is currently active',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Soft delete timestamp - when health record was deactivated',
+    },
+    deletedBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'User who deactivated this health record (for audit trail)',
+    },
     ...AuditableModel.getAuditableFields(),
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
@@ -305,6 +353,10 @@ HealthRecord.init(
       { fields: ['recordType', 'recordDate'] },
       { fields: ['createdBy'] },
       { fields: ['followUpRequired', 'followUpDate'] },
+      { fields: ['isActive'] },
+      { fields: ['isActive', 'recordDate'] },
+      { fields: ['deletedAt'] },
+      { fields: ['deletedBy'] },
     ],
   }
 );
