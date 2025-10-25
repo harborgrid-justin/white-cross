@@ -45,7 +45,11 @@ import type {
   IncidentReportDocument,
   InsuranceSubmissionResponse,
   InsuranceSubmissionsResponse,
-  ActionStatus
+  ActionStatus,
+  CreateCommentRequest,
+  UpdateCommentRequest,
+  CommentResponse,
+  CommentListResponse
 } from '../types'
 import type { ApiClient } from '../core/ApiClient';
 import { apiClient } from '../core/ApiClient';
@@ -909,6 +913,113 @@ class IncidentsApiImpl implements IIncidentsApi {
       const queryParams = params ? `?${buildUrlParams(params)}` : ''
       const response = await this.client.get(`/api/v1/incidents/export${queryParams}`, { responseType: 'blob' })
       return response.data
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  // =====================
+  // COMMENTS
+  // =====================
+
+  /**
+   * Get all comments for an incident
+   *
+   * Returns comments in chronological order (oldest first)
+   * Supports pagination for large comment threads
+   *
+   * @param incidentReportId - Incident report ID
+   * @param page - Optional page number for pagination
+   * @param limit - Optional limit per page
+   * @returns List of comments with pagination
+   *
+   * @example
+   * ```typescript
+   * const comments = await incidentsApi.getComments(incidentId, 1, 20);
+   * ```
+   *
+   * Backend: GET /api/v1/incidents/{id}/comments
+   */
+  async getComments(incidentReportId: string, page?: number, limit?: number): Promise<CommentListResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (page) queryParams.append('page', page.toString())
+      if (limit) queryParams.append('limit', limit.toString())
+
+      const queryString = queryParams.toString() ? `?${queryParams}` : ''
+      const response = await this.client.get(`/api/v1/incidents/${incidentReportId}/comments${queryString}`)
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  /**
+   * Create a new comment on an incident
+   *
+   * Adds a comment to the incident discussion thread
+   * Automatically associates with current user
+   *
+   * @param data - Comment creation data
+   * @returns Created comment
+   *
+   * @example
+   * ```typescript
+   * const comment = await incidentsApi.createComment({
+   *   incidentReportId: id,
+   *   text: 'Follow-up scheduled with parent for tomorrow'
+   * });
+   * ```
+   *
+   * Backend: POST /api/v1/incidents/{incidentReportId}/comments
+   */
+  async createComment(data: CreateCommentRequest): Promise<CommentResponse> {
+    try {
+      const response = await this.client.post(`/api/v1/incidents/${data.incidentReportId}/comments`, {
+        text: data.text
+      })
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  /**
+   * Update an existing comment
+   *
+   * Allows editing comment text
+   * Marks comment as edited with timestamp
+   *
+   * @param commentId - Comment ID
+   * @param data - Update data
+   * @returns Updated comment
+   *
+   * Backend: PUT /api/v1/incidents/comments/{commentId}
+   */
+  async updateComment(commentId: string, data: UpdateCommentRequest): Promise<CommentResponse> {
+    try {
+      const response = await this.client.put(`/api/v1/incidents/comments/${commentId}`, data)
+      return extractApiData(response)
+    } catch (error) {
+      throw handleApiError(error as any)
+    }
+  }
+
+  /**
+   * Delete a comment
+   *
+   * Permanently removes comment from incident
+   * Only comment author or admins can delete
+   *
+   * @param commentId - Comment ID
+   * @returns Success indicator
+   *
+   * Backend: DELETE /api/v1/incidents/comments/{commentId}
+   */
+  async deleteComment(commentId: string): Promise<{ success: boolean }> {
+    try {
+      const response = await this.client.delete(`/api/v1/incidents/comments/${commentId}`)
+      return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
     }
