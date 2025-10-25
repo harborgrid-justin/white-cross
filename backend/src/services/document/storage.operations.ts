@@ -1,26 +1,41 @@
 /**
+ * @fileoverview HIPAA-compliant document storage operations with comprehensive access tracking.
+ *
+ * Provides secure document download and view operations with automatic audit logging,
+ * PHI flagging, and access counting for compliance monitoring. Every document access
+ * is tracked with user ID, timestamp, IP address, and PHI indicators.
+ *
  * LOC: D6A44FD802-S
  * WC-GEN-251 | storage.operations.ts - Document storage operations
  *
  * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - database/models
- *   - types.ts
+ *   - logger.ts - Winston logging for access tracking
+ *   - database/models - Document, DocumentSignature, DocumentAuditTrail models
+ *   - audit.operations.ts - Audit trail creation functions
+ *   - database/types/enums - DocumentAction enumeration
  *
  * DOWNSTREAM (imported by):
- *   - index.ts (document service aggregator)
- */
-
-/**
- * WC-GEN-251 | storage.operations.ts - Document storage operations
- * Purpose: File upload, download, access tracking for document storage
- * Upstream: ../utils/logger, ../database/models | Dependencies: sequelize
- * Downstream: Document service index | Called by: DocumentService class
- * Related: Document model, audit operations
- * Exports: Storage functions | Key Services: File lifecycle, access tracking
- * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Access validation → Storage operation → Audit logging
- * LLM Context: HIPAA-compliant document storage with comprehensive access tracking
+ *   - index.ts - Document service aggregator
+ *   - documentService.ts - Main document orchestration service
+ *
+ * Key Features:
+ * - HIPAA-compliant access tracking for all document operations
+ * - Automatic PHI flagging in audit trails
+ * - Access count incrementation for usage analytics
+ * - Last accessed timestamp tracking
+ * - IP address logging for security audits
+ * - Transaction-safe operations with rollback on errors
+ * - Complete association loading for document views
+ *
+ * Compliance Notes:
+ * - Every document access logged to audit trail (HIPAA requirement)
+ * - PHI flag captured in audit entries for sensitive documents
+ * - IP addresses recorded for security forensics
+ * - Access counts support usage pattern analysis
+ * - Audit entries immutable and timestamped
+ *
+ * @module services/document/storage.operations
+ * @since 1.0.0
  */
 
 import { logger } from '../../utils/logger';
@@ -34,10 +49,44 @@ import { DocumentAction } from '../../database/types/enums';
 import { addAuditTrail } from './audit.operations';
 
 /**
- * Download a document (tracks access)
- * @param documentId - Document ID
- * @param downloadedBy - User ID downloading the document
- * @param ipAddress - Optional IP address of the downloader
+ * Download a document with HIPAA-compliant access tracking.
+ *
+ * Records document download in audit trail, increments access counter,
+ * updates last accessed timestamp, and loads complete document data
+ * including versions, signatures, and audit history for compliance.
+ *
+ * @async
+ * @param {string} documentId - Unique document identifier to download
+ * @param {string} downloadedBy - User ID performing the download (for audit trail)
+ * @param {string} [ipAddress] - Optional IP address of downloader for security audit
+ *
+ * @returns {Promise<Document>} Document instance with all associations:
+ *   - parent: Parent document (if this is a version)
+ *   - versions: All document versions ordered by version DESC
+ *   - signatures: All digital signatures ordered by signedAt DESC
+ *   - auditTrail: Most recent 50 audit entries ordered by createdAt DESC
+ *
+ * @throws {Error} If document not found or database operation fails
+ *
+ * @example
+ * ```typescript
+ * const document = await downloadDocument(
+ *   'doc_123',
+ *   'nurse_001',
+ *   '192.168.1.100'
+ * );
+ * console.log(`Downloaded: ${document.title}`);
+ * console.log(`Access count: ${document.accessCount}`);
+ * console.log(`Contains PHI: ${document.containsPHI ? 'Yes' : 'No'}`);
+ * ```
+ *
+ * @remarks
+ * - Creates DOWNLOADED audit trail entry with PHI flag
+ * - Increments document accessCount for usage analytics
+ * - Updates lastAccessedAt to current timestamp
+ * - PHI documents logged with special [PHI] indicator
+ * - Transaction ensures atomicity of access tracking
+ * - Associations loaded after transaction commit for current data
  */
 export async function downloadDocument(documentId: string, downloadedBy: string, ipAddress?: string) {
   const transaction = await sequelize.transaction();
@@ -108,10 +157,44 @@ export async function downloadDocument(documentId: string, downloadedBy: string,
 }
 
 /**
- * View a document (tracks access)
- * @param documentId - Document ID
- * @param viewedBy - User ID viewing the document
- * @param ipAddress - Optional IP address of the viewer
+ * View a document with HIPAA-compliant access tracking.
+ *
+ * Records document view in audit trail (distinct from download),
+ * increments access counter, updates last accessed timestamp, and
+ * loads complete document data for display.
+ *
+ * @async
+ * @param {string} documentId - Unique document identifier to view
+ * @param {string} viewedBy - User ID performing the view (for audit trail)
+ * @param {string} [ipAddress] - Optional IP address of viewer for security audit
+ *
+ * @returns {Promise<Document>} Document instance with all associations:
+ *   - parent: Parent document (if this is a version)
+ *   - versions: All document versions ordered by version DESC
+ *   - signatures: All digital signatures ordered by signedAt DESC
+ *   - auditTrail: Most recent 50 audit entries ordered by createdAt DESC
+ *
+ * @throws {Error} If document not found or database operation fails
+ *
+ * @example
+ * ```typescript
+ * const document = await viewDocument(
+ *   'doc_123',
+ *   'nurse_001',
+ *   '192.168.1.100'
+ * );
+ * console.log(`Viewing: ${document.title} (v${document.version})`);
+ * console.log(`Signatures: ${document.signatures?.length || 0}`);
+ * ```
+ *
+ * @remarks
+ * - Creates VIEWED audit trail entry (separate from DOWNLOADED)
+ * - Increments document accessCount for usage analytics
+ * - Updates lastAccessedAt to current timestamp
+ * - PHI documents logged with special [PHI] indicator
+ * - Transaction ensures atomicity of access tracking
+ * - View action distinct from download for compliance reporting
+ * - Useful for differentiating read-only access from file retrieval
  */
 export async function viewDocument(documentId: string, viewedBy: string, ipAddress?: string) {
   const transaction = await sequelize.transaction();

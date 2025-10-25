@@ -24,11 +24,41 @@
  */
 
 /**
- * Chronic Condition CRUD Operations Module
+ * @fileoverview Chronic Condition CRUD Operations Module
  *
- * Core Create, Read, Update, Delete operations for chronic conditions.
+ * Provides core database operations for chronic condition management with comprehensive
+ * validation, audit logging, and HIPAA compliance:
+ * - Create: Validate student, set defaults, audit log creation
+ * - Read: Retrieve by ID or by student with associations
+ * - Update: Track changes, maintain audit trail
+ * - Delete: Soft delete (deactivate) and hard delete operations
  *
  * @module services/chronicCondition/crudOperations
+ *
+ * @remarks
+ * PHI SENSITIVITY: All CRUD operations handle protected health information (PHI).
+ * Every operation includes comprehensive audit logging with:
+ * - Action type (CREATE, READ, UPDATE, DELETE)
+ * - Entity ID and student ID
+ * - Timestamp and user context
+ * - Change tracking for updates (old vs new values)
+ *
+ * Healthcare Context:
+ * - Student validation ensures referential integrity
+ * - Associations with HealthRecord and Student models
+ * - Default array initialization for medications, restrictions, triggers, accommodations
+ * - Status-based workflow (ACTIVE, MANAGED, RESOLVED, MONITORING)
+ *
+ * Data Integrity:
+ * - Foreign key validation before creation
+ * - Transactional support for consistency
+ * - Soft delete preserves historical data
+ * - Hard delete requires explicit confirmation
+ *
+ * @see {@link module:services/chronicCondition/queryOperations} for search operations
+ * @see {@link module:services/chronicCondition/businessLogic} for business logic
+ *
+ * @since 1.0.0
  */
 
 import { Transaction } from 'sequelize';
@@ -45,11 +75,67 @@ import {
 } from './types';
 
 /**
- * Creates a new chronic condition record with validation
+ * Creates a new chronic condition record with comprehensive validation and audit logging.
  *
- * @param data - Chronic condition data
- * @param transaction - Optional transaction
- * @returns Created chronic condition with associations
+ * Validates student existence, initializes default arrays, creates the condition record,
+ * and returns it with full student and health record associations. All creations are
+ * audit logged for HIPAA compliance.
+ *
+ * @param {CreateChronicConditionData} data - Chronic condition data including:
+ *   - studentId (required): Valid student UUID
+ *   - condition (required): Condition name (e.g., "Type 1 Diabetes", "Asthma")
+ *   - diagnosedDate (required): Date of diagnosis
+ *   - status (required): ACTIVE, MANAGED, RESOLVED, or MONITORING
+ *   - icdCode (optional): ICD-10 diagnosis code (e.g., "E10.9", "J45.909")
+ *   - diagnosedBy (optional): Healthcare provider name
+ *   - severity (optional): Severity level (Low, Moderate, High, Critical)
+ *   - carePlan (optional): Care plan documentation
+ *   - medications (optional): Array of medication names
+ *   - restrictions (optional): Array of activity restrictions
+ *   - triggers (optional): Array of condition triggers
+ *   - accommodations (optional): Array of required accommodations
+ *   - emergencyProtocol (optional): Emergency response procedures
+ *   - requiresIEP/requires504 (optional): Educational accommodation flags
+ * @param {Transaction} [transaction] - Optional Sequelize transaction for atomic operations
+ *
+ * @returns {Promise<ChronicCondition>} Created chronic condition with student and health record associations
+ *
+ * @throws {Error} When student ID is not found in database
+ * @throws {ValidationError} When required fields are missing or invalid
+ * @throws {SequelizeError} When database creation fails
+ *
+ * @example
+ * ```typescript
+ * // Create new diabetes diagnosis
+ * const diabetesCondition = await createChronicCondition({
+ *   studentId: 'student-uuid',
+ *   condition: 'Type 1 Diabetes',
+ *   icdCode: 'E10.9',
+ *   diagnosedDate: new Date('2024-01-15'),
+ *   diagnosedBy: 'Dr. Sarah Johnson, Endocrinology',
+ *   status: 'ACTIVE',
+ *   severity: 'High',
+ *   carePlan: 'Blood glucose monitoring 4x daily...',
+ *   medications: ['Insulin - Humalog', 'Insulin - Lantus'],
+ *   restrictions: ['No unsupervised activities until stable'],
+ *   triggers: ['Illness', 'Stress', 'Irregular meals'],
+ *   accommodations: ['Blood sugar checks during class', 'Snacks allowed', 'Extra restroom breaks'],
+ *   emergencyProtocol: 'If blood sugar <70 or >300, contact parent and 911',
+ *   requiresIEP: true,
+ *   nextReviewDate: new Date('2024-04-15')
+ * });
+ *
+ * console.log('Created condition:', diabetesCondition.id);
+ * console.log('Student:', diabetesCondition.student.firstName);
+ * ```
+ *
+ * @remarks
+ * PHI: All creations are audit logged with student ID, condition, status, and diagnosing provider.
+ *
+ * Default Behavior:
+ * - Empty arrays initialized for medications, restrictions, triggers, accommodations
+ * - Student and HealthRecord associations eager loaded in response
+ * - Creation timestamp auto-generated
  */
 export async function createChronicCondition(
   data: CreateChronicConditionData,
@@ -112,11 +198,38 @@ export async function createChronicCondition(
 }
 
 /**
- * Retrieves a chronic condition by ID
+ * Retrieves a single chronic condition by ID with full student and health record associations.
  *
- * @param id - Chronic condition ID
- * @param transaction - Optional transaction
- * @returns Chronic condition or null
+ * Returns complete condition details including student demographics and associated health
+ * record. Audit logs all PHI access for HIPAA compliance.
+ *
+ * @param {string} id - Unique identifier of the chronic condition
+ * @param {Transaction} [transaction] - Optional Sequelize transaction
+ *
+ * @returns {Promise<ChronicCondition | null>} Chronic condition with associations, or null if not found
+ *
+ * @throws {SequelizeError} When database query fails
+ *
+ * @example
+ * ```typescript
+ * const condition = await getChronicConditionById('condition-uuid');
+ * if (condition) {
+ *   console.log(`${condition.student.firstName} ${condition.student.lastName}`);
+ *   console.log(`Condition: ${condition.condition} (${condition.icdCode})`);
+ *   console.log(`Status: ${condition.status}`);
+ *   console.log(`Care Plan: ${condition.carePlan}`);
+ * } else {
+ *   console.log('Condition not found');
+ * }
+ * ```
+ *
+ * @remarks
+ * PHI: Access is audit logged with student ID and timestamp when condition is found.
+ * Returns null without logging if condition doesn't exist.
+ *
+ * Associations Loaded:
+ * - student: Full student demographics (name, DOB, grade, student number)
+ * - healthRecord: Associated health record if exists (optional)
  */
 export async function getChronicConditionById(
   id: string,
@@ -158,12 +271,63 @@ export async function getChronicConditionById(
 }
 
 /**
- * Retrieves all chronic conditions for a specific student
+ * Retrieves all chronic conditions for a specific student with filtering and associations.
  *
- * @param studentId - Student ID
- * @param includeInactive - Include inactive conditions
- * @param transaction - Optional transaction
- * @returns Array of chronic conditions
+ * Returns student's complete chronic condition profile, ordered by status (ACTIVE first)
+ * and diagnosis date (newest first). Optionally includes resolved/inactive conditions for
+ * historical review.
+ *
+ * @param {string} studentId - Unique identifier of the student
+ * @param {boolean} [includeInactive=false] - Whether to include resolved/inactive conditions.
+ *                                             Default false (active conditions only)
+ * @param {Transaction} [transaction] - Optional Sequelize transaction
+ *
+ * @returns {Promise<ChronicCondition[]>} Array of chronic conditions with student and health
+ *                                         record associations, ordered by status and diagnosis date
+ *
+ * @throws {SequelizeError} When database query fails
+ *
+ * @example
+ * ```typescript
+ * // Get active chronic conditions for care planning
+ * const activeConditions = await getStudentChronicConditions('student-uuid');
+ * console.log(`Student has ${activeConditions.length} active chronic conditions`);
+ *
+ * activeConditions.forEach(condition => {
+ *   console.log(`- ${condition.condition} (${condition.status})`);
+ *   if (condition.requiresIEP) console.log('  Requires IEP');
+ *   if (condition.medications.length > 0) {
+ *     console.log('  Medications:', condition.medications.join(', '));
+ *   }
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Include historical conditions for comprehensive review
+ * const allConditions = await getStudentChronicConditions('student-uuid', true);
+ * const active = allConditions.filter(c => c.status === 'ACTIVE');
+ * const resolved = allConditions.filter(c => c.status === 'RESOLVED');
+ *
+ * console.log(`Active: ${active.length}, Resolved: ${resolved.length}`);
+ * ```
+ *
+ * @remarks
+ * PHI: Access is audit logged with student ID and condition count when results exist.
+ *
+ * Ordering:
+ * - Primary: Status (ACTIVE conditions appear first)
+ * - Secondary: Diagnosis date (newest first)
+ *
+ * Associations Loaded:
+ * - student: Student demographics (minimal fields for efficiency)
+ * - healthRecord: Associated health record if exists
+ *
+ * Use Cases:
+ * - Care plan review and coordination
+ * - IEP/504 accommodation planning
+ * - Emergency protocol reference
+ * - Historical health condition review
  */
 export async function getStudentChronicConditions(
   studentId: string,
@@ -217,12 +381,44 @@ export async function getStudentChronicConditions(
 }
 
 /**
- * Updates a chronic condition record
+ * Updates a chronic condition record with change tracking and audit logging.
  *
- * @param id - Chronic condition ID
- * @param data - Update data
- * @param transaction - Optional transaction
- * @returns Updated chronic condition
+ * Retrieves existing condition, stores old values for audit trail, applies updates,
+ * reloads with associations, and logs all changes for HIPAA compliance.
+ *
+ * @param {string} id - Unique identifier of the chronic condition to update
+ * @param {UpdateChronicConditionData} data - Partial update data. Any fields from CreateChronicConditionData
+ *                                            plus isActive flag can be updated
+ * @param {Transaction} [transaction] - Optional Sequelize transaction
+ *
+ * @returns {Promise<ChronicCondition>} Updated chronic condition with student association
+ *
+ * @throws {Error} When chronic condition ID is not found
+ * @throws {ValidationError} When update data fails validation
+ * @throws {SequelizeError} When database update fails
+ *
+ * @example
+ * ```typescript
+ * // Update care plan and review date
+ * const updated = await updateChronicCondition('condition-uuid', {
+ *   carePlan: 'Updated care plan with new protocols...',
+ *   lastReviewDate: new Date(),
+ *   nextReviewDate: new Date('2024-07-01')
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Change condition status to managed
+ * const managed = await updateChronicCondition('condition-uuid', {
+ *   status: 'MANAGED',
+ *   notes: 'Condition well-controlled with current treatment plan'
+ * });
+ * ```
+ *
+ * @remarks
+ * PHI: Updates are audit logged with before/after values for condition, status, and care plan.
+ * Change tracking enables compliance reporting and care plan history.
  */
 export async function updateChronicCondition(
   id: string,
@@ -286,11 +482,37 @@ export async function updateChronicCondition(
 }
 
 /**
- * Soft deletes (deactivates) a chronic condition
+ * Soft deletes a chronic condition by marking it as RESOLVED (preferred method).
  *
- * @param id - Chronic condition ID
- * @param transaction - Optional transaction
- * @returns Success status
+ * This is the recommended deletion method as it preserves historical health data
+ * for compliance and continuity of care while removing the condition from active
+ * management workflows.
+ *
+ * @param {string} id - Unique identifier of the chronic condition to deactivate
+ * @param {Transaction} [transaction] - Optional Sequelize transaction
+ *
+ * @returns {Promise<{success: boolean}>} Success indicator object
+ *
+ * @throws {Error} When chronic condition ID is not found
+ * @throws {SequelizeError} When database update fails
+ *
+ * @example
+ * ```typescript
+ * // Mark asthma as resolved after successful treatment
+ * const result = await deactivateChronicCondition('condition-uuid');
+ * console.log('Condition deactivated:', result.success);
+ * ```
+ *
+ * @remarks
+ * PHI: Deactivation is audit logged with student ID and condition name.
+ *
+ * Soft Delete vs Hard Delete:
+ * - Soft delete (this function): Changes status to RESOLVED, preserves all data
+ * - Hard delete: Permanently removes record from database
+ * - Recommendation: Always use soft delete unless legally required to purge data
+ *
+ * Data Retention: Resolved conditions remain queryable for historical reporting
+ * but are excluded from active care management queries by default.
  */
 export async function deactivateChronicCondition(
   id: string,
@@ -327,11 +549,47 @@ export async function deactivateChronicCondition(
 }
 
 /**
- * Hard deletes a chronic condition (use with caution)
+ * Hard deletes a chronic condition by permanently removing it from the database.
  *
- * @param id - Chronic condition ID
- * @param transaction - Optional transaction
- * @returns Success status
+ * WARNING: This operation permanently destroys PHI and cannot be undone. Use only
+ * when legally required (e.g., patient data removal request, GDPR right to deletion).
+ * In most cases, use deactivateChronicCondition() instead.
+ *
+ * @param {string} id - Unique identifier of the chronic condition to permanently delete
+ * @param {Transaction} [transaction] - Optional Sequelize transaction
+ *
+ * @returns {Promise<{success: boolean}>} Success indicator object
+ *
+ * @throws {Error} When chronic condition ID is not found
+ * @throws {SequelizeError} When database deletion fails or foreign key constraints prevent deletion
+ *
+ * @example
+ * ```typescript
+ * // CAUTION: Only use when required by law
+ * // Permanently delete chronic condition (e.g., for GDPR compliance)
+ * const result = await deleteChronicCondition('condition-uuid');
+ * console.log('Record permanently deleted:', result.success);
+ * ```
+ *
+ * @remarks
+ * PHI: Deletion is audit logged with complete condition details before destruction.
+ * Audit log entry includes student ID, condition name, and student name for compliance.
+ *
+ * CAUTION - Permanent Data Loss:
+ * - This operation cannot be reversed
+ * - All condition history, care plans, and audit data are destroyed
+ * - May violate healthcare record retention requirements
+ * - Recommendation: Use soft delete (deactivateChronicCondition) instead
+ *
+ * Legal Considerations:
+ * - Healthcare records typically require 7-10 year retention
+ * - Minors' records may require retention until age of majority + retention period
+ * - Only delete when required by law (GDPR, CCPA data removal requests)
+ * - Document legal basis for deletion in audit logs
+ *
+ * Foreign Key Impact:
+ * - Deletion may fail if condition is referenced by other records
+ * - Consider cascade delete behavior or manual cleanup of dependencies
  */
 export async function deleteChronicCondition(
   id: string,

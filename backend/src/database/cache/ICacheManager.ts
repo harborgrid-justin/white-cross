@@ -28,40 +28,147 @@
 
 /**
  * Cache Manager Interface
- * Provides abstraction for caching layer with PHI encryption support
+ *
+ * Provides abstraction layer for caching operations with healthcare-specific features:
+ * - PHI data encryption at rest
+ * - Configurable TTL per entity type
+ * - Audit logging for PHI cache access
+ * - Pattern-based cache invalidation
+ * - Statistics tracking for performance monitoring
+ *
+ * Supports Redis, in-memory, or custom cache implementations through this interface.
+ *
+ * @interface ICacheManager
+ *
+ * @example
+ * ```typescript
+ * // Implementing a Redis cache manager
+ * class RedisCacheManager implements ICacheManager {
+ *   async get<T>(key: string): Promise<T | null> {
+ *     const value = await redis.get(key);
+ *     return value ? JSON.parse(value) : null;
+ *   }
+ *   // ... other methods
+ * }
+ * ```
+ *
+ * @see {@link CacheConfig} for cache configuration options
+ * @see {@link CacheTTL} for standard TTL values
  */
 
 export interface ICacheManager {
   /**
-   * Get cached value by key
-   * @param key Cache key
-   * @returns Cached value or null if not found
+   * Retrieves a cached value by key.
+   *
+   * Returns the cached value if found and not expired, otherwise returns null.
+   * For PHI entities, may require audit logging of the cache read operation.
+   *
+   * @template T - Type of the cached value
+   * @param {string} key - Cache key to retrieve
+   *
+   * @returns {Promise<T | null>} Cached value or null if not found/expired
+   *
+   * @example
+   * ```typescript
+   * const student = await cacheManager.get<Student>('white-cross:student:123');
+   * if (student) {
+   *   console.log('Cache hit:', student);
+   * } else {
+   *   console.log('Cache miss');
+   * }
+   * ```
    */
   get<T>(key: string): Promise<T | null>;
 
   /**
-   * Set cache value
-   * @param key Cache key
-   * @param value Value to cache
-   * @param ttl Time to live in seconds
+   * Stores a value in the cache with specified TTL.
+   *
+   * Sets or updates a cache entry. For PHI entities, data should be encrypted
+   * before caching if encryption is enabled in configuration.
+   *
+   * @template T - Type of the value to cache
+   * @param {string} key - Cache key to set
+   * @param {T} value - Value to cache (will be serialized)
+   * @param {number} ttl - Time to live in seconds (cache entry lifetime)
+   *
+   * @returns {Promise<void>} Resolves when value is cached
+   *
+   * @example
+   * ```typescript
+   * // Cache student data for 15 minutes
+   * await cacheManager.set(
+   *   'white-cross:student:123',
+   *   studentData,
+   *   CacheTTL.MEDIUM  // 900 seconds = 15 minutes
+   * );
+   * ```
+   *
+   * @see {@link CacheTTL} for standard TTL constants
    */
   set<T>(key: string, value: T, ttl: number): Promise<void>;
 
   /**
-   * Delete cached value
-   * @param key Cache key
+   * Deletes a cached value by key.
+   *
+   * Removes the cache entry immediately. Used for cache invalidation
+   * when entity data is updated or deleted.
+   *
+   * @param {string} key - Cache key to delete
+   *
+   * @returns {Promise<void>} Resolves when cache entry is deleted
+   *
+   * @example
+   * ```typescript
+   * // Invalidate student cache after update
+   * await Student.update({ name: 'New Name' }, { where: { id: '123' } });
+   * await cacheManager.delete('white-cross:student:123');
+   * ```
    */
   delete(key: string): Promise<void>;
 
   /**
-   * Delete multiple keys matching pattern
-   * @param pattern Pattern to match (e.g., "user:*")
+   * Deletes all cache entries matching a pattern.
+   *
+   * Performs bulk cache invalidation using pattern matching (e.g., wildcard patterns).
+   * Useful for invalidating all related cache entries after a bulk operation.
+   *
+   * @param {string} pattern - Pattern to match (supports wildcards like 'user:*')
+   *
+   * @returns {Promise<void>} Resolves when all matching entries are deleted
+   *
+   * @example
+   * ```typescript
+   * // Invalidate all student caches for a specific school
+   * await cacheManager.deletePattern('white-cross:student:school-123:*');
+   *
+   * // Invalidate all health record list caches
+   * await cacheManager.deletePattern('white-cross:healthrecord:list:*');
+   * ```
+   *
+   * @remarks
+   * Pattern matching syntax depends on cache implementation (Redis: SCAN, in-memory: regex).
+   * Use sparingly as pattern matching can be expensive on large datasets.
    */
   deletePattern(pattern: string): Promise<void>;
 
   /**
-   * Check if key exists in cache
-   * @param key Cache key
+   * Checks if a key exists in the cache.
+   *
+   * Returns true if key exists and has not expired, false otherwise.
+   * Does not count as a cache read for audit purposes.
+   *
+   * @param {string} key - Cache key to check
+   *
+   * @returns {Promise<boolean>} True if key exists, false otherwise
+   *
+   * @example
+   * ```typescript
+   * if (await cacheManager.exists('white-cross:student:123')) {
+   *   console.log('Student is cached');
+   * } else {
+   *   console.log('Need to fetch from database');
+   * }
+   * ```
    */
   exists(key: string): Promise<boolean>;
 
@@ -284,7 +391,25 @@ export const ENTITY_CACHE_TTL: Record<string, number> = {
 };
 
 /**
- * Get cache TTL for entity type
+ * Retrieves the recommended cache TTL for a given entity type.
+ *
+ * Returns entity-specific TTL if configured, otherwise returns default MEDIUM TTL (15 minutes).
+ * PHI entities typically have shorter TTL to ensure data freshness and compliance.
+ *
+ * @param {string} entityType - Entity type name (e.g., 'HealthRecord', 'Student')
+ *
+ * @returns {number} TTL in seconds for the entity type
+ *
+ * @example
+ * ```typescript
+ * const ttl = getCacheTTL('HealthRecord');  // Returns 300 (5 minutes)
+ * await cacheManager.set('white-cross:healthrecord:123', data, ttl);
+ *
+ * const defaultTTL = getCacheTTL('UnknownEntity');  // Returns 900 (15 minutes)
+ * ```
+ *
+ * @see {@link ENTITY_CACHE_TTL} for entity-specific TTL configuration
+ * @see {@link CacheTTL} for standard TTL constants
  */
 export function getCacheTTL(entityType: string): number {
   return ENTITY_CACHE_TTL[entityType] || CacheTTL.MEDIUM;

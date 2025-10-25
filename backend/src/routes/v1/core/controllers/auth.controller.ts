@@ -1,6 +1,15 @@
 /**
- * Authentication Controller
- * Business logic for user authentication operations
+ * @fileoverview Authentication Controller
+ *
+ * Business logic for user authentication operations including registration,
+ * login, token management, and profile retrieval. Implements secure authentication
+ * patterns with JWT tokens, bcrypt password hashing, and comprehensive error handling.
+ *
+ * @module routes/v1/core/controllers/auth.controller
+ * @requires User
+ * @requires jwtUtils
+ * @requires @hapi/hapi
+ * @since 1.0.0
  */
 
 import { User } from '../../../../database/models/core/User';
@@ -16,9 +25,62 @@ import {
   conflictResponse
 } from '../../../shared/utils';
 
+/**
+ * Authentication controller class.
+ *
+ * Provides static methods for handling authentication operations.
+ * All methods are async and return Hapi response objects.
+ *
+ * @class AuthController
+ */
 export class AuthController {
   /**
-   * Register a new user
+   * Registers a new user account.
+   *
+   * Creates a new user with hashed password and returns the user object
+   * (excluding password). Checks for duplicate email addresses before creation.
+   *
+   * @route POST /api/v1/auth/register
+   * @authentication None - Public endpoint
+   *
+   * @param {Request} request - Hapi request with registration payload
+   * @param {string} request.payload.email - User email address (unique)
+   * @param {string} request.payload.password - Password (min 8 chars, will be hashed)
+   * @param {string} request.payload.firstName - User first name
+   * @param {string} request.payload.lastName - User last name
+   * @param {string} request.payload.role - User role (ADMIN, NURSE, etc.)
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   *
+   * @returns {Promise<ResponseObject>} 201 with user object or error response
+   * @throws {Boom.conflict} When email already exists (409)
+   * @throws {Boom.badRequest} When validation fails (400)
+   *
+   * @example
+   * ```typescript
+   * // Request payload
+   * {
+   *   email: "nurse@school.edu",
+   *   password: "SecurePass123",
+   *   firstName: "Jane",
+   *   lastName: "Smith",
+   *   role: "NURSE"
+   * }
+   *
+   * // Response (201)
+   * {
+   *   success: true,
+   *   data: {
+   *     user: {
+   *       id: "uuid",
+   *       email: "nurse@school.edu",
+   *       firstName: "Jane",
+   *       lastName: "Smith",
+   *       role: "NURSE",
+   *       isActive: true
+   *     }
+   *   }
+   * }
+   * ```
    */
   static async register(request: any, h: ResponseToolkit) {
     const { email, password, firstName, lastName, role } = request.payload;
@@ -44,7 +106,40 @@ export class AuthController {
   }
 
   /**
-   * Login user and generate JWT token
+   * Authenticates user credentials and generates JWT token.
+   *
+   * Validates email and password, checks account status, and returns
+   * a JWT token valid for 24 hours along with the user profile.
+   *
+   * @route POST /api/v1/auth/login
+   * @authentication None - Public endpoint
+   *
+   * @param {Request} request - Hapi request with login credentials
+   * @param {string} request.payload.email - User email address
+   * @param {string} request.payload.password - User password
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   *
+   * @returns {Promise<ResponseObject>} 200 with token and user or error response
+   * @throws {Boom.unauthorized} When credentials are invalid or account inactive (401)
+   * @throws {Boom.badRequest} When validation fails (400)
+   *
+   * @example
+   * ```typescript
+   * // Request payload
+   * {
+   *   email: "nurse@school.edu",
+   *   password: "SecurePass123"
+   * }
+   *
+   * // Response (200)
+   * {
+   *   success: true,
+   *   data: {
+   *     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+   *     user: { id: "uuid", email: "...", role: "NURSE", ... }
+   *   }
+   * }
+   * ```
    */
   static async login(request: any, h: ResponseToolkit) {
     const { email, password } = request.payload;
@@ -80,7 +175,33 @@ export class AuthController {
   }
 
   /**
-   * Verify JWT token validity
+   * Verifies JWT token validity and returns associated user.
+   *
+   * Validates token signature, expiration, and user account status.
+   * Does not generate a new token - use refresh endpoint for that.
+   *
+   * @route POST /api/v1/auth/verify
+   * @authentication None - Token validated from Authorization header
+   *
+   * @param {Request} request - Hapi request with Authorization header
+   * @param {string} request.headers.authorization - Bearer token
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   *
+   * @returns {Promise<ResponseObject>} 200 with user object or error response
+   * @throws {Boom.unauthorized} When token is invalid, expired, or user inactive (401)
+   *
+   * @example
+   * ```typescript
+   * // Request
+   * GET /api/v1/auth/verify
+   * Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   *
+   * // Response (200)
+   * {
+   *   success: true,
+   *   data: { id: "uuid", email: "...", role: "NURSE", ... }
+   * }
+   * ```
    */
   static async verify(request: any, h: ResponseToolkit) {
     const authHeader = request.headers.authorization;

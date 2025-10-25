@@ -1,17 +1,104 @@
 /**
- * Medications Routes - Legacy Schema with Enhanced Swagger Documentation
- * HTTP endpoints for medication management using the legacy database schema
- * All routes prefixed with /api/v1/medications
+ * @fileoverview Medication Management Routes (v1) - Legacy Schema
  *
- * ⚠️ IMPORTANT: This file has been updated to work with the LEGACY database schema
- * Database table: medications (single table with medicationName, dosage, frequency, route, prescribedBy)
+ * HTTP route definitions for comprehensive medication management including CRUD operations,
+ * student medication tracking, and medication lifecycle management. Implements secure
+ * medication administration with role-based access control and HIPAA compliance.
+ *
+ * **Available Endpoints (7 routes):**
+ * - GET /api/v1/medications - List all medications with pagination and filters
+ * - POST /api/v1/medications - Create new medication record
+ * - GET /api/v1/medications/{id} - Get medication details by ID
+ * - PUT /api/v1/medications/{id} - Update medication information
+ * - POST /api/v1/medications/{id}/deactivate - Deactivate medication (soft delete)
+ * - POST /api/v1/medications/{id}/activate - Reactivate medication
+ * - GET /api/v1/medications/student/{studentId} - Get all medications for a student
+ *
+ * **Legacy Schema Notice:**
+ * This file currently works with the legacy database schema using a single medications table.
+ * Database table: medications (medicationName, dosage, frequency, route, prescribedBy)
  * Migration: 20251011221125-create-complete-healthcare-schema.js
  *
- * Swagger/OpenAPI Documentation:
- * - Complete request/response schemas for all medication endpoints
- * - HIPAA compliance notes for PHI-protected endpoints
- * - Comprehensive error responses and status codes
- * - Request body examples and validation rules
+ * To enable extended features (inventory, administration logs, interactions), you need to:
+ * 1. Run migration: 00004-create-medications-extended.ts
+ * 2. Migrate data from legacy to new schema
+ * 3. Switch to new schema validators
+ * 4. Uncomment disabled routes (10 additional routes available)
+ *
+ * **Security Features:**
+ * - All routes require JWT authentication
+ * - PHI-protected endpoints with audit logging
+ * - NURSE or ADMIN role required for create/update/delete operations
+ * - Soft deletion preserves historical records for compliance
+ * - Deactivation requires detailed reason and type for audit trail
+ *
+ * **HIPAA Compliance:**
+ * - All medication access is logged for audit trail
+ * - PHI protection on all endpoints returning medication data
+ * - Deactivation/deletion maintains historical records
+ * - Student medication access restricted by role and assignment
+ *
+ * **Medication Lifecycle:**
+ * 1. Create: Add new medication with prescription details
+ * 2. Update: Modify dosage, frequency, or instructions
+ * 3. Deactivate: Soft delete with reason (discontinued, completed, error)
+ * 4. Activate: Restore previously deactivated medication
+ * 5. Track: Filter active/inactive medications by student or system-wide
+ *
+ * @module routes/v1/healthcare/routes/medications.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @requires ../controllers/medications.controller
+ * @requires ../validators/medications.validators
+ * @requires ../schemas/medications.response.schemas
+ * @see {@link module:routes/v1/healthcare/controllers/medications.controller} for business logic
+ * @see {@link module:routes/v1/healthcare/validators/medications.validators} for validation schemas
+ * @see {@link module:routes/v1/healthcare/schemas/medications.response.schemas} for response schemas
+ * @since 1.0.0
+ *
+ * @example
+ * ```typescript
+ * // List all active medications with pagination
+ * GET /api/v1/medications?page=1&limit=20&isActive=true
+ * Authorization: Bearer <token>
+ * // Response: { success: true, data: { medications: [...], pagination: {...} } }
+ *
+ * // Create new medication (Nurse or Admin only)
+ * POST /api/v1/medications
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "medicationName": "Ibuprofen 200mg",
+ *   "dosage": "200mg",
+ *   "frequency": "Every 6 hours as needed",
+ *   "route": "Oral",
+ *   "prescribedBy": "Dr. Smith",
+ *   "startDate": "2025-10-23",
+ *   "instructions": "Take with food",
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000"
+ * }
+ *
+ * // Get all medications for a student (PHI Protected)
+ * GET /api/v1/medications/student/{studentId}?isActive=true
+ * Authorization: Bearer <token>
+ * // Response: { success: true, data: { medications: [...], pagination: {...} } }
+ *
+ * // Deactivate medication with audit trail
+ * POST /api/v1/medications/{id}/deactivate
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "reason": "Treatment completed successfully",
+ *   "deactivationType": "COMPLETED"
+ * }
+ *
+ * // Update medication dosage
+ * PUT /api/v1/medications/{id}
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "dosage": "400mg",
+ *   "frequency": "Every 8 hours as needed",
+ *   "instructions": "Take with food and full glass of water"
+ * }
+ * ```
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -433,9 +520,37 @@ const getMedicationsByStudentRoute: ServerRoute = {
  */
 
 /**
- * EXPORT ROUTES FOR LEGACY SCHEMA
+ * Medication management route collection for legacy schema.
+ *
+ * Complete set of 7 routes for medication CRUD operations and student medication
+ * tracking using the legacy single-table schema. All routes are PHI-protected and
+ * require JWT authentication with HIPAA-compliant audit logging.
+ *
+ * **Route Categories:**
+ * - Medication CRUD: List, create, get, update (4 routes)
+ * - Lifecycle Management: Activate, deactivate (2 routes)
+ * - Student Tracking: Get medications by student (1 route)
+ *
+ * **Permission Model:**
+ * - NURSE/ADMIN: Full access to create, update, activate, deactivate
+ * - All authenticated users: Can view medications (with scope restrictions)
+ * - Student-specific queries: Restricted by student assignment
+ *
+ * **Key Features:**
+ * - Soft deletion with audit trail (deactivate/activate)
+ * - Pagination support on list and student queries
+ * - Search and filter by medication name, student, active status
+ * - Complete Swagger/OpenAPI documentation for all endpoints
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // Import and register routes in Hapi server
+ * import { medicationsRoutes } from './routes/medications.routes';
+ * server.route(medicationsRoutes);
+ * ```
  */
-
 export const medicationsRoutes: ServerRoute[] = [
   // Medication CRUD (7 routes) - Works with legacy schema
   listMedicationsRoute,

@@ -1,6 +1,16 @@
 /**
- * Authentication Routes (v1)
- * HTTP route definitions for authentication endpoints
+ * @fileoverview Authentication Routes (v1)
+ *
+ * HTTP route definitions for all authentication endpoints including user registration,
+ * login, token verification, token refresh, and profile retrieval. Implements JWT-based
+ * authentication with comprehensive Swagger documentation for API consumers.
+ *
+ * @module routes/v1/core/routes/auth.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @see {@link module:routes/v1/core/controllers/auth.controller} for business logic
+ * @see {@link module:routes/v1/core/validators/auth.validators} for validation schemas
+ * @since 1.0.0
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -10,7 +20,20 @@ import { registerSchema, loginSchema } from '../validators/auth.validators';
 import { asyncHandler } from '../../../shared/utils';
 
 /**
- * Reusable Swagger schemas for authentication
+ * User response schema for Swagger documentation.
+ *
+ * Defines the structure of user objects returned by authentication endpoints.
+ * Excludes sensitive fields like password hash.
+ *
+ * @const {Joi.ObjectSchema}
+ * @property {string} id - User UUID
+ * @property {string} email - User email address
+ * @property {string} firstName - User first name
+ * @property {string} lastName - User last name
+ * @property {string} role - User role (ADMIN, NURSE, etc.)
+ * @property {boolean} isActive - Account active status
+ * @property {string} createdAt - Account creation timestamp (ISO 8601)
+ * @property {string} updatedAt - Last update timestamp (ISO 8601)
  */
 const UserResponseSchema = Joi.object({
   id: Joi.string().uuid().example('550e8400-e29b-41d4-a716-446655440000').description('User unique identifier (UUID)'),
@@ -47,7 +70,52 @@ const ErrorResponseSchema = Joi.object({
 }).label('ErrorResponse');
 
 /**
- * Authentication routes
+ * Authentication route definitions.
+ *
+ * Complete collection of authentication endpoints for the White Cross platform.
+ * All routes return standardized API responses with comprehensive error handling.
+ *
+ * **Available Endpoints:**
+ * - POST /api/v1/auth/register - Create new user account (public)
+ * - POST /api/v1/auth/login - Authenticate and receive JWT token (public)
+ * - POST /api/v1/auth/verify - Validate JWT token (public)
+ * - POST /api/v1/auth/refresh - Refresh JWT token (public)
+ * - GET /api/v1/auth/me - Get current user profile (requires auth)
+ * - GET /api/v1/auth/test-login - Test login for E2E (dev/test only)
+ *
+ * **Authentication Strategy:**
+ * - JWT tokens with 24-hour expiration
+ * - Bearer token format: "Authorization: Bearer <token>"
+ * - Passwords hashed with bcrypt (cost factor 10)
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // Register new user
+ * POST /api/v1/auth/register
+ * Content-Type: application/json
+ * {
+ *   "email": "nurse@school.edu",
+ *   "password": "SecurePass123",
+ *   "firstName": "Jane",
+ *   "lastName": "Smith",
+ *   "role": "NURSE"
+ * }
+ *
+ * // Login and receive token
+ * POST /api/v1/auth/login
+ * Content-Type: application/json
+ * {
+ *   "email": "nurse@school.edu",
+ *   "password": "SecurePass123"
+ * }
+ * // Response: { success: true, data: { token: "...", user: {...} } }
+ *
+ * // Access protected endpoint
+ * GET /api/v1/auth/me
+ * Authorization: Bearer <token>
+ * ```
  */
 export const authRoutes: ServerRoute[] = [
   {

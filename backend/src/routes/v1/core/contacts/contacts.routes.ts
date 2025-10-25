@@ -1,17 +1,78 @@
 /**
- * LOC: CONTACT-ROUTES-001
- * WC-ROUTES-CONTACTS-001 | Contact Management REST API Routes
- * 
- * Purpose: RESTful API endpoints for contact management
- * Inspired by: TwentyHQ CRM contact API patterns
- * Features: CRUD operations, search, filtering, pagination
- * 
- * UPSTREAM (imports from):
- *   - ContactService
- *   - Permission middleware
- * 
- * DOWNSTREAM (imported by):
- *   - v1 routes index
+ * @fileoverview Contact Management Routes (v1)
+ *
+ * RESTful API endpoints for CRM-style contact management in the White Cross
+ * Healthcare Platform. Supports emergency contacts, healthcare providers,
+ * school staff, and external stakeholders with comprehensive relationship tracking.
+ *
+ * **Inspired by**: TwentyHQ CRM contact API patterns
+ *
+ * **Route Categories (9 routes):**
+ * - Contact CRUD: Create, Read, Update, Deactivate (5 routes)
+ * - Search & Filter: Search and relation-based queries (2 routes)
+ * - Lifecycle: Activate/Deactivate contacts (soft delete) (2 routes)
+ * - Analytics: Contact statistics by type (1 route)
+ *
+ * **Contact Types:**
+ * - EMERGENCY: Primary and secondary emergency contacts for students
+ * - GUARDIAN: Legal guardians and parents
+ * - PROVIDER: External healthcare providers (doctors, specialists)
+ * - STAFF: School staff (teachers, administrators, counselors)
+ * - VENDOR: External service vendors
+ * - OTHER: Miscellaneous contacts
+ *
+ * **Security Features:**
+ * - All routes require JWT authentication
+ * - Fine-grained permissions via requirePermission middleware
+ * - Soft delete pattern (audit trail preservation)
+ * - User tracking for all mutations (createdBy, updatedBy, deletedBy)
+ *
+ * **Data Management:**
+ * - Pagination with configurable limit (max 100 per page)
+ * - Multi-field sorting (orderBy + orderDirection)
+ * - Advanced filtering (type, active status, relation, search)
+ * - Full-text search across name, email, and organization
+ *
+ * **PHI Considerations:**
+ * While contacts themselves may not contain PHI, relationships to students
+ * and health data require HIPAA compliance. All operations are audit-logged.
+ *
+ * @module routes/v1/core/contacts/contacts.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @requires ../../../../services/contact
+ * @requires ../../../../database/models/core/Contact
+ * @requires ../../../../shared/permissions/middleware
+ * @requires ../../../../shared/permissions
+ * @see {@link module:services/contact} for business logic
+ * @see {@link module:database/models/core/Contact} for Contact model
+ * @see {@link https://twenty.com/} TwentyHQ CRM inspiration
+ * @since 1.0.0
+ *
+ * @example
+ * ```typescript
+ * // List all emergency contacts with pagination
+ * GET /api/v1/contacts?type=EMERGENCY&page=1&limit=20&orderBy=lastName
+ * Authorization: Bearer <token>
+ *
+ * // Create new emergency contact
+ * POST /api/v1/contacts
+ * {
+ *   "firstName": "John",
+ *   "lastName": "Doe",
+ *   "type": "EMERGENCY",
+ *   "phone": "555-0100",
+ *   "email": "john.doe@example.com",
+ *   "relationTo": "student-uuid",
+ *   "relationshipType": "Parent"
+ * }
+ *
+ * // Search contacts by name
+ * GET /api/v1/contacts/search?query=john&limit=10
+ *
+ * // Get all contacts for a specific student
+ * GET /api/v1/contacts/by-relation/{studentId}?type=EMERGENCY
+ * ```
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -22,7 +83,39 @@ import { requirePermission } from '../../../../shared/permissions/middleware';
 import { Resource, Action } from '../../../../shared/permissions';
 
 /**
- * Contact REST API Routes
+ * Contact management route collection.
+ *
+ * Complete set of 9 RESTful endpoints for CRM-style contact management.
+ * Implements pagination, search, filtering, and soft delete patterns
+ * inspired by modern CRM systems like TwentyHQ.
+ *
+ * **Route Breakdown:**
+ * - GET /contacts: List with pagination, filtering, sorting
+ * - GET /contacts/{id}: Get single contact by ID
+ * - POST /contacts: Create new contact
+ * - PUT /contacts/{id}: Update existing contact
+ * - POST /contacts/{id}/deactivate: Soft delete (preserves audit trail)
+ * - POST /contacts/{id}/activate: Restore deactivated contact
+ * - GET /contacts/search: Full-text search
+ * - GET /contacts/by-relation/{relationTo}: Get contacts for student/user
+ * - GET /contacts/stats: Contact statistics by type
+ *
+ * **Permissions:**
+ * All routes use fine-grained permission checks:
+ * - List/Read: Contact:List and Contact:Read permissions
+ * - Create: Contact:Create permission
+ * - Update: Contact:Update permission
+ * - Delete: Contact:Delete permission (for deactivation)
+ *
+ * **Soft Delete Pattern:**
+ * Contacts are never hard-deleted. Deactivation sets:
+ * - isActive = false
+ * - deletedAt = current timestamp
+ * - deletedBy = current user ID
+ *
+ * This preserves audit trail and allows restoration via activation.
+ *
+ * @const {ServerRoute[]}
  */
 export const contactRoutes: ServerRoute[] = [
   // Get all contacts

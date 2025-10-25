@@ -1,6 +1,16 @@
 /**
- * Students Validators
- * Validation schemas for student management endpoints
+ * @fileoverview Students Validators - Validation schemas for student management endpoints
+ *
+ * Comprehensive Joi validation schemas for all student-related API operations including:
+ * - Student enrollment and profile management
+ * - Search and filtering
+ * - Nurse assignment and transfers
+ * - Health records access control
+ *
+ * All schemas enforce HIPAA-compliant data validation with strict type checking,
+ * length constraints, and business rule validation.
+ *
+ * @module operations/validators/students
  */
 
 import Joi from 'joi';
@@ -10,6 +20,30 @@ import { paginationSchema } from '../../../shared/validators';
  * Query Schemas
  */
 
+/**
+ * List students query parameters schema
+ *
+ * Validates query parameters for student listing with pagination and multiple filters.
+ * Supports nurse dashboards, administrative reports, and student search interfaces.
+ *
+ * @schema
+ * @example
+ * // Valid query for students with allergies in grade 3
+ * {
+ *   page: 1,
+ *   limit: 20,
+ *   grade: '3',
+ *   hasAllergies: true
+ * }
+ *
+ * @example
+ * // Valid search query for student lookup
+ * {
+ *   search: 'John Smith',
+ *   nurseId: 'nurse-uuid-123',
+ *   isActive: true
+ * }
+ */
 export const listStudentsQuerySchema = paginationSchema.keys({
   search: Joi.string()
     .trim()
@@ -38,6 +72,38 @@ export const listStudentsQuerySchema = paginationSchema.keys({
  * Payload Schemas
  */
 
+/**
+ * Create student payload schema
+ *
+ * Validates new student enrollment data with comprehensive demographic validation.
+ * Enforces business rules: date of birth must be past, student number must be unique,
+ * and all required fields must be present.
+ *
+ * @schema
+ * @example
+ * // Valid kindergarten student enrollment
+ * {
+ *   firstName: 'Emily',
+ *   lastName: 'Johnson',
+ *   dateOfBirth: '2018-09-15',
+ *   grade: 'K',
+ *   studentNumber: 'STU-2024-0123',
+ *   gender: 'FEMALE',
+ *   enrollmentDate: '2024-08-20',
+ *   nurseId: 'nurse-uuid-456'
+ * }
+ *
+ * @example
+ * // Invalid - future date of birth
+ * {
+ *   firstName: 'Test',
+ *   lastName: 'Student',
+ *   dateOfBirth: '2030-01-01', // FAILS: date.max validation
+ *   grade: '1',
+ *   studentNumber: 'STU-2024-9999',
+ *   gender: 'MALE'
+ * }
+ */
 export const createStudentSchema = Joi.object({
   firstName: Joi.string()
     .trim()
@@ -147,6 +213,32 @@ export const createStudentSchema = Joi.object({
     })
 });
 
+/**
+ * Update student payload schema
+ *
+ * Validates student profile updates. At least one field must be provided for update.
+ * Partial update support allows nurses and administrators to modify specific fields
+ * without requiring complete student data resubmission.
+ *
+ * @schema
+ * @example
+ * // Valid grade level update for new school year
+ * {
+ *   grade: '4'
+ * }
+ *
+ * @example
+ * // Valid nurse reassignment
+ * {
+ *   nurseId: 'new-nurse-uuid-789'
+ * }
+ *
+ * @example
+ * // Invalid - empty update payload
+ * {
+ *   // FAILS: object.min - at least one field required
+ * }
+ */
 export const updateStudentSchema = Joi.object({
   firstName: Joi.string()
     .trim()
@@ -210,6 +302,32 @@ export const updateStudentSchema = Joi.object({
   'object.min': 'At least one field must be provided for update'
 });
 
+/**
+ * Deactivate student payload schema
+ *
+ * Validates deactivation request requiring detailed reason for audit trail.
+ * Reason must be substantive (5-500 characters) to ensure proper documentation
+ * of student withdrawal, transfer, or graduation.
+ *
+ * @schema
+ * @example
+ * // Valid graduation deactivation
+ * {
+ *   reason: 'Student graduated and enrolled in middle school'
+ * }
+ *
+ * @example
+ * // Valid transfer deactivation
+ * {
+ *   reason: 'Family relocated to different school district - transferred to Lincoln Elementary'
+ * }
+ *
+ * @example
+ * // Invalid - reason too short
+ * {
+ *   reason: 'Left' // FAILS: string.min - must be at least 5 characters
+ * }
+ */
 export const deactivateStudentSchema = Joi.object({
   reason: Joi.string()
     .trim()
@@ -228,6 +346,19 @@ export const deactivateStudentSchema = Joi.object({
  * Parameter Schemas
  */
 
+/**
+ * Student ID parameter schema
+ *
+ * Validates student UUID in route parameters. Ensures proper UUID format
+ * for all student lookup and modification operations.
+ *
+ * @schema
+ * @example
+ * // Valid UUID parameter
+ * {
+ *   id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+ * }
+ */
 export const studentIdParamSchema = Joi.object({
   id: Joi.string()
     .uuid()
@@ -235,6 +366,25 @@ export const studentIdParamSchema = Joi.object({
     .description('Student UUID')
 });
 
+/**
+ * Transfer student payload schema
+ *
+ * Validates nurse assignment transfer request. Requires valid nurse UUID
+ * to ensure student is reassigned to an existing, active nurse.
+ *
+ * @schema
+ * @example
+ * // Valid transfer to new nurse
+ * {
+ *   nurseId: 'new-nurse-uuid-123'
+ * }
+ *
+ * @example
+ * // Invalid - missing nurse ID
+ * {
+ *   // FAILS: any.required - nurseId is mandatory for transfer
+ * }
+ */
 export const transferStudentSchema = Joi.object({
   nurseId: Joi.string()
     .uuid()
@@ -245,6 +395,25 @@ export const transferStudentSchema = Joi.object({
     })
 });
 
+/**
+ * Grade parameter schema
+ *
+ * Validates grade level in route parameters. Supports standard grade formats
+ * including kindergarten ("K") and grades 1-12.
+ *
+ * @schema
+ * @example
+ * // Valid kindergarten grade
+ * {
+ *   grade: 'K'
+ * }
+ *
+ * @example
+ * // Valid numeric grade
+ * {
+ *   grade: '5'
+ * }
+ */
 export const gradeParamSchema = Joi.object({
   grade: Joi.string()
     .trim()
@@ -252,6 +421,32 @@ export const gradeParamSchema = Joi.object({
     .description('Grade level (e.g., "K", "1", "2", etc.)')
 });
 
+/**
+ * Search query parameter schema
+ *
+ * Validates search query for student lookup by name or ID. Minimum 1 character
+ * required to prevent overly broad searches. Supports fuzzy matching for quick
+ * student identification in emergency situations.
+ *
+ * @schema
+ * @example
+ * // Valid search by last name
+ * {
+ *   query: 'Smith'
+ * }
+ *
+ * @example
+ * // Valid search by student number
+ * {
+ *   query: 'STU-2024-0123'
+ * }
+ *
+ * @example
+ * // Invalid - empty query
+ * {
+ *   query: '' // FAILS: string.min - must be at least 1 character
+ * }
+ */
 export const searchQueryParamSchema = Joi.object({
   query: Joi.string()
     .trim()
@@ -263,4 +458,18 @@ export const searchQueryParamSchema = Joi.object({
     })
 });
 
+/**
+ * Health records query parameter schema
+ *
+ * Validates query parameters for health records pagination. Uses standard
+ * pagination schema to maintain consistency across all paginated endpoints.
+ *
+ * @schema
+ * @example
+ * // Valid pagination query
+ * {
+ *   page: 1,
+ *   limit: 20
+ * }
+ */
 export const healthRecordsQuerySchema = paginationSchema;

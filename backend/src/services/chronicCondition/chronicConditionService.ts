@@ -22,13 +22,25 @@
  */
 
 /**
- * Chronic Condition Service - Sequelize Implementation
+ * @fileoverview Chronic Condition Service - Legacy Entry Point
  *
- * Enterprise-grade service for managing student chronic health conditions.
- * Implements comprehensive care plan tracking, medication management, and PHI compliance.
+ * DEPRECATED: This file provides backward compatibility for legacy imports.
+ * New code should import directly from './chronicCondition' module.
  *
  * @module services/chronicConditionService
- * @deprecated Import from './chronicCondition' instead for better modularity
+ * @deprecated Import from './chronicCondition' instead for better modularity and access to types
+ *
+ * @example
+ * ```typescript
+ * // DEPRECATED - Old import pattern
+ * import ChronicConditionService from './services/chronicConditionService';
+ *
+ * // RECOMMENDED - New import pattern
+ * import { ChronicConditionService } from './services/chronicCondition';
+ * import type { CreateChronicConditionData } from './services/chronicCondition';
+ * ```
+ *
+ * @since 1.0.0
  */
 
 // Re-export everything from the modular implementation

@@ -1,21 +1,53 @@
 /**
+ * @fileoverview Health Record Import/Export Module - HIPAA-Compliant Data Portability
+ * @module services/healthRecord/import-export.module
+ * @description Secure bulk import/export operations for health records with comprehensive PHI protection
+ *
+ * Key Features:
+ * - Complete health history export in JSON format
+ * - Bulk student health record export operations
+ * - Health record import with validation and error handling
+ * - Import data structure validation
+ * - Record type summary generation for metadata
+ * - Comprehensive error tracking for failed imports
+ * - Student demographic data inclusion in exports
+ *
+ * Export Capabilities:
+ * - Health records (all types)
+ * - Allergy information
+ * - Chronic conditions with care plans
+ * - Vaccination history
+ * - Growth chart data
+ * - Export metadata and statistics
+ *
+ * @compliance HIPAA Privacy Rule §164.308 - Administrative Safeguards
+ * @compliance HIPAA Security Rule §164.312 - Technical Safeguards
+ * @compliance HIPAA Right of Access §164.524 - Patient access to PHI
+ * @compliance 45 CFR §164.524 - Electronic health information in requested format
+ * @security PHI Export - Data must be encrypted during transit and at rest
+ * @security Export operations require elevated 'health:export' permission
+ * @security Exported data contains comprehensive PHI requiring secure handling
+ * @audit All export operations logged with student ID and record counts
+ * @audit Import operations logged with success/failure statistics
+ * @audit Minimum 6-year retention for HIPAA compliance
+ * @encryption Exported PHI should be encrypted before transmission or storage
+ * @portability Supports patient right to access and data portability under HIPAA
+ *
+ * Security Considerations:
+ * - Exports contain complete PHI and must be handled as sensitive data
+ * - Consider encryption at application level before transmission
+ * - Log all export operations for security audit trail
+ * - Implement access controls for export functionality
+ * - Rate limit export operations to prevent data exfiltration
+ *
+ * @requires ../../utils/logger
+ * @requires ../../database/models
+ * @requires ./types
+ * @requires ./healthRecord.module
+ *
  * LOC: 1D8E9B5F34
- * WC-SVC-HLT-IEX | import-export.module.ts - Health Record Import/Export Module
- *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - models (database/models)
- *   - types.ts (./types.ts)
- *   - healthRecord.module.ts (./healthRecord.module.ts)
- *
- * DOWNSTREAM (imported by):
- *   - index.ts (./index.ts)
- *
- * Purpose: Data import/export functionality for health records in JSON format
- * Exports: ImportExportModule class for bulk data operations
- * HIPAA: Contains PHI export - requires encryption and secure handling
+ * WC-SVC-HLT-IEX | import-export.module.ts
  * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Data validation → Bulk processing → Error handling → Audit logging
  */
 
 import { logger } from '../../utils/logger';
@@ -23,12 +55,53 @@ import { Student } from '../../database/models';
 import { ImportResults } from './types';
 
 /**
- * Import/Export Module
- * Handles bulk import and export operations for health records
+ * @class ImportExportModule
+ * @description HIPAA-compliant import/export operations for health records with comprehensive PHI protection
+ * @security All methods require elevated permissions for bulk PHI operations
+ * @audit All operations logged for compliance and security tracking
+ * @encryption Exported data must be encrypted before transmission
  */
 export class ImportExportModule {
   /**
-   * Export complete health history for a student (JSON format)
+   * @method exportHealthHistory
+   * @description Export complete health history for a student in structured JSON format
+   * @async
+   *
+   * @param {string} studentId - Student UUID whose health history to export
+   *
+   * @returns {Promise<Object>} Complete health history export package
+   * @returns {string} result.exportDate - ISO timestamp of export
+   * @returns {string} result.exportVersion - Export format version for compatibility
+   * @returns {Object} result.student - Student demographic information
+   * @returns {Array} result.healthRecords - All health records
+   * @returns {Array} result.allergies - All allergy information
+   * @returns {Array} result.chronicConditions - All chronic conditions with care plans
+   * @returns {Array} result.vaccinations - Vaccination history
+   * @returns {Array} result.growthData - Growth chart data points
+   * @returns {Object} result.metadata - Export metadata and statistics
+   *
+   * @throws {Error} When student not found
+   * @throws {Error} When database query fails
+   *
+   * @security PHI Export - Requires 'health:export' permission
+   * @security Exported data contains complete PHI requiring encryption
+   * @audit Export logged with student ID and record count
+   * @compliance HIPAA Right of Access - Patient/guardian can request complete records
+   * @portability Supports data portability requirements under HIPAA
+   * @encryption Result must be encrypted before transmission or storage
+   * @privacy Ensure export is delivered only to authorized requestor
+   *
+   * @example
+   * // Export student health history for parent request
+   * const healthHistory = await ImportExportModule.exportHealthHistory('student-123');
+   * // Encrypt and transmit securely to authorized parent/guardian
+   * // Log: "Health history exported for John Doe - 156 records"
+   *
+   * @example
+   * // Export for student transferring to new school
+   * const exportData = await ImportExportModule.exportHealthHistory('student-456');
+   * const encrypted = encryptPHI(exportData);
+   * await sendSecureEmail(encrypted, newSchoolNurse@example.com);
    */
   static async exportHealthHistory(studentId: string): Promise<any> {
     try {
@@ -95,7 +168,46 @@ export class ImportExportModule {
   }
 
   /**
-   * Import health records from JSON (basic import functionality)
+   * @method importHealthRecords
+   * @description Import health records from JSON format with validation and error handling
+   * @async
+   *
+   * @param {string} studentId - Target student UUID for imported records
+   * @param {Object} importData - Import data package (must match export format)
+   * @param {Array} [importData.healthRecords] - Array of health records to import
+   *
+   * @returns {Promise<ImportResults>} Import operation results
+   * @returns {number} result.imported - Count of successfully imported records
+   * @returns {number} result.skipped - Count of skipped records (validation failures)
+   * @returns {string[]} result.errors - Array of error messages for skipped records
+   *
+   * @throws {Error} When student not found
+   * @throws {Error} When database operations fail
+   *
+   * @security PHI Import - Requires 'health:create' permission
+   * @audit Import logged with success/failure statistics
+   * @validation Each record validated before import (see ValidationModule)
+   * @errorHandling Failed records skipped with detailed error tracking
+   * @idempotency Duplicate records may be rejected by validation
+   *
+   * @example
+   * // Import health records from previous school
+   * const importData = {
+   *   healthRecords: [
+   *     { type: 'CHECKUP', date: '2024-01-15', description: 'Annual physical', ... },
+   *     { type: 'VACCINATION', date: '2024-02-01', description: 'COVID-19 booster', ... }
+   *   ]
+   * };
+   * const results = await ImportExportModule.importHealthRecords('student-123', importData);
+   * console.log(`Imported: ${results.imported}, Skipped: ${results.skipped}`);
+   * if (results.errors.length > 0) {
+   *   console.error('Import errors:', results.errors);
+   * }
+   *
+   * @example
+   * // Import with error handling
+   * const results = await ImportExportModule.importHealthRecords('student-456', data);
+   * results.errors.forEach(error => logger.warn(`Import issue: ${error}`));
    */
   static async importHealthRecords(
     studentId: string,
@@ -161,7 +273,34 @@ export class ImportExportModule {
   }
 
   /**
-   * Validate import data structure
+   * @method validateImportData
+   * @description Validate import data structure and required fields before processing
+   * @static
+   *
+   * @param {any} data - Import data to validate
+   *
+   * @returns {Object} Validation result with detailed error messages
+   * @returns {boolean} result.isValid - Whether data structure is valid
+   * @returns {string[]} result.errors - Array of specific validation error messages
+   *
+   * @validation Checks data is object (not null/undefined/primitive)
+   * @validation Validates healthRecords is array if present
+   * @validation Validates each record has required fields (type, date, description)
+   * @errorHandling Returns detailed errors for each validation failure
+   *
+   * @example
+   * const validation = ImportExportModule.validateImportData(importData);
+   * if (!validation.isValid) {
+   *   throw new Error(`Invalid import data: ${validation.errors.join(', ')}`);
+   * }
+   * // Proceed with import
+   *
+   * @example
+   * // Validate before processing
+   * const { isValid, errors } = ImportExportModule.validateImportData(data);
+   * if (!isValid) {
+   *   return { success: false, message: 'Validation failed', errors };
+   * }
    */
   static validateImportData(data: any): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
@@ -196,7 +335,19 @@ export class ImportExportModule {
   }
 
   /**
-   * Get record type summary for export metadata
+   * @method getRecordTypeSummary
+   * @description Generate summary statistics of record types for export metadata
+   * @private
+   * @static
+   *
+   * @param {Array} records - Array of health records to summarize
+   *
+   * @returns {Record<string, number>} Object mapping record types to counts
+   *
+   * @example
+   * // Internal use in exportHealthHistory
+   * const summary = this.getRecordTypeSummary(healthRecords);
+   * // Returns: { CHECKUP: 45, VACCINATION: 23, ILLNESS: 12, ... }
    */
   private static getRecordTypeSummary(records: any[]): Record<string, number> {
     return records.reduce((acc: Record<string, number>, record: any) => {
@@ -207,7 +358,44 @@ export class ImportExportModule {
   }
 
   /**
-   * Export multiple students' health records (bulk export)
+   * @method bulkExportHealthRecords
+   * @description Export health records for multiple students in a single operation
+   * @async
+   *
+   * @param {string[]} studentIds - Array of student UUIDs to export
+   *
+   * @returns {Promise<Object>} Bulk export results package
+   * @returns {Array} result.exports - Array of successful export objects
+   * @returns {Array} result.errors - Array of error objects for failed exports
+   * @returns {Object} result.summary - Operation summary statistics
+   * @returns {number} result.summary.total - Total students requested
+   * @returns {number} result.summary.successful - Successfully exported count
+   * @returns {number} result.summary.failed - Failed export count
+   *
+   * @throws {Error} When no student IDs provided
+   *
+   * @security PHI Bulk Export - Requires 'health:export:bulk' permission
+   * @security Exports contain PHI for multiple students - highest security required
+   * @audit Bulk export logged with student count and success/failure statistics
+   * @performance Large bulk exports may take significant time
+   * @errorHandling Individual student failures don't block other exports
+   * @encryption Result must be encrypted before transmission
+   * @rateLimit Consider rate limiting to prevent data exfiltration
+   *
+   * @example
+   * // Export health records for all graduating seniors
+   * const seniorIds = await getGraduatingSeniorIds();
+   * const bulkExport = await ImportExportModule.bulkExportHealthRecords(seniorIds);
+   * console.log(`Exported ${bulkExport.summary.successful}/${bulkExport.summary.total} records`);
+   * if (bulkExport.errors.length > 0) {
+   *   console.error('Export failures:', bulkExport.errors);
+   * }
+   *
+   * @example
+   * // Export for grade-level health screening report
+   * const studentIds = ['student-1', 'student-2', 'student-3'];
+   * const exports = await ImportExportModule.bulkExportHealthRecords(studentIds);
+   * // Process successful exports, log failures
    */
   static async bulkExportHealthRecords(studentIds: string[]): Promise<any> {
     try {

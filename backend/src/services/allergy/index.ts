@@ -26,12 +26,19 @@
  */
 
 /**
- * Allergy Service - Modular Implementation
+ * @fileoverview Allergy Service - Module Entry Point
  *
- * Enterprise-grade service for managing student allergies with full PHI compliance.
- * Provides comprehensive allergy tracking, severity management, and verification workflows.
+ * Exports comprehensive allergy management functionality for student health records.
+ * Provides both functional exports and backwards-compatible AllergyService class.
+ *
+ * Enterprise-grade service with full HIPAA compliance, patient safety focus, and
+ * medication-allergy cross-checking capabilities. All operations include automatic
+ * PHI audit logging and support transactional workflows.
  *
  * @module services/allergy
+ * @security All operations log PHI access for HIPAA compliance
+ * @compliance HIPAA, healthcare allergy documentation standards
+ * @since 1.0.0
  */
 
 // Export types
@@ -74,8 +81,46 @@ export {
 } from './validation';
 
 /**
- * AllergyService class for backwards compatibility
- * This maintains the same API as the original monolithic service
+ * AllergyService class providing unified interface for allergy management.
+ *
+ * Maintains backwards compatibility with original monolithic service while delegating
+ * to modular implementation. All static methods provide the same API surface with
+ * improved modularity, testability, and maintainability.
+ *
+ * **PATIENT SAFETY CRITICAL** - This service manages life-threatening allergy information
+ * that directly impacts medication administration and emergency response.
+ *
+ * @class AllergyService
+ *
+ * @example
+ * ```typescript
+ * // Create new allergy record
+ * const allergy = await AllergyService.createAllergy({
+ *   studentId: 'student-uuid-123',
+ *   allergen: 'Penicillin',
+ *   severity: 'SEVERE',
+ *   verified: false
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Check for critical allergies before medication
+ * const critical = await AllergyService.getCriticalAllergies('student-uuid-456');
+ * if (critical.length > 0) {
+ *   console.warn('ALERT: Patient has critical allergies');
+ * }
+ * ```
+ *
+ * @remarks
+ * Prefer using functional exports for new code:
+ * - import { createAllergy, getStudentAllergies } from '@/services/allergy'
+ *
+ * Use AllergyService class for backwards compatibility:
+ * - import AllergyService from '@/services/allergy'
+ *
+ * @security All methods log PHI access automatically
+ * @compliance HIPAA audit logging, healthcare data standards
  */
 export class AllergyService {
   static async createAllergy(data: any, transaction?: any) {

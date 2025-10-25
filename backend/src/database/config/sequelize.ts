@@ -146,11 +146,54 @@ const sequelizeOptions: Options = {
   },
 };
 
-// Create Sequelize instance
+/**
+ * Sequelize ORM instance configured for White Cross healthcare platform.
+ *
+ * This instance is configured with:
+ * - PostgreSQL dialect with SSL support in production
+ * - Optimized connection pooling (5-20 connections)
+ * - Automatic query performance monitoring
+ * - Retry logic for transient connection failures
+ * - HIPAA-compliant audit logging integration
+ *
+ * @see {@link sequelizeOptions} for complete configuration details
+ * @see {@link initializeDatabase} to initialize the database connection
+ *
+ * @example
+ * ```typescript
+ * import { sequelize } from '@/database/config/sequelize';
+ *
+ * // Use in model definitions
+ * const User = sequelize.define('User', { ... });
+ *
+ * // Execute raw queries
+ * const results = await sequelize.query('SELECT * FROM users WHERE active = true');
+ * ```
+ */
 export const sequelize = new Sequelize(DATABASE_URL, sequelizeOptions);
 
 /**
- * Database health check
+ * Performs a database health check by attempting to authenticate with the database.
+ *
+ * This function tests database connectivity and measures response latency.
+ * Used primarily for health monitoring endpoints and startup validation.
+ *
+ * @returns {Promise<Object>} Health check result object
+ * @returns {boolean} returns.healthy - Whether the database is accessible and responding
+ * @returns {number} returns.latency - Response time in milliseconds
+ * @returns {string} [returns.error] - Error message if health check failed
+ *
+ * @example
+ * ```typescript
+ * const health = await checkDatabaseHealth();
+ * if (health.healthy) {
+ *   console.log(`Database is healthy (latency: ${health.latency}ms)`);
+ * } else {
+ *   console.error(`Database error: ${health.error}`);
+ * }
+ * ```
+ *
+ * @see {@link initializeDatabase} for database initialization
  */
 export async function checkDatabaseHealth(): Promise<{
   healthy: boolean;
@@ -180,7 +223,40 @@ export async function checkDatabaseHealth(): Promise<{
 }
 
 /**
- * Initialize database connection
+ * Initializes the database connection and performs health validation.
+ *
+ * This function:
+ * - Tests database connectivity via health check
+ * - Logs connection pool configuration
+ * - Provides detailed troubleshooting guidance on connection failures
+ * - Optionally syncs database schema in development mode
+ *
+ * Should be called during application startup before accepting requests.
+ *
+ * @returns {Promise<void>} Resolves when database is successfully initialized
+ *
+ * @throws {Error} When database connection fails or health check fails
+ * @throws {Error} When DATABASE_URL environment variable is missing
+ *
+ * @example
+ * ```typescript
+ * // In server startup
+ * try {
+ *   await initializeDatabase();
+ *   console.log('Database ready');
+ *   // Start accepting requests
+ * } catch (error) {
+ *   console.error('Database initialization failed', error);
+ *   process.exit(1);
+ * }
+ * ```
+ *
+ * @remarks
+ * In development mode with SEQUELIZE_AUTO_SYNC=true, this will automatically
+ * sync database models using `sequelize.sync({ alter: true })`. This should
+ * NEVER be enabled in production.
+ *
+ * @see {@link checkDatabaseHealth} for health check implementation
  */
 export async function initializeDatabase(): Promise<void> {
   try {
@@ -228,7 +304,33 @@ export async function initializeDatabase(): Promise<void> {
 }
 
 /**
- * Get database connection pool statistics
+ * Retrieves real-time PostgreSQL connection pool statistics.
+ *
+ * Queries `pg_stat_activity` to get the current state of all database connections
+ * for the current database. Useful for monitoring connection usage and diagnosing
+ * connection pool exhaustion issues.
+ *
+ * @returns {Promise<Array<{state: string, count: number}>>} Array of connection states with counts
+ * Each element contains:
+ * - `state`: Connection state (e.g., 'active', 'idle', 'idle in transaction')
+ * - `count`: Number of connections in that state
+ *
+ * @example
+ * ```typescript
+ * const stats = await getPoolStats();
+ * stats.forEach(({ state, count }) => {
+ *   console.log(`${count} connections in ${state} state`);
+ * });
+ * // Output example:
+ * // 3 connections in active state
+ * // 5 connections in idle state
+ * ```
+ *
+ * @remarks
+ * This function executes a raw SQL query against pg_stat_activity.
+ * Returns an empty array if the query fails rather than throwing.
+ *
+ * @see {@link poolConfig} for connection pool configuration
  */
 export async function getPoolStats(): Promise<
   Array<{
@@ -260,7 +362,37 @@ export async function getPoolStats(): Promise<
 }
 
 /**
- * Execute operation with retry logic for transient failures
+ * Executes a database operation with automatic retry logic for transient failures.
+ *
+ * Retries operations that fail due to connection errors or timeouts using
+ * exponential backoff strategy. Non-retryable errors are thrown immediately.
+ *
+ * @template T - Return type of the operation
+ * @param {() => Promise<T>} operation - Async function to execute with retry logic
+ * @param {number} [maxRetries=3] - Maximum number of retry attempts (default: 3)
+ * @param {number} [delayMs=1000] - Base delay in milliseconds between retries (default: 1000)
+ *
+ * @returns {Promise<T>} Result of the successful operation
+ *
+ * @throws {Error} If all retry attempts fail or error is not retryable
+ *
+ * @example
+ * ```typescript
+ * // Retry a database query
+ * const users = await executeWithRetry(
+ *   async () => await User.findAll({ where: { active: true } }),
+ *   5,  // max 5 retries
+ *   2000  // 2 second base delay
+ * );
+ * ```
+ *
+ * @remarks
+ * Retryable errors include:
+ * - Connection errors (ECONNREFUSED, ETIMEDOUT, EHOSTUNREACH)
+ * - Sequelize connection errors
+ * - Timeout errors
+ *
+ * Uses exponential backoff: delay * attempt (1s, 2s, 3s for attempts 1, 2, 3)
  */
 export async function executeWithRetry<T>(
   operation: () => Promise<T>,
@@ -300,7 +432,44 @@ export async function executeWithRetry<T>(
 }
 
 /**
- * Transaction wrapper with timeout
+ * Executes a function within a database transaction with configurable timeout.
+ *
+ * Provides automatic transaction management with commit on success and rollback
+ * on failure. Sets READ_COMMITTED isolation level and configurable statement timeout.
+ *
+ * @template T - Return type of the transaction function
+ * @param {(transaction: any) => Promise<T>} fn - Function to execute within transaction context
+ * @param {Object} [options={}] - Transaction options
+ * @param {number} [options.timeout=60000] - Statement timeout in milliseconds (default: 60000)
+ *
+ * @returns {Promise<T>} Result of the transaction function
+ *
+ * @throws {Error} If transaction function fails (triggers automatic rollback)
+ * @throws {Error} If transaction exceeds timeout duration
+ *
+ * @example
+ * ```typescript
+ * // Transfer student between schools with transaction
+ * const result = await executeTransaction(async (transaction) => {
+ *   await Student.update(
+ *     { schoolId: newSchoolId },
+ *     { where: { id: studentId }, transaction }
+ *   );
+ *   await AuditLog.create(
+ *     { action: 'TRANSFER', entityId: studentId },
+ *     { transaction }
+ *   );
+ *   return { success: true };
+ * }, { timeout: 30000 });
+ * ```
+ *
+ * @remarks
+ * - Uses READ_COMMITTED isolation level to balance consistency and performance
+ * - Automatically handles commit and rollback
+ * - Sets PostgreSQL statement_timeout for the transaction scope
+ * - Default timeout is 60 seconds but can be adjusted per transaction
+ *
+ * @see {@link sequelize.transaction} for underlying Sequelize transaction API
  */
 export async function executeTransaction<T>(
   fn: (transaction: any) => Promise<T>,
@@ -323,7 +492,32 @@ export async function executeTransaction<T>(
 }
 
 /**
- * Graceful shutdown
+ * Gracefully closes all database connections.
+ *
+ * Should be called during application shutdown to ensure all connections
+ * are properly closed and resources are released. Waits for active
+ * connections to complete before closing.
+ *
+ * @returns {Promise<void>} Resolves when all connections are closed
+ *
+ * @throws {Error} If database disconnection encounters an error
+ *
+ * @example
+ * ```typescript
+ * // In graceful shutdown handler
+ * process.on('SIGTERM', async () => {
+ *   console.log('Shutting down gracefully...');
+ *   await disconnectDatabase();
+ *   process.exit(0);
+ * });
+ * ```
+ *
+ * @remarks
+ * This function will wait for all active queries to complete before
+ * closing connections. It's important to call this during shutdown
+ * to prevent connection leaks and ensure data integrity.
+ *
+ * @see {@link initializeDatabase} for database initialization
  */
 export async function disconnectDatabase(): Promise<void> {
   try {

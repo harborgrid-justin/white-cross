@@ -1,12 +1,39 @@
 /**
- * Shared Validation Schemas
- * Common Joi validation schemas used across v1 routes
+ * @fileoverview Shared Validation Schemas
+ *
+ * Common Joi validation schemas used across all v1 API routes to ensure
+ * consistent validation behavior, error messages, and data constraints.
+ * These schemas promote DRY principles and standardize API input validation.
+ *
+ * @module routes/shared/validators
+ * @requires joi
+ * @since 1.0.0
  */
 
 import Joi from 'joi';
 
 /**
- * Pagination schema
+ * Pagination query parameters validation schema.
+ *
+ * Validates standard pagination parameters for list endpoints.
+ *
+ * @const {Joi.ObjectSchema}
+ * @property {number} [page=1] - Page number (min: 1)
+ * @property {number} [limit=20] - Items per page (min: 1, max: 100)
+ *
+ * @example
+ * ```typescript
+ * // In a route definition
+ * {
+ *   method: 'GET',
+ *   path: '/api/v1/students',
+ *   options: {
+ *     validate: {
+ *       query: paginationSchema
+ *     }
+ *   }
+ * }
+ * ```
  */
 export const paginationSchema = Joi.object({
   page: Joi.number()
@@ -23,7 +50,19 @@ export const paginationSchema = Joi.object({
 });
 
 /**
- * Email schema
+ * Email address validation schema.
+ *
+ * Validates email format, normalizes to lowercase, and trims whitespace.
+ * Required field with custom error messages.
+ *
+ * @const {Joi.StringSchema}
+ *
+ * @example
+ * ```typescript
+ * const userSchema = Joi.object({
+ *   email: emailSchema
+ * });
+ * ```
  */
 export const emailSchema = Joi.string()
   .email()
@@ -37,7 +76,19 @@ export const emailSchema = Joi.string()
   });
 
 /**
- * First name schema
+ * First name validation schema.
+ *
+ * Validates first name with length constraints (1-100 characters).
+ * Trims whitespace automatically. Required field.
+ *
+ * @const {Joi.StringSchema}
+ *
+ * @example
+ * ```typescript
+ * const userSchema = Joi.object({
+ *   firstName: firstNameSchema
+ * });
+ * ```
  */
 export const firstNameSchema = Joi.string()
   .trim()
@@ -52,7 +103,19 @@ export const firstNameSchema = Joi.string()
   });
 
 /**
- * Last name schema
+ * Last name validation schema.
+ *
+ * Validates last name with length constraints (1-100 characters).
+ * Trims whitespace automatically. Required field.
+ *
+ * @const {Joi.StringSchema}
+ *
+ * @example
+ * ```typescript
+ * const userSchema = Joi.object({
+ *   lastName: lastNameSchema
+ * });
+ * ```
  */
 export const lastNameSchema = Joi.string()
   .trim()
@@ -67,7 +130,26 @@ export const lastNameSchema = Joi.string()
   });
 
 /**
- * UUID parameter schema
+ * UUID parameter validation schema.
+ *
+ * Validates route parameters containing a UUID identifier.
+ * Commonly used in RESTful resource endpoints (e.g., /api/v1/users/:id).
+ *
+ * @const {Joi.ObjectSchema}
+ * @property {string} id - UUID v4 identifier (required)
+ *
+ * @example
+ * ```typescript
+ * {
+ *   method: 'GET',
+ *   path: '/api/v1/users/{id}',
+ *   options: {
+ *     validate: {
+ *       params: uuidParamSchema
+ *     }
+ *   }
+ * }
+ * ```
  */
 export const uuidParamSchema = Joi.object({
   id: Joi.string()
@@ -81,7 +163,19 @@ export const uuidParamSchema = Joi.object({
 });
 
 /**
- * Boolean query parameter schema
+ * Boolean query parameter validation schema.
+ *
+ * Validates optional boolean query parameters.
+ * Accepts: true, false, 'true', 'false', '1', '0'.
+ *
+ * @const {Joi.BooleanSchema}
+ *
+ * @example
+ * ```typescript
+ * const querySchema = Joi.object({
+ *   includeInactive: booleanQuerySchema
+ * });
+ * ```
  */
 export const booleanQuerySchema = Joi.boolean()
   .optional()

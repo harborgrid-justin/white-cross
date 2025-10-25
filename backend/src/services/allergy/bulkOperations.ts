@@ -27,11 +27,16 @@
  */
 
 /**
- * Allergy Bulk Operations Module
+ * @fileoverview Allergy Bulk Operations - Data Migration and Import
  *
- * Handles bulk operations for allergies (useful for data migration or imports)
+ * Provides atomic bulk creation operations for allergy records. Designed for data
+ * migration, initial system setup, and batch import workflows. All bulk operations
+ * validate data integrity and support transactions for all-or-nothing guarantees.
  *
  * @module services/allergy/bulkOperations
+ * @security Bulk operations log aggregate counts and student IDs for audit trail
+ * @compliance HIPAA audit logging for bulk PHI operations
+ * @since 1.0.0
  */
 
 import { Op, Transaction } from 'sequelize';
@@ -43,11 +48,64 @@ import { validateBulkStudentIds } from './validation';
 import { logBulkAllergiesCreation } from './auditLogging';
 
 /**
- * Bulk creates allergies (useful for data migration or imports)
+ * Creates multiple allergy records atomically in a single bulk operation.
  *
- * @param allergiesData - Array of allergy data
- * @param transaction - Optional transaction
- * @returns Array of created allergy records
+ * Validates all student IDs exist before creating any records to ensure data integrity.
+ * Uses Sequelize bulkCreate for performance, with model-level validation enabled.
+ * All-or-nothing: if any validation fails, no records are created.
+ *
+ * @param {CreateAllergyData[]} allergiesData - Array of complete allergy data objects
+ * @param {Transaction} [transaction] - Optional transaction for atomic multi-step workflows
+ *
+ * @returns {Promise<AllergyModel[]>} Array of created allergy records
+ *
+ * @throws {Error} "One or more student IDs are invalid" - if any studentId doesn't exist
+ * @throws {Error} Validation error - if any allergy data is invalid
+ * @throws {Error} Database error - if bulk creation fails
+ *
+ * @security Logs bulk creation count and affected student IDs for HIPAA audit trail
+ * @compliance HIPAA audit logging for bulk PHI creation operations
+ *
+ * @example
+ * ```typescript
+ * // Import allergies during system migration
+ * const importData = [
+ *   {
+ *     studentId: 'student-1',
+ *     allergen: 'Penicillin',
+ *     severity: 'SEVERE',
+ *     verified: false
+ *   },
+ *   {
+ *     studentId: 'student-2',
+ *     allergen: 'Peanuts',
+ *     severity: 'LIFE_THREATENING',
+ *     verified: true,
+ *     verifiedBy: 'nurse-uuid-123'
+ *   }
+ * ];
+ *
+ * const created = await bulkCreateAllergies(importData);
+ * console.log(`Successfully imported ${created.length} allergy records`);
+ * ```
+ *
+ * @warning Does NOT check for duplicate allergies - validate uniqueness before bulk import
+ * @warning Large bulk operations may cause performance issues - batch in groups of 100-500
+ * @warning Always use within transaction for data migration to enable rollback
+ *
+ * @remarks
+ * Best practices for bulk operations:
+ * - Batch large imports into chunks of 100-500 records
+ * - Use transactions for atomic all-or-nothing behavior
+ * - Validate data format before calling this function
+ * - Consider duplicate checking if importing from external sources
+ * - Monitor performance and adjust batch size accordingly
+ *
+ * Performance considerations:
+ * - bulkCreate is significantly faster than individual creates
+ * - Validation still runs on each record (model-level)
+ * - Database indexes may slow very large bulk operations
+ * - Transaction overhead increases with batch size
  */
 export async function bulkCreateAllergies(
   allergiesData: CreateAllergyData[],

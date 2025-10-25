@@ -25,11 +25,14 @@
  */
 
 /**
- * Allergy Statistics Module
+ * @fileoverview Allergy Statistics - Analytics and Reporting
  *
- * Handles statistical analysis and reporting for allergies
+ * Provides comprehensive statistical analysis of allergy data for clinical dashboards,
+ * safety monitoring, and compliance reporting. Generates aggregate counts by severity,
+ * type, and verification status to support data-driven safety decisions.
  *
  * @module services/allergy/statistics
+ * @since 1.0.0
  */
 
 import { Op } from 'sequelize';
@@ -39,10 +42,59 @@ import { Allergy as AllergyModel, sequelize } from '../../database/models';
 import { AllergyFilters, AllergyStatistics } from './types';
 
 /**
- * Gets allergy statistics for reporting and analytics
+ * Generates comprehensive allergy statistics for analytics and reporting.
  *
- * @param filters - Optional filters
- * @returns Allergy statistics
+ * Aggregates allergy data by severity, type, and verification status. Identifies
+ * critical allergies requiring immediate attention. Supports filtering to scope
+ * statistics to specific students or populations.
+ *
+ * Uses parallel queries for performance - all aggregations execute simultaneously.
+ *
+ * @param {AllergyFilters} [filters={}] - Optional filters to scope statistics
+ * @param {string} [filters.studentId] - Limit statistics to specific student
+ *
+ * @returns {Promise<AllergyStatistics>} Statistical summary of allergy data
+ * @returns {number} total - Total active allergies matching filters
+ * @returns {Record<string, number>} bySeverity - Count by severity (MILD, MODERATE, SEVERE, LIFE_THREATENING)
+ * @returns {Record<string, number>} byType - Count by allergen type (MEDICATION, FOOD, ENVIRONMENTAL)
+ * @returns {number} verified - Count of healthcare-verified allergies
+ * @returns {number} unverified - Count of unverified (parent-reported) allergies
+ * @returns {number} critical - Count of SEVERE and LIFE_THREATENING allergies
+ *
+ * @throws {Error} Database error - if aggregation queries fail
+ *
+ * @example
+ * ```typescript
+ * // School-wide allergy statistics for safety dashboard
+ * const stats = await getAllergyStatistics();
+ * console.log(`Total allergies: ${stats.total}`);
+ * console.log(`Critical allergies: ${stats.critical} (${(stats.critical/stats.total*100).toFixed(1)}%)`);
+ * console.log(`Verification rate: ${(stats.verified/stats.total*100).toFixed(1)}%`);
+ *
+ * // Severity breakdown
+ * Object.entries(stats.bySeverity).forEach(([severity, count]) => {
+ *   console.log(`${severity}: ${count}`);
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Individual student allergy profile statistics
+ * const studentStats = await getAllergyStatistics({
+ *   studentId: 'student-uuid-123'
+ * });
+ * if (studentStats.critical > 0) {
+ *   console.warn(`Student has ${studentStats.critical} critical allergies`);
+ * }
+ * ```
+ *
+ * @remarks
+ * Only includes ACTIVE allergies in all statistics. Inactive/resolved allergies are excluded.
+ * All queries run in parallel for optimal performance. Statistics are calculated in real-time
+ * from current database state.
+ *
+ * Critical allergy count includes both SEVERE and LIFE_THREATENING severity levels, representing
+ * allergies that require immediate clinical attention and medication cross-checking.
  */
 export async function getAllergyStatistics(
   filters: AllergyFilters = {}
