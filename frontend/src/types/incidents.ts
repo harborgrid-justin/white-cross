@@ -274,6 +274,37 @@ export interface FollowUpAction extends BaseEntity {
   notes?: string; // PHI - May contain health information
 }
 
+/**
+ * Incident Comment entity
+ * User comments on incident reports for collaboration and discussion
+ *
+ * PHI/PII Fields:
+ * - userId: User identifier who created the comment (PII)
+ * - text: Comment content may contain health information (PHI)
+ * - editedBy: User identifier who edited the comment (PII)
+ */
+export interface IncidentComment extends BaseEntity {
+  // Reference
+  incidentReportId: string;
+  incidentReport?: IncidentReport;
+
+  // User Information
+  userId: string; // PII - User identifier
+  user?: User;
+
+  // Comment Details
+  text: string; // May contain PHI
+
+  // Edit tracking
+  isEdited: boolean;
+  editedAt?: string;
+  editedBy?: string; // PII - User identifier
+
+  // Metadata
+  createdAt: string;
+  updatedAt: string;
+}
+
 // =====================
 // API REQUEST/RESPONSE TYPES
 // =====================
@@ -657,6 +688,41 @@ export interface FollowUpActionFormData {
   dueDate: string;
   priority: ActionPriority;
   assignedTo?: string;
+}
+
+/**
+ * Request payload for creating a comment
+ */
+export interface CreateCommentRequest {
+  incidentReportId: string;
+  text: string;
+}
+
+/**
+ * Request payload for updating a comment
+ */
+export interface UpdateCommentRequest {
+  text: string;
+}
+
+/**
+ * Response containing a single comment
+ */
+export interface CommentResponse {
+  comment: IncidentComment;
+}
+
+/**
+ * Response containing list of comments
+ */
+export interface CommentListResponse {
+  comments: IncidentComment[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 }
 
 // =====================

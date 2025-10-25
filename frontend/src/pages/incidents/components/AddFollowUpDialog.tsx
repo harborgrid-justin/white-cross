@@ -1,30 +1,79 @@
 /**
  * AddFollowUpDialog Component
- * 
- * Add Follow Up Dialog for incidents module.
+ *
+ * Modal dialog for adding or editing follow-up actions.
+ * Wraps FollowUpActionForm in a Modal component with proper state management.
  */
 
 import React from 'react';
-import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalTitle,
+} from '@/components/ui/overlays/Modal';
+import FollowUpActionForm from './FollowUpActionForm';
+import { type FollowUpAction } from '@/types/incidents';
 
 interface AddFollowUpDialogProps {
-  className?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  incidentId: string;
+  action?: FollowUpAction | null;
 }
 
 /**
- * AddFollowUpDialog component - Add Follow Up Dialog
+ * AddFollowUpDialog component - Modal for creating/editing follow-up actions
  */
-const AddFollowUpDialog: React.FC<AddFollowUpDialogProps> = ({ className = '' }) => {
+const AddFollowUpDialog: React.FC<AddFollowUpDialogProps> = ({
+  isOpen,
+  onClose,
+  incidentId,
+  action = null,
+}) => {
+  const isEditMode = !!action;
+
+  const handleSuccess = () => {
+    onClose();
+  };
+
+  const handleCancel = () => {
+    onClose();
+  };
+
   return (
-    <div className={`add-follow-up-dialog ${className}`}>
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Follow Up Dialog</h3>
-        <div className="text-center text-gray-500 py-8">
-          <p>Add Follow Up Dialog functionality</p>
-          <p className="text-sm mt-2">Connected to incidents Redux slice</p>
-        </div>
-      </div>
-    </div>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      size="lg"
+      centered
+      closeOnBackdropClick={false}
+      closeOnEscapeKey={true}
+      showCloseButton={true}
+    >
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle>
+            {isEditMode ? 'Edit Follow-Up Action' : 'Add Follow-Up Action'}
+          </ModalTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {isEditMode
+              ? 'Update the details of this follow-up action.'
+              : 'Create a new follow-up action for this incident report.'}
+          </p>
+        </ModalHeader>
+
+        <ModalBody>
+          <FollowUpActionForm
+            incidentId={incidentId}
+            action={action}
+            onSuccess={handleSuccess}
+            onCancel={handleCancel}
+          />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 

@@ -10,6 +10,7 @@ import { ProtectedRoute } from '../../routes';
 import AppointmentSchedule from './AppointmentSchedule';
 import AppointmentCreate from './AppointmentCreate';
 import AppointmentDetail from './AppointmentDetail';
+import AppointmentEdit from './AppointmentEdit';
 
 export const AppointmentRoutes = () => (
   <>
@@ -34,6 +35,14 @@ export const AppointmentRoutes = () => (
       element={
         <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'COUNSELOR']}>
           <AppointmentDetail />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/appointments/:id/edit"
+      element={
+        <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+          <AppointmentEdit />
         </ProtectedRoute>
       }
     />

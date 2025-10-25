@@ -247,7 +247,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   /**
    * Create a new appointment
    */
-  async create(appointmentData: AppointmentCreateData): Promise<{ appointment: Appointment }> {
+  async create(appointmentData: CreateAppointmentData): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.post<{ appointment: Appointment }>('/appointments', appointmentData)
       return extractApiData(response)
@@ -259,7 +259,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   /**
    * Update an existing appointment
    */
-  async update(id: string, data: AppointmentUpdateData): Promise<{ appointment: Appointment }> {
+  async update(id: string, data: UpdateAppointmentData): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.put(`/appointments/${id}`, data)
       return extractApiData(response)
