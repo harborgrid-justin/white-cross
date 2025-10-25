@@ -11,8 +11,11 @@ import {
   Calendar,
   User,
   Shield,
-  Archive
+  Archive,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
+import { documentsApi } from '../../services';
 
 interface Document {
   id: string;
@@ -52,6 +55,9 @@ const Documents: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -145,6 +151,32 @@ const Documents: React.FC = () => {
   const handleView = (document: Document) => {
     // TODO: Implement document viewer
     console.log('Viewing document:', document.name);
+  };
+
+  const handleDeleteClick = (document: Document, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedDocument(document);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteDocument = async () => {
+    if (!selectedDocument) return;
+
+    try {
+      setDeleteLoading(true);
+      await documentsApi.deleteDocument(selectedDocument.id);
+      
+      // Remove from local state
+      setDocuments(prevDocs => prevDocs.filter(d => d.id !== selectedDocument.id));
+    } catch (err) {
+      console.error('Failed to delete document:', err);
+      alert('Failed to delete document. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setSelectedDocument(null);
+    }
   };
 
   const handleUpload = () => {
@@ -433,6 +465,13 @@ const Documents: React.FC = () => {
                         >
                           <Download className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={(e) => handleDeleteClick(document, e)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete Document"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -453,6 +492,70 @@ const Documents: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedDocument && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div 
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => {
+                if (!deleteLoading) {
+                  setShowDeleteModal(false);
+                  setSelectedDocument(null);
+                }
+              }}
+            ></div>
+
+            {/* Center modal */}
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            {/* Modal panel */}
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Delete Document
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to delete <strong>{selectedDocument.name}</strong>?
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      This action cannot be undone. The document will be permanently removed from the system.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleDeleteDocument}
+                  disabled={deleteLoading}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete Document'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setSelectedDocument(null);
+                  }}
+                  disabled={deleteLoading}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

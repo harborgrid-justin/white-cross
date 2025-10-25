@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Plus, Search, Filter, Clock, User, FileText } from 'lucide-react';
+import { Calendar, Plus, Search, Filter, Clock, User, FileText, Edit, XCircle, AlertTriangle } from 'lucide-react';
 import { appointmentsApi } from '../../services';
 import { PROTECTED_ROUTES, buildAppointmentRoute } from '../../constants/routes';
 import { useAuth } from '../../contexts/AuthContext';
@@ -48,6 +48,10 @@ const Appointments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   // Load appointments
   useEffect(() => {
@@ -89,6 +93,35 @@ const Appointments: React.FC = () => {
     setFilters({});
     setSearchTerm('');
   };
+
+  const handleCancelClick = (appointment: Appointment, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedAppointment(appointment);
+    setShowCancelModal(true);
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!selectedAppointment) return;
+
+    try {
+      setCancelLoading(true);
+      await appointmentsApi.cancel(selectedAppointment.id, cancelReason || undefined);
+
+      // Reload appointments list
+      await loadAppointments();
+    } catch (err) {
+      setError('Failed to cancel appointment');
+      console.error('Failed to cancel appointment:', err);
+    } finally {
+      setCancelLoading(false);
+      setShowCancelModal(false);
+      setSelectedAppointment(null);
+      setCancelReason('');
+    }
+  };
+
+  const canCancelAppointments = user?.role === 'ADMIN' || user?.role === 'NURSE' || user?.role === 'SCHOOL_ADMIN';
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -369,13 +402,24 @@ const Appointments: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <Link
-                            to={buildAppointmentRoute(appointment.id)}
-                            className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                          >
-                            <FileText className="w-4 h-4" />
-                            View Details
-                          </Link>
+                          <div className="flex items-center gap-3">
+                            <Link
+                              to={buildAppointmentRoute(appointment.id)}
+                              className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                              title="View Details"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </Link>
+                            {canCancelAppointments && appointment.status === 'SCHEDULED' && (
+                              <button
+                                onClick={(e) => handleCancelClick(appointment, e)}
+                                className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                                title="Cancel Appointment"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -396,6 +440,86 @@ const Appointments: React.FC = () => {
             <p className="text-gray-600">
               Calendar view implementation coming soon. Use list view to manage appointments.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Appointment Modal */}
+      {showCancelModal && selectedAppointment && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div 
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => {
+                if (!cancelLoading) {
+                  setShowCancelModal(false);
+                  setSelectedAppointment(null);
+                  setCancelReason('');
+                }
+              }}
+            ></div>
+
+            {/* Center modal */}
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            {/* Modal panel */}
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Cancel Appointment
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to cancel the appointment for <strong>{selectedAppointment.studentName}</strong> scheduled for{' '}
+                      {new Date(selectedAppointment.scheduledDate).toLocaleDateString()}?
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      This action cannot be undone.
+                    </p>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Cancellation Reason (Optional)
+                      </label>
+                      <textarea
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        rows={3}
+                        className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter reason for cancellation..."
+                        disabled={cancelLoading}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleCancelAppointment}
+                  disabled={cancelLoading}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  {cancelLoading ? 'Cancelling...' : 'Cancel Appointment'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setSelectedAppointment(null);
+                    setCancelReason('');
+                  }}
+                  disabled={cancelLoading}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  Keep Appointment
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
