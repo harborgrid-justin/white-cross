@@ -48,7 +48,7 @@ import {
   SecurityIncidentStatus
 } from '../../database/types/enums';
 import { auditService, AuditService } from '../audit/auditService';
-import { UserPermissionsResult } from './types';
+import { UserPermissionsResult } from './accessControl.types';
 
 // Type augmentations for model associations
 declare module '../../database/models' {

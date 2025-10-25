@@ -40,7 +40,7 @@ import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { AuditLog } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { AuditLogFilters } from './types';
+import { AuditLogFilters } from './administration.types';
 
 /**
  * Create an audit log entry

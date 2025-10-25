@@ -42,7 +42,7 @@
  */
 
 // Export types
-export * from './types';
+export * from './allergy.types';
 
 // Export all operations
 export {

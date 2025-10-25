@@ -34,7 +34,7 @@
 import { logger } from '../../utils/logger';
 import { District, License } from '../../database/models';
 import { AuditAction, LicenseType, LicenseStatus } from '../../database/types/enums';
-import { CreateLicenseData } from './types';
+import { CreateLicenseData } from './administration.types';
 import { createAuditLog } from './auditOperations';
 
 /**

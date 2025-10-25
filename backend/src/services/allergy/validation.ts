@@ -42,7 +42,7 @@
 
 import { Op, Transaction } from 'sequelize';
 import { Allergy as AllergyModel, Student } from '../../database/models';
-import { CreateAllergyData } from './types';
+import { CreateAllergyData } from './allergy.types';
 
 /**
  * Validates that a student record exists before creating or modifying allergy data.

@@ -50,7 +50,7 @@ import {
   Student,
   HealthRecord
 } from '../../database/models';
-import { CreateAllergyData, UpdateAllergyData } from './types';
+import { CreateAllergyData, UpdateAllergyData } from './allergy.types';
 import { validateAllergyData } from './validation';
 import { logAllergyCreation, logAllergyRead, logAllergyUpdate, logAllergyDeactivation, logAllergyDeletion } from './auditLogging';
 
