@@ -1,12 +1,145 @@
 /**
- * Health Assessments Routes - Enhanced with Comprehensive Swagger Documentation
- * HTTP endpoints for health risk assessments, screenings, growth tracking, and emergency notifications
- * All routes prefixed with /api/v1/health-assessments
+ * @fileoverview Health Assessments & Analytics Routes (v1)
  *
- * Swagger/OpenAPI Documentation:
- * - Complete request/response schemas for all 11 assessment endpoints
- * - HIPAA compliance notes for all PHI-protected endpoints
- * - Detailed schemas for risk assessments, screenings, growth analysis, and immunization forecasts
+ * HTTP route definitions for advanced health assessment capabilities including risk scoring,
+ * health screenings, growth tracking, immunization forecasting, emergency notifications, and
+ * medication interaction analysis. Implements proactive health management with clinical analytics
+ * and emergency response protocols.
+ *
+ * **Available Endpoints (11 routes):**
+ *
+ * **Health Risk Assessment (2 routes):**
+ * - GET /api/v1/health-assessments/risk/{studentId} - Calculate health risk score for student
+ * - GET /api/v1/health-assessments/high-risk-students - Get list of high-risk students
+ *
+ * **Health Screenings (2 routes):**
+ * - POST /api/v1/health-assessments/screenings - Record health screening results
+ * - GET /api/v1/health-assessments/screenings/{studentId} - Get screening history for student
+ *
+ * **Growth Tracking (2 routes):**
+ * - POST /api/v1/health-assessments/growth/{studentId} - Record growth measurement
+ * - GET /api/v1/health-assessments/growth/{studentId}/analysis - Analyze growth trends
+ *
+ * **Immunization Forecast (1 route):**
+ * - GET /api/v1/health-assessments/immunizations/{studentId}/forecast - Get immunization forecast
+ *
+ * **Emergency Notifications (2 routes):**
+ * - POST /api/v1/health-assessments/emergency/notify - Send emergency health notification
+ * - GET /api/v1/health-assessments/emergency/{studentId} - Get emergency notification history
+ *
+ * **Medication Interactions (2 routes):**
+ * - GET /api/v1/health-assessments/medication-interactions/{studentId} - Check medication interactions
+ * - POST /api/v1/health-assessments/medication-interactions/{studentId}/check - Check new medication interactions
+ *
+ * **Security Features:**
+ * - All routes require JWT authentication
+ * - HIGHLY SENSITIVE PHI-protected endpoints with comprehensive audit logging
+ * - NURSE or ADMIN role required for recording screenings, measurements, and emergency notifications
+ * - High-risk student lists restricted to NURSE and ADMIN roles
+ * - Emergency notification protocols trigger multi-channel alerts
+ *
+ * **HIPAA Compliance:**
+ * - All health assessment access is logged with timestamp and user for complete audit trail
+ * - PHI protection on all endpoints returning health analytics and risk scores
+ * - Emergency notifications include HIPAA-compliant patient information disclosure
+ * - Risk assessments and screenings maintain confidentiality while enabling proactive care
+ *
+ * **Clinical Capabilities:**
+ * - **Risk Assessment**: Calculates 0-100 risk score based on chronic conditions, severe allergies,
+ *   medication count, and recent incidents. Generates actionable recommendations for care teams.
+ * - **Health Screenings**: Vision, hearing, scoliosis, dental, BMI, blood pressure, developmental
+ *   screenings with pass/fail/refer results and follow-up tracking.
+ * - **Growth Tracking**: Height, weight, BMI percentile calculations with growth velocity analysis
+ *   and clinical interpretation.
+ * - **Immunization Forecast**: CDC guideline-based forecasting with overdue, due soon, and upcoming
+ *   vaccine schedules including contraindication checking.
+ * - **Emergency Protocols**: Automated notification of parents, emergency contacts, and medical staff
+ *   based on severity with incident report creation.
+ * - **Medication Safety**: Comprehensive drug-drug, drug-food, and drug-condition interaction checking
+ *   with severity assessment and management recommendations.
+ *
+ * **Screening Types:**
+ * - VISION, HEARING, SCOLIOSIS, DENTAL, BMI, BLOOD_PRESSURE, DEVELOPMENTAL
+ *
+ * **Risk Levels:**
+ * - LOW (0-25), MODERATE (26-50), HIGH (51-75), CRITICAL (76-100)
+ *
+ * @module routes/v1/healthcare/routes/healthAssessments.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @requires ../controllers/healthAssessments.controller
+ * @requires ../validators/healthAssessments.validators
+ * @see {@link module:routes/v1/healthcare/controllers/healthAssessments.controller} for business logic
+ * @see {@link module:routes/v1/healthcare/validators/healthAssessments.validators} for validation schemas
+ * @since 1.0.0
+ *
+ * @example
+ * ```typescript
+ * // Calculate health risk score for care planning
+ * GET /api/v1/health-assessments/risk/{studentId}
+ * Authorization: Bearer <token>
+ * // Response: {
+ * //   riskScore: 35,
+ * //   riskLevel: "MODERATE",
+ * //   riskFactors: [{ factor: "Chronic asthma", severity: "MODERATE", impact: 15 }],
+ * //   recommendations: ["Monitor asthma symptoms closely", "Ensure inhaler available"]
+ * // }
+ *
+ * // Get high-risk students for proactive intervention
+ * GET /api/v1/health-assessments/high-risk-students?threshold=50
+ * Authorization: Bearer <nurse-token>
+ * // Response: { students: [{ id, name, riskScore, primaryConcerns }] }
+ *
+ * // Record vision screening with referral
+ * POST /api/v1/health-assessments/screenings
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000",
+ *   "screeningType": "VISION",
+ *   "screeningDate": "2025-10-23",
+ *   "result": "REFER",
+ *   "detailedResults": { "leftEye": "20/40", "rightEye": "20/60" },
+ *   "followUpRequired": true,
+ *   "followUpNotes": "Refer to optometrist for comprehensive exam",
+ *   "parentNotified": true
+ * }
+ *
+ * // Record growth measurement with automatic percentile calculation
+ * POST /api/v1/health-assessments/growth/{studentId}
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "height": 155.5,
+ *   "weight": 48.2,
+ *   "measurementDate": "2025-10-23",
+ *   "notes": "Annual wellness measurement"
+ * }
+ *
+ * // Trigger emergency notification for severe allergic reaction
+ * POST /api/v1/health-assessments/emergency/notify
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000",
+ *   "severity": "CRITICAL",
+ *   "situation": "ALLERGIC_REACTION",
+ *   "description": "Severe allergic reaction to peanuts, EpiPen administered",
+ *   "location": "Cafeteria",
+ *   "notifyEMS": true
+ * }
+ *
+ * // Check medication interactions before prescribing
+ * POST /api/v1/health-assessments/medication-interactions/{studentId}/check
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "medicationName": "Amoxicillin 250mg",
+ *   "dosage": "250mg",
+ *   "frequency": "Three times daily"
+ * }
+ * // Response: {
+ * //   hasInteractions: false,
+ * //   interactions: [],
+ * //   recommendations: ["Safe to prescribe"]
+ * // }
+ * ```
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -488,9 +621,61 @@ const checkNewMedicationInteractionsRoute: ServerRoute = {
 };
 
 /**
- * EXPORT ALL ROUTES
+ * Health assessments and analytics route collection.
+ *
+ * Complete set of 11 routes for advanced health assessment capabilities organized
+ * into 5 functional categories. Enables proactive health management through risk scoring,
+ * clinical screenings, growth analytics, immunization forecasting, emergency response,
+ * and medication safety checking.
+ *
+ * **Route Categories:**
+ * - Health Risk Assessment: Proactive risk scoring and high-risk identification (2 routes)
+ * - Health Screenings: Vision, hearing, scoliosis, dental, BMI screenings (2 routes)
+ * - Growth Tracking: Percentile-based growth monitoring and trend analysis (2 routes)
+ * - Immunization Forecast: CDC-compliant vaccine scheduling and tracking (1 route)
+ * - Emergency Notifications: Multi-channel emergency alerts with incident tracking (2 routes)
+ * - Medication Interactions: Drug safety checking and interaction analysis (2 routes)
+ *
+ * **Permission Model:**
+ * - NURSE/ADMIN: Full access to all assessments, screenings, and emergency protocols
+ * - All authenticated users: Can view assessment results for assigned students
+ * - High-risk lists: Restricted to NURSE and ADMIN roles
+ * - Emergency notifications: Trigger automatic escalation based on severity
+ *
+ * **Key Features:**
+ * - Clinical risk scoring (0-100) with actionable recommendations
+ * - Comprehensive health screening programs (7 screening types)
+ * - CDC-compliant growth percentile tracking with clinical interpretation
+ * - Immunization forecasting with catch-up schedules
+ * - Multi-channel emergency notification system
+ * - Real-time medication interaction checking
+ * - Longitudinal trend analysis for early intervention
+ * - Complete Swagger/OpenAPI documentation for all endpoints
+ *
+ * **Clinical Analytics:**
+ * - Risk scores calculated from chronic conditions, allergies, medications, incidents
+ * - Growth velocity analysis with concerning pattern detection
+ * - Immunization compliance tracking against state/CDC requirements
+ * - Drug-drug, drug-food, and drug-condition interaction analysis
+ * - Screening referral tracking and follow-up management
+ *
+ * **Emergency Response:**
+ * Emergency notifications automatically:
+ * - Contact parents and emergency contacts via SMS, email, phone
+ * - Alert assigned nurse and school administrator
+ * - Create incident report with timeline
+ * - Notify EMS if critical severity
+ * - Generate audit trail for legal protection
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // Import and register routes in Hapi server
+ * import { healthAssessmentsRoutes } from './routes/healthAssessments.routes';
+ * server.route(healthAssessmentsRoutes);
+ * ```
  */
-
 export const healthAssessmentsRoutes: ServerRoute[] = [
   // Health Risk Assessment (2 routes)
   getHealthRiskRoute,

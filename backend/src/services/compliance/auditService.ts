@@ -1,25 +1,32 @@
 /**
- * LOC: 1795FFD08D
- * WC-GEN-235 | auditService.ts - General utility functions and operations
+ * @fileoverview Compliance Audit Service - HIPAA-compliant audit logging and tracking
  *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - index.ts (database/models/index.ts)
+ * This service provides comprehensive audit trail management required for healthcare compliance,
+ * including HIPAA audit logging (45 CFR 164.312(b)), user action tracking, and PHI access
+ * monitoring. All interactions with Protected Health Information (PHI) must be logged through
+ * this service to maintain regulatory compliance and enable security investigations.
  *
- * DOWNSTREAM (imported by):
- *   - index.ts (services/compliance/index.ts)
- */
-
-/**
- * WC-GEN-235 | auditService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * Key responsibilities:
+ * - Record all PHI access and modifications with complete context (user, timestamp, IP, changes)
+ * - Provide comprehensive audit log retrieval with filtering by user, entity, action, and date range
+ * - Generate audit statistics and analytics for compliance reporting and anomaly detection
+ * - Maintain immutable audit trails for legal and regulatory requirements
+ * - Support security investigations and compliance audits with detailed access history
+ *
+ * HIPAA Compliance:
+ * - Implements audit control requirements under 45 CFR 164.312(b)
+ * - Maintains complete audit trails of electronic PHI access and modifications
+ * - Provides tamper-evident logging for security rule compliance
+ * - Enables periodic audit reviews and access reports
+ *
+ * Integration Points:
+ * - Called by all services handling PHI (health records, medications, appointments)
+ * - Used by compliance reporting services for regulatory reports
+ * - Integrated with security monitoring and alerting systems
+ * - Provides data for compliance dashboards and analytics
+ *
+ * @module services/compliance/auditService
+ * @since 1.0.0
  */
 
 import { Op } from 'sequelize';

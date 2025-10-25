@@ -44,28 +44,53 @@ import { VitalSigns, GrowthDataPoint } from './types';
 export class VitalsModule {
   /**
    * @method getGrowthChartData
-   * @description Retrieve growth chart data points for CDC percentile plotting
+   * @description Retrieve growth chart data points for CDC percentile plotting and growth monitoring
    * @async
+   *
+   * Extracts height, weight, and BMI measurements from health records ordered chronologically
+   * for plotting on CDC growth charts. Supports pediatric growth tracking, obesity screening,
+   * and nutritional assessment according to CDC and WHO standards.
    *
    * @param {string} studentId - Student UUID
    *
-   * @returns {Promise<GrowthDataPoint[]>} Array of growth data points ordered chronologically
+   * @returns {Promise<GrowthDataPoint[]>} Array of growth data points ordered chronologically (oldest first)
    * @returns {Date} result[].date - Measurement date
-   * @returns {number} result[].height - Height in cm
-   * @returns {number} result[].weight - Weight in kg
-   * @returns {number} result[].bmi - BMI value
-   * @returns {string} result[].recordType - Type of health record
+   * @returns {number} [result[].height] - Height in centimeters (CDC standard units)
+   * @returns {number} [result[].weight] - Weight in kilograms (CDC standard units)
+   * @returns {number} [result[].bmi] - Body Mass Index (weight/height²)
+   * @returns {string} result[].recordType - Type of health record (CHECKUP, PHYSICAL_EXAM, SCREENING)
    *
    * @throws {Error} When database query fails
+   * @throws {ForbiddenError} When user lacks 'health:read' permission
    *
    * @security PHI Access - Requires 'health:read' permission
-   * @audit PHI access logged with student ID
-   * @clinical Data formatted for CDC growth chart plotting
-   * @clinical BMI-for-age percentiles calculated separately
+   * @audit PHI access logged with student ID and data point count
+   * @clinical Data formatted for CDC growth chart plotting (birth to 20 years)
+   * @clinical BMI-for-age percentiles: <5th (underweight), 5-84th (healthy), 85-94th (overweight), ≥95th (obese)
+   * @clinical Height-for-age and weight-for-age percentiles tracked separately
+   * @clinical WHO growth standards used for children <2 years, CDC for 2-20 years
    *
    * @example
+   * // Plot growth trajectory on CDC chart
    * const growthData = await VitalsModule.getGrowthChartData('student-123');
-   * // Returns: [{date: '2024-01-01', height: 150, weight: 45, bmi: 20}, ...]
+   * console.log(`Tracking ${growthData.length} growth measurements`);
+   *
+   * growthData.forEach(point => {
+   *   console.log(`${point.date.toLocaleDateString()}: H:${point.height}cm W:${point.weight}kg BMI:${point.bmi}`);
+   * });
+   *
+   * // Calculate growth velocity (height gained per year)
+   * const firstYear = growthData[0];
+   * const currentYear = growthData[growthData.length - 1];
+   * const heightGain = currentYear.height - firstYear.height;
+   * console.log(`Height gain: ${heightGain.toFixed(1)}cm over period`);
+   *
+   * @example
+   * // Identify obesity screening flags
+   * const recentGrowth = growthData.slice(-3); // Last 3 measurements
+   * const avgBMI = recentGrowth.reduce((sum, p) => sum + p.bmi, 0) / recentGrowth.length;
+   * console.log(`Average BMI: ${avgBMI.toFixed(1)}`);
+   * // Flag for pediatrician review if BMI >95th percentile for age/sex
    */
   static async getGrowthChartData(studentId: string): Promise<GrowthDataPoint[]> {
     try {
@@ -101,21 +126,43 @@ export class VitalsModule {
 
   /**
    * @method getRecentVitals
-   * @description Get most recent vital signs measurements for a student
+   * @description Retrieve most recent vital signs measurements for trend monitoring
    * @async
    *
-   * @param {string} studentId - Student UUID
-   * @param {number} [limit=10] - Maximum number of records to return
+   * Fetches the most recent vital signs records ordered by date (newest first).
+   * Useful for patient dashboard displays, trend analysis, and clinical review.
    *
-   * @returns {Promise<any[]>} Array of recent vital signs ordered by date (newest first)
+   * @param {string} studentId - Student UUID
+   * @param {number} [limit=10] - Maximum number of records to return (default: 10)
+   *
+   * @returns {Promise<any[]>} Array of health records containing vital signs, ordered chronologically
+   * @returns {string} result[].id - Health record UUID
+   * @returns {Date} result[].date - Measurement date
+   * @returns {VitalSigns} result[].vital - Vital signs data (BP, HR, temp, RR, O2 sat, height, weight, BMI)
+   * @returns {string} result[].type - Health record type
+   * @returns {string} result[].provider - Healthcare provider who recorded vitals
    *
    * @throws {Error} When database query fails
+   * @throws {ForbiddenError} When user lacks 'health:read' permission
    *
    * @security PHI Access - Requires 'health:read' permission
-   * @audit PHI access logged with student ID
+   * @audit PHI access logged with student ID and record count
+   * @clinical Most recent vitals displayed first for immediate clinical assessment
+   * @clinical Supports vital signs trending over time
    *
    * @example
+   * // Get last 5 vital signs for dashboard
    * const recentVitals = await VitalsModule.getRecentVitals('student-123', 5);
+   * recentVitals.forEach(record => {
+   *   console.log(`Date: ${record.date}`);
+   *   console.log(`BP: ${record.vital.bloodPressureSystolic}/${record.vital.bloodPressureDiastolic}`);
+   *   console.log(`HR: ${record.vital.heartRate} bpm`);
+   *   console.log(`Temp: ${record.vital.temperature}°F`);
+   * });
+   *
+   * @example
+   * // Get all vital signs for comprehensive review
+   * const allVitals = await VitalsModule.getRecentVitals('student-123', 100);
    */
   static async getRecentVitals(studentId: string, limit: number = 10): Promise<any[]> {
     try {

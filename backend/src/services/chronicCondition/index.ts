@@ -24,12 +24,80 @@
  */
 
 /**
- * Chronic Condition Service - Main Module
+ * @fileoverview Chronic Condition Service - Main Module
  *
- * Enterprise-grade service for managing student chronic health conditions.
- * Implements comprehensive care plan tracking, medication management, and PHI compliance.
+ * Enterprise-grade service for comprehensive management of student chronic health conditions.
+ * Provides a unified service class aggregating all chronic condition operations with
+ * HIPAA-compliant PHI handling, ICD-10 coding support, and educational accommodation tracking.
+ *
+ * Core Capabilities:
+ * - CRUD operations for chronic condition records
+ * - Advanced search with multi-criteria filtering
+ * - Care plan tracking and review scheduling
+ * - Educational accommodation management (IEP/504)
+ * - Population health statistics and analytics
+ * - Bulk operations for data imports
+ * - Transaction support for atomic operations
  *
  * @module services/chronicCondition
+ *
+ * @remarks
+ * PHI SENSITIVITY: All operations handle protected health information with comprehensive
+ * audit logging for HIPAA compliance. Every database operation is logged with action type,
+ * entity IDs, timestamps, and change tracking.
+ *
+ * Healthcare Context:
+ * - ICD-10 diagnosis code support (e.g., E10.9 for Type 1 Diabetes)
+ * - Care plan documentation and review tracking
+ * - Medication, restriction, and trigger management
+ * - Emergency protocol documentation
+ * - IEP/504 educational accommodation coordination
+ * - Clinical severity tracking (Low, Moderate, High, Critical)
+ *
+ * Service Architecture:
+ * - Static methods for stateless operation
+ * - Modular organization (CRUD, Query, Business Logic)
+ * - Sequelize ORM with transaction support
+ * - Eager loading of student and health record associations
+ * - Comprehensive error handling and logging
+ *
+ * @example
+ * ```typescript
+ * import { ChronicConditionService } from './services/chronicCondition';
+ *
+ * // Create new chronic condition
+ * const condition = await ChronicConditionService.createChronicCondition({
+ *   studentId: 'student-uuid',
+ *   condition: 'Type 1 Diabetes',
+ *   icdCode: 'E10.9',
+ *   diagnosedDate: new Date(),
+ *   status: 'ACTIVE',
+ *   severity: 'High',
+ *   requiresIEP: true
+ * });
+ *
+ * // Search active conditions requiring IEP
+ * const results = await ChronicConditionService.searchChronicConditions({
+ *   status: 'ACTIVE',
+ *   requiresIEP: true
+ * }, { page: 1, limit: 20 });
+ *
+ * // Get conditions due for review
+ * const reviewList = await ChronicConditionService.getConditionsRequiringReview(30);
+ *
+ * // Update care plan
+ * const updated = await ChronicConditionService.updateCarePlan(
+ *   condition.id,
+ *   'Updated care plan documentation...'
+ * );
+ * ```
+ *
+ * @see {@link module:services/chronicCondition/crudOperations} for CRUD implementation
+ * @see {@link module:services/chronicCondition/queryOperations} for search implementation
+ * @see {@link module:services/chronicCondition/businessLogic} for business logic
+ * @see {@link module:services/chronicCondition/types} for type definitions
+ *
+ * @since 1.0.0
  */
 
 import { Transaction } from 'sequelize';
@@ -48,13 +116,60 @@ import * as queryOps from './queryOperations';
 import * as businessOps from './businessLogic';
 
 /**
- * ChronicConditionService
+ * Chronic Condition Service Class
  *
- * Provides enterprise-grade chronic condition management with:
- * - HIPAA-compliant PHI handling
- * - Care plan tracking
- * - Review date management
- * - Educational accommodation tracking (IEP/504)
+ * Unified service providing comprehensive chronic condition management for school health systems.
+ * All methods are static, providing stateless operation with transaction support for atomic
+ * multi-step operations.
+ *
+ * Service Organization:
+ * - **CRUD Operations**: Create, read, update, delete chronic condition records
+ * - **Query Operations**: Search, filter, and retrieve conditions with complex criteria
+ * - **Business Logic**: Care plan updates, bulk operations, transaction management
+ *
+ * Key Features:
+ * - HIPAA-compliant PHI handling with audit logging
+ * - ICD-10 diagnosis code support
+ * - Care plan tracking with review scheduling
+ * - Educational accommodation integration (IEP/504)
+ * - Medication and restriction management
+ * - Emergency protocol documentation
+ * - Population health statistics
+ * - Bulk import/export capabilities
+ *
+ * @class ChronicConditionService
+ *
+ * @example
+ * ```typescript
+ * // Comprehensive chronic condition workflow
+ * const condition = await ChronicConditionService.createChronicCondition({
+ *   studentId: 'uuid',
+ *   condition: 'Asthma',
+ *   icdCode: 'J45.909',
+ *   diagnosedDate: new Date(),
+ *   status: 'MANAGED',
+ *   medications: ['Albuterol Inhaler'],
+ *   triggers: ['Exercise', 'Cold air'],
+ *   requiresIEP: false,
+ *   requires504: true
+ * });
+ *
+ * // Later: Update care plan
+ * await ChronicConditionService.updateCarePlan(
+ *   condition.id,
+ *   'Revised asthma action plan with new trigger management...'
+ * );
+ *
+ * // Get dashboard statistics
+ * const stats = await ChronicConditionService.getChronicConditionStatistics();
+ * console.log(`Managing ${stats.total} chronic conditions`);
+ * console.log(`${stats.reviewDueSoon} need review soon`);
+ * ```
+ *
+ * @remarks
+ * All operations include comprehensive audit logging for HIPAA compliance.
+ * Transaction support available through withTransaction() method or by passing
+ * transaction parameter to individual operations.
  */
 export class ChronicConditionService {
   // ==================== CRUD Operations ====================

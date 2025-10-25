@@ -1,26 +1,43 @@
 /**
+ * @fileoverview Document version control operations for enterprise version management.
+ *
+ * Provides document versioning capabilities with parent-child relationships, version
+ * numbering, inheritance of metadata, and comprehensive audit trails. Supports
+ * collaborative document workflows with version history tracking.
+ *
  * LOC: D6A44FD802-V
  * WC-GEN-253 | version.operations.ts - Document version control
  *
  * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - database/models
- *   - types.ts
+ *   - logger.ts - Winston logging for version operations
+ *   - database/models - Document model with version associations
+ *   - documentValidation.ts - Version creation and file upload validation
+ *   - types.ts - CreateDocumentData interface
+ *   - audit.operations.ts - Audit trail creation
  *
  * DOWNSTREAM (imported by):
- *   - index.ts (document service aggregator)
- */
-
-/**
- * WC-GEN-253 | version.operations.ts - Document version control
- * Purpose: Document versioning, version creation, and version management
- * Upstream: ../utils/logger, ../database/models | Dependencies: sequelize
- * Downstream: Document service index | Called by: DocumentService class
- * Related: Document model, audit operations
- * Exports: Version functions | Key Services: Version control
- * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Version validation → Version creation → Audit logging
- * LLM Context: Enterprise document versioning with audit compliance
+ *   - index.ts - Document service aggregator
+ *   - documentService.ts - Main document orchestration service
+ *
+ * Key Features:
+ * - Automatic version number incrementation
+ * - Parent-child document relationships
+ * - Metadata inheritance from parent document
+ * - Version count limits and validation
+ * - File upload validation for new versions
+ * - Comprehensive audit trail for version history
+ * - Transaction-safe operations
+ *
+ * Version Management Rules:
+ * - New versions start in DRAFT status
+ * - Version numbers auto-increment from parent
+ * - Student ID, category, and access level inherited from parent
+ * - Title and description can be overridden
+ * - Tags and template data can be updated
+ * - Parent must exist and be in appropriate status
+ *
+ * @module services/document/version.operations
+ * @since 1.0.0
  */
 
 import { logger } from '../../utils/logger';
@@ -36,9 +53,53 @@ import { CreateDocumentData } from './types';
 import { addAuditTrail } from './audit.operations';
 
 /**
- * Create a new version of an existing document
- * @param parentId - Parent document ID
- * @param data - Document data for new version
+ * Create a new version of an existing document with metadata inheritance.
+ *
+ * Creates a new document as a version of an existing parent document. Inherits
+ * category, student ID, and access level from parent. Validates version limits
+ * and file upload constraints. New version starts in DRAFT status.
+ *
+ * @async
+ * @param {string} parentId - ID of parent document to create version from
+ * @param {CreateDocumentData} data - Version document data:
+ *   - title: Optional new title (defaults to parent title)
+ *   - description: Optional new description (defaults to parent description)
+ *   - fileType: MIME type of new file (required, must pass validation)
+ *   - fileName: New filename (required, must pass validation)
+ *   - fileSize: New file size in bytes (required, must pass validation)
+ *   - fileUrl: Storage URL for new file version
+ *   - uploadedBy: User ID creating the version
+ *   - tags: Optional new tags (defaults to parent tags)
+ *   - templateData: Optional new template data (defaults to parent)
+ *
+ * @returns {Promise<Document>} Created version document with version number and parent reference
+ *
+ * @throws {Error} If parent document not found
+ * @throws {DocumentValidationError} If version creation not allowed (status, count limit) or file validation fails
+ *
+ * @example
+ * ```typescript
+ * const newVersion = await createDocumentVersion('doc_123', {
+ *   title: 'Updated Health Assessment', // Optional override
+ *   fileType: 'application/pdf',
+ *   fileName: 'assessment_v2.pdf',
+ *   fileSize: 256000,
+ *   fileUrl: 's3://docs/health/assessment_v2.pdf',
+ *   uploadedBy: 'nurse_001',
+ *   tags: ['health', 'annual', '2025', 'revised']
+ * });
+ * console.log(`Created version ${newVersion.version} of parent document`);
+ * ```
+ *
+ * @remarks
+ * - Version number automatically incremented from parent (parent.version + 1)
+ * - New version inherits: category, studentId, accessLevel, isTemplate from parent
+ * - New version starts in DRAFT status regardless of parent status
+ * - Parent ID stored in parentId field for relationship
+ * - Audit trail entry created with version number and parent ID
+ * - File upload validation ensures size and type constraints
+ * - Version count limits prevent excessive version proliferation
+ * - Transaction ensures atomic version creation and audit logging
  */
 export async function createDocumentVersion(
   parentId: string,

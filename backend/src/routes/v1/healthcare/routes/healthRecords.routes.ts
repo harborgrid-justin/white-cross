@@ -1,13 +1,155 @@
 /**
- * Health Records Routes - Enhanced with Comprehensive Swagger Documentation
- * HTTP endpoints for comprehensive health record management
- * All routes prefixed with /api/v1/health-records
+ * @fileoverview Health Records Management Routes (v1)
  *
- * Swagger/OpenAPI Documentation:
- * - Complete request/response schemas for all 27 health record endpoints
- * - HIPAA compliance notes for all PHI-protected endpoints
- * - Comprehensive error responses and status codes
- * - Detailed examples for allergies, conditions, vaccinations, and vitals
+ * HTTP route definitions for comprehensive health record management including general
+ * health records, allergies, chronic conditions, vaccinations/immunizations, vital signs,
+ * and medical summaries. Implements secure healthcare data management with role-based
+ * access control and HIPAA-compliant audit logging.
+ *
+ * **Available Endpoints (27 routes):**
+ *
+ * **General Health Records (5 routes):**
+ * - GET /api/v1/health-records/student/{studentId} - List all health records for student
+ * - GET /api/v1/health-records/{id} - Get health record by ID
+ * - POST /api/v1/health-records - Create new health record
+ * - PUT /api/v1/health-records/{id} - Update health record
+ * - DELETE /api/v1/health-records/{id} - Delete health record (soft delete)
+ *
+ * **Allergy Management (5 routes):**
+ * - GET /api/v1/health-records/student/{studentId}/allergies - List all allergies for student
+ * - GET /api/v1/health-records/allergies/{id} - Get allergy by ID
+ * - POST /api/v1/health-records/allergies - Add new allergy
+ * - PUT /api/v1/health-records/allergies/{id} - Update allergy information
+ * - DELETE /api/v1/health-records/allergies/{id} - Remove allergy record
+ *
+ * **Chronic Conditions (5 routes):**
+ * - GET /api/v1/health-records/student/{studentId}/conditions - List chronic conditions
+ * - GET /api/v1/health-records/conditions/{id} - Get chronic condition by ID
+ * - POST /api/v1/health-records/conditions - Add new chronic condition
+ * - PUT /api/v1/health-records/conditions/{id} - Update chronic condition
+ * - DELETE /api/v1/health-records/conditions/{id} - Remove chronic condition
+ *
+ * **Vaccinations/Immunizations (5 routes):**
+ * - GET /api/v1/health-records/student/{studentId}/vaccinations - List vaccinations
+ * - GET /api/v1/health-records/vaccinations/{id} - Get vaccination by ID
+ * - POST /api/v1/health-records/vaccinations - Add new vaccination record
+ * - PUT /api/v1/health-records/vaccinations/{id} - Update vaccination record
+ * - DELETE /api/v1/health-records/vaccinations/{id} - Remove vaccination record
+ *
+ * **Vital Signs & Growth (3 routes):**
+ * - POST /api/v1/health-records/vitals - Record vital signs
+ * - GET /api/v1/health-records/student/{studentId}/vitals/latest - Get latest vital signs
+ * - GET /api/v1/health-records/student/{studentId}/vitals/history - Get vitals history
+ *
+ * **Summary & Reports (2 routes):**
+ * - GET /api/v1/health-records/student/{studentId}/summary - Get comprehensive medical summary
+ * - GET /api/v1/health-records/student/{studentId}/immunization-status - Check immunization compliance
+ *
+ * **Security Features:**
+ * - All routes require JWT authentication
+ * - HIGHLY SENSITIVE PHI-protected endpoints with comprehensive audit logging
+ * - NURSE or ADMIN role required for create/update/delete operations
+ * - Medical professional authorization required for allergy/condition changes
+ * - Soft deletion preserves historical records for compliance
+ * - Student-specific data restricted by nurse assignment and role
+ *
+ * **HIPAA Compliance:**
+ * - All health record access is logged with timestamp and user for complete audit trail
+ * - PHI protection on all endpoints returning medical information
+ * - Deletion maintains archived records for legal and medical reference
+ * - Critical safety data (allergies, chronic conditions) prominently marked
+ * - Emergency access protocols for life-threatening situations
+ *
+ * **Record Types:**
+ * - CHECKUP, VACCINATION, ILLNESS, INJURY, SCREENING, PHYSICAL_EXAM
+ * - MENTAL_HEALTH, DENTAL, VISION, HEARING
+ *
+ * **Allergy Severity Levels:**
+ * - MILD, MODERATE, SEVERE, LIFE_THREATENING
+ * - Types: FOOD, MEDICATION, ENVIRONMENTAL, INSECT, OTHER
+ *
+ * **Chronic Condition Status:**
+ * - ACTIVE, CONTROLLED, IN_REMISSION, CURED
+ *
+ * @module routes/v1/healthcare/routes/healthRecords.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @requires ../controllers/healthRecords.controller
+ * @requires ../validators/healthRecords.validators
+ * @requires ../schemas/healthRecords.response.schemas
+ * @see {@link module:routes/v1/healthcare/controllers/healthRecords.controller} for business logic
+ * @see {@link module:routes/v1/healthcare/validators/healthRecords.validators} for validation schemas
+ * @see {@link module:routes/v1/healthcare/schemas/healthRecords.response.schemas} for response schemas
+ * @since 1.0.0
+ *
+ * @example
+ * ```typescript
+ * // Get comprehensive medical summary (Emergency reference)
+ * GET /api/v1/health-records/student/{studentId}/summary
+ * Authorization: Bearer <token>
+ * // Response: { allergies, conditions, medications, vitals, immunizations }
+ *
+ * // Create new health record
+ * POST /api/v1/health-records
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000",
+ *   "recordType": "CHECKUP",
+ *   "recordDate": "2025-10-23",
+ *   "provider": "Dr. Jane Smith",
+ *   "diagnosis": "Healthy - routine annual exam",
+ *   "followUpRequired": false
+ * }
+ *
+ * // Add critical allergy (LIFE_THREATENING)
+ * POST /api/v1/health-records/allergies
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000",
+ *   "allergen": "Peanuts",
+ *   "allergyType": "FOOD",
+ *   "severity": "LIFE_THREATENING",
+ *   "reaction": "Anaphylaxis, difficulty breathing",
+ *   "treatment": "EpiPen auto-injector",
+ *   "verifiedByMD": true,
+ *   "notes": "Carries EpiPen at all times"
+ * }
+ *
+ * // Record vital signs with growth tracking
+ * POST /api/v1/health-records/vitals
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000",
+ *   "recordDate": "2025-10-23T10:30:00Z",
+ *   "temperature": 98.6,
+ *   "bloodPressureSystolic": 110,
+ *   "bloodPressureDiastolic": 70,
+ *   "heartRate": 72,
+ *   "height": 150.5,
+ *   "weight": 45.2,
+ *   "notes": "Normal vitals, healthy growth"
+ * }
+ *
+ * // Add vaccination with dose tracking
+ * POST /api/v1/health-records/vaccinations
+ * Authorization: Bearer <nurse-token>
+ * {
+ *   "studentId": "660e8400-e29b-41d4-a716-446655440000",
+ *   "vaccineName": "DTaP (Diphtheria, Tetanus, Pertussis)",
+ *   "cvxCode": "106",
+ *   "lotNumber": "12345ABC",
+ *   "administrationDate": "2025-10-23",
+ *   "doseNumber": 4,
+ *   "totalDosesRequired": 5,
+ *   "administeredBy": "Nurse Johnson",
+ *   "nextDueDate": "2030-10-23"
+ * }
+ *
+ * // Check immunization compliance status
+ * GET /api/v1/health-records/student/{studentId}/immunization-status
+ * Authorization: Bearer <token>
+ * // Response: { compliant: true/false, missing: [], overdue: [], upcoming: [] }
+ * ```
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -1206,9 +1348,51 @@ const getImmunizationStatusRoute: ServerRoute = {
 };
 
 /**
- * EXPORT ROUTES
+ * Health records management route collection.
+ *
+ * Complete set of 27 routes for comprehensive health record management organized
+ * into 6 functional categories. All routes are HIGHLY SENSITIVE PHI-protected with
+ * HIPAA-compliant audit logging and role-based access control.
+ *
+ * **Route Categories:**
+ * - General Health Records: CRUD operations for medical visits and exams (5 routes)
+ * - Allergy Management: Critical safety data tracking with severity levels (5 routes)
+ * - Chronic Conditions: Ongoing condition management with care plans (5 routes)
+ * - Vaccinations: Immunization tracking with CDC compliance (5 routes)
+ * - Vital Signs: Growth tracking and health monitoring (3 routes)
+ * - Summary & Reports: Comprehensive medical overview and compliance (2 routes)
+ *
+ * **Permission Model:**
+ * - NURSE/ADMIN: Full access to create, update, delete health records
+ * - Medical Professional: Required for allergy/condition modifications
+ * - All authenticated users: Can view records (with scope restrictions)
+ * - Student-specific queries: Restricted by nurse assignment and role
+ *
+ * **Key Features:**
+ * - Comprehensive medical history tracking across multiple categories
+ * - Critical safety alerts for life-threatening allergies
+ * - Growth percentile tracking and trend analysis
+ * - Immunization compliance checking against state/CDC requirements
+ * - Emergency medical summary for first responders
+ * - Soft deletion with historical record preservation
+ * - Complete Swagger/OpenAPI documentation for all endpoints
+ *
+ * **HIPAA Compliance:**
+ * Every health record operation creates audit trail entries including:
+ * - User who accessed/modified the record
+ * - Timestamp of access/modification
+ * - Type of operation (create, read, update, delete)
+ * - Student identifier and record type
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // Import and register routes in Hapi server
+ * import { healthRecordsRoutes } from './routes/healthRecords.routes';
+ * server.route(healthRecordsRoutes);
+ * ```
  */
-
 export const healthRecordsRoutes: ServerRoute[] = [
   // General health records
   listStudentRecordsRoute,

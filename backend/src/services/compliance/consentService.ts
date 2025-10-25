@@ -1,24 +1,41 @@
 /**
- * LOC: 60EC8F5626
- * WC-GEN-238 | consentService.ts - General utility functions and operations
+ * @fileoverview Consent Management Service - Healthcare consent forms and digital signatures
  *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
+ * This service manages the complete lifecycle of healthcare consent forms and digital signatures,
+ * ensuring legal validity and HIPAA compliance for all consent-based healthcare operations. Consent
+ * forms are legally binding documents that authorize healthcare providers to perform specific actions,
+ * share information, or administer treatments.
  *
- * DOWNSTREAM (imported by):
- *   - index.ts (services/compliance/index.ts)
- */
-
-/**
- * WC-GEN-238 | consentService.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ./types | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
+ * Key responsibilities:
+ * - Create and manage versioned consent form templates with legal validity requirements
+ * - Capture digital signatures with complete audit trail (name, relationship, IP, timestamp)
+ * - Validate signatory authorization and relationship to patient
+ * - Track consent lifecycle including signing, expiration, and withdrawal
+ * - Prevent duplicate signatures and enforce business rules
+ * - Maintain immutable audit trail of consent decisions and withdrawals
+ *
+ * HIPAA Compliance:
+ * - Ensures proper authorization before PHI disclosure per 45 CFR 164.508
+ * - Maintains complete audit trails of consent authorization and revocation
+ * - Validates signatory authority for legal representation
+ * - Provides evidence of authorization for compliance audits
+ *
+ * Legal Considerations:
+ * - Digital signatures captured with IP address and timestamp for authenticity
+ * - Minimum content length requirements (50 characters) for legal validity
+ * - Authorized relationship validation (parent, guardian, etc.)
+ * - Version tracking for consent form changes
+ * - Permanent and irreversible withdrawal with full audit trail
+ * - Consent expiration date management
+ *
+ * Integration Points:
+ * - Used by medication administration services for treatment authorization
+ * - Required by photo release and student information sharing workflows
+ * - Integrated with parent portal for online consent signing
+ * - Provides data for compliance reporting and audit trails
+ *
+ * @module services/compliance/consentService
+ * @since 1.0.0
  */
 
 import { Transaction } from 'sequelize';

@@ -1,24 +1,48 @@
 /**
+ * @fileoverview Document service facade aggregating all document management operations.
+ *
+ * Provides a unified interface for document lifecycle management, versioning, signatures,
+ * search, sharing, templates, analytics, and compliance through the Facade pattern.
+ * Delegates operations to specialized modules for improved maintainability.
+ *
  * LOC: D6A44FD802-I
  * WC-GEN-259 | index.ts - Document service main aggregator
  *
  * UPSTREAM (imports from):
- *   - All document operation modules
+ *   - crud.operations.ts - CRUD operations
+ *   - storage.operations.ts - Storage and access tracking
+ *   - sharing.operations.ts - Document sharing
+ *   - version.operations.ts - Version control
+ *   - signature.operations.ts - Digital signatures
+ *   - search.operations.ts - Search and retrieval
+ *   - template.operations.ts - Template management
+ *   - analytics.operations.ts - Statistics and analytics
+ *   - audit.operations.ts - Audit trail operations
+ *   - types.ts - TypeScript interfaces and types
  *
  * DOWNSTREAM (imported by):
- *   - documents.ts (routes/documents.ts)
- */
-
-/**
- * WC-GEN-259 | index.ts - Document service main aggregator
- * Purpose: Central export point for all document service operations
- * Upstream: Document operation modules | Dependencies: All document modules
- * Downstream: Routes, controllers | Called by: Application components
- * Related: documentService.ts (legacy), Document model
- * Exports: DocumentService class | Key Services: Document management facade
- * Last Updated: 2025-10-18 | File Type: .ts
- * Critical Path: Module aggregation → Service delegation → Operation execution
- * LLM Context: Facade pattern for enterprise document management system
+ *   - routes/v1/documents.ts - Document API routes
+ *   - Application controllers and services
+ *
+ * Architecture Pattern:
+ * - Facade pattern for simplified API surface
+ * - Modular operation separation by concern
+ * - Delegation to specialized operation modules
+ * - Type-safe interfaces for all operations
+ *
+ * Key Features:
+ * - Complete document lifecycle management
+ * - HIPAA-compliant storage and access tracking
+ * - Digital signature workflows
+ * - Version control with history
+ * - Template-based document generation
+ * - Comprehensive search and filtering
+ * - Document sharing and permissions
+ * - Analytics and statistics
+ * - Full audit trail compliance
+ *
+ * @module services/document
+ * @since 1.0.0
  */
 
 // Export all types
@@ -50,12 +74,49 @@ import type {
 import type { DocumentCategory } from '../../database/types/enums';
 
 /**
- * Document Service
- * Handles all document management operations including creation, versioning,
- * signatures, and audit trail with full HIPAA compliance
+ * Enterprise document management service with HIPAA compliance and comprehensive audit trails.
  *
- * This service acts as a facade, delegating operations to specialized modules
- * for improved maintainability and separation of concerns.
+ * Provides a unified facade for all document operations including CRUD, versioning, signatures,
+ * search, sharing, templates, and analytics. Delegates to specialized operation modules following
+ * the Facade pattern for clean separation of concerns.
+ *
+ * @class DocumentService
+ *
+ * @example
+ * ```typescript
+ * // Create a new document
+ * const doc = await DocumentService.createDocument({
+ *   title: 'Student Health Assessment',
+ *   category: DocumentCategory.HEALTH_RECORD,
+ *   fileType: 'application/pdf',
+ *   fileName: 'assessment.pdf',
+ *   fileSize: 256000,
+ *   fileUrl: 's3://docs/assessment.pdf',
+ *   uploadedBy: 'nurse_001',
+ *   studentId: 'student_12345'
+ * });
+ *
+ * // Sign the document
+ * await DocumentService.signDocument({
+ *   documentId: doc.id,
+ *   signedBy: 'nurse_001',
+ *   signedByRole: 'school_nurse'
+ * });
+ *
+ * // Search documents
+ * const results = await DocumentService.searchDocuments('immunization', {
+ *   category: DocumentCategory.IMMUNIZATION_RECORD
+ * });
+ * ```
+ *
+ * @remarks
+ * - All operations include automatic audit logging for HIPAA compliance
+ * - PHI documents receive special tracking and protection
+ * - Transaction-safe operations with automatic rollback on errors
+ * - Comprehensive validation before all database operations
+ * - Retention policies automatically calculated and enforced
+ *
+ * @since 1.0.0
  */
 export class DocumentService {
   // ========================================
