@@ -221,9 +221,22 @@ const getRecordByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Health record retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Health record not found' }
+          '200': {
+            description: 'Health record retrieved successfully',
+            schema: HealthRecordResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Health record not found - Invalid record ID',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -245,10 +258,30 @@ const createRecordRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Health record created successfully' },
-          '400': { description: 'Validation error - Invalid record data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '201': {
+            description: 'Health record created successfully',
+            schema: HealthRecordResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid record data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -271,10 +304,30 @@ const updateRecordRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Health record updated successfully' },
-          '400': { description: 'Validation error - Invalid update data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Health record not found' }
+          '200': {
+            description: 'Health record updated successfully',
+            schema: HealthRecordResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Health record not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -296,10 +349,26 @@ const deleteRecordRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '204': { description: 'Health record deleted successfully (no content)' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Admin only' },
-          '404': { description: 'Health record not found' }
+          '204': {
+            description: 'Health record deleted successfully (no content)',
+            schema: DeleteSuccessResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Admin only',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Health record not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -357,9 +426,22 @@ const getAllergyByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Allergy retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Allergy not found' }
+          '200': {
+            description: 'Allergy retrieved successfully',
+            schema: AllergyResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Allergy not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -381,10 +463,30 @@ const createAllergyRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Allergy created successfully' },
-          '400': { description: 'Validation error - Invalid allergy data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '201': {
+            description: 'Allergy created successfully',
+            schema: AllergyResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid allergy data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -407,10 +509,30 @@ const updateAllergyRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Allergy updated successfully' },
-          '400': { description: 'Validation error - Invalid update data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Allergy not found' }
+          '200': {
+            description: 'Allergy updated successfully',
+            schema: AllergyResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Allergy not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -432,10 +554,26 @@ const deleteAllergyRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '204': { description: 'Allergy deleted successfully (no content)' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Medical professional authorization required' },
-          '404': { description: 'Allergy not found' }
+          '204': {
+            description: 'Allergy deleted successfully (no content)',
+            schema: DeleteSuccessResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Medical professional authorization required',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Allergy not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -461,9 +599,26 @@ const listConditionsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Chronic conditions retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Chronic conditions retrieved successfully',
+            schema: ChronicConditionListResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -485,9 +640,22 @@ const getConditionByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Chronic condition retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Chronic condition not found' }
+          '200': {
+            description: 'Chronic condition retrieved successfully',
+            schema: ChronicConditionResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Chronic condition not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -509,10 +677,30 @@ const createConditionRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Chronic condition created successfully' },
-          '400': { description: 'Validation error - Invalid condition data or ICD-10 code' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '201': {
+            description: 'Chronic condition created successfully',
+            schema: ChronicConditionResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid condition data or ICD-10 code',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -535,10 +723,30 @@ const updateConditionRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Chronic condition updated successfully' },
-          '400': { description: 'Validation error - Invalid update data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Chronic condition not found' }
+          '200': {
+            description: 'Chronic condition updated successfully',
+            schema: ChronicConditionResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Chronic condition not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -560,10 +768,26 @@ const deleteConditionRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '204': { description: 'Chronic condition deleted successfully (no content)' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Medical professional authorization required' },
-          '404': { description: 'Chronic condition not found' }
+          '204': {
+            description: 'Chronic condition deleted successfully (no content)',
+            schema: DeleteSuccessResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Medical professional authorization required',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Chronic condition not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -621,9 +845,22 @@ const getVaccinationByIdRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Vaccination retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Vaccination not found' }
+          '200': {
+            description: 'Vaccination retrieved successfully',
+            schema: VaccinationResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Vaccination not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -645,10 +882,30 @@ const createVaccinationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Vaccination created successfully' },
-          '400': { description: 'Validation error - Invalid vaccination data or date sequence' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '201': {
+            description: 'Vaccination created successfully',
+            schema: VaccinationResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid vaccination data or date sequence',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -671,10 +928,30 @@ const updateVaccinationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Vaccination updated successfully' },
-          '400': { description: 'Validation error - Invalid update data' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Vaccination not found' }
+          '200': {
+            description: 'Vaccination updated successfully',
+            schema: VaccinationResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Invalid update data',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Vaccination not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -696,10 +973,26 @@ const deleteVaccinationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '204': { description: 'Vaccination deleted successfully (no content)' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Medical professional authorization required' },
-          '404': { description: 'Vaccination not found' }
+          '204': {
+            description: 'Vaccination deleted successfully (no content)',
+            schema: DeleteSuccessResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Medical professional authorization required',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Vaccination not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -725,10 +1018,30 @@ const recordVitalsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Vital signs recorded successfully' },
-          '400': { description: 'Validation error - Vital signs out of acceptable range' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '201': {
+            description: 'Vital signs recorded successfully',
+            schema: VitalsResponseSchema
+          },
+          '400': {
+            description: 'Validation error - Vital signs out of acceptable range',
+            schema: ValidationErrorResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -750,9 +1063,22 @@ const getLatestVitalsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Latest vital signs retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found or no vitals recorded' }
+          '200': {
+            description: 'Latest vital signs retrieved successfully',
+            schema: VitalsResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Student not found or no vitals recorded',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -775,9 +1101,22 @@ const getVitalsHistoryRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Vital signs history retrieved successfully with pagination' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Vital signs history retrieved successfully with pagination',
+            schema: VitalsHistoryResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -803,9 +1142,26 @@ const getMedicalSummaryRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Medical summary retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Medical summary retrieved successfully',
+            schema: MedicalSummaryResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }
@@ -827,9 +1183,22 @@ const getImmunizationStatusRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Immunization status retrieved successfully' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found' }
+          '200': {
+            description: 'Immunization status retrieved successfully',
+            schema: ImmunizationStatusResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '404': {
+            description: 'Student not found',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: ErrorResponseSchema
+          }
         }
       }
     }

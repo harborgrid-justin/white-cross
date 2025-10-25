@@ -6,6 +6,7 @@
 
 import { ServerRoute } from '@hapi/hapi';
 import { asyncHandler } from '../../../shared/utils';
+import { standardFailAction } from '../../core/shared/validationConfig';
 import { MessagesController } from '../controllers/messages.controller';
 import {
   listMessagesQuerySchema,
@@ -44,7 +45,8 @@ const listMessagesRoute: ServerRoute = {
     description: 'List messages with pagination and filters',
     notes: '**PHI Protected Endpoint** - Returns paginated list of messages. Supports filtering by sender, recipient, category, priority, status, and date range. Includes sender details and delivery summary. Access is audited for compliance.',
     validate: {
-      query: listMessagesQuerySchema
+      query: listMessagesQuerySchema,
+      failAction: standardFailAction
     },
     plugins: {
       'hapi-swagger': {
@@ -68,7 +70,8 @@ const getMessageByIdRoute: ServerRoute = {
     description: 'Get message by ID',
     notes: '**PHI Protected Endpoint** - Returns detailed message information including sender details, template used, and all delivery records. Shows message content, attachments, priority, category, and delivery status across all channels.',
     validate: {
-      params: messageIdParamSchema
+      params: messageIdParamSchema,
+      failAction: standardFailAction
     },
     plugins: {
       'hapi-swagger': {
@@ -92,7 +95,8 @@ const sendMessageRoute: ServerRoute = {
     description: 'Send new message to specific recipients',
     notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Sends message to specified recipients via selected channels (EMAIL, SMS, PUSH_NOTIFICATION, VOICE). Supports immediate or scheduled delivery. Validates HIPAA compliance, message content limits, and recipient contact information. Maximum 100 recipients per message. Returns message record and delivery status for each recipient/channel combination.',
     validate: {
-      payload: sendMessageSchema
+      payload: sendMessageSchema,
+      failAction: standardFailAction
     },
     plugins: {
       'hapi-swagger': {
@@ -100,7 +104,14 @@ const sendMessageRoute: ServerRoute = {
           '201': { description: 'Message sent successfully', schema: MessageResponseSchema },
           '400': { description: 'Validation error - Invalid message data or HIPAA violation', schema: ErrorResponseSchema },
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
-          '403': { description: 'Forbidden - Insufficient permissions', schema: ErrorResponseSchema }
+          '403': { description: 'Forbidden - Insufficient permissions', schema: ErrorResponseSchema },
+          '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
+        }
+      },
+      'hapi-rate-limit': {
+        userLimit: 50,
+        userCache: {
+          expiresIn: 60000 // 50 messages per minute per user
         }
       }
     }
@@ -179,7 +190,14 @@ const replyToMessageRoute: ServerRoute = {
           '201': { description: 'Reply sent successfully', schema: MessageResponseSchema },
           '400': { description: 'Validation error', schema: ErrorResponseSchema },
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
-          '404': { description: 'Original message not found', schema: ErrorResponseSchema }
+          '404': { description: 'Original message not found', schema: ErrorResponseSchema },
+          '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
+        }
+      },
+      'hapi-rate-limit': {
+        userLimit: 30,
+        userCache: {
+          expiresIn: 60000 // 30 replies per minute per user
         }
       }
     }

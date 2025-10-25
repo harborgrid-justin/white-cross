@@ -316,8 +316,8 @@ const activateMedicationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '204': {
-            description: 'Medication activated successfully (no content)',
+          '200': {
+            description: 'Medication activated successfully',
             schema: MedicationResponseSchema
           },
           '401': {

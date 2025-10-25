@@ -47,7 +47,14 @@ const createBroadcastRoute: ServerRoute = {
           '201': { description: 'Broadcast created and sent/scheduled successfully', schema: BroadcastResponseSchema },
           '400': { description: 'Validation error - Invalid audience criteria, HIPAA violation, or recipient limit exceeded', schema: ErrorResponseSchema },
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
-          '403': { description: 'Forbidden - Insufficient permissions for broadcast messaging', schema: ErrorResponseSchema }
+          '403': { description: 'Forbidden - Insufficient permissions for broadcast messaging', schema: ErrorResponseSchema },
+          '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
+        }
+      },
+      'hapi-rate-limit': {
+        userLimit: 10,
+        userCache: {
+          expiresIn: 60000 // 10 broadcasts per minute per user (stricter due to high impact)
         }
       }
     }
@@ -202,7 +209,14 @@ const scheduleMessageRoute: ServerRoute = {
           '201': { description: 'Message scheduled successfully', schema: ScheduledMessageResponseSchema },
           '400': { description: 'Validation error - Invalid schedule time or recipient configuration', schema: ErrorResponseSchema },
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
-          '403': { description: 'Forbidden - Insufficient permissions for scheduled messaging', schema: ErrorResponseSchema }
+          '403': { description: 'Forbidden - Insufficient permissions for scheduled messaging', schema: ErrorResponseSchema },
+          '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
+        }
+      },
+      'hapi-rate-limit': {
+        userLimit: 20,
+        userCache: {
+          expiresIn: 60000 // 20 scheduled messages per minute per user
         }
       }
     }

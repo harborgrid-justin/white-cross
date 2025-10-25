@@ -12,6 +12,7 @@ import {
   studentPhotoSearchSchema,
   academicTranscriptSchema,
   gradeTransitionSchema,
+  barcodeScanSchema,
   barcodeVerificationSchema,
   waitlistSchema,
   studentIdParamSchema
@@ -222,10 +223,7 @@ const scanBarcodeRoute: ServerRoute = {
     description: 'Scan and decode barcode for student/medication identification',
     notes: 'Scans various barcode formats (Code 128, QR, Data Matrix) to identify students, medications, or equipment. Returns decoded information and associated records. Used for quick identification and medication administration.',
     validate: {
-      payload: {
-        barcodeString: require('joi').string().min(1).max(500).required(),
-        scanType: require('joi').string().valid('student', 'medication', 'equipment', 'general').default('general')
-      }
+      payload: barcodeScanSchema
     },
     plugins: {
       'hapi-swagger': {

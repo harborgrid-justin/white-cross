@@ -5,6 +5,7 @@
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
+import Boom from '@hapi/boom';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
@@ -30,6 +31,11 @@ export class AnalyticsController {
   /**
    * Get aggregated health metrics
    * GET /api/v1/analytics/health-metrics
+   *
+   * @description Retrieves aggregated health metrics for specified time period
+   * @param {AuthenticatedRequest} request - Request with query params (schoolId, districtId, dates, aggregationLevel)
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Health metrics with optional comparison data
    */
   static async getHealthMetrics(request: AuthenticatedRequest, h: ResponseToolkit) {
     const {
@@ -85,6 +91,11 @@ export class AnalyticsController {
   /**
    * Get health trend analysis
    * GET /api/v1/analytics/health-trends
+   *
+   * @description Provides time-series trend analysis for health conditions and medications
+   * @param {AuthenticatedRequest} request - Request with query params (schoolId, dates, timePeriod, metrics)
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Health condition and medication trends
    */
   static async getHealthTrends(request: AuthenticatedRequest, h: ResponseToolkit) {
     const {
@@ -145,6 +156,12 @@ export class AnalyticsController {
   /**
    * Get student-specific health trends
    * GET /api/v1/analytics/health-metrics/student/{studentId}
+   *
+   * @description Returns detailed health trend data for individual student (PHI ENDPOINT)
+   * @param {AuthenticatedRequest} request - Request with studentId param and query params
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Student health trends including vital signs and visit history
+   * @security Requires proper authorization and access logging per HIPAA
    */
   static async getStudentHealthMetrics(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { studentId } = request.params;
@@ -176,6 +193,11 @@ export class AnalyticsController {
   /**
    * Get school-wide health metrics
    * GET /api/v1/analytics/health-metrics/school/{schoolId}
+   *
+   * @description Retrieves comprehensive school-level health analytics dashboard
+   * @param {AuthenticatedRequest} request - Request with schoolId param and query params
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} School health summary, immunization data, and incident analytics
    */
   static async getSchoolMetrics(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { schoolId } = request.params;
@@ -635,6 +657,11 @@ export class AnalyticsController {
   /**
    * Generate custom report
    * POST /api/v1/analytics/reports/custom
+   *
+   * @description Generates custom report with multiple formats and report types
+   * @param {AuthenticatedRequest} request - Request with report configuration payload
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Generated report metadata with download URL
    */
   static async generateCustomReport(request: AuthenticatedRequest, h: ResponseToolkit) {
     const {
@@ -725,6 +752,12 @@ export class AnalyticsController {
   /**
    * Get generated report
    * GET /api/v1/analytics/reports/{id}
+   *
+   * @description Retrieves a previously generated report by ID
+   * @param {AuthenticatedRequest} request - Authenticated request with report ID
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Report data or metadata
+   * @throws {Boom.notFound} When report with specified ID does not exist
    */
   static async getGeneratedReport(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
@@ -737,10 +770,7 @@ export class AnalyticsController {
     const report = await ComplianceReportGenerator.getReport(id);
 
     if (!report) {
-      return h.response({
-        success: false,
-        error: { message: 'Report not found' }
-      }).code(404);
+      throw Boom.notFound('Report not found');
     }
 
     // Return full report or metadata only

@@ -185,7 +185,7 @@ const getStockLevelsRoute: ServerRoute = {
 
 const adjustStockRoute: ServerRoute = {
   method: 'POST',
-  path: '/api/v1/inventory/stock/adjust',
+  path: '/api/v1/inventory/stock/{id}/adjust',
   handler: asyncHandler(InventoryController.adjustStock),
   options: {
     auth: 'jwt',
@@ -193,6 +193,7 @@ const adjustStockRoute: ServerRoute = {
     description: 'Adjust stock levels (add/remove)',
     notes: 'Manually adjusts stock quantity for corrections, waste disposal, transfers, or usage. Positive values add stock, negative values remove. Creates audit trail transaction with: (1) Adjustment amount, (2) Reason (required), (3) Performed by (auto-captured from JWT), (4) Previous and new stock levels. Cannot be used for purchase orders - use purchase order workflow instead. All adjustments are permanent and logged.',
     validate: {
+      params: itemIdParamSchema,
       payload: adjustStockSchema
     },
     plugins: {
@@ -231,7 +232,7 @@ const getLowStockAlertsRoute: ServerRoute = {
 
 const recordStockCountRoute: ServerRoute = {
   method: 'POST',
-  path: '/api/v1/inventory/stock/count',
+  path: '/api/v1/inventory/stock/{id}/count',
   handler: asyncHandler(InventoryController.recordStockCount),
   options: {
     auth: 'jwt',
@@ -239,6 +240,7 @@ const recordStockCountRoute: ServerRoute = {
     description: 'Record physical stock count',
     notes: 'Records results of physical inventory count and automatically adjusts stock if discrepancy found. Compares counted quantity to system quantity and creates adjustment transaction if different. Used for: (1) Regular inventory audits, (2) Compliance verification, (3) Shrinkage detection, (4) Expiration management. All counts are logged with performer, date, and notes for audit compliance.',
     validate: {
+      params: itemIdParamSchema,
       payload: recordStockCountSchema
     },
     plugins: {

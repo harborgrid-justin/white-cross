@@ -14,6 +14,9 @@ import {
 export class MessagesController {
   /**
    * List messages with pagination and filters
+   * @param request - Authenticated Hapi request with query parameters
+   * @param h - Hapi response toolkit
+   * @returns Paginated list of messages with filters applied
    */
   static async list(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { page = 1, limit = 20, senderId, recipientId, category, priority, status, dateFrom, dateTo } = request.query;
@@ -39,6 +42,10 @@ export class MessagesController {
 
   /**
    * Get message by ID with full details
+   * @param request - Authenticated Hapi request with message ID param
+   * @param h - Hapi response toolkit
+   * @returns Message details including deliveries
+   * @throws {404} If message not found
    */
   static async getById(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
@@ -57,6 +64,10 @@ export class MessagesController {
 
   /**
    * Send new message to specific recipients
+   * @param request - Authenticated Hapi request with message payload
+   * @param h - Hapi response toolkit
+   * @returns Created message with delivery statuses
+   * @description Sends message via specified channels to recipients
    */
   static async send(request: AuthenticatedRequest, h: ResponseToolkit) {
     const senderId = request.auth.credentials?.userId;

@@ -5,7 +5,7 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { asyncHandler } from '../../../shared/utils';
+import { asyncHandler, validationFailAction } from '../../../shared/utils';
 import { ComplianceController } from '../controllers/compliance.controller';
 import {
   complianceReportQuerySchema,
@@ -459,6 +459,16 @@ const deleteChecklistRoute: ServerRoute = {
  * POLICY MANAGEMENT ROUTES
  */
 
+/**
+ * List Policies Route
+ *
+ * @description Retrieve list of policy documents with filtering
+ * @param {string} [request.query.category] - Filter by policy category
+ * @param {string} [request.query.status] - Filter by policy status
+ * @returns {object} 200 - List of policy documents
+ * @returns {object} 401 - Unauthorized
+ * @security JWT
+ */
 const listPoliciesRoute: ServerRoute = {
   method: 'GET',
   path: '/api/v1/compliance/policies',
@@ -469,13 +479,18 @@ const listPoliciesRoute: ServerRoute = {
     description: 'List policy documents',
     notes: 'Returns list of policy documents. Supports filtering by category (HIPAA_PRIVACY, HIPAA_SECURITY, FERPA, DATA_RETENTION, INCIDENT_RESPONSE, ACCESS_CONTROL, TRAINING) and status (DRAFT, ACTIVE, ARCHIVED, SUPERSEDED). Used for policy management and staff training.',
     validate: {
-      query: policyQuerySchema
+      query: policyQuerySchema,
+      failAction: validationFailAction
+    },
+    response: {
+      schema: PolicyListResponseSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Policies retrieved successfully' },
-          '401': { description: 'Unauthorized' }
+          '200': { description: 'Policies retrieved successfully', schema: PolicyListResponseSchema },
+          '400': { description: 'Validation error', schema: ValidationErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema }
         }
       }
     }

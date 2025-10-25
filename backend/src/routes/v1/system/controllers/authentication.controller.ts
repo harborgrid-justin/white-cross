@@ -4,6 +4,7 @@
  */
 
 import { Request, ResponseToolkit, Lifecycle } from '@hapi/hapi';
+import Boom from '@hapi/boom';
 import { successResponse } from '../../../../shared/utils';
 import { logger } from '../../../../shared/logging/logger';
 
@@ -11,6 +12,16 @@ import { logger } from '../../../../shared/logging/logger';
  * MFA HANDLERS
  */
 
+/**
+ * Setup Multi-Factor Authentication for user
+ *
+ * @description Initializes MFA using TOTP, SMS, or email methods
+ * @param {Request} request - Request with MFA setup data (method, phoneNumber, email)
+ * @param {ResponseToolkit} h - Hapi response toolkit
+ * @returns {Promise<Lifecycle.ReturnValue>} MFA setup data including QR code and backup codes
+ * @throws {Boom.badRequest} When invalid MFA method is provided
+ * @throws {Boom.badImplementation} When MFA setup fails
+ */
 export const setupMFA = async (request: Request, h: ResponseToolkit): Promise<Lifecycle.ReturnValue> => {
   try {
     const { method, phoneNumber, email } = request.payload as any;
@@ -25,10 +36,7 @@ export const setupMFA = async (request: Request, h: ResponseToolkit): Promise<Li
 
     // Validate MFA method
     if (!['totp', 'sms', 'email'].includes(method)) {
-      return h.response({
-        success: false,
-        error: 'Invalid MFA method. Supported methods: totp, sms, email'
-      }).code(400);
+      throw Boom.badRequest('Invalid MFA method. Supported methods: totp, sms, email');
     }
 
     // Generate MFA setup data
@@ -50,19 +58,26 @@ export const setupMFA = async (request: Request, h: ResponseToolkit): Promise<Li
     });
 
   } catch (error) {
-    logger.error('Error setting up MFA', { 
+    logger.error('Error setting up MFA', {
       error: error.message,
       stack: error.stack,
-      userId: request.auth.credentials.userId 
+      userId: request.auth.credentials.userId
     });
 
-    return h.response({
-      success: false,
-      error: 'Failed to setup MFA'
-    }).code(500);
+    throw Boom.badImplementation('Failed to setup MFA');
   }
 };
 
+/**
+ * Verify Multi-Factor Authentication code
+ *
+ * @description Validates MFA code for TOTP, SMS, email, or backup codes
+ * @param {Request} request - Request with MFA verification data (code, method, secret)
+ * @param {ResponseToolkit} h - Hapi response toolkit
+ * @returns {Promise<Lifecycle.ReturnValue>} Verification result with validity status
+ * @throws {Boom.forbidden} When MFA verification fails
+ * @throws {Boom.badImplementation} When verification process errors
+ */
 export const verifyMFA = async (request: Request, h: ResponseToolkit): Promise<Lifecycle.ReturnValue> => {
   try {
     const { code, secret, method } = request.payload as any;
@@ -78,18 +93,16 @@ export const verifyMFA = async (request: Request, h: ResponseToolkit): Promise<L
     const verification = await validateMFACode(userId, code, secret, method);
 
     if (!verification.isValid) {
-      logger.warn('MFA verification failed', { 
-        userId, 
+      logger.warn('MFA verification failed', {
+        userId,
         method,
-        reason: verification.reason 
+        reason: verification.reason
       });
 
-      return h.response({
-        success: false,
-        error: 'Invalid MFA code',
+      throw Boom.forbidden('Invalid MFA code', {
         verified: false,
         attemptsRemaining: verification.attemptsRemaining
-      }).code(403);
+      });
     }
 
     logger.info('MFA verification successful', { 
@@ -105,16 +118,18 @@ export const verifyMFA = async (request: Request, h: ResponseToolkit): Promise<L
     });
 
   } catch (error) {
-    logger.error('Error verifying MFA', { 
+    // If error is already a Boom error, re-throw it
+    if (error.isBoom) {
+      throw error;
+    }
+
+    logger.error('Error verifying MFA', {
       error: error.message,
       stack: error.stack,
-      userId: request.auth.credentials.userId 
+      userId: request.auth.credentials.userId
     });
 
-    return h.response({
-      success: false,
-      error: 'Failed to verify MFA code'
-    }).code(500);
+    throw Boom.badImplementation('Failed to verify MFA code');
   }
 };
 
@@ -122,6 +137,15 @@ export const verifyMFA = async (request: Request, h: ResponseToolkit): Promise<L
  * SYSTEM MONITORING HANDLERS
  */
 
+/**
+ * Get comprehensive system health status
+ *
+ * @description Returns database connectivity, service status, memory usage, and performance metrics
+ * @param {Request} request - Request with optional query params (includeDetails)
+ * @param {ResponseToolkit} h - Hapi response toolkit
+ * @returns {Promise<Lifecycle.ReturnValue>} System health status with component details
+ * @throws {Boom.badImplementation} When health check fails
+ */
 export const getSystemHealth = async (request: Request, h: ResponseToolkit): Promise<Lifecycle.ReturnValue> => {
   try {
     const { includeDetails } = request.query as any;
@@ -144,19 +168,25 @@ export const getSystemHealth = async (request: Request, h: ResponseToolkit): Pro
     return successResponse(h, healthData);
 
   } catch (error) {
-    logger.error('Error retrieving system health', { 
+    logger.error('Error retrieving system health', {
       error: error.message,
       stack: error.stack,
-      userId: request.auth.credentials.userId 
+      userId: request.auth.credentials.userId
     });
 
-    return h.response({
-      success: false,
-      error: 'Failed to retrieve system health'
-    }).code(500);
+    throw Boom.badImplementation('Failed to retrieve system health');
   }
 };
 
+/**
+ * Get feature integration status
+ *
+ * @description Returns availability and health status of all system modules
+ * @param {Request} request - Request with optional module filter
+ * @param {ResponseToolkit} h - Hapi response toolkit
+ * @returns {Promise<Lifecycle.ReturnValue>} Feature status for all modules
+ * @throws {Boom.badImplementation} When feature status retrieval fails
+ */
 export const getFeatureStatus = async (request: Request, h: ResponseToolkit): Promise<Lifecycle.ReturnValue> => {
   try {
     const { module } = request.query as any;
@@ -179,19 +209,25 @@ export const getFeatureStatus = async (request: Request, h: ResponseToolkit): Pr
     return successResponse(h, featureData);
 
   } catch (error) {
-    logger.error('Error retrieving feature status', { 
+    logger.error('Error retrieving feature status', {
       error: error.message,
       stack: error.stack,
-      userId: request.auth.credentials.userId 
+      userId: request.auth.credentials.userId
     });
 
-    return h.response({
-      success: false,
-      error: 'Failed to retrieve feature status'
-    }).code(500);
+    throw Boom.badImplementation('Failed to retrieve feature status');
   }
 };
 
+/**
+ * Generate comprehensive feature integration report
+ *
+ * @description Creates detailed report of all system features and integration health
+ * @param {Request} request - Authenticated request
+ * @param {ResponseToolkit} h - Hapi response toolkit
+ * @returns {Promise<Lifecycle.ReturnValue>} Comprehensive feature report with recommendations
+ * @throws {Boom.badImplementation} When report generation fails
+ */
 export const generateFeatureReport = async (request: Request, h: ResponseToolkit): Promise<Lifecycle.ReturnValue> => {
   try {
     const userId = request.auth.credentials.userId;
@@ -210,16 +246,13 @@ export const generateFeatureReport = async (request: Request, h: ResponseToolkit
     return successResponse(h, report);
 
   } catch (error) {
-    logger.error('Error generating feature report', { 
+    logger.error('Error generating feature report', {
       error: error.message,
       stack: error.stack,
-      userId: request.auth.credentials.userId 
+      userId: request.auth.credentials.userId
     });
 
-    return h.response({
-      success: false,
-      error: 'Failed to generate feature report'
-    }).code(500);
+    throw Boom.badImplementation('Failed to generate feature report');
   }
 };
 
