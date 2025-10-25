@@ -1,6 +1,41 @@
 /**
- * Health Check Routes (v1)
- * Public health check endpoint for API monitoring and status verification
+ * @fileoverview Health Check Routes (v1)
+ *
+ * Public health check endpoint for API monitoring, status verification, and uptime
+ * tracking. Used by monitoring systems, load balancers, and health probes to verify
+ * the White Cross Healthcare Platform API is operational.
+ *
+ * **Key Features:**
+ * - No authentication required (public endpoint)
+ * - Verifies actual database connectivity
+ * - Returns comprehensive service status
+ * - Includes system metrics (uptime, memory, environment)
+ * - Returns 503 status when degraded (e.g., DB connection failed)
+ *
+ * **Use Cases:**
+ * - Kubernetes/Docker health probes (liveness/readiness)
+ * - Load balancer health checks
+ * - Monitoring dashboards (Datadog, New Relic, Prometheus)
+ * - API status pages and uptime monitors
+ * - Integration testing pipelines
+ * - Incident detection and alerting
+ *
+ * **Health Check Response:**
+ * - status: OK/DEGRADED/DOWN
+ * - message: Human-readable status description
+ * - timestamp: Current server time (ISO 8601)
+ * - uptime: Process uptime in seconds
+ * - version: API version number
+ * - environment: Deployment environment (dev/staging/prod)
+ * - services: Individual service health (api, database, auth)
+ * - memory: Heap memory usage statistics
+ *
+ * @module routes/v1/core/routes/health.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @requires ../../../../database/models
+ * @see {@link https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/} Kubernetes Health Probes
+ * @since 1.0.0
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -8,9 +43,71 @@ import Joi from 'joi';
 import { sequelize } from '../../../../database/models';
 
 /**
- * Basic health check endpoint
- * No authentication required - used by monitoring systems
- * Actually verifies database connectivity before returning status
+ * Health check route collection.
+ *
+ * Single public endpoint for comprehensive API health monitoring. Actively
+ * verifies database connectivity and returns detailed service status.
+ *
+ * **Health States:**
+ * - 200 OK: All services healthy, database connected
+ * - 503 DEGRADED: Database connection failed or other service issues
+ *
+ * **Monitoring Integration:**
+ * Configure this endpoint in:
+ * - Kubernetes: readinessProbe and livenessProbe
+ * - Docker: HEALTHCHECK instruction
+ * - AWS ELB: Health check configuration
+ * - Datadog/New Relic: Synthetic monitoring
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // Simple health check request
+ * GET /api/v1/health
+ * // No authentication required
+ *
+ * // Response (200 OK - Healthy)
+ * {
+ *   "status": "OK",
+ *   "message": "White Cross Healthcare Platform API is operational",
+ *   "timestamp": "2024-01-15T10:30:00.000Z",
+ *   "uptime": 3600.25,
+ *   "version": "1.0.0",
+ *   "environment": "production",
+ *   "services": {
+ *     "api": "healthy",
+ *     "database": "connected",
+ *     "authentication": "active"
+ *   },
+ *   "memory": {
+ *     "total": 256,
+ *     "used": 128,
+ *     "unit": "MB"
+ *   }
+ * }
+ *
+ * // Response (503 Service Unavailable - Degraded)
+ * {
+ *   "status": "DEGRADED",
+ *   "message": "API is experiencing issues with database connectivity",
+ *   "services": {
+ *     "api": "healthy",
+ *     "database": "error",
+ *     "authentication": "active"
+ *   }
+ * }
+ *
+ * // Kubernetes liveness probe configuration
+ * livenessProbe:
+ *   httpGet:
+ *     path: /api/v1/health
+ *     port: 3001
+ *   initialDelaySeconds: 30
+ *   periodSeconds: 10
+ *   timeoutSeconds: 5
+ *   failureThreshold: 3
+ * ```
  */
 export const healthRoutes: ServerRoute[] = [
   {

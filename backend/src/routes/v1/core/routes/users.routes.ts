@@ -1,6 +1,46 @@
 /**
- * Users Routes (v1)
- * HTTP route definitions for user management endpoints
+ * @fileoverview User Management Routes (v1)
+ *
+ * HTTP route definitions for comprehensive user account management including
+ * CRUD operations, password management, role filtering, and user statistics.
+ * Implements secure user administration with role-based access control.
+ *
+ * **Available Endpoints (12 routes):**
+ * - GET /api/v1/users - List users with pagination/filtering
+ * - GET /api/v1/users/{id} - Get user details by ID
+ * - POST /api/v1/users - Create new user (Admin only)
+ * - PUT /api/v1/users/{id} - Update user information
+ * - POST /api/v1/users/{id}/change-password - Change password (requires current)
+ * - POST /api/v1/users/{id}/reset-password - Reset password (Admin only)
+ * - POST /api/v1/users/{id}/deactivate - Deactivate user (Admin only)
+ * - POST /api/v1/users/{id}/reactivate - Reactivate user (Admin only)
+ * - GET /api/v1/users/statistics - Platform user statistics (Admin only)
+ * - GET /api/v1/users/role/{role} - Get users by role
+ * - GET /api/v1/users/nurses/available - Get active nurses for assignment
+ *
+ * **Security Features:**
+ * - All routes require JWT authentication
+ * - Admin-only operations for user creation, role changes, and system management
+ * - Self-service operations allow users to update own profile and password
+ * - Password validation enforces minimum security requirements
+ * - Account activation/deactivation with audit trails
+ *
+ * **User Roles:**
+ * - ADMIN: Full system access and user management
+ * - DISTRICT_ADMIN: District-wide user management
+ * - SCHOOL_ADMIN: School-level administration
+ * - NURSE: Student health management (primary user type)
+ * - COUNSELOR: Limited health record access
+ * - VIEWER: Read-only access
+ *
+ * @module routes/v1/core/routes/users.routes
+ * @requires @hapi/hapi
+ * @requires joi
+ * @requires ../controllers/users.controller
+ * @requires ../validators/users.validators
+ * @see {@link module:routes/v1/core/controllers/users.controller} for business logic
+ * @see {@link module:routes/v1/core/validators/users.validators} for validation schemas
+ * @since 1.0.0
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -76,7 +116,65 @@ const ErrorResponseSchema = Joi.object({
 }).label('ErrorResponse');
 
 /**
- * User management routes
+ * User management route collection.
+ *
+ * Complete set of 12 routes for user administration in the White Cross
+ * Healthcare Platform. Supports pagination, filtering, password management,
+ * and role-based access control.
+ *
+ * **Route Categories:**
+ * - User CRUD: List, get, create, update (4 routes)
+ * - Password Management: Change, reset (2 routes)
+ * - Account Management: Activate, deactivate (2 routes)
+ * - Query & Filter: By role, nurses, statistics (3 routes)
+ *
+ * **Permission Model:**
+ * - Admins: Full access to all operations
+ * - Regular users: Can view/update own profile and change own password
+ * - Nurses: Can be queried for student assignments
+ *
+ * **Pagination:**
+ * Default 20 items per page, configurable via query parameters.
+ * Includes total count and page metadata in responses.
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // List all nurses with pagination
+ * GET /api/v1/users?role=NURSE&page=1&limit=20
+ * Authorization: Bearer <token>
+ * // Response: { success: true, data: [...], pagination: {...} }
+ *
+ * // Create new user (Admin only)
+ * POST /api/v1/users
+ * Authorization: Bearer <admin-token>
+ * {
+ *   "email": "nurse@school.edu",
+ *   "password": "SecurePass123",
+ *   "firstName": "Jane",
+ *   "lastName": "Smith",
+ *   "role": "NURSE"
+ * }
+ *
+ * // Change own password
+ * POST /api/v1/users/{userId}/change-password
+ * Authorization: Bearer <token>
+ * {
+ *   "currentPassword": "OldPass123",
+ *   "newPassword": "NewSecurePass456"
+ * }
+ *
+ * // Get user statistics (Admin only)
+ * GET /api/v1/users/statistics
+ * Authorization: Bearer <admin-token>
+ * // Response: { total: 150, active: 140, byRole: {...} }
+ *
+ * // Get available nurses for assignment
+ * GET /api/v1/users/nurses/available
+ * Authorization: Bearer <token>
+ * // Response: { success: true, data: { nurses: [...] } }
+ * ```
  */
 export const usersRoutes: ServerRoute[] = [
   /**

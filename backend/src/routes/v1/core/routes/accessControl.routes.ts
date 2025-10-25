@@ -1,13 +1,43 @@
 /**
- * Access Control Routes
- * HTTP endpoints for RBAC, security incidents, and IP restrictions
- * All routes prefixed with /api/v1/access-control
+ * @fileoverview Access Control Routes (v1)
  *
- * COMPLIANCE:
- * - All routes use standard validation options (abortEarly: false, stripUnknown: true)
+ * Comprehensive HTTP route definitions for Role-Based Access Control (RBAC), security
+ * incident management, session tracking, and IP restriction enforcement. Implements
+ * enterprise-grade access control with audit logging and security compliance.
+ *
+ * **Route Categories:**
+ * - Role Management: CRUD operations for roles (5 routes)
+ * - Permission Management: Permission definitions and queries (2 routes)
+ * - Role-Permission Assignments: Bind permissions to roles (2 routes)
+ * - User-Role Assignments: Assign roles to users (2 routes)
+ * - Permission Queries: Check user permissions (2 routes)
+ * - Session Management: Track and control user sessions (3 routes)
+ * - Security Incidents: Log and track security events (3 routes)
+ * - IP Restrictions: Allow/deny IP addresses (3 routes)
+ * - Statistics & Utilities: System reports and initialization (2 routes)
+ *
+ * **Security Features:**
+ * - All routes require JWT authentication except health checks
+ * - Admin-only endpoints for system configuration
+ * - Audit logging for all permission changes
+ * - Session tracking for security monitoring
+ * - IP-based access control with allow/deny lists
+ *
+ * **Compliance:**
+ * - Standard validation options (abortEarly: false, stripUnknown: true)
  * - Sensitive operations include audit logging hooks
- * - Caching configured appropriately for read vs. write operations
- * - Rate limiting applied to sensitive mutation endpoints
+ * - Caching configured for read vs. write operations
+ * - Rate limiting on mutation endpoints
+ * - HIPAA audit trail for access control changes
+ *
+ * @module routes/v1/core/routes/accessControl.routes
+ * @requires @hapi/hapi
+ * @requires ../controllers/accessControl.controller
+ * @requires ../validators/accessControl.validators
+ * @requires ../shared/validationConfig
+ * @see {@link module:routes/v1/core/controllers/accessControl.controller} for business logic
+ * @see {@link module:routes/v1/core/validators/accessControl.validators} for validation schemas
+ * @since 1.0.0
  */
 
 import { ServerRoute } from '@hapi/hapi';
@@ -666,9 +696,69 @@ const initializeDefaultRolesRoute: ServerRoute = {
 };
 
 /**
- * EXPORT ALL ROUTES
+ * Access control route collection.
+ *
+ * Complete set of 24 routes for enterprise-grade RBAC, security monitoring,
+ * and access management in the White Cross Healthcare Platform.
+ *
+ * **Total Routes: 24**
+ * - Roles: 5 (CRUD + list)
+ * - Permissions: 2 (create, list)
+ * - Role-Permission Links: 2 (assign, remove)
+ * - User-Role Links: 2 (assign, remove)
+ * - Permission Queries: 2 (get user permissions, check specific permission)
+ * - Sessions: 3 (list, delete one, delete all)
+ * - Security Incidents: 3 (list, create, update)
+ * - IP Restrictions: 3 (list, add, remove)
+ * - Utilities: 2 (statistics, initialize defaults)
+ *
+ * **Authentication:**
+ * All routes require JWT authentication. Most mutation endpoints require ADMIN role.
+ *
+ * **Caching Strategy:**
+ * - Read operations: 5-minute cache (roles, permissions)
+ * - Write operations: No caching
+ * - User-specific queries: Private cache only
+ *
+ * @const {ServerRoute[]}
+ *
+ * @example
+ * ```typescript
+ * // Create a new role with permissions
+ * POST /api/v1/access-control/roles
+ * Authorization: Bearer <admin-token>
+ * Content-Type: application/json
+ * {
+ *   "name": "School Nurse",
+ *   "description": "Full access to student health records",
+ *   "permissionIds": ["perm-uuid-1", "perm-uuid-2"]
+ * }
+ *
+ * // Assign role to user
+ * POST /api/v1/access-control/users/{userId}/roles/{roleId}
+ * Authorization: Bearer <admin-token>
+ *
+ * // Check if user has permission
+ * GET /api/v1/access-control/users/{userId}/check?resource=students&action=write
+ * Authorization: Bearer <token>
+ * // Response: { success: true, data: { hasPermission: true } }
+ *
+ * // Create security incident
+ * POST /api/v1/access-control/security-incidents
+ * Authorization: Bearer <admin-token>
+ * {
+ *   "type": "UNAUTHORIZED_ACCESS",
+ *   "severity": "HIGH",
+ *   "description": "Multiple failed login attempts",
+ *   "metadata": { "ipAddress": "192.168.1.100", "attempts": 5 }
+ * }
+ *
+ * // Get security statistics
+ * GET /api/v1/access-control/statistics
+ * Authorization: Bearer <admin-token>
+ * // Response includes role counts, active sessions, incident summary
+ * ```
  */
-
 export const accessControlRoutes: ServerRoute[] = [
   // Roles management (5 routes)
   getRolesRoute,

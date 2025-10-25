@@ -1,33 +1,94 @@
 /**
+ * @fileoverview Appointment CRUD Operations Module - Enterprise-grade create, read, update, delete operations
+ *
  * LOC: 454766BAB0
- * WC-GEN-211 | crudOperations.ts - General utility functions and operations
+ * WC-GEN-211 | crudOperations.ts - Appointment CRUD Operations with Comprehensive Validation
  *
- * UPSTREAM (imports from):
- *   - logger.ts (utils/logger.ts)
- *   - index.ts (database/models/index.ts)
- *   - enums.ts (database/types/enums.ts)
- *   - validation.ts (services/appointment/validation.ts)
- *   - statusTransitions.ts (services/appointment/statusTransitions.ts)
- *   - AppointmentAvailabilityService.ts (dynamic)
- *   - AppointmentReminderService.ts
- *   - AppointmentWaitlistService.ts (dynamic import only)
+ * This module provides robust CRUD operations for appointments with:
+ * - Comprehensive data validation using AppointmentValidation
+ * - State machine-enforced status transitions via AppointmentStatusTransitions
+ * - Availability conflict checking with buffer time
+ * - Automatic reminder scheduling on appointment creation
+ * - Waitlist integration for cancelled appointment slots
+ * - HIPAA-compliant audit logging
+ * - Student and nurse association loading
  *
- * DOWNSTREAM (imported by):
- *   - appointmentService.ts (services/appointmentService.ts)
- *   - AppointmentRecurringService.ts
- *   - AppointmentWaitlistService.ts
- */
-
-/**
- * WC-GEN-211 | crudOperations.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../../utils/logger, ../../database/models, ../../database/types/enums | Dependencies: sequelize, ../../utils/logger, ../../database/models
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: classes | Key Services: Core functionality
- * Last Updated: 2025-10-23 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture, uses dynamic import for waitlist to avoid circular dependency
+ * ARCHITECTURAL PATTERN:
+ * - Static class methods (no instance required)
+ * - Separation of concerns: validation, transitions, availability handled by specialized modules
+ * - Dynamic import for waitlist to prevent circular dependencies
+ * - Comprehensive error handling and logging
+ *
+ * VALIDATION & BUSINESS RULES:
+ * - Future datetime validation
+ * - Duration limits (15-120 minutes)
+ * - Status transition validation (finite state machine)
+ * - Cancellation notice period (2 hours minimum)
+ * - Cannot modify finalized appointments (completed, cancelled, no-show)
+ * - Appointment time validation (not too early/late for start)
+ *
+ * CONFLICT CHECKING:
+ * - Checks nurse availability with buffer time
+ * - Excludes current appointment from checks during updates
+ * - Returns detailed conflict information with student names
+ *
+ * HIPAA COMPLIANCE:
+ * - All operations logged with appointment and student details
+ * - PHI access tracked via audit logs
+ * - Soft delete pattern preserves records for compliance
+ *
+ * CIRCULAR DEPENDENCY HANDLING:
+ * Uses dynamic import for AppointmentWaitlistService to avoid circular dependencies:
+ * - AppointmentService → crudOperations → AppointmentWaitlistService → crudOperations (circular)
+ * - Solution: Dynamic import in cancelAppointment method
+ *
+ * UPSTREAM DEPENDENCIES:
+ * - logger.ts (utils/logger.ts) - Winston logging
+ * - index.ts (database/models/index.ts) - Sequelize models
+ * - enums.ts (database/types/enums.ts) - Status and type enums
+ * - validation.ts (services/appointment/validation.ts) - Business rule validation
+ * - statusTransitions.ts (services/appointment/statusTransitions.ts) - State machine
+ * - AppointmentAvailabilityService.ts - Conflict checking
+ * - AppointmentReminderService.ts - Reminder scheduling
+ * - AppointmentWaitlistService.ts (dynamic import) - Slot filling
+ *
+ * DOWNSTREAM CONSUMERS:
+ * - AppointmentService.ts (services/appointment/AppointmentService.ts) - Main facade
+ * - AppointmentRecurringService.ts - Recurring appointment creation
+ * - AppointmentWaitlistService.ts - Waitlist appointment creation
+ *
+ * @module services/appointment/crudOperations
+ * @requires sequelize
+ * @requires utils/logger
+ * @requires database/models
+ * @requires database/types/enums
+ * @requires services/appointment/validation
+ * @requires services/appointment/statusTransitions
+ * @requires services/appointment/AppointmentAvailabilityService
+ * @requires services/appointment/AppointmentReminderService
+ *
+ * @example
+ * ```typescript
+ * import { AppointmentCrudOperations } from './crudOperations';
+ *
+ * // Create appointment with validation
+ * const appointment = await AppointmentCrudOperations.createAppointment({
+ *   studentId: 'student-123',
+ *   nurseId: 'nurse-456',
+ *   scheduledAt: new Date('2025-10-26T10:00:00Z'),
+ *   duration: 30,
+ *   type: AppointmentType.CHECKUP
+ * });
+ *
+ * // Get appointments with pagination and filters
+ * const result = await AppointmentCrudOperations.getAppointments(1, 20, {
+ *   nurseId: 'nurse-456',
+ *   status: AppointmentStatus.SCHEDULED
+ * });
+ * ```
+ *
+ * @since 1.0.0
+ * @lastUpdated 2025-10-25
  */
 
 import { Op } from 'sequelize';
@@ -45,13 +106,71 @@ import { AppointmentAvailabilityService } from './AppointmentAvailabilityService
 import { AppointmentReminderService } from './AppointmentReminderService';
 
 /**
- * Enterprise-grade CRUD operations module for appointments
- * Handles create, read, update operations with comprehensive validation
+ * AppointmentCrudOperations - Static class providing enterprise-grade CRUD operations
+ *
+ * All methods are static and designed to be called directly without instantiation.
+ * Implements comprehensive validation, conflict checking, and business rule enforcement.
+ *
+ * FEATURES:
+ * - Paginated queries with flexible filtering
+ * - Automatic association loading (student, nurse details)
+ * - Comprehensive validation before create/update
+ * - Conflict checking with detailed error messages
+ * - Status transition enforcement via state machine
+ * - Automatic reminder scheduling
+ * - Waitlist integration for slot optimization
+ * - HIPAA-compliant audit logging
+ *
+ * @class AppointmentCrudOperations
+ * @static
+ * @since 1.0.0
  */
 export class AppointmentCrudOperations {
   /**
-   * Get appointments with pagination and filters
-   * Implements efficient querying with Sequelize ORM
+   * Retrieves appointments with pagination and advanced filtering
+   *
+   * Supports filtering by nurse, student, status, type, and date ranges.
+   * Automatically loads associated student and nurse details for each appointment.
+   * Returns paginated results with metadata.
+   *
+   * QUERY OPTIMIZATION:
+   * - Uses Sequelize findAndCountAll for efficient pagination
+   * - Filters applied at database level (WHERE clause)
+   * - Eager loading of associations (student, nurse)
+   * - Ordered by scheduledAt ascending
+   * - Distinct count to prevent duplicate rows from joins
+   *
+   * @param {number} [page=1] - Page number (1-indexed)
+   * @param {number} [limit=20] - Number of appointments per page
+   * @param {AppointmentFilters} [filters={}] - Filter criteria
+   * @param {string} [filters.nurseId] - Filter by nurse UUID
+   * @param {string} [filters.studentId] - Filter by student UUID
+   * @param {AppointmentStatus} [filters.status] - Filter by appointment status
+   * @param {AppointmentType} [filters.type] - Filter by appointment type
+   * @param {Date} [filters.dateFrom] - Start date for range filter (inclusive)
+   * @param {Date} [filters.dateTo] - End date for range filter (inclusive)
+   *
+   * @returns {Promise<{appointments: Appointment[], pagination: {page: number, limit: number, total: number, pages: number}}>}
+   *   Appointments array with pagination metadata
+   *
+   * @throws {Error} If database query fails
+   *
+   * @example
+   * ```typescript
+   * // Get scheduled appointments for nurse next week
+   * const result = await AppointmentCrudOperations.getAppointments(1, 20, {
+   *   nurseId: 'nurse-123',
+   *   status: AppointmentStatus.SCHEDULED,
+   *   dateFrom: new Date('2025-10-26'),
+   *   dateTo: new Date('2025-11-02')
+   * });
+   *
+   * console.log(`Page ${result.pagination.page} of ${result.pagination.pages}`);
+   * console.log(`Total appointments: ${result.pagination.total}`);
+   * result.appointments.forEach(apt => {
+   *   console.log(`${apt.student.firstName} - ${apt.type} at ${apt.scheduledAt}`);
+   * });
+   * ```
    */
   static async getAppointments(
     page: number = 1,
@@ -125,7 +244,17 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Get a single appointment by ID
+   * Retrieves a single appointment by ID with full associations
+   *
+   * @param {string} id - Appointment UUID
+   * @returns {Promise<Appointment>} Appointment with student and nurse details
+   * @throws {Error} If appointment not found
+   *
+   * @example
+   * ```typescript
+   * const appointment = await AppointmentCrudOperations.getAppointmentById('appt-123');
+   * console.log(`${appointment.student.firstName} with ${appointment.nurse.firstName}`);
+   * ```
    */
   static async getAppointmentById(id: string) {
     try {
@@ -156,7 +285,34 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Create new appointment with comprehensive validation
+   * Creates new appointment with comprehensive validation and conflict checking
+   *
+   * WORKFLOW:
+   * 1. Set default duration if not provided
+   * 2. Validate appointment data (future date, duration, business rules)
+   * 3. Verify student exists
+   * 4. Verify nurse exists
+   * 5. Check availability conflicts (with buffer time)
+   * 6. Create appointment with SCHEDULED status
+   * 7. Reload with associations
+   * 8. Schedule automatic reminders
+   * 9. Log creation for HIPAA audit
+   *
+   * @param {CreateAppointmentData} data - Appointment creation data
+   * @returns {Promise<Appointment>} Created appointment with associations
+   * @throws {Error} If validation fails, student/nurse not found, or conflicts detected
+   *
+   * @example
+   * ```typescript
+   * const appointment = await AppointmentCrudOperations.createAppointment({
+   *   studentId: 'student-456',
+   *   nurseId: 'nurse-123',
+   *   scheduledAt: new Date('2025-10-26T10:00:00Z'),
+   *   duration: 30,
+   *   type: AppointmentType.CHECKUP
+   * });
+   * // Reminders automatically scheduled
+   * ```
    */
   static async createAppointment(data: CreateAppointmentData) {
     try {
@@ -230,7 +386,25 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Update appointment with validation and conflict checking
+   * Updates appointment with validation, status transition, and conflict checking
+   *
+   * VALIDATIONS:
+   * - Cannot modify finalized appointments (completed, cancelled, no-show)
+   * - Status transitions validated by state machine
+   * - Rescheduling checks for conflicts (excluding current appointment)
+   *
+   * @param {string} id - Appointment UUID
+   * @param {UpdateAppointmentData} data - Partial update data
+   * @returns {Promise<Appointment>} Updated appointment with associations
+   * @throws {Error} If not found, invalid transition, or conflicts detected
+   *
+   * @example
+   * ```typescript
+   * const updated = await AppointmentCrudOperations.updateAppointment('appt-123', {
+   *   scheduledAt: new Date('2025-10-26T14:00:00Z'),
+   *   notes: 'Rescheduled per parent request'
+   * });
+   * ```
    */
   static async updateAppointment(id: string, data: UpdateAppointmentData) {
     try {
@@ -303,7 +477,12 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Get upcoming appointments for a nurse
+   * Retrieves upcoming appointments for a nurse (scheduled or in-progress)
+   *
+   * @param {string} nurseId - Nurse UUID
+   * @param {number} [limit=10] - Maximum number to return
+   * @returns {Promise<Appointment[]>} Upcoming appointments ordered by time
+   * @throws {Error} If query fails
    */
   static async getUpcomingAppointments(nurseId: string, limit: number = 10) {
     try {
@@ -336,7 +515,28 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Cancel appointment with validation and waitlist processing
+   * Cancels appointment with validation and automatic waitlist processing
+   *
+   * WORKFLOW:
+   * 1. Validate can be cancelled (not already finalized)
+   * 2. Validate cancellation notice period (2 hours minimum)
+   * 3. Validate status transition to CANCELLED
+   * 4. Update appointment status
+   * 5. Attempt to fill slot from waitlist (best effort, logs warnings on failure)
+   *
+   * @param {string} id - Appointment UUID
+   * @param {string} [reason] - Optional cancellation reason
+   * @returns {Promise<Appointment>} Cancelled appointment
+   * @throws {Error} If not found, cannot be cancelled, or insufficient notice
+   *
+   * @example
+   * ```typescript
+   * const cancelled = await AppointmentCrudOperations.cancelAppointment(
+   *   'appt-123',
+   *   'Student home sick'
+   * );
+   * // Waitlist automatically processed
+   * ```
    */
   static async cancelAppointment(id: string, reason?: string) {
     try {
@@ -396,7 +596,13 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Mark appointment as no-show
+   * Marks appointment as no-show (student didn't arrive)
+   *
+   * Validates appointment time has passed and status allows NO_SHOW transition.
+   *
+   * @param {string} id - Appointment UUID
+   * @returns {Promise<Appointment>} No-show appointment
+   * @throws {Error} If not found, time hasn't passed, or invalid status
    */
   static async markNoShow(id: string) {
     try {
@@ -434,7 +640,13 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Start appointment (transition to IN_PROGRESS status)
+   * Starts appointment (transitions to IN_PROGRESS status)
+   *
+   * Validates timing (not too early/late) and status transition.
+   *
+   * @param {string} id - Appointment UUID
+   * @returns {Promise<Appointment>} Started appointment
+   * @throws {Error} If not found, timing invalid, or transition not allowed
    */
   static async startAppointment(id: string) {
     try {
@@ -477,7 +689,25 @@ export class AppointmentCrudOperations {
   }
 
   /**
-   * Complete appointment (transition to COMPLETED status)
+   * Completes appointment with optional completion data
+   *
+   * @param {string} id - Appointment UUID
+   * @param {Object} [completionData] - Optional completion details
+   * @param {string} [completionData.notes] - Completion notes
+   * @param {string} [completionData.outcomes] - Health outcomes
+   * @param {boolean} [completionData.followUpRequired] - Follow-up needed
+   * @param {Date} [completionData.followUpDate] - Follow-up date
+   * @returns {Promise<Appointment>} Completed appointment
+   * @throws {Error} If not found or status transition not allowed
+   *
+   * @example
+   * ```typescript
+   * const completed = await AppointmentCrudOperations.completeAppointment('appt-123', {
+   *   notes: 'Medication administered successfully',
+   *   outcomes: 'No adverse reactions',
+   *   followUpRequired: true
+   * });
+   * ```
    */
   static async completeAppointment(id: string, completionData?: {
     notes?: string;

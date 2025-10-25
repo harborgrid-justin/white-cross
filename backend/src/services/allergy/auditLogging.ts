@@ -26,11 +26,18 @@
  */
 
 /**
- * Allergy Audit Logging Module
+ * @fileoverview Allergy Audit Logging - HIPAA Compliance
  *
- * Handles PHI-compliant audit logging for allergy operations
+ * Provides comprehensive PHI-compliant audit logging for all allergy operations.
+ * Every function logs critical information required for HIPAA compliance, including
+ * action type, entity IDs, PHI access details, and timestamps.
+ *
+ * All logs use Winston logger with structured format for analysis and compliance audits.
  *
  * @module services/allergy/auditLogging
+ * @security All functions log PHI access for HIPAA compliance and security monitoring
+ * @compliance HIPAA audit trail requirements for PHI access and modifications
+ * @since 1.0.0
  */
 
 import { logger } from '../../utils/logger';
@@ -38,7 +45,13 @@ import { Allergy as AllergyModel } from '../../database/models';
 import { CreateAllergyData, AllergyFilters } from './types';
 
 /**
- * Logs allergy creation event
+ * Logs allergy record creation for HIPAA audit trail.
+ *
+ * @param {AllergyModel} allergy - Created allergy record
+ * @param {CreateAllergyData} data - Input data used to create allergy
+ *
+ * @security Logs allergen, severity, and student ID for PHI access tracking
+ * @compliance HIPAA create operation audit requirement
  */
 export function logAllergyCreation(allergy: AllergyModel, data: CreateAllergyData): void {
   logger.info('PHI Access - Allergy Created', {
@@ -54,7 +67,12 @@ export function logAllergyCreation(allergy: AllergyModel, data: CreateAllergyDat
 }
 
 /**
- * Logs allergy read event
+ * Logs allergy record retrieval for HIPAA audit trail.
+ *
+ * @param {string} allergyId - Allergy record ID accessed
+ * @param {string} studentId - Associated student ID
+ * @security Logs PHI read access for HIPAA compliance
+ * @compliance HIPAA read operation audit requirement
  */
 export function logAllergyRead(allergyId: string, studentId: string): void {
   logger.info('PHI Access - Allergy Retrieved', {
@@ -67,7 +85,13 @@ export function logAllergyRead(allergyId: string, studentId: string): void {
 }
 
 /**
- * Logs student allergies retrieval event
+ * Logs bulk student allergy retrieval for HIPAA audit trail.
+ *
+ * @param {string} studentId - Student ID whose allergies were accessed
+ * @param {number} count - Number of allergy records retrieved
+ * @param {boolean} includeInactive - Whether inactive allergies were included
+ * @security Logs bulk PHI access for HIPAA compliance
+ * @compliance HIPAA bulk read operation audit requirement
  */
 export function logStudentAllergiesRead(
   studentId: string,
@@ -85,7 +109,12 @@ export function logStudentAllergiesRead(
 }
 
 /**
- * Logs allergy search event
+ * Logs allergy search query for HIPAA audit trail.
+ *
+ * @param {AllergyFilters} filters - Search filters applied
+ * @param {number} resultCount - Number of records returned
+ * @security Logs search criteria and result count for PHI access tracking
+ * @compliance HIPAA search operation audit requirement
  */
 export function logAllergySearch(filters: AllergyFilters, resultCount: number): void {
   logger.info('PHI Access - Allergies Searched', {
@@ -98,7 +127,13 @@ export function logAllergySearch(filters: AllergyFilters, resultCount: number): 
 }
 
 /**
- * Logs allergy update event
+ * Logs allergy record modification with before/after values for HIPAA audit trail.
+ *
+ * @param {AllergyModel} allergy - Updated allergy record
+ * @param {Object} oldValues - Previous values before update
+ * @param {string} [updatedBy] - User ID who performed update
+ * @security Logs old and new values for complete change tracking
+ * @compliance HIPAA update operation audit requirement with change history
  */
 export function logAllergyUpdate(
   allergy: AllergyModel,
@@ -124,7 +159,13 @@ export function logAllergyUpdate(
 }
 
 /**
- * Logs allergy deactivation event
+ * Logs allergy soft-delete (deactivation) for HIPAA audit trail.
+ *
+ * @param {string} allergyId - Deactivated allergy record ID
+ * @param {string} studentId - Associated student ID
+ * @param {string} allergen - Allergen name for context
+ * @security Logs deactivation for clinical history tracking
+ * @compliance HIPAA deactivation audit requirement
  */
 export function logAllergyDeactivation(
   allergyId: string,
@@ -142,7 +183,13 @@ export function logAllergyDeactivation(
 }
 
 /**
- * Logs allergy deletion event
+ * Logs permanent allergy deletion for HIPAA audit trail.
+ *
+ * @param {string} allergyId - Permanently deleted allergy record ID
+ * @param {Object} auditData - Complete allergy data captured before deletion
+ * @security Logs all allergy data before permanent deletion for permanent record
+ * @compliance HIPAA deletion audit requirement with data preservation
+ * @warning Permanent deletion logged at WARN level due to severity
  */
 export function logAllergyDeletion(
   allergyId: string,
@@ -163,7 +210,13 @@ export function logAllergyDeletion(
 }
 
 /**
- * Logs critical allergies retrieval event
+ * Logs critical allergy access for HIPAA audit trail.
+ *
+ * @param {string} studentId - Student ID whose critical allergies were accessed
+ * @param {number} count - Number of critical allergy records
+ * @param {string[]} severities - Severity levels of retrieved allergies
+ * @security Logs high-risk PHI access for medication safety audit
+ * @compliance HIPAA critical PHI access audit requirement
  */
 export function logCriticalAllergiesRead(
   studentId: string,
@@ -181,7 +234,12 @@ export function logCriticalAllergiesRead(
 }
 
 /**
- * Logs bulk allergies creation event
+ * Logs bulk allergy creation for HIPAA audit trail.
+ *
+ * @param {number} count - Number of allergy records created
+ * @param {string[]} studentIds - Array of affected student IDs
+ * @security Logs bulk PHI creation with aggregate count and student list
+ * @compliance HIPAA bulk creation audit requirement
  */
 export function logBulkAllergiesCreation(count: number, studentIds: string[]): void {
   logger.info('PHI Access - Allergies Bulk Created', {

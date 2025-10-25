@@ -1,6 +1,47 @@
 /**
- * Users Controller
- * Business logic for user management operations
+ * @fileoverview Users Controller
+ *
+ * Business logic for user account management operations including CRUD, password
+ * management, account activation/deactivation, and user statistics. Implements
+ * role-based access control with self-service capabilities for profile management.
+ *
+ * **Controller Responsibilities:**
+ * - User CRUD: List, get, create, update users
+ * - Password Management: Change password (self-service), reset password (admin)
+ * - Account Lifecycle: Activate, deactivate user accounts
+ * - Query Operations: Filter by role, search, statistics
+ * - Permission Enforcement: Admin-only vs self-service operations
+ *
+ * **Permission Model:**
+ * - ADMIN/DISTRICT_ADMIN: Full user management capabilities
+ * - Regular Users: Can view/update own profile and change own password
+ * - SCHOOL_ADMIN: Can view user statistics
+ * - Self-service operations: Users cannot deactivate themselves
+ *
+ * **Security Features:**
+ * - Password validation with minimum requirements
+ * - Current password verification for password changes
+ * - Admin-only password reset (bypasses current password)
+ * - Account status management with audit trails
+ * - Role-based access control for sensitive operations
+ *
+ * **Response Patterns:**
+ * - 200: Successful GET/PUT operations
+ * - 201: User created successfully
+ * - 400: Validation error or business logic violation
+ * - 401: Unauthorized (authentication required)
+ * - 403: Forbidden (insufficient permissions)
+ * - 404: User not found
+ * - 409: Conflict (duplicate email)
+ *
+ * @module routes/v1/core/controllers/users.controller
+ * @requires @hapi/hapi
+ * @requires ../../../../services
+ * @requires ../../../shared/types/route.types
+ * @requires ../../../shared/utils
+ * @see {@link module:services/UserService} for business logic implementation
+ * @see {@link module:routes/v1/core/routes/users.routes} for route definitions
+ * @since 1.0.0
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
@@ -18,9 +59,78 @@ import {
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
 
+/**
+ * Users Controller class.
+ *
+ * Static controller methods for handling user management operations. Implements
+ * dual permission model: admin-only operations and self-service operations.
+ *
+ * **Method Categories:**
+ * - Query: list, getById, getUsersByRole, getAvailableNurses
+ * - Mutation: create, update, deactivate, reactivate
+ * - Password: changePassword, resetPassword
+ * - Analytics: getStatistics
+ *
+ * **Permission Patterns:**
+ * - Admin operations: create, resetPassword, deactivate, reactivate
+ * - Self-service operations: update own profile, change own password
+ * - Mixed operations: update (admins can update anyone, users can update self)
+ *
+ * @class UsersController
+ *
+ * @example
+ * ```typescript
+ * // Usage in route definition
+ * {
+ *   method: 'GET',
+ *   path: '/api/v1/users',
+ *   handler: asyncHandler(UsersController.list)
+ * }
+ * ```
+ */
 export class UsersController {
   /**
-   * Get all users with pagination and filters
+   * List users with pagination and filtering.
+   *
+   * Returns paginated list of users with optional filtering by role,
+   * active status, and search query. Supports sorting and pagination.
+   *
+   * @route GET /api/v1/users
+   * @authentication JWT required
+   * @authorization Any authenticated user
+   *
+   * @param {AuthenticatedRequest} request - Hapi request with query params
+   * @param {number} [request.query.page=1] - Page number
+   * @param {number} [request.query.limit=20] - Items per page
+   * @param {string} [request.query.search] - Search by name or email
+   * @param {string} [request.query.role] - Filter by role
+   * @param {boolean} [request.query.isActive] - Filter by active status
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   *
+   * @returns {Promise<ResponseObject>} 200 with paginated users
+   * @throws {Boom.unauthorized} When not authenticated (401)
+   *
+   * @example
+   * ```typescript
+   * // Request
+   * GET /api/v1/users?role=NURSE&page=1&limit=20&isActive=true
+   * Authorization: Bearer <token>
+   *
+   * // Response (200)
+   * {
+   *   success: true,
+   *   data: [
+   *     { id: "uuid", email: "nurse1@school.edu", role: "NURSE", ... },
+   *     { id: "uuid", email: "nurse2@school.edu", role: "NURSE", ... }
+   *   ],
+   *   pagination: {
+   *     page: 1,
+   *     limit: 20,
+   *     total: 80,
+   *     totalPages: 4
+   *   }
+   * }
+   * ```
    */
   static async list(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { page, limit } = parsePagination(request.query);

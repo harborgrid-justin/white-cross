@@ -1,6 +1,18 @@
 /**
- * Emergency Contacts Controller
- * Business logic for emergency contact management and notifications
+ * @fileoverview Emergency Contacts Controller - Business logic for emergency contact management and notifications
+ *
+ * Manages emergency contact CRUD operations, multi-channel notification workflows, and contact
+ * verification processes. Critical for emergency situations, ensuring schools can quickly reach
+ * parents and guardians when student health or safety issues arise.
+ *
+ * Key responsibilities:
+ * - Emergency contact management with priority levels (PRIMARY, SECONDARY, EMERGENCY_ONLY)
+ * - Multi-channel notification dispatch (SMS, email, voice)
+ * - Contact verification and validation
+ * - Business rule enforcement (minimum PRIMARY contact requirement)
+ * - Notification delivery tracking and reporting
+ *
+ * @module operations/controllers/emergencyContacts
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
@@ -12,9 +24,46 @@ import {
   createdResponse
 } from '../../../shared/utils';
 
+/**
+ * Emergency Contacts Controller
+ *
+ * Handles all emergency contact operations including creation, updates, deletion,
+ * notification dispatch, and verification. Enforces critical business rules to ensure
+ * every student has appropriate emergency contact coverage.
+ *
+ * @class EmergencyContactsController
+ */
 export class EmergencyContactsController {
   /**
    * Get all emergency contacts for a student
+   *
+   * Retrieves complete list of emergency contacts for a student, ordered by priority
+   * level (PRIMARY, SECONDARY, EMERGENCY_ONLY). Used for contact management interfaces
+   * and emergency notification workflows. Returns active contacts with full details
+   * including phone, email, relationship, and notification preferences.
+   *
+   * @param {AuthenticatedRequest} request - Authenticated HTTP request containing:
+   *   - params.studentId: Student UUID to retrieve contacts for
+   *   - auth.credentials: JWT credentials for access control
+   * @param {ResponseToolkit} h - Hapi response toolkit for HTTP response construction
+   * @returns {Promise<Response>} HTTP 200 response with:
+   *   - contacts: Array of emergency contact objects ordered by priority
+   * @throws {NotFoundError} When student ID does not exist
+   * @throws {AuthorizationError} When user lacks access to student contacts
+   *
+   * @example
+   * // Nurse retrieving student emergency contacts
+   * const request = {
+   *   params: { studentId: 'student-uuid-123' },
+   *   auth: { credentials: { userId: 'nurse-uuid', roles: ['NURSE'] } }
+   * };
+   * const response = await EmergencyContactsController.getStudentContacts(request, h);
+   * // Returns: {
+   * //   contacts: [
+   * //     { id: 'contact-1', name: 'Jane Doe', relationship: 'MOTHER', priority: 'PRIMARY', phone: '555-0100' },
+   * //     { id: 'contact-2', name: 'John Doe', relationship: 'FATHER', priority: 'PRIMARY', phone: '555-0101' }
+   * //   ]
+   * // }
    */
   static async getStudentContacts(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { studentId } = request.params;
