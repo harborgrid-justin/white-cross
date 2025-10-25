@@ -130,11 +130,15 @@ export class HealthRecordsController {
    * @returns {Promise<Response>} Deletion confirmation
    * @description Soft-deletes health record, maintaining for compliance and historical reference
    */
+  /**
+   * Delete health record - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteRecord(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await HealthRecordService.deleteHealthRecord(id);
+    await HealthRecordService.deleteHealthRecord(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**
@@ -203,11 +207,15 @@ export class HealthRecordsController {
    * @returns {Promise<Response>} Deletion confirmation
    * @description Removes allergy from active list (soft delete - archives for historical reference)
    */
+  /**
+   * Delete allergy - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteAllergy(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await HealthRecordService.deleteAllergy(id);
+    await HealthRecordService.deleteAllergy(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**
@@ -289,11 +297,15 @@ export class HealthRecordsController {
    * @returns {Promise<Response>} Deletion confirmation
    * @description Archives chronic condition (soft delete), maintaining historical record
    */
+  /**
+   * Delete chronic condition - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteCondition(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await HealthRecordService.deleteChronicCondition(id);
+    await HealthRecordService.deleteChronicCondition(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**
@@ -375,11 +387,15 @@ export class HealthRecordsController {
    * @returns {Promise<Response>} Deletion confirmation
    * @description Archives vaccination record (soft delete), maintaining historical record for compliance
    */
+  /**
+   * Delete vaccination - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
+   */
   static async deleteVaccination(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await HealthRecordService.deleteVaccination(id);
+    await HealthRecordService.deleteVaccination(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**

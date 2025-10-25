@@ -42,13 +42,14 @@ export class EmergencyContactsController {
   }
 
   /**
-   * Delete emergency contact (soft delete)
+   * Delete emergency contact (soft delete) - REST standard: 204 No Content
+   * Successful DELETE operations should return 204 with empty body
    */
   static async delete(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const result = await EmergencyContactService.deleteEmergencyContact(id);
+    await EmergencyContactService.deleteEmergencyContact(id);
 
-    return successResponse(h, result);
+    return h.response().code(204);
   }
 
   /**

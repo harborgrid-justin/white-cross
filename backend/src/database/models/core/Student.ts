@@ -362,9 +362,23 @@ Student.init(
         }
       }
     },
+    /**
+     * Foreign key reference to assigned nurse (User with NURSE role)
+     *
+     * @type {string|null}
+     * @description Primary nurse assigned to this student for healthcare management
+     * @foreignKey references users(id) ON DELETE SET NULL
+     */
     nurseId: {
       type: DataTypes.STRING(36),
       allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'Foreign key to users table (nurse)',
       validate: {
         isUUID: {
           args: 4,

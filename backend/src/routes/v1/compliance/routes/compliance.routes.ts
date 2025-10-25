@@ -210,8 +210,8 @@ const deleteComplianceReportRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': {
-            description: 'Compliance report deleted successfully',
+          '204': {
+            description: 'Compliance report deleted successfully (no content)',
             schema: DeleteSuccessResponseSchema
           },
           '400': {
@@ -429,8 +429,8 @@ const deleteChecklistRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': {
-            description: 'Checklist item deleted successfully',
+          '204': {
+            description: 'Checklist item deleted successfully (no content)',
             schema: DeleteSuccessResponseSchema
           },
           '400': {

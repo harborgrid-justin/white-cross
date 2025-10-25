@@ -192,10 +192,25 @@ Session.init(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
+    /**
+     * Foreign key reference to User who owns this session
+     *
+     * @type {string}
+     * @description Links session to authenticated user account. When user is deleted, all their sessions are automatically removed.
+     * @foreignKey references users(id) ON DELETE CASCADE
+     * @security Sessions are automatically invalidated when user account is deleted
+     * @security Critical for preventing orphaned sessions and unauthorized access
+     */
     userId: {
       type: DataTypes.STRING,
       allowNull: false,
-      comment: 'User ID for this session',
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to users table - session owner',
       validate: {
         notEmpty: {
           msg: 'User ID cannot be empty'

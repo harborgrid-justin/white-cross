@@ -531,25 +531,53 @@ Document.init(
         },
       },
     },
+    /**
+     * Foreign key reference to User who uploaded this document
+     *
+     * @type {string|null}
+     * @description Links to the user who uploaded/created this document. Preserves audit trail even if user is deleted.
+     * @foreignKey references users(id) ON DELETE SET NULL
+     * @security Maintains audit trail and document ownership history even after user account deletion
+     * @security Critical for compliance and forensic tracking of document sources
+     * @compliance HIPAA - Audit trail preservation required for PHI documents
+     */
     uploadedBy: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'Foreign key to users table - document uploader (nullable for audit trail)',
       validate: {
-        notNull: {
-          msg: 'Uploader ID is required',
-        },
-        notEmpty: {
-          msg: 'Uploader ID cannot be empty',
-        },
         isUUID: {
           args: 4,
           msg: 'Uploader ID must be a valid UUID',
         },
       },
     },
+    /**
+     * Foreign key reference to Student this document belongs to
+     *
+     * @type {string|null}
+     * @description Links document to specific student. When student is deleted, all their documents are removed.
+     * @foreignKey references students(id) ON DELETE CASCADE
+     * @security Student documents automatically removed when student record is deleted
+     * @compliance FERPA - Student educational records tied to student lifecycle
+     * @compliance HIPAA - Student health documents removed with student record
+     */
     studentId: {
       type: DataTypes.STRING,
       allowNull: true,
+      references: {
+        model: 'students',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to students table - document owner (nullable for non-student documents)',
       validate: {
         isUUID: {
           args: 4,

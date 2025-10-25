@@ -129,9 +129,25 @@ EmergencyContact.init(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
+    /**
+     * Foreign key reference to Student this emergency contact belongs to
+     *
+     * @type {string}
+     * @description Links emergency contact to specific student. When student is deleted, all their emergency contacts are removed.
+     * @foreignKey references students(id) ON DELETE CASCADE
+     * @security Emergency contacts are student-specific and removed when student record is deleted
+     * @compliance FERPA - Emergency contact information tied to student lifecycle
+     */
     studentId: {
       type: DataTypes.STRING(36),
       allowNull: false,
+      references: {
+        model: 'students',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to students table - emergency contact owner',
       validate: {
         isUUID: {
           args: 4,

@@ -209,21 +209,55 @@ Appointment.init(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
+    /**
+     * Foreign key reference to Student this appointment is for
+     *
+     * @type {string}
+     * @description Links appointment to specific student patient. When student is deleted, all their appointments are removed.
+     * @foreignKey references students(id) ON DELETE CASCADE
+     * @security Appointments are student-specific and removed when student record is deleted
+     * @compliance HIPAA - Appointment records contain PHI and tied to patient lifecycle
+     */
     studentId: {
       type: DataTypes.STRING,
       allowNull: false,
+      references: {
+        model: 'students',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to students table - appointment patient',
       validate: {
         notEmpty: {
           msg: 'Student ID is required'
         }
       }
     },
+    /**
+     * Foreign key reference to User (nurse) assigned to this appointment
+     *
+     * @type {string|null}
+     * @description Links appointment to assigned healthcare provider. Preserves appointment history if nurse account is deleted.
+     * @foreignKey references users(id) ON DELETE SET NULL
+     * @security Maintains appointment history and scheduling records even after nurse account deletion
+     * @security Critical for audit trail and historical appointment tracking
+     * @compliance HIPAA - Audit trail preservation required for appointment records
+     */
     nurseId: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'Foreign key to users table - assigned nurse (nullable for audit trail)',
       validate: {
-        notEmpty: {
-          msg: 'Nurse ID is required'
+        isUUID: {
+          args: 4,
+          msg: 'Nurse ID must be a valid UUID'
         }
       }
     },

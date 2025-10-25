@@ -146,7 +146,7 @@ const deleteItemRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Item archived successfully' },
+          '204': { description: 'Item archived successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '404': { description: 'Item not found' }
         }

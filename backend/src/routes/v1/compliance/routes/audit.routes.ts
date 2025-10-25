@@ -636,8 +636,8 @@ const archiveOldLogsRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': {
-            description: 'Audit logs archived successfully',
+          '204': {
+            description: 'Audit logs archived successfully (no content)',
             schema: ArchiveLogsResponseSchema
           },
           '400': {

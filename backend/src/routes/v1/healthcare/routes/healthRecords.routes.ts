@@ -296,7 +296,7 @@ const deleteRecordRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Health record deleted successfully' },
+          '204': { description: 'Health record deleted successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin only' },
           '404': { description: 'Health record not found' }
@@ -432,7 +432,7 @@ const deleteAllergyRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Allergy deleted successfully' },
+          '204': { description: 'Allergy deleted successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Medical professional authorization required' },
           '404': { description: 'Allergy not found' }
@@ -560,7 +560,7 @@ const deleteConditionRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Chronic condition deleted successfully' },
+          '204': { description: 'Chronic condition deleted successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Medical professional authorization required' },
           '404': { description: 'Chronic condition not found' }
@@ -696,7 +696,7 @@ const deleteVaccinationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Vaccination deleted successfully' },
+          '204': { description: 'Vaccination deleted successfully (no content)' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Medical professional authorization required' },
           '404': { description: 'Vaccination not found' }

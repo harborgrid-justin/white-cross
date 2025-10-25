@@ -212,9 +212,26 @@ HealthRecord.init(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
+    /**
+     * Foreign key reference to Student this health record belongs to
+     *
+     * @type {string}
+     * @description Links health record to specific student. When student is deleted, all their health records are removed.
+     * @foreignKey references students(id) ON DELETE CASCADE
+     * @security Health records are student-specific PHI and removed when student record is deleted
+     * @compliance HIPAA - Protected Health Information tied to patient (student) lifecycle
+     * @compliance FERPA - Educational health records removed with student record
+     */
     studentId: {
       type: DataTypes.STRING,
       allowNull: false,
+      references: {
+        model: 'students',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      comment: 'Foreign key to students table - health record owner',
     },
     recordType: {
       type: DataTypes.ENUM(...Object.values(HealthRecordType)),

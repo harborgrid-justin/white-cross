@@ -139,7 +139,7 @@ const deleteIntegrationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Integration deleted successfully' },
+          '204': { description: 'Integration deleted successfully (no content)' },
           '400': { description: 'Cannot delete active integration - deactivate first' },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden - Admin role required' },

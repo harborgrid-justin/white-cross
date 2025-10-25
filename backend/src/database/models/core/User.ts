@@ -576,13 +576,41 @@ User.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    /**
+     * Foreign key reference to School
+     *
+     * @type {string|null}
+     * @description Associates user with a specific school for context and permissions
+     * @foreignKey references schools(id) ON DELETE SET NULL
+     */
     schoolId: {
       type: DataTypes.STRING,
       allowNull: true,
+      references: {
+        model: 'schools',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'Foreign key to schools table'
     },
+    /**
+     * Foreign key reference to District
+     *
+     * @type {string|null}
+     * @description Associates user with a district for multi-school management
+     * @foreignKey references districts(id) ON DELETE SET NULL
+     */
     districtId: {
       type: DataTypes.STRING,
       allowNull: true,
+      references: {
+        model: 'districts',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'Foreign key to districts table'
     },
     phone: {
       type: DataTypes.STRING,
