@@ -32,7 +32,7 @@
  */
 
 import { logger } from '../../utils/logger';
-import { ConfigurationData } from './types';
+import { ConfigurationData } from './administration.types';
 import { getAllConfigurations, setConfiguration } from './configurationOperations';
 
 /**

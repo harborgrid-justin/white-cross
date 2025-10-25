@@ -49,7 +49,7 @@ import {
   Student,
   HealthRecord
 } from '../../database/models';
-import { AllergyFilters, PaginationOptions, PaginatedAllergyResults } from './types';
+import { AllergyFilters, PaginationOptions, PaginatedAllergyResults } from './allergy.types';
 import { logStudentAllergiesRead, logAllergySearch } from './auditLogging';
 
 /**

@@ -39,7 +39,7 @@ import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 import { Allergy as AllergyModel, sequelize } from '../../database/models';
-import { AllergyFilters, AllergyStatistics } from './types';
+import { AllergyFilters, AllergyStatistics } from './allergy.types';
 
 /**
  * Generates comprehensive allergy statistics for analytics and reporting.

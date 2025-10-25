@@ -43,7 +43,7 @@ import { Op, Transaction } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 import { Allergy as AllergyModel, Student } from '../../database/models';
-import { CreateAllergyData } from './types';
+import { CreateAllergyData } from './allergy.types';
 import { validateBulkStudentIds } from './validation';
 import { logBulkAllergiesCreation } from './auditLogging';
 

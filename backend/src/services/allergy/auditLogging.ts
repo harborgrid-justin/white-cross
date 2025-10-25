@@ -42,7 +42,7 @@
 
 import { logger } from '../../utils/logger';
 import { Allergy as AllergyModel } from '../../database/models';
-import { CreateAllergyData, AllergyFilters } from './types';
+import { CreateAllergyData, AllergyFilters } from './allergy.types';
 
 /**
  * Logs allergy record creation for HIPAA audit trail.

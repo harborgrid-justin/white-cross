@@ -34,7 +34,7 @@
 import { logger } from '../../utils/logger';
 import { District, School, License, sequelize } from '../../database/models';
 import { AuditAction, LicenseStatus } from '../../database/types/enums';
-import { CreateDistrictData, UpdateDistrictData } from './types';
+import { CreateDistrictData, UpdateDistrictData } from './administration.types';
 import { createAuditLog } from './auditOperations';
 
 /**
