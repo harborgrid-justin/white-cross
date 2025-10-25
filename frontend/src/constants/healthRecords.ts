@@ -54,7 +54,18 @@ export const SEVERITY_LEVELS = [
 export const CONDITION_STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'Active', color: 'green' },
   { value: 'MANAGED', label: 'Managed', color: 'blue' },
+  { value: 'IN_REMISSION', label: 'In Remission', color: 'blue' },
   { value: 'RESOLVED', label: 'Resolved', color: 'gray' },
+  { value: 'UNDER_OBSERVATION', label: 'Under Observation', color: 'yellow' },
+] as const
+
+export const ALLERGY_TYPES = [
+  { value: 'MEDICATION', label: 'Medication' },
+  { value: 'FOOD', label: 'Food' },
+  { value: 'ENVIRONMENTAL', label: 'Environmental' },
+  { value: 'INSECT', label: 'Insect' },
+  { value: 'LATEX', label: 'Latex' },
+  { value: 'OTHER', label: 'Other' },
 ] as const
 
 export const VACCINATION_PRIORITIES = [

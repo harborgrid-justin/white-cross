@@ -223,6 +223,7 @@ console.assert(typeof selectSearchQuery === 'function', 'selectSearchQuery shoul
 console.assert(typeof selectSortConfig === 'function', 'selectSortConfig should be a function');
 console.assert(typeof selectViewMode === 'function', 'selectViewMode should be a function');
 console.assert(typeof selectLoadingStates === 'function', 'selectLoadingStates should be a function');
+*/
 // TODO: Restore these when selectors are available
 // console.assert(typeof selectIsLoading === 'function', 'selectIsLoading should be a function');
 // console.assert(typeof selectErrorStates === 'function', 'selectErrorStates should be a function');
