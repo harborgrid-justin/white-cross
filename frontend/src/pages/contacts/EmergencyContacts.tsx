@@ -195,13 +195,13 @@ const EmergencyContacts: React.FC = () => {
       
       // Remove from local state
       setContacts(prevContacts => prevContacts.filter(c => c.id !== selectedContact.id));
-      setSelectedContact(null);
-      setShowDeleteModal(false);
     } catch (err) {
       console.error('Failed to delete contact:', err);
       alert('Failed to delete contact. Please try again.');
     } finally {
       setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setSelectedContact(null);
     }
   };
 

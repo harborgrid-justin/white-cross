@@ -169,13 +169,13 @@ const Documents: React.FC = () => {
       
       // Remove from local state
       setDocuments(prevDocs => prevDocs.filter(d => d.id !== selectedDocument.id));
-      setSelectedDocument(null);
-      setShowDeleteModal(false);
     } catch (err) {
       console.error('Failed to delete document:', err);
       alert('Failed to delete document. Please try again.');
     } finally {
       setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setSelectedDocument(null);
     }
   };
 
