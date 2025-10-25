@@ -3,707 +3,864 @@
  *
  * @fileoverview Comprehensive health records management with HIPAA compliance
  * @module pages/students/StudentHealthRecords
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
-  Search,
-  Filter,
-  Plus,
-  FileText,
-  Calendar,
+  Heart,
   AlertTriangle,
   Shield,
-  User,
-  Heart,
-  Pill,
   Activity,
-  Clock,
-  Eye,
+  Ruler,
+  FileText,
+  Syringe,
+  Plus,
   Edit,
-  Download
+  Trash2,
+  Eye,
+  TrendingUp,
+  Calendar,
 } from 'lucide-react';
 
-/**
- * Health record data interface representing a student's health record entry.
- *
- * @interface HealthRecord
- * @property {string} id - Unique identifier for the health record
- * @property {string} studentId - Associated student identifier
- * @property {string} studentName - Student's full name for display
- * @property {('medical_history'|'allergy'|'medication'|'immunization'|'physical_exam'|'incident'|'other')} recordType - Type of health record
- * @property {string} title - Brief title/summary of the health record
- * @property {string} description - Detailed description of the health record
- * @property {string} date - Date of the health record in ISO format
- * @property {string} [provider] - Healthcare provider name (optional)
- * @property {string} [diagnosis] - Medical diagnosis if applicable (optional)
- * @property {string} [treatment] - Treatment plan or action taken (optional)
- * @property {string[]} [medications] - List of medications (optional)
- * @property {string[]} [allergies] - List of allergies noted (optional)
- * @property {string[]} [restrictions] - Activity or dietary restrictions (optional)
- * @property {boolean} followUpRequired - Whether follow-up is needed
- * @property {string} [followUpDate] - Scheduled follow-up date (optional)
- * @property {('standard'|'confidential'|'restricted')} confidentialityLevel - Access control level
- * @property {string[]} [attachments] - File attachments (optional)
- * @property {string} createdBy - User who created the record
- * @property {string} createdAt - Creation timestamp in ISO format
- * @property {string} lastUpdated - Last update timestamp in ISO format
- * @property {('active'|'resolved'|'ongoing'|'archived')} status - Current status of the record
- *
- * @remarks
- * HIPAA Compliance: This interface represents Protected Health Information (PHI).
- * All fields containing medical data must be encrypted at rest and in transit.
- * Access to records must be logged for audit purposes.
- *
- * Confidentiality Levels:
- * - standard: General health information, accessible to authorized health staff
- * - confidential: Sensitive health data, requires elevated permissions
- * - restricted: Highly sensitive data, limited to specific authorized personnel only
- */
-interface HealthRecord {
-  id: string;
-  studentId: string;
-  studentName: string;
-  recordType: 'medical_history' | 'allergy' | 'medication' | 'immunization' | 'physical_exam' | 'incident' | 'other';
-  title: string;
-  description: string;
-  date: string;
-  provider?: string;
-  diagnosis?: string;
-  treatment?: string;
-  medications?: string[];
-  allergies?: string[];
-  restrictions?: string[];
-  followUpRequired: boolean;
-  followUpDate?: string;
-  confidentialityLevel: 'standard' | 'confidential' | 'restricted';
-  attachments?: string[];
-  createdBy: string;
-  createdAt: string;
-  lastUpdated: string;
-  status: 'active' | 'resolved' | 'ongoing' | 'archived';
-}
+// UI Components
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '../../components/ui/navigation/Tabs';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableEmptyState,
+  TableLoadingState,
+} from '../../components/ui/data/Table';
+import { Button } from '../../components/ui/buttons/Button';
 
-/**
- * Filter criteria interface for health records.
- *
- * @interface HealthRecordFilters
- * @property {string} recordType - Filter by record type (empty string for all)
- * @property {string} status - Filter by status (empty string for all)
- * @property {string} confidentialityLevel - Filter by confidentiality level (empty string for all)
- * @property {string} followUpRequired - Filter by follow-up requirement ('true', 'false', or empty)
- * @property {string} dateRange - Filter by date range preset
- */
-interface HealthRecordFilters {
-  recordType: string;
-  status: string;
-  confidentialityLevel: string;
-  followUpRequired: string;
-  dateRange: string;
-}
+// Hooks
+import {
+  useHealthRecords,
+  useAllergies,
+  useConditions,
+  useVaccinations,
+  useVitalSigns,
+  useGrowthMeasurements,
+  useScreenings,
+  useDeleteHealthRecord,
+  useDeleteAllergy,
+  useDeleteCondition,
+  useDeleteVaccination,
+  useDeleteVitalSigns,
+  useDeleteGrowthMeasurement,
+  useDeleteScreening,
+} from '../../hooks/domains/health-records/useHealthRecords';
 
-/**
- * Student Health Records management component with comprehensive filtering and HIPAA compliance.
- *
- * Provides a secure interface for viewing, searching, and managing student health records
- * with multi-level confidentiality controls and audit-ready design.
- *
- * @component
- * @returns {React.FC} Rendered health records management page
- *
- * @remarks
- * HIPAA Compliance:
- * - All health record access should be logged for audit trails
- * - Records display confidentiality level badges
- * - Restricted records require elevated authentication
- * - PHI (Protected Health Information) is clearly marked
- * - Implements minimum necessary access principle
- *
- * Security:
- * - Role-based access control for viewing/editing records
- * - Confidentiality levels enforce data segregation
- * - All record views should trigger audit log entries
- * - Attachments should be served via secure, authenticated endpoints
- *
- * Data Privacy:
- * - Follows FERPA and HIPAA regulations
- * - Student data anonymization for reporting
- * - Export restrictions on confidential and restricted records
- * - Follow-up tracking with automated reminders
- *
- * @example
- * ```tsx
- * import StudentHealthRecords from './pages/students/StudentHealthRecords';
- *
- * function HealthSection() {
- *   return (
- *     <ProtectedRoute requiredRole={['NURSE', 'ADMIN', 'COUNSELOR']}>
- *       <StudentHealthRecords />
- *     </ProtectedRoute>
- *   );
- * }
- * ```
- *
- * @features
- * - Multi-field search (name, title, provider, diagnosis)
- * - Advanced filtering by type, status, confidentiality, follow-up
- * - Confidentiality level badges (Standard, Confidential, Restricted)
- * - Record type icons for quick visual identification
- * - Follow-up date tracking with visual indicators
- * - Attachment management
- * - Status workflow (Active, Ongoing, Resolved, Archived)
- * - Responsive card-based layout
- * - Allergy, medication, and restriction highlights
- * - Audit trail display (created by, created at, last updated)
- */
+// Types
+import type {
+  HealthRecord,
+  Allergy,
+  ChronicCondition,
+  Vaccination,
+  VitalSigns,
+  GrowthMeasurement,
+  Screening,
+  AllergySeverity,
+  ConditionSeverity,
+  VaccinationStatus,
+  ScreeningOutcome,
+} from '../../services/modules/healthRecordsApi';
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+type TabValue = 'all' | 'allergies' | 'conditions' | 'vaccinations' | 'vital-signs' | 'growth' | 'screenings';
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 const StudentHealthRecords: React.FC = () => {
-  const [records, setRecords] = useState<HealthRecord[]>([]);
-  const [filteredRecords, setFilteredRecords] = useState<HealthRecord[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<HealthRecordFilters>({
-    recordType: '',
-    status: '',
-    confidentialityLevel: '',
-    followUpRequired: '',
-    dateRange: ''
-  });
-  const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [selectedRecord, setSelectedRecord] = useState<HealthRecord | null>(null);
-  const [showRecordModal, setShowRecordModal] = useState(false);
+  // Get student ID from URL params
+  const { studentId } = useParams<{ studentId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  useEffect(() => {
-    fetchHealthRecords();
-  }, []);
+  // Get active tab from URL or default to 'all'
+  const activeTab = (searchParams.get('tab') as TabValue) || 'all';
 
-  useEffect(() => {
-    filterRecords();
-  }, [records, searchTerm, filters]);
+  // Local state
+  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  const fetchHealthRecords = async () => {
+  // Fetch data for each tab
+  const { data: healthRecordsData, isLoading: recordsLoading, error: recordsError } = useHealthRecords(studentId || '');
+  const { data: allergies, isLoading: allergiesLoading } = useAllergies(studentId || '');
+  const { data: conditions, isLoading: conditionsLoading } = useConditions(studentId || '');
+  const { data: vaccinations, isLoading: vaccinationsLoading } = useVaccinations(studentId || '');
+  const { data: vitalSigns, isLoading: vitalSignsLoading } = useVitalSigns(studentId || '');
+  const { data: growthMeasurements, isLoading: growthLoading } = useGrowthMeasurements(studentId || '');
+  const { data: screenings, isLoading: screeningsLoading } = useScreenings(studentId || '');
+
+  // Delete mutations
+  const deleteHealthRecord = useDeleteHealthRecord();
+  const deleteAllergy = useDeleteAllergy();
+  const deleteCondition = useDeleteCondition();
+  const deleteVaccination = useDeleteVaccination();
+  const deleteVitalSigns = useDeleteVitalSigns();
+  const deleteGrowthMeasurement = useDeleteGrowthMeasurement();
+  const deleteScreening = useDeleteScreening();
+
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
+
+  const handleDelete = async () => {
+    if (!selectedRecord) return;
+
     try {
-      setLoading(true);
-      // TODO: Replace with actual API call
-      const mockRecords: HealthRecord[] = [
-        {
-          id: '1',
-          studentId: 'STU001',
-          studentName: 'John Smith',
-          recordType: 'allergy',
-          title: 'Severe Peanut Allergy',
-          description: 'Student has a severe allergy to peanuts and tree nuts. Carries EpiPen at all times.',
-          date: '2024-01-15',
-          provider: 'Dr. Sarah Johnson, Allergist',
-          diagnosis: 'IgE-mediated food allergy',
-          treatment: 'Avoidance, emergency epinephrine',
-          medications: ['EpiPen Auto-Injector'],
-          allergies: ['Peanuts', 'Tree nuts'],
-          restrictions: ['No nuts in classroom', 'Separate lunch area'],
-          followUpRequired: true,
-          followUpDate: '2024-06-15',
-          confidentialityLevel: 'confidential',
-          attachments: ['allergy_test_results.pdf'],
-          createdBy: 'School Nurse',
-          createdAt: '2024-01-15T10:30:00Z',
-          lastUpdated: '2024-01-20T14:45:00Z',
-          status: 'active'
-        },
-        {
-          id: '2',
-          studentId: 'STU001',
-          studentName: 'John Smith',
-          recordType: 'immunization',
-          title: 'Annual Flu Vaccination',
-          description: 'Student received annual influenza vaccination as part of school health program.',
-          date: '2024-09-15',
-          provider: 'School Health Clinic',
-          treatment: 'Influenza vaccine (quadrivalent)',
-          followUpRequired: false,
-          confidentialityLevel: 'standard',
-          createdBy: 'School Nurse',
-          createdAt: '2024-09-15T11:00:00Z',
-          lastUpdated: '2024-09-15T11:00:00Z',
-          status: 'active'
-        },
-        {
-          id: '3',
-          studentId: 'STU002',
-          studentName: 'Emma Wilson',
-          recordType: 'medication',
-          title: 'Daily Asthma Medication',
-          description: 'Student requires daily inhaled corticosteroid and rescue inhaler for asthma management.',
-          date: '2024-08-20',
-          provider: 'Dr. Michael Chen, Pulmonologist',
-          diagnosis: 'Mild persistent asthma',
-          treatment: 'Daily controller + rescue medication',
-          medications: ['Flovent HFA (morning)', 'Albuterol inhaler (as needed)'],
-          restrictions: ['Modified PE activities during flare-ups'],
-          followUpRequired: true,
-          followUpDate: '2024-12-20',
-          confidentialityLevel: 'confidential',
-          createdBy: 'School Nurse',
-          createdAt: '2024-08-20T09:15:00Z',
-          lastUpdated: '2024-10-01T13:30:00Z',
-          status: 'ongoing'
-        }
-      ];
-      setRecords(mockRecords);
+      switch (activeTab) {
+        case 'all':
+          await deleteHealthRecord.mutateAsync(selectedRecord.id);
+          break;
+        case 'allergies':
+          await deleteAllergy.mutateAsync(selectedRecord.id);
+          break;
+        case 'conditions':
+          await deleteCondition.mutateAsync(selectedRecord.id);
+          break;
+        case 'vaccinations':
+          await deleteVaccination.mutateAsync(selectedRecord.id);
+          break;
+        case 'vital-signs':
+          await deleteVitalSigns.mutateAsync(selectedRecord.id);
+          break;
+        case 'growth':
+          await deleteGrowthMeasurement.mutateAsync(selectedRecord.id);
+          break;
+        case 'screenings':
+          await deleteScreening.mutateAsync(selectedRecord.id);
+          break;
+      }
+      setShowDeleteModal(false);
+      setSelectedRecord(null);
     } catch (error) {
-      console.error('Error fetching health records:', error);
-    } finally {
-      setLoading(false);
+      console.error('Delete failed:', error);
     }
   };
 
-  const filterRecords = () => {
-    let filtered = records;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(record =>
-        record.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (record.provider && record.provider.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (record.diagnosis && record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    // Record type filter
-    if (filters.recordType) {
-      filtered = filtered.filter(record => record.recordType === filters.recordType);
-    }
-
-    // Status filter
-    if (filters.status) {
-      filtered = filtered.filter(record => record.status === filters.status);
-    }
-
-    // Confidentiality level filter
-    if (filters.confidentialityLevel) {
-      filtered = filtered.filter(record => record.confidentialityLevel === filters.confidentialityLevel);
-    }
-
-    // Follow-up required filter
-    if (filters.followUpRequired) {
-      const followUpRequired = filters.followUpRequired === 'true';
-      filtered = filtered.filter(record => record.followUpRequired === followUpRequired);
-    }
-
-    setFilteredRecords(filtered);
-  };
-
-  const handleViewRecord = (record: HealthRecord) => {
-    setSelectedRecord(record);
-    setShowRecordModal(true);
-  };
-
-  const handleEditRecord = (record: HealthRecord) => {
-    // TODO: Implement edit functionality
-    console.log('Editing record:', record.id);
-  };
-
-  const handleAddRecord = () => {
-    setSelectedRecord(null);
-    setShowRecordModal(true);
-  };
+  // ============================================================================
+  // UTILITY FUNCTIONS
+  // ============================================================================
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
     });
   };
 
-  const getRecordTypeIcon = (type: string) => {
-    switch (type) {
-      case 'allergy':
-        return <AlertTriangle className="w-5 h-5 text-red-500" />;
-      case 'medication':
-        return <Pill className="w-5 h-5 text-blue-500" />;
-      case 'immunization':
-        return <Shield className="w-5 h-5 text-green-500" />;
-      case 'physical_exam':
-        return <Activity className="w-5 h-5 text-purple-500" />;
-      case 'incident':
-        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
-      case 'medical_history':
-        return <Heart className="w-5 h-5 text-pink-500" />;
-      default:
-        return <FileText className="w-5 h-5 text-gray-500" />;
+  const getSeverityBadge = (severity: AllergySeverity | ConditionSeverity) => {
+    const colors = {
+      MILD: 'bg-green-100 text-green-800',
+      MODERATE: 'bg-yellow-100 text-yellow-800',
+      SEVERE: 'bg-orange-100 text-orange-800',
+      LIFE_THREATENING: 'bg-red-100 text-red-800',
+      CRITICAL: 'bg-red-100 text-red-800',
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[severity]}`}>
+        {severity.replace('_', ' ')}
+      </span>
+    );
+  };
+
+  const getVaccinationStatusBadge = (status: VaccinationStatus) => {
+    const colors = {
+      COMPLETED: 'bg-green-100 text-green-800',
+      PARTIAL: 'bg-yellow-100 text-yellow-800',
+      OVERDUE: 'bg-red-100 text-red-800',
+      EXEMPTED: 'bg-gray-100 text-gray-800',
+      NOT_REQUIRED: 'bg-gray-100 text-gray-800',
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[status]}`}>
+        {status.replace('_', ' ')}
+      </span>
+    );
+  };
+
+  const getScreeningOutcomeBadge = (outcome: ScreeningOutcome) => {
+    const colors = {
+      PASSED: 'bg-green-100 text-green-800',
+      FAILED: 'bg-red-100 text-red-800',
+      REFER: 'bg-yellow-100 text-yellow-800',
+      INCONCLUSIVE: 'bg-gray-100 text-gray-800',
+      DECLINED: 'bg-gray-100 text-gray-800',
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[outcome]}`}>
+        {outcome}
+      </span>
+    );
+  };
+
+  // ============================================================================
+  // TAB CONTENT COMPONENTS
+  // ============================================================================
+
+  const AllRecordsTab = () => {
+    if (recordsLoading) return <TableLoadingState cols={5} />;
+    if (recordsError) return <div className="text-red-600">Error loading health records</div>;
+    if (!healthRecordsData?.data || healthRecordsData.data.length === 0) {
+      return <TableEmptyState cols={5} title="No health records found" description="Add the first health record to get started." />;
     }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const colors = {
-      active: 'bg-green-100 text-green-800',
-      ongoing: 'bg-blue-100 text-blue-800',
-      resolved: 'bg-gray-100 text-gray-800',
-      archived: 'bg-yellow-100 text-yellow-800'
-    };
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[status as keyof typeof colors]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Provider</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {healthRecordsData.data.map((record: HealthRecord) => (
+            <TableRow key={record.id}>
+              <TableCell>
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                  {formatDate(record.date)}
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="text-sm font-medium">{record.type.replace('_', ' ')}</span>
+              </TableCell>
+              <TableCell>
+                <div className="max-w-xs">
+                  <p className="text-sm text-gray-900 truncate">{record.description}</p>
+                  {record.diagnosis && (
+                    <p className="text-xs text-gray-500 truncate">Diagnosis: {record.diagnosis}</p>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="text-sm text-gray-600">{record.provider || 'N/A'}</span>
+              </TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Eye className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(record);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(record);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     );
   };
 
-  const getConfidentialityBadge = (level: string) => {
-    const colors = {
-      standard: 'bg-gray-100 text-gray-800',
-      confidential: 'bg-yellow-100 text-yellow-800',
-      restricted: 'bg-red-100 text-red-800'
-    };
+  const AllergiesTab = () => {
+    if (allergiesLoading) return <TableLoadingState cols={5} />;
+    if (!allergies || allergies.length === 0) {
+      return <TableEmptyState cols={5} title="No allergies recorded" description="Add an allergy record to track student allergies." />;
+    }
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[level as keyof typeof colors]}`}>
-        <Shield className="w-3 h-3 inline mr-1" />
-        {level.charAt(0).toUpperCase() + level.slice(1)}
-      </span>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Allergen</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Severity</TableHead>
+            <TableHead>Reaction</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {allergies.map((allergy: Allergy) => (
+            <TableRow key={allergy.id}>
+              <TableCell>
+                <div className="flex items-center">
+                  {allergy.isCritical && <AlertTriangle className="w-4 h-4 mr-2 text-red-600" />}
+                  <span className="font-medium">{allergy.allergen}</span>
+                </div>
+              </TableCell>
+              <TableCell>{allergy.allergyType}</TableCell>
+              <TableCell>{getSeverityBadge(allergy.severity)}</TableCell>
+              <TableCell>
+                <p className="text-sm text-gray-600 max-w-xs truncate">{allergy.reaction || 'N/A'}</p>
+              </TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(allergy);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(allergy);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     );
   };
 
-  const getRecordTypeLabel = (type: string) => {
-    const labels = {
-      medical_history: 'Medical History',
-      allergy: 'Allergy',
-      medication: 'Medication',
-      immunization: 'Immunization',
-      physical_exam: 'Physical Exam',
-      incident: 'Incident',
-      other: 'Other'
-    };
-    return labels[type as keyof typeof labels] || type;
+  const ConditionsTab = () => {
+    if (conditionsLoading) return <TableLoadingState cols={6} />;
+    if (!conditions || conditions.length === 0) {
+      return <TableEmptyState cols={6} title="No chronic conditions recorded" description="Add a chronic condition to track ongoing health issues." />;
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Condition</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Severity</TableHead>
+            <TableHead>Diagnosed Date</TableHead>
+            <TableHead>Next Review</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {conditions.map((condition: ChronicCondition) => (
+            <TableRow key={condition.id}>
+              <TableCell>
+                <div>
+                  <p className="font-medium">{condition.condition}</p>
+                  {condition.icdCode && <p className="text-xs text-gray-500">ICD: {condition.icdCode}</p>}
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="text-sm">{condition.status}</span>
+              </TableCell>
+              <TableCell>{getSeverityBadge(condition.severity)}</TableCell>
+              <TableCell>{formatDate(condition.diagnosedDate)}</TableCell>
+              <TableCell>
+                {condition.nextReviewDate ? formatDate(condition.nextReviewDate) : 'N/A'}
+              </TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(condition);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(condition);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
   };
 
-  if (loading) {
+  const VaccinationsTab = () => {
+    if (vaccinationsLoading) return <TableLoadingState cols={6} />;
+    if (!vaccinations || vaccinations.length === 0) {
+      return <TableEmptyState cols={6} title="No vaccinations recorded" description="Add a vaccination record to track immunizations." />;
+    }
+
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Vaccine Name</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Administered Date</TableHead>
+            <TableHead>Dose</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {vaccinations.map((vaccination: Vaccination) => (
+            <TableRow key={vaccination.id}>
+              <TableCell>
+                <div className="flex items-center">
+                  <Syringe className="w-4 h-4 mr-2 text-blue-600" />
+                  <span className="font-medium">{vaccination.vaccineName}</span>
+                </div>
+              </TableCell>
+              <TableCell>{vaccination.vaccineType}</TableCell>
+              <TableCell>{formatDate(vaccination.administeredDate)}</TableCell>
+              <TableCell>
+                {vaccination.doseNumber && vaccination.totalDoses
+                  ? `${vaccination.doseNumber} of ${vaccination.totalDoses}`
+                  : 'N/A'}
+              </TableCell>
+              <TableCell>{getVaccinationStatusBadge(vaccination.status)}</TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(vaccination);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(vaccination);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  const VitalSignsTab = () => {
+    if (vitalSignsLoading) return <TableLoadingState cols={6} />;
+    if (!vitalSigns || vitalSigns.length === 0) {
+      return <TableEmptyState cols={6} title="No vital signs recorded" description="Add vital signs measurements." />;
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Temperature</TableHead>
+            <TableHead>Blood Pressure</TableHead>
+            <TableHead>Heart Rate</TableHead>
+            <TableHead>O2 Saturation</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {vitalSigns.map((vital: VitalSigns) => (
+            <TableRow key={vital.id}>
+              <TableCell>{formatDate(vital.recordDate)}</TableCell>
+              <TableCell>
+                {vital.temperature ? `${vital.temperature}°C` : 'N/A'}
+              </TableCell>
+              <TableCell>
+                {vital.bloodPressureSystolic && vital.bloodPressureDiastolic
+                  ? `${vital.bloodPressureSystolic}/${vital.bloodPressureDiastolic}`
+                  : 'N/A'}
+              </TableCell>
+              <TableCell>
+                {vital.heartRate ? `${vital.heartRate} bpm` : 'N/A'}
+              </TableCell>
+              <TableCell>
+                {vital.oxygenSaturation ? `${vital.oxygenSaturation}%` : 'N/A'}
+              </TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(vital);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(vital);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  const GrowthMeasurementsTab = () => {
+    if (growthLoading) return <TableLoadingState cols={6} />;
+    if (!growthMeasurements || growthMeasurements.length === 0) {
+      return <TableEmptyState cols={6} title="No growth measurements recorded" description="Add growth measurements to track development." />;
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Height</TableHead>
+            <TableHead>Weight</TableHead>
+            <TableHead>BMI</TableHead>
+            <TableHead>Measured By</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {growthMeasurements.map((measurement: GrowthMeasurement) => (
+            <TableRow key={measurement.id}>
+              <TableCell>{formatDate(measurement.measurementDate)}</TableCell>
+              <TableCell>
+                {measurement.height ? `${measurement.height} cm` : 'N/A'}
+              </TableCell>
+              <TableCell>
+                {measurement.weight ? `${measurement.weight} kg` : 'N/A'}
+              </TableCell>
+              <TableCell>
+                {measurement.bmi ? measurement.bmi.toFixed(1) : 'N/A'}
+              </TableCell>
+              <TableCell>{measurement.measuredBy}</TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(measurement);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(measurement);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  const ScreeningsTab = () => {
+    if (screeningsLoading) return <TableLoadingState cols={6} />;
+    if (!screenings || screenings.length === 0) {
+      return <TableEmptyState cols={6} title="No screenings recorded" description="Add screening results." />;
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Type</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Outcome</TableHead>
+            <TableHead>Performed By</TableHead>
+            <TableHead>Follow-up</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {screenings.map((screening: Screening) => (
+            <TableRow key={screening.id}>
+              <TableCell>
+                <span className="font-medium">{screening.screeningType}</span>
+              </TableCell>
+              <TableCell>{formatDate(screening.screeningDate)}</TableCell>
+              <TableCell>{getScreeningOutcomeBadge(screening.outcome)}</TableCell>
+              <TableCell>{screening.performedBy}</TableCell>
+              <TableCell>
+                {screening.followUpRequired && screening.followUpDate
+                  ? formatDate(screening.followUpDate)
+                  : 'N/A'}
+              </TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(screening);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => {
+                      setSelectedRecord(screening);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  // ============================================================================
+  // DELETE MODAL
+  // ============================================================================
+
+  const DeleteConfirmationModal = () => {
+    if (!showDeleteModal || !selectedRecord) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="flex items-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Confirm Deletion</h3>
+          </div>
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete this record? This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setSelectedRecord(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================================
+  // MAIN RENDER
+  // ============================================================================
+
+  if (!studentId) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <AlertTriangle className="h-5 w-5 text-red-400" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Student ID Required</h3>
+            <div className="mt-2 text-sm text-red-700">
+              <p>No student ID provided in the URL.</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Student Health Records</h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Comprehensive health information management with HIPAA compliance
-              </p>
-            </div>
-            <div className="mt-4 sm:mt-0">
-              <button
-                onClick={handleAddRecord}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Health Record
-              </button>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 flex items-center">
+              <Heart className="w-6 h-6 mr-2 text-red-600" />
+              Student Health Records
+            </h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Comprehensive health information management with HIPAA compliance
+            </p>
           </div>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search by student name, record title, provider, or diagnosis..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          <div className="mt-4 sm:mt-0">
+            <Button
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setShowCreateModal(true)}
             >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-            </button>
-          </div>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Record Type
-                  </label>
-                  <select
-                    value={filters.recordType}
-                    onChange={(e) => setFilters({ ...filters, recordType: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    aria-label="Filter by record type"
-                  >
-                    <option value="">All Types</option>
-                    <option value="allergy">Allergy</option>
-                    <option value="medication">Medication</option>
-                    <option value="immunization">Immunization</option>
-                    <option value="physical_exam">Physical Exam</option>
-                    <option value="incident">Incident</option>
-                    <option value="medical_history">Medical History</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    aria-label="Filter by status"
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Confidentiality
-                  </label>
-                  <select
-                    value={filters.confidentialityLevel}
-                    onChange={(e) => setFilters({ ...filters, confidentialityLevel: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    aria-label="Filter by confidentiality level"
-                  >
-                    <option value="">All Levels</option>
-                    <option value="standard">Standard</option>
-                    <option value="confidential">Confidential</option>
-                    <option value="restricted">Restricted</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Follow-up Required
-                  </label>
-                  <select
-                    value={filters.followUpRequired}
-                    onChange={(e) => setFilters({ ...filters, followUpRequired: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    aria-label="Filter by follow-up requirement"
-                  >
-                    <option value="">All Records</option>
-                    <option value="true">Follow-up Required</option>
-                    <option value="false">No Follow-up</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date Range
-                  </label>
-                  <select
-                    value={filters.dateRange}
-                    onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    aria-label="Filter by date range"
-                  >
-                    <option value="">All Dates</option>
-                    <option value="last_week">Last Week</option>
-                    <option value="last_month">Last Month</option>
-                    <option value="last_3_months">Last 3 Months</option>
-                    <option value="last_year">Last Year</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
-                  <button
-                    onClick={() => setFilters({
-                      recordType: '',
-                      status: '',
-                      confidentialityLevel: '',
-                      followUpRequired: '',
-                      dateRange: ''
-                    })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Health Records List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">
-              Health Records ({filteredRecords.length})
-            </h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {filteredRecords.map((record) => (
-              <div key={record.id} className="p-6 hover:bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">
-                        {getRecordTypeIcon(record.recordType)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {record.title}
-                          </h3>
-                          <span className="text-sm text-gray-500">
-                            ({getRecordTypeLabel(record.recordType)})
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-3">
-                          Student: <span className="font-medium">{record.studentName}</span>
-                        </p>
-                        
-                        <p className="text-sm text-gray-700 mb-3">
-                          {record.description}
-                        </p>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                          <div className="space-y-2">
-                            <div className="flex items-center text-sm text-gray-600">
-                              <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                              <span className="font-medium">Date:</span>
-                              <span className="ml-1">{formatDate(record.date)}</span>
-                            </div>
-                            {record.provider && (
-                              <div className="flex items-center text-sm text-gray-600">
-                                <User className="w-4 h-4 mr-2 text-gray-400" />
-                                <span className="font-medium">Provider:</span>
-                                <span className="ml-1">{record.provider}</span>
-                              </div>
-                            )}
-                            {record.diagnosis && (
-                              <div className="flex items-center text-sm text-gray-600">
-                                <FileText className="w-4 h-4 mr-2 text-gray-400" />
-                                <span className="font-medium">Diagnosis:</span>
-                                <span className="ml-1">{record.diagnosis}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            {record.followUpRequired && record.followUpDate && (
-                              <div className="flex items-center text-sm text-amber-600">
-                                <Clock className="w-4 h-4 mr-2" />
-                                <span className="font-medium">Follow-up:</span>
-                                <span className="ml-1">{formatDate(record.followUpDate)}</span>
-                              </div>
-                            )}
-                            {record.attachments && record.attachments.length > 0 && (
-                              <div className="flex items-center text-sm text-gray-600">
-                                <FileText className="w-4 h-4 mr-2 text-gray-400" />
-                                <span className="font-medium">Attachments:</span>
-                                <span className="ml-1">{record.attachments.length} file(s)</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {getStatusBadge(record.status)}
-                          {getConfidentialityBadge(record.confidentialityLevel)}
-                          {record.followUpRequired && (
-                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-                              <Clock className="w-3 h-3 mr-1" />
-                              Follow-up Required
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Key Information Highlights */}
-                        {record.allergies && record.allergies.length > 0 && (
-                          <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-3">
-                            <p className="text-sm text-red-800">
-                              <strong>Allergies:</strong> {record.allergies.join(', ')}
-                            </p>
-                          </div>
-                        )}
-                        
-                        {record.medications && record.medications.length > 0 && (
-                          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
-                            <p className="text-sm text-blue-800">
-                              <strong>Medications:</strong> {record.medications.join(', ')}
-                            </p>
-                          </div>
-                        )}
-
-                        {record.restrictions && record.restrictions.length > 0 && (
-                          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-3">
-                            <p className="text-sm text-yellow-800">
-                              <strong>Restrictions:</strong> {record.restrictions.join(', ')}
-                            </p>
-                          </div>
-                        )}
-
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Clock className="w-3 h-3 mr-1" />
-                          Created {formatDateTime(record.createdAt)} by {record.createdBy}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 ml-4">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleViewRecord(record)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        title="View Record"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleEditRecord(record)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        title="Edit Record"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {filteredRecords.length === 0 && (
-              <div className="text-center py-12">
-                <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No health records found</h3>
-                <p className="text-gray-500">
-                  {searchTerm || Object.values(filters).some(f => f)
-                    ? 'Try adjusting your search criteria or filters'
-                    : 'Add the first health record to get started'}
-                </p>
-              </div>
-            )}
+              Add Record
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList>
+            <TabsTrigger value="all">
+              <FileText className="w-4 h-4 mr-2" />
+              All Records
+            </TabsTrigger>
+            <TabsTrigger value="allergies">
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Allergies
+            </TabsTrigger>
+            <TabsTrigger value="conditions">
+              <Heart className="w-4 h-4 mr-2" />
+              Chronic Conditions
+            </TabsTrigger>
+            <TabsTrigger value="vaccinations">
+              <Syringe className="w-4 h-4 mr-2" />
+              Vaccinations
+            </TabsTrigger>
+            <TabsTrigger value="vital-signs">
+              <Activity className="w-4 h-4 mr-2" />
+              Vital Signs
+            </TabsTrigger>
+            <TabsTrigger value="growth">
+              <Ruler className="w-4 h-4 mr-2" />
+              Growth
+            </TabsTrigger>
+            <TabsTrigger value="screenings">
+              <Eye className="w-4 h-4 mr-2" />
+              Screenings
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all">
+            <div className="mt-4">
+              <AllRecordsTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="allergies">
+            <div className="mt-4">
+              <AllergiesTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="conditions">
+            <div className="mt-4">
+              <ConditionsTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="vaccinations">
+            <div className="mt-4">
+              <VaccinationsTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="vital-signs">
+            <div className="mt-4">
+              <VitalSignsTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="growth">
+            <div className="mt-4">
+              <GrowthMeasurementsTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="screenings">
+            <div className="mt-4">
+              <ScreeningsTab />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Modals */}
+      <DeleteConfirmationModal />
+
+      {/* TODO: Add create/edit modals using existing modal components */}
+      {/* These will be integrated in the next step */}
     </div>
   );
 };

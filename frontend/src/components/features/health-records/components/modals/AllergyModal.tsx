@@ -12,7 +12,7 @@
 
 import React from 'react'
 import type { Allergy, AllergyFormErrors } from '@/types/healthRecords'
-import { SEVERITY_LEVELS } from '@/constants/healthRecords'
+import { SEVERITY_LEVELS, ALLERGY_TYPES } from '@/constants/healthRecords'
 
 interface AllergyModalProps {
   isOpen: boolean
@@ -49,10 +49,10 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Allergen</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="allergen"
-              className="w-full border border-gray-300 rounded px-3 py-2" 
+              className="w-full border border-gray-300 rounded px-3 py-2"
               placeholder="Enter allergen"
               defaultValue={allergy?.allergen || ''}
               data-testid="allergen-input"
@@ -61,7 +61,25 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
               <p className="text-red-600 text-sm mt-1" data-testid="allergen-error">{errors.allergen}</p>
             )}
           </div>
-          
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Allergy Type</label>
+            <select
+              name="allergyType"
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              defaultValue={allergy?.allergyType || ''}
+              data-testid="allergy-type-select"
+            >
+              <option value="">Select type</option>
+              {ALLERGY_TYPES.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+            {errors.allergyType && (
+              <p className="text-red-600 text-sm mt-1" data-testid="allergy-type-error">{errors.allergyType}</p>
+            )}
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
             <select 

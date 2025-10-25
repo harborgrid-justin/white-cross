@@ -22,9 +22,13 @@ import {
   Users,
   Clock,
   ChevronDown,
-  X
+  X,
+  Trash2
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
+import { incidentsApi } from '../../services/modules/incidentsApi'
+import type { IncidentReportListResponse, IncidentReport as APIIncidentReport } from '../../types/incidents'
 
 /**
  * Incident Report Interface
@@ -50,6 +54,14 @@ export interface IncidentReport {
   parentNotified: boolean
   createdAt: string
   updatedAt: string
+  student?: {
+    firstName: string
+    lastName: string
+  }
+  reportedBy?: {
+    firstName: string
+    lastName: string
+  }
 }
 
 /**
@@ -78,18 +90,26 @@ interface FilterState {
  * - Role-based permissions
  * - Responsive design
  * - Loading and error states
+ * - Delete functionality with confirmation
  */
 const IncidentReports: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
   // State management
-  const [reports, setReports] = useState<IncidentReport[]>([])
+  const [reports, setReports] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(20)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalReports, setTotalReports] = useState(0)
+
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [reportToDelete, setReportToDelete] = useState<any | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
@@ -103,148 +123,72 @@ const IncidentReports: React.FC = () => {
     parentNotified: null
   })
 
-  // Mock data - TODO: Replace with actual API call
-  const mockReports: IncidentReport[] = [
-    {
-      id: '1',
-      incidentNumber: 'INC-2024-001',
-      title: 'Playground Fall - Minor Injury',
-      description: 'Student fell from swing set, sustained minor scrape on left knee',
-      type: 'INJURY',
-      severity: 'LOW',
-      status: 'RESOLVED',
-      studentId: 'STU-001',
-      studentName: 'John Smith',
-      reportedBy: 'Sarah Johnson',
-      reportedByRole: 'Nurse',
-      incidentDate: '2024-10-23',
-      incidentTime: '10:30',
-      location: 'Playground',
-      witnessCount: 2,
-      actionsTaken: 'Applied first aid, cleaned wound, applied bandage',
-      followUpRequired: false,
-      parentNotified: true,
-      createdAt: '2024-10-23T10:35:00Z',
-      updatedAt: '2024-10-23T11:00:00Z'
-    },
-    {
-      id: '2',
-      incidentNumber: 'INC-2024-002',
-      title: 'Severe Allergic Reaction',
-      description: 'Student had severe allergic reaction to peanuts in cafeteria',
-      type: 'MEDICAL_EMERGENCY',
-      severity: 'CRITICAL',
-      status: 'UNDER_REVIEW',
-      studentId: 'STU-002',
-      studentName: 'Emily Davis',
-      reportedBy: 'Maria Garcia',
-      reportedByRole: 'Nurse',
-      incidentDate: '2024-10-24',
-      incidentTime: '12:15',
-      location: 'Cafeteria',
-      witnessCount: 5,
-      actionsTaken: 'EpiPen administered, 911 called, student transported to hospital',
-      followUpRequired: true,
-      parentNotified: true,
-      createdAt: '2024-10-24T12:20:00Z',
-      updatedAt: '2024-10-24T12:45:00Z'
-    },
-    {
-      id: '3',
-      incidentNumber: 'INC-2024-003',
-      title: 'Behavioral Incident - Classroom Disruption',
-      description: 'Student exhibited disruptive behavior during class',
-      type: 'BEHAVIORAL',
-      severity: 'MEDIUM',
-      status: 'SUBMITTED',
-      studentId: 'STU-003',
-      studentName: 'Michael Brown',
-      reportedBy: 'Robert Wilson',
-      reportedByRole: 'Teacher',
-      incidentDate: '2024-10-24',
-      incidentTime: '14:00',
-      location: 'Room 205',
-      witnessCount: 1,
-      actionsTaken: 'Student removed from classroom, counselor notified',
-      followUpRequired: true,
-      parentNotified: false,
-      createdAt: '2024-10-24T14:10:00Z',
-      updatedAt: '2024-10-24T14:10:00Z'
-    }
-  ]
-
-  // Load incident reports
+  // Load incident reports from API
   useEffect(() => {
     const loadReports = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // TODO: Replace with actual API call
-        // const response = await incidentApi.getAll()
+        // Build filter params for API
+        const params: any = {
+          page: currentPage,
+          limit: itemsPerPage,
+        }
 
-        // Simulate API delay
-        setTimeout(() => {
-          setReports(mockReports)
-          setLoading(false)
-        }, 1000)
-      } catch (err) {
-        console.error('Error loading incident reports:', err)
-        setError('Failed to load incident reports. Please try again.')
+        // Add filters if they exist
+        if (filters.type !== 'all') params.type = filters.type
+        if (filters.severity !== 'all') params.severity = filters.severity
+        if (filters.status !== 'all') params.status = filters.status
+        if (filters.dateFrom) params.dateFrom = filters.dateFrom
+        if (filters.dateTo) params.dateTo = filters.dateTo
+        if (filters.followUpRequired !== null) params.followUpRequired = filters.followUpRequired
+        if (filters.parentNotified !== null) params.parentNotified = filters.parentNotified
+
+        // Call API
+        const response: IncidentReportListResponse = await incidentsApi.getAll(params)
+
+        setReports(response.reports)
+        setTotalReports(response.pagination.total)
+        setTotalPages(response.pagination.pages)
         setLoading(false)
+      } catch (err: any) {
+        console.error('Error loading incident reports:', err)
+        setError(err?.message || 'Failed to load incident reports. Please try again.')
+        setLoading(false)
+        toast.error('Failed to load incident reports')
       }
     }
 
     loadReports()
-  }, [])
+  }, [currentPage, itemsPerPage, filters])
 
-  // Filter reports
+  // Client-side search filter (for search across all fields)
   const filteredReports = useMemo(() => {
+    if (!filters.search) return reports
+
     return reports.filter(report => {
-      // Search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase()
-        const matchesSearch =
-          report.incidentNumber.toLowerCase().includes(searchLower) ||
-          report.title.toLowerCase().includes(searchLower) ||
-          report.studentName.toLowerCase().includes(searchLower) ||
-          report.description.toLowerCase().includes(searchLower) ||
-          report.location.toLowerCase().includes(searchLower)
+      const searchLower = filters.search.toLowerCase()
+      const studentName = report.student?.firstName ? `${report.student.firstName} ${report.student.lastName}` : ''
+      const reporterName = report.reportedBy?.firstName ? `${report.reportedBy.firstName} ${report.reportedBy.lastName}` : ''
 
-        if (!matchesSearch) return false
-      }
-
-      // Type filter
-      if (filters.type !== 'all' && report.type !== filters.type) return false
-
-      // Severity filter
-      if (filters.severity !== 'all' && report.severity !== filters.severity) return false
-
-      // Status filter
-      if (filters.status !== 'all' && report.status !== filters.status) return false
-
-      // Date range filter
-      if (filters.dateFrom && report.incidentDate < filters.dateFrom) return false
-      if (filters.dateTo && report.incidentDate > filters.dateTo) return false
-
-      // Follow-up filter
-      if (filters.followUpRequired !== null && report.followUpRequired !== filters.followUpRequired) return false
-
-      // Parent notification filter
-      if (filters.parentNotified !== null && report.parentNotified !== filters.parentNotified) return false
-
-      return true
+      return (
+        report.description.toLowerCase().includes(searchLower) ||
+        studentName.toLowerCase().includes(searchLower) ||
+        reporterName.toLowerCase().includes(searchLower) ||
+        report.location.toLowerCase().includes(searchLower)
+      )
     })
-  }, [reports, filters])
+  }, [reports, filters.search])
 
-  // Pagination
-  const totalPages = Math.ceil(filteredReports.length / itemsPerPage)
+  // Use API response directly for pagination (server-side pagination)
+  const paginatedReports = filteredReports
   const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedReports = filteredReports.slice(startIndex, startIndex + itemsPerPage)
 
   // Permission checks
   const canCreate = user?.role === 'ADMIN' || user?.role === 'NURSE' || user?.role === 'COUNSELOR'
   const canEdit = user?.role === 'ADMIN' || user?.role === 'NURSE'
+  const canDelete = user?.role === 'ADMIN'
   const canExport = user?.role === 'ADMIN' || user?.role === 'NURSE' || user?.role === 'SCHOOL_ADMIN'
 
   // Handlers
@@ -264,6 +208,53 @@ const IncidentReports: React.FC = () => {
       followUpRequired: null,
       parentNotified: null
     })
+    setCurrentPage(1)
+  }
+
+  const handleDeleteClick = (report: any) => {
+    setReportToDelete(report)
+    setDeleteConfirmOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false)
+    setReportToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!reportToDelete) return
+
+    try {
+      setDeleting(true)
+      await incidentsApi.delete(reportToDelete.id)
+
+      toast.success('Incident report deleted successfully')
+      setDeleteConfirmOpen(false)
+      setReportToDelete(null)
+
+      // Refresh the list
+      const params: any = {
+        page: currentPage,
+        limit: itemsPerPage,
+      }
+      if (filters.type !== 'all') params.type = filters.type
+      if (filters.severity !== 'all') params.severity = filters.severity
+      if (filters.status !== 'all') params.status = filters.status
+      if (filters.dateFrom) params.dateFrom = filters.dateFrom
+      if (filters.dateTo) params.dateTo = filters.dateTo
+      if (filters.followUpRequired !== null) params.followUpRequired = filters.followUpRequired
+      if (filters.parentNotified !== null) params.parentNotified = filters.parentNotified
+
+      const response: IncidentReportListResponse = await incidentsApi.getAll(params)
+      setReports(response.reports)
+      setTotalReports(response.pagination.total)
+      setTotalPages(response.pagination.pages)
+    } catch (err: any) {
+      console.error('Error deleting incident report:', err)
+      toast.error(err?.message || 'Failed to delete incident report')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const hasActiveFilters = filters.search || filters.type !== 'all' || filters.severity !== 'all' ||
@@ -271,7 +262,7 @@ const IncidentReports: React.FC = () => {
     filters.followUpRequired !== null || filters.parentNotified !== null
 
   // Get severity badge color
-  const getSeverityColor = (severity: IncidentReport['severity']) => {
+  const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'CRITICAL':
         return 'bg-red-100 text-red-800 border-red-200'
@@ -287,7 +278,7 @@ const IncidentReports: React.FC = () => {
   }
 
   // Get status badge color
-  const getStatusColor = (status: IncidentReport['status']) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'DRAFT':
         return 'bg-gray-100 text-gray-800 border-gray-200'
@@ -512,8 +503,8 @@ const IncidentReports: React.FC = () => {
           {/* Results Count */}
           <div className="flex items-center text-sm text-gray-500">
             <FileText className="h-4 w-4 mr-2" />
-            {filteredReports.length} report{filteredReports.length !== 1 ? 's' : ''} found
-            {hasActiveFilters && ` (filtered from ${reports.length})`}
+            {totalReports} report{totalReports !== 1 ? 's' : ''} found
+            {hasActiveFilters && ` (filtered)`}
           </div>
         </div>
       </div>
@@ -572,87 +563,106 @@ const IncidentReports: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedReports.map((report) => (
-                  <tr key={report.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{report.title}</div>
-                        <div className="text-sm text-gray-500">{report.incidentNumber}</div>
-                        <div className="text-xs text-gray-400 mt-1">{report.location}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{report.studentName}</div>
-                      <div className="text-sm text-gray-500">Reported by: {report.reportedBy}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {report.type.replace(/_/g, ' ')}
+                {paginatedReports.map((report) => {
+                  const studentName = report.student
+                    ? `${report.student.firstName} ${report.student.lastName}`
+                    : 'Unknown'
+                  const reporterName = report.reportedBy
+                    ? `${report.reportedBy.firstName} ${report.reportedBy.lastName}`
+                    : 'Unknown'
+                  const incidentDate = report.occurredAt ? new Date(report.occurredAt).toLocaleDateString() : 'N/A'
+                  const incidentTime = report.occurredAt ? new Date(report.occurredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'
+
+                  return (
+                    <tr key={report.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{report.description.substring(0, 60)}...</div>
+                          <div className="text-xs text-gray-400 mt-1">{report.location}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{studentName}</div>
+                        <div className="text-sm text-gray-500">Reported by: {reporterName}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="space-y-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {report.type.replace(/_/g, ' ')}
+                          </span>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getSeverityColor(report.severity)}`}>
+                            {report.severity}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(report.status || 'DRAFT')}`}>
+                          {(report.status || 'DRAFT').replace(/_/g, ' ')}
                         </span>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getSeverityColor(report.severity)}`}>
-                          {report.severity}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(report.status)}`}>
-                        {report.status.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                        {new Date(report.incidentDate).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                        {report.incidentTime}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        {report.followUpRequired && (
-                          <div className="flex items-center text-xs text-orange-600">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Follow-up needed
-                          </div>
-                        )}
-                        {report.parentNotified && (
-                          <div className="flex items-center text-xs text-green-600">
-                            <Users className="h-3 w-3 mr-1" />
-                            Parent notified
-                          </div>
-                        )}
-                        {report.witnessCount > 0 && (
-                          <div className="text-xs text-gray-500">
-                            {report.witnessCount} witness{report.witnessCount !== 1 ? 'es' : ''}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Link
-                          to={`/incident-reports/${report.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="View Details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                        {canEdit && (
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Calendar className="h-4 w-4 mr-1 text-gray-400" />
+                          {incidentDate}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Clock className="h-4 w-4 mr-1 text-gray-400" />
+                          {incidentTime}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="space-y-1">
+                          {report.followUpRequired && (
+                            <div className="flex items-center text-xs text-orange-600">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Follow-up needed
+                            </div>
+                          )}
+                          {report.parentNotified && (
+                            <div className="flex items-center text-xs text-green-600">
+                              <Users className="h-3 w-3 mr-1" />
+                              Parent notified
+                            </div>
+                          )}
+                          {report.witnessStatements && report.witnessStatements.length > 0 && (
+                            <div className="text-xs text-gray-500">
+                              {report.witnessStatements.length} witness{report.witnessStatements.length !== 1 ? 'es' : ''}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
                           <Link
-                            to={`/incident-reports/${report.id}/edit`}
-                            className="text-gray-600 hover:text-gray-900"
-                            title="Edit Report"
+                            to={`/incident-reports/${report.id}`}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="View Details"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Link>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {canEdit && (
+                            <Link
+                              to={`/incident-reports/${report.id}/edit`}
+                              className="text-gray-600 hover:text-gray-900"
+                              title="Edit Report"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          )}
+                          {canDelete && (
+                            <button
+                              onClick={() => handleDeleteClick(report)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Delete Report"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -681,9 +691,9 @@ const IncidentReports: React.FC = () => {
                   <p className="text-sm text-gray-700">
                     Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
                     <span className="font-medium">
-                      {Math.min(startIndex + itemsPerPage, filteredReports.length)}
+                      {Math.min(startIndex + itemsPerPage, totalReports)}
                     </span>{' '}
-                    of <span className="font-medium">{filteredReports.length}</span> results
+                    of <span className="font-medium">{totalReports}</span> results
                   </p>
                 </div>
                 <div>
@@ -723,6 +733,63 @@ const IncidentReports: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && reportToDelete && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">Delete Incident Report</h3>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete this incident report? This action cannot be undone.
+                </p>
+                <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm font-medium text-gray-900">
+                    {reportToDelete.description.substring(0, 100)}
+                    {reportToDelete.description.length > 100 ? '...' : ''}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Location: {reportToDelete.location} | Type: {reportToDelete.type}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={handleDeleteCancel}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center"
+                >
+                  {deleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Report'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

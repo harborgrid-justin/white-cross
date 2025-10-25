@@ -19,47 +19,13 @@ import {
   Eye,
   FileText,
   Calendar,
-  Phone
+  Phone,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-
-/**
- * Student data interface representing a student record in the system.
- *
- * @interface Student
- * @property {string} id - Unique identifier for the student
- * @property {string} firstName - Student's first name
- * @property {string} lastName - Student's last name
- * @property {string} studentNumber - School-assigned student identification number
- * @property {string} grade - Current grade level (e.g., "9th", "10th")
- * @property {string} dateOfBirth - Student's date of birth in ISO format
- * @property {string} guardianName - Primary guardian/parent name
- * @property {string} guardianPhone - Primary guardian contact phone number
- * @property {string} emergencyContact - Emergency contact phone number
- * @property {string[]} medicalConditions - Array of known medical conditions
- * @property {string[]} allergies - Array of known allergies
- * @property {boolean} isActive - Whether the student is currently active in the system
- * @property {string} [lastVisit] - Date of last health office visit (optional)
- *
- * @remarks
- * Security: Contains personally identifiable information (PII). Handle with care.
- * HIPAA Compliance: Medical conditions and allergies are Protected Health Information (PHI).
- */
-interface Student {
-  id: string
-  firstName: string
-  lastName: string
-  studentNumber: string
-  grade: string
-  dateOfBirth: string
-  guardianName: string
-  guardianPhone: string
-  emergencyContact: string
-  medicalConditions: string[]
-  allergies: string[]
-  isActive: boolean
-  lastVisit?: string
-}
+import { studentsApi } from '../../services/modules/studentsApi'
+import type { Student } from '../../types/student.types'
 
 /**
  * Students management page component with comprehensive student data management.
@@ -78,6 +44,7 @@ interface Student {
  *
  * Permissions:
  * - Create/Edit: Requires ADMIN or NURSE role
+ * - Delete: Requires ADMIN role
  * - View Health Records: Requires ADMIN, NURSE, or COUNSELOR role
  * - Export: Available to all authenticated users (should implement PHI filtering)
  *
@@ -96,122 +63,140 @@ interface Student {
  * ```
  *
  * @features
- * - Real-time search across name and student number
- * - Grade-level filtering
- * - Pagination for large datasets (20 items per page)
+ * - Real-time search across name and student number via API
+ * - Grade-level filtering via API
+ * - Server-side pagination for large datasets (20 items per page)
  * - Quick access to health records, appointments, emergency contacts
  * - Role-based action visibility
+ * - Delete operation with confirmation modal (soft delete)
  * - Responsive table layout with mobile pagination
  * - Medical condition and allergy indicators
- * - Last visit date tracking
  */
 const Students: React.FC = () => {
   const { user } = useAuth()
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGrade, setSelectedGrade] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(20)
-
-  // Mock data - replace with actual API calls
-  const mockStudents: Student[] = [
-    {
-      id: '1',
-      firstName: 'John',
-      lastName: 'Smith',
-      studentNumber: 'ST001',
-      grade: '9th',
-      dateOfBirth: '2008-05-15',
-      guardianName: 'Sarah Smith',
-      guardianPhone: '(555) 123-4567',
-      emergencyContact: '(555) 987-6543',
-      medicalConditions: ['Asthma'],
-      allergies: ['Peanuts'],
-      isActive: true,
-      lastVisit: '2024-10-15'
-    },
-    {
-      id: '2',
-      firstName: 'Emily',
-      lastName: 'Johnson',
-      studentNumber: 'ST002',
-      grade: '10th',
-      dateOfBirth: '2007-08-22',
-      guardianName: 'Michael Johnson',
-      guardianPhone: '(555) 234-5678',
-      emergencyContact: '(555) 876-5432',
-      medicalConditions: [],
-      allergies: ['Tree Nuts'],
-      isActive: true,
-      lastVisit: '2024-10-18'
-    },
-    {
-      id: '3',
-      firstName: 'David',
-      lastName: 'Brown',
-      studentNumber: 'ST003',
-      grade: '11th',
-      dateOfBirth: '2006-12-03',
-      guardianName: 'Lisa Brown',
-      guardianPhone: '(555) 345-6789',
-      emergencyContact: '(555) 765-4321',
-      medicalConditions: ['Diabetes Type 1'],
-      allergies: [],
-      isActive: true,
-      lastVisit: '2024-10-10'
-    }
-  ]
+  const [totalStudents, setTotalStudents] = useState(0)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const grades = ['9th', '10th', '11th', '12th']
 
-  // Load students data
+  // Load students data from API
   useEffect(() => {
     const loadStudents = async () => {
       try {
         setLoading(true)
-        // TODO: Replace with actual API call
-        // const data = await studentsApi.getAll()
-        
-        // Simulate API delay
-        setTimeout(() => {
-          setStudents(mockStudents)
-          setLoading(false)
-        }, 1000)
+        setError(null)
+
+        const filters = {
+          page: currentPage,
+          limit: itemsPerPage,
+          isActive: true,
+          ...(searchQuery && { search: searchQuery }),
+          ...(selectedGrade !== 'all' && { grade: selectedGrade })
+        }
+
+        const response = await studentsApi.getAll(filters)
+        setStudents(response.students)
+        setTotalStudents(response.pagination.total)
+        setLoading(false)
       } catch (error) {
         console.error('Error loading students:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load students')
         setLoading(false)
       }
     }
 
     loadStudents()
-  }, [])
+  }, [currentPage, itemsPerPage, searchQuery, selectedGrade])
 
-  // Filter students based on search and grade
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = 
-      student.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.studentNumber.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesGrade = selectedGrade === 'all' || student.grade === selectedGrade
-    
-    return matchesSearch && matchesGrade && student.isActive
-  })
-
-  // Pagination
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage)
+  // Pagination - API handles filtering and pagination server-side
+  const totalPages = Math.ceil(totalStudents / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedStudents = filteredStudents.slice(startIndex, startIndex + itemsPerPage)
 
   // Check permissions
   const canCreate = user?.role === 'ADMIN' || user?.role === 'NURSE'
   const canEdit = user?.role === 'ADMIN' || user?.role === 'NURSE'
+  const canDelete = user?.role === 'ADMIN'
   const canViewHealth = user?.role === 'ADMIN' || user?.role === 'NURSE' || user?.role === 'COUNSELOR'
 
   const handleExport = () => {
     // TODO: Implement export functionality
     console.log('Exporting students data...')
+  }
+
+  const handleDeleteStudent = async () => {
+    if (!selectedStudent) return
+
+    try {
+      setDeleteLoading(true)
+      await studentsApi.deactivate(selectedStudent.id)
+      setShowDeleteModal(false)
+      setSelectedStudent(null)
+      setDeleteLoading(false)
+
+      // Reload students list
+      const filters = {
+        page: currentPage,
+        limit: itemsPerPage,
+        isActive: true,
+        ...(searchQuery && { search: searchQuery }),
+        ...(selectedGrade !== 'all' && { grade: selectedGrade })
+      }
+      const response = await studentsApi.getAll(filters)
+      setStudents(response.students)
+      setTotalStudents(response.pagination.total)
+    } catch (error) {
+      console.error('Failed to delete student:', error)
+      setError(error instanceof Error ? error.message : 'Failed to delete student')
+      setDeleteLoading(false)
+    }
+  }
+
+  // Delete confirmation modal component
+  const DeleteConfirmModal: React.FC = () => {
+    if (!showDeleteModal || !selectedStudent) return null
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="flex items-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900">Deactivate Student</h3>
+          </div>
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to deactivate {selectedStudent.firstName} {selectedStudent.lastName}?
+            This will remove them from the active student list.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                setShowDeleteModal(false)
+                setSelectedStudent(null)
+              }}
+              disabled={deleteLoading}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteStudent}
+              disabled={deleteLoading}
+              className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleteLoading ? 'Deactivating...' : 'Deactivate Student'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -223,8 +208,28 @@ const Students: React.FC = () => {
     )
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Students</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
+      <DeleteConfirmModal />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -287,7 +292,7 @@ const Students: React.FC = () => {
           {/* Results Count */}
           <div className="flex items-center text-sm text-gray-500">
             <Users className="h-4 w-4 mr-2" />
-            {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
+            {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
           </div>
         </div>
       </div>
@@ -310,16 +315,13 @@ const Students: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Medical Info
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Visit
-                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedStudents.map((student) => (
+              {students.map((student) => (
                 <tr key={student.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
@@ -338,32 +340,37 @@ const Students: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm text-gray-900">{student.guardianName}</div>
-                      <div className="text-sm text-gray-500">{student.guardianPhone}</div>
+                      {student.emergencyContacts && student.emergencyContacts.length > 0 ? (
+                        <>
+                          <div className="text-sm text-gray-900">
+                            {student.emergencyContacts[0].firstName} {student.emergencyContacts[0].lastName}
+                          </div>
+                          <div className="text-sm text-gray-500">{student.emergencyContacts[0].phoneNumber}</div>
+                        </>
+                      ) : (
+                        <div className="text-sm text-gray-400">No contact</div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-wrap gap-1">
-                      {student.medicalConditions.map((condition, index) => (
+                      {student.chronicConditions && student.chronicConditions.map((condition) => (
                         <span
-                          key={index}
+                          key={condition.id}
                           className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
                         >
-                          {condition}
+                          {condition.conditionName}
                         </span>
                       ))}
-                      {student.allergies.map((allergy, index) => (
+                      {student.allergies && student.allergies.map((allergy) => (
                         <span
-                          key={index}
+                          key={allergy.id}
                           className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800"
                         >
-                          {allergy}
+                          {allergy.allergen}
                         </span>
                       ))}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {student.lastVisit ? new Date(student.lastVisit).toLocaleDateString() : 'Never'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
@@ -406,6 +413,18 @@ const Students: React.FC = () => {
                           <Edit className="h-4 w-4" />
                         </Link>
                       )}
+                      {canDelete && (
+                        <button
+                          onClick={() => {
+                            setSelectedStudent(student)
+                            setShowDeleteModal(true)
+                          }}
+                          className="text-red-600 hover:text-red-900"
+                          title="Deactivate Student"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -438,9 +457,9 @@ const Students: React.FC = () => {
                 <p className="text-sm text-gray-700">
                   Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
                   <span className="font-medium">
-                    {Math.min(startIndex + itemsPerPage, filteredStudents.length)}
+                    {Math.min(startIndex + itemsPerPage, totalStudents)}
                   </span>{' '}
-                  of <span className="font-medium">{filteredStudents.length}</span> results
+                  of <span className="font-medium">{totalStudents}</span> results
                 </p>
               </div>
               <div>
