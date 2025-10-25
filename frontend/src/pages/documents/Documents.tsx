@@ -13,7 +13,8 @@ import {
   Shield,
   Archive,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Edit
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { documentsApi } from '../../services';
@@ -21,6 +22,7 @@ import { documentsApi } from '../../services';
 interface Document {
   id: string;
   name: string;
+  description?: string;
   type: 'medical' | 'administrative' | 'legal' | 'emergency' | 'other';
   category: string;
   fileType: 'pdf' | 'doc' | 'docx' | 'jpg' | 'png' | 'other';
@@ -59,6 +61,17 @@ const Documents: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    description: '',
+    category: '',
+    type: '',
+    tags: '',
+    confidentialityLevel: ''
+  });
 
   useEffect(() => {
     fetchDocuments();
@@ -183,6 +196,65 @@ const Documents: React.FC = () => {
 
   const handleUpload = () => {
     setUploadModalOpen(true);
+  };
+
+  const handleEditClick = (document: Document, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setEditingDocument(document);
+    setEditFormData({
+      name: document.name,
+      description: document.description || '',
+      category: document.category,
+      type: document.type,
+      tags: document.tags.join(', '),
+      confidentialityLevel: document.confidentialityLevel
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateDocument = async () => {
+    if (!editingDocument) return;
+
+    try {
+      setEditLoading(true);
+
+      // Prepare update data - only send fields that match the API
+      const updateData = {
+        title: editFormData.name,
+        description: editFormData.description,
+        tags: editFormData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+      };
+
+      await documentsApi.updateDocument(editingDocument.id, updateData);
+
+      // Update local state with the edited document
+      setDocuments(prevDocs =>
+        prevDocs.map(doc =>
+          doc.id === editingDocument.id
+            ? {
+                ...doc,
+                name: editFormData.name,
+                description: editFormData.description,
+                category: editFormData.category,
+                type: editFormData.type as Document['type'],
+                tags: editFormData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
+                confidentialityLevel: editFormData.confidentialityLevel as Document['confidentialityLevel'],
+                lastModified: new Date().toISOString()
+              }
+            : doc
+        )
+      );
+
+      toast.success('Document updated successfully');
+      setShowEditModal(false);
+      setEditingDocument(null);
+    } catch (err) {
+      console.error('Failed to update document:', err);
+      toast.error('Failed to update document. Please try again.');
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const getFileIcon = (fileType: string) => {
@@ -468,6 +540,13 @@ const Documents: React.FC = () => {
                           <Download className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={(e) => handleEditClick(document, e)}
+                          className="text-yellow-600 hover:text-yellow-900"
+                          title="Edit Document"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={(e) => handleDeleteClick(document, e)}
                           className="text-red-600 hover:text-red-900"
                           title="Delete Document"
@@ -500,7 +579,7 @@ const Documents: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             {/* Background overlay */}
-            <div 
+            <div
               className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
               onClick={() => {
                 if (!deleteLoading) {
@@ -549,6 +628,174 @@ const Documents: React.FC = () => {
                     setSelectedDocument(null);
                   }}
                   disabled={deleteLoading}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Document Modal */}
+      {showEditModal && editingDocument && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => {
+                if (!editLoading) {
+                  setShowEditModal(false);
+                  setEditingDocument(null);
+                }
+              }}
+            ></div>
+
+            {/* Center modal */}
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            {/* Modal panel */}
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <Edit className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Edit Document Metadata
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Update document information. Note: The actual file cannot be changed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <form className="space-y-4">
+                  {/* Document Name */}
+                  <div>
+                    <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">
+                      Document Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-name"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter document name"
+                      required
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700">
+                      Description
+                    </label>
+                    <textarea
+                      id="edit-description"
+                      rows={3}
+                      value={editFormData.description}
+                      onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter document description"
+                    />
+                  </div>
+
+                  {/* Category and Type in a row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="edit-category" className="block text-sm font-medium text-gray-700">
+                        Category
+                      </label>
+                      <select
+                        id="edit-category"
+                        value={editFormData.category}
+                        onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      >
+                        <option value="Policy">Policy</option>
+                        <option value="Template">Template</option>
+                        <option value="Form">Form</option>
+                        <option value="Report">Report</option>
+                        <option value="Record">Record</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="edit-type" className="block text-sm font-medium text-gray-700">
+                        Type
+                      </label>
+                      <select
+                        id="edit-type"
+                        value={editFormData.type}
+                        onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      >
+                        <option value="medical">Medical</option>
+                        <option value="administrative">Administrative</option>
+                        <option value="legal">Legal</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <label htmlFor="edit-tags" className="block text-sm font-medium text-gray-700">
+                      Tags
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-tags"
+                      value={editFormData.tags}
+                      onChange={(e) => setEditFormData({ ...editFormData, tags: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter tags separated by commas"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Separate multiple tags with commas</p>
+                  </div>
+
+                  {/* Confidentiality Level */}
+                  <div>
+                    <label htmlFor="edit-confidentiality" className="block text-sm font-medium text-gray-700">
+                      Confidentiality Level
+                    </label>
+                    <select
+                      id="edit-confidentiality"
+                      value={editFormData.confidentialityLevel}
+                      onChange={(e) => setEditFormData({ ...editFormData, confidentialityLevel: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="public">Public</option>
+                      <option value="internal">Internal</option>
+                      <option value="confidential">Confidential</option>
+                      <option value="restricted">Restricted</option>
+                    </select>
+                  </div>
+                </form>
+              </div>
+
+              <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleUpdateDocument}
+                  disabled={editLoading || !editFormData.name.trim()}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editLoading ? 'Updating...' : 'Update Document'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingDocument(null);
+                  }}
+                  disabled={editLoading}
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
                 >
                   Cancel
