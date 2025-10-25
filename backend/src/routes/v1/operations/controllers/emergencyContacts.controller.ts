@@ -4,6 +4,7 @@
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
+import Boom from '@hapi/boom';
 import { EmergencyContactService } from '../../../../services/emergencyContactService';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
@@ -104,13 +105,10 @@ export class EmergencyContactsController {
    */
   static async getById(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-
-    // Use internal method or add new service method
-    const contacts = await EmergencyContactService.getStudentEmergencyContacts('');
-    const contact = contacts.find(c => c.id === id);
+    const contact = await EmergencyContactService.getEmergencyContactById(id);
 
     if (!contact) {
-      return h.response({ success: false, error: 'Contact not found' }).code(404);
+      throw Boom.notFound('Emergency contact not found');
     }
 
     return successResponse(h, { contact });

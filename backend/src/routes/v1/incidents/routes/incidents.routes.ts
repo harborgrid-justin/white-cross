@@ -101,7 +101,14 @@ const createIncidentRoute: ServerRoute = {
           '400': { description: 'Validation error - Invalid incident data or missing required fields' },
           '401': { description: 'Unauthorized - JWT token required' },
           '404': { description: 'Student not found' },
+          '429': { description: 'Too many requests - Rate limit exceeded' },
           '500': { description: 'Internal server error' }
+        }
+      },
+      'hapi-rate-limit': {
+        userLimit: 30,
+        userCache: {
+          expiresIn: 60000 // 30 incident reports per minute per user
         }
       }
     }

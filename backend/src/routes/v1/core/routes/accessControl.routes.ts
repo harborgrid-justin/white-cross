@@ -72,14 +72,7 @@ const getRoleByIdRoute: ServerRoute = {
     description: 'Get role by ID',
     notes: 'Returns a single role with its permissions. Requires authentication.',
     validate: {
-      params: roleIdParamSchema,
-      options: {
-        abortEarly: false,
-        stripUnknown: true
-      },
-      failAction: async (request, h, err) => {
-        throw err;
-      }
+      params: roleIdParamSchema
     },
     cache: {
       expiresIn: 5 * 60 * 1000, // 5 minutes

@@ -5,7 +5,8 @@
  */
 
 import { ServerRoute } from '@hapi/hapi';
-import { asyncHandler } from '../../../shared/utils';
+import Boom from '@hapi/boom';
+import { asyncHandler, validationFailAction } from '../../../shared/utils';
 import { DocumentsController } from '../controllers/documents.controller';
 import {
   documentQuerySchema,
@@ -24,11 +25,44 @@ import {
   auditTrailQuerySchema,
   expiringDocumentsQuerySchema
 } from '../validators/documents.validators';
+import {
+  DocumentListResponseSchema,
+  DocumentResponseSchema,
+  DocumentCreatedResponseSchema,
+  DocumentSignaturesResponseSchema,
+  SignatureCreatedResponseSchema,
+  DocumentVersionsResponseSchema,
+  DocumentShareResponseSchema,
+  DocumentTemplatesResponseSchema,
+  StudentDocumentsResponseSchema,
+  DocumentSearchResponseSchema,
+  DocumentAnalyticsResponseSchema,
+  DocumentCategoriesResponseSchema,
+  DocumentAuditTrailResponseSchema,
+  ExpiringDocumentsResponseSchema,
+  ErrorResponseSchema,
+  ValidationErrorResponseSchema
+} from '../schemas/documents.response.schemas';
 
 /**
  * DOCUMENT CRUD ROUTES
  */
 
+/**
+ * List Documents Route
+ *
+ * @description Get all documents with pagination and filters
+ * @param {object} request.query - Query parameters for pagination and filtering
+ * @param {number} request.query.page - Page number (default: 1)
+ * @param {number} request.query.limit - Items per page (default: 20)
+ * @param {string} [request.query.category] - Filter by document category
+ * @param {string} [request.query.status] - Filter by document status
+ * @param {string} [request.query.studentId] - Filter by student ID
+ * @returns {object} 200 - Paginated list of documents
+ * @returns {object} 401 - Unauthorized
+ * @returns {object} 500 - Internal server error
+ * @security JWT
+ */
 const listDocumentsRoute: ServerRoute = {
   method: 'GET',
   path: '/api/v1/documents',
@@ -39,20 +73,35 @@ const listDocumentsRoute: ServerRoute = {
     description: 'Get all documents with pagination and filters',
     notes: '**PHI PROTECTED ENDPOINT** - Returns paginated list of documents. Supports comprehensive filtering by category (CONSENT_FORM, HEALTH_FORM, MEDICAL_REPORT, INCIDENT_REPORT, etc.), status, student, date range, and full-text search. Used for document library, compliance tracking, and record management. All access is logged for HIPAA compliance.',
     validate: {
-      query: documentQuerySchema
+      query: documentQuerySchema,
+      failAction: validationFailAction
+    },
+    response: {
+      schema: DocumentListResponseSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Documents retrieved successfully with pagination metadata' },
-          '401': { description: 'Unauthorized - Authentication required' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Documents retrieved successfully with pagination metadata', schema: DocumentListResponseSchema },
+          '400': { description: 'Validation error', schema: ValidationErrorResponseSchema },
+          '401': { description: 'Unauthorized - Authentication required', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
   }
 };
 
+/**
+ * Get Document By ID Route
+ *
+ * @description Retrieve a single document with complete metadata
+ * @param {string} request.params.id - Document UUID
+ * @returns {object} 200 - Document with extended information (versions, signatures, audit trail)
+ * @returns {object} 401 - Unauthorized
+ * @returns {object} 404 - Document not found
+ * @security JWT
+ */
 const getDocumentByIdRoute: ServerRoute = {
   method: 'GET',
   path: '/api/v1/documents/{id}',
@@ -63,21 +112,40 @@ const getDocumentByIdRoute: ServerRoute = {
     description: 'Get document by ID',
     notes: '**PHI PROTECTED ENDPOINT** - Returns complete document metadata including file info, signatures, version history (last 5 versions), audit trail (last 50 entries), and access tracking. Used for document detail view and verification. Access is logged for HIPAA compliance.',
     validate: {
-      params: documentIdParamSchema
+      params: documentIdParamSchema,
+      failAction: validationFailAction
+    },
+    response: {
+      schema: DocumentResponseSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'Document retrieved successfully with full metadata' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Document not found' },
-          '500': { description: 'Internal server error' }
+          '200': { description: 'Document retrieved successfully with full metadata', schema: DocumentResponseSchema },
+          '400': { description: 'Validation error', schema: ValidationErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Document not found', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }
   }
 };
 
+/**
+ * Create Document Route
+ *
+ * @description Upload and create new document record
+ * @param {object} request.payload - Document data and file metadata
+ * @param {string} request.payload.title - Document title
+ * @param {string} request.payload.category - Document category
+ * @param {string} request.payload.fileUrl - File storage URL
+ * @param {number} request.payload.fileSize - File size in bytes (max 100MB)
+ * @returns {object} 201 - Document created successfully
+ * @returns {object} 400 - Validation error
+ * @returns {object} 401 - Unauthorized
+ * @security JWT
+ */
 const createDocumentRoute: ServerRoute = {
   method: 'POST',
   path: '/api/v1/documents',
@@ -88,16 +156,20 @@ const createDocumentRoute: ServerRoute = {
     description: 'Upload new document',
     notes: '**PHI PROTECTED ENDPOINT** - Creates new document record with file metadata. Supports multiple categories: MEDICAL_RECORD, CONSENT_FORM, INCIDENT_REPORT, STUDENT_FILE, INSURANCE, etc. File must be uploaded to storage first (separate upload endpoint). Validates file type, size (max 100MB), and required metadata. Creates initial audit trail entry. Default status: DRAFT.',
     validate: {
-      payload: createDocumentSchema
+      payload: createDocumentSchema,
+      failAction: validationFailAction
+    },
+    response: {
+      schema: DocumentCreatedResponseSchema
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '201': { description: 'Document created successfully with audit trail entry' },
-          '400': { description: 'Validation error - Invalid document data or file metadata' },
-          '401': { description: 'Unauthorized' },
-          '404': { description: 'Student not found (if studentId provided)' },
-          '500': { description: 'Internal server error' }
+          '201': { description: 'Document created successfully with audit trail entry', schema: DocumentCreatedResponseSchema },
+          '400': { description: 'Validation error - Invalid document data or file metadata', schema: ValidationErrorResponseSchema },
+          '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
+          '404': { description: 'Student not found (if studentId provided)', schema: ErrorResponseSchema },
+          '500': { description: 'Internal server error', schema: ErrorResponseSchema }
         }
       }
     }

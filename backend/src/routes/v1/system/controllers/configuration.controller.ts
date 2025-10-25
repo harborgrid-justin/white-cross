@@ -5,6 +5,7 @@
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
+import Boom from '@hapi/boom';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
@@ -15,14 +16,24 @@ import { AdministrationService } from '../../../../services/administration';
 import { ConsentFormService } from '../../../../services/enterpriseFeatures';
 
 /**
- * SYSTEM CONFIGURATION
- */
-
-/**
- * Get system configuration
- * GET /api/v1/system/config
+ * Configuration Controller Class
+ * Handles system-wide configuration, school management, and feature flags
  */
 export class ConfigurationController {
+
+  /**
+   * SYSTEM CONFIGURATION
+   */
+
+  /**
+   * Get system configuration
+   * GET /api/v1/system/config
+   *
+   * @description Returns current system configuration settings (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Authenticated admin request
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} System configuration with masked credentials
+   */
   static async getSystemConfig(request: AuthenticatedRequest, h: ResponseToolkit) {
     const settings = await AdministrationService.getSystemSettings();
 
@@ -32,6 +43,11 @@ export class ConfigurationController {
   /**
    * Update system configuration
    * PUT /api/v1/system/config
+   *
+   * @description Updates system-wide configuration settings (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with settings payload
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Updated configuration settings
    */
   static async updateSystemConfig(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { settings } = request.payload as any;
@@ -58,6 +74,11 @@ export class ConfigurationController {
   /**
    * List schools in district
    * GET /api/v1/system/schools
+   *
+   * @description Returns paginated list of schools with optional filtering (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with pagination and filter params
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Paginated school list
    */
   static async listSchools(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { page, limit } = parsePagination(request.query);
@@ -117,6 +138,11 @@ export class ConfigurationController {
   /**
    * Get enabled features
    * GET /api/v1/system/features
+   *
+   * @description Returns current feature flag configuration
+   * @param {AuthenticatedRequest} request - Authenticated request
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Feature flags with enabled/disabled status
    */
   static async getFeatures(request: AuthenticatedRequest, h: ResponseToolkit) {
     // Get all system configurations related to features
@@ -141,6 +167,11 @@ export class ConfigurationController {
   /**
    * Update enabled features
    * PUT /api/v1/system/features
+   *
+   * @description Enables or disables system features (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with features array payload
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Updated feature flags
    */
   static async updateFeatures(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { features } = request.payload as any;

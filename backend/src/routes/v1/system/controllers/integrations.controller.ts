@@ -5,6 +5,7 @@
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
+import Boom from '@hapi/boom';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
@@ -21,6 +22,10 @@ import { SISConnector } from '../../../../services/integration/sisConnector';
 import { GradeTransitionService } from '../../../../services/gradeTransitionService';
 import { AdministrationService } from '../../../../services/administration';
 
+/**
+ * Integrations Controller Class
+ * Handles integration CRUD, sync operations, and system utilities
+ */
 export class IntegrationsController {
   /**
    * INTEGRATION CRUD
@@ -29,6 +34,11 @@ export class IntegrationsController {
   /**
    * List all integrations
    * GET /api/v1/system/integrations
+   *
+   * @description Returns paginated list of configured integrations (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with pagination and filter params
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Paginated integration list with masked credentials
    */
   static async listIntegrations(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { page, limit } = parsePagination(request.query);
@@ -77,6 +87,11 @@ export class IntegrationsController {
   /**
    * Create new integration
    * POST /api/v1/system/integrations
+   *
+   * @description Creates new integration configuration with encrypted credentials (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with integration configuration payload
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Created integration configuration
    */
   static async createIntegration(request: AuthenticatedRequest, h: ResponseToolkit) {
     const integrationData = request.payload as any;
@@ -149,6 +164,12 @@ export class IntegrationsController {
   /**
    * Sync student data from SIS
    * POST /api/v1/system/sync/students
+   *
+   * @description Pulls student data from Student Information System (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with sync configuration payload
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Sync session with statistics
+   * @throws {Boom.badRequest} When integration is not SIS type
    */
   static async syncStudents(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { integrationId, grade, fullSync, modifiedSince } = request.payload as any;
@@ -157,10 +178,7 @@ export class IntegrationsController {
     const integration = await ConfigManager.getIntegrationById(integrationId, true);
 
     if (integration.type !== 'SIS') {
-      return h.response({
-        success: false,
-        error: { message: 'Integration must be of type SIS for student sync' }
-      }).code(400);
+      throw Boom.badRequest('Integration must be of type SIS for student sync');
     }
 
     // Trigger sync using SIS connector
@@ -266,6 +284,11 @@ export class IntegrationsController {
   /**
    * Trigger grade transition
    * POST /api/v1/system/grade-transition
+   *
+   * @description Performs end-of-year grade transition for all active students (ADMIN ONLY)
+   * @param {AuthenticatedRequest} request - Request with transition configuration payload
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject>} Transition results with success/failure counts
    */
   static async gradeTransition(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { effectiveDate, dryRun = false, grades } = request.payload as any;

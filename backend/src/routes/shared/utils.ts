@@ -142,3 +142,32 @@ export function validationErrorResponse(h: ResponseToolkit, errors: any) {
     }
   }).code(422);
 }
+
+/**
+ * Validation fail action handler
+ * Custom error handler for Joi validation failures
+ * Provides detailed, user-friendly validation error messages
+ *
+ * @param request - Hapi request object
+ * @param h - Hapi response toolkit
+ * @param error - Joi validation error
+ * @returns Formatted validation error response (400)
+ */
+export function validationFailAction(request: Request, h: ResponseToolkit, error: any) {
+  // Extract validation details from Joi error
+  const details = error.details?.map((detail: any) => ({
+    field: detail.path?.join('.') || detail.context?.key || 'unknown',
+    message: detail.message,
+    type: detail.type,
+    value: detail.context?.value
+  })) || [];
+
+  return h.response({
+    success: false,
+    error: {
+      message: 'Validation failed',
+      code: 'VALIDATION_ERROR',
+      details
+    }
+  }).code(400).takeover();
+}

@@ -198,14 +198,6 @@ export const sendEmergencyNotificationSchema = Joi.object({
       'any.required': 'Priority is required'
     }),
 
-  studentId: Joi.string()
-    .uuid()
-    .required()
-    .description('Student UUID')
-    .messages({
-      'any.required': 'Student ID is required'
-    }),
-
   channels: Joi.array()
     .items(Joi.string().valid('sms', 'email', 'voice'))
     .min(1)

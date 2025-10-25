@@ -156,6 +156,13 @@ export const gradeTransitionSchema = Joi.object({
  * BARCODE SCANNING SCHEMAS
  */
 
+export const barcodeScanSchema = Joi.object({
+  barcodeString: Joi.string().min(1).max(500).required()
+    .description('Barcode string to scan and decode'),
+  scanType: Joi.string().valid('student', 'medication', 'equipment', 'general').default('general')
+    .description('Type of barcode being scanned')
+});
+
 export const barcodeVerificationSchema = Joi.object({
   studentBarcode: Joi.string().min(1).max(200).required()
     .description('Student identification barcode'),

@@ -37,9 +37,16 @@ export const messagingRoutes: ServerRoute[] = [
             400: { description: 'Invalid message data', schema: ErrorResponseSchema },
             401: { description: 'Authentication required', schema: ErrorResponseSchema },
             403: { description: 'Insufficient permissions', schema: ErrorResponseSchema },
+            429: { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema },
             500: { description: 'Server error sending messages', schema: ErrorResponseSchema }
           },
           security: [{ jwt: [] }]
+        },
+        'hapi-rate-limit': {
+          userLimit: 10,
+          userCache: {
+            expiresIn: 60000 // 10 bulk messages per minute per user
+          }
         }
       }
     },

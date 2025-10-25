@@ -409,21 +409,78 @@ const checkNewMedicationInteractionsRoute: ServerRoute = {
     notes: '**HIGHLY SENSITIVE PHI ENDPOINT** - Validates potential interactions before adding a new medication to student\'s regimen. Includes severity assessment, clinical significance, and management recommendations.',
     validate: {
       params: healthRiskParamSchema,
-      payload: {
-        medicationName: require('joi').string().min(1).max(200).required(),
-        dosage: require('joi').string().optional(),
-        frequency: require('joi').string().optional()
-      }
+      payload: Joi.object({
+        medicationName: Joi.string().min(1).max(200).required().description('Medication name to check'),
+        dosage: Joi.string().optional().description('Proposed dosage'),
+        frequency: Joi.string().optional().description('Proposed frequency')
+      }).label('CheckMedicationInteractionPayload')
     },
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': { description: 'New medication interactions checked successfully' },
-          '400': { description: 'Validation error' },
-          '401': { description: 'Unauthorized' },
-          '403': { description: 'Forbidden - Requires NURSE role' },
-          '404': { description: 'Student not found' },
-          '500': { description: 'Internal server error' }
+          '200': {
+            description: 'New medication interactions checked successfully',
+            schema: Joi.object({
+              success: Joi.boolean().example(true),
+              data: Joi.object({
+                interactionCheck: Joi.object({
+                  hasInteractions: Joi.boolean().example(false),
+                  interactions: Joi.array().items(Joi.object()).example([]),
+                  recommendations: Joi.array().items(Joi.string()).example(['Safe to prescribe'])
+                })
+              })
+            }).label('CheckMedicationInteractionsResponse')
+          },
+          '400': {
+            description: 'Validation error - Invalid medication data',
+            schema: Joi.object({
+              success: Joi.boolean().example(false),
+              error: Joi.object({
+                message: Joi.string().example('Validation error'),
+                code: Joi.string().example('VALIDATION_ERROR')
+              })
+            }).label('ValidationErrorResponse')
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: Joi.object({
+              success: Joi.boolean().example(false),
+              error: Joi.object({
+                message: Joi.string().example('Unauthorized'),
+                code: Joi.string().example('UNAUTHORIZED')
+              })
+            }).label('UnauthorizedResponse')
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE role',
+            schema: Joi.object({
+              success: Joi.boolean().example(false),
+              error: Joi.object({
+                message: Joi.string().example('Forbidden - Requires NURSE role'),
+                code: Joi.string().example('FORBIDDEN')
+              })
+            }).label('ForbiddenResponse')
+          },
+          '404': {
+            description: 'Student not found',
+            schema: Joi.object({
+              success: Joi.boolean().example(false),
+              error: Joi.object({
+                message: Joi.string().example('Student not found'),
+                code: Joi.string().example('STUDENT_NOT_FOUND')
+              })
+            }).label('NotFoundResponse')
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: Joi.object({
+              success: Joi.boolean().example(false),
+              error: Joi.object({
+                message: Joi.string().example('Internal server error'),
+                code: Joi.string().example('INTERNAL_ERROR')
+              })
+            }).label('InternalErrorResponse')
+          }
         }
       }
     }
