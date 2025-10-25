@@ -73,6 +73,9 @@ interface DocumentAttributes {
   requiresSignature: boolean;
   lastAccessedAt?: Date;
   accessCount: number;
+  isActive: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,6 +103,9 @@ interface DocumentCreationAttributes
     | 'requiresSignature'
     | 'lastAccessedAt'
     | 'accessCount'
+    | 'isActive'
+    | 'deletedAt'
+    | 'deletedBy'
     | 'createdAt'
     | 'updatedAt'
   > {}
@@ -206,6 +212,9 @@ export class Document extends Model<DocumentAttributes, DocumentCreationAttribut
   public requiresSignature!: boolean;
   public lastAccessedAt?: Date;
   public accessCount!: number;
+  public isActive!: boolean;
+  public deletedAt?: Date;
+  public deletedBy?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -631,6 +640,28 @@ Document.init(
         },
       },
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      comment: 'Soft delete flag - whether document is currently active (not archived)',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Soft delete timestamp - when document was archived/deactivated',
+    },
+    deletedBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+      comment: 'User who archived/deactivated this document (for audit trail)',
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   },
@@ -649,6 +680,10 @@ Document.init(
       { fields: ['containsPHI'] },
       { fields: ['requiresSignature'] },
       { fields: ['lastAccessedAt'] },
+      { fields: ['isActive'] },
+      { fields: ['isActive', 'createdAt'] },
+      { fields: ['deletedAt'] },
+      { fields: ['deletedBy'] },
     ],
     validate: {
       // Cross-field validation

@@ -256,14 +256,14 @@ const updateMedicationRoute: ServerRoute = {
 };
 
 const deactivateMedicationRoute: ServerRoute = {
-  method: 'PUT',
+  method: 'POST',
   path: '/api/v1/medications/{id}/deactivate',
   handler: asyncHandler(MedicationsController.deactivate),
   options: {
     auth: 'jwt',
     tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
-    description: 'Deactivate a medication (Legacy Schema)',
-    notes: '**PHI Protected Endpoint** - Deactivates a medication. Requires detailed reason and deactivation type for audit trail. Does not delete historical records. HIPAA Compliance: All deactivations are logged.',
+    description: 'Deactivate a medication (soft delete)',
+    notes: '**PHI Protected Endpoint** - Deactivates a medication. Requires detailed reason and deactivation type for audit trail. Does not delete historical records. HIPAA Compliance: All deactivations are logged. Sets isActive = false, deletedAt = NOW(), deletedBy = current user.',
     validate: {
       params: medicationIdParamSchema,
       payload: deactivateMedicationSchema
@@ -271,8 +271,8 @@ const deactivateMedicationRoute: ServerRoute = {
     plugins: {
       'hapi-swagger': {
         responses: {
-          '200': {
-            description: 'Medication deactivated successfully - Historical record preserved',
+          '204': {
+            description: 'Medication deactivated successfully - Historical record preserved (no content)',
             schema: MedicationDeactivatedResponseSchema
           },
           '400': {
@@ -289,6 +289,47 @@ const deactivateMedicationRoute: ServerRoute = {
           },
           '404': {
             description: 'Medication not found - Cannot deactivate non-existent medication',
+            schema: NotFoundResponseSchema
+          },
+          '500': {
+            description: 'Internal server error - Database or system failure',
+            schema: InternalErrorResponseSchema
+          }
+        }
+      }
+    }
+  }
+};
+
+const activateMedicationRoute: ServerRoute = {
+  method: 'POST',
+  path: '/api/v1/medications/{id}/activate',
+  handler: asyncHandler(MedicationsController.activate),
+  options: {
+    auth: 'jwt',
+    tags: ['api', 'Medications', 'Healthcare', 'v1', 'Legacy-Schema'],
+    description: 'Activate a medication (restore from soft delete)',
+    notes: '**PHI Protected Endpoint** - Reactivates a previously deactivated medication. Sets isActive = true, clears deletedAt and deletedBy. Requires NURSE or ADMIN role. HIPAA Compliance: All activations are logged.',
+    validate: {
+      params: medicationIdParamSchema
+    },
+    plugins: {
+      'hapi-swagger': {
+        responses: {
+          '204': {
+            description: 'Medication activated successfully (no content)',
+            schema: MedicationResponseSchema
+          },
+          '401': {
+            description: 'Unauthorized - Authentication required',
+            schema: UnauthorizedResponseSchema
+          },
+          '403': {
+            description: 'Forbidden - Requires NURSE or ADMIN role',
+            schema: ForbiddenResponseSchema
+          },
+          '404': {
+            description: 'Medication not found - Cannot activate non-existent medication',
             schema: NotFoundResponseSchema
           },
           '500': {
@@ -396,12 +437,13 @@ const getMedicationsByStudentRoute: ServerRoute = {
  */
 
 export const medicationsRoutes: ServerRoute[] = [
-  // Medication CRUD (5 routes) - Works with legacy schema
+  // Medication CRUD (7 routes) - Works with legacy schema
   listMedicationsRoute,
   createMedicationRoute,
   getMedicationByIdRoute,
   updateMedicationRoute,
   deactivateMedicationRoute,
+  activateMedicationRoute,
   getMedicationsByStudentRoute,
 
   // The following routes from the NEW schema have been disabled:

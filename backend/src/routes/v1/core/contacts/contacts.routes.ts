@@ -230,10 +230,10 @@ export const contactRoutes: ServerRoute[] = [
     },
   },
 
-  // Delete contact
+  // Deactivate contact (soft delete)
   {
-    method: 'DELETE',
-    path: '/api/v1/contacts/{id}',
+    method: 'POST',
+    path: '/api/v1/contacts/{id}/deactivate',
     options: {
       pre: [
         requirePermission({
@@ -242,8 +242,8 @@ export const contactRoutes: ServerRoute[] = [
         }),
       ],
       tags: ['api', 'contacts'],
-      description: 'Delete contact',
-      notes: 'Soft deletes a contact record',
+      description: 'Deactivate contact (soft delete)',
+      notes: 'Soft deletes a contact record by setting isActive = false and deletedAt timestamp. Maintains audit trail.',
       validate: {
         params: Joi.object({
           id: Joi.string().uuid().required(),
@@ -252,18 +252,58 @@ export const contactRoutes: ServerRoute[] = [
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': { description: 'Contact deleted successfully (no content)' },
+            '204': { description: 'Contact deactivated successfully (no content)' },
             '404': { description: 'Contact not found' },
             '401': { description: 'Unauthorized' },
             '403': { description: 'Permission denied' },
+            '500': { description: 'Internal server error' },
           },
         },
       },
     },
     handler: async (request, h) => {
       const { id } = request.params;
-      await ContactService.deleteContact(id);
-      return h.response().code(204);
+      const user = request.auth.credentials as any;
+      await ContactService.deactivateContact(id, user?.id);
+      return h.response({ success: true, message: 'Contact deactivated successfully' }).code(200);
+    },
+  },
+
+  // Activate contact (restore from soft delete)
+  {
+    method: 'POST',
+    path: '/api/v1/contacts/{id}/activate',
+    options: {
+      pre: [
+        requirePermission({
+          resource: Resource.Contact,
+          action: Action.Update,
+        }),
+      ],
+      tags: ['api', 'contacts'],
+      description: 'Activate contact (restore from soft delete)',
+      notes: 'Reactivates a previously deactivated contact by setting isActive = true and clearing deletedAt/deletedBy.',
+      validate: {
+        params: Joi.object({
+          id: Joi.string().uuid().required(),
+        }),
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '204': { description: 'Contact activated successfully (no content)' },
+            '404': { description: 'Contact not found' },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Permission denied' },
+            '500': { description: 'Internal server error' },
+          },
+        },
+      },
+    },
+    handler: async (request, h) => {
+      const { id } = request.params;
+      await ContactService.activateContact(id);
+      return h.response({ success: true, message: 'Contact activated successfully' }).code(200);
     },
   },
 

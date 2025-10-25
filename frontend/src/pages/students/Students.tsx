@@ -23,9 +23,10 @@ import {
   Trash2,
   AlertTriangle
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { studentsApi } from '../../services/modules/studentsApi'
-import type { Student } from '../../types/student.types'
+import type { Student, UpdateStudentData } from '../../types/student.types'
 
 /**
  * Students management page component with comprehensive student data management.
@@ -85,6 +86,21 @@ const Students: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [editLoading, setEditLoading] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    gender: 'MALE' as 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY',
+    grade: '',
+    studentNumber: '',
+    enrollmentDate: '',
+    medicalRecordNum: '',
+    nurseId: '',
+    isActive: true
+  })
 
   const grades = ['9th', '10th', '11th', '12th']
 
@@ -160,6 +176,91 @@ const Students: React.FC = () => {
     }
   }
 
+  const handleEditClick = (student: Student, event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setEditingStudent(student)
+    setEditFormData({
+      firstName: student.firstName,
+      lastName: student.lastName,
+      dateOfBirth: student.dateOfBirth.split('T')[0], // Format for date input
+      gender: student.gender,
+      grade: student.grade,
+      studentNumber: student.studentNumber,
+      enrollmentDate: student.enrollmentDate ? student.enrollmentDate.split('T')[0] : '',
+      medicalRecordNum: student.medicalRecordNum || '',
+      nurseId: student.nurseId || '',
+      isActive: student.isActive
+    })
+    setShowEditModal(true)
+  }
+
+  const handleUpdateStudent = async () => {
+    if (!editingStudent) return
+
+    // Validate required fields
+    if (!editFormData.firstName.trim()) {
+      toast.error('First name is required')
+      return
+    }
+    if (!editFormData.lastName.trim()) {
+      toast.error('Last name is required')
+      return
+    }
+    if (!editFormData.dateOfBirth) {
+      toast.error('Date of birth is required')
+      return
+    }
+    if (!editFormData.grade) {
+      toast.error('Grade is required')
+      return
+    }
+
+    try {
+      setEditLoading(true)
+
+      // Prepare update data
+      const updateData: UpdateStudentData = {
+        firstName: editFormData.firstName.trim(),
+        lastName: editFormData.lastName.trim(),
+        dateOfBirth: editFormData.dateOfBirth,
+        gender: editFormData.gender,
+        grade: editFormData.grade,
+        studentNumber: editFormData.studentNumber,
+        isActive: editFormData.isActive
+      }
+
+      // Add optional fields only if they have values
+      if (editFormData.enrollmentDate) {
+        updateData.enrollmentDate = editFormData.enrollmentDate
+      }
+      if (editFormData.medicalRecordNum) {
+        updateData.medicalRecordNum = editFormData.medicalRecordNum
+      }
+      if (editFormData.nurseId) {
+        updateData.nurseId = editFormData.nurseId
+      }
+
+      const updatedStudent = await studentsApi.update(editingStudent.id, updateData)
+
+      // Update local state
+      setStudents(prevStudents =>
+        prevStudents.map(s =>
+          s.id === editingStudent.id ? { ...s, ...updatedStudent } : s
+        )
+      )
+
+      toast.success('Student updated successfully')
+      setShowEditModal(false)
+      setEditingStudent(null)
+    } catch (err) {
+      console.error('Failed to update student:', err)
+      toast.error(err instanceof Error ? err.message : 'Failed to update student. Please try again.')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
   // Delete confirmation modal component
   const DeleteConfirmModal: React.FC = () => {
     if (!showDeleteModal || !selectedStudent) return null
@@ -226,9 +327,221 @@ const Students: React.FC = () => {
     )
   }
 
+  // Edit Student Modal component
+  const EditStudentModal: React.FC = () => {
+    if (!showEditModal || !editingStudent) return null
+
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          {/* Background overlay */}
+          <div
+            className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+            onClick={() => {
+              if (!editLoading) {
+                setShowEditModal(false)
+                setEditingStudent(null)
+              }
+            }}
+          ></div>
+
+          {/* Center modal */}
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+          {/* Modal panel */}
+          <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+            <div className="sm:flex sm:items-start">
+              <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                <Edit className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Edit Student
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Update student information
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <form className="space-y-4">
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-firstName" className="block text-sm font-medium text-gray-700">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-firstName"
+                      value={editFormData.firstName}
+                      onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter first name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-lastName" className="block text-sm font-medium text-gray-700">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-lastName"
+                      value={editFormData.lastName}
+                      onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter last name"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Date of Birth and Gender */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-dateOfBirth" className="block text-sm font-medium text-gray-700">
+                      Date of Birth <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      id="edit-dateOfBirth"
+                      value={editFormData.dateOfBirth}
+                      onChange={(e) => setEditFormData({ ...editFormData, dateOfBirth: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-gender" className="block text-sm font-medium text-gray-700">
+                      Gender <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="edit-gender"
+                      value={editFormData.gender}
+                      onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value as any })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      required
+                    >
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                      <option value="OTHER">Other</option>
+                      <option value="PREFER_NOT_TO_SAY">Prefer Not to Say</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Grade and Student Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-grade" className="block text-sm font-medium text-gray-700">
+                      Grade <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="edit-grade"
+                      value={editFormData.grade}
+                      onChange={(e) => setEditFormData({ ...editFormData, grade: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      required
+                    >
+                      <option value="">Select Grade</option>
+                      {grades.map(grade => (
+                        <option key={grade} value={grade}>{grade} Grade</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="edit-studentNumber" className="block text-sm font-medium text-gray-700">
+                      Student Number
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-studentNumber"
+                      value={editFormData.studentNumber}
+                      onChange={(e) => setEditFormData({ ...editFormData, studentNumber: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Student number"
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                {/* Enrollment Date and Medical Record Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-enrollmentDate" className="block text-sm font-medium text-gray-700">
+                      Enrollment Date
+                    </label>
+                    <input
+                      type="date"
+                      id="edit-enrollmentDate"
+                      value={editFormData.enrollmentDate}
+                      onChange={(e) => setEditFormData({ ...editFormData, enrollmentDate: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-medicalRecordNum" className="block text-sm font-medium text-gray-700">
+                      Medical Record Number
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-medicalRecordNum"
+                      value={editFormData.medicalRecordNum}
+                      onChange={(e) => setEditFormData({ ...editFormData, medicalRecordNum: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Medical record number"
+                    />
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={editFormData.isActive}
+                      onChange={(e) => setEditFormData({ ...editFormData, isActive: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Active Student</span>
+                  </label>
+                </div>
+              </form>
+            </div>
+
+            <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+              <button
+                type="button"
+                onClick={handleUpdateStudent}
+                disabled={editLoading || !editFormData.firstName.trim() || !editFormData.lastName.trim()}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {editLoading ? 'Updating...' : 'Update Student'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingStudent(null)
+                }}
+                disabled={editLoading}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <DeleteConfirmModal />
+      <EditStudentModal />
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -405,13 +718,13 @@ const Students: React.FC = () => {
                         <Phone className="h-4 w-4" />
                       </Link>
                       {canEdit && (
-                        <Link
-                          to={`/students/${student.id}/edit`}
+                        <button
+                          onClick={(e) => handleEditClick(student, e)}
                           className="text-gray-600 hover:text-gray-900"
                           title="Edit Student"
                         >
                           <Edit className="h-4 w-4" />
-                        </Link>
+                        </button>
                       )}
                       {canDelete && (
                         <button
