@@ -1,6 +1,6 @@
 /**
  * VendorRepository Implementation
- * Auto-generated repository for Vendor data access
+ * Repository for Vendor data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class VendorRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Vendor, auditLogger, cacheManager, 'Vendor');
   }
-
-  /**
-   * Custom Vendor-specific methods can be added here
-   */
 }

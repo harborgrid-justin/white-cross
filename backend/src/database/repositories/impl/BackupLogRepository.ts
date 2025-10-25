@@ -1,6 +1,6 @@
 /**
  * BackupLogRepository Implementation
- * Auto-generated repository for BackupLog data access
+ * Repository for BackupLog data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class BackupLogRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(BackupLog, auditLogger, cacheManager, 'BackupLog');
   }
-
-  /**
-   * Custom BackupLog-specific methods can be added here
-   */
 }

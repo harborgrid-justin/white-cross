@@ -1,6 +1,6 @@
 /**
  * AppointmentWaitlistRepository Implementation
- * Auto-generated repository for AppointmentWaitlist data access
+ * Repository for AppointmentWaitlist data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class AppointmentWaitlistRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(AppointmentWaitlist, auditLogger, cacheManager, 'AppointmentWaitlist');
   }
-
-  /**
-   * Custom AppointmentWaitlist-specific methods can be added here
-   */
 }

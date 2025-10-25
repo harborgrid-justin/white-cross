@@ -1,6 +1,6 @@
 /**
  * ConsentSignatureRepository Implementation
- * Auto-generated repository for ConsentSignature data access
+ * Repository for ConsentSignature data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ConsentSignatureRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ConsentSignature, auditLogger, cacheManager, 'ConsentSignature');
   }
-
-  /**
-   * Custom ConsentSignature-specific methods can be added here
-   */
 }

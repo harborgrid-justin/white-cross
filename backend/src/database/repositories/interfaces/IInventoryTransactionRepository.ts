@@ -1,6 +1,6 @@
 /**
  * @fileoverview InventoryTransaction repository interface.
- * Auto-generated repository interface for InventoryTransaction data management.
+ * Repository interface for InventoryTransaction data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with InventoryTransaction-specific operations
  */
 export interface IInventoryTransactionRepository extends IRepository<any, any, any> {
-  // Add InventoryTransaction-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create InventoryTransaction DTO
  */
 export interface CreateInventoryTransactionDTO {
-  [key: string]: any;
+  // Properties defined by InventoryTransaction model
+  id?: string;
 }
 
 /**
  * Update InventoryTransaction DTO
  */
 export interface UpdateInventoryTransactionDTO {
-  [key: string]: any;
+  // Properties defined by InventoryTransaction model  
+  id?: string;
 }

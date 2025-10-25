@@ -1,6 +1,6 @@
 /**
  * @fileoverview RolePermission repository interface.
- * Auto-generated repository interface for RolePermission data management.
+ * Repository interface for RolePermission data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with RolePermission-specific operations
  */
 export interface IRolePermissionRepository extends IRepository<any, any, any> {
-  // Add RolePermission-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create RolePermission DTO
  */
 export interface CreateRolePermissionDTO {
-  [key: string]: any;
+  // Properties defined by RolePermission model
+  id?: string;
 }
 
 /**
  * Update RolePermission DTO
  */
 export interface UpdateRolePermissionDTO {
-  [key: string]: any;
+  // Properties defined by RolePermission model  
+  id?: string;
 }

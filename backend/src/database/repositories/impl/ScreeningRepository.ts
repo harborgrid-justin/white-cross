@@ -1,6 +1,6 @@
 /**
  * ScreeningRepository Implementation
- * Auto-generated repository for Screening data access
+ * Repository for Screening data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ScreeningRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Screening, auditLogger, cacheManager, 'Screening');
   }
-
-  /**
-   * Custom Screening-specific methods can be added here
-   */
 }

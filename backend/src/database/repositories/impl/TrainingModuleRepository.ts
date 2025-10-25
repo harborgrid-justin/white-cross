@@ -1,6 +1,6 @@
 /**
  * TrainingModuleRepository Implementation
- * Auto-generated repository for TrainingModule data access
+ * Repository for TrainingModule data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class TrainingModuleRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(TrainingModule, auditLogger, cacheManager, 'TrainingModule');
   }
-
-  /**
-   * Custom TrainingModule-specific methods can be added here
-   */
 }

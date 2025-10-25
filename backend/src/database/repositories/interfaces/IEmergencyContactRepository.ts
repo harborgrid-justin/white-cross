@@ -1,6 +1,6 @@
 /**
  * @fileoverview EmergencyContact repository interface.
- * Auto-generated repository interface for EmergencyContact data management.
+ * Repository interface for EmergencyContact data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with EmergencyContact-specific operations
  */
 export interface IEmergencyContactRepository extends IRepository<any, any, any> {
-  // Add EmergencyContact-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create EmergencyContact DTO
  */
 export interface CreateEmergencyContactDTO {
-  [key: string]: any;
+  // Properties defined by EmergencyContact model
+  id?: string;
 }
 
 /**
  * Update EmergencyContact DTO
  */
 export interface UpdateEmergencyContactDTO {
-  [key: string]: any;
+  // Properties defined by EmergencyContact model  
+  id?: string;
 }

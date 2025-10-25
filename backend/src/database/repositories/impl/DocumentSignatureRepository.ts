@@ -1,6 +1,6 @@
 /**
  * DocumentSignatureRepository Implementation
- * Auto-generated repository for DocumentSignature data access
+ * Repository for DocumentSignature data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class DocumentSignatureRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(DocumentSignature, auditLogger, cacheManager, 'DocumentSignature');
   }
-
-  /**
-   * Custom DocumentSignature-specific methods can be added here
-   */
 }

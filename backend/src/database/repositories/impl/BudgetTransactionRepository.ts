@@ -1,6 +1,6 @@
 /**
  * BudgetTransactionRepository Implementation
- * Auto-generated repository for BudgetTransaction data access
+ * Repository for BudgetTransaction data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class BudgetTransactionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(BudgetTransaction, auditLogger, cacheManager, 'BudgetTransaction');
   }
-
-  /**
-   * Custom BudgetTransaction-specific methods can be added here
-   */
 }

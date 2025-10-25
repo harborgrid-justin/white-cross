@@ -1,6 +1,6 @@
 /**
  * InventoryTransactionRepository Implementation
- * Auto-generated repository for InventoryTransaction data access
+ * Repository for InventoryTransaction data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class InventoryTransactionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(InventoryTransaction, auditLogger, cacheManager, 'InventoryTransaction');
   }
-
-  /**
-   * Custom InventoryTransaction-specific methods can be added here
-   */
 }

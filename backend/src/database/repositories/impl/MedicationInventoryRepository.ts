@@ -1,6 +1,6 @@
 /**
  * MedicationInventoryRepository Implementation
- * Auto-generated repository for MedicationInventory data access
+ * Repository for MedicationInventory data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class MedicationInventoryRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(MedicationInventory, auditLogger, cacheManager, 'MedicationInventory');
   }
-
-  /**
-   * Custom MedicationInventory-specific methods can be added here
-   */
 }

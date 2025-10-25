@@ -1,6 +1,6 @@
 /**
  * @fileoverview Role repository interface.
- * Auto-generated repository interface for Role data management.
+ * Repository interface for Role data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Role-specific operations
  */
 export interface IRoleRepository extends IRepository<any, any, any> {
-  // Add Role-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Role DTO
  */
 export interface CreateRoleDTO {
-  [key: string]: any;
+  // Properties defined by Role model
+  id?: string;
 }
 
 /**
  * Update Role DTO
  */
 export interface UpdateRoleDTO {
-  [key: string]: any;
+  // Properties defined by Role model  
+  id?: string;
 }

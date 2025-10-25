@@ -1,6 +1,6 @@
 /**
  * SecurityIncidentRepository Implementation
- * Auto-generated repository for SecurityIncident data access
+ * Repository for SecurityIncident data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class SecurityIncidentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(SecurityIncident, auditLogger, cacheManager, 'SecurityIncident');
   }
-
-  /**
-   * Custom SecurityIncident-specific methods can be added here
-   */
 }

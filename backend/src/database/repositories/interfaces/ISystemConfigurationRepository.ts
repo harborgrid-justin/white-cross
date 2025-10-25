@@ -1,6 +1,6 @@
 /**
  * @fileoverview SystemConfiguration repository interface.
- * Auto-generated repository interface for SystemConfiguration data management.
+ * Repository interface for SystemConfiguration data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with SystemConfiguration-specific operations
  */
 export interface ISystemConfigurationRepository extends IRepository<any, any, any> {
-  // Add SystemConfiguration-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create SystemConfiguration DTO
  */
 export interface CreateSystemConfigurationDTO {
-  [key: string]: any;
+  // Properties defined by SystemConfiguration model
+  id?: string;
 }
 
 /**
  * Update SystemConfiguration DTO
  */
 export interface UpdateSystemConfigurationDTO {
-  [key: string]: any;
+  // Properties defined by SystemConfiguration model  
+  id?: string;
 }

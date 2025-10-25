@@ -1,6 +1,6 @@
 /**
  * DocumentRepository Implementation
- * Auto-generated repository for Document data access
+ * Repository for Document data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class DocumentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Document, auditLogger, cacheManager, 'Document');
   }
-
-  /**
-   * Custom Document-specific methods can be added here
-   */
 }

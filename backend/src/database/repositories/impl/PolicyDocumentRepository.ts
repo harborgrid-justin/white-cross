@@ -1,6 +1,6 @@
 /**
  * PolicyDocumentRepository Implementation
- * Auto-generated repository for PolicyDocument data access
+ * Repository for PolicyDocument data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class PolicyDocumentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PolicyDocument, auditLogger, cacheManager, 'PolicyDocument');
   }
-
-  /**
-   * Custom PolicyDocument-specific methods can be added here
-   */
 }

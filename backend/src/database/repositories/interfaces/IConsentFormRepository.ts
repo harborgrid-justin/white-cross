@@ -1,6 +1,6 @@
 /**
  * @fileoverview ConsentForm repository interface.
- * Auto-generated repository interface for ConsentForm data management.
+ * Repository interface for ConsentForm data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with ConsentForm-specific operations
  */
 export interface IConsentFormRepository extends IRepository<any, any, any> {
-  // Add ConsentForm-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create ConsentForm DTO
  */
 export interface CreateConsentFormDTO {
-  [key: string]: any;
+  // Properties defined by ConsentForm model
+  id?: string;
 }
 
 /**
  * Update ConsentForm DTO
  */
 export interface UpdateConsentFormDTO {
-  [key: string]: any;
+  // Properties defined by ConsentForm model  
+  id?: string;
 }

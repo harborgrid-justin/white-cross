@@ -1,6 +1,6 @@
 /**
  * MedicationLogRepository Implementation
- * Auto-generated repository for MedicationLog data access
+ * Repository for MedicationLog data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class MedicationLogRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(MedicationLog, auditLogger, cacheManager, 'MedicationLog');
   }
-
-  /**
-   * Custom MedicationLog-specific methods can be added here
-   */
 }

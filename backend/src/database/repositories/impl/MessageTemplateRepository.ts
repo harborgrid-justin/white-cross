@@ -1,6 +1,6 @@
 /**
  * MessageTemplateRepository Implementation
- * Auto-generated repository for MessageTemplate data access
+ * Repository for MessageTemplate data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class MessageTemplateRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(MessageTemplate, auditLogger, cacheManager, 'MessageTemplate');
   }
-
-  /**
-   * Custom MessageTemplate-specific methods can be added here
-   */
 }

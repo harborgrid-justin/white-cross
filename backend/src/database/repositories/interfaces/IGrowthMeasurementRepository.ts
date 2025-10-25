@@ -1,6 +1,6 @@
 /**
  * @fileoverview GrowthMeasurement repository interface.
- * Auto-generated repository interface for GrowthMeasurement data management.
+ * Repository interface for GrowthMeasurement data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with GrowthMeasurement-specific operations
  */
 export interface IGrowthMeasurementRepository extends IRepository<any, any, any> {
-  // Add GrowthMeasurement-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create GrowthMeasurement DTO
  */
 export interface CreateGrowthMeasurementDTO {
-  [key: string]: any;
+  // Properties defined by GrowthMeasurement model
+  id?: string;
 }
 
 /**
  * Update GrowthMeasurement DTO
  */
 export interface UpdateGrowthMeasurementDTO {
-  [key: string]: any;
+  // Properties defined by GrowthMeasurement model  
+  id?: string;
 }

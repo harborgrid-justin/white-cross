@@ -1,6 +1,6 @@
 /**
  * @fileoverview Vaccination repository interface.
- * Auto-generated repository interface for Vaccination data management.
+ * Repository interface for Vaccination data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Vaccination-specific operations
  */
 export interface IVaccinationRepository extends IRepository<any, any, any> {
-  // Add Vaccination-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Vaccination DTO
  */
 export interface CreateVaccinationDTO {
-  [key: string]: any;
+  // Properties defined by Vaccination model
+  id?: string;
 }
 
 /**
  * Update Vaccination DTO
  */
 export interface UpdateVaccinationDTO {
-  [key: string]: any;
+  // Properties defined by Vaccination model  
+  id?: string;
 }

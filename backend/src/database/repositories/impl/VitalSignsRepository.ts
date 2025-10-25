@@ -1,6 +1,6 @@
 /**
  * VitalSignsRepository Implementation
- * Auto-generated repository for VitalSigns data access
+ * Repository for VitalSigns data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class VitalSignsRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(VitalSigns, auditLogger, cacheManager, 'VitalSigns');
   }
-
-  /**
-   * Custom VitalSigns-specific methods can be added here
-   */
 }

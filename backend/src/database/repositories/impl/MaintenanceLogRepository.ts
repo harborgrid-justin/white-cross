@@ -1,6 +1,6 @@
 /**
  * MaintenanceLogRepository Implementation
- * Auto-generated repository for MaintenanceLog data access
+ * Repository for MaintenanceLog data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class MaintenanceLogRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(MaintenanceLog, auditLogger, cacheManager, 'MaintenanceLog');
   }
-
-  /**
-   * Custom MaintenanceLog-specific methods can be added here
-   */
 }

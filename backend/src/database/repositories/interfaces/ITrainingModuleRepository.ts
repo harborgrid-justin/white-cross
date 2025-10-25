@@ -1,6 +1,6 @@
 /**
  * @fileoverview TrainingModule repository interface.
- * Auto-generated repository interface for TrainingModule data management.
+ * Repository interface for TrainingModule data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with TrainingModule-specific operations
  */
 export interface ITrainingModuleRepository extends IRepository<any, any, any> {
-  // Add TrainingModule-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create TrainingModule DTO
  */
 export interface CreateTrainingModuleDTO {
-  [key: string]: any;
+  // Properties defined by TrainingModule model
+  id?: string;
 }
 
 /**
  * Update TrainingModule DTO
  */
 export interface UpdateTrainingModuleDTO {
-  [key: string]: any;
+  // Properties defined by TrainingModule model  
+  id?: string;
 }

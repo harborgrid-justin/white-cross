@@ -1,6 +1,6 @@
 /**
  * PurchaseOrderRepository Implementation
- * Auto-generated repository for PurchaseOrder data access
+ * Repository for PurchaseOrder data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class PurchaseOrderRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PurchaseOrder, auditLogger, cacheManager, 'PurchaseOrder');
   }
-
-  /**
-   * Custom PurchaseOrder-specific methods can be added here
-   */
 }

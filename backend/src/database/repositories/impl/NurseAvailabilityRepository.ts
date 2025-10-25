@@ -1,6 +1,6 @@
 /**
  * NurseAvailabilityRepository Implementation
- * Auto-generated repository for NurseAvailability data access
+ * Repository for NurseAvailability data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class NurseAvailabilityRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(NurseAvailability, auditLogger, cacheManager, 'NurseAvailability');
   }
-
-  /**
-   * Custom NurseAvailability-specific methods can be added here
-   */
 }

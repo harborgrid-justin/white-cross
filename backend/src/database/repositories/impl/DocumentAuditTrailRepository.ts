@@ -1,6 +1,6 @@
 /**
  * DocumentAuditTrailRepository Implementation
- * Auto-generated repository for DocumentAuditTrail data access
+ * Repository for DocumentAuditTrail data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class DocumentAuditTrailRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(DocumentAuditTrail, auditLogger, cacheManager, 'DocumentAuditTrail');
   }
-
-  /**
-   * Custom DocumentAuditTrail-specific methods can be added here
-   */
 }

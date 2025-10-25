@@ -1,6 +1,6 @@
 /**
  * @fileoverview MessageDelivery repository interface.
- * Auto-generated repository interface for MessageDelivery data management.
+ * Repository interface for MessageDelivery data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with MessageDelivery-specific operations
  */
 export interface IMessageDeliveryRepository extends IRepository<any, any, any> {
-  // Add MessageDelivery-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create MessageDelivery DTO
  */
 export interface CreateMessageDeliveryDTO {
-  [key: string]: any;
+  // Properties defined by MessageDelivery model
+  id?: string;
 }
 
 /**
  * Update MessageDelivery DTO
  */
 export interface UpdateMessageDeliveryDTO {
-  [key: string]: any;
+  // Properties defined by MessageDelivery model  
+  id?: string;
 }

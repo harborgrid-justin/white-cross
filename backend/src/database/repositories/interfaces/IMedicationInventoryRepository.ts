@@ -1,6 +1,6 @@
 /**
  * @fileoverview MedicationInventory repository interface.
- * Auto-generated repository interface for MedicationInventory data management.
+ * Repository interface for MedicationInventory data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with MedicationInventory-specific operations
  */
 export interface IMedicationInventoryRepository extends IRepository<any, any, any> {
-  // Add MedicationInventory-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create MedicationInventory DTO
  */
 export interface CreateMedicationInventoryDTO {
-  [key: string]: any;
+  // Properties defined by MedicationInventory model
+  id?: string;
 }
 
 /**
  * Update MedicationInventory DTO
  */
 export interface UpdateMedicationInventoryDTO {
-  [key: string]: any;
+  // Properties defined by MedicationInventory model  
+  id?: string;
 }

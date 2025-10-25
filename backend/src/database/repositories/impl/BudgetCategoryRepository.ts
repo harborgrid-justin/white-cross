@@ -1,6 +1,6 @@
 /**
  * BudgetCategoryRepository Implementation
- * Auto-generated repository for BudgetCategory data access
+ * Repository for BudgetCategory data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class BudgetCategoryRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(BudgetCategory, auditLogger, cacheManager, 'BudgetCategory');
   }
-
-  /**
-   * Custom BudgetCategory-specific methods can be added here
-   */
 }

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Message repository interface.
- * Auto-generated repository interface for Message data management.
+ * Repository interface for Message data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Message-specific operations
  */
 export interface IMessageRepository extends IRepository<any, any, any> {
-  // Add Message-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Message DTO
  */
 export interface CreateMessageDTO {
-  [key: string]: any;
+  // Properties defined by Message model
+  id?: string;
 }
 
 /**
  * Update Message DTO
  */
 export interface UpdateMessageDTO {
-  [key: string]: any;
+  // Properties defined by Message model  
+  id?: string;
 }

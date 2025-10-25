@@ -1,6 +1,6 @@
 /**
  * @fileoverview AppointmentWaitlist repository interface.
- * Auto-generated repository interface for AppointmentWaitlist data management.
+ * Repository interface for AppointmentWaitlist data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with AppointmentWaitlist-specific operations
  */
 export interface IAppointmentWaitlistRepository extends IRepository<any, any, any> {
-  // Add AppointmentWaitlist-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create AppointmentWaitlist DTO
  */
 export interface CreateAppointmentWaitlistDTO {
-  [key: string]: any;
+  // Properties defined by AppointmentWaitlist model
+  id?: string;
 }
 
 /**
  * Update AppointmentWaitlist DTO
  */
 export interface UpdateAppointmentWaitlistDTO {
-  [key: string]: any;
+  // Properties defined by AppointmentWaitlist model  
+  id?: string;
 }

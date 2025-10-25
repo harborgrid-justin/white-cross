@@ -1,6 +1,6 @@
 /**
  * IntegrationLogRepository Implementation
- * Auto-generated repository for IntegrationLog data access
+ * Repository for IntegrationLog data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class IntegrationLogRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(IntegrationLog, auditLogger, cacheManager, 'IntegrationLog');
   }
-
-  /**
-   * Custom IntegrationLog-specific methods can be added here
-   */
 }

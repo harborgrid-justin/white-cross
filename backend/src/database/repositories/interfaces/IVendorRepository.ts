@@ -1,6 +1,6 @@
 /**
  * @fileoverview Vendor repository interface.
- * Auto-generated repository interface for Vendor data management.
+ * Repository interface for Vendor data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Vendor-specific operations
  */
 export interface IVendorRepository extends IRepository<any, any, any> {
-  // Add Vendor-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Vendor DTO
  */
 export interface CreateVendorDTO {
-  [key: string]: any;
+  // Properties defined by Vendor model
+  id?: string;
 }
 
 /**
  * Update Vendor DTO
  */
 export interface UpdateVendorDTO {
-  [key: string]: any;
+  // Properties defined by Vendor model  
+  id?: string;
 }

@@ -1,6 +1,6 @@
 /**
  * LoginAttemptRepository Implementation
- * Auto-generated repository for LoginAttempt data access
+ * Repository for LoginAttempt data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class LoginAttemptRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(LoginAttempt, auditLogger, cacheManager, 'LoginAttempt');
   }
-
-  /**
-   * Custom LoginAttempt-specific methods can be added here
-   */
 }

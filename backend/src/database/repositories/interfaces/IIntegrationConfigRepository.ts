@@ -1,6 +1,6 @@
 /**
  * @fileoverview IntegrationConfig repository interface.
- * Auto-generated repository interface for IntegrationConfig data management.
+ * Repository interface for IntegrationConfig data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with IntegrationConfig-specific operations
  */
 export interface IIntegrationConfigRepository extends IRepository<any, any, any> {
-  // Add IntegrationConfig-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create IntegrationConfig DTO
  */
 export interface CreateIntegrationConfigDTO {
-  [key: string]: any;
+  // Properties defined by IntegrationConfig model
+  id?: string;
 }
 
 /**
  * Update IntegrationConfig DTO
  */
 export interface UpdateIntegrationConfigDTO {
-  [key: string]: any;
+  // Properties defined by IntegrationConfig model  
+  id?: string;
 }

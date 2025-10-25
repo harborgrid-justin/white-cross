@@ -1,6 +1,6 @@
 /**
  * @fileoverview StudentMedication repository interface.
- * Auto-generated repository interface for StudentMedication data management.
+ * Repository interface for StudentMedication data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with StudentMedication-specific operations
  */
 export interface IStudentMedicationRepository extends IRepository<any, any, any> {
-  // Add StudentMedication-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create StudentMedication DTO
  */
 export interface CreateStudentMedicationDTO {
-  [key: string]: any;
+  // Properties defined by StudentMedication model
+  id?: string;
 }
 
 /**
  * Update StudentMedication DTO
  */
 export interface UpdateStudentMedicationDTO {
-  [key: string]: any;
+  // Properties defined by StudentMedication model  
+  id?: string;
 }

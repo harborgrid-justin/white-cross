@@ -1,6 +1,6 @@
 /**
  * MessageDeliveryRepository Implementation
- * Auto-generated repository for MessageDelivery data access
+ * Repository for MessageDelivery data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class MessageDeliveryRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(MessageDelivery, auditLogger, cacheManager, 'MessageDelivery');
   }
-
-  /**
-   * Custom MessageDelivery-specific methods can be added here
-   */
 }

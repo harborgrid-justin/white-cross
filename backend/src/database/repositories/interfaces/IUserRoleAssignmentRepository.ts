@@ -1,6 +1,6 @@
 /**
  * @fileoverview UserRoleAssignment repository interface.
- * Auto-generated repository interface for UserRoleAssignment data management.
+ * Repository interface for UserRoleAssignment data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with UserRoleAssignment-specific operations
  */
 export interface IUserRoleAssignmentRepository extends IRepository<any, any, any> {
-  // Add UserRoleAssignment-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create UserRoleAssignment DTO
  */
 export interface CreateUserRoleAssignmentDTO {
-  [key: string]: any;
+  // Properties defined by UserRoleAssignment model
+  id?: string;
 }
 
 /**
  * Update UserRoleAssignment DTO
  */
 export interface UpdateUserRoleAssignmentDTO {
-  [key: string]: any;
+  // Properties defined by UserRoleAssignment model  
+  id?: string;
 }

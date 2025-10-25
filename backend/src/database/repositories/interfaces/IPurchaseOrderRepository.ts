@@ -1,6 +1,6 @@
 /**
  * @fileoverview PurchaseOrder repository interface.
- * Auto-generated repository interface for PurchaseOrder data management.
+ * Repository interface for PurchaseOrder data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with PurchaseOrder-specific operations
  */
 export interface IPurchaseOrderRepository extends IRepository<any, any, any> {
-  // Add PurchaseOrder-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create PurchaseOrder DTO
  */
 export interface CreatePurchaseOrderDTO {
-  [key: string]: any;
+  // Properties defined by PurchaseOrder model
+  id?: string;
 }
 
 /**
  * Update PurchaseOrder DTO
  */
 export interface UpdatePurchaseOrderDTO {
-  [key: string]: any;
+  // Properties defined by PurchaseOrder model  
+  id?: string;
 }

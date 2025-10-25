@@ -1,6 +1,6 @@
 /**
  * PolicyAcknowledgmentRepository Implementation
- * Auto-generated repository for PolicyAcknowledgment data access
+ * Repository for PolicyAcknowledgment data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class PolicyAcknowledgmentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PolicyAcknowledgment, auditLogger, cacheManager, 'PolicyAcknowledgment');
   }
-
-  /**
-   * Custom PolicyAcknowledgment-specific methods can be added here
-   */
 }

@@ -1,6 +1,6 @@
 /**
  * @fileoverview ComplianceChecklistItem repository interface.
- * Auto-generated repository interface for ComplianceChecklistItem data management.
+ * Repository interface for ComplianceChecklistItem data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with ComplianceChecklistItem-specific operations
  */
 export interface IComplianceChecklistItemRepository extends IRepository<any, any, any> {
-  // Add ComplianceChecklistItem-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create ComplianceChecklistItem DTO
  */
 export interface CreateComplianceChecklistItemDTO {
-  [key: string]: any;
+  // Properties defined by ComplianceChecklistItem model
+  id?: string;
 }
 
 /**
  * Update ComplianceChecklistItem DTO
  */
 export interface UpdateComplianceChecklistItemDTO {
-  [key: string]: any;
+  // Properties defined by ComplianceChecklistItem model  
+  id?: string;
 }

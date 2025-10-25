@@ -1,6 +1,6 @@
 /**
  * SystemConfigurationRepository Implementation
- * Auto-generated repository for SystemConfiguration data access
+ * Repository for SystemConfiguration data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class SystemConfigurationRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(SystemConfiguration, auditLogger, cacheManager, 'SystemConfiguration');
   }
-
-  /**
-   * Custom SystemConfiguration-specific methods can be added here
-   */
 }

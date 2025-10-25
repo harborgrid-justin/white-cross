@@ -1,6 +1,6 @@
 /**
  * @fileoverview Screening repository interface.
- * Auto-generated repository interface for Screening data management.
+ * Repository interface for Screening data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Screening-specific operations
  */
 export interface IScreeningRepository extends IRepository<any, any, any> {
-  // Add Screening-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Screening DTO
  */
 export interface CreateScreeningDTO {
-  [key: string]: any;
+  // Properties defined by Screening model
+  id?: string;
 }
 
 /**
  * Update Screening DTO
  */
 export interface UpdateScreeningDTO {
-  [key: string]: any;
+  // Properties defined by Screening model  
+  id?: string;
 }

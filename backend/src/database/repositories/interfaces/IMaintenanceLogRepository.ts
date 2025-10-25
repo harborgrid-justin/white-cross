@@ -1,6 +1,6 @@
 /**
  * @fileoverview MaintenanceLog repository interface.
- * Auto-generated repository interface for MaintenanceLog data management.
+ * Repository interface for MaintenanceLog data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with MaintenanceLog-specific operations
  */
 export interface IMaintenanceLogRepository extends IRepository<any, any, any> {
-  // Add MaintenanceLog-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create MaintenanceLog DTO
  */
 export interface CreateMaintenanceLogDTO {
-  [key: string]: any;
+  // Properties defined by MaintenanceLog model
+  id?: string;
 }
 
 /**
  * Update MaintenanceLog DTO
  */
 export interface UpdateMaintenanceLogDTO {
-  [key: string]: any;
+  // Properties defined by MaintenanceLog model  
+  id?: string;
 }

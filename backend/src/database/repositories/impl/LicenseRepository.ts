@@ -1,6 +1,6 @@
 /**
  * LicenseRepository Implementation
- * Auto-generated repository for License data access
+ * Repository for License data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class LicenseRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(License, auditLogger, cacheManager, 'License');
   }
-
-  /**
-   * Custom License-specific methods can be added here
-   */
 }

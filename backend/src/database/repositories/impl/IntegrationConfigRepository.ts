@@ -1,6 +1,6 @@
 /**
  * IntegrationConfigRepository Implementation
- * Auto-generated repository for IntegrationConfig data access
+ * Repository for IntegrationConfig data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class IntegrationConfigRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(IntegrationConfig, auditLogger, cacheManager, 'IntegrationConfig');
   }
-
-  /**
-   * Custom IntegrationConfig-specific methods can be added here
-   */
 }

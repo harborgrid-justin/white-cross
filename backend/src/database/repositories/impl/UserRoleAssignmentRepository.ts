@@ -1,6 +1,6 @@
 /**
  * UserRoleAssignmentRepository Implementation
- * Auto-generated repository for UserRoleAssignment data access
+ * Repository for UserRoleAssignment data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class UserRoleAssignmentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(UserRoleAssignment, auditLogger, cacheManager, 'UserRoleAssignment');
   }
-
-  /**
-   * Custom UserRoleAssignment-specific methods can be added here
-   */
 }

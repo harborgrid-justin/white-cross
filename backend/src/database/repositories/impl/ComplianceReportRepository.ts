@@ -1,6 +1,6 @@
 /**
  * ComplianceReportRepository Implementation
- * Auto-generated repository for ComplianceReport data access
+ * Repository for ComplianceReport data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ComplianceReportRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ComplianceReport, auditLogger, cacheManager, 'ComplianceReport');
   }
-
-  /**
-   * Custom ComplianceReport-specific methods can be added here
-   */
 }

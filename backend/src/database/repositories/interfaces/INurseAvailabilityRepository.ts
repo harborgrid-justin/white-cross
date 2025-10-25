@@ -1,6 +1,6 @@
 /**
  * @fileoverview NurseAvailability repository interface.
- * Auto-generated repository interface for NurseAvailability data management.
+ * Repository interface for NurseAvailability data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with NurseAvailability-specific operations
  */
 export interface INurseAvailabilityRepository extends IRepository<any, any, any> {
-  // Add NurseAvailability-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create NurseAvailability DTO
  */
 export interface CreateNurseAvailabilityDTO {
-  [key: string]: any;
+  // Properties defined by NurseAvailability model
+  id?: string;
 }
 
 /**
  * Update NurseAvailability DTO
  */
 export interface UpdateNurseAvailabilityDTO {
-  [key: string]: any;
+  // Properties defined by NurseAvailability model  
+  id?: string;
 }

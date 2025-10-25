@@ -1,6 +1,6 @@
 /**
  * TrainingCompletionRepository Implementation
- * Auto-generated repository for TrainingCompletion data access
+ * Repository for TrainingCompletion data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class TrainingCompletionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(TrainingCompletion, auditLogger, cacheManager, 'TrainingCompletion');
   }
-
-  /**
-   * Custom TrainingCompletion-specific methods can be added here
-   */
 }

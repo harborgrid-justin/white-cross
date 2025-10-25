@@ -1,6 +1,6 @@
 /**
  * RolePermissionRepository Implementation
- * Auto-generated repository for RolePermission data access
+ * Repository for RolePermission data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class RolePermissionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(RolePermission, auditLogger, cacheManager, 'RolePermission');
   }
-
-  /**
-   * Custom RolePermission-specific methods can be added here
-   */
 }

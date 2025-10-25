@@ -1,6 +1,6 @@
 /**
  * @fileoverview AppointmentReminder repository interface.
- * Auto-generated repository interface for AppointmentReminder data management.
+ * Repository interface for AppointmentReminder data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with AppointmentReminder-specific operations
  */
 export interface IAppointmentReminderRepository extends IRepository<any, any, any> {
-  // Add AppointmentReminder-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create AppointmentReminder DTO
  */
 export interface CreateAppointmentReminderDTO {
-  [key: string]: any;
+  // Properties defined by AppointmentReminder model
+  id?: string;
 }
 
 /**
  * Update AppointmentReminder DTO
  */
 export interface UpdateAppointmentReminderDTO {
-  [key: string]: any;
+  // Properties defined by AppointmentReminder model  
+  id?: string;
 }

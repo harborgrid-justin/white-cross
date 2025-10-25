@@ -1,6 +1,6 @@
 /**
  * @fileoverview InventoryItem repository interface.
- * Auto-generated repository interface for InventoryItem data management.
+ * Repository interface for InventoryItem data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with InventoryItem-specific operations
  */
 export interface IInventoryItemRepository extends IRepository<any, any, any> {
-  // Add InventoryItem-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create InventoryItem DTO
  */
 export interface CreateInventoryItemDTO {
-  [key: string]: any;
+  // Properties defined by InventoryItem model
+  id?: string;
 }
 
 /**
  * Update InventoryItem DTO
  */
 export interface UpdateInventoryItemDTO {
-  [key: string]: any;
+  // Properties defined by InventoryItem model  
+  id?: string;
 }

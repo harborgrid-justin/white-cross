@@ -1,6 +1,6 @@
 /**
  * SessionRepository Implementation
- * Auto-generated repository for Session data access
+ * Repository for Session data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class SessionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Session, auditLogger, cacheManager, 'Session');
   }
-
-  /**
-   * Custom Session-specific methods can be added here
-   */
 }

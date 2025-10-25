@@ -1,6 +1,6 @@
 /**
  * StudentMedicationRepository Implementation
- * Auto-generated repository for StudentMedication data access
+ * Repository for StudentMedication data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class StudentMedicationRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(StudentMedication, auditLogger, cacheManager, 'StudentMedication');
   }
-
-  /**
-   * Custom StudentMedication-specific methods can be added here
-   */
 }

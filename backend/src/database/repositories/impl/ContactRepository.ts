@@ -1,6 +1,6 @@
 /**
  * ContactRepository Implementation
- * Auto-generated repository for Contact data access
+ * Repository for Contact data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ContactRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Contact, auditLogger, cacheManager, 'Contact');
   }
-
-  /**
-   * Custom Contact-specific methods can be added here
-   */
 }

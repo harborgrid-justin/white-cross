@@ -1,6 +1,6 @@
 /**
  * @fileoverview IntegrationLog repository interface.
- * Auto-generated repository interface for IntegrationLog data management.
+ * Repository interface for IntegrationLog data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with IntegrationLog-specific operations
  */
 export interface IIntegrationLogRepository extends IRepository<any, any, any> {
-  // Add IntegrationLog-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create IntegrationLog DTO
  */
 export interface CreateIntegrationLogDTO {
-  [key: string]: any;
+  // Properties defined by IntegrationLog model
+  id?: string;
 }
 
 /**
  * Update IntegrationLog DTO
  */
 export interface UpdateIntegrationLogDTO {
-  [key: string]: any;
+  // Properties defined by IntegrationLog model  
+  id?: string;
 }

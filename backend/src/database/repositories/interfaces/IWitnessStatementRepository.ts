@@ -1,6 +1,6 @@
 /**
  * @fileoverview WitnessStatement repository interface.
- * Auto-generated repository interface for WitnessStatement data management.
+ * Repository interface for WitnessStatement data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with WitnessStatement-specific operations
  */
 export interface IWitnessStatementRepository extends IRepository<any, any, any> {
-  // Add WitnessStatement-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create WitnessStatement DTO
  */
 export interface CreateWitnessStatementDTO {
-  [key: string]: any;
+  // Properties defined by WitnessStatement model
+  id?: string;
 }
 
 /**
  * Update WitnessStatement DTO
  */
 export interface UpdateWitnessStatementDTO {
-  [key: string]: any;
+  // Properties defined by WitnessStatement model  
+  id?: string;
 }

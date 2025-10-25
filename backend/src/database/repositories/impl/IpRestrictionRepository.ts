@@ -1,6 +1,6 @@
 /**
  * IpRestrictionRepository Implementation
- * Auto-generated repository for IpRestriction data access
+ * Repository for IpRestriction data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class IpRestrictionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(IpRestriction, auditLogger, cacheManager, 'IpRestriction');
   }
-
-  /**
-   * Custom IpRestriction-specific methods can be added here
-   */
 }

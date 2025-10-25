@@ -1,6 +1,6 @@
 /**
  * @fileoverview DocumentAuditTrail repository interface.
- * Auto-generated repository interface for DocumentAuditTrail data management.
+ * Repository interface for DocumentAuditTrail data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with DocumentAuditTrail-specific operations
  */
 export interface IDocumentAuditTrailRepository extends IRepository<any, any, any> {
-  // Add DocumentAuditTrail-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create DocumentAuditTrail DTO
  */
 export interface CreateDocumentAuditTrailDTO {
-  [key: string]: any;
+  // Properties defined by DocumentAuditTrail model
+  id?: string;
 }
 
 /**
  * Update DocumentAuditTrail DTO
  */
 export interface UpdateDocumentAuditTrailDTO {
-  [key: string]: any;
+  // Properties defined by DocumentAuditTrail model  
+  id?: string;
 }

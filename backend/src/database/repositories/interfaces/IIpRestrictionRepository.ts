@@ -1,6 +1,6 @@
 /**
  * @fileoverview IpRestriction repository interface.
- * Auto-generated repository interface for IpRestriction data management.
+ * Repository interface for IpRestriction data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with IpRestriction-specific operations
  */
 export interface IIpRestrictionRepository extends IRepository<any, any, any> {
-  // Add IpRestriction-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create IpRestriction DTO
  */
 export interface CreateIpRestrictionDTO {
-  [key: string]: any;
+  // Properties defined by IpRestriction model
+  id?: string;
 }
 
 /**
  * Update IpRestriction DTO
  */
 export interface UpdateIpRestrictionDTO {
-  [key: string]: any;
+  // Properties defined by IpRestriction model  
+  id?: string;
 }

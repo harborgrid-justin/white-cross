@@ -1,6 +1,6 @@
 /**
  * ComplianceChecklistItemRepository Implementation
- * Auto-generated repository for ComplianceChecklistItem data access
+ * Repository for ComplianceChecklistItem data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ComplianceChecklistItemRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ComplianceChecklistItem, auditLogger, cacheManager, 'ComplianceChecklistItem');
   }
-
-  /**
-   * Custom ComplianceChecklistItem-specific methods can be added here
-   */
 }

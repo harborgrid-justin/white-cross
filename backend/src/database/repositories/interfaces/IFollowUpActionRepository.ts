@@ -1,6 +1,6 @@
 /**
  * @fileoverview FollowUpAction repository interface.
- * Auto-generated repository interface for FollowUpAction data management.
+ * Repository interface for FollowUpAction data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with FollowUpAction-specific operations
  */
 export interface IFollowUpActionRepository extends IRepository<any, any, any> {
-  // Add FollowUpAction-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create FollowUpAction DTO
  */
 export interface CreateFollowUpActionDTO {
-  [key: string]: any;
+  // Properties defined by FollowUpAction model
+  id?: string;
 }
 
 /**
  * Update FollowUpAction DTO
  */
 export interface UpdateFollowUpActionDTO {
-  [key: string]: any;
+  // Properties defined by FollowUpAction model  
+  id?: string;
 }

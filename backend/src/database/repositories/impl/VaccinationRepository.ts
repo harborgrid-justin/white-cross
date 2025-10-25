@@ -1,6 +1,6 @@
 /**
  * VaccinationRepository Implementation
- * Auto-generated repository for Vaccination data access
+ * Repository for Vaccination data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class VaccinationRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Vaccination, auditLogger, cacheManager, 'Vaccination');
   }
-
-  /**
-   * Custom Vaccination-specific methods can be added here
-   */
 }

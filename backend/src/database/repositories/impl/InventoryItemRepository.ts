@@ -1,6 +1,6 @@
 /**
  * InventoryItemRepository Implementation
- * Auto-generated repository for InventoryItem data access
+ * Repository for InventoryItem data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class InventoryItemRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(InventoryItem, auditLogger, cacheManager, 'InventoryItem');
   }
-
-  /**
-   * Custom InventoryItem-specific methods can be added here
-   */
 }

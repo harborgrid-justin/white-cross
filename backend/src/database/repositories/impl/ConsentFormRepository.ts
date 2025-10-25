@@ -1,6 +1,6 @@
 /**
  * ConsentFormRepository Implementation
- * Auto-generated repository for ConsentForm data access
+ * Repository for ConsentForm data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ConsentFormRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ConsentForm, auditLogger, cacheManager, 'ConsentForm');
   }
-
-  /**
-   * Custom ConsentForm-specific methods can be added here
-   */
 }

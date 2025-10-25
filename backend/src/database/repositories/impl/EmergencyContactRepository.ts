@@ -1,6 +1,6 @@
 /**
  * EmergencyContactRepository Implementation
- * Auto-generated repository for EmergencyContact data access
+ * Repository for EmergencyContact data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class EmergencyContactRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(EmergencyContact, auditLogger, cacheManager, 'EmergencyContact');
   }
-
-  /**
-   * Custom EmergencyContact-specific methods can be added here
-   */
 }

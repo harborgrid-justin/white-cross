@@ -1,6 +1,6 @@
 /**
  * MessageRepository Implementation
- * Auto-generated repository for Message data access
+ * Repository for Message data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class MessageRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Message, auditLogger, cacheManager, 'Message');
   }
-
-  /**
-   * Custom Message-specific methods can be added here
-   */
 }

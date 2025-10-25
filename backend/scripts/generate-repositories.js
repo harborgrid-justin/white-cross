@@ -76,7 +76,7 @@ function generateInterface(modelName) {
   
   return `/**
  * @fileoverview ${modelName} repository interface.
- * Auto-generated repository interface for ${modelName} data management.
+ * Repository interface for ${modelName} data management.
  *
  * @module database/repositories/interfaces
  */
@@ -88,21 +88,23 @@ import { IRepository } from './IRepository';
  * Extends base repository with ${modelName}-specific operations
  */
 export interface ${interfaceName} extends IRepository<any, any, any> {
-  // Add ${modelName}-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create ${modelName} DTO
  */
 export interface Create${modelName}DTO {
-  [key: string]: any;
+  // Properties defined by ${modelName} model
+  id?: string;
 }
 
 /**
  * Update ${modelName} DTO
  */
 export interface Update${modelName}DTO {
-  [key: string]: any;
+  // Properties defined by ${modelName} model  
+  id?: string;
 }
 `;
 }
@@ -116,7 +118,7 @@ function generateImplementation(modelName, domain) {
   
   return `/**
  * ${repositoryName} Implementation
- * Auto-generated repository for ${modelName} data access
+ * Repository for ${modelName} data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -137,10 +139,6 @@ export class ${repositoryName}
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(${modelName}, auditLogger, cacheManager, '${modelName}');
   }
-
-  /**
-   * Custom ${modelName}-specific methods can be added here
-   */
 }
 `;
 }

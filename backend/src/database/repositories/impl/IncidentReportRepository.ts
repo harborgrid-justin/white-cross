@@ -1,6 +1,6 @@
 /**
  * IncidentReportRepository Implementation
- * Auto-generated repository for IncidentReport data access
+ * Repository for IncidentReport data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class IncidentReportRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(IncidentReport, auditLogger, cacheManager, 'IncidentReport');
   }
-
-  /**
-   * Custom IncidentReport-specific methods can be added here
-   */
 }

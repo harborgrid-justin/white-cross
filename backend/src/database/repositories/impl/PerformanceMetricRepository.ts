@@ -1,6 +1,6 @@
 /**
  * PerformanceMetricRepository Implementation
- * Auto-generated repository for PerformanceMetric data access
+ * Repository for PerformanceMetric data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class PerformanceMetricRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PerformanceMetric, auditLogger, cacheManager, 'PerformanceMetric');
   }
-
-  /**
-   * Custom PerformanceMetric-specific methods can be added here
-   */
 }

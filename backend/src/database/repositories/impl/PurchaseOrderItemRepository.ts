@@ -1,6 +1,6 @@
 /**
  * PurchaseOrderItemRepository Implementation
- * Auto-generated repository for PurchaseOrderItem data access
+ * Repository for PurchaseOrderItem data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class PurchaseOrderItemRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PurchaseOrderItem, auditLogger, cacheManager, 'PurchaseOrderItem');
   }
-
-  /**
-   * Custom PurchaseOrderItem-specific methods can be added here
-   */
 }

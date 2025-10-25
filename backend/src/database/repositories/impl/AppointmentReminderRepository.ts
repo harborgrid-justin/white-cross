@@ -1,6 +1,6 @@
 /**
  * AppointmentReminderRepository Implementation
- * Auto-generated repository for AppointmentReminder data access
+ * Repository for AppointmentReminder data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class AppointmentReminderRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(AppointmentReminder, auditLogger, cacheManager, 'AppointmentReminder');
   }
-
-  /**
-   * Custom AppointmentReminder-specific methods can be added here
-   */
 }

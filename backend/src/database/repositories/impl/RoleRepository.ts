@@ -1,6 +1,6 @@
 /**
  * RoleRepository Implementation
- * Auto-generated repository for Role data access
+ * Repository for Role data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class RoleRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Role, auditLogger, cacheManager, 'Role');
   }
-
-  /**
-   * Custom Role-specific methods can be added here
-   */
 }

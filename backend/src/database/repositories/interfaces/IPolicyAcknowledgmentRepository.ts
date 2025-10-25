@@ -1,6 +1,6 @@
 /**
  * @fileoverview PolicyAcknowledgment repository interface.
- * Auto-generated repository interface for PolicyAcknowledgment data management.
+ * Repository interface for PolicyAcknowledgment data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with PolicyAcknowledgment-specific operations
  */
 export interface IPolicyAcknowledgmentRepository extends IRepository<any, any, any> {
-  // Add PolicyAcknowledgment-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create PolicyAcknowledgment DTO
  */
 export interface CreatePolicyAcknowledgmentDTO {
-  [key: string]: any;
+  // Properties defined by PolicyAcknowledgment model
+  id?: string;
 }
 
 /**
  * Update PolicyAcknowledgment DTO
  */
 export interface UpdatePolicyAcknowledgmentDTO {
-  [key: string]: any;
+  // Properties defined by PolicyAcknowledgment model  
+  id?: string;
 }

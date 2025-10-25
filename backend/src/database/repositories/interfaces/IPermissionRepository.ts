@@ -1,6 +1,6 @@
 /**
  * @fileoverview Permission repository interface.
- * Auto-generated repository interface for Permission data management.
+ * Repository interface for Permission data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Permission-specific operations
  */
 export interface IPermissionRepository extends IRepository<any, any, any> {
-  // Add Permission-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Permission DTO
  */
 export interface CreatePermissionDTO {
-  [key: string]: any;
+  // Properties defined by Permission model
+  id?: string;
 }
 
 /**
  * Update Permission DTO
  */
 export interface UpdatePermissionDTO {
-  [key: string]: any;
+  // Properties defined by Permission model  
+  id?: string;
 }

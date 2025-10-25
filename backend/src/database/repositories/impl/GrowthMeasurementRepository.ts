@@ -1,6 +1,6 @@
 /**
  * GrowthMeasurementRepository Implementation
- * Auto-generated repository for GrowthMeasurement data access
+ * Repository for GrowthMeasurement data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class GrowthMeasurementRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(GrowthMeasurement, auditLogger, cacheManager, 'GrowthMeasurement');
   }
-
-  /**
-   * Custom GrowthMeasurement-specific methods can be added here
-   */
 }

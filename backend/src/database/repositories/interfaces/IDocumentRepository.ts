@@ -1,6 +1,6 @@
 /**
  * @fileoverview Document repository interface.
- * Auto-generated repository interface for Document data management.
+ * Repository interface for Document data management.
  *
  * @module database/repositories/interfaces
  */
@@ -12,19 +12,21 @@ import { IRepository } from './IRepository';
  * Extends base repository with Document-specific operations
  */
 export interface IDocumentRepository extends IRepository<any, any, any> {
-  // Add Document-specific methods here if needed
+  // Domain-specific methods can be added here
 }
 
 /**
  * Create Document DTO
  */
 export interface CreateDocumentDTO {
-  [key: string]: any;
+  // Properties defined by Document model
+  id?: string;
 }
 
 /**
  * Update Document DTO
  */
 export interface UpdateDocumentDTO {
-  [key: string]: any;
+  // Properties defined by Document model  
+  id?: string;
 }

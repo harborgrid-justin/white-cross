@@ -1,6 +1,6 @@
 /**
  * PermissionRepository Implementation
- * Auto-generated repository for Permission data access
+ * Repository for Permission data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class PermissionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Permission, auditLogger, cacheManager, 'Permission');
   }
-
-  /**
-   * Custom Permission-specific methods can be added here
-   */
 }

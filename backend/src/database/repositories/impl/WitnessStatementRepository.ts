@@ -1,6 +1,6 @@
 /**
  * WitnessStatementRepository Implementation
- * Auto-generated repository for WitnessStatement data access
+ * Repository for WitnessStatement data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class WitnessStatementRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(WitnessStatement, auditLogger, cacheManager, 'WitnessStatement');
   }
-
-  /**
-   * Custom WitnessStatement-specific methods can be added here
-   */
 }

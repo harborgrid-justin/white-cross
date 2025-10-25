@@ -1,6 +1,6 @@
 /**
  * FollowUpActionRepository Implementation
- * Auto-generated repository for FollowUpAction data access
+ * Repository for FollowUpAction data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class FollowUpActionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(FollowUpAction, auditLogger, cacheManager, 'FollowUpAction');
   }
-
-  /**
-   * Custom FollowUpAction-specific methods can be added here
-   */
 }

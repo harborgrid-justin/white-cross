@@ -1,6 +1,6 @@
 /**
  * ConfigurationHistoryRepository Implementation
- * Auto-generated repository for ConfigurationHistory data access
+ * Repository for ConfigurationHistory data access with CRUD operations
  */
 
 import { BaseRepository, RepositoryError } from '../base/BaseRepository';
@@ -21,8 +21,4 @@ export class ConfigurationHistoryRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ConfigurationHistory, auditLogger, cacheManager, 'ConfigurationHistory');
   }
-
-  /**
-   * Custom ConfigurationHistory-specific methods can be added here
-   */
 }
