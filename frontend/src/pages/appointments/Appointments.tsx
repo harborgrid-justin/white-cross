@@ -107,16 +107,17 @@ const Appointments: React.FC = () => {
     try {
       setCancelLoading(true);
       await appointmentsApi.cancel(selectedAppointment.id, cancelReason || undefined);
+      
       setShowCancelModal(false);
       setSelectedAppointment(null);
       setCancelReason('');
-      setCancelLoading(false);
 
       // Reload appointments list
       await loadAppointments();
     } catch (err) {
       setError('Failed to cancel appointment');
       console.error('Failed to cancel appointment:', err);
+    } finally {
       setCancelLoading(false);
     }
   };

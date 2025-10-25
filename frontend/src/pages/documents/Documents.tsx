@@ -166,16 +166,16 @@ const Documents: React.FC = () => {
     try {
       setDeleteLoading(true);
       await documentsApi.deleteDocument(selectedDocument.id);
-      setShowDeleteModal(false);
-      setDeleteLoading(false);
-
+      
       // Remove from local state
       setDocuments(prevDocs => prevDocs.filter(d => d.id !== selectedDocument.id));
       setSelectedDocument(null);
+      setShowDeleteModal(false);
     } catch (err) {
       console.error('Failed to delete document:', err);
+      alert('Failed to delete document. Please try again.');
+    } finally {
       setDeleteLoading(false);
-      // TODO: Show error toast
     }
   };
 

@@ -192,16 +192,16 @@ const EmergencyContacts: React.FC = () => {
     try {
       setDeleteLoading(true);
       await contactsApi.delete(selectedContact.id);
-      setShowDeleteModal(false);
-      setDeleteLoading(false);
-
+      
       // Remove from local state
       setContacts(prevContacts => prevContacts.filter(c => c.id !== selectedContact.id));
       setSelectedContact(null);
+      setShowDeleteModal(false);
     } catch (err) {
       console.error('Failed to delete contact:', err);
+      alert('Failed to delete contact. Please try again.');
+    } finally {
       setDeleteLoading(false);
-      // TODO: Show error toast
     }
   };
 
