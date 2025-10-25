@@ -711,6 +711,178 @@ export type DocumentSortField = 'createdAt' | 'updatedAt' | 'title' | 'category'
 export type DocumentSortOrder = 'ASC' | 'DESC';
 
 // ============================================================================
+// Advanced Search and Bulk Operations
+// ============================================================================
+
+/**
+ * Signature Type Enum
+ * Types of signatures supported in the system
+ */
+export enum SignatureType {
+  DIGITAL = 'DIGITAL',
+  ELECTRONIC = 'ELECTRONIC',
+  BIOMETRIC = 'BIOMETRIC',
+  PIN = 'PIN',
+  HAND_SIGNATURE = 'HAND_SIGNATURE',
+}
+
+/**
+ * Advanced Search Filters
+ * Extended filtering options for document search
+ */
+export interface AdvancedSearchFilters extends DocumentFilters {
+  fullTextSearch?: string;
+  tags?: string[];
+  metadataFilters?: Record<string, any>;
+  uploadedByIds?: string[];
+  sharedWithIds?: string[];
+  signedStatus?: 'SIGNED' | 'UNSIGNED' | 'PENDING';
+  hasAttachments?: boolean;
+  minVersion?: number;
+  maxVersion?: number;
+  retentionStatus?: 'ACTIVE' | 'ARCHIVED' | 'EXPIRED';
+}
+
+/**
+ * Search Sort Options
+ * Configuration for sorting search results
+ */
+export interface SearchSortOptions {
+  field: DocumentSortField;
+  order: DocumentSortOrder;
+}
+
+/**
+ * Search Documents Request
+ * Full request payload for advanced document search
+ */
+export interface SearchDocumentsRequest {
+  query?: string;
+  filters?: AdvancedSearchFilters;
+  sortOptions?: SearchSortOptions;
+  page?: number;
+  pageSize?: number;
+  includeArchived?: boolean;
+}
+
+/**
+ * Search Results
+ * Response containing search results with metadata
+ */
+export interface SearchResults {
+  documents: Document[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  facets?: {
+    categories?: Record<DocumentCategory, number>;
+    statuses?: Record<DocumentStatus, number>;
+    years?: Record<string, number>;
+  };
+  suggestions?: string[];
+}
+
+/**
+ * Bulk Download Options
+ * Configuration options for bulk download operations
+ */
+export interface BulkDownloadOptions {
+  format?: 'ZIP' | 'TAR';
+  includeMetadata?: boolean;
+  compression?: 'NONE' | 'FAST' | 'BEST';
+  maxSize?: number; // Maximum size in bytes
+}
+
+/**
+ * Bulk Download Request
+ * Request to download multiple documents
+ */
+export interface BulkDownloadRequest {
+  documentIds: string[];
+  options?: BulkDownloadOptions;
+  includeVersions?: boolean;
+}
+
+/**
+ * Bulk Download Progress
+ * Progress tracking for bulk download operations
+ */
+export interface BulkDownloadProgress {
+  processed: number;
+  total: number;
+  currentDocument?: string;
+  bytesProcessed: number;
+  totalBytes: number;
+  estimatedTimeRemaining?: number; // seconds
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+}
+
+/**
+ * Bulk Download Response
+ * Response from bulk download operation
+ */
+export interface BulkDownloadResponse {
+  downloadUrl: string;
+  blob?: Blob;
+  filename: string;
+  size: number;
+  expiresAt: string; // ISO 8601 datetime
+  documentCount: number;
+}
+
+/**
+ * Version Comparison Request
+ * Request to compare two document versions
+ */
+export interface VersionComparisonRequest {
+  documentId: string;
+  version1Id: string;
+  version2Id: string;
+  compareOptions?: {
+    ignoreWhitespace?: boolean;
+    showDiff?: boolean;
+  };
+}
+
+/**
+ * Version Comparison
+ * Result of comparing two document versions
+ */
+export interface VersionComparison {
+  documentId: string;
+  version1: DocumentVersion;
+  version2: DocumentVersion;
+  differences: {
+    field: string;
+    oldValue: any;
+    newValue: any;
+    type: 'ADDED' | 'REMOVED' | 'MODIFIED';
+  }[];
+  similarity: number; // 0-100 percentage
+  hasDifferences: boolean;
+}
+
+/**
+ * Signature Verification Result
+ * Result of signature verification operation
+ */
+export interface SignatureVerificationResult {
+  signatureId: string;
+  documentId: string;
+  isValid: boolean;
+  signedBy: string;
+  signedAt: string;
+  signatureType: SignatureType;
+  certificateChain?: string[];
+  trustLevel: 'TRUSTED' | 'UNTRUSTED' | 'UNKNOWN';
+  verificationMethod: string;
+  timestamp: string;
+  errors?: string[];
+  warnings?: string[];
+}
+
+// ============================================================================
 // Constants and Mappings
 // ============================================================================
 

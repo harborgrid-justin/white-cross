@@ -418,6 +418,67 @@ export const documentFiltersSchema = z.object({
   hasSignatures: z.boolean().optional(),
 });
 
+/**
+ * Advanced Search Filters Schema
+ */
+export const advancedSearchFiltersSchema = documentFiltersSchema.extend({
+  fullTextSearch: z.string().max(500).optional(),
+  tags: z.array(z.string()).max(MAX_TAGS_COUNT).optional(),
+  metadataFilters: z.record(z.any()).optional(),
+  uploadedByIds: z.array(uuidSchema).optional(),
+  sharedWithIds: z.array(uuidSchema).optional(),
+  signedStatus: z.enum(['SIGNED', 'UNSIGNED', 'PENDING']).optional(),
+  hasAttachments: z.boolean().optional(),
+  minVersion: z.number().int().min(1).optional(),
+  maxVersion: z.number().int().min(1).optional(),
+  retentionStatus: z.enum(['ACTIVE', 'ARCHIVED', 'EXPIRED']).optional(),
+});
+
+/**
+ * Search Documents Request Schema
+ */
+export const searchDocumentsRequestSchema = z.object({
+  query: z.string().max(500).optional(),
+  filters: advancedSearchFiltersSchema.optional(),
+  sortOptions: z.object({
+    field: z.enum(['createdAt', 'updatedAt', 'title', 'category', 'status', 'fileSize', 'version']),
+    order: z.enum(['ASC', 'DESC']),
+  }).optional(),
+  page: z.number().int().min(1).optional().default(1),
+  pageSize: z.number().int().min(1).max(100).optional().default(20),
+  includeArchived: z.boolean().optional().default(false),
+});
+
+/**
+ * Bulk Download Request Schema
+ */
+export const bulkDownloadRequestSchema = z.object({
+  documentIds: z.array(uuidSchema).min(1, 'At least one document ID must be provided').max(100, 'Cannot download more than 100 documents at once'),
+  options: z.object({
+    format: z.enum(['ZIP', 'TAR']).optional().default('ZIP'),
+    includeMetadata: z.boolean().optional().default(true),
+    compression: z.enum(['NONE', 'FAST', 'BEST']).optional().default('FAST'),
+    maxSize: z.number().int().positive().optional(),
+  }).optional(),
+  includeVersions: z.boolean().optional().default(false),
+});
+
+/**
+ * Version Comparison Request Schema
+ */
+export const versionComparisonSchema = z.object({
+  documentId: uuidSchema,
+  version1Id: uuidSchema,
+  version2Id: uuidSchema,
+  compareOptions: z.object({
+    ignoreWhitespace: z.boolean().optional().default(false),
+    showDiff: z.boolean().optional().default(true),
+  }).optional(),
+}).refine(
+  (data) => data.version1Id !== data.version2Id,
+  'Cannot compare a version with itself'
+);
+
 // ============================================================================
 // HIPAA Compliance Validation
 // ============================================================================
@@ -491,3 +552,7 @@ export type ShareDocumentInput = z.infer<typeof shareDocumentSchema>;
 export type BulkDeleteDocumentsInput = z.infer<typeof bulkDeleteDocumentsSchema>;
 export type FileUploadInput = z.infer<typeof fileUploadSchema>;
 export type DocumentFiltersInput = z.infer<typeof documentFiltersSchema>;
+export type AdvancedSearchFiltersInput = z.infer<typeof advancedSearchFiltersSchema>;
+export type SearchDocumentsRequestInput = z.infer<typeof searchDocumentsRequestSchema>;
+export type BulkDownloadRequestInput = z.infer<typeof bulkDownloadRequestSchema>;
+export type VersionComparisonInput = z.infer<typeof versionComparisonSchema>;
