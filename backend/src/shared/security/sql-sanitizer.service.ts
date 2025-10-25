@@ -70,7 +70,7 @@
  *
  * const sortField = validateSortField(userInput.sortBy, 'students');
  * const sortOrder = validateSortOrder(userInput.order);
- * const query = `SELECT * FROM students ORDER BY ${sortField} ${sortOrder}`;
+ * const query = 'SELECT * FROM students ORDER BY ' + sortField + ' ' + sortOrder;
  *
  * @example
  * // Safe LIKE pattern for search
@@ -244,7 +244,7 @@ export type SortOrder = typeof ALLOWED_SORT_ORDERS[number];
  * // Throw from validation function
  * if (!allowedFields.includes(field)) {
  *   throw new SqlInjectionError(
- *     `Invalid sort field: ${field}`,
+ *     'Invalid sort field: ' + field,
  *     field
  *   );
  * }
@@ -295,16 +295,16 @@ export class SqlInjectionError extends Error {
  * 5. Throw SqlInjectionError with logging if invalid
  *
  * **Attack Prevention:**
- * - Blocks SQL keywords: `SELECT`, `DROP`, `UNION`, `INSERT`, etc.
- * - Blocks SQL comments: `--`, `/*`, `*/`
- * - Blocks boolean logic: `OR 1=1`, `AND 1=1`
- * - Blocks subqueries: `(SELECT ...)`, nested queries
- * - Blocks functions: `SLEEP()`, `BENCHMARK()`, `RAND()`
+ * - Blocks SQL keywords: SELECT, DROP, UNION, INSERT, etc.
+ * - Blocks SQL comments: double dash, slash-star, star-slash
+ * - Blocks boolean logic: OR 1=1, AND 1=1
+ * - Blocks subqueries: (SELECT ...), nested queries
+ * - Blocks functions: SLEEP(), BENCHMARK(), RAND()
  *
  * @example
  * // Valid sort field
  * const field = validateSortField('firstName', 'students');
- * const query = `SELECT * FROM students ORDER BY ${field} ASC`;
+ * const query = 'SELECT * FROM students ORDER BY ' + field + ' ASC';
  * // Safe: field = 'firstName' (whitelisted)
  *
  * @example
@@ -384,16 +384,16 @@ export function validateSortField(field: string, entityType: string): string {
  * 4. Throw SqlInjectionError if invalid
  *
  * **Attack Prevention:**
- * - Blocks SQL functions: `RANDOM()`, `RAND()`, `NEWID()`
- * - Blocks SQL keywords: `SELECT`, `UNION`, `WHERE`
- * - Blocks boolean logic: `OR 1=1`, `AND 1=1`
- * - Blocks comments: `--`, `/*`, `*/`
+ * - Blocks SQL functions: RANDOM(), RAND(), NEWID()
+ * - Blocks SQL keywords: SELECT, UNION, WHERE
+ * - Blocks boolean logic: OR 1=1, AND 1=1
+ * - Blocks comments: double dash, slash-star, star-slash
  *
  * @example
  * // Valid sort orders
  * const order1 = validateSortOrder('ASC');  // Returns: 'ASC'
  * const order2 = validateSortOrder('desc'); // Returns: 'DESC' (normalized)
- * const query = `SELECT * FROM students ORDER BY name ${order1}`;
+ * const query = 'SELECT * FROM students ORDER BY name ' + order1;
  *
  * @example
  * // SQL injection attempt - blocked
@@ -504,7 +504,7 @@ export interface PaginationParams {
  * // Standard pagination
  * const params = validatePagination(2, 25);
  * // Returns: { page: 2, limit: 25, offset: 25 }
- * const query = `SELECT * FROM students LIMIT ${params.limit} OFFSET ${params.offset}`;
+ * const query = 'SELECT * FROM students LIMIT ' + params.limit + ' OFFSET ' + params.offset;
  *
  * @example
  * // Enforce custom maximum limit
@@ -602,14 +602,14 @@ export function validatePagination(
  * 4. Add wildcards based on match type
  *
  * **Match Types:**
- * - `'starts'` - Prefix match: `searchTerm%`
- * - `'ends'` - Suffix match: `%searchTerm`
- * - `'contains'` - Substring match: `%searchTerm%` (default)
+ * - 'starts' - Prefix match: searchTerm%
+ * - 'ends' - Suffix match: %searchTerm
+ * - 'contains' - Substring match: %searchTerm% (default)
  *
  * **Attack Prevention:**
  * - **Second-Order SQL Injection**: Escapes stored malicious patterns
  * - **LIKE Wildcard Abuse**: Escapes % and _ to prevent unintended matches
- * - **Performance DoS**: Prevents `%%%%%` patterns causing slow queries
+ * - **Performance DoS**: Prevents %%%%% patterns causing slow queries
  *
  * @example
  * // Safe LIKE search (CORRECT - uses parameterized query)
@@ -656,8 +656,8 @@ export function validatePagination(
  * @security
  * - **ALWAYS** use with parameterized queries
  * - **NEVER** concatenate into SQL string:
- *   ❌ WRONG: `SELECT * FROM users WHERE name LIKE '%${escaped}%'`
- *   ✅ RIGHT: `db.query('SELECT * FROM users WHERE name LIKE ?', [pattern])`
+ *   ❌ WRONG: 'SELECT * FROM users WHERE name LIKE ' + pattern
+ *   ✅ RIGHT: db.query('SELECT * FROM users WHERE name LIKE ?', [pattern])
  * - Escaping prevents LIKE wildcards, but NOT SQL injection
  * - Consider adding minimum search length (e.g., ≥ 3 chars) for performance
  * - Log searches with many wildcards (potential DoS indicator)

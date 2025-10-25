@@ -33,7 +33,7 @@
 import { logger } from '../../utils/logger';
 import { BackupLog } from '../../database/models';
 import { BackupStatus } from '../../database/types/enums';
-import { BackupData } from './types';
+import { BackupData } from './administration.types';
 
 /**
  * Create a backup log entry and initiate backup process

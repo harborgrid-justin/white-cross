@@ -33,7 +33,7 @@
 import { logger } from '../../utils/logger';
 import { TrainingModule, TrainingCompletion, User } from '../../database/models';
 import { TrainingCategory } from '../../database/types/enums';
-import { CreateTrainingModuleData } from './types';
+import { CreateTrainingModuleData } from './administration.types';
 
 /**
  * Create a training module

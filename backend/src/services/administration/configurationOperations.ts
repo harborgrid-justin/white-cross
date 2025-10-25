@@ -34,7 +34,7 @@
 import { logger } from '../../utils/logger';
 import { SystemConfiguration, ConfigurationHistory, sequelize } from '../../database/models';
 import { ConfigCategory } from '../../database/types/enums';
-import { ConfigurationData } from './types';
+import { ConfigurationData } from './administration.types';
 
 /**
  * Get a single configuration by key

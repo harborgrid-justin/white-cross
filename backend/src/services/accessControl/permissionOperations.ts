@@ -40,7 +40,7 @@ import {
 } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
 import { auditService, AuditService } from '../audit/auditService';
-import { CreatePermissionData } from './types';
+import { CreatePermissionData } from './accessControl.types';
 
 /**
  * Get all permissions ordered by resource and action

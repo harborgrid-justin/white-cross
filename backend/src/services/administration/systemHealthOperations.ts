@@ -37,7 +37,7 @@ import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { User, District, School, PerformanceMetric, sequelize } from '../../database/models';
 import { MetricType } from '../../database/types/enums';
-import { SystemHealth } from './types';
+import { SystemHealth } from './administration.types';
 
 /**
  * Get system health metrics

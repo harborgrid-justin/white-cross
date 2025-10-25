@@ -44,7 +44,7 @@ import { auditService, AuditService } from '../audit/auditService';
 import {
   CreateRoleData,
   UpdateRoleData
-} from './types';
+} from './accessControl.types';
 
 /**
  * Get all roles with their permissions and user assignments

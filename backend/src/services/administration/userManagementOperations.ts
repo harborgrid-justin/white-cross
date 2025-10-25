@@ -37,7 +37,7 @@ import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { User } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { UserData } from './types';
+import { UserData } from './administration.types';
 import { createAuditLog } from './auditOperations';
 
 /**

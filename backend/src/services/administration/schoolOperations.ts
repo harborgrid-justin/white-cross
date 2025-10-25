@@ -34,7 +34,7 @@
 import { logger } from '../../utils/logger';
 import { District, School } from '../../database/models';
 import { AuditAction } from '../../database/types/enums';
-import { CreateSchoolData, UpdateSchoolData } from './types';
+import { CreateSchoolData, UpdateSchoolData } from './administration.types';
 import { createAuditLog } from './auditOperations';
 
 /**
