@@ -252,7 +252,7 @@ export const contactRoutes: ServerRoute[] = [
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': { description: 'Contact deleted successfully' },
+            '204': { description: 'Contact deleted successfully (no content)' },
             '404': { description: 'Contact not found' },
             '401': { description: 'Unauthorized' },
             '403': { description: 'Permission denied' },
@@ -262,8 +262,8 @@ export const contactRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       const { id } = request.params;
-      const result = await ContactService.deleteContact(id);
-      return h.response(result).code(200);
+      await ContactService.deleteContact(id);
+      return h.response().code(204);
     },
   },
 

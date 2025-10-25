@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  Edit, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  User, 
+import {
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  Phone,
+  Mail,
+  MapPin,
+  User,
   Users,
   Shield,
   AlertTriangle,
@@ -15,6 +15,7 @@ import {
   Clock,
   Trash2
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { contactsApi } from '../../services';
 
 interface EmergencyContact {
@@ -192,12 +193,13 @@ const EmergencyContacts: React.FC = () => {
     try {
       setDeleteLoading(true);
       await contactsApi.delete(selectedContact.id);
-      
+
       // Remove from local state
       setContacts(prevContacts => prevContacts.filter(c => c.id !== selectedContact.id));
+      toast.success('Contact deleted successfully');
     } catch (err) {
       console.error('Failed to delete contact:', err);
-      alert('Failed to delete contact. Please try again.');
+      toast.error('Failed to delete contact. Please try again.');
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);

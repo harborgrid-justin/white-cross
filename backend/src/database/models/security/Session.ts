@@ -221,6 +221,25 @@ Session.init(
         },
       },
     },
+    /**
+     * IP address of the session for security monitoring and anomaly detection
+     *
+     * @type {string|null}
+     * @nullable
+     * @description Stores the IP address from which the session was initiated.
+     * Used for security monitoring, suspicious activity detection, and audit trails.
+     *
+     * Validation:
+     * - IPv4: Each octet must be 0-255 (e.g., "192.168.1.1")
+     * - IPv6: Simplified validation for standard format (e.g., "2001:0db8:85a3:0000:0000:8a2e:0370:7334")
+     *
+     * @security Critical for detecting unauthorized access patterns
+     * @security Used in security incident reports and compliance audits
+     *
+     * @example
+     * Valid IPv4: "192.168.1.1", "10.0.0.1", "255.255.255.255"
+     * Invalid IPv4: "256.1.1.1", "999.999.999.999"
+     */
     ipAddress: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -228,8 +247,10 @@ Session.init(
       validate: {
         isValidIp(value: string | undefined) {
           if (!value) return;
-          // IPv4 or IPv6 validation
-          const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+          // IPv4 validation - ensures each octet is 0-255
+          // Matches: 0-199 (0-9, 10-99, 100-199), 200-249, 250-255
+          const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+          // IPv6 validation (simplified - full validation is more complex)
           const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
           if (!ipv4Regex.test(value) && !ipv6Regex.test(value)) {
             throw new Error('Invalid IP address format');

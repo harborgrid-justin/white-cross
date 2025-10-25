@@ -31,9 +31,33 @@
 
 import { Response } from 'express';
 import { logger } from '../logging/logger';
+import {
+  ServiceError,
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+  AuthenticationError,
+  AuthorizationError
+} from '../../errors/ServiceError';
 
 /**
  * Standard API response interface
+ *
+ * @template T - The type of data being returned in the response
+ * @property {boolean} success - Indicates if the request was successful
+ * @property {T} [data] - The response data (present on success)
+ * @property {object} [error] - Error details (present on failure)
+ * @property {string} error.message - Human-readable error message
+ * @property {string} [error.code] - Machine-readable error code for categorization
+ * @property {any} [error.details] - Additional error context or validation details
+ * @property {object} [meta] - Response metadata
+ * @property {object} [meta.pagination] - Pagination information for list endpoints
+ * @property {number} meta.pagination.page - Current page number
+ * @property {number} meta.pagination.limit - Items per page
+ * @property {number} meta.pagination.total - Total number of items
+ * @property {number} meta.pagination.pages - Total number of pages
+ * @property {string} [meta.timestamp] - Response timestamp (ISO 8601)
+ * @property {string} [meta.requestId] - Unique request identifier for tracing
  */
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -57,6 +81,24 @@ export interface ApiResponse<T = any> {
 
 /**
  * Success response with data
+ *
+ * @template T - Type of the response data
+ * @param {Response} res - Express response object
+ * @param {T} data - Data to include in the response body
+ * @param {number} [statusCode=200] - HTTP status code (default: 200 OK)
+ * @param {ApiResponse<T>['meta']} [meta] - Optional metadata (pagination, timestamps, etc.)
+ * @returns {Response} Express response with standardized success format
+ *
+ * @example
+ * ```typescript
+ * // Simple success response
+ * return successResponse(res, { user: userData }, 200);
+ *
+ * // Success with pagination metadata
+ * return successResponse(res, users, 200, {
+ *   pagination: { page: 1, limit: 20, total: 100, pages: 5 }
+ * });
+ * ```
  */
 export const successResponse = <T>(
   res: Response,
@@ -75,6 +117,27 @@ export const successResponse = <T>(
 
 /**
  * Error response
+ *
+ * @param {Response} res - Express response object
+ * @param {string} message - Human-readable error message
+ * @param {number} [statusCode=400] - HTTP status code (default: 400 Bad Request)
+ * @param {string} [code] - Machine-readable error code for categorization
+ * @param {any} [details] - Additional error context (e.g., validation errors)
+ * @returns {Response} Express response with standardized error format
+ *
+ * @example
+ * ```typescript
+ * // Simple error response
+ * return errorResponse(res, 'Invalid email format', 400, 'VALIDATION_ERROR');
+ *
+ * // Error with validation details
+ * return errorResponse(res, 'Validation failed', 400, 'VALIDATION_ERROR', {
+ *   fields: { email: 'Invalid format', password: 'Too short' }
+ * });
+ * ```
+ *
+ * @security Never expose stack traces or internal implementation details in error responses
+ * @security Ensure error messages don't contain PHI (Protected Health Information)
  */
 export const errorResponse = (
   res: Response,
@@ -216,6 +279,29 @@ export const serviceUnavailableResponse = (
 
 /**
  * Paginated response helper
+ *
+ * @template T - Type of items in the data array
+ * @param {Response} res - Express response object
+ * @param {T[]} data - Array of items for the current page
+ * @param {object} pagination - Pagination metadata
+ * @param {number} pagination.page - Current page number (1-indexed)
+ * @param {number} pagination.limit - Number of items per page
+ * @param {number} pagination.total - Total number of items across all pages
+ * @param {number} [pagination.pages] - Total number of pages (calculated if not provided)
+ * @returns {Response} Express response with standardized paginated format
+ *
+ * @example
+ * ```typescript
+ * // Paginated list of students
+ * const students = await getStudents(page, limit);
+ * const total = await getStudentCount();
+ *
+ * return paginatedResponse(res, students, {
+ *   page: 1,
+ *   limit: 20,
+ *   total: 150  // Will calculate pages: Math.ceil(150/20) = 8
+ * });
+ * ```
  */
 export const paginatedResponse = <T>(
   res: Response,
@@ -240,38 +326,55 @@ export const paginatedResponse = <T>(
 /**
  * Handle async route errors
  * Wrapper function to catch async errors and send appropriate response
+ *
+ * @description Enhanced error handler using proper error type checking
+ * instead of fragile string matching. Supports ServiceError hierarchy.
+ *
+ * @param fn - Async route handler function
+ * @returns Express middleware that handles async errors
  */
 export const asyncHandler = (
   fn: (req: any, res: Response, next?: any) => Promise<any>
 ) => {
   return (req: any, res: Response, next: any) => {
     Promise.resolve(fn(req, res, next)).catch((error: Error) => {
-      logger.error('Async route error:', {
-        path: req.path,
-        method: req.method,
-        error: error.message,
-        stack: error.stack
-      });
+      // Log error with full context
+      if (error instanceof ServiceError) {
+        logger.error('Async route error (ServiceError):', error.toLogObject());
+      } else {
+        logger.error('Async route error:', {
+          path: req.path,
+          method: req.method,
+          error: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      }
 
-      // Handle specific error types
-      if (error.message.includes('not found') || error.message.includes('Not found')) {
+      // Handle specific error types using instanceof (proper type checking)
+      if (error instanceof NotFoundError) {
         return notFoundResponse(res, error.message);
       }
 
-      if (error.message.includes('already exists') || error.message.includes('duplicate')) {
+      if (error instanceof ConflictError) {
         return conflictResponse(res, error.message);
       }
 
-      if (error.message.includes('unauthorized') || error.message.includes('Unauthorized')) {
+      if (error instanceof AuthenticationError) {
         return unauthorizedResponse(res, error.message);
       }
 
-      if (error.message.includes('forbidden') || error.message.includes('Forbidden')) {
+      if (error instanceof AuthorizationError) {
         return forbiddenResponse(res, error.message);
       }
 
-      if (error.message.includes('validation') || error.message.includes('invalid')) {
+      if (error instanceof ValidationError) {
         return badRequestResponse(res, error.message);
+      }
+
+      // Handle generic ServiceError
+      if (error instanceof ServiceError) {
+        return errorResponse(res, error.message, error.statusCode, error.code);
       }
 
       // Default to internal server error

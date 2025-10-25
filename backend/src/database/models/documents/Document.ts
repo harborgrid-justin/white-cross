@@ -348,6 +348,33 @@ Document.init(
         },
       },
     },
+    /**
+     * File URL for accessing the document
+     *
+     * @type {string}
+     * @description URL pointing to the document file location (cloud storage, CDN, etc.)
+     *
+     * Validation:
+     * - Must be a valid URL format
+     * - Cannot be null or empty
+     * - HIPAA Requirement: PHI documents MUST use HTTPS protocol
+     *
+     * @security HIPAA Compliance: PHI documents must be transmitted over secure channels
+     * @security All PHI document URLs must start with 'https://'
+     * @security Non-HTTPS URLs for PHI documents will be rejected at model validation
+     *
+     * @example
+     * ```typescript
+     * // Valid PHI document URL
+     * fileUrl: "https://secure-storage.example.com/documents/patient-123/record.pdf"
+     *
+     * // Invalid PHI document URL (will throw validation error)
+     * fileUrl: "http://storage.example.com/documents/patient-123/record.pdf"
+     *
+     * // Valid non-PHI document URL
+     * fileUrl: "http://storage.example.com/documents/public/form.pdf"
+     * ```
+     */
     fileUrl: {
       type: DataTypes.STRING(500),
       allowNull: false,
@@ -360,6 +387,12 @@ Document.init(
         },
         isUrl: {
           msg: 'File URL must be a valid URL',
+        },
+        httpsForPHI(value: string) {
+          // HIPAA Compliance: PHI documents must use HTTPS for secure transmission
+          if ((this as any).containsPHI && !value.startsWith('https://')) {
+            throw new Error('PHI documents must use HTTPS protocol for secure transmission (HIPAA requirement)');
+          }
         },
       },
     },

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Upload, 
-  Download, 
-  Eye, 
-  FileText, 
-  Image, 
+import {
+  Search,
+  Filter,
+  Upload,
+  Download,
+  Eye,
+  FileText,
+  Image,
   File,
   Calendar,
   User,
@@ -15,6 +15,7 @@ import {
   Trash2,
   AlertTriangle
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { documentsApi } from '../../services';
 
 interface Document {
@@ -166,12 +167,13 @@ const Documents: React.FC = () => {
     try {
       setDeleteLoading(true);
       await documentsApi.deleteDocument(selectedDocument.id);
-      
+
       // Remove from local state
       setDocuments(prevDocs => prevDocs.filter(d => d.id !== selectedDocument.id));
+      toast.success('Document deleted successfully');
     } catch (err) {
       console.error('Failed to delete document:', err);
-      alert('Failed to delete document. Please try again.');
+      toast.error('Failed to delete document. Please try again.');
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);
