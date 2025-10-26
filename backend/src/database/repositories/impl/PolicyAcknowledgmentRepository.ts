@@ -10,7 +10,7 @@ import {
   CreatePolicyAcknowledgmentDTO,
   UpdatePolicyAcknowledgmentDTO
 } from '../interfaces/IPolicyAcknowledgmentRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class PolicyAcknowledgmentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PolicyAcknowledgment, auditLogger, cacheManager, 'PolicyAcknowledgment');
   }
+  /**
+   * Invalidate PolicyAcknowledgment-related caches
+   */
+  protected async invalidateCaches(entity: PolicyAcknowledgment): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:policyacknowledgment:*`);
+    } catch (error) {
+      logger.warn('Error invalidating PolicyAcknowledgment caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize PolicyAcknowledgment data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

@@ -9,18 +9,16 @@
  * @version 1.0.0
  *
  * @example
- * ```typescript
+ * \`\`\`typescript
  * import { appointmentsApi, studentsApi, medicationsApi } from '@/services/api';
- * ```
+ * \`\`\`
  */
 
-// Re-export all API modules
+// Re-export all API modules - using wildcards except where conflicts occur
 export * from './modules/appointmentsApi';
 export * from './modules/studentsApi';
 export * from './modules/medicationsApi';
-export * from './modules/healthRecordsApi';
 export * from './modules/accessControlApi';
-export * from './modules/administrationApi';
 export * from './modules/analyticsApi';
 export * from './modules/auditApi';
 export * from './modules/authApi';
@@ -31,7 +29,6 @@ export * from './modules/complianceApi';
 export * from './modules/dashboardApi';
 export * from './modules/documentsApi';
 export * from './modules/emergencyContactsApi';
-export * from './modules/healthAssessmentsApi';
 export * from './modules/incidentsApi';
 export * from './modules/integrationApi';
 export * from './modules/inventoryApi';
@@ -42,5 +39,57 @@ export * from './modules/studentManagementApi';
 export * from './modules/usersApi';
 export * from './modules/vendorApi';
 
-// Re-export services
-export * from './modules/AdministrationService';
+// Export main API services, but avoid duplicate type exports
+export { 
+  administrationApi,
+  AdministrationApi,
+  createAdministrationApi
+} from './modules/administrationApi';
+
+// Export health records API - primary source for health record types
+export {
+  healthRecordsApi,
+  HealthRecordsApi,
+  createHealthRecordsApi,
+  type HealthRecord,
+  type HealthRecordCreate,
+  type HealthRecordUpdate,
+  type Allergy,
+  type AllergyCreate,
+  type AllergyUpdate,
+  type ChronicCondition,
+  type ChronicConditionCreate,
+  type ChronicConditionUpdate,
+  type Vaccination,
+  type VaccinationCreate,
+  type VaccinationUpdate,
+  type VitalSigns,
+  type VitalSignsCreate,
+  type VitalSignsUpdate,
+  type Screening,
+  type ScreeningCreate,
+  type ScreeningUpdate,
+  type GrowthMeasurement,
+  type GrowthMeasurementCreate,
+  type GrowthMeasurementUpdate,
+  AllergyType,
+  AllergySeverity,
+  ConditionSeverity,
+  ConditionStatus,
+  HealthRecordType,
+  ScreeningType,
+  ScreeningOutcome,
+  VaccinationStatus
+} from './modules/healthRecordsApi';
+
+// Export health assessments API with renamed types to avoid conflicts
+export {
+  healthAssessmentsApi,
+  HealthAssessmentsApi,
+  createHealthAssessmentsApi,
+  type RiskAssessment,
+  type CreateRiskAssessmentRequest,
+  type GrowthTracking
+} from './modules/healthAssessmentsApi';
+
+// Note: AdministrationService exports same classes as administrationApi, so we only export administrationApi to avoid ambiguity

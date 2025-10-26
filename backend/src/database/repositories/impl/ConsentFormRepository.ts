@@ -10,7 +10,7 @@ import {
   CreateConsentFormDTO,
   UpdateConsentFormDTO
 } from '../interfaces/IConsentFormRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class ConsentFormRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ConsentForm, auditLogger, cacheManager, 'ConsentForm');
+  }
+
+  protected async invalidateCaches(entity: ConsentForm): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:consentform:type:${data.type}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating consent form caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

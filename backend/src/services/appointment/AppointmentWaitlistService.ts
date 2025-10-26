@@ -58,7 +58,7 @@ export class AppointmentWaitlistService {
       const waitlistEntry = await AppointmentWaitlist.create({
         studentId: data.studentId,
         nurseId: data.nurseId,
-        type: data.type as any,
+        type: data.appointmentType as any,
         preferredDate: data.preferredDate,
         duration: data.duration || 30,
         priority: (data.priority || WaitlistPriority.NORMAL) as any,
@@ -78,7 +78,7 @@ export class AppointmentWaitlistService {
         ]
       });
 
-      logger.info(`Added ${student.firstName} ${student.lastName} to waitlist for ${data.type}`);
+      logger.info(`Added ${student.firstName} ${student.lastName} to waitlist for ${data.appointmentType}`);
       return waitlistEntry;
     } catch (error) {
       logger.error('Error adding to waitlist:', error);
@@ -198,8 +198,8 @@ export class AppointmentWaitlistService {
           const appointment = await AppointmentCrudOperations.createAppointment({
             studentId: entry.studentId,
             nurseId: cancelledAppointment.nurseId,
-            type: entry.type,
-            scheduledAt: cancelledAppointment.scheduledAt,
+            appointmentType: cancelledAppointment.type as any,
+            scheduledDate: cancelledAppointment.scheduledAt,
             duration: entry.duration,
             reason: entry.reason,
             notes: `Auto-scheduled from waitlist: ${entry.notes || ''}`

@@ -50,12 +50,6 @@ const createBroadcastRoute: ServerRoute = {
           '403': { description: 'Forbidden - Insufficient permissions for broadcast messaging', schema: ErrorResponseSchema },
           '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
         }
-      },
-      'hapi-rate-limit': {
-        userLimit: 10,
-        userCache: {
-          expiresIn: 60000 // 10 broadcasts per minute per user (stricter due to high impact)
-        }
       }
     }
   }
@@ -211,12 +205,6 @@ const scheduleMessageRoute: ServerRoute = {
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
           '403': { description: 'Forbidden - Insufficient permissions for scheduled messaging', schema: ErrorResponseSchema },
           '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
-        }
-      },
-      'hapi-rate-limit': {
-        userLimit: 20,
-        userCache: {
-          expiresIn: 60000 // 20 scheduled messages per minute per user
         }
       }
     }

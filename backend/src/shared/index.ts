@@ -48,7 +48,7 @@
 export {
   UTILITY_CONSTANTS,
   type UtilityResult,
-  type PaginationOptions,
+  type PaginationOptions as UtilityPaginationOptions,
   hashPassword,
   comparePassword,
   validatePasswordComplexity,
@@ -83,8 +83,20 @@ export {
 // Other security utilities
 export * from './security/rate-limiting.service';
 export * from './security/permission.utils';
-export * from './security/sql-sanitizer.service';
 export * from './security/headers';
+
+// SQL Sanitizer - selective export to avoid PaginationParams conflict
+export {
+  ALLOWED_SORT_FIELDS,
+  ALLOWED_SORT_ORDERS,
+  type SortOrder,
+  SqlInjectionError,
+  validateSortField,
+  validateSortOrder,
+  type PaginationParams as SqlSanitizerPaginationParams,
+  validatePagination,
+  buildSafeLikePattern
+} from './security/sql-sanitizer.service';
 
 // ==========================================
 // BUSINESS DOMAIN SERVICES

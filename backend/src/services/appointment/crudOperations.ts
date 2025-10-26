@@ -194,8 +194,8 @@ export class AppointmentCrudOperations {
         whereClause.status = filters.status;
       }
 
-      if (filters.type) {
-        whereClause.type = filters.type;
+      if (filters.appointmentType) {
+        whereClause.appointmentType = filters.appointmentType;
       }
 
       if (filters.dateFrom || filters.dateTo) {
@@ -337,7 +337,7 @@ export class AppointmentCrudOperations {
       // Check for scheduling conflicts with buffer time
       const conflicts = await AppointmentAvailabilityService.checkAvailability(
         data.nurseId,
-        data.scheduledAt,
+        data.scheduledDate,
         duration
       );
 
@@ -351,10 +351,14 @@ export class AppointmentCrudOperations {
       }
 
       const appointment = await Appointment.create({
-        ...data,
+        studentId: data.studentId,
+        nurseId: data.nurseId,
+        type: data.appointmentType as any,
+        scheduledAt: data.scheduledDate,
         duration,
-        status: AppointmentStatus.SCHEDULED,
-        type: data.type as any
+        reason: data.reason,
+        notes: data.notes,
+        status: AppointmentStatus.SCHEDULED
       });
 
       // Reload with associations
@@ -431,11 +435,11 @@ export class AppointmentCrudOperations {
       await AppointmentValidation.validateAppointmentData(data, true, existingAppointment);
 
       // If rescheduling, check for conflicts
-      if (data.scheduledAt && data.scheduledAt.getTime() !== existingAppointment.scheduledAt.getTime()) {
+      if (data.scheduledDate && data.scheduledDate.getTime() !== existingAppointment.scheduledAt.getTime()) {
         const duration = data.duration || existingAppointment.duration;
         const conflicts = await AppointmentAvailabilityService.checkAvailability(
           existingAppointment.nurseId,
-          data.scheduledAt,
+          data.scheduledDate,
           duration,
           id // Exclude current appointment from conflict check
         );
@@ -450,7 +454,18 @@ export class AppointmentCrudOperations {
         }
       }
 
-      await existingAppointment.update(data as any);
+      // Map scheduledDate to scheduledAt and appointmentType to type for database model
+      const updateData: any = { ...data };
+      if (data.scheduledDate) {
+        updateData.scheduledAt = data.scheduledDate;
+        delete updateData.scheduledDate;
+      }
+      if (data.appointmentType) {
+        updateData.type = data.appointmentType;
+        delete updateData.appointmentType;
+      }
+
+      await existingAppointment.update(updateData);
 
       // Reload with associations
       await existingAppointment.reload({

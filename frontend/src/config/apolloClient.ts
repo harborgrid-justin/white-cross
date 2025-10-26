@@ -91,7 +91,8 @@ const retryLink = new RetryLink({
     max: 3,
     retryIf: (error, _operation) => {
       // Retry on network errors or 5xx server errors
-      return !!error && (!error.statusCode || error.statusCode >= 500);
+      const statusCode = (error as any)?.statusCode;
+      return !!error && (!statusCode || statusCode >= 500);
     },
   },
 });
@@ -99,7 +100,8 @@ const retryLink = new RetryLink({
 /**
  * Error Link - handles GraphQL and network errors
  */
-const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+const errorLink = onError((errorResponse: any) => {
+  const { graphQLErrors, networkError, operation } = errorResponse;
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path, extensions }) => {
       const errorCode = extensions?.code as string;
@@ -144,8 +146,8 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
       // Audit log for errors
       auditService.logFailure(
         {
-          action: 'GRAPHQL_ERROR',
-          resourceType: 'API',
+          action: 'READ' as any, // Using generic READ action for GraphQL errors
+          resourceType: 'DOCUMENT' as any, // Using generic DOCUMENT type for API errors
           context: {
             operation: operation.operationName,
             message,
@@ -186,8 +188,8 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
     // Audit log for network errors
     auditService.logFailure(
       {
-        action: 'NETWORK_ERROR',
-        resourceType: 'API',
+        action: 'READ' as any, // Using generic READ action for network errors
+        resourceType: 'DOCUMENT' as any, // Using generic DOCUMENT type for API errors
         context: {
           operation: operation.operationName,
           error: networkError.message,
@@ -301,7 +303,7 @@ export const apolloClient = new ApolloClient({
       errorPolicy: 'all',
     },
   },
-  connectToDevTools: import.meta.env.DEV,
+  // connectToDevTools is not available in the current Apollo Client version
 });
 
 // ==========================================

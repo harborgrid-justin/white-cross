@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { vendorApi } from '../../../services/modules/vendorApi';
+import { vendorApi } from '../../../services';
 import {
   Vendor,
   VendorFilters,

@@ -6,7 +6,7 @@
 import { ServerRoute } from '@hapi/hapi';
 import { sendBulkMessage } from '../controllers/messaging.controller';
 import {
-  validateBulkMessage
+  bulkMessageSchema
 } from '../validators/messaging.validators';
 import {
   BulkMessageResponseSchema,
@@ -28,7 +28,7 @@ export const messagingRoutes: ServerRoute[] = [
       description: 'Send bulk message to multiple recipients',
       notes: 'Allows sending messages to groups of parents, students, or staff members',
       validate: {
-        payload: validateBulkMessage
+        payload: bulkMessageSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -41,12 +41,6 @@ export const messagingRoutes: ServerRoute[] = [
             500: { description: 'Server error sending messages', schema: ErrorResponseSchema }
           },
           security: [{ jwt: [] }]
-        },
-        'hapi-rate-limit': {
-          userLimit: 10,
-          userCache: {
-            expiresIn: 60000 // 10 bulk messages per minute per user
-          }
         }
       }
     },

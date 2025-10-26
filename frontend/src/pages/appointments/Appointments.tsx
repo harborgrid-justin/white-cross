@@ -15,29 +15,10 @@ import { Calendar, Plus, Search, Filter, Clock, User, FileText, Edit, XCircle, A
 import { appointmentsApi } from '../../services';
 import { PROTECTED_ROUTES, buildAppointmentRoute } from '../../constants/routes';
 import { useAuth } from '../../contexts/AuthContext';
+import type { Appointment, AppointmentFilters as BaseAppointmentFilters } from '../../types/appointments';
 
-interface Appointment {
-  id: string;
-  studentId: string;
-  studentName: string;
-  appointmentType: string;
-  scheduledDate: string;
-  scheduledTime: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
-  provider: string;
-  reason: string;
-  notes?: string;
-  createdAt: string;
-}
-
-interface AppointmentFilters {
-  status?: string;
-  type?: string;
-  provider?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  search?: string;
-}
+// Extend filters to include search
+interface AppointmentFilters extends Omit<BaseAppointmentFilters, 'page' | 'limit'> {}
 
 const Appointments: React.FC = () => {
   const { user } = useAuth();
@@ -62,12 +43,11 @@ const Appointments: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await appointmentsApi.getAll({
-        ...filters,
-        search: searchTerm
+        ...filters
       });
-      
+
       setAppointments(response.data || []);
     } catch (err) {
       setError('Failed to load appointments');
@@ -79,7 +59,7 @@ const Appointments: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setFilters(prev => ({ ...prev, search: searchTerm }));
+    loadAppointments();
   };
 
   const handleFilterChange = (key: keyof AppointmentFilters, value: string) => {
@@ -364,7 +344,11 @@ const Appointments: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {appointments.map((appointment) => {
-                    const { date, time } = formatDateTime(appointment.scheduledDate, appointment.scheduledTime);
+                    const scheduledDate = new Date(appointment.scheduledAt);
+                    const { date, time } = formatDateTime(
+                      scheduledDate.toISOString().split('T')[0],
+                      scheduledDate.toTimeString().slice(0, 5)
+                    );
                     
                     return (
                       <tr key={appointment.id} className="hover:bg-gray-50">
@@ -373,7 +357,7 @@ const Appointments: React.FC = () => {
                             <User className="w-5 h-5 text-gray-400 mr-3" />
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {appointment.studentName}
+                                {appointment.student?.firstName} {appointment.student?.lastName}
                               </div>
                               <div className="text-sm text-gray-500">
                                 ID: {appointment.studentId}
@@ -391,10 +375,10 @@ const Appointments: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {appointment.appointmentType}
+                          {appointment.type?.replace(/_/g, ' ')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {appointment.provider}
+                          {appointment.nurse?.firstName} {appointment.nurse?.lastName}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
@@ -475,8 +459,8 @@ const Appointments: React.FC = () => {
                   </h3>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      Are you sure you want to cancel the appointment for <strong>{selectedAppointment.studentName}</strong> scheduled for{' '}
-                      {new Date(selectedAppointment.scheduledDate).toLocaleDateString()}?
+                      Are you sure you want to cancel the appointment for <strong>{selectedAppointment.student?.firstName} {selectedAppointment.student?.lastName}</strong> scheduled for{' '}
+                      {new Date(selectedAppointment.scheduledAt).toLocaleDateString()}?
                     </p>
                     <p className="text-sm text-gray-500 mt-2">
                       This action cannot be undone.

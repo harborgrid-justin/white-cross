@@ -9,14 +9,14 @@ import {
   Student,
   EmergencyContact,
   sequelize
-} from '../database/models';
+} from '../../database/models';
 import {
   MessageType,
   MessagePriority,
   MessageCategory,
   RecipientType,
   DeliveryStatus
-} from '../database/types/enums';
+} from '../../database/types/enums';
 import {
   validateEmail,
   validatePhoneNumber,
@@ -33,7 +33,7 @@ import {
   createMessageSchema,
   broadcastMessageSchema,
   emergencyAlertSchema
-} from '../utils/communicationValidation';
+} from '../../utils/communicationValidation';
 
 /**
  * Interface for creating a new message template

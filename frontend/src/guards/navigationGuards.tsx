@@ -140,12 +140,12 @@ export function withAuthGuard<P extends object>(
   Component: ComponentType<P>
 ): ComponentType<P> {
   return function AuthGuardedComponent(props: P) {
-    const { user, loading } = useAuthContext();
+    const { user, isLoading } = useAuthContext();
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
-      if (!loading && !user) {
+      if (!isLoading && !user) {
         // Store intended destination for redirect after login
         const redirectPath = encodeURIComponent(location.pathname + location.search);
         navigate(`/login?redirect=${redirectPath}`, { replace: true });
@@ -156,9 +156,9 @@ export function withAuthGuard<P extends object>(
           attemptedPath: location.pathname
         });
       }
-    }, [user, loading, navigate, location]);
+    }, [user, isLoading, navigate, location]);
 
-    if (loading) {
+    if (isLoading) {
       return <LoadingSpinner />;
     }
 
@@ -188,10 +188,10 @@ export function withRoleGuard<P extends object>(
 ): (Component: ComponentType<P>) => ComponentType<P> {
   return function (Component: ComponentType<P>) {
     return function RoleGuardedComponent(props: P) {
-      const { user, loading } = useAuthContext();
+      const { user, isLoading } = useAuthContext();
       const location = useLocation();
 
-      if (loading) {
+      if (isLoading) {
         return <LoadingSpinner />;
       }
 
@@ -199,7 +199,7 @@ export function withRoleGuard<P extends object>(
         return <AccessDenied message="Authentication required" />;
       }
 
-      const hasRole = allowedRoles.includes(user.role);
+      const hasRole = allowedRoles.includes(user.role as UserRole);
 
       if (!hasRole) {
         logGuardAction('ROLE_GUARD', false, {
@@ -242,10 +242,10 @@ export function withPermissionGuard<P extends object>(
 ): (Component: ComponentType<P>) => ComponentType<P> {
   return function (Component: ComponentType<P>) {
     return function PermissionGuardedComponent(props: P) {
-      const { user, loading } = useAuthContext();
+      const { user, isLoading } = useAuthContext();
       const location = useLocation();
 
-      if (loading) {
+      if (isLoading) {
         return <LoadingSpinner />;
       }
 
@@ -254,7 +254,7 @@ export function withPermissionGuard<P extends object>(
       }
 
       // Check all required permissions
-      const hasAllPermissions = checkAllPermissions(user, requiredPermissions);
+      const hasAllPermissions = checkAllPermissions(user as any, requiredPermissions);
 
       if (!hasAllPermissions) {
         logGuardAction('PERMISSION_GUARD', false, {
@@ -299,7 +299,7 @@ export function withDataGuard<P extends object, T = any>(
 ): (Component: ComponentType<P & { guardData: T }>) => ComponentType<P> {
   return function (Component: ComponentType<P & { guardData: T }>) {
     return function DataGuardedComponent(props: P) {
-      const { user } = useAuth();
+      const { user } = useAuthContext();
       const navigate = useNavigate();
       const location = useLocation();
       const [data, setData] = useState<T | null>(null);
@@ -477,7 +477,7 @@ export function checkPermission(
   }
 
   // Role-based permission mapping
-  const rolePermissions = getRolePermissions(user.role);
+  const rolePermissions = getRolePermissions(user.role as UserRole);
 
   // Check if role has the required permission
   const permissionKey = `${permission.resource}.${permission.action}`;
@@ -536,7 +536,7 @@ export function hasAccessToRoute(
 
   // Check role requirements
   if (metadata.roles && metadata.roles.length > 0) {
-    if (!user || !metadata.roles.includes(user.role)) {
+    if (!user || !metadata.roles.includes(user.role as UserRole)) {
       return false;
     }
   }
@@ -604,7 +604,7 @@ function getRolePermissions(role: UserRole): string[] {
       'reports.read',
       'communication.read'
     ],
-    READ_ONLY: [
+    VIEWER: [
       'students.read',
       'medications.read',
       'health_records.read',
@@ -629,14 +629,14 @@ export function EnsureIncidentReportLoaded<P extends object>(
 ): ComponentType<P & { incidentReportId: string }> {
   return withDataGuard<P & { incidentReportId: string }, { incidentReport: any }>(
     async (context) => {
-      const { incidentReportsApi } = await import('../services');
+      const { incidentsApi } = await import('../services');
       const incidentReportId = (context as any).incidentReportId;
 
       if (!incidentReportId) {
         throw new Error('Incident report ID is required');
       }
 
-      const { report } = await incidentReportsApi.getById(incidentReportId);
+      const { report } = await incidentsApi.getById(incidentReportId);
       return { incidentReport: report };
     }
   )(Component as any) as any;

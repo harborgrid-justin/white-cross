@@ -10,6 +10,49 @@ import {
   successResponse,
   createdResponse
 } from '../../../shared/utils';
+import { RecipientType, MessageType, MessagePriority, MessageCategory } from '../../../../database/types/enums';
+
+/**
+ * Payload Interfaces
+ */
+interface SendMessagePayload {
+  recipients: Array<{
+    type: RecipientType;
+    id: string;
+    email?: string;
+    phoneNumber?: string;
+    pushToken?: string;
+    preferredLanguage?: string;
+  }>;
+  channels?: string[];
+  subject?: string;
+  content: string;
+  priority?: string;
+  category: MessageCategory;
+  templateId?: string;
+  scheduledAt?: string | Date;
+  attachments?: string[];
+  translateTo?: string[];
+  [key: string]: any;
+}
+
+interface ReplyPayload {
+  channels?: string[];
+  content: string;
+  priority?: string;
+  [key: string]: any;
+}
+
+interface CreateTemplatePayload {
+  name: string;
+  subject?: string;
+  content: string;
+  type: MessageType;
+  category: MessageCategory;
+  variables?: string[];
+  isActive?: boolean;
+  [key: string]: any;
+}
 
 export class MessagesController {
   /**
@@ -71,11 +114,21 @@ export class MessagesController {
    */
   static async send(request: AuthenticatedRequest, h: ResponseToolkit) {
     const senderId = request.auth.credentials?.userId;
+    const payload = request.payload as SendMessagePayload;
 
+    // Extract all required fields from payload
     const result = await CommunicationService.sendMessage({
-      ...request.payload,
-      senderId,
-      scheduledAt: request.payload.scheduledAt ? new Date(request.payload.scheduledAt) : undefined
+      recipients: payload.recipients,
+      channels: (payload.channels || [MessageType.EMAIL]) as MessageType[],
+      subject: payload.subject,
+      content: payload.content,
+      priority: (payload.priority || MessagePriority.MEDIUM) as MessagePriority,
+      category: payload.category,
+      templateId: payload.templateId,
+      scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : undefined,
+      attachments: payload.attachments,
+      senderId: senderId as string,
+      translateTo: payload.translateTo
     });
 
     return createdResponse(h, {
@@ -175,6 +228,7 @@ export class MessagesController {
   static async reply(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const senderId = request.auth.credentials?.userId;
+    const payload = request.payload as ReplyPayload;
 
     // Get original message
     const originalMessage = await CommunicationService.getMessageById(id);
@@ -190,17 +244,17 @@ export class MessagesController {
     // Reply goes to the original sender
     const result = await CommunicationService.sendMessage({
       recipients: [{
-        type: 'NURSE', // Assuming original sender is a nurse
+        type: RecipientType.NURSE, // Assuming original sender is a nurse
         id: originalMessage.senderId,
         email: undefined,
         phoneNumber: undefined
       }],
-      channels: request.payload.channels || ['EMAIL'],
+      channels: (payload.channels || [MessageType.EMAIL]) as MessageType[],
       subject: `Re: ${originalMessage.subject || 'Your message'}`,
-      content: request.payload.content,
-      priority: request.payload.priority || 'MEDIUM',
+      content: payload.content,
+      priority: (payload.priority || MessagePriority.MEDIUM) as MessagePriority,
       category: originalMessage.category,
-      senderId
+      senderId: senderId as string
     });
 
     return createdResponse(h, {
@@ -218,7 +272,7 @@ export class MessagesController {
 
     // Get messages where current user is a recipient
     const deliveries = await CommunicationService.getRecipientDeliveries(
-      userId,
+      userId as string,
       parseInt(limit as string) * parseInt(page as string)
     );
 
@@ -247,7 +301,7 @@ export class MessagesController {
     const result = await CommunicationService.getMessages(
       parseInt(page as string),
       parseInt(limit as string),
-      { senderId: userId }
+      { senderId: userId as string }
     );
 
     return successResponse(h, {
@@ -276,10 +330,18 @@ export class MessagesController {
    */
   static async createTemplate(request: AuthenticatedRequest, h: ResponseToolkit) {
     const createdBy = request.auth.credentials?.userId;
+    const payload = request.payload as CreateTemplatePayload;
 
+    // Extract all required fields from payload
     const template = await CommunicationService.createMessageTemplate({
-      ...request.payload,
-      createdBy
+      name: payload.name,
+      subject: payload.subject,
+      content: payload.content,
+      type: payload.type,
+      category: payload.category,
+      variables: payload.variables,
+      isActive: payload.isActive,
+      createdBy: createdBy as string
     });
 
     return createdResponse(h, { template });

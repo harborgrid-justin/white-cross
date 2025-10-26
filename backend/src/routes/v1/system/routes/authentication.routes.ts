@@ -13,10 +13,10 @@ import {
   generateFeatureReport
 } from '../controllers/authentication.controller';
 import {
-  validateMFASetup,
-  validateMFAVerification,
-  validateSystemHealthQuery,
-  validateFeatureStatusQuery
+  mfaSetupSchema,
+  mfaVerificationSchema,
+  systemHealthQuerySchema,
+  featureStatusQuerySchema
 } from '../validators/authentication.validators';
 
 /**
@@ -162,7 +162,7 @@ export const authenticationRoutes: ServerRoute[] = [
       description: 'Setup multi-factor authentication for user',
       notes: 'Initializes MFA for the authenticated user using TOTP, SMS, or email methods',
       validate: {
-        payload: validateMFASetup
+        payload: mfaSetupSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -202,7 +202,7 @@ export const authenticationRoutes: ServerRoute[] = [
       description: 'Verify MFA authentication code',
       notes: 'Validates MFA code for TOTP, SMS, or backup codes',
       validate: {
-        payload: validateMFAVerification
+        payload: mfaVerificationSchema
       },
       plugins: {
         'hapi-swagger': {
@@ -248,7 +248,7 @@ export const systemMonitoringRoutes: ServerRoute[] = [
       description: 'Get comprehensive system health status',
       notes: 'Returns database connectivity, service status, memory usage, and performance metrics',
       validate: {
-        query: validateSystemHealthQuery
+        query: systemHealthQuerySchema
       },
       plugins: {
         'hapi-swagger': {
@@ -284,7 +284,7 @@ export const systemMonitoringRoutes: ServerRoute[] = [
       description: 'Get status of all integrated system features',
       notes: 'Returns availability and health status of healthcare, operations, analytics, and communication modules',
       validate: {
-        query: validateFeatureStatusQuery
+        query: featureStatusQuerySchema
       },
       plugins: {
         'hapi-swagger': {

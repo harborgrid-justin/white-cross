@@ -126,7 +126,7 @@ export function optimisticCreate<T extends BaseEntity>(
     OperationType.CREATE,
     previousData || null,
     optimisticData,
-    options
+    (options as unknown) as OptimisticOperationOptions<{ data: T[] }>
   );
 
   return { updateId, tempId, tempEntity };
@@ -238,7 +238,7 @@ export function optimisticUpdateInList<T extends BaseEntity>(
     OperationType.UPDATE,
     previousData,
     optimisticData,
-    options
+    (options as unknown) as OptimisticOperationOptions<{ data: T[] }>
   );
 
   return updateId;
@@ -322,7 +322,7 @@ export function optimisticDeleteFromList<T extends BaseEntity>(
     OperationType.DELETE,
     previousData,
     optimisticData,
-    options
+    (options as unknown) as OptimisticOperationOptions<{ data: T[] }>
   );
 
   return updateId;
@@ -374,7 +374,7 @@ export function optimisticBulkCreate<T extends BaseEntity>(
     OperationType.BULK_CREATE,
     previousData || null,
     optimisticData,
-    options
+    (options as unknown) as OptimisticOperationOptions<{ data: T[] }>
   );
 
   return { updateId, tempEntities, tempIdMap };
@@ -412,7 +412,7 @@ export function optimisticBulkDelete<T extends BaseEntity>(
     OperationType.BULK_DELETE,
     previousData,
     optimisticData,
-    options
+    (options as unknown) as OptimisticOperationOptions<{ data: T[] }>
   );
 
   // Remove from cache

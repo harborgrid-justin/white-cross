@@ -58,14 +58,9 @@ export const CreateConditionModal: React.FC<CreateConditionModalProps> = ({
         condition: data.condition,
         icdCode: data.icdCode,
         diagnosisDate: data.diagnosisDate,
-        severity: data.severity,
-        status: data.status,
-        treatments: data.treatments,
-        accommodationsRequired: data.accommodationsRequired,
-        accommodationDetails: data.accommodationsRequired ? data.accommodationDetails : undefined,
-        emergencyProtocol: data.emergencyProtocol,
-        actionPlan: data.actionPlan,
-        triggers: data.triggers,
+        severity: data.severity as any,
+        status: data.status as any,
+        treatments: data.treatments ? [data.treatments] : undefined,
         notes: data.notes,
       });
       reset();

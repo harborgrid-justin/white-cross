@@ -12,6 +12,32 @@
 
 import { ResponseToolkit, Request } from '@hapi/hapi';
 
+// Re-export pagination utilities from shared/utils
+export {
+  parsePagination,
+  buildPaginationMeta,
+  buildFilters,
+  buildSort,
+  FilterFieldConfig,
+  PaginationParams,
+  PaginationMeta as PaginationMetaUtil,
+  FILTER_OPERATORS,
+  DEFAULT_PAGE,
+  DEFAULT_LIMIT,
+  MAX_LIMIT
+} from '../../shared/utils/pagination';
+
+// Re-export payload helper utilities from shared/utils
+export {
+  isPayloadObject,
+  extractPayload,
+  extractPayloadSafe,
+  extractPayloadProperty,
+  createPayloadWithFields,
+  convertPayloadDates,
+  preparePayload
+} from '../../shared/utils/payloadHelpers';
+
 /**
  * Async handler wrapper for Hapi route handlers.
  *
@@ -89,6 +115,53 @@ export function createdResponse(h: ResponseToolkit, data: any, message?: string)
     message: message || 'Resource created successfully',
     data
   }).code(201);
+}
+
+/**
+ * Pagination metadata interface for list responses
+ */
+export interface PaginationMeta {
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+/**
+ * Generates a paginated response with HTTP 200 status.
+ *
+ * Standard response format for list endpoints that support pagination.
+ * Includes both data and pagination metadata.
+ *
+ * @param {ResponseToolkit} h - Hapi response toolkit
+ * @param {any[]} data - Array of items for current page
+ * @param {PaginationMeta} pagination - Pagination metadata
+ * @param {string} [message] - Optional success message
+ * @returns {ResponseObject} Formatted paginated response with 200 status
+ *
+ * @example
+ * ```typescript
+ * // Returning paginated student list
+ * const students = await Student.findAll({ limit, offset });
+ * const total = await Student.count();
+ * const pagination = buildPaginationMeta(page, limit, total);
+ * return paginatedResponse(h, students, pagination);
+ * ```
+ */
+export function paginatedResponse(
+  h: ResponseToolkit,
+  data: any[],
+  pagination: PaginationMeta,
+  message?: string
+) {
+  return h.response({
+    success: true,
+    message,
+    data,
+    pagination
+  }).code(200);
 }
 
 /**

@@ -13,71 +13,43 @@
 // Central types export file for the White Cross healthcare platform
 // Re-exports all types from unified type system
 
-// Re-export common types for backward compatibility
+// IMPORTANT: Export common and api types first. Domain-specific files should NOT
+// re-export common types to avoid TS2308 "already exported" errors.
+// If you need types from common, import them directly from './common' or use this index.
+
+// Re-export common base types
 export * from './common'
 
-// Re-export API types for convenient access  
+// Re-export API types
 export * from './api'
 
-// Re-export compliance types
-export * from './compliance'
+// Re-export domain-specific types
+// NOTE: Wildcard exports commented out to resolve TS2308 duplicate export errors
+// These domain files re-export types already in common/api, causing conflicts
+// Consumers should import from './common', './api', or specific domain files directly
+// TODO: Refactor domain files to not re-export common/api types
+// export * from './appointments'
+// export * from './administration'
+// export * from './communication'
+// export * from './incidents'
+// export * from './compliance'
+// export * from './reports'
+// export * from './dashboard'
+// export * from './integrations'
+// export * from './vendors'
+// export * from './purchaseOrders'
+// export * from './inventory'
 
-// Re-export appointment types
-export * from './appointments'
-
-// Re-export administration types
-export * from './administration'
-
-// Re-export communication types
-export * from './communication'
-
-// Re-export incident types
-export * from './incidents'
-
-// Re-export report types
-export * from './reports'
-
-// Re-export dashboard types
-export * from './dashboard'
-
-// Re-export analytics types
+// Safe exports (no conflicts with common/api)
 export * from './analytics'
-
-// Re-export access control types
 export * from './accessControl'
-
-// Re-export integration types
-export * from './integrations'
-
-// Re-export vendor types
-export * from './vendors'
-
-// Re-export purchase order types
-export * from './purchaseOrders'
-
-// Re-export inventory types
-export * from './inventory'
-
-// Re-export budget types
-export * from './budget'
-
-// Re-export state management types
+// export * from './budget' // Conflicts: BudgetCategory
 export * from './state'
-
-// Re-export navigation types
 export * from './navigation'
-
-// Re-export cache types
 export * from './cache'
-
-// Re-export health records types
-export * from './healthRecords'
-
-// Re-export documents types
+// export * from './healthRecords' // Conflicts: MedicationAdherence, Allergy, ChronicCondition, etc.
 export * from './documents'
-
-// Re-export student types
-export * from './student.types'
+// export * from './student.types' // Conflicts: Student, EmergencyContact, Gender, etc.
 
 // Re-export medication-specific types (avoiding duplicates with api.ts)
 export type {

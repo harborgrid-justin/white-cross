@@ -65,13 +65,10 @@ export const EditAllergyModal: React.FC<EditAllergyModalProps> = ({
         id: allergy.id,
         data: {
           allergen: data.allergen,
-          allergyType: data.allergyType,
-          severity: data.severity,
-          symptoms: data.symptoms,
+          allergyType: data.allergyType as any,
+          severity: data.severity as any,
+          symptoms: data.symptoms ? [data.symptoms] : undefined,
           treatment: data.treatment,
-          emergencyProtocol: data.emergencyProtocol,
-          epiPenRequired: data.epiPenRequired,
-          epiPenLocation: data.epiPenRequired ? data.epiPenLocation : undefined,
           notes: data.notes,
         },
       });

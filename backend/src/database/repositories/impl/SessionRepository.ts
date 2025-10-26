@@ -10,7 +10,7 @@ import {
   CreateSessionDTO,
   UpdateSessionDTO
 } from '../interfaces/ISessionRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class SessionRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Session, auditLogger, cacheManager, 'Session');
   }
+  /**
+   * Invalidate Session-related caches
+   */
+  protected async invalidateCaches(entity: Session): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:session:*`);
+    } catch (error) {
+      logger.warn('Error invalidating Session caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize Session data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

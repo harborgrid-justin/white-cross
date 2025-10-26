@@ -10,7 +10,7 @@ import {
   CreateDocumentDTO,
   UpdateDocumentDTO
 } from '../interfaces/IDocumentRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class DocumentRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Document, auditLogger, cacheManager, 'Document');
+  }
+
+  protected async invalidateCaches(entity: Document): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:document:student:${data.studentId}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating document caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

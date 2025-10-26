@@ -11,7 +11,7 @@
  */
 
 import { Pill, Package, AlertTriangle, Bell, Clock } from 'lucide-react'
-import type { MedicationTab } from '../../../../types/medications'
+import type { MedicationTab } from '@/types/medications'
 
 interface OverviewTabProps {
   onTabChange: (tab: MedicationTab) => void

@@ -10,7 +10,7 @@ import {
   CreateConfigurationHistoryDTO,
   UpdateConfigurationHistoryDTO
 } from '../interfaces/IConfigurationHistoryRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,17 @@ export class ConfigurationHistoryRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ConfigurationHistory, auditLogger, cacheManager, 'ConfigurationHistory');
+  }
+
+  protected async invalidateCaches(entity: ConfigurationHistory): Promise<void> {
+    try {
+      await this.cacheManager.deletePattern(`white-cross:configurationhistory:*`);
+    } catch (error) {
+      logger.warn('Error invalidating configuration history caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

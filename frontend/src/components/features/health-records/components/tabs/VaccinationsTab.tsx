@@ -48,6 +48,9 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
 }) => {
   const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
 
+  // Helper to check if vaccination is compliant
+  const isCompliant = (vax: Vaccination) => vax.complianceStatus === 'COMPLIANT'
+
   const filteredAndSortedVaccinations = sortVaccinations(
     filterVaccinations(vaccinations, searchQuery, vaccinationFilter),
     vaccinationSort
@@ -57,7 +60,7 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
   // These are vaccinations that are overdue or scheduled for the future
   const upcomingVaccinations = React.useMemo(() => {
     return vaccinations
-      .filter(vax => !vax.isCompliant && vax.nextDueDate) // Not compliant and has a due date
+      .filter(vax => !isCompliant(vax) && vax.nextDueDate) // Not compliant and has a due date
       .sort((a, b) => {
         // Sort by due date (earliest first)
         const dateA = new Date(a.nextDueDate || '').getTime()
@@ -132,20 +135,20 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
             <div className="flex justify-between items-start">
               <div className="flex items-start gap-3">
                 <Shield className={`h-5 w-5 mt-1 ${
-                  vax.isCompliant ? 'text-green-600' : 'text-orange-600'
+                  isCompliant(vax) ? 'text-green-600' : 'text-orange-600'
                 }`} />
                 <div>
                   <h4 className="font-semibold" data-testid="vaccine-name">{vax.vaccineName}</h4>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-1 rounded ${getVaccinationStatusColor(vax.isCompliant)}`} data-testid="compliance-badge">
-                      {vax.isCompliant ? 'Compliant' : 'Overdue'}
+                    <span className={`text-xs px-2 py-1 rounded ${getVaccinationStatusColor(isCompliant(vax))}`} data-testid="compliance-badge">
+                      {isCompliant(vax) ? 'Compliant' : 'Overdue'}
                     </span>
-                    {vax.administeredDate && (
+                    {vax.administrationDate && (
                       <span className="text-sm text-gray-600" data-testid="administered-date">
-                        Administered: {vax.administeredDate}
+                        Administered: {vax.administrationDate}
                       </span>
                     )}
-                    {vax.nextDueDate && !vax.isCompliant && (
+                    {vax.nextDueDate && !isCompliant(vax) && (
                       <span className="text-sm text-gray-600" data-testid="due-date">
                         Due: {vax.nextDueDate}
                       </span>
@@ -226,20 +229,20 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-green-700" data-testid="compliance-percentage">
               {vaccinations.length > 0
-                ? Math.round((vaccinations.filter(v => v.isCompliant).length / vaccinations.length) * 100)
+                ? Math.round((vaccinations.filter(v => isCompliant(v)).length / vaccinations.length) * 100)
                 : 0}%
             </div>
             <div className="text-sm text-green-600">Overall Compliance</div>
           </div>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-yellow-700" data-testid="missing-vaccinations">
-              {vaccinations.filter(v => !v.isCompliant && !v.administeredDate).length}
+              {vaccinations.filter(v => !isCompliant(v) && !v.administeredDate).length}
             </div>
             <div className="text-sm text-yellow-600">Missing Vaccinations</div>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-red-700" data-testid="overdue-vaccinations">
-              {vaccinations.filter(v => !v.isCompliant && v.nextDueDate && new Date(v.nextDueDate) < new Date()).length}
+              {vaccinations.filter(v => !isCompliant(v) && v.nextDueDate && new Date(v.nextDueDate) < new Date()).length}
             </div>
             <div className="text-sm text-red-600">Overdue Vaccinations</div>
           </div>

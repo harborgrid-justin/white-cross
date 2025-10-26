@@ -28,6 +28,7 @@ export * from './string';
 export * from './date';
 export * from './responseHelpers';
 export * from './pagination';
+export * from './payloadHelpers';
 // Note: validation utilities moved to ../security/validation.service.ts
 // DateHelpers provides more comprehensive date utilities
 export { 

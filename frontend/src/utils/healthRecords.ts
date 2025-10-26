@@ -101,22 +101,23 @@ export const calculateBMI = (heightInches: number, weightPounds: number): number
 }
 
 export const sortVaccinations = (
-  vaccinations: Vaccination[], 
+  vaccinations: Vaccination[],
   sortType: string
 ): Vaccination[] => {
   return [...vaccinations].sort((a, b) => {
     switch (sortType) {
       case 'date-desc':
-        return new Date(b.administeredDate || '1900-01-01').getTime() - 
-               new Date(a.administeredDate || '1900-01-01').getTime()
+        return new Date(b.administrationDate || '1900-01-01').getTime() -
+               new Date(a.administrationDate || '1900-01-01').getTime()
       case 'date-asc':
-        return new Date(a.administeredDate || '1900-01-01').getTime() - 
-               new Date(b.administeredDate || '1900-01-01').getTime()
+        return new Date(a.administrationDate || '1900-01-01').getTime() -
+               new Date(b.administrationDate || '1900-01-01').getTime()
       case 'name':
         return a.vaccineName.localeCompare(b.vaccineName)
       case 'status':
-        return (a.isCompliant ? 'Completed' : 'Overdue').localeCompare(
-               b.isCompliant ? 'Completed' : 'Overdue')
+        const aStatus = a.complianceStatus === 'COMPLIANT' ? 'Completed' : 'Overdue';
+        const bStatus = b.complianceStatus === 'COMPLIANT' ? 'Completed' : 'Overdue';
+        return aStatus.localeCompare(bStatus)
       default:
         return 0
     }
@@ -124,8 +125,8 @@ export const sortVaccinations = (
 }
 
 export const filterVaccinations = (
-  vaccinations: Vaccination[], 
-  searchQuery: string, 
+  vaccinations: Vaccination[],
+  searchQuery: string,
   statusFilter: string
 ): Vaccination[] => {
   return vaccinations.filter(vax => {
@@ -135,7 +136,7 @@ export const filterVaccinations = (
     }
     // Status filter
     if (statusFilter) {
-      const status = vax.isCompliant ? 'Completed' : 'Overdue'
+      const status = vax.complianceStatus === 'COMPLIANT' ? 'Completed' : 'Overdue'
       if (status !== statusFilter) {
         return false
       }

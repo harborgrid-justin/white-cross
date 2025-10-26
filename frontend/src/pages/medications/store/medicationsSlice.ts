@@ -6,7 +6,7 @@
  */
 
 import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { StudentMedication } from '../../../types/student.types';
+import { Medication } from '../../../types/api';
 import { medicationsApi } from '../../../services/api';
 
 // Medication creation data
@@ -52,29 +52,29 @@ interface MedicationFilters {
 }
 
 // Create API service adapter for medications
-const medicationsApiService: EntityApiService<StudentMedication, CreateMedicationData, UpdateMedicationData> = {
+const medicationsApiService: EntityApiService<Medication, CreateMedicationData, UpdateMedicationData> = {
   async getAll(params?: MedicationFilters) {
     const response = await medicationsApi.getAll(params);
     return {
-      data: response.data?.medications || [],
-      total: response.data?.pagination?.total,
-      pagination: response.data?.pagination,
+      data: response.medications || [],
+      total: response.pagination?.total,
+      pagination: response.pagination,
     };
   },
 
   async getById(id: string) {
     const response = await medicationsApi.getById(id);
-    return { data: response.data };
+    return { data: response };
   },
 
   async create(data: CreateMedicationData) {
-    const response = await medicationsApi.create(data);
-    return { data: response.data };
+    const response = await medicationsApi.create(data as any);
+    return { data: response };
   },
 
   async update(id: string, data: UpdateMedicationData) {
-    const response = await medicationsApi.update(id, data);
-    return { data: response.data };
+    const response = await medicationsApi.update(id, data as any);
+    return { data: response };
   },
 
   async delete(id: string) {
@@ -84,7 +84,7 @@ const medicationsApiService: EntityApiService<StudentMedication, CreateMedicatio
 };
 
 // Create the medications slice using the entity factory
-const medicationsSliceFactory = createEntitySlice<StudentMedication, CreateMedicationData, UpdateMedicationData>(
+const medicationsSliceFactory = createEntitySlice<Medication, CreateMedicationData, UpdateMedicationData>(
   'medications',
   medicationsApiService,
   {
@@ -99,44 +99,29 @@ export const medicationsActions = medicationsSliceFactory.actions;
 export const medicationsSelectors = medicationsSliceFactory.adapter.getSelectors((state: any) => state.medications);
 export const medicationsThunks = medicationsSliceFactory.thunks;
 
-// Export custom selectors
-export const selectMedicationsByStudent = (state: any, studentId: string): StudentMedication[] => {
-  const allMedications = medicationsSelectors.selectAll(state) as StudentMedication[];
-  return allMedications.filter(medication => medication.studentId === studentId);
+// Export custom selectors for medication catalog
+export const selectActiveMedications = (state: any): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  // Medication catalog doesn't have isActive - all medications in catalog are assumed available
+  return allMedications;
 };
 
-export const selectActiveMedications = (state: any): StudentMedication[] => {
-  const allMedications = medicationsSelectors.selectAll(state) as StudentMedication[];
-  return allMedications.filter(medication => medication.isActive);
+export const selectControlledMedications = (state: any): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.isControlled);
 };
 
-export const selectActiveMedicationsByStudent = (state: any, studentId: string): StudentMedication[] => {
-  const allMedications = medicationsSelectors.selectAll(state) as StudentMedication[];
-  return allMedications.filter(medication => 
-    medication.studentId === studentId && medication.isActive
-  );
+export const selectMedicationsByCategory = (state: any, category: string): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.category === category);
 };
 
-export const selectMedicationsRequiringConsent = (state: any): StudentMedication[] => {
-  const allMedications = medicationsSelectors.selectAll(state) as StudentMedication[];
-  return allMedications.filter(medication => 
-    medication.requiresParentConsent && !medication.parentConsentDate
-  );
+export const selectMedicationsByForm = (state: any, dosageForm: string): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.dosageForm === dosageForm);
 };
 
-export const selectMedicationsByRoute = (state: any, route: string): StudentMedication[] => {
-  const allMedications = medicationsSelectors.selectAll(state) as StudentMedication[];
-  return allMedications.filter(medication => medication.route === route);
-};
-
-export const selectExpiringMedications = (state: any, days: number = 30): StudentMedication[] => {
-  const allMedications = medicationsSelectors.selectAll(state) as StudentMedication[];
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() + days);
-  
-  return allMedications.filter(medication => {
-    if (!medication.endDate || !medication.isActive) return false;
-    const endDate = new Date(medication.endDate);
-    return endDate <= cutoffDate;
-  }).sort((a, b) => new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime());
+export const selectMedicationsRequiringWitness = (state: any): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.requiresWitness);
 };

@@ -21,7 +21,7 @@ export class StudentManagementController {
   static async uploadPhoto(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { studentId } = request.params;
     const { imageData, metadata } = request.payload as any;
-    const userId = request.auth.credentials.userId;
+    const userId = request.auth.credentials.userId as string;
 
     const result = await StudentPhotoService.uploadPhoto({
       studentId,
@@ -30,10 +30,10 @@ export class StudentManagementController {
       metadata
     });
 
-    logger.info('Student photo uploaded', { 
+    logger.info('Student photo uploaded', {
       studentId,
-      photoId: result.id,
-      userId 
+      photoUrl: result.photoUrl || '',
+      userId
     });
 
     return createdResponse(h, { photo: result });
@@ -86,10 +86,10 @@ export class StudentManagementController {
 
     const history = await AcademicTranscriptService.getAcademicHistory(studentId);
 
-    logger.info('Academic history retrieved', { 
+    logger.info('Academic history retrieved', {
       studentId,
-      transcriptCount: history.transcripts?.length || 0,
-      userId 
+      recordCount: (history as any).length || 0,
+      userId
     });
 
     return successResponse(h, { academicHistory: history });
@@ -118,17 +118,16 @@ export class StudentManagementController {
     const { effectiveDate, dryRun = false, criteria } = request.payload as any;
     const userId = request.auth.credentials.userId;
 
-    const result = await GradeTransitionService.performBulkTransition(effectiveDate, dryRun, criteria);
+    const result = await GradeTransitionService.performBulkTransition(effectiveDate, dryRun);
 
     const logLevel = dryRun ? 'info' : 'warn';
-    logger[logLevel]('Bulk grade transition performed', { 
+    logger[logLevel]('Bulk grade transition performed', {
       effectiveDate,
       dryRun,
-      studentsAffected: result.studentsProcessed,
-      promoted: result.promoted,
-      retained: result.retained,
-      graduated: result.graduated,
-      userId 
+      total: result.total,
+      successful: result.successful,
+      failed: result.failed,
+      userId
     });
 
     return successResponse(h, { transitionResults: result });
@@ -197,18 +196,17 @@ export class StudentManagementController {
     const userId = request.auth.credentials.userId;
 
     const result = await EnterpriseFeatures.WaitlistManagementService.addToWaitlist(
-      studentId, 
-      appointmentType, 
-      priority,
-      { addedBy: userId, notes }
+      studentId,
+      appointmentType,
+      priority
     );
 
-    logger.info('Student added to waitlist', { 
+    logger.info('Student added to waitlist', {
       studentId,
       appointmentType,
       priority,
-      waitlistPosition: result.position,
-      userId 
+      waitlistId: result.id,
+      userId
     });
 
     return createdResponse(h, { waitlistEntry: result });

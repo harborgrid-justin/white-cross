@@ -10,7 +10,7 @@ import {
   CreateGrowthMeasurementDTO,
   UpdateGrowthMeasurementDTO
 } from '../interfaces/IGrowthMeasurementRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class GrowthMeasurementRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(GrowthMeasurement, auditLogger, cacheManager, 'GrowthMeasurement');
+  }
+
+  protected async invalidateCaches(entity: GrowthMeasurement): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:growthmeasurement:student:${data.studentId}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating growth measurement caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

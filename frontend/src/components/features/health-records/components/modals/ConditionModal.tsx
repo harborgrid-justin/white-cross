@@ -68,7 +68,7 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
               type="date"
               name="diagnosedDate"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={condition?.diagnosedDate || ''}
+              defaultValue={condition?.diagnosisDate || ''}
               data-testid="diagnosed-date-input"
             />
             {errors.diagnosedDate && (

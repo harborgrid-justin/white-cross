@@ -10,7 +10,7 @@ import {
   CreateComplianceReportDTO,
   UpdateComplianceReportDTO
 } from '../interfaces/IComplianceReportRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,17 @@ export class ComplianceReportRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ComplianceReport, auditLogger, cacheManager, 'ComplianceReport');
+  }
+
+  protected async invalidateCaches(entity: ComplianceReport): Promise<void> {
+    try {
+      await this.cacheManager.deletePattern(`white-cross:compliancereport:*`);
+    } catch (error) {
+      logger.warn('Error invalidating compliance report caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

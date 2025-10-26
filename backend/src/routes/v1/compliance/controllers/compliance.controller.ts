@@ -9,7 +9,8 @@ import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse,
-  paginatedResponse
+  paginatedResponse,
+  preparePayload
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
 
@@ -18,7 +19,59 @@ import { ComplianceReportService } from '../../../../services/compliance/complia
 import { ConsentService } from '../../../../services/compliance/consentService';
 import { ChecklistService } from '../../../../services/compliance/checklistService';
 import { PolicyService } from '../../../../services/compliance/policyService';
-import { ComplianceStatisticsService } from '../../../../services/compliance/statisticsService';
+import { StatisticsService } from '../../../../services/compliance/statisticsService';
+import { ComplianceReportType } from '../../../../database/types/enums';
+
+/**
+ * Payload Interfaces
+ */
+interface CreateComplianceReportPayload {
+  dueDate?: string | Date;
+  [key: string]: any;
+}
+
+interface UpdateComplianceReportPayload {
+  [key: string]: any;
+}
+
+interface GenerateComplianceReportPayload {
+  reportType: string;
+  period: string;
+  startDate?: string;
+  endDate?: string;
+  includeRecommendations?: boolean;
+}
+
+interface CreateChecklistPayload {
+  dueDate?: string | Date;
+  [key: string]: any;
+}
+
+interface UpdateChecklistPayload {
+  completedBy?: string;
+  [key: string]: any;
+}
+
+interface CreatePolicyPayload {
+  effectiveDate: string;
+  reviewDate?: string;
+  [key: string]: any;
+}
+
+interface UpdatePolicyPayload {
+  approvedBy?: string;
+  reviewDate?: string;
+  [key: string]: any;
+}
+
+interface CreateConsentFormPayload {
+  expiresAt?: string | Date;
+  [key: string]: any;
+}
+
+interface RecordConsentPayload {
+  [key: string]: any;
+}
 
 export class ComplianceController {
   /**
@@ -63,10 +116,16 @@ export class ComplianceController {
    * POST /api/v1/compliance/reports
    */
   static async createComplianceReport(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const reportData = {
-      ...request.payload,
-      createdById: request.auth.credentials.userId,
-      dueDate: request.payload.dueDate ? new Date(request.payload.dueDate) : undefined
+    const payload = request.payload as CreateComplianceReportPayload;
+
+    // Extract and type the data according to CreateComplianceReportData interface
+    const reportData: import('../../../../services/compliance/types').CreateComplianceReportData = {
+      reportType: payload.reportType,
+      title: payload.title,
+      description: payload.description,
+      period: payload.period,
+      createdById: request.auth.credentials.userId as string,
+      dueDate: payload.dueDate ? new Date(payload.dueDate) : undefined
     };
 
     const report = await ComplianceReportService.createComplianceReport(reportData);
@@ -80,7 +139,8 @@ export class ComplianceController {
    */
   static async updateComplianceReport(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const report = await ComplianceReportService.updateComplianceReport(id, request.payload);
+    const payload = request.payload as UpdateComplianceReportPayload;
+    const report = await ComplianceReportService.updateComplianceReport(id, payload);
 
     return successResponse(h, { report });
   }
@@ -105,16 +165,17 @@ export class ComplianceController {
    * POST /api/v1/compliance/reports/generate
    */
   static async generateComplianceReport(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const { reportType, period, startDate, endDate, includeRecommendations = true } = request.payload;
+    const payload = request.payload as GenerateComplianceReportPayload;
+    const { reportType, period, startDate, endDate, includeRecommendations = true } = payload;
 
     // Note: This would use a report generation service
     // For now, create a placeholder report
     const report = await ComplianceReportService.createComplianceReport({
-      reportType,
+      reportType: reportType as ComplianceReportType,
       title: `${reportType} Compliance Report - ${period}`,
       description: `Auto-generated compliance report for ${period} period`,
       period,
-      createdById: request.auth.credentials.userId
+      createdById: request.auth.credentials.userId as string
     });
 
     return createdResponse(h, {
@@ -166,9 +227,15 @@ export class ComplianceController {
    * POST /api/v1/compliance/checklists
    */
   static async createChecklist(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const checklistData = {
-      ...request.payload,
-      dueDate: request.payload.dueDate ? new Date(request.payload.dueDate) : undefined
+    const payload = request.payload as CreateChecklistPayload;
+
+    // Extract and type the data according to CreateChecklistItemData interface
+    const checklistData: import('../../../../services/compliance/types').CreateChecklistItemData = {
+      requirement: payload.requirement,
+      description: payload.description,
+      category: payload.category,
+      dueDate: payload.dueDate ? new Date(payload.dueDate) : undefined,
+      reportId: payload.reportId
     };
 
     const checklist = await ChecklistService.addChecklistItem(checklistData);
@@ -182,10 +249,11 @@ export class ComplianceController {
    */
   static async updateChecklist(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
+    const payload = request.payload as UpdateChecklistPayload;
 
-    const updateData = {
-      ...request.payload,
-      completedBy: request.payload.completedBy || request.auth.credentials.userId
+    const updateData: any = {
+      ...payload,
+      completedBy: payload.completedBy || request.auth.credentials.userId as string
     };
 
     const checklist = await ChecklistService.updateChecklistItem(id, updateData);
@@ -243,10 +311,16 @@ export class ComplianceController {
    * POST /api/v1/compliance/policies
    */
   static async createPolicy(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const policyData = {
-      ...request.payload,
-      effectiveDate: new Date(request.payload.effectiveDate),
-      reviewDate: request.payload.reviewDate ? new Date(request.payload.reviewDate) : undefined
+    const payload = request.payload as CreatePolicyPayload;
+
+    // Extract and type the data according to CreatePolicyData interface
+    const policyData: import('../../../../services/compliance/types').CreatePolicyData = {
+      title: payload.title,
+      category: payload.category,
+      content: payload.content,
+      version: payload.version,
+      effectiveDate: new Date(payload.effectiveDate),
+      reviewDate: payload.reviewDate ? new Date(payload.reviewDate) : undefined
     };
 
     const policy = await PolicyService.createPolicy(policyData);
@@ -260,11 +334,13 @@ export class ComplianceController {
    */
   static async updatePolicy(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { policyId } = request.params;
+    const payload = request.payload as UpdatePolicyPayload;
 
-    const updateData = {
-      ...request.payload,
-      approvedBy: request.payload.approvedBy || request.auth.credentials.userId,
-      reviewDate: request.payload.reviewDate ? new Date(request.payload.reviewDate) : undefined
+    // Extract and type the data according to UpdatePolicyData interface
+    const updateData: import('../../../../services/compliance/types').UpdatePolicyData = {
+      status: payload.status,
+      approvedBy: payload.approvedBy || (request.auth.credentials.userId as string),
+      reviewDate: payload.reviewDate ? new Date(payload.reviewDate) : undefined
     };
 
     const policy = await PolicyService.updatePolicy(policyId, updateData);
@@ -289,8 +365,8 @@ export class ComplianceController {
    */
   static async acknowledgePolicy(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { policyId } = request.params;
-    const userId = request.auth.credentials.userId;
-    const ipAddress = request.info.remoteAddress || request.headers['x-forwarded-for'] as string;
+    const userId = request.auth.credentials.userId as string;
+    const ipAddress = (request.info.remoteAddress || request.headers['x-forwarded-for']) as string;
 
     const acknowledgment = await PolicyService.acknowledgePolicy(policyId, userId, ipAddress);
 
@@ -331,9 +407,16 @@ export class ComplianceController {
    * POST /api/v1/compliance/consents/forms
    */
   static async createConsentForm(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const formData = {
-      ...request.payload,
-      expiresAt: request.payload.expiresAt ? new Date(request.payload.expiresAt) : undefined
+    const payload = request.payload as CreateConsentFormPayload;
+
+    // Extract and type the data according to CreateConsentFormData interface
+    const formData: import('../../../../services/compliance/types').CreateConsentFormData = {
+      type: payload.type,
+      title: payload.title,
+      description: payload.description,
+      content: payload.content,
+      version: payload.version,
+      expiresAt: payload.expiresAt ? new Date(payload.expiresAt) : undefined
     };
 
     const form = await ConsentService.createConsentForm(formData);
@@ -346,10 +429,16 @@ export class ComplianceController {
    * POST /api/v1/compliance/consents
    */
   static async recordConsent(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const ipAddress = request.info.remoteAddress || request.headers['x-forwarded-for'] as string;
+    const ipAddress = (request.info.remoteAddress || request.headers['x-forwarded-for']) as string;
+    const payload = request.payload as RecordConsentPayload;
 
-    const consentData = {
-      ...request.payload,
+    // Extract and type the data according to SignConsentFormData interface
+    const consentData: import('../../../../services/compliance/types').SignConsentFormData = {
+      consentFormId: payload.consentFormId,
+      studentId: payload.studentId,
+      signedBy: payload.signedBy,
+      relationship: payload.relationship,
+      signatureData: payload.signatureData,
       ipAddress
     };
 
@@ -375,7 +464,7 @@ export class ComplianceController {
    */
   static async withdrawConsent(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { signatureId } = request.params;
-    const withdrawnBy = request.auth.credentials.userId;
+    const withdrawnBy = request.auth.credentials.userId as string;
 
     const signature = await ConsentService.withdrawConsent(signatureId, withdrawnBy);
 

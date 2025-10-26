@@ -38,13 +38,16 @@
 export type {
   ApiResponse,
   SuccessResponse,
-  ErrorResponse,
   ErrorDetail,
   PaginatedResponse,
   PaginationInfo,
   MutationResponse,
   BulkOperationResponse,
 } from '../api/responses';
+
+// Import ErrorResponse for use in type guards (cannot use type-only import in runtime code)
+import type { ErrorResponse } from '../api/responses';
+export type { ErrorResponse };
 
 // Re-export domain-specific response types
 export type {

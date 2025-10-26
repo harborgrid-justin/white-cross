@@ -107,12 +107,6 @@ const sendMessageRoute: ServerRoute = {
           '403': { description: 'Forbidden - Insufficient permissions', schema: ErrorResponseSchema },
           '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
         }
-      },
-      'hapi-rate-limit': {
-        userLimit: 50,
-        userCache: {
-          expiresIn: 60000 // 50 messages per minute per user
-        }
       }
     }
   }
@@ -192,12 +186,6 @@ const replyToMessageRoute: ServerRoute = {
           '401': { description: 'Unauthorized', schema: ErrorResponseSchema },
           '404': { description: 'Original message not found', schema: ErrorResponseSchema },
           '429': { description: 'Too many requests - Rate limit exceeded', schema: ErrorResponseSchema }
-        }
-      },
-      'hapi-rate-limit': {
-        userLimit: 30,
-        userCache: {
-          expiresIn: 60000 // 30 replies per minute per user
         }
       }
     }

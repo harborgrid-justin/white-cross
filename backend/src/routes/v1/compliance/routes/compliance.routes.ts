@@ -160,7 +160,7 @@ const createComplianceReportRoute: ServerRoute = {
 const updateComplianceReportRoute: ServerRoute = {
   method: 'PUT',
   path: '/api/v1/compliance/reports/{id}',
-  handler: asyncHandler(ComplianceController.updateComplianceReportById),
+  handler: asyncHandler(ComplianceController.updateComplianceReport),
   options: {
     auth: 'jwt',
     tags: ['api', 'Compliance', 'Reports', 'v1'],

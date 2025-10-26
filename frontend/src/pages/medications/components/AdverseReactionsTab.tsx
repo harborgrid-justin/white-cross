@@ -11,10 +11,10 @@
  */
 
 import { AlertTriangle } from 'lucide-react'
-import { LoadingSpinner, EmptyState } from '../../../ui/feedback'
-import { useMedicationsData } from '../../../../hooks/domains/medications'
-import { getSeverityColor, formatDate } from '../../../../utils/medications'
-import type { AdverseReaction } from '../../../../types/api'
+import { LoadingSpinner, EmptyState } from '@/components/ui/feedback'
+import { useMedicationsData } from '@/hooks/domains/medications'
+import { getSeverityColor, formatDate } from '@/utils/medications'
+import type { AdverseReaction } from '@/types/api'
 
 interface AdverseReactionsTabProps {
   onReactionSelect?: (reaction: AdverseReaction) => void

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { purchaseOrderApi } from '../../../services/modules/purchaseOrderApi';
+import { purchaseOrderApi } from '../../../services';
 import {
   PurchaseOrder,
   PurchaseOrderFilters,

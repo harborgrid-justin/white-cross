@@ -1,28 +1,16 @@
 /**
  * Documents Slice
- * 
+ *
  * Redux slice for managing documents using the slice factory.
  * Handles CRUD operations for document management and storage.
  */
 
 import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
 import { documentsApi } from '../../../services';
+import type { Document as DocumentType } from '../../../types/documents';
 
-// Document interface
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  url: string;
-  studentId?: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  tags?: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+// Use the imported Document type instead of local interface
+type Document = DocumentType;
 
 // Document creation data
 interface CreateDocumentData {
@@ -59,7 +47,12 @@ const documentsApiService: EntityApiService<Document, CreateDocumentData, Update
     return {
       data: response.documents || [],
       total: response.pagination?.total || 0,
-      pagination: response.pagination,
+      pagination: response.pagination ? {
+        page: response.pagination.page,
+        pageSize: response.pagination.limit,
+        total: response.pagination.total,
+        totalPages: response.pagination.pages
+      } : undefined,
     };
   },
 
@@ -108,12 +101,14 @@ export const selectDocumentsByStudent = (state: any, studentId: string): Documen
 
 export const selectActiveDocuments = (state: any): Document[] => {
   const allDocuments = documentsSelectors.selectAll(state) as Document[];
-  return allDocuments.filter(document => document.isActive);
+  return allDocuments.filter(document =>
+    document.status === 'APPROVED' || document.status === 'PENDING_REVIEW'
+  );
 };
 
-export const selectDocumentsByType = (state: any, type: string): Document[] => {
+export const selectDocumentsByType = (state: any, category: string): Document[] => {
   const allDocuments = documentsSelectors.selectAll(state) as Document[];
-  return allDocuments.filter(document => document.type === type);
+  return allDocuments.filter(document => document.category === category);
 };
 
 export const selectDocumentsByUploader = (state: any, uploadedBy: string): Document[] => {
@@ -123,7 +118,7 @@ export const selectDocumentsByUploader = (state: any, uploadedBy: string): Docum
 
 export const selectDocumentsByTag = (state: any, tag: string): Document[] => {
   const allDocuments = documentsSelectors.selectAll(state) as Document[];
-  return allDocuments.filter(document => 
+  return allDocuments.filter(document =>
     document.tags && document.tags.includes(tag)
   );
 };
@@ -132,9 +127,9 @@ export const selectRecentDocuments = (state: any, days: number = 7): Document[] 
   const allDocuments = documentsSelectors.selectAll(state) as Document[];
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
-  
+
   return allDocuments.filter(document => {
-    const uploadDate = new Date(document.uploadedAt);
-    return uploadDate >= cutoffDate;
-  }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+    const createdDate = new Date(document.createdAt!);
+    return createdDate >= cutoffDate;
+  }).sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
 };

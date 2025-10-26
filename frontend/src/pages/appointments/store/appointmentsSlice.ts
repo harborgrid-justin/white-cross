@@ -6,70 +6,43 @@
  */
 
 import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { Appointment } from '../../../types/student.types';
 import { appointmentsApi } from '../../../services';
-
-// Appointment creation data
-interface CreateAppointmentData {
-  studentId: string;
-  nurseId: string;
-  scheduledAt: string;
-  duration: number;
-  type: string;
-  reason?: string;
-  notes?: string;
-}
-
-// Appointment update data
-interface UpdateAppointmentData {
-  scheduledAt?: string;
-  duration?: number;
-  type?: string;
-  reason?: string;
-  status?: string;
-  notes?: string;
-}
-
-// Appointment filters
-interface AppointmentFilters {
-  studentId?: string;
-  nurseId?: string;
-  status?: string;
-  type?: string;
-  startDate?: string;
-  endDate?: string;
-  page?: number;
-  limit?: number;
-}
+import type {
+  Appointment,
+  AppointmentFilters,
+  CreateAppointmentData,
+  UpdateAppointmentData
+} from '../../../types/appointments';
 
 // Create API service adapter for appointments
 const appointmentsApiService: EntityApiService<Appointment, CreateAppointmentData, UpdateAppointmentData> = {
   async getAll(params?: AppointmentFilters) {
-    const response = await appointmentsApi.getAll(params);
+    const response = await appointmentsApi.getAll(params as AppointmentFilters);
     return {
-      data: response.data?.appointments || [],
-      total: response.data?.pagination?.total,
-      pagination: response.data?.pagination,
+      data: response.data || [],
+      total: response.pagination?.total || 0,
+      pagination: response.pagination,
     };
   },
 
   async getById(id: string) {
     const response = await appointmentsApi.getById(id);
-    return { data: response.data };
+    return { data: response.appointment };
   },
 
   async create(data: CreateAppointmentData) {
     const response = await appointmentsApi.create(data);
-    return { data: response.data };
+    return { data: response.appointment };
   },
 
   async update(id: string, data: UpdateAppointmentData) {
     const response = await appointmentsApi.update(id, data);
-    return { data: response.data };
+    return { data: response.appointment };
   },
 
   async delete(id: string) {
-    await appointmentsApi.delete(id);
+    // appointmentsApi doesn't have a delete method, use cancel instead
+    await appointmentsApi.cancel(id, 'Deleted');
     return { success: true };
   },
 };

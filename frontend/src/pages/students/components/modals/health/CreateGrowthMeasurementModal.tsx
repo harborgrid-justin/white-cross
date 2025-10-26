@@ -76,14 +76,24 @@ export const CreateGrowthMeasurementModal: React.FC<CreateGrowthMeasurementModal
 
   const onSubmit = async (data: GrowthMeasurementFormData) => {
     try {
+      // Convert measurements to metric for API
+      let heightInCm = data.height;
+      let weightInKg = data.weight;
+
+      if (data.height && data.heightUnit === 'in') {
+        heightInCm = data.height * 2.54;
+      }
+
+      if (data.weight && data.weightUnit === 'lb') {
+        weightInKg = data.weight * 0.453592;
+      }
+
       await createMutation.mutateAsync({
         studentId,
         measurementDate: data.measurementDate,
         measuredBy: data.measuredBy,
-        height: data.height,
-        heightUnit: data.heightUnit,
-        weight: data.weight,
-        weightUnit: data.weightUnit,
+        height: heightInCm,
+        weight: weightInKg,
         headCircumference: data.headCircumference,
         notes: data.notes,
       });

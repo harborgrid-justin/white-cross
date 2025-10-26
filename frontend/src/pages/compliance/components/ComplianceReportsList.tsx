@@ -39,6 +39,9 @@ const ComplianceReportsList: React.FC = () => {
   const loading = useAppSelector(state => selectLoading(state).reports);
   const pagination = useAppSelector(selectReportsPagination);
 
+  // Calculate total pages from pagination data
+  const totalPages = pagination.total > 0 ? Math.ceil(pagination.total / pagination.limit) : 0;
+
   const [showFilters, setShowFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState({
     reportType: '',
@@ -49,7 +52,7 @@ const ComplianceReportsList: React.FC = () => {
 
   // Fetch reports on mount
   useEffect(() => {
-    dispatch(fetchComplianceReports());
+    dispatch(fetchComplianceReports(undefined));
   }, [dispatch]);
 
   /**
@@ -57,7 +60,7 @@ const ComplianceReportsList: React.FC = () => {
    */
   const handleApplyFilters = () => {
     dispatch(setReportFilters(localFilters));
-    dispatch(fetchComplianceReports());
+    dispatch(fetchComplianceReports(undefined));
   };
 
   /**
@@ -65,7 +68,7 @@ const ComplianceReportsList: React.FC = () => {
    */
   const handlePageChange = (newPage: number) => {
     dispatch(setReportsPagination({ page: newPage }));
-    dispatch(fetchComplianceReports());
+    dispatch(fetchComplianceReports(undefined));
   };
 
   /**
@@ -241,7 +244,7 @@ const ComplianceReportsList: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {pagination.totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t">
             <div className="text-sm text-gray-600">
               Showing {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)} to{' '}
@@ -256,11 +259,11 @@ const ComplianceReportsList: React.FC = () => {
                 Previous
               </button>
               <span className="text-sm text-gray-600">
-                Page {pagination.page} of {pagination.totalPages}
+                Page {pagination.page} of {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
+                disabled={pagination.page >= totalPages}
                 className="btn btn-sm btn-secondary"
               >
                 Next

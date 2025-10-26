@@ -5,12 +5,52 @@
 
 import { ResponseToolkit } from '@hapi/hapi';
 import { CommunicationService } from '../../../../services/communication';
+import { BroadcastMessageData } from '../../../../services/communication/types';
 import { ScheduledMessageQueue } from '../../../../services/communication/scheduledMessageQueue';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse
 } from '../../../shared/utils';
+import { preparePayload } from '../../../../shared/utils/payloadHelpers';
+
+/**
+ * Payload Interfaces
+ */
+interface BroadcastPayload {
+  audience: BroadcastMessageData['audience'];
+  channels: BroadcastMessageData['channels'];
+  subject?: string;
+  content: string;
+  priority: BroadcastMessageData['priority'];
+  category: BroadcastMessageData['category'];
+  scheduledAt?: string | Date;
+  translateTo?: string[];
+}
+
+interface SchedulePayload {
+  subject: string;
+  body: string;
+  recipientType: 'ALL_PARENTS' | 'SPECIFIC_USERS' | 'STUDENT_PARENTS' | 'GRADE_LEVEL' | 'CUSTOM_GROUP';
+  recipientIds?: string[];
+  recipientFilter?: {
+    studentIds?: string[];
+    gradeLevel?: string;
+    schoolId?: string;
+    tags?: string[];
+  };
+  channels: ('EMAIL' | 'SMS' | 'PUSH' | 'PORTAL')[];
+  scheduledFor: string | Date;
+  timezone?: string;
+  priority?: 'LOW' | 'NORMAL' | 'HIGH';
+  templateId?: string;
+  templateVariables?: Record<string, string>;
+  throttle?: {
+    maxPerMinute?: number;
+    maxPerHour?: number;
+  };
+  schoolId?: string;
+}
 
 export class BroadcastsController {
   /**
@@ -18,12 +58,22 @@ export class BroadcastsController {
    */
   static async createBroadcast(request: AuthenticatedRequest, h: ResponseToolkit) {
     const senderId = request.auth.credentials?.userId;
+    const payload = request.payload as BroadcastPayload;
 
-    const result = await CommunicationService.sendBroadcastMessage({
-      ...request.payload,
-      senderId,
-      scheduledAt: request.payload.scheduledAt ? new Date(request.payload.scheduledAt) : undefined
-    });
+    // Extract all required fields for BroadcastMessageData
+    const broadcastData: BroadcastMessageData = {
+      audience: payload.audience,
+      channels: payload.channels,
+      subject: payload.subject,
+      content: payload.content,
+      priority: payload.priority,
+      category: payload.category,
+      senderId: senderId as string,
+      scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : undefined,
+      translateTo: payload.translateTo
+    };
+
+    const result = await CommunicationService.sendBroadcastMessage(broadcastData);
 
     return createdResponse(h, {
       message: result.message,
@@ -210,11 +260,25 @@ export class BroadcastsController {
    */
   static async schedule(request: AuthenticatedRequest, h: ResponseToolkit) {
     const createdBy = request.auth.credentials?.userId;
+    const payload = request.payload as SchedulePayload;
 
-    const scheduledMessage = await ScheduledMessageQueue.scheduleMessage({
-      ...request.payload,
-      createdBy
-    });
+    // Extract all required fields for scheduleMessage
+    const scheduleData = {
+      subject: payload.subject,
+      body: payload.body,
+      recipientType: payload.recipientType,
+      recipientIds: payload.recipientIds,
+      recipientFilter: payload.recipientFilter,
+      channels: payload.channels,
+      scheduledFor: typeof payload.scheduledFor === 'string'
+        ? new Date(payload.scheduledFor)
+        : payload.scheduledFor,
+      priority: payload.priority,
+      createdBy: createdBy as string,
+      schoolId: payload.schoolId
+    };
+
+    const scheduledMessage = await ScheduledMessageQueue.scheduleMessage(scheduleData);
 
     return createdResponse(h, { scheduledMessage });
   }

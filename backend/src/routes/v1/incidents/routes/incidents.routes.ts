@@ -104,12 +104,6 @@ const createIncidentRoute: ServerRoute = {
           '429': { description: 'Too many requests - Rate limit exceeded' },
           '500': { description: 'Internal server error' }
         }
-      },
-      'hapi-rate-limit': {
-        userLimit: 30,
-        userCache: {
-          expiresIn: 60000 // 30 incident reports per minute per user
-        }
       }
     }
   }

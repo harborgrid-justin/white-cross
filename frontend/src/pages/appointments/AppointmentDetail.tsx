@@ -14,32 +14,21 @@ import { Calendar, Clock, User, FileText, Edit, ArrowLeft, Save } from 'lucide-r
 import { appointmentsApi } from '../../services';
 import { PROTECTED_ROUTES, buildAppointmentEditRoute } from '../../constants/routes';
 import { useAuth } from '../../contexts/AuthContext';
+import { AppointmentStatus } from '../../types/appointments';
 
-interface AppointmentDetail {
-  id: string;
-  studentId: string;
-  studentName: string;
-  appointmentType: string;
-  scheduledDate: string;
-  scheduledTime: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
-  provider: string;
-  reason: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Use the Appointment type from types
+import type { Appointment } from '../../types/appointments';
 
 const AppointmentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [appointment, setAppointment] = useState<AppointmentDetail | null>(null);
+  const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState('');
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<AppointmentStatus>(AppointmentStatus.SCHEDULED);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -56,9 +45,9 @@ const AppointmentDetail: React.FC = () => {
       setError(null);
       
       const response = await appointmentsApi.getById(id);
-      setAppointment(response.data);
-      setNotes(response.data.notes || '');
-      setStatus(response.data.status);
+      setAppointment(response.appointment);
+      setNotes(response.appointment.notes || '');
+      setStatus(response.appointment.status);
     } catch (err) {
       setError('Failed to load appointment details');
       console.error('Error loading appointment:', err);
@@ -143,7 +132,11 @@ const AppointmentDetail: React.FC = () => {
     );
   }
 
-  const { date, time } = formatDateTime(appointment.scheduledDate, appointment.scheduledTime);
+  const scheduledDate = new Date(appointment.scheduledAt);
+  const { date, time } = formatDateTime(
+    scheduledDate.toISOString().split('T')[0],
+    scheduledDate.toTimeString().slice(0, 5)
+  );
 
   return (
     <div className="space-y-6">
@@ -159,7 +152,7 @@ const AppointmentDetail: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Appointment Details</h1>
             <p className="text-gray-600 mt-1">
-              {appointment.studentName} - {date}
+              {appointment.student?.firstName} {appointment.student?.lastName} - {date}
             </p>
           </div>
         </div>
@@ -217,7 +210,7 @@ const AppointmentDetail: React.FC = () => {
               <label className="text-sm font-medium text-gray-500">Student</label>
               <div className="flex items-center mt-1">
                 <User className="w-5 h-5 text-gray-400 mr-2" />
-                <span className="text-gray-900 font-medium">{appointment.studentName}</span>
+                <span className="text-gray-900 font-medium">{appointment.student?.firstName} {appointment.student?.lastName}</span>
               </div>
               <div className="text-sm text-gray-500 mt-1">ID: {appointment.studentId}</div>
             </div>
@@ -238,12 +231,12 @@ const AppointmentDetail: React.FC = () => {
 
             <div>
               <label className="text-sm font-medium text-gray-500">Type</label>
-              <div className="mt-1 text-gray-900 font-medium">{appointment.appointmentType}</div>
+              <div className="mt-1 text-gray-900 font-medium">{appointment.type?.replace(/_/g, ' ')}</div>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">Provider</label>
-              <div className="mt-1 text-gray-900 font-medium">{appointment.provider}</div>
+              <div className="mt-1 text-gray-900 font-medium">{appointment.nurse?.firstName} {appointment.nurse?.lastName}</div>
             </div>
 
             <div>
@@ -252,7 +245,7 @@ const AppointmentDetail: React.FC = () => {
                 {editing ? (
                   <select
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    onChange={(e) => setStatus(e.target.value as AppointmentStatus)}
                     className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="SCHEDULED">Scheduled</option>

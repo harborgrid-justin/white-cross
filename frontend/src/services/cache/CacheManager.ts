@@ -33,10 +33,10 @@ import type {
   CacheStats,
   InvalidationOptions,
   CacheEvent,
-  CacheEventType,
   CacheEventListener,
   PerformanceMetrics
 } from './types';
+import { CacheEventType } from './types';
 import { CACHE_CONFIG, PERFORMANCE_CONFIG } from './cacheConfig';
 
 /**
@@ -100,13 +100,13 @@ export class CacheManager {
    */
   private initializeEventListeners(): void {
     // Initialize listener sets for each event type
-    this.listeners.set('hit', new Set());
-    this.listeners.set('miss', new Set());
-    this.listeners.set('set', new Set());
-    this.listeners.set('invalidate', new Set());
-    this.listeners.set('evict', new Set());
-    this.listeners.set('persist', new Set());
-    this.listeners.set('restore', new Set());
+    this.listeners.set(CacheEventType.HIT, new Set());
+    this.listeners.set(CacheEventType.MISS, new Set());
+    this.listeners.set(CacheEventType.SET, new Set());
+    this.listeners.set(CacheEventType.INVALIDATE, new Set());
+    this.listeners.set(CacheEventType.EVICT, new Set());
+    this.listeners.set(CacheEventType.PERSIST, new Set());
+    this.listeners.set(CacheEventType.RESTORE, new Set());
   }
 
   /**
@@ -252,7 +252,7 @@ export class CacheManager {
     this.cache.set(key, entry);
     this.addToTagIndex(key, tags);
     this.updateMemoryUsage(size);
-    this.emitEvent('set', key);
+    this.emitEvent(CacheEventType.SET, key);
 
     // Track performance
     if (PERFORMANCE_CONFIG.enabled) {
@@ -300,7 +300,7 @@ export class CacheManager {
     this.removeFromTagIndex(key, entry.tags);
     this.cache.delete(key);
     this.updateMemoryUsage(-entry.size);
-    this.emitEvent('invalidate', key);
+    this.emitEvent(CacheEventType.INVALIDATE, key);
 
     return true;
   }
@@ -522,7 +522,7 @@ export class CacheManager {
         this.updateMemoryUsage(-entry.size);
       }
       this.stats.evictions++;
-      this.emitEvent('evict', lruKey);
+      this.emitEvent(CacheEventType.EVICT, lruKey);
     }
   }
 
@@ -557,7 +557,7 @@ export class CacheManager {
    */
   private recordHit(key: string): void {
     this.stats.hits++;
-    this.emitEvent('hit', key);
+    this.emitEvent(CacheEventType.HIT, key);
   }
 
   /**
@@ -567,7 +567,7 @@ export class CacheManager {
    */
   private recordMiss(key: string): void {
     this.stats.misses++;
-    this.emitEvent('miss', key);
+    this.emitEvent(CacheEventType.MISS, key);
   }
 
   /**
@@ -702,11 +702,9 @@ export class CacheManager {
     // Reset statistics
     this.resetStats();
 
-    // Emit cleanup event
-    this.emitEvent({
-      type: 'clear',
-      timestamp: Date.now()
-    });
+    // Emit cleanup event for all listeners - no specific event type for cleanup
+    // Just emit invalidate to notify listeners cache is being cleared
+    this.emitEvent(CacheEventType.INVALIDATE, 'cleanup');
 
     // Allow event handlers to complete
     await Promise.resolve();

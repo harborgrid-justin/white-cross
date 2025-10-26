@@ -16,7 +16,7 @@ const ConsentFormsList: React.FC = () => {
   const loading = useAppSelector(state => selectLoading(state).consentForms);
 
   useEffect(() => {
-    dispatch(fetchConsentForms());
+    dispatch(fetchConsentForms(undefined));
   }, [dispatch]);
 
   if (loading && forms.length === 0) {

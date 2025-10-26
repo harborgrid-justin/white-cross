@@ -10,7 +10,7 @@ import {
   CreatePurchaseOrderDTO,
   UpdatePurchaseOrderDTO
 } from '../interfaces/IPurchaseOrderRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class PurchaseOrderRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(PurchaseOrder, auditLogger, cacheManager, 'PurchaseOrder');
   }
+  /**
+   * Invalidate PurchaseOrder-related caches
+   */
+  protected async invalidateCaches(entity: PurchaseOrder): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:purchaseorder:*`);
+    } catch (error) {
+      logger.warn('Error invalidating PurchaseOrder caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize PurchaseOrder data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

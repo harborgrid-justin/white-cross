@@ -31,7 +31,7 @@ import toast from 'react-hot-toast';
 // TYPE DEFINITIONS
 // ==========================================
 
-interface QueryMeta {
+interface QueryMeta extends Record<string, unknown> {
   /**
    * Whether this query contains PHI data
    * PHI data will not be persisted to localStorage
@@ -192,8 +192,8 @@ const queryCache = new QueryCache({
     if (meta?.auditLog) {
       auditService.logFailure(
         {
-          action: 'QUERY_ERROR',
-          resourceType: 'API',
+          action: 'READ' as any, // Using generic READ action for query errors
+          resourceType: 'DOCUMENT' as any, // Using generic DOCUMENT type for API errors
           context: {
             queryKey: query.queryKey,
             errorMessage: error.message,
@@ -471,7 +471,7 @@ export async function safePrefetch<T>(
       queryFn,
       staleTime: options?.staleTime,
       gcTime: options?.gcTime,
-      meta: options?.meta,
+      meta: options?.meta as Record<string, unknown>,
     });
   } catch (error) {
     // Log error but don't throw - prefetch failures are non-critical

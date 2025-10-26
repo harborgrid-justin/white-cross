@@ -63,7 +63,9 @@ import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse,
-  paginatedResponse
+  paginatedResponse,
+  preparePayload,
+  extractPayloadSafe
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
 
@@ -180,8 +182,8 @@ export class HealthRecordsController {
 
     return paginatedResponse(
       h,
-      result.records || result.data,
-      buildPaginationMeta(page, limit, result.total)
+      result.records,
+      buildPaginationMeta(page, limit, result.pagination.total)
     );
   }
 
@@ -281,17 +283,24 @@ export class HealthRecordsController {
   static async createRecord(request: AuthenticatedRequest, h: ResponseToolkit) {
     // Payload already validated with correct field names (recordType, recordDate, etc.)
     // Convert recordDate to Date object if it's a string
-    const recordData = {
-      ...request.payload,
-      recordDate: new Date(request.payload.recordDate)
+    const recordData = preparePayload(request.payload, {
+      dateFields: ['recordDate', 'followUpDate']
+    });
+
+    // Extract and type the fields for CreateHealthRecordData
+    const payload = recordData as any;
+    const typedData = {
+      studentId: payload.studentId,
+      type: payload.recordType || payload.type,
+      date: payload.recordDate || payload.date,
+      description: payload.diagnosis || payload.description || '',
+      vital: payload.vital,
+      provider: payload.provider,
+      notes: payload.notes,
+      attachments: payload.attachments
     };
 
-    // Convert optional date fields
-    if (recordData.followUpDate) {
-      recordData.followUpDate = new Date(recordData.followUpDate);
-    }
-
-    const record = await HealthRecordService.createHealthRecord(recordData);
+    const record = await HealthRecordService.createHealthRecord(typedData);
 
     return createdResponse(h, { record });
   }
@@ -343,15 +352,9 @@ export class HealthRecordsController {
     const { id } = request.params;
 
     // Payload already validated with correct field names
-    const updateData = { ...request.payload };
-
-    // Convert date strings to Date objects if present
-    if (updateData.recordDate) {
-      updateData.recordDate = new Date(updateData.recordDate);
-    }
-    if (updateData.followUpDate) {
-      updateData.followUpDate = new Date(updateData.followUpDate);
-    }
+    const updateData = preparePayload(request.payload, {
+      dateFields: ['recordDate', 'followUpDate']
+    });
 
     const record = await HealthRecordService.updateHealthRecord(id, updateData);
 
@@ -543,7 +546,20 @@ export class HealthRecordsController {
    * ```
    */
   static async createAllergy(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const allergy = await HealthRecordService.createAllergy(request.payload);
+    // Extract payload fields and prepare for CreateAllergyData
+    const payload = extractPayloadSafe(request.payload);
+
+    const allergyData = {
+      studentId: payload.studentId as string,
+      allergen: payload.allergen as string,
+      severity: payload.severity as any,
+      reaction: (payload.reaction || payload.reactions) as string | undefined,
+      treatment: payload.treatment as string | undefined,
+      verified: payload.verified as boolean | undefined,
+      verifiedBy: payload.verifiedBy as string | undefined
+    };
+
+    const allergy = await HealthRecordService.createAllergy(allergyData);
 
     return createdResponse(h, { allergy });
   }
@@ -594,7 +610,31 @@ export class HealthRecordsController {
    */
   static async updateAllergy(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const allergy = await HealthRecordService.updateAllergy(id, request.payload);
+
+    // Extract payload fields and prepare for Partial<CreateAllergyData>
+    const payload = extractPayloadSafe(request.payload);
+
+    const allergyUpdateData: Partial<{
+      studentId: string;
+      allergen: string;
+      severity: any;
+      reaction?: string;
+      treatment?: string;
+      verified?: boolean;
+      verifiedBy?: string;
+    }> = {};
+
+    if (payload.studentId !== undefined) allergyUpdateData.studentId = payload.studentId as string;
+    if (payload.allergen !== undefined) allergyUpdateData.allergen = payload.allergen as string;
+    if (payload.severity !== undefined) allergyUpdateData.severity = payload.severity;
+    if (payload.reaction !== undefined || payload.reactions !== undefined) {
+      allergyUpdateData.reaction = (payload.reaction || payload.reactions) as string;
+    }
+    if (payload.treatment !== undefined) allergyUpdateData.treatment = payload.treatment as string;
+    if (payload.verified !== undefined) allergyUpdateData.verified = payload.verified as boolean;
+    if (payload.verifiedBy !== undefined) allergyUpdateData.verifiedBy = payload.verifiedBy as string;
+
+    const allergy = await HealthRecordService.updateAllergy(id, allergyUpdateData);
 
     return successResponse(h, { allergy });
   }
@@ -792,14 +832,30 @@ export class HealthRecordsController {
    * ```
    */
   static async createCondition(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const conditionData = {
-      ...request.payload,
-      diagnosisDate: new Date(request.payload.diagnosisDate),
-      lastReviewDate: request.payload.lastReviewDate ? new Date(request.payload.lastReviewDate) : undefined,
-      nextReviewDate: request.payload.nextReviewDate ? new Date(request.payload.nextReviewDate) : undefined
+    const conditionData = preparePayload(request.payload, {
+      dateFields: ['diagnosisDate', 'lastReviewDate', 'nextReviewDate']
+    });
+
+    // Extract and type the fields for CreateChronicConditionData
+    const payload = conditionData as any;
+    const typedData = {
+      studentId: payload.studentId,
+      condition: payload.diagnosis || payload.condition,
+      diagnosisDate: payload.diagnosisDate,
+      status: payload.status,
+      severity: payload.severity,
+      notes: payload.notes,
+      carePlan: payload.carePlan,
+      medications: payload.medications,
+      restrictions: payload.restrictions,
+      triggers: payload.triggers,
+      diagnosedBy: payload.diagnosedBy,
+      lastReviewDate: payload.lastReviewDate,
+      nextReviewDate: payload.nextReviewDate,
+      icdCode: payload.icdCode
     };
 
-    const condition = await HealthRecordService.createChronicCondition(conditionData);
+    const condition = await HealthRecordService.createChronicCondition(typedData);
 
     return createdResponse(h, { condition });
   }
@@ -853,10 +909,9 @@ export class HealthRecordsController {
   static async updateCondition(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
 
-    const updateData = { ...request.payload };
-    if (updateData.diagnosisDate) updateData.diagnosisDate = new Date(updateData.diagnosisDate);
-    if (updateData.lastReviewDate) updateData.lastReviewDate = new Date(updateData.lastReviewDate);
-    if (updateData.nextReviewDate) updateData.nextReviewDate = new Date(updateData.nextReviewDate);
+    const updateData = preparePayload(request.payload, {
+      dateFields: ['diagnosisDate', 'lastReviewDate', 'nextReviewDate']
+    });
 
     const condition = await HealthRecordService.updateChronicCondition(id, updateData);
 
@@ -1067,14 +1122,33 @@ export class HealthRecordsController {
    * ```
    */
   static async createVaccination(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const vaccinationData = {
-      ...request.payload,
-      administrationDate: new Date(request.payload.administrationDate),
-      expirationDate: request.payload.expirationDate ? new Date(request.payload.expirationDate) : undefined,
-      nextDueDate: request.payload.nextDueDate ? new Date(request.payload.nextDueDate) : undefined
+    const vaccinationData = preparePayload(request.payload, {
+      dateFields: ['administrationDate', 'expirationDate', 'nextDueDate']
+    });
+
+    // Extract and type the fields for CreateVaccinationData
+    const payload = vaccinationData as any;
+    const typedData = {
+      studentId: payload.studentId,
+      vaccineName: payload.vaccine || payload.vaccineName,
+      administrationDate: payload.administrationDate,
+      administeredBy: payload.administeredBy,
+      cvxCode: payload.cvxCode,
+      ndcCode: payload.ndcCode,
+      lotNumber: payload.lotNumber,
+      manufacturer: payload.manufacturer,
+      doseNumber: payload.doseNumber,
+      totalDoses: payload.totalDoses,
+      expirationDate: payload.expirationDate,
+      nextDueDate: payload.nextDueDate,
+      site: payload.site,
+      route: payload.route,
+      dosageAmount: payload.dosageAmount || payload.dose,
+      reactions: payload.reactions || payload.adverseReaction,
+      notes: payload.notes
     };
 
-    const vaccination = await HealthRecordService.createVaccination(vaccinationData);
+    const vaccination = await HealthRecordService.createVaccination(typedData);
 
     return createdResponse(h, { vaccination });
   }
@@ -1126,10 +1200,9 @@ export class HealthRecordsController {
   static async updateVaccination(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
 
-    const updateData = { ...request.payload };
-    if (updateData.administrationDate) updateData.administrationDate = new Date(updateData.administrationDate);
-    if (updateData.expirationDate) updateData.expirationDate = new Date(updateData.expirationDate);
-    if (updateData.nextDueDate) updateData.nextDueDate = new Date(updateData.nextDueDate);
+    const updateData = preparePayload(request.payload, {
+      dateFields: ['administrationDate', 'expirationDate', 'nextDueDate']
+    });
 
     const vaccination = await HealthRecordService.updateVaccination(id, updateData);
 
@@ -1247,11 +1320,14 @@ export class HealthRecordsController {
    * ```
    */
   static async recordVitals(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const vitalsRecord = await HealthRecordService.recordVitalSigns(
-      request.payload.studentId,
-      request.payload.vitals,
-      request.payload.recordedBy
-    );
+    const payload = request.payload as any;
+
+    // recordVitalSigns expects a single object with { studentId, vitals, recordedBy }
+    const vitalsRecord = await HealthRecordService.recordVitalSigns({
+      studentId: payload.studentId,
+      vitals: payload.vitals,
+      recordedBy: payload.recordedBy
+    });
 
     return createdResponse(h, { record: vitalsRecord });
   }
@@ -1338,12 +1414,17 @@ export class HealthRecordsController {
     const { studentId } = request.params;
     const { page, limit } = parsePagination(request.query);
 
-    const result = await HealthRecordService.getVitalsHistory(studentId, page, limit);
+    const allRecords = await HealthRecordService.getVitalsHistory(studentId);
+
+    // Manual pagination
+    const offset = (page - 1) * limit;
+    const records = allRecords.slice(offset, offset + limit);
+    const total = allRecords.length;
 
     return paginatedResponse(
       h,
-      result.records || result.data,
-      buildPaginationMeta(page, limit, result.total)
+      records,
+      buildPaginationMeta(page, limit, total)
     );
   }
 

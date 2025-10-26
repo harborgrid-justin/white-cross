@@ -6,11 +6,11 @@
 
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { Medication } from '../../../types/medication.types';
-import { toggleMedicationStatus } from '../store/medicationsSlice';
+import { StudentMedication } from '@/types/api';
+import { medicationsThunks } from '../store/medicationsSlice';
 
 interface MedicationCardProps {
-  medication: Medication;
+  medication: StudentMedication;
   showStudent?: boolean;
   onStatusChange?: () => void;
 }
@@ -23,7 +23,10 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
   const dispatch = useDispatch();
 
   const handleStatusToggle = () => {
-    dispatch(toggleMedicationStatus(medication.id));
+    dispatch(medicationsThunks.update({
+      id: medication.id,
+      data: { isActive: !medication.isActive }
+    }) as any);
     if (onStatusChange) {
       onStatusChange();
     }
@@ -32,9 +35,9 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
   return (
     <div className="medication-card">
       <div className="card-header">
-        <h3 className="medication-name">{medication.name}</h3>
-        {showStudent && (
-          <span className="student-name">{medication.studentName}</span>
+        <h3 className="medication-name">{medication.medication?.name || 'Unknown Medication'}</h3>
+        {showStudent && medication.student && (
+          <span className="student-name">{medication.student.firstName} {medication.student.lastName}</span>
         )}
       </div>
 
@@ -46,12 +49,12 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
 
         <div className="schedule">
           <span className="schedule-label">Schedule:</span>
-          <span className="schedule-value">{medication.schedule}</span>
+          <span className="schedule-value">{medication.frequency}</span>
         </div>
 
         <div className="alerts">
-          {medication.alerts && (
-            <span className="alert-badge">{medication.alerts}</span>
+          {medication.endDate && new Date(medication.endDate) < new Date() && (
+            <span className="alert-badge">Expired</span>
           )}
         </div>
       </div>
@@ -61,7 +64,7 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
         <button className="edit-button">Edit</button>
         <button className="administer-button">Administer</button>
         <button className="toggle-status-button" onClick={handleStatusToggle}>
-          {medication.active ? 'Deactivate' : 'Activate'}
+          {medication.isActive ? 'Deactivate' : 'Activate'}
         </button>
       </div>
     </div>

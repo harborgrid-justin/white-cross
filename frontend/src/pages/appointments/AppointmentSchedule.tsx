@@ -17,7 +17,8 @@ import { appointmentsApi } from '../../services';
 import { studentsApi } from '../../services';
 import { useAuth } from '../../contexts/AuthContext';
 import { PROTECTED_ROUTES } from '../../constants/routes';
-import type { Appointment, AppointmentStatus, Student } from '../../types';
+import type { Appointment, AppointmentStatus } from '../../types/appointments';
+import type { Student } from '../../types/student.types';
 
 // ============================================================================
 // INTERFACES
@@ -89,15 +90,15 @@ const AppointmentSchedule: React.FC = () => {
       setError(null);
 
       const [appointmentsData, studentsData] = await Promise.all([
-        appointmentsApi.getAppointments({
-          startDate: filters.dateRange.start.toISOString(),
-          endDate: filters.dateRange.end.toISOString(),
-          ...filters,
+        appointmentsApi.getAll({
+          dateFrom: format(filters.dateRange.start, 'yyyy-MM-dd'),
+          dateTo: format(filters.dateRange.end, 'yyyy-MM-dd'),
+          limit: 1000,
         }),
-        studentsApi.getStudents({ limit: 1000 }), // Get all students for quick booking
+        studentsApi.getAll({ limit: 1000 }), // Get all students for quick booking
       ]);
 
-      setAppointments(appointmentsData.appointments || []);
+      setAppointments(appointmentsData.data || []);
       setStudents(studentsData.students || []);
     } catch (err) {
       console.error('Failed to load appointment data:', err);
@@ -117,21 +118,23 @@ const AppointmentSchedule: React.FC = () => {
 
   const generateTimeSlots = (date: Date): TimeSlot[] => {
     const slots: TimeSlot[] = [];
-    const dayAppointments = appointments.filter(apt => 
-      isSameDay(parseISO(apt.appointmentDate), date)
+    const dayAppointments = appointments.filter(apt =>
+      isSameDay(parseISO(apt.scheduledAt), date)
     );
 
     // Generate 30-minute slots from 8 AM to 5 PM
     for (let hour = 8; hour < 17; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const startTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        const endTime = minute === 30 
+        const endTime = minute === 30
           ? `${(hour + 1).toString().padStart(2, '0')}:00`
           : `${hour.toString().padStart(2, '0')}:30`;
 
-        const existingAppointment = dayAppointments.find(apt => 
-          apt.startTime === startTime && apt.status !== 'CANCELLED'
-        );
+        const aptTime = format(parseISO(`${format(date, 'yyyy-MM-dd')}T${startTime}:00`), 'HH:mm');
+        const existingAppointment = dayAppointments.find(apt => {
+          const aptScheduledTime = format(parseISO(apt.scheduledAt), 'HH:mm');
+          return aptScheduledTime === startTime && apt.status !== 'CANCELLED';
+        });
 
         slots.push({
           id: `${format(date, 'yyyy-MM-dd')}-${startTime}`,
@@ -162,8 +165,8 @@ const AppointmentSchedule: React.FC = () => {
         date: currentDay,
         isCurrentMonth: true,
         timeSlots: generateTimeSlots(currentDay),
-        appointments: appointments.filter(apt => 
-          isSameDay(parseISO(apt.appointmentDate), currentDay)
+        appointments: appointments.filter(apt =>
+          isSameDay(parseISO(apt.scheduledAt), currentDay)
         ),
       });
       currentDay = addDays(currentDay, 1);
@@ -231,14 +234,14 @@ const AppointmentSchedule: React.FC = () => {
 
       try {
         setSubmitting(true);
-        await appointmentsApi.createAppointment({
+        await appointmentsApi.create({
           studentId: selectedStudent,
-          appointmentDate: format(selectedDate, 'yyyy-MM-dd'),
-          startTime: selectedTimeSlot.startTime,
-          endTime: selectedTimeSlot.endTime,
-          appointmentType,
+          nurseId: filters.providerId || '', // Use current user ID in real implementation
+          type: appointmentType as any, // Cast to AppointmentType enum
+          scheduledAt: `${format(selectedDate, 'yyyy-MM-dd')}T${selectedTimeSlot.startTime}:00`,
+          duration: 30, // Default 30 minutes
+          reason: notes || 'Quick booking',
           notes: notes || undefined,
-          status: 'SCHEDULED' as AppointmentStatus,
         });
 
         setShowQuickBook(false);
@@ -285,7 +288,7 @@ const AppointmentSchedule: React.FC = () => {
                 <option value="">Select a student...</option>
                 {students.map(student => (
                   <option key={student.id} value={student.id}>
-                    {student.firstName} {student.lastName} - {student.studentId}
+                    {student.firstName} {student.lastName} - {student.studentNumber}
                   </option>
                 ))}
               </select>
@@ -541,7 +544,7 @@ const AppointmentSchedule: React.FC = () => {
                             {dayTimeSlot.appointment.student?.firstName} {dayTimeSlot.appointment.student?.lastName}
                           </div>
                           <div className="truncate">
-                            {dayTimeSlot.appointment.appointmentType?.replace(/_/g, ' ')}
+                            {dayTimeSlot.appointment.type?.replace(/_/g, ' ')}
                           </div>
                         </div>
                       )}

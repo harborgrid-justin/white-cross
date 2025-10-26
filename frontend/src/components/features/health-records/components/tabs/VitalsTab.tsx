@@ -97,16 +97,13 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
       await recordVitalsMutation.mutateAsync({
         studentId,
         vitals: {
-          timestamp: formData.timestamp,
+          measurementDate: formData.timestamp,
           temperature: formData.temperature,
-          bloodPressure: formData.bloodPressureSystolic && formData.bloodPressureDiastolic
-            ? `${formData.bloodPressureSystolic}/${formData.bloodPressureDiastolic}`
-            : undefined,
+          bloodPressureSystolic: formData.bloodPressureSystolic,
+          bloodPressureDiastolic: formData.bloodPressureDiastolic,
           heartRate: formData.heartRate,
           respiratoryRate: formData.respiratoryRate,
           oxygenSaturation: formData.oxygenSaturation,
-          weight: formData.weight,
-          height: formData.height,
           notes: formData.notes,
         },
       })
@@ -405,7 +402,7 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
                 {vitalsData.map((vital, index) => (
                   <tr key={index} className="border-t hover:bg-gray-50" data-testid="vital-row">
                     <td className="px-4 py-2 text-sm">
-                      {new Date(vital.recordDate).toLocaleString()}
+                      {new Date(vital.measurementDate).toLocaleString()}
                     </td>
                     <td className={`px-4 py-2 text-sm ${vital.temperature ? getStatusColor(vital.temperature, 'temperature') : ''}`}>
                       {vital.temperature || '-'}

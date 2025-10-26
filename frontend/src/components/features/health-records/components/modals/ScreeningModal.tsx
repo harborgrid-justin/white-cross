@@ -35,11 +35,11 @@ const SCREENING_TYPES: { value: ScreeningType; label: string }[] = [
 ];
 
 const SCREENING_OUTCOMES: { value: ScreeningOutcome; label: string }[] = [
-  { value: 'PASSED', label: 'Passed' },
-  { value: 'FAILED', label: 'Failed' },
+  { value: 'PASS', label: 'Passed' },
+  { value: 'FAIL', label: 'Failed' },
   { value: 'REFER', label: 'Refer' },
   { value: 'INCONCLUSIVE', label: 'Inconclusive' },
-  { value: 'DECLINED', label: 'Declined' },
+  { value: 'INCOMPLETE', label: 'Incomplete' },
 ];
 
 export const ScreeningModal: React.FC<ScreeningModalProps> = ({

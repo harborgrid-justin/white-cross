@@ -89,7 +89,7 @@ export interface IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
-    data: any
+    data: Record<string, unknown>
   ): Promise<void>;
 
   /**
@@ -155,7 +155,7 @@ export interface IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
-    changes: Record<string, { before: any; after: any }>
+    changes: Record<string, { before: unknown; after: unknown }>
   ): Promise<void>;
 
   /**
@@ -191,7 +191,7 @@ export interface IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
-    data: any
+    data: Record<string, unknown>
   ): Promise<void>;
 
   /**
@@ -225,7 +225,7 @@ export interface IAuditLogger {
     operation: string,
     entityType: string,
     context: ExecutionContext,
-    metadata: any
+    metadata: Record<string, unknown>
   ): Promise<void>;
 
   /**
@@ -258,7 +258,7 @@ export interface IAuditLogger {
    * PHI exports must be audited to ensure compliance with minimum necessary
    * standard and to track potential data breach incidents.
    */
-  logExport(entityType: string, context: ExecutionContext, metadata: any): Promise<void>;
+  logExport(entityType: string, context: ExecutionContext, metadata: Record<string, unknown>): Promise<void>;
 
   /**
    * Logs database transaction operations.
@@ -285,7 +285,7 @@ export interface IAuditLogger {
    * );
    * ```
    */
-  logTransaction(operation: string, context: ExecutionContext, metadata: any): Promise<void>;
+  logTransaction(operation: string, context: ExecutionContext, metadata: Record<string, unknown>): Promise<void>;
 
   /**
    * Logs cache access operations for PHI tracking.
@@ -317,7 +317,7 @@ export interface IAuditLogger {
    * Required for PHI entities to maintain complete access audit trail.
    * Cache reads should be logged with same rigor as database reads.
    */
-  logCacheAccess(operation: string, cacheKey: string, metadata?: any): Promise<void>;
+  logCacheAccess(operation: string, cacheKey: string, metadata?: Record<string, unknown>): Promise<void>;
 }
 
 /**
@@ -357,7 +357,7 @@ export interface AuditLogEntry {
   /**
    * Changes made (before/after values or metadata)
    */
-  changes: any;
+  changes: Record<string, unknown> | Record<string, { before: unknown; after: unknown }> | null;
 
   /**
    * Timestamp of the action
@@ -478,20 +478,21 @@ export const SENSITIVE_FIELDS = [
  *
  * @see {@link SENSITIVE_FIELDS} for list of redacted field patterns
  */
-export function sanitizeSensitiveData(data: any): any {
+export function sanitizeSensitiveData(data: unknown): unknown {
   if (typeof data !== 'object' || data === null) {
     return data;
   }
 
-  const sanitized: any = Array.isArray(data) ? [] : {};
+  const sanitized: Record<string, unknown> | unknown[] = Array.isArray(data) ? [] : {};
 
-  for (const key in data) {
+  for (const key in data as Record<string, unknown>) {
+    const value = (data as Record<string, unknown>)[key];
     if (SENSITIVE_FIELDS.some((field) => key.toLowerCase().includes(field.toLowerCase()))) {
-      sanitized[key] = '[REDACTED]';
-    } else if (typeof data[key] === 'object' && data[key] !== null) {
-      sanitized[key] = sanitizeSensitiveData(data[key]);
+      (sanitized as Record<string, unknown>)[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      (sanitized as Record<string, unknown>)[key] = sanitizeSensitiveData(value);
     } else {
-      sanitized[key] = data[key];
+      (sanitized as Record<string, unknown>)[key] = value;
     }
   }
 

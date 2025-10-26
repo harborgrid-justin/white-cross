@@ -92,6 +92,9 @@ export const swaggerSecuritySchemes = {
 /**
  * @constant {Array<Object>} enhancedSwaggerTags
  * @description Comprehensive API endpoint categorization with descriptions
+ *
+ * Note: hapi-swagger type definition has a typo in ExternalDocumentation interface
+ * It uses 'string' instead of 'url', so we use 'string' to match the type definition
  */
 export const enhancedSwaggerTags = [
   {
@@ -99,7 +102,7 @@ export const enhancedSwaggerTags = [
     description: 'User authentication and authorization endpoints including login, logout, registration, password reset, and token refresh.',
     externalDocs: {
       description: 'Authentication documentation',
-      url: 'https://docs.whitecross.health/authentication'
+      string: 'https://docs.whitecross.health/authentication'
     }
   },
   {
@@ -107,7 +110,7 @@ export const enhancedSwaggerTags = [
     description: 'Student management and profile endpoints for creating, reading, updating student information, and managing student assignments.',
     externalDocs: {
       description: 'Student management guide',
-      url: 'https://docs.whitecross.health/students'
+      string: 'https://docs.whitecross.health/students'
     }
   },
   {
@@ -115,7 +118,7 @@ export const enhancedSwaggerTags = [
     description: 'Medication tracking and administration endpoints including prescription management, medication administration, inventory tracking, and alerts.',
     externalDocs: {
       description: 'Medication management documentation',
-      url: 'https://docs.whitecross.health/medications'
+      string: 'https://docs.whitecross.health/medications'
     }
   },
   {
@@ -123,7 +126,7 @@ export const enhancedSwaggerTags = [
     description: 'Student health records and medical history endpoints including immunizations, allergies, chronic conditions, and vital signs. All endpoints are HIPAA-compliant.',
     externalDocs: {
       description: 'Health records documentation',
-      url: 'https://docs.whitecross.health/health-records'
+      string: 'https://docs.whitecross.health/health-records'
     }
   },
   {
@@ -131,7 +134,7 @@ export const enhancedSwaggerTags = [
     description: 'Appointment scheduling and management endpoints including availability checks, booking, rescheduling, and cancellation.',
     externalDocs: {
       description: 'Appointment scheduling guide',
-      url: 'https://docs.whitecross.health/appointments'
+      string: 'https://docs.whitecross.health/appointments'
     }
   },
   {
@@ -139,7 +142,7 @@ export const enhancedSwaggerTags = [
     description: 'Emergency contact management endpoints for maintaining and verifying student emergency contact information.',
     externalDocs: {
       description: 'Emergency contacts documentation',
-      url: 'https://docs.whitecross.health/emergency-contacts'
+      string: 'https://docs.whitecross.health/emergency-contacts'
     }
   },
   {
@@ -147,7 +150,7 @@ export const enhancedSwaggerTags = [
     description: 'Incident reporting and tracking endpoints for documenting and managing health-related incidents at school.',
     externalDocs: {
       description: 'Incident reporting guide',
-      url: 'https://docs.whitecross.health/incidents'
+      string: 'https://docs.whitecross.health/incidents'
     }
   },
   {
@@ -155,7 +158,7 @@ export const enhancedSwaggerTags = [
     description: 'User management and role administration endpoints for managing nurses, administrators, and other staff members.',
     externalDocs: {
       description: 'User management documentation',
-      url: 'https://docs.whitecross.health/users'
+      string: 'https://docs.whitecross.health/users'
     }
   },
   {
@@ -163,7 +166,7 @@ export const enhancedSwaggerTags = [
     description: 'Medical inventory and supplies management endpoints including stock tracking, reordering, and inventory alerts.',
     externalDocs: {
       description: 'Inventory management guide',
-      url: 'https://docs.whitecross.health/inventory'
+      string: 'https://docs.whitecross.health/inventory'
     }
   },
   {
@@ -171,7 +174,7 @@ export const enhancedSwaggerTags = [
     description: 'Vendor and supplier management endpoints for maintaining vendor relationships and product catalogs.',
     externalDocs: {
       description: 'Vendor management documentation',
-      url: 'https://docs.whitecross.health/vendors'
+      string: 'https://docs.whitecross.health/vendors'
     }
   },
   {
@@ -179,7 +182,7 @@ export const enhancedSwaggerTags = [
     description: 'Purchase order creation and tracking endpoints for ordering supplies and managing vendor orders.',
     externalDocs: {
       description: 'Purchase order documentation',
-      url: 'https://docs.whitecross.health/purchase-orders'
+      string: 'https://docs.whitecross.health/purchase-orders'
     }
   },
   {
@@ -187,7 +190,7 @@ export const enhancedSwaggerTags = [
     description: 'Budget management and financial tracking endpoints for monitoring spending and budget allocations.',
     externalDocs: {
       description: 'Budget management guide',
-      url: 'https://docs.whitecross.health/budget'
+      string: 'https://docs.whitecross.health/budget'
     }
   },
   {
@@ -195,7 +198,7 @@ export const enhancedSwaggerTags = [
     description: 'Communication and notification endpoints for sending messages, emails, and SMS to parents and staff.',
     externalDocs: {
       description: 'Communication system documentation',
-      url: 'https://docs.whitecross.health/communication'
+      string: 'https://docs.whitecross.health/communication'
     }
   },
   {
@@ -203,7 +206,7 @@ export const enhancedSwaggerTags = [
     description: 'Analytics and reporting endpoints for generating various reports including health trends, compliance reports, and analytics dashboards.',
     externalDocs: {
       description: 'Reporting documentation',
-      url: 'https://docs.whitecross.health/reports'
+      string: 'https://docs.whitecross.health/reports'
     }
   },
   {
@@ -211,7 +214,7 @@ export const enhancedSwaggerTags = [
     description: 'Regulatory compliance and audit endpoints for HIPAA compliance, state regulations, and audit trail management.',
     externalDocs: {
       description: 'Compliance documentation',
-      url: 'https://docs.whitecross.health/compliance'
+      string: 'https://docs.whitecross.health/compliance'
     }
   },
   {
@@ -219,7 +222,7 @@ export const enhancedSwaggerTags = [
     description: 'Document management and file storage endpoints for uploading, downloading, and organizing documents.',
     externalDocs: {
       description: 'Document management guide',
-      url: 'https://docs.whitecross.health/documents'
+      string: 'https://docs.whitecross.health/documents'
     }
   },
   {
@@ -227,7 +230,7 @@ export const enhancedSwaggerTags = [
     description: 'Role-based access control and permissions endpoints for managing user roles, permissions, and access levels.',
     externalDocs: {
       description: 'Access control documentation',
-      url: 'https://docs.whitecross.health/access-control'
+      string: 'https://docs.whitecross.health/access-control'
     }
   },
   {
@@ -235,7 +238,7 @@ export const enhancedSwaggerTags = [
     description: 'Audit logging and trail endpoints for tracking user activities and maintaining compliance audit trails.',
     externalDocs: {
       description: 'Audit logging documentation',
-      url: 'https://docs.whitecross.health/audit'
+      string: 'https://docs.whitecross.health/audit'
     }
   },
   {
@@ -243,7 +246,7 @@ export const enhancedSwaggerTags = [
     description: 'Third-party integration and webhook endpoints for connecting with external systems and services.',
     externalDocs: {
       description: 'Integration guide',
-      url: 'https://docs.whitecross.health/integrations'
+      string: 'https://docs.whitecross.health/integrations'
     }
   },
   {
@@ -251,7 +254,7 @@ export const enhancedSwaggerTags = [
     description: 'System administration and configuration endpoints for managing system settings, backups, and system health.',
     externalDocs: {
       description: 'Administration documentation',
-      url: 'https://docs.whitecross.health/administration'
+      string: 'https://docs.whitecross.health/administration'
     }
   },
   {
@@ -259,7 +262,7 @@ export const enhancedSwaggerTags = [
     description: 'School district management endpoints for managing district-level settings and configurations.',
     externalDocs: {
       description: 'District management guide',
-      url: 'https://docs.whitecross.health/districts'
+      string: 'https://docs.whitecross.health/districts'
     }
   },
   {
@@ -267,7 +270,7 @@ export const enhancedSwaggerTags = [
     description: 'School management and configuration endpoints for managing individual schools within districts.',
     externalDocs: {
       description: 'School management documentation',
-      url: 'https://docs.whitecross.health/schools'
+      string: 'https://docs.whitecross.health/schools'
     }
   }
 ];
@@ -587,7 +590,7 @@ For complete terms, visit: https://whitecross.health/terms
     securityDefinitions: swaggerSecuritySchemes,
     security: [{ jwt: [] }], // Default to JWT auth
     grouping: 'tags',
-    sortTags: 'name',
+    sortTags: 'alpha', // Sort tags alphabetically (valid values: 'alpha' | 'unsorted')
     sortEndpoints: 'ordered',
     documentationPath: SWAGGER_CONFIG.PATHS.DOCUMENTATION,
     swaggerUI: true,

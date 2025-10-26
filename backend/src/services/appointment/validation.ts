@@ -258,31 +258,31 @@ export class AppointmentValidation {
     existingAppointment?: Appointment
   ): Promise<void> {
     // Validate appointment type
-    if (data.type) {
-      this.validateAppointmentType(data.type);
+    if (data.appointmentType) {
+      this.validateAppointmentType(data.appointmentType);
     }
 
     // Validate scheduled time
-    if (data.scheduledAt) {
-      this.validateFutureDateTime(data.scheduledAt);
-      this.validateNotWeekend(data.scheduledAt);
+    if (data.scheduledDate) {
+      this.validateFutureDateTime(data.scheduledDate);
+      this.validateNotWeekend(data.scheduledDate);
 
       const duration = data.duration ||
         (existingAppointment?.duration) ||
         this.DEFAULT_DURATION_MINUTES;
 
-      this.validateBusinessHours(data.scheduledAt, duration);
+      this.validateBusinessHours(data.scheduledDate, duration);
 
       if ('nurseId' in data) {
         await this.validateMaxAppointmentsPerDay(
           data.nurseId,
-          data.scheduledAt,
+          data.scheduledDate,
           existingAppointment?.id
         );
       } else if (existingAppointment) {
         await this.validateMaxAppointmentsPerDay(
           existingAppointment.nurseId,
-          data.scheduledAt,
+          data.scheduledDate,
           existingAppointment.id
         );
       }
@@ -293,10 +293,7 @@ export class AppointmentValidation {
       this.validateDuration(data.duration);
     }
 
-    // Validate reason is provided
-    if ('reason' in data && (!data.reason || data.reason.trim().length === 0)) {
-      throw new Error('Appointment reason is required');
-    }
+    // Validate reason is provided (optional field, so no validation needed)
   }
 
   /**

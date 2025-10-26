@@ -105,7 +105,7 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
               className="w-full border border-gray-300 rounded px-3 py-2" 
               rows={3}
               placeholder="Describe allergic reaction"
-              defaultValue={allergy?.reaction || ''}
+              defaultValue={typeof allergy?.reactions === 'string' ? allergy.reactions : ''}
               data-testid="reaction-input"
             />
           </div>

@@ -31,13 +31,13 @@ import {
   Student,
   User,
   sequelize
-} from '../database/models';
+} from '../../database/models';
 import {
   DocumentCategory,
   DocumentStatus,
   DocumentAccessLevel,
   DocumentAction
-} from '../database/types/enums';
+} from '../../database/types/enums';
 import {
   validateDocumentCreation,
   validateDocumentUpdate,
@@ -51,7 +51,7 @@ import {
   throwIfValidationErrors,
   DocumentValidationError,
   RETENTION_YEARS,
-} from '../utils/documentValidation';
+} from '../../utils/documentValidation';
 
 /**
  * Interface for creating a new document

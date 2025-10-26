@@ -13,7 +13,6 @@ import {
   ComplianceReportsList,
   ComplianceReportForm,
   ComplianceReportDetails,
-  ReportGeneratorModal,
   
   // Consent Forms Components  
   ConsentFormsList,
@@ -110,15 +109,8 @@ export const ComplianceRoutes: React.FC = () => {
         }
       />
 
-      {/* Generate Report */}
-      <Route
-        path="/reports/generate"
-        element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'COMPLIANCE_OFFICER']}>
-            <ReportGeneratorModal />
-          </ProtectedRoute>
-        }
-      />
+      {/* Note: ReportGeneratorModal is a modal component, not a route.
+          It should be rendered conditionally within parent components. */}
 
       {/* ========================================================================== */}
       {/* CONSENT FORMS ROUTES */}

@@ -10,7 +10,7 @@ import {
   CreateVitalSignsDTO,
   UpdateVitalSignsDTO
 } from '../interfaces/IVitalSignsRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class VitalSignsRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(VitalSigns, auditLogger, cacheManager, 'VitalSigns');
   }
+  /**
+   * Invalidate VitalSigns-related caches
+   */
+  protected async invalidateCaches(entity: VitalSigns): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:vitalsigns:*`);
+    } catch (error) {
+      logger.warn('Error invalidating VitalSigns caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize VitalSigns data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

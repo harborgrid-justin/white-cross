@@ -10,7 +10,7 @@ import {
   CreateIncidentReportDTO,
   UpdateIncidentReportDTO
 } from '../interfaces/IIncidentReportRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class IncidentReportRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(IncidentReport, auditLogger, cacheManager, 'IncidentReport');
+  }
+
+  protected async invalidateCaches(entity: IncidentReport): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:incidentreport:student:${data.studentId}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating incident report caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

@@ -193,7 +193,7 @@ export class SequelizeHealthRecordRepository implements IHealthRecordRepository 
     const recordsByType: any = {};
     const types: HealthRecordEntity['type'][] = ['VISIT', 'SCREENING', 'VACCINATION', 'INJURY', 'ILLNESS', 'MEDICATION', 'OTHER'];
     for (const type of types) {
-      recordsByType[type] = await HealthRecord.count({ where: { studentId, type } });
+      recordsByType[type] = await HealthRecord.count({ where: { studentId, recordType: type } });
     }
 
     const lastVisit = await HealthRecord.findOne({
@@ -253,7 +253,7 @@ export class SequelizeHealthRecordRepository implements IHealthRecordRepository 
     const result: any = {};
 
     for (const type of types) {
-      result[type] = await HealthRecord.count({ where: { studentId, type } });
+      result[type] = await HealthRecord.count({ where: { studentId, recordType: type } });
     }
 
     return result;
@@ -265,7 +265,7 @@ export class SequelizeHealthRecordRepository implements IHealthRecordRepository 
 
     if (filters.studentId) where.studentId = filters.studentId;
     if (filters.type) {
-      where.type = Array.isArray(filters.type) ? { [Op.in]: filters.type } : filters.type;
+      where.recordType = Array.isArray(filters.type) ? { [Op.in]: filters.type } : filters.type;
     }
     if (filters.dateFrom) {
       where.date = where.date || {};

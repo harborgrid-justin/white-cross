@@ -121,8 +121,7 @@ export class SequelizeIncidentReportRepository implements IIncidentReportReposit
   async findRequiringFollowUp(beforeDate?: Date): Promise<IncidentReportEntity[]> {
     const reports = await IncidentReport.findAll({
       where: {
-        followUpRequired: true,
-        followUpCompletedAt: null
+        followUpRequired: true
       },
       include: [{ model: Student, as: 'student' }],
       order: [['occurredAt', 'ASC']]

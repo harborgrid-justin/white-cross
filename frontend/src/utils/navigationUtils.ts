@@ -85,7 +85,7 @@ export function hasRequiredPermissions(
       'incident_reports.read', 'incident_reports.create',
       'reports.read', 'communication.read'
     ],
-    READ_ONLY: [
+    VIEWER: [
       'students.read', 'medications.read', 'health_records.read',
       'appointments.read', 'incident_reports.read', 'reports.read'
     ]
@@ -177,12 +177,13 @@ export function filterNavigationItems(
     })
     .filter(item => {
       // Keep items that user has access to, or items with accessible children
-      if (item.hasAccess) {
+      const filteredItem = item as FilteredNavigationItem;
+      if (filteredItem.hasAccess) {
         return true;
       }
 
-      if (item.children && item.children.length > 0) {
-        return item.children.some(child => child.hasAccess);
+      if (filteredItem.children && filteredItem.children.length > 0) {
+        return filteredItem.children.some(child => (child as FilteredNavigationItem).hasAccess);
       }
 
       return false;
@@ -196,9 +197,14 @@ export function getAccessibleNavigationItems(
   items: NavigationItem[],
   user: User | null
 ): NavigationItem[] {
-  return filterNavigationItems(items, user)
+  const filtered = filterNavigationItems(items, user);
+  return filtered
     .filter(item => item.hasAccess)
-    .map(({ hasAccess, noAccessReason, ...item }) => item as NavigationItem);
+    .map(item => {
+      // Extract only NavigationItem properties
+      const { hasAccess, noAccessReason, isActive, isActiveTree, ...navItem } = item;
+      return navItem as NavigationItem;
+    });
 }
 
 // ============================================================================
@@ -224,7 +230,7 @@ export function isNavigationItemActive(
  * Mark active navigation items in tree
  */
 export function markActiveNavigationItems(
-  items: FilteredNavigationItem[],
+  items: NavigationItem[],
   currentPath: string
 ): FilteredNavigationItem[] {
   return items.map(item => {
@@ -233,14 +239,17 @@ export function markActiveNavigationItems(
       isNavigationItemActive(child, currentPath, false)
     ) || false;
 
-    return {
+    const filteredItem: FilteredNavigationItem = {
       ...item,
+      hasAccess: true, // Assuming items passed here are already filtered
       isActive,
       isActiveTree: isActive || hasActiveChild,
       children: item.children
         ? markActiveNavigationItems(item.children, currentPath)
         : undefined,
     };
+
+    return filteredItem;
   });
 }
 

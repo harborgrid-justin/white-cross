@@ -20,6 +20,40 @@ import { AuditStatisticsService } from '../../../../services/audit/auditStatisti
 import { PHIAccessService } from '../../../../services/audit/phiAccessService';
 import { ComplianceReportingService } from '../../../../services/audit/complianceReportingService';
 import { SecurityAnalysisService } from '../../../../services/audit/securityAnalysisService';
+import { PHIAccessType, PHIDataCategory } from '../../../../services/audit/types';
+
+/**
+ * Payload Interfaces
+ */
+interface CreateAuditLogPayload {
+  userId?: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  changes?: Record<string, any>;
+}
+
+interface LogPhiAccessPayload {
+  userId?: string;
+  accessType: string;
+  entityType: string;
+  entityId: string;
+  studentId: string;
+  dataCategory: string;
+  success?: boolean;
+  errorMessage?: string;
+}
+
+interface RunSecurityAnalysisPayload {
+  startDate: string;
+  endDate: string;
+  analysisType?: string;
+}
+
+interface ArchiveLogsPayload {
+  olderThanDays: number;
+  dryRun?: boolean;
+}
 
 export class AuditController {
   /**
@@ -80,15 +114,16 @@ export class AuditController {
   static async createAuditLog(request: AuthenticatedRequest, h: ResponseToolkit) {
     const ipAddress = request.info.remoteAddress || request.headers['x-forwarded-for'] as string;
     const userAgent = request.headers['user-agent'];
+    const payload = request.payload as CreateAuditLogPayload;
 
     await AuditLogService.logAction({
-      userId: request.payload.userId || request.auth.credentials.userId,
-      action: request.payload.action,
-      entityType: request.payload.entityType,
-      entityId: request.payload.entityId,
-      changes: request.payload.changes || {},
+      userId: payload.userId || request.auth.credentials.userId as string,
+      action: payload.action,
+      entityType: payload.entityType,
+      entityId: payload.entityId,
+      changes: payload.changes || {},
       ipAddress,
-      userAgent
+      userAgent: userAgent as string
     });
 
     return createdResponse(h, { logged: true });
@@ -134,20 +169,21 @@ export class AuditController {
   static async logPhiAccess(request: AuthenticatedRequest, h: ResponseToolkit) {
     const ipAddress = request.info.remoteAddress || request.headers['x-forwarded-for'] as string;
     const userAgent = request.headers['user-agent'];
+    const payload = request.payload as LogPhiAccessPayload;
 
     await PHIAccessService.logPHIAccess({
-      userId: request.payload.userId || request.auth.credentials.userId,
-      action: request.payload.accessType === 'VIEW' ? 'VIEW' : 'UPDATE',
-      entityType: request.payload.entityType,
-      entityId: request.payload.entityId,
-      studentId: request.payload.studentId,
-      accessType: request.payload.accessType,
-      dataCategory: request.payload.dataCategory,
-      success: request.payload.success !== undefined ? request.payload.success : true,
-      errorMessage: request.payload.errorMessage,
+      userId: payload.userId || request.auth.credentials.userId as string,
+      action: payload.accessType === 'VIEW' ? 'VIEW' : 'UPDATE',
+      entityType: payload.entityType,
+      entityId: payload.entityId,
+      studentId: payload.studentId,
+      accessType: payload.accessType as PHIAccessType,
+      dataCategory: payload.dataCategory as PHIDataCategory,
+      success: payload.success !== undefined ? payload.success : true,
+      errorMessage: payload.errorMessage,
       changes: {},
       ipAddress,
-      userAgent
+      userAgent: userAgent as string
     });
 
     return createdResponse(h, { logged: true });
@@ -268,7 +304,8 @@ export class AuditController {
    * POST /api/v1/audit/security-analysis/run
    */
   static async runSecurityAnalysis(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const { startDate, endDate, analysisType = 'COMPREHENSIVE' } = request.payload;
+    const payload = request.payload as RunSecurityAnalysisPayload;
+    const { startDate, endDate, analysisType = 'COMPREHENSIVE' } = payload;
 
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -397,7 +434,8 @@ export class AuditController {
    * Successful DELETE operations should return 204 with empty body
    */
   static async archiveOldLogs(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const { olderThanDays, dryRun = false } = request.payload;
+    const payload = request.payload as ArchiveLogsPayload;
+    const { olderThanDays, dryRun = false } = payload;
 
     // Note: This would require actual archival implementation
     // Archive logs (implementation would be in service layer)

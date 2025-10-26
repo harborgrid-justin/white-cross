@@ -499,6 +499,30 @@ export class MedicationCrudService {
   }
 
   /**
+   * Activate (reactivate) a medication
+   */
+  static async activateMedication(id: string) {
+    try {
+      const medication = await Medication.findByPk(id);
+
+      if (!medication) {
+        throw new Error('Medication not found');
+      }
+
+      await medication.update({
+        isActive: true,
+        endDate: null
+      });
+
+      logger.info(`Medication activated: ${id}`);
+      return medication;
+    } catch (error) {
+      logger.error(`Error activating medication ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Retrieves medication form options and pharmaceutical reference data
    *
    * Returns standardized lists of medication dosage forms, categories, strength units,

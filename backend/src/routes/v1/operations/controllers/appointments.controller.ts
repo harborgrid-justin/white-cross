@@ -9,7 +9,8 @@ import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse,
-  paginatedResponse
+  paginatedResponse,
+  preparePayload
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
 
@@ -33,8 +34,8 @@ export class AppointmentsController {
 
     return paginatedResponse(
       h,
-      result.appointments || result.data,
-      buildPaginationMeta(page, limit, result.total)
+      result.appointments,
+      buildPaginationMeta(page, limit, result.pagination.total)
     );
   }
 
@@ -55,12 +56,11 @@ export class AppointmentsController {
    * @returns {Promise<Response>} Created appointment response
    */
   static async create(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const appointmentData = {
-      ...request.payload,
-      scheduledDate: new Date(request.payload.scheduledDate)
-    };
+    const appointmentData = preparePayload(request.payload, {
+      dateFields: ['scheduledDate']
+    });
 
-    const appointment = await AppointmentService.createAppointment(appointmentData);
+    const appointment = await AppointmentService.createAppointment(appointmentData as any);
 
     return createdResponse(h, { appointment });
   }
@@ -74,10 +74,9 @@ export class AppointmentsController {
   static async update(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
 
-    const updateData = { ...request.payload };
-    if (updateData.scheduledDate) {
-      updateData.scheduledDate = new Date(updateData.scheduledDate);
-    }
+    const updateData = preparePayload(request.payload, {
+      dateFields: ['scheduledDate']
+    });
 
     const appointment = await AppointmentService.updateAppointment(id, updateData);
 
@@ -89,7 +88,8 @@ export class AppointmentsController {
    */
   static async cancel(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const { reason } = request.payload;
+    const payload = preparePayload(request.payload);
+    const reason = payload.reason as string | undefined;
 
     const appointment = await AppointmentService.cancelAppointment(id, reason);
 
@@ -123,8 +123,9 @@ export class AppointmentsController {
    */
   static async complete(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
+    const completionData = preparePayload(request.payload);
 
-    const appointment = await AppointmentService.completeAppointment(id, request.payload);
+    const appointment = await AppointmentService.completeAppointment(id, completionData as any);
 
     return successResponse(h, { appointment });
   }
@@ -179,11 +180,13 @@ export class AppointmentsController {
    * @returns {Promise<Response>} Created recurring appointments response
    */
   static async createRecurring(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const { baseData, recurrencePattern } = request.payload;
+    const payload = preparePayload(request.payload);
+    const baseData = payload.baseData as any;
+    const recurrencePattern = payload.recurrencePattern as any;
 
     const appointmentData = {
       ...baseData,
-      scheduledAt: new Date(baseData.scheduledAt)
+      scheduledDate: new Date(baseData.scheduledDate)
     };
 
     const appointments = await AppointmentService.createRecurringAppointments(
@@ -198,7 +201,8 @@ export class AppointmentsController {
    * Add student to appointment waitlist
    */
   static async addToWaitlist(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const entry = await AppointmentService.addToWaitlist(request.payload);
+    const waitlistData = preparePayload(request.payload);
+    const entry = await AppointmentService.addToWaitlist(waitlistData as any);
 
     return createdResponse(h, { entry });
   }
@@ -227,7 +231,8 @@ export class AppointmentsController {
    */
   static async removeFromWaitlist(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const { reason } = request.payload;
+    const payload = preparePayload(request.payload);
+    const reason = payload.reason as string | undefined;
 
     await AppointmentService.removeFromWaitlist(id, reason);
 

@@ -12,8 +12,8 @@
 
 import React, { useState } from 'react'
 import { Search, Pill, Filter, Plus, Edit, Trash2, Activity } from 'lucide-react'
-import { useMedicationAdministration } from '../../../../../hooks/domains/medications'
-import { useStudents } from '../../../../../hooks/domains/students'
+import { useMedicationAdministration } from '@/hooks/domains/medications'
+import { useStudents } from '@/hooks/domains/students'
 
 interface Medication {
   id: string

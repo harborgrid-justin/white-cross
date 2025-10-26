@@ -69,25 +69,25 @@ export { QuickMedicationForm } from './QuickMedicationForm';
  * MedicationDetails - Detailed view of a medication
  * Features: Full details, history, interactions, side effects
  */
-export { MedicationDetails } from './MedicationDetails';
+export { default as MedicationDetails } from './MedicationDetails';
 
 /**
  * MedicationHistory - Administration history
  * Features: Past administrations, missed doses, adherence tracking
  */
-export { MedicationHistory } from './MedicationHistory';
+export { default as MedicationHistory } from './MedicationHistory';
 
 /**
  * MedicationTimeline - Timeline of medication events
  * Features: Start/stop dates, changes, administrations
  */
-export { MedicationTimeline } from './MedicationTimeline';
+export { default as MedicationTimeline } from './MedicationTimeline';
 
 /**
  * MedicationNotes - Notes section for medication
  * Features: Add/edit notes, side effects, observations
  */
-export { MedicationNotes } from './MedicationNotes';
+export { default as MedicationNotes } from './MedicationNotes';
 
 // ==============================================================================
 // ADMINISTRATION COMPONENTS
@@ -97,7 +97,7 @@ export { MedicationNotes } from './MedicationNotes';
  * MedicationAdministration - Record medication administration
  * Features: Dose logging, time, administered by, student verification
  */
-export { MedicationAdministration } from './MedicationAdministration';
+export { default as MedicationAdministration } from './MedicationAdministration';
 
 /**
  * AdministrationSchedule - Daily administration schedule

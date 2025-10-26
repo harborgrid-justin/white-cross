@@ -10,7 +10,7 @@ import {
   CreateContactDTO,
   UpdateContactDTO
 } from '../interfaces/IContactRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,27 @@ export class ContactRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Contact, auditLogger, cacheManager, 'Contact');
+  }
+
+  /**
+   * Invalidate Contact-related caches
+   */
+  protected async invalidateCaches(entity: Contact): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:contact:*`);
+    } catch (error) {
+      logger.warn('Error invalidating Contact caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize Contact data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

@@ -17,25 +17,23 @@ import { ArrowLeft, Save, Calendar, Clock, User, FileText, AlertCircle } from 'l
 import { format, parseISO } from 'date-fns';
 import { appointmentsApi, studentsApi } from '@/services';
 import { PROTECTED_ROUTES } from '@/constants/routes';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/input/Input';
-import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
+import { Button } from '@/components/ui/buttons/Button';
+import { Input } from '@/components/ui/inputs/Input';
+import { Select } from '@/components/ui/inputs/Select';
+import { Textarea } from '@/components/ui/inputs/Textarea';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { useToast } from '@/hooks/useToast';
-import type { Appointment, AppointmentType, UpdateAppointmentData } from '@/types/appointments';
-import type { Student } from '@/types/students';
+import type { Appointment, UpdateAppointmentData } from '@/types/appointments';
+import { AppointmentType } from '@/types/appointments';
+import type { Student } from '@/types/student.types';
 
 const appointmentTypes: AppointmentType[] = [
-  'ROUTINE_CHECKUP',
-  'MEDICATION_ADMINISTRATION',
-  'INJURY_ASSESSMENT',
-  'ILLNESS_EVALUATION',
-  'FOLLOW_UP',
-  'SCREENING',
-  'IMMUNIZATION',
-  'COUNSELING',
-  'OTHER'
+  AppointmentType.ROUTINE_CHECKUP,
+  AppointmentType.MEDICATION_ADMINISTRATION,
+  AppointmentType.INJURY_ASSESSMENT,
+  AppointmentType.ILLNESS_EVALUATION,
+  AppointmentType.FOLLOW_UP,
+  AppointmentType.SCREENING,
 ];
 
 const AppointmentEdit: React.FC = () => {
@@ -90,8 +88,8 @@ const AppointmentEdit: React.FC = () => {
 
       // Load student info
       if (appointmentData.studentId) {
-        const studentResponse = await studentsApi.getById(appointmentData.studentId);
-        setStudent(studentResponse.student);
+        const student = await studentsApi.getById(appointmentData.studentId);
+        setStudent(student);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load appointment');
@@ -157,7 +155,7 @@ const AppointmentEdit: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="large" />
       </div>
     );
   }
@@ -213,10 +211,10 @@ const AppointmentEdit: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Appointment Type <span className="text-red-500">*</span>
             </label>
-            <Select
+            <select
               value={formData.type || ''}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as AppointmentType })}
-              className="w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select type...</option>
               {appointmentTypes.map((type) => (
@@ -224,7 +222,7 @@ const AppointmentEdit: React.FC = () => {
                   {type.replace(/_/g, ' ')}
                 </option>
               ))}
-            </Select>
+            </select>
           </div>
 
           {/* Date and Time */}
@@ -313,7 +311,7 @@ const AppointmentEdit: React.FC = () => {
             >
               {saving ? (
                 <>
-                  <LoadingSpinner size="sm" className="mr-2" />
+                  <LoadingSpinner size="small" className="mr-2" />
                   Saving...
                 </>
               ) : (

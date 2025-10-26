@@ -42,31 +42,36 @@ interface HealthRecordFilters {
 // Create API service adapter for health records
 const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecordData, UpdateHealthRecordData> = {
   async getAll(params?: HealthRecordFilters) {
-    const response = await healthRecordsApi.getAll(params);
+    // HealthRecordsApi requires studentId as first parameter
+    const studentId = params?.studentId || '';
+    if (!studentId) {
+      throw new Error('studentId is required for fetching health records');
+    }
+    const response = await healthRecordsApi.getRecords(studentId, params);
     return {
-      data: response.data?.healthRecords || [],
-      total: response.data?.pagination?.total,
-      pagination: response.data?.pagination,
+      data: response.data || [],
+      total: response.total,
+      pagination: response.pagination,
     };
   },
 
   async getById(id: string) {
-    const response = await healthRecordsApi.getById(id);
-    return { data: response.data };
+    const response = await healthRecordsApi.getRecordById(id);
+    return { data: response };
   },
 
   async create(data: CreateHealthRecordData) {
-    const response = await healthRecordsApi.create(data);
-    return { data: response.data };
+    const response = await healthRecordsApi.createRecord(data as any);
+    return { data: response };
   },
 
   async update(id: string, data: UpdateHealthRecordData) {
-    const response = await healthRecordsApi.update(id, data);
-    return { data: response.data };
+    const response = await healthRecordsApi.updateRecord(id, data as any);
+    return { data: response };
   },
 
   async delete(id: string) {
-    await healthRecordsApi.delete(id);
+    await healthRecordsApi.deleteRecord(id);
     return { success: true };
   },
 };

@@ -10,7 +10,7 @@ import {
   CreateEmergencyContactDTO,
   UpdateEmergencyContactDTO
 } from '../interfaces/IEmergencyContactRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class EmergencyContactRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(EmergencyContact, auditLogger, cacheManager, 'EmergencyContact');
+  }
+
+  protected async invalidateCaches(entity: EmergencyContact): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:emergencycontact:student:${data.studentId}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating emergency contact caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

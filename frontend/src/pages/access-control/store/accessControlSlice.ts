@@ -548,9 +548,14 @@ const accessControlSlice = createSlice({
       })
       .addCase(fetchSecurityIncidents.fulfilled, (state, action) => {
         state.loading.incidents = false;
-        state.securityIncidents = action.payload.incidents || action.payload || [];
-        if (action.payload.pagination) {
-          state.pagination.incidents = { ...state.pagination.incidents, ...action.payload.pagination };
+        // Handle both paginated response and array response
+        if (Array.isArray(action.payload)) {
+          state.securityIncidents = action.payload;
+        } else {
+          state.securityIncidents = action.payload.incidents || [];
+          if (action.payload.pagination) {
+            state.pagination.incidents = { ...state.pagination.incidents, ...action.payload.pagination };
+          }
         }
       })
       .addCase(fetchSecurityIncidents.rejected, (state, action) => {

@@ -434,12 +434,12 @@ export class StudentService {
 
       if (dob >= today) {
         await transaction.rollback();
-        throw ValidationError.outOfRange('dateOfBirth', dob, 'Date of birth must be in the past.');
+        throw new ValidationError('Date of birth must be in the past.');
       }
 
       if (age < 3 || age > 100) {
         await transaction.rollback();
-        throw ValidationError.outOfRange('age', age, 'Student age must be between 3 and 100 years.');
+        throw ValidationError.outOfRange('age', 3, 100, age);
       }
 
       // Validate nurse assignment if provided
@@ -496,7 +496,7 @@ export class StudentService {
       });
 
       // Invalidate related caches
-      cacheManager.invalidateByTags(['students']);
+      cacheManager.invalidateByTag('students');
 
       return student;
     } catch (error: any) {
@@ -1007,6 +1007,123 @@ export class StudentService {
       return exportData;
     } catch (error) {
       logger.error('Error exporting student data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get student health records
+   */
+  static async getStudentHealthRecords(studentId: string) {
+    try {
+      const { HealthRecord } = require('../database/models');
+
+      const records = await HealthRecord.findAll({
+        where: { studentId },
+        order: [['date', 'DESC']],
+        limit: 50
+      });
+
+      logger.info(`Retrieved health records for student: ${studentId}`);
+      return records;
+    } catch (error) {
+      logger.error(`Error getting health records for student ${studentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get student mental health records
+   */
+  static async getStudentMentalHealthRecords(studentId: string) {
+    try {
+      const { HealthRecord } = require('../database/models');
+
+      const records = await HealthRecord.findAll({
+        where: {
+          studentId,
+          type: 'MENTAL_HEALTH'
+        },
+        order: [['date', 'DESC']],
+        limit: 50
+      });
+
+      logger.info(`Retrieved mental health records for student: ${studentId}`);
+      return records;
+    } catch (error) {
+      logger.error(`Error getting mental health records for student ${studentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get students by nurse (assigned nurse)
+   */
+  static async getStudentsByNurse(nurseId: string) {
+    try {
+      const students = await Student.findAll({
+        where: {
+          assignedNurseId: nurseId,
+          isActive: true
+        },
+        order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+      });
+
+      logger.info(`Retrieved students for nurse: ${nurseId}`);
+      return students;
+    } catch (error) {
+      logger.error(`Error getting students for nurse ${nurseId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get comprehensive student profile including health records
+   */
+  static async getStudentProfile(studentId: string) {
+    try {
+      const { HealthRecord, Allergy, ChronicCondition, EmergencyContact } = require('../database/models');
+
+      const student = await Student.findByPk(studentId, {
+        include: [
+          {
+            model: EmergencyContact,
+            as: 'emergencyContacts',
+            where: { isActive: true },
+            required: false
+          }
+        ]
+      });
+
+      if (!student) {
+        throw new Error(`Student with ID ${studentId} not found`);
+      }
+
+      const [healthRecords, allergies, chronicConditions] = await Promise.all([
+        HealthRecord.findAll({
+          where: { studentId },
+          order: [['date', 'DESC']],
+          limit: 20
+        }),
+        Allergy.findAll({
+          where: { studentId, isActive: true }
+        }),
+        ChronicCondition.findAll({
+          where: { studentId, status: 'ACTIVE' }
+        })
+      ]);
+
+      const profile = {
+        ...student.toJSON(),
+        healthRecords,
+        allergies,
+        chronicConditions
+      };
+
+      logger.info(`Retrieved profile for student: ${studentId}`);
+      return profile;
+    } catch (error) {
+      logger.error(`Error getting student profile for ${studentId}:`, error);
       throw error;
     }
   }

@@ -32,7 +32,7 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
   // No mock data - this is CRITICAL for HIPAA compliance
   const displayScreenings = (screenings || []).map(screening => ({
     ...screening,
-    icon: screening.screeningType === 'Vision' ? Eye : Ear
+    icon: screening.screeningType === 'VISION' ? Eye : Ear
   }))
 
   return (

@@ -14,7 +14,7 @@ const ComplianceStatistics: React.FC = () => {
   const loading = useAppSelector(state => selectLoading(state).statistics);
 
   useEffect(() => {
-    dispatch(fetchStatistics());
+    dispatch(fetchStatistics(undefined));
   }, [dispatch]);
 
   if (loading) {

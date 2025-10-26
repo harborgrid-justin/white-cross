@@ -73,6 +73,17 @@ class WaitlistManagementService {
     // Return waitlist sorted by priority and date
     return [];
   }
+
+  static async getWaitlistStatus(studentId: string): Promise<{ waitlists: WaitlistEntry[] }> {
+    try {
+      // In production, query waitlist entries for this student
+      logger.info('Getting waitlist status for student', { studentId });
+      return { waitlists: [] };
+    } catch (error) {
+      logger.error('Error getting waitlist status', { error, studentId });
+      throw error;
+    }
+  }
 }
 
 // ============================================

@@ -130,10 +130,10 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
                         )}
                       </div>
 
-                      {allergy.reaction && (
+                      {allergy.reactions && (
                         <div className="mb-2">
                           <span className="font-semibold text-red-900">Reaction: </span>
-                          <span className="text-gray-800">{allergy.reaction}</span>
+                          <span className="text-gray-800">{typeof allergy.reactions === 'string' ? allergy.reactions : JSON.stringify(allergy.reactions)}</span>
                         </div>
                       )}
 
@@ -211,9 +211,9 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
                         </span>
                       </div>
 
-                      {allergy.reaction && (
+                      {allergy.reactions && (
                         <div className="mt-1 text-sm text-gray-600">
-                          <span className="font-medium">Reaction: </span>{allergy.reaction}
+                          <span className="font-medium">Reaction: </span>{typeof allergy.reactions === 'string' ? allergy.reactions : JSON.stringify(allergy.reactions)}
                         </div>
                       )}
 

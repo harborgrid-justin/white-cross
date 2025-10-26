@@ -401,7 +401,7 @@ export const contactRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       const { id } = request.params;
-      await ContactService.activateContact(id);
+      await ContactService.reactivateContact(id);
       return h.response().code(204);
     },
   },

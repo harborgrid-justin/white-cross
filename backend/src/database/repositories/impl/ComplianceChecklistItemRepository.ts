@@ -10,7 +10,7 @@ import {
   CreateComplianceChecklistItemDTO,
   UpdateComplianceChecklistItemDTO
 } from '../interfaces/IComplianceChecklistItemRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,17 @@ export class ComplianceChecklistItemRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(ComplianceChecklistItem, auditLogger, cacheManager, 'ComplianceChecklistItem');
+  }
+
+  protected async invalidateCaches(entity: ComplianceChecklistItem): Promise<void> {
+    try {
+      await this.cacheManager.deletePattern(`white-cross:compliancechecklistitem:*`);
+    } catch (error) {
+      logger.warn('Error invalidating compliance checklist item caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

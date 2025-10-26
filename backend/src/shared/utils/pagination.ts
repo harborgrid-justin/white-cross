@@ -50,20 +50,28 @@ export interface PaginationMeta {
 /**
  * Parse and validate pagination parameters from request query
  *
- * @param {Request} request - Hapi request object
+ * @param {Request | Record<string, any>} requestOrQuery - Hapi request object or query object
  * @returns {PaginationParams} Validated pagination parameters
  *
  * @example
  * ```typescript
+ * // Pass full request object
  * const { page, limit, offset } = parsePagination(request);
+ *
+ * // Or pass query object directly
+ * const { page, limit, offset } = parsePagination(request.query);
+ *
  * const results = await Model.findAll({
  *   limit,
  *   offset
  * });
  * ```
  */
-export function parsePagination(request: Request): PaginationParams {
-  const query = request.query as Record<string, any>;
+export function parsePagination(requestOrQuery: Request | Record<string, any>): PaginationParams {
+  // Support both request object and query object directly
+  const query = ('query' in requestOrQuery && requestOrQuery.query)
+    ? requestOrQuery.query as Record<string, any>
+    : requestOrQuery as Record<string, any>;
 
   // Parse page number
   let page = parseInt(query.page as string, 10);
@@ -157,20 +165,37 @@ export const FILTER_OPERATORS = {
 } as const;
 
 /**
+ * Field configuration for buildFilters
+ */
+export interface FilterFieldConfig {
+  type?: 'string' | 'number' | 'boolean' | 'date';
+  operator?: keyof typeof FILTER_OPERATORS;
+}
+
+/**
  * Build database filters from query parameters
  *
  * Converts query parameters into Sequelize-compatible filter objects.
  * Supports various operators and automatic type conversion.
  *
- * @param {Request} request - Hapi request object
- * @param {string[]} allowedFields - List of fields that can be filtered
+ * @param {Request | Record<string, any>} requestOrQuery - Hapi request object or query object
+ * @param {string[] | Record<string, FilterFieldConfig>} allowedFieldsOrConfig - List of allowed fields or field configuration object
  * @param {Record<string, any>} [defaults={}] - Default filter values
  * @returns {Record<string, any>} Filter object for database queries
  *
  * @example
  * ```typescript
- * // Query: ?status=active&age[gte]=18&name[like]=%John%
+ * // Using array of field names (legacy API)
  * const filters = buildFilters(request, ['status', 'age', 'name']);
+ *
+ * // Using field configuration object (new API)
+ * const filters = buildFilters(request.query, {
+ *   status: { type: 'string' },
+ *   age: { type: 'number' },
+ *   isActive: { type: 'boolean' }
+ * });
+ *
+ * // Query: ?status=active&age[gte]=18&name[like]=%John%
  * // Result: {
  * //   status: 'active',
  * //   age: { [Op.gte]: 18 },
@@ -181,11 +206,20 @@ export const FILTER_OPERATORS = {
  * ```
  */
 export function buildFilters(
-  request: Request,
-  allowedFields: string[],
+  requestOrQuery: Request | Record<string, any>,
+  allowedFieldsOrConfig: string[] | Record<string, FilterFieldConfig>,
   defaults: Record<string, any> = {}
 ): Record<string, any> {
-  const query = request.query as Record<string, any>;
+  // Support both request object and query object directly
+  const query = ('query' in requestOrQuery && requestOrQuery.query)
+    ? requestOrQuery.query as Record<string, any>
+    : requestOrQuery as Record<string, any>;
+
+  // Extract allowed field names from either array or config object
+  const allowedFields = Array.isArray(allowedFieldsOrConfig)
+    ? allowedFieldsOrConfig
+    : Object.keys(allowedFieldsOrConfig);
+
   const filters: Record<string, any> = { ...defaults };
 
   // Import Sequelize operators dynamically to avoid circular dependencies
@@ -240,12 +274,12 @@ export function buildFilters(
           case 'in':
             fieldFilters[Op.in] = Array.isArray(operatorValue)
               ? operatorValue
-              : operatorValue.split(',');
+              : typeof operatorValue === 'string' ? operatorValue.split(',') : [operatorValue];
             break;
           case 'notin':
             fieldFilters[Op.notIn] = Array.isArray(operatorValue)
               ? operatorValue
-              : operatorValue.split(',');
+              : typeof operatorValue === 'string' ? operatorValue.split(',') : [operatorValue];
             break;
           case 'between':
             if (Array.isArray(operatorValue) && operatorValue.length === 2) {
@@ -298,7 +332,7 @@ function parseNumericValue(value: any): number | any {
 /**
  * Build sorting parameters from query
  *
- * @param {Request} request - Hapi request object
+ * @param {Request | Record<string, any>} requestOrQuery - Hapi request object or query object
  * @param {string[]} allowedFields - List of fields that can be sorted
  * @param {string} [defaultSort='createdAt'] - Default sort field
  * @param {'ASC'|'DESC'} [defaultOrder='DESC'] - Default sort order
@@ -314,12 +348,15 @@ function parseNumericValue(value: any): number | any {
  * ```
  */
 export function buildSort(
-  request: Request,
+  requestOrQuery: Request | Record<string, any>,
   allowedFields: string[],
   defaultSort: string = 'createdAt',
   defaultOrder: 'ASC' | 'DESC' = 'DESC'
 ): Array<[string, 'ASC' | 'DESC']> {
-  const query = request.query as Record<string, any>;
+  // Support both request object and query object directly
+  const query = ('query' in requestOrQuery && requestOrQuery.query)
+    ? requestOrQuery.query as Record<string, any>
+    : requestOrQuery as Record<string, any>;
 
   let sortField = query.sort || query.sortBy || defaultSort;
   let sortOrder = (query.order || query.sortOrder || defaultOrder).toUpperCase();

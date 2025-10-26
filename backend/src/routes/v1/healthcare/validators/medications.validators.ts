@@ -26,7 +26,8 @@ export {
   addToInventorySchema,
   updateInventoryQuantitySchema,
   reportAdverseReactionSchema,
-  deactivateStudentMedicationSchema
+  deactivateStudentMedicationSchema,
+  deactivateMedicationSchema
 } from '../../../../validators/medicationValidators';
 
 // Additional query and parameter schemas for medication routes

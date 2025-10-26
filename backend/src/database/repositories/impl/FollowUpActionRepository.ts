@@ -10,7 +10,7 @@ import {
   CreateFollowUpActionDTO,
   UpdateFollowUpActionDTO
 } from '../interfaces/IFollowUpActionRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class FollowUpActionRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(FollowUpAction, auditLogger, cacheManager, 'FollowUpAction');
+  }
+
+  protected async invalidateCaches(entity: FollowUpAction): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:followupaction:incident:${data.incidentReportId}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating follow-up action caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

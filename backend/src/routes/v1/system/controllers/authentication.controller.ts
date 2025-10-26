@@ -4,8 +4,7 @@
  */
 
 import { Request, ResponseToolkit, Lifecycle } from '@hapi/hapi';
-import Boom from '@hapi/boom';
-import { successResponse } from '../../../../shared/utils';
+import * as Boom from '@hapi/boom';
 import { logger } from '../../../../shared/logging/logger';
 
 /**
@@ -40,22 +39,25 @@ export const setupMFA = async (request: Request, h: ResponseToolkit): Promise<Li
     }
 
     // Generate MFA setup data
-    const setupData = await generateMFASetup(userId, method, { phoneNumber, email });
+    const setupData = await generateMFASetup(userId as string, method, { phoneNumber, email });
 
-    logger.info('MFA setup completed', { 
-      userId, 
+    logger.info('MFA setup completed', {
+      userId,
       method,
-      setupId: setupData.setupId 
+      setupId: setupData.setupId
     });
 
-    return successResponse(h, {
-      setupId: setupData.setupId,
-      method: setupData.method,
-      qrCode: setupData.qrCode, // For TOTP
-      backupCodes: setupData.backupCodes,
-      verificationRequired: true,
-      instructions: setupData.instructions
-    });
+    return h.response({
+      success: true,
+      data: {
+        setupId: setupData.setupId,
+        method: setupData.method,
+        qrCode: setupData.qrCode, // For TOTP
+        backupCodes: setupData.backupCodes,
+        verificationRequired: true,
+        instructions: setupData.instructions
+      }
+    }).code(200);
 
   } catch (error) {
     logger.error('Error setting up MFA', {
@@ -90,7 +92,7 @@ export const verifyMFA = async (request: Request, h: ResponseToolkit): Promise<L
     });
 
     // Validate MFA code
-    const verification = await validateMFACode(userId, code, secret, method);
+    const verification = await validateMFACode(userId as string, code, secret, method);
 
     if (!verification.isValid) {
       logger.warn('MFA verification failed', {
@@ -105,17 +107,20 @@ export const verifyMFA = async (request: Request, h: ResponseToolkit): Promise<L
       });
     }
 
-    logger.info('MFA verification successful', { 
-      userId, 
-      method 
+    logger.info('MFA verification successful', {
+      userId,
+      method
     });
 
-    return successResponse(h, {
-      verified: true,
-      method: verification.method,
-      timestamp: new Date().toISOString(),
-      validUntil: verification.validUntil
-    });
+    return h.response({
+      success: true,
+      data: {
+        verified: true,
+        method: verification.method,
+        timestamp: new Date().toISOString(),
+        validUntil: verification.validUntil
+      }
+    }).code(200);
 
   } catch (error) {
     // If error is already a Boom error, re-throw it
@@ -159,13 +164,16 @@ export const getSystemHealth = async (request: Request, h: ResponseToolkit): Pro
     // Get comprehensive system health data
     const healthData = await collectSystemHealth(includeDetails);
 
-    logger.info('System health retrieved', { 
+    logger.info('System health retrieved', {
       userId,
       overallStatus: healthData.status,
-      componentCount: healthData.components?.length 
+      componentCount: Array.isArray(healthData.components) ? healthData.components.length : healthData.components
     });
 
-    return successResponse(h, healthData);
+    return h.response({
+      success: true,
+      data: healthData
+    }).code(200);
 
   } catch (error) {
     logger.error('Error retrieving system health', {
@@ -200,13 +208,16 @@ export const getFeatureStatus = async (request: Request, h: ResponseToolkit): Pr
     // Get feature integration status
     const featureData = await collectFeatureStatus(module);
 
-    logger.info('Feature status retrieved', { 
+    logger.info('Feature status retrieved', {
       userId,
       moduleCount: featureData.modules?.length,
-      totalEndpoints: featureData.totalEndpoints 
+      totalEndpoints: featureData.totalEndpoints
     });
 
-    return successResponse(h, featureData);
+    return h.response({
+      success: true,
+      data: featureData
+    }).code(200);
 
   } catch (error) {
     logger.error('Error retrieving feature status', {
@@ -237,13 +248,16 @@ export const generateFeatureReport = async (request: Request, h: ResponseToolkit
     // Generate comprehensive feature report
     const report = await createFeatureReport();
 
-    logger.info('Feature report generated', { 
+    logger.info('Feature report generated', {
       userId,
       reportId: report.reportId,
-      moduleCount: report.modules?.length 
+      moduleCount: report.modules?.length
     });
 
-    return successResponse(h, report);
+    return h.response({
+      success: true,
+      data: report
+    }).code(200);
 
   } catch (error) {
     logger.error('Error generating feature report', {

@@ -67,8 +67,6 @@ const server = Hapi.server({
         // During development, return full error details
         throw err;
       },
-      // Configure Joi as validator with options
-      validator: Joi,
       options: {
         abortEarly: false,
         stripUnknown: true

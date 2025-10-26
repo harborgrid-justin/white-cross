@@ -285,7 +285,7 @@ export const refreshDashboardCache = createAsyncThunk(
       const success = await dashboardApiService.refreshCache();
       if (success) {
         // Refetch all dashboard data after cache refresh
-        await dispatch(fetchCompleteDashboardData());
+        await dispatch(fetchCompleteDashboardData({}));
       }
       return success;
     } catch (error: any) {

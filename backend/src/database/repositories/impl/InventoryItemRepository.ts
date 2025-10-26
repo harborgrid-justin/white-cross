@@ -10,7 +10,7 @@ import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO
 } from '../interfaces/IInventoryItemRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class InventoryItemRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(InventoryItem, auditLogger, cacheManager, 'InventoryItem');
   }
+  /**
+   * Invalidate InventoryItem-related caches
+   */
+  protected async invalidateCaches(entity: InventoryItem): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:inventoryitem:*`);
+    } catch (error) {
+      logger.warn('Error invalidating InventoryItem caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize InventoryItem data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

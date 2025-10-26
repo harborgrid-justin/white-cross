@@ -31,15 +31,17 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { communicationApi } from '../../services'
-import type {
-  Message,
-  MessageTemplate,
+import {
   MessageType,
   MessagePriority,
   MessageCategory,
-  CreateMessageData,
-  MessageRecipient,
   RecipientType
+} from '../../types/communication'
+import type {
+  Message,
+  MessageTemplate,
+  CreateMessageData,
+  MessageRecipient
 } from '../../types/communication'
 
 /**
@@ -58,13 +60,13 @@ const Communication: React.FC = () => {
   // Compose Tab State
   const [composing, setComposing] = useState(false)
   const [composeForm, setComposeForm] = useState({
-    recipientType: 'PARENT' as RecipientType,
+    recipientType: RecipientType.PARENT,
     recipientIds: '',
-    channels: ['EMAIL'] as MessageType[],
+    channels: [MessageType.EMAIL] as MessageType[],
     subject: '',
     content: '',
-    priority: 'MEDIUM' as MessagePriority,
-    category: 'GENERAL' as MessageCategory,
+    priority: MessagePriority.MEDIUM,
+    category: MessageCategory.GENERAL,
     templateId: ''
   })
 
@@ -91,8 +93,8 @@ const Communication: React.FC = () => {
     name: '',
     subject: '',
     content: '',
-    type: 'EMAIL' as MessageType,
-    category: 'GENERAL' as MessageCategory
+    type: MessageType.EMAIL,
+    category: MessageCategory.GENERAL
   })
   const [creatingTemplate, setCreatingTemplate] = useState(false)
 
@@ -192,13 +194,13 @@ const Communication: React.FC = () => {
 
       // Reset form
       setComposeForm({
-        recipientType: 'PARENT',
+        recipientType: RecipientType.PARENT,
         recipientIds: '',
-        channels: ['EMAIL'],
+        channels: [MessageType.EMAIL],
         subject: '',
         content: '',
-        priority: 'MEDIUM',
-        category: 'GENERAL',
+        priority: MessagePriority.MEDIUM,
+        category: MessageCategory.GENERAL,
         templateId: ''
       })
     } catch (error: any) {
@@ -259,8 +261,8 @@ const Communication: React.FC = () => {
         name: '',
         subject: '',
         content: '',
-        type: 'EMAIL',
-        category: 'GENERAL'
+        type: MessageType.EMAIL,
+        category: MessageCategory.GENERAL
       })
       setShowTemplateModal(false)
     } catch (error: any) {
@@ -310,11 +312,11 @@ const Communication: React.FC = () => {
 
   // Get priority badge
   const getPriorityBadge = (priority: MessagePriority) => {
-    const colors = {
-      LOW: 'bg-gray-100 text-gray-800',
-      MEDIUM: 'bg-blue-100 text-blue-800',
-      HIGH: 'bg-orange-100 text-orange-800',
-      URGENT: 'bg-red-100 text-red-800'
+    const colors: Record<MessagePriority, string> = {
+      [MessagePriority.LOW]: 'bg-gray-100 text-gray-800',
+      [MessagePriority.MEDIUM]: 'bg-blue-100 text-blue-800',
+      [MessagePriority.HIGH]: 'bg-orange-100 text-orange-800',
+      [MessagePriority.URGENT]: 'bg-red-100 text-red-800'
     }
     return (
       <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[priority]}`}>
@@ -325,14 +327,14 @@ const Communication: React.FC = () => {
 
   // Get category badge
   const getCategoryBadge = (category: MessageCategory) => {
-    const colors = {
-      EMERGENCY: 'bg-red-100 text-red-800',
-      HEALTH_UPDATE: 'bg-green-100 text-green-800',
-      APPOINTMENT_REMINDER: 'bg-blue-100 text-blue-800',
-      MEDICATION_REMINDER: 'bg-purple-100 text-purple-800',
-      GENERAL: 'bg-gray-100 text-gray-800',
-      INCIDENT_NOTIFICATION: 'bg-yellow-100 text-yellow-800',
-      COMPLIANCE: 'bg-indigo-100 text-indigo-800'
+    const colors: Record<MessageCategory, string> = {
+      [MessageCategory.EMERGENCY]: 'bg-red-100 text-red-800',
+      [MessageCategory.HEALTH_UPDATE]: 'bg-green-100 text-green-800',
+      [MessageCategory.APPOINTMENT_REMINDER]: 'bg-blue-100 text-blue-800',
+      [MessageCategory.MEDICATION_REMINDER]: 'bg-purple-100 text-purple-800',
+      [MessageCategory.GENERAL]: 'bg-gray-100 text-gray-800',
+      [MessageCategory.INCIDENT_NOTIFICATION]: 'bg-yellow-100 text-yellow-800',
+      [MessageCategory.COMPLIANCE]: 'bg-indigo-100 text-indigo-800'
     }
     return (
       <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[category]}`}>
@@ -344,13 +346,13 @@ const Communication: React.FC = () => {
   // Get channel icon
   const getChannelIcon = (channel: MessageType) => {
     switch (channel) {
-      case 'EMAIL':
+      case MessageType.EMAIL:
         return <Mail className="w-4 h-4" />
-      case 'SMS':
+      case MessageType.SMS:
         return <Phone className="w-4 h-4" />
-      case 'PUSH_NOTIFICATION':
+      case MessageType.PUSH_NOTIFICATION:
         return <Bell className="w-4 h-4" />
-      case 'VOICE':
+      case MessageType.VOICE:
         return <Phone className="w-4 h-4" />
       default:
         return <MessageSquare className="w-4 h-4" />
@@ -451,7 +453,7 @@ const Communication: React.FC = () => {
                 Channels
               </label>
               <div className="flex flex-wrap gap-3">
-                {(['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'] as MessageType[]).map(channel => (
+                {[MessageType.EMAIL, MessageType.SMS, MessageType.PUSH_NOTIFICATION, MessageType.VOICE].map(channel => (
                   <label key={channel} className="flex items-center">
                     <input
                       type="checkbox"
@@ -543,13 +545,13 @@ const Communication: React.FC = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setComposeForm({
-                  recipientType: 'PARENT',
+                  recipientType: RecipientType.PARENT,
                   recipientIds: '',
-                  channels: ['EMAIL'],
+                  channels: [MessageType.EMAIL],
                   subject: '',
                   content: '',
-                  priority: 'MEDIUM',
-                  category: 'GENERAL',
+                  priority: MessagePriority.MEDIUM,
+                  category: MessageCategory.GENERAL,
                   templateId: ''
                 })}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"

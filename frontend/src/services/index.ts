@@ -175,21 +175,7 @@ export type {
 
 // Analytics API exports
 export { analyticsApi } from './modules/analyticsApi';
-export type {
-  HealthMetrics,
-  HealthTrends,
-  IncidentTrends,
-  IncidentLocationData,
-  MedicationUsage,
-  MedicationAdherence,
-  AppointmentTrends,
-  NoShowRate,
-  DashboardData,
-  AnalyticsSummary,
-  CustomReport,
-  CustomReportRequest,
-  AnalyticsApi
-} from './modules/analyticsApi';
+export type { AnalyticsApi } from './modules/analyticsApi';
 
 // Audit API exports
 export { auditApi } from './modules/auditApi';
@@ -264,11 +250,8 @@ export type {
 export { healthAssessmentsApi } from './modules/healthAssessmentsApi';
 export type {
   HealthRiskAssessment,
-  CreateRiskAssessmentRequest,
   HealthScreening,
   CreateScreeningRequest,
-  GrowthTracking,
-  CreateGrowthTrackingRequest,
   ImmunizationForecast,
   EmergencyNotification,
   CreateEmergencyNotificationRequest,
@@ -596,7 +579,7 @@ export const legacyApi = {
     getHealthSummary: healthRecordsApi.getSummary.bind(healthRecordsApi),
     searchHealthRecords: healthRecordsApi.searchRecords.bind(healthRecordsApi),
     exportHealthHistory: healthRecordsApi.exportRecords.bind(healthRecordsApi),
-    importHealthRecords: healthRecordsApi.importRecords.bind(healthRecordsApi),
+    importHealthRecords: healthRecordsApi.exportRecords.bind(healthRecordsApi),
   },
 
   // Medications API - matches old medicationsApi structure

@@ -1413,4 +1413,315 @@ export class HealthRecordService {
       throw error;
     }
   }
+
+  /**
+   * Get health record by ID
+   */
+  static async getHealthRecordById(id: string) {
+    try {
+      const record = await HealthRecord.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'dateOfBirth', 'medicalRecordNumber']
+          }
+        ]
+      });
+
+      if (!record) {
+        throw new NotFoundError(`Health record with ID ${id} not found`);
+      }
+
+      logger.info(`Retrieved health record: ${id}`);
+      return record;
+    } catch (error) {
+      logger.error(`Error getting health record by ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete health record by ID
+   */
+  static async deleteHealthRecord(id: string) {
+    try {
+      const record = await HealthRecord.findByPk(id);
+
+      if (!record) {
+        throw new NotFoundError(`Health record with ID ${id} not found`);
+      }
+
+      await record.destroy();
+      logger.info(`Deleted health record: ${id}`);
+    } catch (error) {
+      logger.error(`Error deleting health record ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get allergy by ID
+   */
+  static async getAllergyById(id: string) {
+    try {
+      const allergy = await Allergy.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'dateOfBirth']
+          }
+        ]
+      });
+
+      if (!allergy) {
+        throw new NotFoundError(`Allergy with ID ${id} not found`);
+      }
+
+      logger.info(`Retrieved allergy: ${id}`);
+      return allergy;
+    } catch (error) {
+      logger.error(`Error getting allergy by ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create allergy (alias for addAllergy)
+   */
+  static async createAllergy(data: CreateAllergyData) {
+    return this.addAllergy(data);
+  }
+
+  /**
+   * Get chronic condition by ID
+   */
+  static async getChronicConditionById(id: string) {
+    try {
+      const condition = await ChronicCondition.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'dateOfBirth']
+          }
+        ]
+      });
+
+      if (!condition) {
+        throw new NotFoundError(`Chronic condition with ID ${id} not found`);
+      }
+
+      logger.info(`Retrieved chronic condition: ${id}`);
+      return condition;
+    } catch (error) {
+      logger.error(`Error getting chronic condition by ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create chronic condition (alias for addChronicCondition)
+   */
+  static async createChronicCondition(data: CreateChronicConditionData) {
+    return this.addChronicCondition(data);
+  }
+
+  /**
+   * Get vaccination by ID
+   */
+  static async getVaccinationById(id: string) {
+    try {
+      const vaccination = await Vaccination.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'dateOfBirth']
+          }
+        ]
+      });
+
+      if (!vaccination) {
+        throw new NotFoundError(`Vaccination with ID ${id} not found`);
+      }
+
+      logger.info(`Retrieved vaccination: ${id}`);
+      return vaccination;
+    } catch (error) {
+      logger.error(`Error getting vaccination by ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create vaccination (alias for addVaccination)
+   */
+  static async createVaccination(data: CreateVaccinationData) {
+    return this.addVaccination(data);
+  }
+
+  /**
+   * Record vital signs for a student
+   */
+  static async recordVitalSigns(data: { studentId: string; vitals: any; recordedBy: string }) {
+    try {
+      const { studentId, vitals, recordedBy } = data;
+
+      const record = await HealthRecord.create({
+        studentId,
+        type: 'VITALS' as any,
+        date: new Date(),
+        recordedBy,
+        notes: vitals.notes || '',
+        vitalSigns: vitals
+      } as any);
+
+      logger.info(`Recorded vital signs for student: ${studentId}`);
+      return record;
+    } catch (error) {
+      logger.error('Error recording vital signs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get latest vital signs for a student
+   */
+  static async getLatestVitals(studentId: string) {
+    try {
+      const vitals = await HealthRecord.findOne({
+        where: {
+          studentId,
+          type: 'VITALS' as any
+        } as any,
+        order: [['date', 'DESC']],
+        limit: 1
+      });
+
+      logger.info(`Retrieved latest vitals for student: ${studentId}`);
+      return vitals;
+    } catch (error) {
+      logger.error(`Error getting latest vitals for student ${studentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get vitals history for a student
+   */
+  static async getVitalsHistory(studentId: string, options: { startDate?: Date; endDate?: Date; limit?: number } = {}) {
+    try {
+      const where: any = {
+        studentId,
+        type: 'VITALS' as any
+      };
+
+      if (options.startDate || options.endDate) {
+        where.date = {};
+        if (options.startDate) {
+          where.date[Op.gte] = options.startDate;
+        }
+        if (options.endDate) {
+          where.date[Op.lte] = options.endDate;
+        }
+      }
+
+      const vitals = await HealthRecord.findAll({
+        where,
+        order: [['date', 'DESC']],
+        limit: options.limit || 50
+      });
+
+      logger.info(`Retrieved vitals history for student: ${studentId}`);
+      return vitals;
+    } catch (error) {
+      logger.error(`Error getting vitals history for student ${studentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get comprehensive medical summary for a student
+   */
+  static async getStudentMedicalSummary(studentId: string) {
+    try {
+      const [
+        student,
+        allergies,
+        chronicConditions,
+        vaccinations,
+        recentVitals,
+        healthRecords
+      ] = await Promise.all([
+        Student.findByPk(studentId),
+        this.getStudentAllergies(studentId),
+        this.getStudentChronicConditions(studentId),
+        this.getStudentVaccinations(studentId),
+        this.getRecentVitals(studentId, 5),
+        this.getStudentHealthRecords(studentId, { limit: 10 })
+      ]);
+
+      if (!student) {
+        throw new NotFoundError(`Student with ID ${studentId} not found`);
+      }
+
+      const summary = {
+        student,
+        allergies,
+        chronicConditions,
+        vaccinations,
+        recentVitals,
+        recentHealthRecords: healthRecords.records
+      };
+
+      logger.info(`Generated medical summary for student: ${studentId}`);
+      return summary;
+    } catch (error) {
+      logger.error(`Error getting medical summary for student ${studentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check immunization compliance for a student
+   */
+  static async checkImmunizationCompliance(studentId: string, requiredVaccinations?: string[]) {
+    try {
+      const vaccinations = await this.getStudentVaccinations(studentId);
+
+      // Basic compliance check - can be enhanced with state requirements
+      const receivedVaccines = vaccinations.map((v: any) => v.vaccineName || v.name);
+      const required = requiredVaccinations || [
+        'MMR', 'DTaP', 'Polio', 'Hepatitis B', 'Varicella'
+      ];
+
+      const compliant = required.every(req =>
+        receivedVaccines.some((received: string) =>
+          received.toLowerCase().includes(req.toLowerCase())
+        )
+      );
+
+      const missing = required.filter(req =>
+        !receivedVaccines.some((received: string) =>
+          received.toLowerCase().includes(req.toLowerCase())
+        )
+      );
+
+      const result = {
+        compliant,
+        missing,
+        received: receivedVaccines,
+        totalRequired: required.length,
+        totalReceived: vaccinations.length
+      };
+
+      logger.info(`Checked immunization compliance for student: ${studentId}`);
+      return result;
+    } catch (error) {
+      logger.error(`Error checking immunization compliance for student ${studentId}:`, error);
+      throw error;
+    }
+  }
 }

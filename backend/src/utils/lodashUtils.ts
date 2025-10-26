@@ -37,7 +37,7 @@ import * as arrayUtils from '../shared/utils/array';
 import * as objectUtils from '../shared/utils/object';
 import * as stringUtils from '../shared/utils/string';
 import * as dateUtils from '../shared/utils/date';
-import * as validationUtils from '../shared/utils/validation';
+import * as validationUtils from '../shared/utilities/validation.utils';
 import _ from 'lodash';
 
 // Export array utilities

@@ -14,11 +14,11 @@ import { RootState } from '../../stores/reduxStore';
 import { ProtectedRoute } from '../../routes';
 
 // Tab Components
-import { MedicationsOverviewTab } from './components/tabs/MedicationsOverviewTab';
-import { MedicationsListTab } from './components/tabs/MedicationsListTab';
-import { MedicationsInventoryTab } from './components/tabs/MedicationsInventoryTab';
-import { MedicationsRemindersTab } from './components/tabs/MedicationsRemindersTab';
-import { MedicationsAdverseReactionsTab } from './components/tabs/MedicationsAdverseReactionsTab';
+import MedicationsOverviewTab from './components/tabs/MedicationsOverviewTab';
+import MedicationsListTab from './components/tabs/MedicationsListTab';
+import MedicationsInventoryTab from './components/tabs/MedicationsInventoryTab';
+import MedicationsRemindersTab from './components/tabs/MedicationsRemindersTab';
+import MedicationsAdverseReactionsTab from './components/tabs/MedicationsAdverseReactionsTab';
 
 /**
  * Available tabs in the medications interface

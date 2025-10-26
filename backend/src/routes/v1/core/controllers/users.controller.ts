@@ -55,8 +55,11 @@ import {
   conflictResponse,
   forbiddenResponse,
   badRequestResponse,
-  paginatedResponse
+  paginatedResponse,
+  extractPayloadSafe,
+  extractPayload
 } from '../../../shared/utils';
+import { ResetPasswordPayload } from '../../../shared/types/payloadTypes';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
 
 /**
@@ -146,7 +149,7 @@ export class UsersController {
     return paginatedResponse(
       h,
       result.users,
-      buildPaginationMeta(page, limit, result.total)
+      buildPaginationMeta(page, limit, result.pagination.total)
     );
   }
 
@@ -171,7 +174,18 @@ export class UsersController {
       return forbiddenResponse(h, 'Insufficient permissions to create users');
     }
 
-    const newUser = await UserService.createUser(request.payload);
+    const payload = request.payload as any;
+
+    // Extract and type the data according to CreateUserData interface
+    const userData: import('../../../../services/user/user.service').CreateUserData = {
+      email: payload.email,
+      password: payload.password,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      role: payload.role
+    };
+
+    const newUser = await UserService.createUser(userData);
 
     return createdResponse(h, { user: newUser });
   }
@@ -192,7 +206,7 @@ export class UsersController {
     }
 
     // Non-admins can only update their own basic info
-    const updateData = { ...request.payload };
+    const updateData = extractPayloadSafe(request.payload);
     if (!canUpdateAnyUser) {
       delete updateData.role;
       delete updateData.isActive;
@@ -216,7 +230,15 @@ export class UsersController {
     }
 
     try {
-      const result = await UserService.changePassword(id, request.payload);
+      const payload = request.payload as any;
+
+      // Extract and type the data according to ChangePasswordData interface
+      const passwordData: import('../../../../services/user/user.service').ChangePasswordData = {
+        currentPassword: payload.currentPassword,
+        newPassword: payload.newPassword
+      };
+
+      const result = await UserService.changePassword(id, passwordData);
       return successResponse(h, result);
     } catch (error) {
       const message = (error as Error).message;
@@ -241,7 +263,8 @@ export class UsersController {
     }
 
     const { id } = request.params;
-    const { newPassword } = request.payload;
+    const payload = request.payload as any;
+    const newPassword = payload.newPassword as string;
 
     const result = await UserService.resetUserPassword(id, newPassword);
 

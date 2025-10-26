@@ -37,7 +37,7 @@ export class AppointmentRecurringService {
   ) {
     try {
       const appointments = [];
-      const currentDate = new Date(baseData.scheduledAt);
+      const currentDate = new Date(baseData.scheduledDate);
 
       while (currentDate <= recurrencePattern.endDate) {
         let shouldCreate = true;
@@ -50,7 +50,7 @@ export class AppointmentRecurringService {
           try {
             const appointment = await AppointmentCrudOperations.createAppointment({
               ...baseData,
-              scheduledAt: new Date(currentDate)
+              scheduledDate: new Date(currentDate)
             });
             appointments.push(appointment);
           } catch (error) {

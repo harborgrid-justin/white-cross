@@ -10,7 +10,7 @@ import {
   CreateTrainingModuleDTO,
   UpdateTrainingModuleDTO
 } from '../interfaces/ITrainingModuleRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class TrainingModuleRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(TrainingModule, auditLogger, cacheManager, 'TrainingModule');
   }
+  /**
+   * Invalidate TrainingModule-related caches
+   */
+  protected async invalidateCaches(entity: TrainingModule): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:trainingmodule:*`);
+    } catch (error) {
+      logger.warn('Error invalidating TrainingModule caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize TrainingModule data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

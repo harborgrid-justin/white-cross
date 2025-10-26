@@ -11,11 +11,11 @@
  */
 
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react'
-import { LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/domains/medications'
-import { useReminderManagement } from '../../../../hooks/utilities'
-import { formatDate } from '../../../../utils/medications'
-import type { MedicationReminder } from '../../../../types/api'
+import { LoadingSpinner, EmptyState } from '@/components'
+import { useMedicationsData } from '@/hooks/domains/medications'
+import { useReminderManagement } from '@/hooks/utilities'
+import { formatDate } from '@/utils/medications'
+import type { MedicationReminder } from '@/types/api'
 
 interface RemindersTabProps {
   onReminderSelect?: (reminder: MedicationReminder) => void

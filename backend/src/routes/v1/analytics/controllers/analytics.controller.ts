@@ -20,6 +20,23 @@ import { ComplianceReportGenerator, ReportFormat } from '../../../../services/an
 import { healthMetricsService } from '../../../../services/healthMetricsService';
 
 /**
+ * Payload Interfaces
+ */
+interface GenerateCustomReportPayload {
+  reportName: string;
+  reportType: string;
+  startDate: string;
+  endDate: string;
+  format?: string;
+  filters?: {
+    schoolId?: string;
+    [key: string]: any;
+  };
+  recipients?: string[];
+  schedule?: any;
+}
+
+/**
  * Analytics Controller Class
  */
 export class AnalyticsController {
@@ -664,6 +681,7 @@ export class AnalyticsController {
    * @returns {Promise<ResponseObject>} Generated report metadata with download URL
    */
   static async generateCustomReport(request: AuthenticatedRequest, h: ResponseToolkit) {
+    const payload = request.payload as GenerateCustomReportPayload;
     const {
       reportName,
       reportType,
@@ -673,7 +691,7 @@ export class AnalyticsController {
       filters = {},
       recipients = [],
       schedule
-    } = request.payload;
+    } = payload;
 
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -691,7 +709,7 @@ export class AnalyticsController {
           periodStart: start,
           periodEnd: end,
           format: reportFormat,
-          generatedBy: userId
+          generatedBy: userId as string
         });
         break;
 
@@ -701,7 +719,7 @@ export class AnalyticsController {
           periodStart: start,
           periodEnd: end,
           format: reportFormat,
-          generatedBy: userId
+          generatedBy: userId as string
         });
         break;
 
@@ -711,7 +729,7 @@ export class AnalyticsController {
           periodStart: start,
           periodEnd: end,
           format: reportFormat,
-          generatedBy: userId
+          generatedBy: userId as string
         });
         break;
 

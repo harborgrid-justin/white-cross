@@ -64,7 +64,7 @@
  * @date 2024
  */
 
-import { sequelize } from '../config/database';
+import { sequelize } from '../../config/database';
 import { QueryTypes } from 'sequelize';
 import { logger } from '../../utils/logger';
 

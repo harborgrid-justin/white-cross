@@ -9,16 +9,38 @@
  * @since 1.0.0
  */
 
-import { Request } from '@hapi/hapi';
+import { Request, ReqRefDefaults } from '@hapi/hapi';
+
+/**
+ * User credentials extra properties for JWT authentication.
+ *
+ * These properties are merged with Hapi's AuthCredentials
+ * populated by the JWT authentication strategy.
+ */
+export interface JWTCredentialsExtra extends Record<string, unknown> {
+  id: string;
+  email: string;
+  role: string;
+  permissions?: string[];
+}
+
+/**
+ * Request references for authenticated JWT requests.
+ *
+ * Extends Hapi's default request references to include JWT credential types.
+ */
+export interface AuthReqRefs extends ReqRefDefaults {
+  AuthCredentialsExtra: JWTCredentialsExtra;
+}
 
 /**
  * Authenticated request interface with user credentials.
  *
- * Extends Hapi Request to include typed authentication credentials
+ * Uses Hapi's generic Request type with custom JWT credential references
  * populated by the JWT authentication strategy.
  *
  * @interface AuthenticatedRequest
- * @extends {Request}
+ * @extends {Request<AuthReqRefs>}
  *
  * @property {Object} auth - Authentication information
  * @property {boolean} auth.isAuthenticated - Authentication status
@@ -37,17 +59,7 @@ import { Request } from '@hapi/hapi';
  * }
  * ```
  */
-export interface AuthenticatedRequest extends Request {
-  auth: {
-    isAuthenticated: boolean;
-    credentials: {
-      id: string;
-      email: string;
-      role: string;
-      permissions?: string[];
-    };
-  };
-}
+export type AuthenticatedRequest = Request<AuthReqRefs>;
 
 /**
  * Pagination query parameters interface.

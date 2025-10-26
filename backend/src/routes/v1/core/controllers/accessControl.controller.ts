@@ -48,7 +48,8 @@ import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse,
-  paginatedResponse
+  paginatedResponse,
+  createPayloadWithFields
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
 
@@ -217,13 +218,29 @@ export class AccessControlController {
    * ```
    */
   static async createRole(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const role = await AccessControlService.createRole(request.payload);
+    const payload = request.payload as any;
+
+    // Extract and type the data according to CreateRoleData interface
+    const roleData: import('../../../../services/accessControl/accessControl.types').CreateRoleData = {
+      name: payload.name,
+      description: payload.description
+    };
+
+    const role = await AccessControlService.createRole(roleData);
     return createdResponse(h, { role });
   }
 
   static async updateRole(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const role = await AccessControlService.updateRole(id, request.payload);
+    const payload = request.payload as any;
+
+    // Extract and type the data according to UpdateRoleData interface
+    const roleData: import('../../../../services/accessControl/accessControl.types').UpdateRoleData = {
+      name: payload.name,
+      description: payload.description
+    };
+
+    const role = await AccessControlService.updateRole(id, roleData);
     return successResponse(h, { role });
   }
 
@@ -247,7 +264,16 @@ export class AccessControlController {
   }
 
   static async createPermission(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const permission = await AccessControlService.createPermission(request.payload);
+    const payload = request.payload as any;
+
+    // Extract and type the data according to CreatePermissionData interface
+    const permissionData: import('../../../../services/accessControl/accessControl.types').CreatePermissionData = {
+      resource: payload.resource,
+      action: payload.action,
+      description: payload.description
+    };
+
+    const permission = await AccessControlService.createPermission(permissionData);
     return createdResponse(h, { permission });
   }
 
@@ -362,24 +388,40 @@ export class AccessControlController {
     return paginatedResponse(
       h,
       result.incidents,
-      buildPaginationMeta(page, limit, result.total)
+      buildPaginationMeta(page, limit, result.pagination.total)
     );
   }
 
   static async createSecurityIncident(request: AuthenticatedRequest, h: ResponseToolkit) {
     const currentUser = request.auth.credentials;
+    const payload = request.payload as any;
 
-    const incident = await AccessControlService.createSecurityIncident({
-      ...request.payload,
-      detectedBy: currentUser.userId
-    });
+    // Extract and type the data according to CreateSecurityIncidentData interface
+    const incidentData: import('../../../../services/accessControl/accessControl.types').CreateSecurityIncidentData = {
+      type: payload.type,
+      severity: payload.severity,
+      description: payload.description,
+      affectedResources: payload.affectedResources,
+      detectedBy: currentUser.userId as string
+    };
+
+    const incident = await AccessControlService.createSecurityIncident(incidentData);
 
     return createdResponse(h, { incident });
   }
 
   static async updateSecurityIncident(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const incident = await AccessControlService.updateSecurityIncident(id, request.payload);
+    const payload = request.payload as any;
+
+    // Extract and type the data according to UpdateSecurityIncidentData interface
+    const incidentData: import('../../../../services/accessControl/accessControl.types').UpdateSecurityIncidentData = {
+      status: payload.status,
+      resolution: payload.resolution,
+      resolvedBy: payload.resolvedBy
+    };
+
+    const incident = await AccessControlService.updateSecurityIncident(id, incidentData);
     return successResponse(h, { incident });
   }
 
@@ -394,11 +436,17 @@ export class AccessControlController {
 
   static async addIpRestriction(request: AuthenticatedRequest, h: ResponseToolkit) {
     const currentUser = request.auth.credentials;
+    const payload = request.payload as any;
 
-    const restriction = await AccessControlService.addIpRestriction({
-      ...request.payload,
-      createdBy: currentUser.userId
-    });
+    // Extract and type the data according to AddIpRestrictionData interface
+    const restrictionData: import('../../../../services/accessControl/accessControl.types').AddIpRestrictionData = {
+      ipAddress: payload.ipAddress,
+      type: payload.type,
+      reason: payload.reason,
+      createdBy: currentUser.userId as string
+    };
+
+    const restriction = await AccessControlService.addIpRestriction(restrictionData);
 
     return createdResponse(h, { restriction });
   }

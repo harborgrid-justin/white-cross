@@ -410,9 +410,9 @@ export class AuditMiddleware {
    */
   async logAuthentication(
     success: boolean,
+    ipAddress: string,
     userId?: string,
     email?: string,
-    ipAddress: string,
     userAgent?: string,
     error?: string
   ): Promise<void> {

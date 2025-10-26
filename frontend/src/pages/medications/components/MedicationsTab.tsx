@@ -11,10 +11,10 @@
  */
 
 import { Pill } from 'lucide-react'
-import { SearchInput, LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/domains/medications'
-import { formatMedicationForDisplay } from '../../../../utils/medications'
-import type { LegacyMedicationWithCount } from '../../../../types'
+import { SearchInput, LoadingSpinner, EmptyState } from '@/components'
+import { useMedicationsData } from '@/hooks/domains/medications'
+import { formatMedicationForDisplay } from '@/utils/medications'
+import type { LegacyMedicationWithCount } from '@/types'
 
 interface MedicationsTabProps {
   searchTerm: string

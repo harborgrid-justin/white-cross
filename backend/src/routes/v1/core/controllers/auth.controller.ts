@@ -24,6 +24,7 @@ import {
   unauthorizedResponse,
   conflictResponse
 } from '../../../shared/utils';
+import { UserRole } from '../../../../database/types/enums';
 
 /**
  * Authentication controller class.
@@ -316,12 +317,12 @@ export class AuthController {
 
     if (!user) {
       // Create test user if it doesn't exist
-      const roleMap: Record<string, string> = {
-        'admin@school.edu': 'ADMIN',
-        'nurse@school.edu': 'NURSE',
-        'counselor@school.edu': 'SCHOOL_ADMIN',
-        'readonly@school.edu': 'NURSE',
-        'doctor@school.edu': 'DOCTOR'
+      const roleMap: Record<string, UserRole> = {
+        'admin@school.edu': UserRole.ADMIN,
+        'nurse@school.edu': UserRole.NURSE,
+        'counselor@school.edu': UserRole.SCHOOL_ADMIN,
+        'readonly@school.edu': UserRole.NURSE,
+        'doctor@school.edu': UserRole.NURSE // DOCTOR is not a valid UserRole, using NURSE
       };
 
       const nameMap: Record<string, { firstName: string, lastName: string }> = {
@@ -337,7 +338,7 @@ export class AuthController {
         password: 'TestPassword123!', // Standard test password
         firstName: nameMap[email]?.firstName || 'Test',
         lastName: nameMap[email]?.lastName || 'User',
-        role: roleMap[email] || 'NURSE',
+        role: roleMap[email] || UserRole.NURSE,
         isActive: true
       });
     }

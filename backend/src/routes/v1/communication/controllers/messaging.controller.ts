@@ -5,7 +5,6 @@
 
 import { Request, ResponseToolkit, Lifecycle } from '@hapi/hapi';
 import Boom from '@hapi/boom';
-import { successResponse } from '../../../../shared/utils';
 import { logger } from '../../../../shared/logging/logger';
 
 /**
@@ -71,13 +70,16 @@ export const sendBulkMessage = async (request: Request, h: ResponseToolkit): Pro
       recipientCount: result.sentCount 
     });
 
-    return successResponse(h, {
-      messageId: result.messageId,
-      sentCount: result.sentCount,
-      failedCount: result.failedCount,
-      status: result.status,
-      estimatedDelivery: result.estimatedDelivery
-    });
+    return h.response({
+      success: true,
+      data: {
+        messageId: result.messageId,
+        sentCount: result.sentCount,
+        failedCount: result.failedCount,
+        status: result.status,
+        estimatedDelivery: result.estimatedDelivery
+      }
+    }).code(200);
 
   } catch (error) {
     logger.error('Error sending bulk message', {

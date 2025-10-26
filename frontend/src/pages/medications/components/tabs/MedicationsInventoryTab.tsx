@@ -12,8 +12,8 @@
 
 import React, { useState } from 'react'
 import { AlertTriangle, Package, Edit3 } from 'lucide-react'
-import { useInventoryManagement } from '../../../../../hooks/domains/inventory'
-import { getDaysUntilExpiration } from '../../../../../utils/medications'
+import { useInventoryManagement } from '@/hooks/domains/inventory'
+import { getDaysUntilExpiration } from '@/utils/medications'
 
 interface InventoryItem {
   id: string

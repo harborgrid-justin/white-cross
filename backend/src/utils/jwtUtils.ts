@@ -75,14 +75,14 @@ export function generateAccessToken(payload: TokenPayload): string {
     {
       ...payload,
       type: 'access'
-    },
+    } as jwt.JwtPayload,
     JWT_CONFIG.ACCESS_TOKEN_SECRET,
     {
       expiresIn: JWT_CONFIG.ACCESS_TOKEN_EXPIRY,
       issuer: JWT_CONFIG.ISSUER,
       audience: JWT_CONFIG.AUDIENCE,
       jwtid: generateTokenId() // Unique ID for blacklisting
-    }
+    } as jwt.SignOptions
   );
 
   logger.debug('Access token generated', {
@@ -115,13 +115,13 @@ export function generateRefreshToken(userId: string): string {
     {
       id: userId,
       type: 'refresh'
-    },
+    } as jwt.JwtPayload,
     JWT_CONFIG.REFRESH_TOKEN_SECRET,
     {
       expiresIn: JWT_CONFIG.REFRESH_TOKEN_EXPIRY,
       issuer: JWT_CONFIG.ISSUER,
       jwtid: generateTokenId() // Unique ID for blacklisting
-    }
+    } as jwt.SignOptions
   );
 
   logger.debug('Refresh token generated', {

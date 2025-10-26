@@ -33,25 +33,25 @@ const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStu
   async getAll(params?: StudentFiltersType) {
     const response = await studentsApi.getAll(params);
     return {
-      data: response.data?.students || [],
-      total: response.data?.pagination?.total,
-      pagination: response.data?.pagination,
+      data: response?.students || [],
+      total: response?.pagination?.total,
+      pagination: response?.pagination,
     };
   },
 
   async getById(id: string) {
     const response = await studentsApi.getById(id);
-    return { data: response.data };
+    return { data: response };
   },
 
   async create(data: CreateStudentData) {
     const response = await studentsApi.create(data);
-    return { data: response.data };
+    return { data: response };
   },
 
   async update(id: string, data: UpdateStudentData) {
     const response = await studentsApi.update(id, data);
-    return { data: response.data };
+    return { data: response };
   },
 
   async delete(id: string) {
@@ -184,7 +184,7 @@ const studentUISlice = createSlice({
 const combinedStudentsSlice = createSlice({
   name: 'students',
   initialState: {
-    ...studentsSliceFactory.slice.getInitialState(),
+    ...(studentsSliceFactory.slice.getInitialState() || {}),
     ui: initialUIState,
   },
   reducers: {
@@ -202,7 +202,7 @@ const combinedStudentsSlice = createSlice({
           action
         );
         return {
-          ...entityState,
+          ...(entityState || {}),
           ui: state.ui,
         };
       }

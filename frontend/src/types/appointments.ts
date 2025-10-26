@@ -57,11 +57,11 @@ export const APPOINTMENT_VALIDATION = {
  * Defines valid status transitions for appointment workflow
  */
 export const APPOINTMENT_STATUS_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
-  SCHEDULED: ['IN_PROGRESS', 'CANCELLED', 'NO_SHOW'],
-  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-  COMPLETED: [],
-  CANCELLED: [],
-  NO_SHOW: [],
+  [AppointmentStatus.SCHEDULED]: [AppointmentStatus.IN_PROGRESS, AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW],
+  [AppointmentStatus.IN_PROGRESS]: [AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED],
+  [AppointmentStatus.COMPLETED]: [],
+  [AppointmentStatus.CANCELLED]: [],
+  [AppointmentStatus.NO_SHOW]: [],
 } as const;
 
 // =====================

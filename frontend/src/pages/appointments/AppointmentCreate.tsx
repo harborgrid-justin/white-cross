@@ -7,26 +7,37 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, ArrowLeft, Save } from 'lucide-react';
 import { appointmentsApi } from '../../services';
 import { PROTECTED_ROUTES } from '../../constants/routes';
+import { AppointmentType } from '../../types/appointments';
 
 const AppointmentCreate: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     studentId: '',
-    studentName: '',
-    appointmentType: 'ROUTINE',
+    nurseId: '',
+    type: AppointmentType.ROUTINE_CHECKUP,
     scheduledDate: '',
     scheduledTime: '',
-    provider: '',
-    reason: ''
+    reason: '',
+    duration: 30
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      await appointmentsApi.create(formData);
+      // Combine date and time into ISO 8601 datetime
+      const scheduledAt = `${formData.scheduledDate}T${formData.scheduledTime}:00`;
+
+      await appointmentsApi.create({
+        studentId: formData.studentId,
+        nurseId: formData.nurseId,
+        type: formData.type,
+        scheduledAt,
+        duration: formData.duration,
+        reason: formData.reason
+      });
       navigate(PROTECTED_ROUTES.APPOINTMENTS);
     } catch (err) {
       console.error('Error creating appointment:', err);
@@ -53,34 +64,65 @@ const AppointmentCreate: React.FC = () => {
       <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="studentName" className="block text-sm font-medium text-gray-700 mb-2">
-              Student Name
+            <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-2">
+              Student ID
             </label>
             <input
-              id="studentName"
+              id="studentId"
               type="text"
-              value={formData.studentName}
-              onChange={(e) => setFormData(prev => ({ ...prev, studentName: e.target.value }))}
+              value={formData.studentId}
+              onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="appointmentType" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="nurseId" className="block text-sm font-medium text-gray-700 mb-2">
+              Nurse ID
+            </label>
+            <input
+              id="nurseId"
+              type="text"
+              value={formData.nurseId}
+              onChange={(e) => setFormData(prev => ({ ...prev, nurseId: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
               Type
             </label>
             <select
-              id="appointmentType"
-              value={formData.appointmentType}
-              onChange={(e) => setFormData(prev => ({ ...prev, appointmentType: e.target.value }))}
+              id="type"
+              value={formData.type}
+              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as AppointmentType }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
             >
-              <option value="ROUTINE">Routine Check</option>
-              <option value="MEDICATION">Medication Review</option>
-              <option value="FOLLOW_UP">Follow-up</option>
-              <option value="EMERGENCY">Emergency</option>
+              <option value={AppointmentType.ROUTINE_CHECKUP}>Routine Checkup</option>
+              <option value={AppointmentType.MEDICATION_ADMINISTRATION}>Medication Administration</option>
+              <option value={AppointmentType.FOLLOW_UP}>Follow-up</option>
+              <option value={AppointmentType.EMERGENCY}>Emergency</option>
+              <option value={AppointmentType.SCREENING}>Screening</option>
             </select>
+          </div>
+
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+              Duration (minutes)
+            </label>
+            <input
+              id="duration"
+              type="number"
+              value={formData.duration}
+              onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 30 }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              min="15"
+              step="15"
+              required
+            />
           </div>
 
           <div>
@@ -106,20 +148,6 @@ const AppointmentCreate: React.FC = () => {
               type="time"
               value={formData.scheduledTime}
               onChange={(e) => setFormData(prev => ({ ...prev, scheduledTime: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label htmlFor="provider" className="block text-sm font-medium text-gray-700 mb-2">
-              Provider
-            </label>
-            <input
-              id="provider"
-              type="text"
-              value={formData.provider}
-              onChange={(e) => setFormData(prev => ({ ...prev, provider: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
               required
             />

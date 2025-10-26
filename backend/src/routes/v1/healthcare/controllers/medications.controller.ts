@@ -54,7 +54,8 @@ import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse,
-  paginatedResponse
+  paginatedResponse,
+  preparePayload
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta } from '../../../shared/utils';
 
@@ -414,8 +415,52 @@ export class MedicationsController {
    */
   static async deactivate(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const { reason, deactivationType } = request.payload;
+    const payload = request.payload as { reason: string; deactivationType: string };
+    const { reason, deactivationType } = payload;
     const medication = await MedicationService.deactivateMedication(id, reason, deactivationType);
+    return successResponse(h, { medication });
+  }
+
+  /**
+   * Activate a medication (restore from soft delete).
+   *
+   * Reactivates a previously deactivated medication by setting isActive = true
+   * and clearing the endDate. This restores the medication to active status
+   * while preserving the complete audit history.
+   *
+   * Common activation scenarios:
+   * - Medication was deactivated in error
+   * - Student returns to same medication after trial period
+   * - Seasonal medication needs (e.g., allergy medications)
+   * - Re-enrollment after transfer
+   *
+   * @param {AuthenticatedRequest} request - Authenticated request with medication ID
+   * @param {ResponseToolkit} h - Hapi.js response toolkit
+   *
+   * @returns {Promise<ResponseObject>} Activated medication record
+   * @returns {200} Success - { success: true, data: { medication: {...} } }
+   *
+   * @throws {NotFoundError} When medication ID does not exist
+   * @throws {UnauthorizedError} When JWT token is missing or invalid
+   * @throws {ForbiddenError} When user lacks NURSE or ADMIN role
+   *
+   * @security JWT authentication required
+   * @security RBAC: Requires NURSE or ADMIN role
+   * @compliance HIPAA - Activation is logged with user ID and timestamp
+   * @hipaa PHI Protected - Modifies patient medication record
+   *
+   * @example
+   * ```typescript
+   * const request = {
+   *   params: { id: '550e8400-e29b-41d4-a716-446655440000' }
+   * };
+   * const response = await MedicationsController.activate(request, h);
+   * // Sets isActive=true, clears endDate
+   * ```
+   */
+  static async activate(request: AuthenticatedRequest, h: ResponseToolkit) {
+    const { id } = request.params;
+    const medication = await MedicationService.activateMedication(id);
     return successResponse(h, { medication });
   }
 
@@ -465,11 +510,11 @@ export class MedicationsController {
    * ```
    */
   static async assignToStudent(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const studentMedication = await MedicationService.assignMedicationToStudent({
-      ...request.payload,
-      startDate: new Date(request.payload.startDate),
-      endDate: request.payload.endDate ? new Date(request.payload.endDate) : undefined
+    const medicationData = preparePayload(request.payload, {
+      dateFields: ['startDate', 'endDate']
     });
+
+    const studentMedication = await MedicationService.assignMedicationToStudent(medicationData);
 
     return createdResponse(h, { studentMedication });
   }
@@ -543,11 +588,12 @@ export class MedicationsController {
   static async logAdministration(request: AuthenticatedRequest, h: ResponseToolkit) {
     const nurseId = request.auth.credentials.userId;
 
-    const medicationLog = await MedicationService.logMedicationAdministration({
-      ...request.payload,
-      nurseId,
-      timeGiven: new Date(request.payload.timeGiven)
+    const logData = preparePayload(request.payload, {
+      dateFields: ['timeGiven'],
+      additionalFields: { nurseId }
     });
+
+    const medicationLog = await MedicationService.logMedicationAdministration(logData);
 
     return createdResponse(h, { medicationLog });
   }
@@ -602,8 +648,8 @@ export class MedicationsController {
 
     return paginatedResponse(
       h,
-      result.logs || result.data,
-      buildPaginationMeta(page, limit, result.total)
+      result.logs,
+      buildPaginationMeta(result.pagination.page, result.pagination.limit, result.pagination.total)
     );
   }
 
@@ -686,13 +732,16 @@ export class MedicationsController {
    * ```
    */
   static async addToInventory(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const inventory = await MedicationService.addToInventory({
-      ...request.payload,
-      expirationDate: new Date(request.payload.expirationDate),
-      costPerUnit: request.payload.costPerUnit
-        ? parseFloat(request.payload.costPerUnit)
-        : undefined
+    const inventoryData = preparePayload(request.payload, {
+      dateFields: ['expirationDate']
     });
+
+    // Convert costPerUnit to float if present
+    if (inventoryData.costPerUnit) {
+      inventoryData.costPerUnit = parseFloat(inventoryData.costPerUnit as string);
+    }
+
+    const inventory = await MedicationService.addToInventory(inventoryData);
 
     return createdResponse(h, { inventory });
   }
@@ -794,7 +843,8 @@ export class MedicationsController {
    */
   static async updateInventoryQuantity(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const { quantity, reason } = request.payload;
+    const payload = request.payload as { quantity: number; reason?: string };
+    const { quantity, reason } = payload;
 
     const inventory = await MedicationService.updateInventoryQuantity(
       id,
@@ -847,7 +897,8 @@ export class MedicationsController {
    */
   static async deactivateStudentMedication(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const { reason } = request.payload;
+    const payload = request.payload as { reason?: string };
+    const { reason } = payload;
 
     const studentMedication = await MedicationService.deactivateStudentMedication(
       id,
@@ -947,11 +998,12 @@ export class MedicationsController {
   static async reportAdverseReaction(request: AuthenticatedRequest, h: ResponseToolkit) {
     const reportedBy = request.auth.credentials.userId;
 
-    const report = await MedicationService.reportAdverseReaction({
-      ...request.payload,
-      reportedBy,
-      reportedAt: new Date(request.payload.reportedAt)
+    const reportData = preparePayload(request.payload, {
+      dateFields: ['reportedAt'],
+      additionalFields: { reportedBy }
     });
+
+    const report = await MedicationService.reportAdverseReaction(reportData);
 
     return createdResponse(h, { report });
   }

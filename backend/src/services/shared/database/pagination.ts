@@ -11,6 +11,7 @@ import {
   PaginationConstraints
 } from '../types/pagination';
 import { ValidationResult, ValidationError } from '../types/common';
+import { ValidationErrorCode } from '../../../types/validation';
 
 /**
  * Calculate pagination offset from page and limit
@@ -130,7 +131,7 @@ export function validatePaginationParams(
       errors.push({
         field: 'page',
         message: 'Page must be a positive integer',
-        code: 'INVALID_VALUE',
+        code: ValidationErrorCode.INVALID_VALUE,
         value: params.page
       });
     }
@@ -142,21 +143,21 @@ export function validatePaginationParams(
       errors.push({
         field: 'limit',
         message: 'Limit must be an integer',
-        code: 'INVALID_TYPE',
+        code: ValidationErrorCode.INVALID_TYPE,
         value: params.limit
       });
     } else if (params.limit < minLimit) {
       errors.push({
         field: 'limit',
         message: `Limit must be at least ${minLimit}`,
-        code: 'TOO_SMALL',
+        code: ValidationErrorCode.TOO_SMALL,
         value: params.limit
       });
     } else if (params.limit > maxLimit) {
       errors.push({
         field: 'limit',
         message: `Limit cannot exceed ${maxLimit}`,
-        code: 'TOO_LARGE',
+        code: ValidationErrorCode.TOO_LARGE,
         value: params.limit
       });
     }
@@ -168,7 +169,7 @@ export function validatePaginationParams(
       errors.push({
         field: 'offset',
         message: 'Offset must be a non-negative integer',
-        code: 'INVALID_VALUE',
+        code: ValidationErrorCode.INVALID_VALUE,
         value: params.offset
       });
     }

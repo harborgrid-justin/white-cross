@@ -25,6 +25,7 @@
 import { Pool } from 'pg';
 import OpenAI from 'openai';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
+import { logger } from '../../utils/logger';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -561,19 +562,19 @@ export class AISearchService {
   private static async getPatientMedicalVector(patientId: string): Promise<number[]> {
     // Implementation to get patient's aggregated medical vector
     const client = await pool.connect();
-    
+
     const result = await client.query(`
       SELECT medical_vector FROM patients_medical_profile WHERE patient_id = $1
     `, [patientId]);
-    
+
     client.release();
-    
+
     if (result.rows.length > 0) {
       return result.rows[0].medical_vector;
     }
-    
-          throw handleSequelizeError(error as Error);
-        }
+
+    throw new Error(`No medical vector found for patient ${patientId}`);
+  }
   private static async findMedicationInteractions(medications: string[], client: any) {
     const query = `
       SELECT m1.name as medication1, m2.name as medication2, 

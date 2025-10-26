@@ -223,7 +223,7 @@ export function isSuccessResponse<T>(
  * ```
  */
 export function isErrorResponse(
-  response: ApiResponse<unknown>
+  response: ApiResponse<any>
 ): response is ErrorResponse {
   return response.success === false && 'errors' in response;
 }

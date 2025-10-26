@@ -69,7 +69,7 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
     if (!inventory) {
       throw new Error(`Inventory item with id ${id} not found`);
     }
-    await inventory.update({ isActive: false } as any, { transaction: options?.transaction });
+    await inventory.update({ quantity: 0 } as any, { transaction: options?.transaction });
   }
 
   async count(filters?: InventoryFilters): Promise<number> {
@@ -99,7 +99,7 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
 
   async findByMedication(medicationId: string): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
-      where: { medicationId, isActive: true },
+      where: { medicationId },
       order: [['expirationDate', 'ASC']]
     });
     return items.map(i => this.toEntity(i));
@@ -108,7 +108,6 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
   async findLowStock(threshold: number = 1.0): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
       where: {
-        isActive: true,
         [Op.and]: [
           literal(`quantity <= (reorderLevel * ${threshold})`)
         ]
@@ -125,7 +124,6 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
 
     const items = await MedicationInventory.findAll({
       where: {
-        isActive: true,
         expirationDate: {
           [Op.lte]: expirationDate,
           [Op.gte]: new Date()
@@ -148,7 +146,7 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
 
   async findByLotNumber(lotNumber: string): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
-      where: { lotNumber },
+      where: { batchNumber: lotNumber },
       order: [['expirationDate', 'ASC']]
     });
     return items.map(i => this.toEntity(i));
@@ -156,7 +154,7 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
 
   async findByLocation(location: string): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
-      where: { location, isActive: true },
+      where: { supplier: location },
       order: [['expirationDate', 'ASC']]
     });
     return items.map(i => this.toEntity(i));
@@ -164,8 +162,8 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
 
   async findByVendor(vendorId: string): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
-      where: { vendorId, isActive: true },
-      order: [['receivedDate', 'DESC']]
+      where: { supplier: vendorId },
+      order: [['expirationDate', 'DESC']]
     });
     return items.map(i => this.toEntity(i));
   }
@@ -173,7 +171,7 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
   async getTotalQuantityByMedication(medicationId: string): Promise<number> {
     const result = await MedicationInventory.findOne({
       attributes: [[fn('SUM', col('quantity')), 'total']],
-      where: { medicationId, isActive: true },
+      where: { medicationId },
       raw: true
     });
     return result ? parseInt((result as any).total) || 0 : 0;
@@ -253,13 +251,13 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
   }
 
   async getInventoryValue(medicationId?: string): Promise<number> {
-    const where: any = { isActive: true };
+    const where: any = {};
     if (medicationId) {
       where.medicationId = medicationId;
     }
 
     const result = await MedicationInventory.findOne({
-      attributes: [[fn('SUM', literal('quantity * cost')), 'total']],
+      attributes: [[fn('SUM', literal('quantity * "costPerUnit"')), 'total']],
       where,
       raw: true
     });
@@ -268,7 +266,7 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
   }
 
   async getInventoryStatistics(): Promise<InventoryStatistics> {
-    const totalItems = await MedicationInventory.count({ where: { isActive: true } });
+    const totalItems = await MedicationInventory.count();
     const totalValue = await this.getInventoryValue();
 
     const lowStock = await this.findLowStock();
@@ -277,13 +275,11 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
 
     const totalQuantityResult = await MedicationInventory.findOne({
       attributes: [[fn('SUM', col('quantity')), 'total']],
-      where: { isActive: true },
       raw: true
     });
 
     const uniqueMedicationsResult = await MedicationInventory.findOne({
       attributes: [[fn('COUNT', fn('DISTINCT', col('medicationId'))), 'count']],
-      where: { isActive: true },
       raw: true
     });
 
@@ -301,7 +297,6 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
   async findExpired(): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
       where: {
-        isActive: true,
         expirationDate: { [Op.lt]: new Date() },
         quantity: { [Op.gt]: 0 }
       },
@@ -314,9 +309,9 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
   async findReceivedBetween(startDate: Date, endDate: Date): Promise<InventoryEntity[]> {
     const items = await MedicationInventory.findAll({
       where: {
-        receivedDate: { [Op.between]: [startDate, endDate] }
+        createdAt: { [Op.between]: [startDate, endDate] }
       },
-      order: [['receivedDate', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
     return items.map(i => this.toEntity(i));
   }
@@ -326,9 +321,8 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
     if (!filters) return where;
 
     if (filters.medicationId) where.medicationId = filters.medicationId;
-    if (filters.location) where.location = filters.location;
-    if (filters.vendorId) where.vendorId = filters.vendorId;
-    if (filters.isActive !== undefined) where.isActive = filters.isActive;
+    if (filters.location) where.supplier = filters.location;
+    if (filters.vendorId) where.supplier = filters.vendorId;
     if (filters.lowStock) {
       where[Op.and] = [literal('quantity <= reorderLevel')];
     }
@@ -349,16 +343,16 @@ export class SequelizeInventoryRepository implements IInventoryRepository {
       quantity: plain.quantity,
       unit: plain.unit,
       batchNumber: plain.batchNumber,
-      lotNumber: plain.lotNumber,
+      lotNumber: plain.batchNumber,
       expirationDate: plain.expirationDate,
-      receivedDate: plain.receivedDate,
-      location: plain.location,
+      receivedDate: plain.createdAt,
+      location: plain.supplier,
       reorderLevel: plain.reorderLevel,
-      reorderQuantity: plain.reorderQuantity,
-      vendorId: plain.vendorId,
-      cost: plain.cost,
-      notes: plain.notes,
-      isActive: plain.isActive,
+      reorderQuantity: plain.reorderLevel,
+      vendorId: plain.supplier,
+      cost: plain.costPerUnit,
+      notes: '',
+      isActive: true,
       createdAt: plain.createdAt,
       updatedAt: plain.updatedAt
     };

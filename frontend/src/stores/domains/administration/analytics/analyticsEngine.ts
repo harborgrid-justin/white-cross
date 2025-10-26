@@ -226,9 +226,9 @@ export const calculateHealthMetrics = createSelector(
       if (!i.expirationDate) return false;
       return new Date(i.expirationDate) <= new Date();
     }).length;
-    const totalValue = inventoryData.reduce((sum: number, item: any) => 
-      sum + (item.quantity * item.cost), 0
-    );
+    const totalValue = inventoryData.reduce((sum: number, item: any) =>
+      sum + ((item.quantity ?? 0) * (item.cost ?? 0)), 0
+    ) as number;
 
     const inventoryStatus: InventoryHealth = {
       totalItems: inventoryData.length,
@@ -248,11 +248,11 @@ export const calculateHealthMetrics = createSelector(
     });
 
     const nurseWorkload: WorkloadMetrics = {
-      averageAppointmentsPerDay: nurses.length > 0 
+      averageAppointmentsPerDay: nurses.length > 0
         ? Math.round(todaysAppointments.length / nurses.length)
         : 0,
       averageAppointmentDuration: appointmentsData.length > 0
-        ? Math.round(appointmentsData.reduce((sum: number, apt: any) => sum + apt.duration, 0) / appointmentsData.length)
+        ? Math.round((appointmentsData.reduce((sum: number, apt: any) => sum + (apt.duration ?? 0), 0) as number) / appointmentsData.length)
         : 0,
       nurseUtilization: 75, // Placeholder - would be calculated from actual scheduling data
       overtimeHours: 0, // Placeholder
@@ -312,20 +312,20 @@ export const assessStudentRisks = createAsyncThunk<
     const riskFactors: RiskFactor[] = [];
 
     // TODO: Fix type casting when store types are resolved
-    const studentsData = Object.values((state as any).students.entities).filter(Boolean);
-    const targetStudents = studentIds 
+    const studentsData = Object.values((state as any).students.entities).filter(Boolean) as any[];
+    const targetStudents = studentIds
       ? studentsData.filter((s: any) => studentIds.includes(s.id))
       : studentsData;
 
     for (const student of targetStudents) {
       // Medication interaction risks
-      const activeMedications = student.medications?.filter((m: any) => m.isActive) || [];
+      const activeMedications = (student as any).medications?.filter((m: any) => m.isActive) || [];
       if (activeMedications.length >= 2) {
         const interactionRisk = calculateDrugInteractionRisk(activeMedications);
         if (interactionRisk.probability > 0.3) {
           riskFactors.push({
             type: 'MEDICATION_INTERACTION',
-            studentId: student.id,
+            studentId: (student as any).id,
             probability: interactionRisk.probability,
             severity: interactionRisk.severity,
             description: `Potential drug interactions between ${interactionRisk.medications.join(', ')}`,
@@ -339,14 +339,14 @@ export const assessStudentRisks = createAsyncThunk<
       }
 
       // Allergy exposure risks
-      const severeAllergies = student.allergies?.filter((a: any) => 
+      const severeAllergies = (student as any).allergies?.filter((a: any) =>
         a.severity === 'SEVERE' || a.severity === 'LIFE_THREATENING'
       ) || [];
-      
+
       if (severeAllergies.length > 0) {
         riskFactors.push({
           type: 'ALLERGY_EXPOSURE',
-          studentId: student.id,
+          studentId: (student as any).id,
           probability: 0.2 + (severeAllergies.length * 0.1),
           severity: severeAllergies.some((a: any) => a.severity === 'LIFE_THREATENING') ? 'CRITICAL' : 'HIGH',
           description: `Severe allergies: ${severeAllergies.map((a: any) => a.allergen).join(', ')}`,
@@ -359,15 +359,15 @@ export const assessStudentRisks = createAsyncThunk<
       }
 
       // Behavioral pattern risks
-      const behavioralIncidents = student.incidentReports?.filter((i: any) => 
-        i.incidentType === 'BEHAVIORAL' && 
+      const behavioralIncidents = (student as any).incidentReports?.filter((i: any) =>
+        i.incidentType === 'BEHAVIORAL' &&
         new Date(i.occurredAt) >= new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days
       ) || [];
 
       if (behavioralIncidents.length >= 3) {
         riskFactors.push({
           type: 'BEHAVIORAL_PATTERN',
-          studentId: student.id,
+          studentId: (student as any).id,
           probability: Math.min(0.8, 0.2 + (behavioralIncidents.length * 0.1)),
           severity: behavioralIncidents.length >= 5 ? 'HIGH' : 'MEDIUM',
           description: `Pattern of behavioral incidents: ${behavioralIncidents.length} in last 90 days`,
@@ -381,8 +381,8 @@ export const assessStudentRisks = createAsyncThunk<
       }
 
       // Chronic condition risks
-      const chronicConditions = student.chronicConditions?.filter((c: any) => c.active) || [];
-      const highRiskConditions = chronicConditions.filter((c: any) => 
+      const chronicConditions = (student as any).chronicConditions?.filter((c: any) => c.active) || [];
+      const highRiskConditions = chronicConditions.filter((c: any) =>
         ['diabetes', 'epilepsy', 'severe asthma', 'heart condition'].some(condition =>
           c.conditionName.toLowerCase().includes(condition)
         )
@@ -391,7 +391,7 @@ export const assessStudentRisks = createAsyncThunk<
       if (highRiskConditions.length > 0) {
         riskFactors.push({
           type: 'CHRONIC_CONDITION',
-          studentId: student.id,
+          studentId: (student as any).id,
           probability: 0.3 + (highRiskConditions.length * 0.2),
           severity: 'HIGH',
           description: `High-risk chronic conditions: ${highRiskConditions.map((c: any) => c.conditionName).join(', ')}`,

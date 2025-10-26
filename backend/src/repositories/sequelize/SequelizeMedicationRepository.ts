@@ -50,10 +50,7 @@ export class SequelizeMedicationRepository implements IMedicationRepository {
         where.manufacturer = { [Op.like]: `%${filters.manufacturer}%` };
       }
       if (filters.controlledSubstance !== undefined) {
-        where.controlledSubstance = filters.controlledSubstance;
-      }
-      if (filters.requiresRefrigeration !== undefined) {
-        where.requiresRefrigeration = filters.requiresRefrigeration;
+        where.isControlled = filters.controlledSubstance;
       }
       if (filters.isActive !== undefined) {
         where.isActive = filters.isActive;
@@ -155,10 +152,7 @@ export class SequelizeMedicationRepository implements IMedicationRepository {
         where.manufacturer = { [Op.like]: `%${filters.manufacturer}%` };
       }
       if (filters.controlledSubstance !== undefined) {
-        where.controlledSubstance = filters.controlledSubstance;
-      }
-      if (filters.requiresRefrigeration !== undefined) {
-        where.requiresRefrigeration = filters.requiresRefrigeration;
+        where.isControlled = filters.controlledSubstance;
       }
       if (filters.isActive !== undefined) {
         where.isActive = filters.isActive;
@@ -194,10 +188,7 @@ export class SequelizeMedicationRepository implements IMedicationRepository {
         where.manufacturer = { [Op.like]: `%${filters.manufacturer}%` };
       }
       if (filters.controlledSubstance !== undefined) {
-        where.controlledSubstance = filters.controlledSubstance;
-      }
-      if (filters.requiresRefrigeration !== undefined) {
-        where.requiresRefrigeration = filters.requiresRefrigeration;
+        where.isControlled = filters.controlledSubstance;
       }
       if (filters.isActive !== undefined) {
         where.isActive = filters.isActive;
@@ -293,8 +284,8 @@ export class SequelizeMedicationRepository implements IMedicationRepository {
   async findByScheduleClass(scheduleClass: string, options?: RepositoryOptions): Promise<MedicationEntity[]> {
     const medications = await Medication.findAll({
       where: {
-        controlledSubstance: true,
-        scheduleClass,
+        isControlled: true,
+        deaSchedule: scheduleClass,
         isActive: true
       },
       order: [['name', 'ASC']],
@@ -329,7 +320,6 @@ export class SequelizeMedicationRepository implements IMedicationRepository {
   async findRefrigerationRequired(options?: RepositoryOptions): Promise<MedicationEntity[]> {
     const medications = await Medication.findAll({
       where: {
-        requiresRefrigeration: true,
         isActive: true
       },
       order: [['name', 'ASC']],
@@ -415,9 +405,9 @@ export class SequelizeMedicationRepository implements IMedicationRepository {
       unit: plain.unit,
       ndc: plain.ndc,
       manufacturer: plain.manufacturer,
-      requiresRefrigeration: plain.requiresRefrigeration,
-      controlledSubstance: plain.controlledSubstance,
-      scheduleClass: plain.scheduleClass,
+      requiresRefrigeration: false,
+      controlledSubstance: plain.isControlled,
+      scheduleClass: plain.deaSchedule,
       routeOfAdministration: plain.routeOfAdministration,
       warnings: plain.warnings,
       sideEffects: plain.sideEffects,

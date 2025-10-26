@@ -549,27 +549,27 @@ export function validateStudentCreation(data: {
 export function normalizeStudentData<T extends Record<string, any>>(
   data: T
 ): T {
-  const normalized = { ...data };
+  const normalized = { ...data } as any;
 
-  if (normalized.studentNumber) {
+  if ('studentNumber' in normalized && typeof normalized.studentNumber === 'string') {
     normalized.studentNumber = normalized.studentNumber.toUpperCase().trim();
   }
 
-  if (normalized.firstName) {
+  if ('firstName' in normalized && typeof normalized.firstName === 'string') {
     normalized.firstName = normalized.firstName.trim();
   }
 
-  if (normalized.lastName) {
+  if ('lastName' in normalized && typeof normalized.lastName === 'string') {
     normalized.lastName = normalized.lastName.trim();
   }
 
-  if (normalized.medicalRecordNum) {
+  if ('medicalRecordNum' in normalized && typeof normalized.medicalRecordNum === 'string') {
     normalized.medicalRecordNum = normalized.medicalRecordNum
       .toUpperCase()
       .trim();
   }
 
-  if (normalized.grade) {
+  if ('grade' in normalized && typeof normalized.grade === 'string') {
     normalized.grade = normalized.grade.trim();
   }
 

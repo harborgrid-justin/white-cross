@@ -547,7 +547,7 @@ export class CorsMiddleware implements IMiddleware {
   /**
    * Validate origin against allowed origins
    */
-  private async validateOrigin(origin: string | null, request: IRequest): boolean {
+  private async validateOrigin(origin: string | null, request: IRequest): Promise<boolean> {
     // No origin header (same-origin request)
     if (!origin) {
       return true;

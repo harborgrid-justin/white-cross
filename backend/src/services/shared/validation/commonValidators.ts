@@ -3,6 +3,7 @@
  */
 
 import { ValidationResult, ValidationError } from '../types/common';
+import { ValidationErrorCode } from '../../../types/validation';
 
 /**
  * Validate UUID format
@@ -14,13 +15,13 @@ export function validateUUID(value: string, fieldName: string = 'ID'): Validatio
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: 'REQUIRED'
+      code: ValidationErrorCode.REQUIRED
     });
   } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
     errors.push({
       field: fieldName,
       message: `${fieldName} must be a valid UUID format`,
-      code: 'INVALID_FORMAT',
+      code: ValidationErrorCode.INVALID_FORMAT,
       value
     });
   }
@@ -48,7 +49,7 @@ export function validateRequiredFields(
       errors.push({
         field,
         message: `${field} is required`,
-        code: 'REQUIRED'
+        code: ValidationErrorCode.REQUIRED
       });
     }
   }
@@ -70,7 +71,7 @@ export function validateEmail(email: string, fieldName: string = 'email'): Valid
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: 'REQUIRED'
+      code: ValidationErrorCode.REQUIRED
     });
   } else {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -78,7 +79,7 @@ export function validateEmail(email: string, fieldName: string = 'email'): Valid
       errors.push({
         field: fieldName,
         message: `${fieldName} must be a valid email address`,
-        code: 'INVALID_FORMAT',
+        code: ValidationErrorCode.INVALID_FORMAT,
         value: email
       });
     }
@@ -102,7 +103,7 @@ export function validatePhoneNumber(phone: string, fieldName: string = 'phone'):
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: 'REQUIRED'
+      code: ValidationErrorCode.REQUIRED
     });
   } else {
     // Remove all non-digit characters for validation
@@ -112,14 +113,14 @@ export function validatePhoneNumber(phone: string, fieldName: string = 'phone'):
       errors.push({
         field: fieldName,
         message: `${fieldName} must contain at least 10 digits`,
-        code: 'TOO_SHORT',
+        code: ValidationErrorCode.TOO_SHORT,
         value: phone
       });
     } else if (digitsOnly.length > 15) {
       errors.push({
         field: fieldName,
         message: `${fieldName} cannot contain more than 15 digits`,
-        code: 'TOO_LONG',
+        code: ValidationErrorCode.TOO_LONG,
         value: phone
       });
     }
@@ -129,7 +130,7 @@ export function validatePhoneNumber(phone: string, fieldName: string = 'phone'):
       warnings.push({
         field: fieldName,
         message: `${fieldName} contains unusual characters`,
-        code: 'UNUSUAL_FORMAT',
+        code: ValidationErrorCode.UNUSUAL_FORMAT,
         value: phone
       });
     }
@@ -158,7 +159,7 @@ export function validateStringLength(
       errors.push({
         field: fieldName,
         message: `${fieldName} is required`,
-        code: 'REQUIRED'
+        code: ValidationErrorCode.REQUIRED
       });
     }
   } else {
@@ -166,7 +167,7 @@ export function validateStringLength(
       errors.push({
         field: fieldName,
         message: `${fieldName} must be at least ${min} characters long`,
-        code: 'TOO_SHORT',
+        code: ValidationErrorCode.TOO_SHORT,
         value: value.length
       });
     }
@@ -175,7 +176,7 @@ export function validateStringLength(
       errors.push({
         field: fieldName,
         message: `${fieldName} cannot exceed ${max} characters`,
-        code: 'TOO_LONG',
+        code: ValidationErrorCode.TOO_LONG,
         value: value.length
       });
     }
@@ -203,14 +204,14 @@ export function validateNumericRange(
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: 'REQUIRED'
+      code: ValidationErrorCode.REQUIRED
     });
   } else {
     if (typeof value !== 'number' || isNaN(value)) {
       errors.push({
         field: fieldName,
         message: `${fieldName} must be a valid number`,
-        code: 'INVALID_TYPE',
+        code: ValidationErrorCode.INVALID_TYPE,
         value
       });
     } else {
@@ -218,7 +219,7 @@ export function validateNumericRange(
         errors.push({
           field: fieldName,
           message: `${fieldName} must be an integer`,
-          code: 'NOT_INTEGER',
+          code: ValidationErrorCode.NOT_INTEGER,
           value
         });
       }
@@ -227,7 +228,7 @@ export function validateNumericRange(
         errors.push({
           field: fieldName,
           message: `${fieldName} must be at least ${min}`,
-          code: 'TOO_SMALL',
+          code: ValidationErrorCode.TOO_SMALL,
           value
         });
       }
@@ -236,7 +237,7 @@ export function validateNumericRange(
         errors.push({
           field: fieldName,
           message: `${fieldName} cannot exceed ${max}`,
-          code: 'TOO_LARGE',
+          code: ValidationErrorCode.TOO_LARGE,
           value
         });
       }
@@ -264,13 +265,13 @@ export function validateEnum<T extends string>(
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: 'REQUIRED'
+      code: ValidationErrorCode.REQUIRED
     });
   } else if (!allowedValues.includes(value)) {
     errors.push({
       field: fieldName,
       message: `${fieldName} must be one of: ${allowedValues.join(', ')}`,
-      code: 'INVALID_VALUE',
+      code: ValidationErrorCode.INVALID_VALUE,
       value
     });
   }
@@ -303,7 +304,7 @@ export function validateArray(
     errors.push({
       field: fieldName,
       message: `${fieldName} must be an array`,
-      code: 'INVALID_TYPE',
+      code: ValidationErrorCode.INVALID_TYPE,
       value
     });
     return { isValid: false, errors, warnings };
@@ -313,7 +314,7 @@ export function validateArray(
     errors.push({
       field: fieldName,
       message: `${fieldName} must contain at least ${minLength} items`,
-      code: 'TOO_SHORT',
+      code: ValidationErrorCode.TOO_SHORT,
       value: value.length
     });
   }
@@ -322,7 +323,7 @@ export function validateArray(
     errors.push({
       field: fieldName,
       message: `${fieldName} cannot contain more than ${maxLength} items`,
-      code: 'TOO_LONG',
+      code: ValidationErrorCode.TOO_LONG,
       value: value.length
     });
   }
@@ -333,7 +334,7 @@ export function validateArray(
       warnings.push({
         field: fieldName,
         message: `${fieldName} contains duplicate items`,
-        code: 'DUPLICATE_ITEMS'
+        code: ValidationErrorCode.DUPLICATE_ITEMS
       });
     }
   }

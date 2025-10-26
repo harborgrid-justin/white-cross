@@ -9,9 +9,16 @@ import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
   createdResponse,
-  paginatedResponse
+  paginatedResponse,
+  createPayloadWithFields,
+  extractPayload
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta, buildFilters } from '../../../shared/utils';
+import {
+  SignDocumentPayload,
+  ShareDocumentPayload,
+  BulkDeleteDocumentsPayload
+} from '../../../shared/types/payloadTypes';
 
 export class DocumentsController {
   /**
@@ -62,10 +69,23 @@ export class DocumentsController {
    */
   static async createDocument(request: AuthenticatedRequest, h: ResponseToolkit) {
     const uploadedBy = request.auth.credentials.userId as string;
+    const payload = request.payload as any;
 
-    const documentData = {
-      ...request.payload,
-      uploadedBy
+    // Extract and type the data according to CreateDocumentData interface
+    const documentData: import('../../../../services/document/types').CreateDocumentData = {
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      fileType: payload.fileType,
+      fileName: payload.fileName,
+      fileSize: payload.fileSize,
+      fileUrl: payload.fileUrl,
+      uploadedBy: uploadedBy,
+      studentId: payload.studentId,
+      tags: payload.tags,
+      isTemplate: payload.isTemplate,
+      templateData: payload.templateData,
+      accessLevel: payload.accessLevel
     };
 
     const document = await DocumentService.createDocument(documentData);
@@ -79,8 +99,19 @@ export class DocumentsController {
   static async updateDocument(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const updatedBy = request.auth.credentials.userId as string;
+    const payload = request.payload as any;
 
-    const document = await DocumentService.updateDocument(id, request.payload, updatedBy);
+    // Extract and type the data according to UpdateDocumentData interface
+    const documentData: import('../../../../services/document/types').UpdateDocumentData = {
+      title: payload.title,
+      description: payload.description,
+      status: payload.status,
+      tags: payload.tags,
+      retentionDate: payload.retentionDate ? new Date(payload.retentionDate) : undefined,
+      accessLevel: payload.accessLevel
+    };
+
+    const document = await DocumentService.updateDocument(id, documentData, updatedBy);
 
     return successResponse(h, { document });
   }
@@ -141,14 +172,15 @@ export class DocumentsController {
   static async signDocument(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const signedBy = request.auth.credentials.userId as string;
-    const signedByRole = request.payload.signedByRole || request.auth.credentials.role;
+    const payload = request.payload as any;
+    const signedByRole = payload.signedByRole || request.auth.credentials.role;
     const ipAddress = request.info.remoteAddress;
 
     const signatureData = {
       documentId: id,
       signedBy,
       signedByRole,
-      signatureData: request.payload.signatureData,
+      signatureData: payload.signatureData,
       ipAddress
     };
 
@@ -187,10 +219,23 @@ export class DocumentsController {
   static async createDocumentVersion(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const uploadedBy = request.auth.credentials.userId as string;
+    const payload = request.payload as any;
 
-    const versionData = {
-      ...request.payload,
-      uploadedBy
+    // Extract and type the data according to CreateDocumentData interface
+    const versionData: import('../../../../services/document/types').CreateDocumentData = {
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      fileType: payload.fileType,
+      fileName: payload.fileName,
+      fileSize: payload.fileSize,
+      fileUrl: payload.fileUrl,
+      uploadedBy: uploadedBy,
+      studentId: payload.studentId,
+      tags: payload.tags,
+      isTemplate: payload.isTemplate,
+      templateData: payload.templateData,
+      accessLevel: payload.accessLevel
     };
 
     const document = await DocumentService.createDocumentVersion(id, versionData);
@@ -208,7 +253,8 @@ export class DocumentsController {
   static async shareDocument(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
     const sharedBy = request.auth.credentials.userId as string;
-    const { sharedWith } = request.payload;
+    const payload = request.payload as any;
+    const sharedWith = payload.sharedWith;
 
     const result = await DocumentService.shareDocument(id, sharedBy, sharedWith);
 
@@ -238,10 +284,14 @@ export class DocumentsController {
   static async createFromTemplate(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { templateId } = request.params;
     const uploadedBy = request.auth.credentials.userId as string;
+    const payload = request.payload as any;
 
-    const documentData = {
-      ...request.payload,
-      uploadedBy
+    // Extract and type the data according to CreateFromTemplateData interface
+    const documentData: import('../../../../services/document/types').CreateFromTemplateData = {
+      title: payload.title,
+      uploadedBy: uploadedBy,
+      studentId: payload.studentId,
+      templateData: payload.templateData
     };
 
     const document = await DocumentService.createFromTemplate(templateId, documentData);
@@ -340,7 +390,8 @@ export class DocumentsController {
    * Bulk delete documents
    */
   static async bulkDeleteDocuments(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const { documentIds } = request.payload;
+    const payload = request.payload as any;
+    const documentIds = payload.documentIds;
     const deletedBy = request.auth.credentials.userId as string;
 
     const result = await DocumentService.bulkDeleteDocuments(documentIds, deletedBy);

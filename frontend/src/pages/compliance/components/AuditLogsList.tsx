@@ -13,7 +13,7 @@ const AuditLogsList: React.FC = () => {
   const loading = useAppSelector(state => selectLoading(state).auditLogs);
 
   useEffect(() => {
-    dispatch(fetchAuditLogs());
+    dispatch(fetchAuditLogs(undefined));
   }, [dispatch]);
 
   if (loading && logs.length === 0) {

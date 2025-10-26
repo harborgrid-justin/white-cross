@@ -128,12 +128,12 @@ import { AppointmentValidation } from './validation';
 import { AppointmentStatusTransitions } from './statusTransitions';
 
 // Import shared time utilities
-import { 
-  isWithinBusinessHours, 
-  calculateTimeSlots, 
-  getNextBusinessDay, 
-  formatAppointmentTime 
-} from '../shared/time/businessHours';
+import {
+  isWithinBusinessHours,
+  calculateTimeSlots,
+  getNextBusinessDay,
+  formatAppointmentTime
+} from '../../shared/time/businessHours';
 
 /**
  * AppointmentService - Facade for comprehensive appointment management

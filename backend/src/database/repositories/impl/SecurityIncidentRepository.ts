@@ -10,7 +10,7 @@ import {
   CreateSecurityIncidentDTO,
   UpdateSecurityIncidentDTO
 } from '../interfaces/ISecurityIncidentRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class SecurityIncidentRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(SecurityIncident, auditLogger, cacheManager, 'SecurityIncident');
   }
+  /**
+   * Invalidate SecurityIncident-related caches
+   */
+  protected async invalidateCaches(entity: SecurityIncident): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:securityincident:*`);
+    } catch (error) {
+      logger.warn('Error invalidating SecurityIncident caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize SecurityIncident data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

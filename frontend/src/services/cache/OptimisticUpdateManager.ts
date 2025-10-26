@@ -45,10 +45,11 @@ import { QueryClient } from '@tanstack/react-query';
 import type {
   OptimisticUpdateContext,
   ConflictDetection,
-  ConflictStrategy,
   MergeResult,
   QueuedMutation
 } from './types';
+import { ConflictStrategy } from './types';
+import { QueryKeyFactory } from './QueryKeyFactory';
 
 /**
  * Optimistic Update Manager Implementation
@@ -115,7 +116,7 @@ export class OptimisticUpdateManager {
 
     // Set optimistic data in React Query
     this.queryClient.setQueryData(
-      context.queryKey as unknown[],
+      QueryKeyFactory.fromString(context.queryKey),
       context.optimisticData
     );
 
@@ -165,16 +166,16 @@ export class OptimisticUpdateManager {
 
       if (mergeResult.success && mergeResult.data) {
         this.queryClient.setQueryData(
-          context.queryKey as unknown[],
+          QueryKeyFactory.fromString(context.queryKey),
           mergeResult.data
         );
       } else {
         // Merge failed, use server data
-        this.queryClient.setQueryData(context.queryKey as unknown[], serverData);
+        this.queryClient.setQueryData(QueryKeyFactory.fromString(context.queryKey), serverData);
       }
     } else {
       // No conflict, use server data
-      this.queryClient.setQueryData(context.queryKey as unknown[], serverData);
+      this.queryClient.setQueryData(QueryKeyFactory.fromString(context.queryKey), serverData);
     }
 
     // Clean up context
@@ -203,7 +204,7 @@ export class OptimisticUpdateManager {
 
     // Restore previous data
     this.queryClient.setQueryData(
-      context.queryKey as unknown[],
+      QueryKeyFactory.fromString(context.queryKey),
       context.previousData
     );
 

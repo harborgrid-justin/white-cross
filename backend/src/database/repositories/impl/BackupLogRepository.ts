@@ -10,7 +10,7 @@ import {
   CreateBackupLogDTO,
   UpdateBackupLogDTO
 } from '../interfaces/IBackupLogRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,17 @@ export class BackupLogRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(BackupLog, auditLogger, cacheManager, 'BackupLog');
+  }
+
+  protected async invalidateCaches(entity: BackupLog): Promise<void> {
+    try {
+      await this.cacheManager.deletePattern(`white-cross:backuplog:*`);
+    } catch (error) {
+      logger.warn('Error invalidating backup log caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

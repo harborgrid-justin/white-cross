@@ -947,3 +947,27 @@ export const deactivateStudentMedicationSchema = Joi.object({
       'any.required': 'Deactivation type is required',
     }),
 });
+
+/**
+ * Schema for deactivating medication (from formulary)
+ */
+export const deactivateMedicationSchema = Joi.object({
+  reason: Joi.string()
+    .trim()
+    .min(10)
+    .max(500)
+    .required()
+    .messages({
+      'string.min': 'Deactivation reason must be at least 10 characters',
+      'string.max': 'Deactivation reason cannot exceed 500 characters',
+      'any.required': 'Reason is required for audit trail',
+    }),
+
+  deactivationType: Joi.string()
+    .valid('COMPLETED', 'DISCONTINUED', 'CHANGED', 'ADVERSE_REACTION', 'PATIENT_REQUEST', 'PHYSICIAN_ORDER', 'OTHER')
+    .required()
+    .messages({
+      'any.only': 'Deactivation type must be valid (COMPLETED, DISCONTINUED, CHANGED, ADVERSE_REACTION, PATIENT_REQUEST, PHYSICIAN_ORDER, OTHER)',
+      'any.required': 'Deactivation type is required',
+    }),
+});

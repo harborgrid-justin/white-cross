@@ -96,6 +96,13 @@ export class MedicationService {
   }
 
   /**
+   * Activate medication
+   */
+  static async activateMedication(id: string) {
+    return MedicationCrudService.activateMedication(id);
+  }
+
+  /**
    * Get medication form options
    */
   static async getMedicationFormOptions() {

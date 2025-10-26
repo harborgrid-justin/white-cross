@@ -119,7 +119,7 @@ export class HealthAssessmentsController {
    * @param {ResponseToolkit} h - Hapi.js response toolkit
    *
    * @returns {Promise<ResponseObject>} Health risk assessment with detailed breakdown
-   * @returns {200} Success - { success: true, data: { totalScore, breakdown, recommendations } }
+   * @returns {200} Success - { success: true, data: { overallScore, breakdown, recommendations } }
    *
    * @throws {NotFoundError} When student ID does not exist
    * @throws {UnauthorizedError} When JWT token is missing or invalid
@@ -137,7 +137,7 @@ export class HealthAssessmentsController {
    * const request = { params: { studentId: '660e8400-e29b-41d4-a716-446655440000' } };
    * const response = await HealthAssessmentsController.getHealthRisk(request, h);
    * // Returns: {
-   * //   totalScore: 67,
+   * //   overallScore: 67,
    * //   riskLevel: "HIGH",
    * //   breakdown: {
    * //     chronicConditions: 30,
@@ -155,11 +155,11 @@ export class HealthAssessmentsController {
     const userId = request.auth.credentials.userId;
 
     const assessment = await HealthRiskAssessmentService.calculateRiskScore(studentId);
-    
-    logger.info('Health risk assessment calculated', { 
-      studentId, 
-      riskScore: assessment.totalScore || assessment.score,
-      userId 
+
+    logger.info('Health risk assessment calculated', {
+      studentId,
+      riskScore: assessment.overallScore,
+      userId
     });
 
     return successResponse(h, assessment);

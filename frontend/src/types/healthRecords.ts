@@ -453,6 +453,7 @@ export interface FormErrors {
 
 export interface AllergyFormErrors {
   allergen?: string
+  allergyType?: string
   severity?: string
   reaction?: string
   treatment?: string

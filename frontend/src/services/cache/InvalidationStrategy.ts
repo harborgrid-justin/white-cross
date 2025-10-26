@@ -629,7 +629,7 @@ export class InvalidationStrategy {
         await this.queryClient.invalidateQueries({
           predicate: (query) => {
             const key = QueryKeyFactory.toString(query.queryKey as unknown[]);
-            return target.queryKey.test(key);
+            return (target.queryKey as RegExp).test(key);
           },
           refetchType: target.refetch ? 'active' : 'none'
         });
@@ -687,7 +687,7 @@ export function resetInvalidationStrategy(): void {
  * Helper: Create Student Update Operation
  */
 export function createStudentUpdateOperation(
-  operationType: string,
+  operationType: 'create' | 'update' | 'delete' | 'bulk',
   studentId: string | number,
   previousValues: Record<string, unknown>,
   newValues: Record<string, unknown>

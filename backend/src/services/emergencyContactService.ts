@@ -714,4 +714,31 @@ export class EmergencyContactService {
       success: true
     };
   }
+
+  /**
+   * Get emergency contact by ID
+   */
+  static async getEmergencyContactById(id: string) {
+    try {
+      const contact = await EmergencyContact.findByPk(id, {
+        include: [
+          {
+            model: Student,
+            as: 'student',
+            attributes: ['id', 'firstName', 'lastName', 'dateOfBirth']
+          }
+        ]
+      });
+
+      if (!contact) {
+        throw new NotFoundError(`Emergency contact with ID ${id} not found`);
+      }
+
+      logger.info(`Retrieved emergency contact: ${id}`);
+      return contact;
+    } catch (error) {
+      logger.error(`Error getting emergency contact by ID ${id}:`, error);
+      throw error;
+    }
+  }
 }

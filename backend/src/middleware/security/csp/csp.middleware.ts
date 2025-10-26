@@ -490,7 +490,7 @@ export class CspMiddleware implements IMiddleware {
         this.metrics.healthcareViolations++;
       }
 
-      res.setStatus(204).send();
+      res.setStatus(204).end();
     } catch (error) {
       console.error('[CSP-VIOLATION-REPORT-ERROR]', error);
       res.setStatus(400).json({ error: 'Invalid violation report' });

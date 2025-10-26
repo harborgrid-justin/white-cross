@@ -10,7 +10,7 @@ import {
   CreateWitnessStatementDTO,
   UpdateWitnessStatementDTO
 } from '../interfaces/IWitnessStatementRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class WitnessStatementRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(WitnessStatement, auditLogger, cacheManager, 'WitnessStatement');
   }
+  /**
+   * Invalidate WitnessStatement-related caches
+   */
+  protected async invalidateCaches(entity: WitnessStatement): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:witnessstatement:*`);
+    } catch (error) {
+      logger.warn('Error invalidating WitnessStatement caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize WitnessStatement data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

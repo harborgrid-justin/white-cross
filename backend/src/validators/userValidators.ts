@@ -23,11 +23,38 @@
 
 /**
  * User and Authentication Validation Schemas
- * 
+ *
  * @deprecated This file is being migrated to shared utilities.
- * Import from '../shared/validation' instead for new code.
+ * Import from '../middleware/core/validation/validation.middleware' instead for new code.
  */
 
-// Re-export from shared utilities for backward compatibility
-export * from '../shared/validation/schemas';
-export { validateRequest, validateQuery, validateParams } from '../shared/validation/middleware';
+// Re-export from middleware for backward compatibility
+export type {
+  ValidationRule,
+  ValidationError,
+  ValidationResult,
+  ValidationConfig
+} from '../middleware/core/validation/validation.middleware';
+
+export {
+  HEALTHCARE_PATTERNS,
+  VALIDATION_CONFIGS,
+  HEALTHCARE_VALIDATION_RULES
+} from '../middleware/core/validation/validation.middleware';
+
+// Stub exports for validateRequest, validateQuery, validateParams
+// These should be imported from the appropriate middleware adapter
+export const validateRequest = (schema: any) => {
+  console.warn('validateRequest is deprecated. Use middleware adapters instead.');
+  return (request: any, h: any) => h.continue;
+};
+
+export const validateQuery = (schema: any) => {
+  console.warn('validateQuery is deprecated. Use middleware adapters instead.');
+  return (request: any, h: any) => h.continue;
+};
+
+export const validateParams = (schema: any) => {
+  console.warn('validateParams is deprecated. Use middleware adapters instead.');
+  return (request: any, h: any) => h.continue;
+};

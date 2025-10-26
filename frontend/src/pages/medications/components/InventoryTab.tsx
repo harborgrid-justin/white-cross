@@ -11,10 +11,10 @@
  */
 
 import { Package } from 'lucide-react'
-import { AlertBanner, LoadingSpinner, EmptyState } from '../../../'
-import { useMedicationsData } from '../../../../hooks/domains/medications'
-import { getExpirationStatus, getStockStatus, formatDate } from '../../../../utils/medications'
-import type { MedicationInventory } from '../../../../types/api'
+import { AlertBanner, LoadingSpinner, EmptyState } from '@/components'
+import { useMedicationsData } from '@/hooks/domains/medications'
+import { getExpirationStatus, getStockStatus, formatDate } from '@/utils/medications'
+import type { MedicationInventory } from '@/types/api'
 
 interface InventoryTabProps {
   onInventoryItemSelect?: (item: MedicationInventory) => void

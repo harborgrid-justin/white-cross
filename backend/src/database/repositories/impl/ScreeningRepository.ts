@@ -10,7 +10,7 @@ import {
   CreateScreeningDTO,
   UpdateScreeningDTO
 } from '../interfaces/IScreeningRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -21,4 +21,26 @@ export class ScreeningRepository
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(Screening, auditLogger, cacheManager, 'Screening');
   }
+  /**
+   * Invalidate Screening-related caches
+   */
+  protected async invalidateCaches(entity: Screening): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, data.id)
+      );
+      await this.cacheManager.deletePattern(`white-cross:screening:*`);
+    } catch (error) {
+      logger.warn('Error invalidating Screening caches:', error);
+    }
+  }
+
+  /**
+   * Sanitize Screening data for audit logging
+   */
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
+  }
+
 }

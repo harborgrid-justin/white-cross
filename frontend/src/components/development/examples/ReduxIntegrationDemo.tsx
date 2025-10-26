@@ -41,9 +41,9 @@ export default function ReduxIntegrationDemo() {
   const mockInventory = { lowStock: [], expired: [] };
 
   // Loading states from different slices
-  const studentsLoading = useAppSelector(state => state.students.loading.list.isLoading);
-  const medicationsLoading = useAppSelector(state => state.medications.loading.list.isLoading);
-  const inventoryLoading = useAppSelector(state => state.inventory.loading.list.isLoading);
+  const studentsLoading = useAppSelector(state => (state.students as any)?.loading?.list?.isLoading ?? false);
+  const medicationsLoading = useAppSelector(state => (state.medications as any)?.loading?.list?.isLoading ?? false);
+  const inventoryLoading = useAppSelector(state => (state.inventory as any)?.loading?.list?.isLoading ?? false);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">

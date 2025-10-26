@@ -10,7 +10,7 @@ import {
   CreateDocumentSignatureDTO,
   UpdateDocumentSignatureDTO
 } from '../interfaces/IDocumentSignatureRepository';
-import { IAuditLogger } from '../../audit/IAuditLogger';
+import { IAuditLogger, sanitizeSensitiveData } from '../../audit/IAuditLogger';
 import { ICacheManager } from '../../cache/ICacheManager';
 import { logger } from '../../../utils/logger';
 
@@ -20,5 +20,20 @@ export class DocumentSignatureRepository
 {
   constructor(auditLogger: IAuditLogger, cacheManager: ICacheManager) {
     super(DocumentSignature, auditLogger, cacheManager, 'DocumentSignature');
+  }
+
+  protected async invalidateCaches(entity: DocumentSignature): Promise<void> {
+    try {
+      const data = entity.get();
+      await this.cacheManager.deletePattern(
+        `white-cross:documentsignature:document:${data.documentId}:*`
+      );
+    } catch (error) {
+      logger.warn('Error invalidating document signature caches:', error);
+    }
+  }
+
+  protected sanitizeForAudit(data: any): any {
+    return sanitizeSensitiveData(data);
   }
 }

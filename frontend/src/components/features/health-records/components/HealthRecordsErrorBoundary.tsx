@@ -27,12 +27,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Shield, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { healthRecordKeys } from '../../../../hooks/domains/health';
-import {
-  HealthRecordsApiError,
-  CircuitBreakerError,
-  UnauthorizedError,
-  ForbiddenError,
-} from '../../../../services/modules/healthRecordsApi';
+import { ApiError } from '../../../../services/core/errors';
 
 interface Props {
   children: ReactNode;
@@ -56,13 +51,14 @@ export class HealthRecordsErrorBoundary extends Component<Props, State> {
   public static getDerivedStateFromError(error: Error): State {
     let errorType: State['errorType'] = 'unknown';
 
-    if (error instanceof UnauthorizedError) {
+    // Check error based on status code or error name
+    if (error.name === 'UnauthorizedError' || (error as any).statusCode === 401) {
       errorType = 'auth';
-    } else if (error instanceof CircuitBreakerError) {
+    } else if (error.name === 'CircuitBreakerError' || error.message?.includes('circuit')) {
       errorType = 'circuit-breaker';
-    } else if (error instanceof ForbiddenError) {
+    } else if (error.name === 'ForbiddenError' || (error as any).statusCode === 403) {
       errorType = 'forbidden';
-    } else if (error instanceof HealthRecordsApiError) {
+    } else if (error instanceof ApiError) {
       errorType = 'api';
     }
 
@@ -218,7 +214,7 @@ export class HealthRecordsErrorBoundary extends Component<Props, State> {
           borderColor: 'border-red-200',
           title: 'Error Loading Health Records',
           message:
-            error instanceof HealthRecordsApiError
+            error instanceof ApiError
               ? error.message
               : 'An error occurred while loading health records. Please try again.',
           actions: (

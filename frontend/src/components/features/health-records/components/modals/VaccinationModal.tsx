@@ -84,7 +84,7 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
               type="date" 
               name="dateAdministered"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              defaultValue={vaccination?.administeredDate || ''}
+              defaultValue={vaccination?.administrationDate || ''}
               data-testid="vaccination-date-input"
             />
             {errors.dateAdministered && (

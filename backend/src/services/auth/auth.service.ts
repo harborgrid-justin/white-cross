@@ -20,8 +20,9 @@
 
 import { User } from '../../database/models';
 import { AuditLogService } from '../audit/auditLogService';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { UserRole } from '../../database/types/enums';
 
 /**
  * @interface UserRegistrationData
@@ -32,7 +33,7 @@ export interface UserRegistrationData {
   password: string;
   firstName: string;
   lastName: string;
-  role?: string;
+  role?: UserRole;
 }
 
 /**
@@ -90,7 +91,6 @@ export interface AuthServiceOptions {
  * ```
  */
 export class AuthService {
-  private auditLogService: AuditLogService;
   private saltRounds: number;
   private enableAuditLogging: boolean;
 
@@ -100,7 +100,6 @@ export class AuthService {
    * @param {AuthServiceOptions} [options] - Service configuration options
    */
   constructor(options: AuthServiceOptions = {}) {
-    this.auditLogService = new AuditLogService();
     this.saltRounds = options.saltRounds || 10;
     this.enableAuditLogging = options.enableAuditLogging !== false;
   }
@@ -132,13 +131,13 @@ export class AuthService {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       if (this.enableAuditLogging) {
-        await this.auditLogService.logAction({
+        await AuditLogService.logAction({
           action: 'user_registration_failed',
-          performedBy: null,
-          resourceType: 'User',
-          resourceId: null,
+          userId: undefined,
+          entityType: 'User',
+          entityId: undefined,
           changes: { email, reason: 'Email already exists' },
-          ipAddress: null,
+          ipAddress: undefined,
         });
       }
       throw new Error('User with this email already exists');
@@ -153,18 +152,18 @@ export class AuthService {
       password: hashedPassword,
       firstName,
       lastName,
-      role: role || 'nurse',
+      role: role || UserRole.NURSE,
     });
 
     // Audit log
     if (this.enableAuditLogging) {
-      await this.auditLogService.logAction({
+      await AuditLogService.logAction({
         action: 'user_registered',
-        performedBy: user.id,
-        resourceType: 'User',
-        resourceId: user.id,
+        userId: user.id,
+        entityType: 'User',
+        entityId: user.id,
         changes: { email, firstName, lastName, role },
-        ipAddress: null,
+        ipAddress: undefined,
       });
     }
 
@@ -195,13 +194,13 @@ export class AuthService {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       if (this.enableAuditLogging) {
-        await this.auditLogService.logAction({
+        await AuditLogService.logAction({
           action: 'login_failed',
-          performedBy: null,
-          resourceType: 'User',
-          resourceId: null,
+          userId: undefined,
+          entityType: 'User',
+          entityId: undefined,
           changes: { email, reason: 'User not found' },
-          ipAddress: null,
+          ipAddress: undefined,
         });
       }
       throw new Error('Invalid email or password');
@@ -211,13 +210,13 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       if (this.enableAuditLogging) {
-        await this.auditLogService.logAction({
+        await AuditLogService.logAction({
           action: 'login_failed',
-          performedBy: user.id,
-          resourceType: 'User',
-          resourceId: user.id,
+          userId: user.id,
+          entityType: 'User',
+          entityId: user.id,
           changes: { email, reason: 'Invalid password' },
-          ipAddress: null,
+          ipAddress: undefined,
         });
       }
       throw new Error('Invalid email or password');
@@ -228,13 +227,13 @@ export class AuthService {
 
     // Audit log
     if (this.enableAuditLogging) {
-      await this.auditLogService.logAction({
+      await AuditLogService.logAction({
         action: 'user_login',
-        performedBy: user.id,
-        resourceType: 'User',
-        resourceId: user.id,
+        userId: user.id,
+        entityType: 'User',
+        entityId: user.id,
         changes: { email, lastLogin: new Date() },
-        ipAddress: null,
+        ipAddress: undefined,
       });
     }
 
@@ -298,7 +297,7 @@ export class AuthService {
    * const testUser = await authService.getOrCreateTestUser('admin');
    * ```
    */
-  async getOrCreateTestUser(role: string = 'nurse'): Promise<User> {
+  async getOrCreateTestUser(role: UserRole = UserRole.NURSE): Promise<User> {
     const testEmail = `test-${role}@whitecross.test`;
 
     let user = await User.findOne({ where: { email: testEmail } });
@@ -310,18 +309,18 @@ export class AuthService {
         email: testEmail,
         password: hashedPassword,
         firstName: 'Test',
-        lastName: role.charAt(0).toUpperCase() + role.slice(1),
+        lastName: role.charAt(0).toUpperCase() + role.slice(1).toLowerCase(),
         role,
       });
 
       if (this.enableAuditLogging) {
-        await this.auditLogService.logAction({
+        await AuditLogService.logAction({
           action: 'test_user_created',
-          performedBy: user.id,
-          resourceType: 'User',
-          resourceId: user.id,
+          userId: user.id,
+          entityType: 'User',
+          entityId: user.id,
           changes: { email: testEmail, role },
-          ipAddress: null,
+          ipAddress: undefined,
         });
       }
     }
@@ -363,13 +362,13 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
       if (this.enableAuditLogging) {
-        await this.auditLogService.logAction({
+        await AuditLogService.logAction({
           action: 'password_change_failed',
-          performedBy: userId,
-          resourceType: 'User',
-          resourceId: userId,
+          userId: userId,
+          entityType: 'User',
+          entityId: userId,
           changes: { reason: 'Invalid current password' },
-          ipAddress: null,
+          ipAddress: undefined,
         });
       }
       throw new Error('Current password is invalid');
@@ -381,13 +380,13 @@ export class AuthService {
 
     // Audit log
     if (this.enableAuditLogging) {
-      await this.auditLogService.logAction({
+      await AuditLogService.logAction({
         action: 'password_changed',
-        performedBy: userId,
-        resourceType: 'User',
-        resourceId: userId,
+        userId: userId,
+        entityType: 'User',
+        entityId: userId,
         changes: { passwordChanged: true },
-        ipAddress: null,
+        ipAddress: undefined,
       });
     }
   }
@@ -424,13 +423,13 @@ export class AuthService {
 
     // Audit log
     if (this.enableAuditLogging) {
-      await this.auditLogService.logAction({
+      await AuditLogService.logAction({
         action: 'password_reset',
-        performedBy: adminUserId || null,
-        resourceType: 'User',
-        resourceId: userId,
+        userId: adminUserId,
+        entityType: 'User',
+        entityId: userId,
         changes: { passwordReset: true, resetBy: adminUserId },
-        ipAddress: null,
+        ipAddress: undefined,
       });
     }
   }

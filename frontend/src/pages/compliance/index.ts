@@ -7,6 +7,8 @@
 
 // Export the main routes component
 export { default as ComplianceRoutes } from './routes';
+// Also import for default export usage
+import ComplianceRoutesDefault from './routes';
 
 // Export store components
 export * from './store';
@@ -107,7 +109,7 @@ export const complianceRouteConfig = {
 
 // Default export for easy importing
 export default {
-  ComplianceRoutes,
+  ComplianceRoutes: ComplianceRoutesDefault,
   compliancePageMetadata,
   complianceRouteConfig
 };

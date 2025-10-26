@@ -103,7 +103,7 @@ export class SequelizeStudentRepository implements IStudentRepository {
   }
 
   async findByNurse(nurseId: string, options?: StudentQueryOptions): Promise<StudentEntity[]> {
-    const queryOptions = this.buildQueryOptions({ assignedNurseId: nurseId }, options);
+    const queryOptions = this.buildQueryOptions({ nurseId: nurseId }, options);
     const students = await Student.findAll(queryOptions);
     return students.map(s => this.toEntity(s));
   }
@@ -227,20 +227,20 @@ export class SequelizeStudentRepository implements IStudentRepository {
   async getCountByNurse(): Promise<Record<string, number>> {
     const results = await Student.findAll({
       attributes: [
-        'assignedNurseId',
+        'nurseId',
         [fn('COUNT', col('id')), 'count']
       ],
       where: {
         isActive: true,
-        assignedNurseId: { [Op.not]: null }
+        nurseId: { [Op.not]: null }
       },
-      group: ['assignedNurseId'],
+      group: ['nurseId'],
       raw: true
     });
 
     const counts: Record<string, number> = {};
     results.forEach((r: any) => {
-      counts[r.assignedNurseId] = parseInt(r.count);
+      counts[r.nurseId] = parseInt(r.count);
     });
     return counts;
   }
@@ -281,7 +281,7 @@ export class SequelizeStudentRepository implements IStudentRepository {
         ? { [Op.in]: filters.enrollmentStatus }
         : filters.enrollmentStatus;
     }
-    if (filters.assignedNurseId) where.assignedNurseId = filters.assignedNurseId;
+    if (filters.assignedNurseId) where.nurseId = filters.assignedNurseId;
     if (filters.schoolId) where.schoolId = filters.schoolId;
     if (filters.isActive !== undefined) where.isActive = filters.isActive;
     if (filters.gender) where.gender = filters.gender;
@@ -336,7 +336,7 @@ export class SequelizeStudentRepository implements IStudentRepository {
       grade: plain.grade,
       gender: plain.gender,
       bloodType: plain.bloodType,
-      assignedNurseId: plain.assignedNurseId,
+      assignedNurseId: plain.nurseId,
       schoolId: plain.schoolId,
       enrollmentStatus: plain.enrollmentStatus,
       enrollmentDate: plain.enrollmentDate,

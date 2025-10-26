@@ -312,7 +312,7 @@ export interface ICacheKeyBuilder {
   /**
    * Build cache key for search results
    */
-  search(query: string, filters: any): string;
+  search(query: string, filters: Record<string, unknown>): string;
 }
 
 /**
@@ -325,7 +325,7 @@ export class CacheKeyBuilder implements ICacheKeyBuilder {
     return `${CacheKeyBuilder.PREFIX}:${entityType.toLowerCase()}:${id}`;
   }
 
-  list(entityType: string, filters: any): string {
+  list(entityType: string, filters: Record<string, unknown>): string {
     const filterHash = this.hashFilters(filters);
     return `${CacheKeyBuilder.PREFIX}:${entityType.toLowerCase()}:list:${filterHash}`;
   }
