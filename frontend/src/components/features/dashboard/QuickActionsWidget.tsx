@@ -14,6 +14,18 @@ import { LucideIcon } from 'lucide-react';
 // TYPES
 // ============================================================================
 
+/**
+ * Quick action button configuration
+ * @interface QuickAction
+ * @property {string} id - Unique identifier
+ * @property {string} label - Action button label
+ * @property {string} [description] - Optional description text
+ * @property {LucideIcon} icon - Lucide icon component
+ * @property {() => void} onClick - Click handler
+ * @property {'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'indigo' | 'pink'} [color] - Button color theme
+ * @property {boolean} [disabled] - Whether button is disabled
+ * @property {string | number} [badge] - Badge to show count or notification
+ */
 export interface QuickAction {
   id: string;
   label: string;
@@ -22,9 +34,20 @@ export interface QuickAction {
   onClick: () => void;
   color?: 'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'indigo' | 'pink';
   disabled?: boolean;
-  badge?: string | number; // Badge to show count or notification
+  badge?: string | number;
 }
 
+/**
+ * Props for QuickActionsWidget component
+ * @interface QuickActionsWidgetProps
+ * @property {string} [title='Quick Actions'] - Widget title
+ * @property {string} [subtitle] - Optional subtitle
+ * @property {QuickAction[]} actions - Array of action configurations
+ * @property {boolean} [darkMode=false] - Enable dark theme
+ * @property {string} [className=''] - Additional CSS classes
+ * @property {2 | 3 | 4} [columns=3] - Number of columns in grid
+ * @property {'sm' | 'md' | 'lg'} [size='md'] - Button size
+ */
 export interface QuickActionsWidgetProps {
   title?: string;
   subtitle?: string;
@@ -118,16 +141,29 @@ const getSizeClasses = (size?: 'sm' | 'md' | 'lg') => {
 // ============================================================================
 
 /**
- * QuickActionsWidget Component
+ * QuickActionsWidget Component - Common action buttons grid
  *
- * Features:
- * - Grid of action buttons
- * - Icons and labels
- * - Color coding
- * - Disabled states
- * - Notification badges
- * - Dark mode support
- * - Responsive columns
+ * Displays a responsive grid of frequently-used action buttons with icons,
+ * labels, and notification badges. Ideal for dashboard quick actions.
+ *
+ * @component
+ * @param {QuickActionsWidgetProps} props - Component props
+ * @returns {React.ReactElement} Rendered quick actions widget
+ *
+ * @example
+ * ```tsx
+ * <QuickActionsWidget
+ *   actions={[
+ *     {
+ *       id: 'new-student',
+ *       label: 'New Student',
+ *       icon: UserPlus,
+ *       onClick: () => navigate('/students/new'),
+ *       color: 'blue'
+ *     }
+ *   ]}
+ * />
+ * ```
  */
 export const QuickActionsWidget = React.memo<QuickActionsWidgetProps>(({
   title = 'Quick Actions',

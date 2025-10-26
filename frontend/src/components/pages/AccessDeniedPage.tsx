@@ -1,18 +1,46 @@
 /**
- * WF-COMP-004 | AccessDeniedPage.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export | Key Features: component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * AccessDeniedPage Component - 403 Access Denied Error Page
+ *
+ * Full-page component displayed when users attempt to access restricted content
+ * without proper permissions. Provides clear messaging and navigation options.
+ *
+ * @module components/pages/AccessDeniedPage
+ *
+ * Security Context:
+ * - Displayed for RBAC permission failures
+ * - Shown when accessing PHI without proper role
+ * - Used for feature-specific access restrictions
+ * - Does not expose information about why access was denied beyond the message
+ *
+ * @component
+ * @since 2025-10-17
+ *
+ * @example
+ * ```tsx
+ * // Basic usage with default message
+ * <AccessDeniedPage onBack={() => navigate(-1)} />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Custom message for specific restriction
+ * <AccessDeniedPage
+ *   message="You need administrator privileges to access this feature"
+ *   onBack={() => navigate('/dashboard')}
+ * />
+ * ```
  */
 
 import React from 'react'
 import { Shield, ArrowLeft } from 'lucide-react'
 
+/**
+ * Props for AccessDeniedPage component
+ *
+ * @interface AccessDeniedPageProps
+ * @property {string} [message="You do not have permission to view this student's records"] - Custom denial message
+ * @property {() => void} [onBack] - Optional callback for back navigation
+ */
 interface AccessDeniedPageProps {
   message?: string
   onBack?: () => void

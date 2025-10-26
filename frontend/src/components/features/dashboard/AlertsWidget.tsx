@@ -14,8 +14,24 @@ import { AlertTriangle, X, CheckCircle, Info, AlertCircle } from 'lucide-react';
 // TYPES
 // ============================================================================
 
+/**
+ * Alert severity levels
+ * @typedef {'critical' | 'warning' | 'info' | 'success'} AlertSeverity
+ */
 export type AlertSeverity = 'critical' | 'warning' | 'info' | 'success';
 
+/**
+ * Alert item data structure
+ * @interface Alert
+ * @property {string} id - Unique identifier for the alert
+ * @property {AlertSeverity} severity - Alert severity level affecting color and icon
+ * @property {string} title - Alert heading text
+ * @property {string} message - Detailed alert message
+ * @property {Date | string} timestamp - When the alert was created
+ * @property {boolean} [dismissible] - Whether alert can be dismissed by user
+ * @property {string} [actionLabel] - Label for action button
+ * @property {() => void} [onAction] - Callback for action button click
+ */
 export interface Alert {
   id: string;
   severity: AlertSeverity;
@@ -27,6 +43,18 @@ export interface Alert {
   onAction?: () => void;
 }
 
+/**
+ * Props for the AlertsWidget component
+ * @interface AlertsWidgetProps
+ * @property {Alert[]} alerts - Array of alert items to display
+ * @property {(id: string) => void} [onDismiss] - Callback when alert is dismissed
+ * @property {boolean} [loading=false] - Show loading state
+ * @property {boolean} [darkMode=false] - Enable dark theme
+ * @property {string} [className=''] - Additional CSS classes
+ * @property {number} [maxItems=5] - Maximum alerts to display before "View All"
+ * @property {boolean} [showViewAll=true] - Show "View All" button when exceeds maxItems
+ * @property {() => void} [onViewAll] - Callback when "View All" is clicked
+ */
 export interface AlertsWidgetProps {
   alerts: Alert[];
   onDismiss?: (id: string) => void;
@@ -82,16 +110,71 @@ const getAlertConfig = (severity: AlertSeverity, darkMode: boolean) => {
 // ============================================================================
 
 /**
- * AlertsWidget Component
+ * AlertsWidget Component - Critical alerts and warnings display
+ *
+ * Displays system alerts, warnings, and notifications with severity-based
+ * color coding and icons. Supports dismissible alerts and custom actions.
+ * Automatically sorts alerts by severity (critical first).
  *
  * Features:
- * - Severity indicators (critical, warning, info, success)
- * - Dismissible alerts
- * - Action buttons
- * - Real-time updates
- * - Dark mode support
- * - Loading state
- * - Empty state
+ * - Severity indicators with color coding (critical, warning, info, success)
+ * - Dismissible alerts with close button
+ * - Action buttons for user responses
+ * - Automatic severity-based sorting
+ * - Real-time alert updates
+ * - Dark mode support with theme switching
+ * - Loading state with spinner
+ * - Empty state with success message
+ * - "View All" functionality for alert overflow
+ *
+ * @component
+ * @param {AlertsWidgetProps} props - Component props
+ * @returns {React.ReactElement} Rendered alerts widget
+ *
+ * @example
+ * ```tsx
+ * // Basic usage with critical alerts
+ * <AlertsWidget
+ *   alerts={[
+ *     {
+ *       id: '1',
+ *       severity: 'critical',
+ *       title: 'System Error',
+ *       message: 'Database connection failed',
+ *       timestamp: new Date(),
+ *       dismissible: true
+ *     }
+ *   ]}
+ *   onDismiss={(id) => console.log('Dismissed:', id)}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // With action buttons and view all
+ * <AlertsWidget
+ *   alerts={alerts}
+ *   maxItems={3}
+ *   showViewAll
+ *   onViewAll={() => navigate('/alerts')}
+ *   onDismiss={handleDismissAlert}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Dark mode with custom actions
+ * <AlertsWidget
+ *   alerts={alerts}
+ *   darkMode={true}
+ *   onDismiss={removeAlert}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Alerts are automatically sorted by severity: critical > warning > info > success
+ * - Color schemes adapt based on dark mode setting
+ * - Supports both Date objects and ISO string timestamps
  */
 export const AlertsWidget = React.memo<AlertsWidgetProps>(({
   alerts,

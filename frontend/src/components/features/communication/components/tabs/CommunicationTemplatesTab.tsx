@@ -12,6 +12,17 @@
 
 import React from 'react'
 
+/**
+ * Template creation form data structure
+ *
+ * @interface TemplateFormData
+ * @property {string} name - Template name for identification (e.g., "Appointment Reminder")
+ * @property {string} subject - Email subject line template (can include variables)
+ * @property {string} content - Message body template with variable placeholders (e.g., {studentName})
+ * @property {string} type - Communication type: "EMAIL", "SMS", "PUSH_NOTIFICATION", or "VOICE"
+ * @property {string} category - Message category for classification
+ * @property {string} variables - Comma-separated list of template variable names
+ */
 interface TemplateFormData {
   name: string
   subject: string
@@ -21,6 +32,18 @@ interface TemplateFormData {
   variables: string
 }
 
+/**
+ * Saved message template structure
+ *
+ * @interface Template
+ * @property {string} id - Unique template identifier
+ * @property {string} name - Template name
+ * @property {string} subject - Email subject template
+ * @property {string} content - Message body template
+ * @property {string} type - Communication type
+ * @property {string} category - Message category
+ * @property {string[]} [variables] - Array of variable names used in template
+ */
 interface Template {
   id: string
   name: string
@@ -31,6 +54,17 @@ interface Template {
   variables?: string[]
 }
 
+/**
+ * Props for the CommunicationTemplatesTab component
+ *
+ * @interface CommunicationTemplatesTabProps
+ * @property {Template[]} templates - Array of existing message templates
+ * @property {TemplateFormData} formData - Current template creation form data
+ * @property {function} onFormChange - Callback when form data changes
+ * @property {function} onSubmit - Template creation submission handler
+ * @property {function} onDeleteTemplate - Template deletion handler
+ * @property {boolean} loading - Loading state during template operations
+ */
 interface CommunicationTemplatesTabProps {
   templates: Template[]
   formData: TemplateFormData
@@ -40,6 +74,56 @@ interface CommunicationTemplatesTabProps {
   loading: boolean
 }
 
+/**
+ * CommunicationTemplatesTab - Message template management interface
+ *
+ * Provides functionality to create, view, and manage reusable message templates.
+ * Templates support variable substitution for personalized communications and can
+ * be used across different communication channels and message categories.
+ *
+ * @param {CommunicationTemplatesTabProps} props - Component props
+ * @returns {JSX.Element} Template management interface
+ *
+ * @example
+ * ```tsx
+ * <CommunicationTemplatesTab
+ *   templates={existingTemplates}
+ *   formData={templateFormData}
+ *   onFormChange={handleFormChange}
+ *   onSubmit={handleCreateTemplate}
+ *   onDeleteTemplate={handleDeleteTemplate}
+ *   loading={isProcessing}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Template variables use {variableName} syntax in content
+ * - Subject field primarily used for email templates
+ * - Variables field accepts comma-separated list (e.g., "studentName, date, time")
+ * - Templates can be reused across multiple messages
+ * - Communication types: EMAIL, SMS, PUSH_NOTIFICATION, VOICE
+ * - Categories: GENERAL, EMERGENCY, HEALTH_UPDATE, APPOINTMENT_REMINDER,
+ *   MEDICATION_REMINDER, INCIDENT_NOTIFICATION, COMPLIANCE
+ *
+ * @security
+ * - Templates should not contain hardcoded PHI
+ * - Variable substitution performed server-side with validation
+ * - Template access controlled by user permissions
+ * - Deleted templates cannot be recovered
+ *
+ * @compliance
+ * - Template content must comply with HIPAA communication standards
+ * - Audit logging for template creation and deletion
+ * - Templates support compliant healthcare notification patterns
+ *
+ * @example Template with variables
+ * ```
+ * Name: "Appointment Reminder"
+ * Subject: "Appointment Reminder for {studentName}"
+ * Content: "Hello {guardianName}, this is a reminder that {studentName} has an appointment on {date} at {time}."
+ * Variables: "studentName, guardianName, date, time"
+ * ```
+ */
 export default function CommunicationTemplatesTab({
   templates,
   formData,

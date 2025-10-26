@@ -13,6 +13,19 @@
 import React from 'react'
 import { Users, Mail, MessageSquare, Smartphone, Phone } from 'lucide-react'
 
+/**
+ * Broadcast message form data structure
+ *
+ * @interface BroadcastFormData
+ * @property {string} grades - Comma-separated target grade levels (e.g., "9, 10, 11, 12") - empty for all grades
+ * @property {string[]} channels - Communication channels: "EMAIL", "SMS", "PUSH_NOTIFICATION", "VOICE"
+ * @property {string} subject - Broadcast message subject line (primarily for email)
+ * @property {string} content - Broadcast message body content
+ * @property {string} priority - Message priority: "LOW", "MEDIUM", "HIGH", or "URGENT"
+ * @property {string} category - Message category for classification
+ * @property {boolean} includeParents - Whether to include parents/guardians in broadcast
+ * @property {boolean} includeEmergencyContacts - Whether to include emergency contacts in broadcast
+ */
 interface BroadcastFormData {
   grades: string
   channels: string[]
@@ -24,6 +37,15 @@ interface BroadcastFormData {
   includeEmergencyContacts: boolean
 }
 
+/**
+ * Props for the CommunicationBroadcastTab component
+ *
+ * @interface CommunicationBroadcastTabProps
+ * @property {BroadcastFormData} formData - Current broadcast form data
+ * @property {function} onFormChange - Callback when form data changes
+ * @property {function} onSubmit - Form submission handler
+ * @property {boolean} loading - Loading state during broadcast sending
+ */
 interface CommunicationBroadcastTabProps {
   formData: BroadcastFormData
   onFormChange: (data: BroadcastFormData) => void
@@ -31,6 +53,48 @@ interface CommunicationBroadcastTabProps {
   loading: boolean
 }
 
+/**
+ * CommunicationBroadcastTab - Mass communication broadcast interface
+ *
+ * Provides a form for sending broadcast messages to multiple recipients based on
+ * grade level filtering. Supports targeting students, parents, and emergency contacts
+ * across multiple communication channels for school-wide or grade-specific announcements.
+ *
+ * @param {CommunicationBroadcastTabProps} props - Component props
+ * @returns {JSX.Element} Broadcast message form
+ *
+ * @example
+ * ```tsx
+ * <CommunicationBroadcastTab
+ *   formData={broadcastFormData}
+ *   onFormChange={handleFormChange}
+ *   onSubmit={handleBroadcastSend}
+ *   loading={isSending}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Grades field is optional - leave empty to broadcast to all grades
+ * - Requires at least one communication channel to be selected
+ * - Submit button disabled when loading or no channels selected
+ * - Can include parents and/or emergency contacts in addition to students
+ * - Subject field primarily used for email communications
+ * - Priority levels: LOW, MEDIUM, HIGH, URGENT
+ * - Categories: GENERAL, EMERGENCY, HEALTH_UPDATE, APPOINTMENT_REMINDER,
+ *   MEDICATION_REMINDER, INCIDENT_NOTIFICATION, COMPLIANCE
+ *
+ * @security
+ * - Broadcast recipient lists generated server-side based on filters
+ * - No PHI should be included in broadcast messages
+ * - All broadcast communications logged in audit trail
+ * - Requires appropriate permissions to send broadcasts
+ *
+ * @compliance
+ * - HIPAA-compliant bulk message delivery
+ * - Respects recipient communication preferences and opt-outs
+ * - Audit logging enabled for all broadcast communications
+ * - Channel selection validated against recipient permissions
+ */
 export default function CommunicationBroadcastTab({
   formData,
   onFormChange,

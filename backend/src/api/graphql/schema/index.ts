@@ -1,19 +1,100 @@
 /**
+ * @fileoverview GraphQL Schema Type Definitions
+ *
+ * Defines the complete GraphQL schema for the White Cross healthcare platform,
+ * including all types, queries, mutations, and custom scalars. Provides a
+ * type-safe, flexible API for accessing healthcare data including students,
+ * contacts, medications, health records, and more.
+ *
+ * @module api/graphql/schema
+ * @since 1.0.0
+ *
+ * @security All queries and mutations enforce authentication and authorization
+ * @compliance HIPAA - Schema designed for secure PHI data access
+ *
  * LOC: GQL-SCHEMA-001
  * WC-GQL-SCHEMA-001 | GraphQL Schema Definition
- * 
+ *
  * Purpose: Main GraphQL schema combining all type definitions
  * Inspired by: TwentyHQ GraphQL API Layer
  * Features: Type-safe API, flexible queries, HIPAA-compliant
- * 
+ *
  * UPSTREAM (imports from):
  *   - Contact schema
  *   - Student schema
- * 
+ *
  * DOWNSTREAM (imported by):
  *   - Apollo Server setup
+ *
+ * @example
+ * Import and use in Apollo Server:
+ * ```typescript
+ * import typeDefs from './schema';
+ * import resolvers from './resolvers';
+ *
+ * const server = new ApolloServer({
+ *   typeDefs,
+ *   resolvers
+ * });
+ * ```
+ *
+ * @example
+ * Example GraphQL query:
+ * ```graphql
+ * query GetStudents {
+ *   students(page: 1, limit: 20, filters: { isActive: true }) {
+ *     students {
+ *       id
+ *       fullName
+ *       grade
+ *       dateOfBirth
+ *     }
+ *     pagination {
+ *       total
+ *       pages
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * @example
+ * Example GraphQL mutation:
+ * ```graphql
+ * mutation CreateContact($input: ContactInput!) {
+ *   createContact(input: $input) {
+ *     id
+ *     fullName
+ *     email
+ *     type
+ *   }
+ * }
+ * ```
  */
 
+/**
+ * GraphQL schema type definitions using SDL (Schema Definition Language).
+ *
+ * Defines:
+ * - Custom scalars (DateTime, JSON)
+ * - Core types (Contact, Student, pagination)
+ * - Input types for mutations
+ * - Query operations with pagination and filtering
+ * - Mutation operations for CRUD operations
+ *
+ * @constant
+ * @type {string}
+ *
+ * @property {Scalar} DateTime - ISO 8601 datetime scalar
+ * @property {Scalar} JSON - Arbitrary JSON data scalar
+ * @property {Type} Contact - Contact information (guardians, staff, providers)
+ * @property {Type} Student - Student demographic and enrollment information
+ * @property {Type} PageInfo - Pagination metadata
+ * @property {Query} contacts - List contacts with filtering and pagination
+ * @property {Query} students - List students with filtering and pagination
+ * @property {Mutation} createContact - Create new contact
+ * @property {Mutation} updateContact - Update existing contact
+ * @property {Mutation} deleteContact - Delete contact
+ */
 export const typeDefs = `#graphql
   # Base types
   scalar DateTime

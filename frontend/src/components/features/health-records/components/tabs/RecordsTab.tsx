@@ -1,13 +1,19 @@
 /**
- * WF-COMP-033 | RecordsTab.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../shared/SearchAndFilter, ../../../contexts/AuthContext | Dependencies: react, lucide-react, ../shared/SearchAndFilter
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: useMemo, functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * RecordsTab Component - Health Records List View
+ *
+ * Displays searchable list of health records with role-based data masking
+ * for PHI protection. Includes confidential record indicators and provider information.
+ *
+ * @module components/features/health-records/tabs/RecordsTab
+ *
+ * HIPAA Compliance:
+ * - Implements role-based PHI data masking (READ_ONLY users see masked data)
+ * - Confidential records marked with shield icon
+ * - Search functionality filters without exposing masked PHI
+ * - All PHI access should trigger audit logging on backend
+ *
+ * @component
+ * @since 2025-10-17
  */
 
 import React from 'react'
@@ -16,6 +22,25 @@ import { SearchAndFilter } from '../shared/SearchAndFilter'
 import { useAuthContext } from '../../../../../hooks/utilities/AuthContext'
 import type { HealthRecord } from '@/services/modules/healthRecordsApi'
 
+/**
+ * Props for RecordsTab component
+ *
+ * @interface RecordsTabProps
+ * @property {string} searchQuery - Current search query for filtering records
+ * @property {(query: string) => void} onSearchChange - Callback when search query changes
+ * @property {HealthRecord[]} healthRecords - Array of health records to display
+ * @property {() => void} onViewDetails - Callback when viewing record details
+ *
+ * @example
+ * ```tsx
+ * <RecordsTab
+ *   searchQuery={searchText}
+ *   onSearchChange={setSearchText}
+ *   healthRecords={studentHealthRecords}
+ *   onViewDetails={() => openDetailsModal()}
+ * />
+ * ```
+ */
 interface RecordsTabProps {
   searchQuery: string
   onSearchChange: (query: string) => void

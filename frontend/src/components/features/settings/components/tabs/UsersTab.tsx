@@ -1,13 +1,43 @@
 /**
- * WF-COMP-079 | UsersTab.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../../../constants/config, ../../../constants/api | Dependencies: lucide-react, react-hot-toast, ../../../constants/config
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export | Key Features: useState, useEffect, useCallback
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * UsersTab Component - User Management for Admin Settings
+ *
+ * Comprehensive user administration interface for creating, editing, and managing
+ * system users with role-based access control. Includes search, filtering, pagination,
+ * and bulk operations for efficient user management.
+ *
+ * @module components/features/settings/tabs/UsersTab
+ *
+ * Security Considerations:
+ * - Password reset functionality requires admin privileges
+ * - Role assignments should be validated on backend
+ * - User deletion triggers cascade operations
+ * - Audit logging recommended for all user modifications
+ *
+ * Features:
+ * - Create/edit users with role assignment (ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN)
+ * - Search and filter by role and status
+ * - Pagination for large user lists
+ * - Bulk selection and operations
+ * - Password reset functionality
+ * - User deletion with confirmation
+ * - Sort by multiple fields
+ * - Export user list
+ *
+ * @component
+ * @since 2025-10-17
+ *
+ * @example
+ * ```tsx
+ * <UsersTab />
+ * ```
+ *
+ * @remarks
+ * Integrates with backend API endpoints:
+ * - GET /api/users - List users with pagination
+ * - POST /api/users - Create new user
+ * - PUT /api/users/:id - Update user
+ * - DELETE /api/users/:id - Delete user
+ * - POST /api/users/:id/reset-password - Reset user password
  */
 
 import React, { useState, useEffect, useCallback } from 'react'

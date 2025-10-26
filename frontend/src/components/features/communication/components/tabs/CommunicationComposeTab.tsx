@@ -13,6 +13,18 @@
 import React from 'react'
 import { Send, Mail, MessageSquare, Smartphone, Phone } from 'lucide-react'
 
+/**
+ * Message composition form data structure
+ *
+ * @interface ComposeFormData
+ * @property {string} recipients - Comma-separated recipient IDs (e.g., "student-1, student-2")
+ * @property {string[]} channels - Communication channels: "EMAIL", "SMS", "PUSH_NOTIFICATION", "VOICE"
+ * @property {string} subject - Message subject line (primarily for email)
+ * @property {string} content - Message body content
+ * @property {string} priority - Message priority: "LOW", "MEDIUM", "HIGH", or "URGENT"
+ * @property {string} category - Message category for classification and routing
+ * @property {string} scheduledAt - ISO datetime string for scheduled delivery (optional)
+ */
 interface ComposeFormData {
   recipients: string
   channels: string[]
@@ -23,6 +35,15 @@ interface ComposeFormData {
   scheduledAt: string
 }
 
+/**
+ * Props for the CommunicationComposeTab component
+ *
+ * @interface CommunicationComposeTabProps
+ * @property {ComposeFormData} formData - Current message composition form data
+ * @property {function} onFormChange - Callback when form data changes
+ * @property {function} onSubmit - Form submission handler
+ * @property {boolean} loading - Loading state during message sending
+ */
 interface CommunicationComposeTabProps {
   formData: ComposeFormData
   onFormChange: (data: ComposeFormData) => void
@@ -30,6 +51,47 @@ interface CommunicationComposeTabProps {
   loading: boolean
 }
 
+/**
+ * CommunicationComposeTab - Individual message composition interface
+ *
+ * Provides a form for composing and sending messages to specific recipients.
+ * Supports multiple communication channels, priority levels, message categorization,
+ * and optional scheduled delivery for healthcare communications.
+ *
+ * @param {CommunicationComposeTabProps} props - Component props
+ * @returns {JSX.Element} Message composition form
+ *
+ * @example
+ * ```tsx
+ * <CommunicationComposeTab
+ *   formData={composeFormData}
+ *   onFormChange={handleFormChange}
+ *   onSubmit={handleSendMessage}
+ *   loading={isSending}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Recipients field accepts comma-separated student/contact IDs
+ * - Requires at least one communication channel to be selected
+ * - Submit button disabled when loading or no channels selected
+ * - Subject field primarily used for email communications
+ * - Scheduled delivery is optional (leave blank for immediate send)
+ * - Priority levels: LOW, MEDIUM, HIGH, URGENT
+ * - Categories: GENERAL, EMERGENCY, HEALTH_UPDATE, APPOINTMENT_REMINDER,
+ *   MEDICATION_REMINDER, INCIDENT_NOTIFICATION, COMPLIANCE
+ *
+ * @security
+ * - Recipient validation performed server-side before sending
+ * - Message content should not include sensitive PHI details
+ * - All communications logged in audit trail with sender ID
+ * - Channel selection respects recipient preferences
+ *
+ * @compliance
+ * - HIPAA-compliant message delivery for healthcare notifications
+ * - Audit logging enabled for all sent communications
+ * - Encryption in transit for all communication channels
+ */
 export default function CommunicationComposeTab({
   formData,
   onFormChange,
