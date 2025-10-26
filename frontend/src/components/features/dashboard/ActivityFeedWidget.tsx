@@ -23,6 +23,10 @@ import {
 // TYPES
 // ============================================================================
 
+/**
+ * Activity types for categorization and icon display
+ * @typedef {'appointment' | 'record' | 'incident' | 'medication' | 'success' | 'error' | 'other'} ActivityType
+ */
 export type ActivityType =
   | 'appointment'
   | 'record'
@@ -32,6 +36,18 @@ export type ActivityType =
   | 'error'
   | 'other';
 
+/**
+ * Activity item data structure
+ * @interface ActivityItem
+ * @property {string} id - Unique identifier
+ * @property {ActivityType} type - Activity category affecting icon and color
+ * @property {string} user - Username who performed the action
+ * @property {string} [userAvatar] - URL to user's avatar image
+ * @property {string} action - Action description
+ * @property {string} [description] - Additional details
+ * @property {Date | string} timestamp - When activity occurred
+ * @property {Record<string, any>} [metadata] - Additional metadata
+ */
 export interface ActivityItem {
   id: string;
   type: ActivityType;
@@ -43,6 +59,18 @@ export interface ActivityItem {
   metadata?: Record<string, any>;
 }
 
+/**
+ * Props for ActivityFeedWidget component
+ * @interface ActivityFeedWidgetProps
+ * @property {ActivityItem[]} activities - Array of activity items
+ * @property {boolean} [loading=false] - Show loading state
+ * @property {boolean} [darkMode=false] - Enable dark theme
+ * @property {string} [className=''] - Additional CSS classes
+ * @property {number} [maxItems=10] - Maximum activities to display
+ * @property {boolean} [showViewAll=true] - Show "View All" button
+ * @property {() => void} [onViewAll] - Callback for "View All"
+ * @property {string} [emptyMessage='No recent activity'] - Message when no activities
+ */
 export interface ActivityFeedWidgetProps {
   activities: ActivityItem[];
   loading?: boolean;
@@ -142,16 +170,33 @@ const formatTimestamp = (timestamp: Date | string): string => {
 // ============================================================================
 
 /**
- * ActivityFeedWidget Component
+ * ActivityFeedWidget Component - Recent activity timeline display
  *
- * Features:
- * - Timeline of recent actions
- * - User avatars
- * - Timestamps with relative time
- * - Action types with icons and colors
- * - Dark mode support
- * - Loading state
- * - Empty state
+ * Displays a chronological feed of user actions and system events with
+ * type-based icons, colors, and relative timestamps. Useful for audit trails
+ * and user activity monitoring.
+ *
+ * @component
+ * @param {ActivityFeedWidgetProps} props - Component props
+ * @returns {React.ReactElement} Rendered activity feed widget
+ *
+ * @example
+ * ```tsx
+ * <ActivityFeedWidget
+ *   activities={[
+ *     {
+ *       id: '1',
+ *       type: 'appointment',
+ *       user: 'Nurse Smith',
+ *       action: 'scheduled an appointment',
+ *       description: 'Physical exam for John Doe',
+ *       timestamp: new Date()
+ *     }
+ *   ]}
+ *   maxItems={5}
+ *   onViewAll={() => navigate('/activity')}
+ * />
+ * ```
  */
 export const ActivityFeedWidget = React.memo<ActivityFeedWidgetProps>(({
   activities,

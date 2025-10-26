@@ -1,18 +1,48 @@
 /**
+ * @fileoverview GraphQL Resolver Implementations
+ *
+ * Implements all GraphQL query and mutation resolvers for the White Cross
+ * healthcare platform. Handles authentication, authorization, data fetching,
+ * and error handling for GraphQL operations. Integrates with service layer
+ * for business logic execution.
+ *
+ * @module api/graphql/resolvers
+ * @since 1.0.0
+ *
+ * @requires graphql - GraphQL error handling
+ * @requires ../../../services/contact - Contact service layer
+ * @requires ../../../services/student - Student service layer
+ * @requires ../../../shared/permissions - RBAC permission system
+ *
+ * @security All resolvers enforce authentication and RBAC permissions
+ * @compliance HIPAA - Implements secure PHI data access controls
+ *
  * LOC: GQL-RESOLVER-001
  * WC-GQL-RESOLVER-001 | GraphQL Resolvers
- * 
+ *
  * Purpose: GraphQL resolver functions for queries and mutations
  * Inspired by: TwentyHQ resolver patterns
  * Features: Type-safe resolvers, permission checking, error handling
- * 
+ *
  * UPSTREAM (imports from):
  *   - ContactService
  *   - StudentService
  *   - Permission system
- * 
+ *
  * DOWNSTREAM (imported by):
  *   - Apollo Server setup
+ *
+ * @example
+ * Import and use in Apollo Server:
+ * ```typescript
+ * import typeDefs from './schema';
+ * import resolvers from './resolvers';
+ *
+ * const server = new ApolloServer({
+ *   typeDefs,
+ *   resolvers
+ * });
+ * ```
  */
 
 import { GraphQLError } from 'graphql';
@@ -23,7 +53,32 @@ import { ContactType } from '../../../database/models/core/Contact';
 import { checkPermission, Role, Resource, Action } from '../../../shared/permissions';
 
 /**
- * DateTime scalar type
+ * Custom GraphQL scalar type for DateTime values.
+ *
+ * Handles serialization and parsing of ISO 8601 datetime strings.
+ * Converts JavaScript Date objects to/from ISO strings for GraphQL transport.
+ *
+ * @constant
+ * @type {GraphQLScalarType}
+ *
+ * @example
+ * Schema usage:
+ * ```graphql
+ * type Student {
+ *   dateOfBirth: DateTime!
+ *   createdAt: DateTime!
+ * }
+ * ```
+ *
+ * @example
+ * Query with datetime:
+ * ```graphql
+ * query {
+ *   student(id: "123") {
+ *     dateOfBirth  # Returns: "2010-05-15T00:00:00.000Z"
+ *   }
+ * }
+ * ```
  */
 const dateTimeScalar = new GraphQLScalarType({
   name: 'DateTime',
@@ -46,7 +101,31 @@ const dateTimeScalar = new GraphQLScalarType({
 });
 
 /**
- * JSON scalar type
+ * Custom GraphQL scalar type for arbitrary JSON data.
+ *
+ * Allows passing and returning unstructured JSON objects through GraphQL.
+ * Useful for flexible data fields like customFields or metadata.
+ *
+ * @constant
+ * @type {GraphQLScalarType}
+ *
+ * @example
+ * Schema usage:
+ * ```graphql
+ * type Contact {
+ *   customFields: JSON
+ * }
+ * ```
+ *
+ * @example
+ * Query with JSON field:
+ * ```graphql
+ * query {
+ *   contact(id: "123") {
+ *     customFields  # Returns: { "emergencyProtocol": "Call 911", "notes": [...] }
+ *   }
+ * }
+ * ```
  */
 const jsonScalar = new GraphQLScalarType({
   name: 'JSON',
@@ -66,7 +145,27 @@ const jsonScalar = new GraphQLScalarType({
 });
 
 /**
- * Get user from context
+ * Extract authenticated user from GraphQL context.
+ *
+ * Retrieves user credentials from the GraphQL execution context,
+ * which are populated from Hapi JWT authentication. Throws GraphQLError
+ * if user is not authenticated.
+ *
+ * @function getUserFromContext
+ * @param {any} context - GraphQL execution context with user credentials
+ * @returns {any} Authenticated user object with id, role, email
+ *
+ * @throws {GraphQLError} UNAUTHENTICATED - When user is not authenticated
+ *
+ * @example
+ * Usage in resolver:
+ * ```typescript
+ * const resolver = async (parent, args, context) => {
+ *   const user = getUserFromContext(context);
+ *   console.log('User ID:', user.id);
+ *   // Proceed with authenticated operation
+ * };
+ * ```
  */
 function getUserFromContext(context: any) {
   if (!context.user) {
@@ -78,11 +177,43 @@ function getUserFromContext(context: any) {
 }
 
 /**
- * Check user permission
+ * Check if user has permission for resource action.
+ *
+ * Validates that the authenticated user has the required RBAC permission
+ * to perform the requested action on the specified resource. Throws
+ * GraphQLError if permission is denied.
+ *
+ * @function checkUserPermission
+ * @param {any} context - GraphQL execution context with user credentials
+ * @param {Resource} resource - Resource being accessed (Contact, Student, etc.)
+ * @param {Action} action - Action being performed (List, Read, Create, Update, Delete)
+ *
+ * @throws {GraphQLError} UNAUTHENTICATED - When user is not authenticated
+ * @throws {GraphQLError} FORBIDDEN - When user lacks required permission
+ *
+ * @example
+ * Usage in query resolver:
+ * ```typescript
+ * contacts: async (parent, args, context) => {
+ *   checkUserPermission(context, Resource.Contact, Action.List);
+ *   // Permission granted, proceed with query
+ *   return await ContactService.getContacts(args);
+ * }
+ * ```
+ *
+ * @example
+ * Usage in mutation resolver:
+ * ```typescript
+ * createContact: async (parent, args, context) => {
+ *   checkUserPermission(context, Resource.Contact, Action.Create);
+ *   // Permission granted, proceed with creation
+ *   return await ContactService.createContact(args.input);
+ * }
+ * ```
  */
 function checkUserPermission(context: any, resource: Resource, action: Action) {
   const user = getUserFromContext(context);
-  
+
   const result = checkPermission({
     userId: user.id,
     userRole: user.role as Role,

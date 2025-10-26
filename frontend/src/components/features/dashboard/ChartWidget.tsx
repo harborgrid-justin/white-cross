@@ -14,8 +14,32 @@ import { Download, RefreshCw, Calendar } from 'lucide-react';
 // TYPES
 // ============================================================================
 
+/**
+ * Time range options for chart data filtering
+ * @typedef {'7d' | '30d' | '90d' | '1y' | 'all'} TimeRange
+ */
 export type TimeRange = '7d' | '30d' | '90d' | '1y' | 'all';
 
+/**
+ * Props for ChartWidget component
+ * @interface ChartWidgetProps
+ * @property {string} title - Chart title
+ * @property {string} [subtitle] - Optional subtitle
+ * @property {React.ReactNode} children - Chart content (e.g., Recharts, Chart.js)
+ * @property {boolean} [loading=false] - Show loading skeleton
+ * @property {string | null} [error=null] - Error message to display
+ * @property {boolean} [darkMode=false] - Enable dark theme
+ * @property {string} [className=''] - Additional CSS classes
+ * @property {boolean} [showTimeRange=false] - Show time range selector
+ * @property {TimeRange} [timeRange='30d'] - Currently selected time range
+ * @property {(range: TimeRange) => void} [onTimeRangeChange] - Time range change handler
+ * @property {boolean} [showExport=false] - Show export button
+ * @property {() => void} [onExport] - Export handler
+ * @property {boolean} [showRefresh=false] - Show refresh button
+ * @property {() => void} [onRefresh] - Refresh handler
+ * @property {string} [emptyMessage='No data available'] - Empty state message
+ * @property {boolean} [isEmpty=false] - Whether chart has no data
+ */
 export interface ChartWidgetProps {
   title: string;
   subtitle?: string;
@@ -52,17 +76,32 @@ const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
 // ============================================================================
 
 /**
- * ChartWidget Component
+ * ChartWidget Component - Container for chart visualizations
  *
- * Features:
- * - Chart container with title/subtitle
- * - Time range selector
- * - Export functionality
- * - Refresh capability
- * - Loading skeleton
- * - Error state
- * - Empty state
- * - Dark mode support
+ * A comprehensive wrapper for chart components providing time range filtering,
+ * export functionality, loading states, and error handling. Works with any
+ * charting library (Recharts, Chart.js, etc.).
+ *
+ * @component
+ * @param {ChartWidgetProps} props - Component props
+ * @returns {React.ReactElement} Rendered chart widget
+ *
+ * @example
+ * ```tsx
+ * <ChartWidget
+ *   title="Patient Visits"
+ *   subtitle="Last 30 days"
+ *   showTimeRange
+ *   timeRange="30d"
+ *   onTimeRangeChange={setRange}
+ *   showExport
+ *   onExport={exportChartData}
+ * >
+ *   <LineChart data={visitData}>
+ *     <Line dataKey="visits" />
+ *   </LineChart>
+ * </ChartWidget>
+ * ```
  */
 export const ChartWidget = React.memo<ChartWidgetProps>(({
   title,

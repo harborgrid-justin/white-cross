@@ -14,11 +14,67 @@ import React from 'react'
 import { Plus } from 'lucide-react'
 import type { PurchaseOrder } from '@/types/inventory'
 
+/**
+ * Props for the InventoryOrdersTab component
+ *
+ * @interface InventoryOrdersTabProps
+ * @property {PurchaseOrder[]} orders - Array of purchase orders to display
+ * @property {function} getStatusBadgeColor - Function to determine CSS classes for status badge styling
+ */
 interface InventoryOrdersTabProps {
   orders: PurchaseOrder[]
   getStatusBadgeColor: (status: string) => string
 }
 
+/**
+ * InventoryOrdersTab - Purchase order management and tracking interface
+ *
+ * Displays a table of purchase orders with details including order number, vendor,
+ * date, total cost, status, and item count. Supports creation of new purchase orders
+ * and tracking of order fulfillment status from vendors.
+ *
+ * @param {InventoryOrdersTabProps} props - Component props
+ * @returns {JSX.Element} Purchase orders table with creation button
+ *
+ * @example
+ * ```tsx
+ * <InventoryOrdersTab
+ *   orders={purchaseOrders}
+ *   getStatusBadgeColor={(status) => {
+ *     const colors = {
+ *       PENDING: 'bg-yellow-100 text-yellow-800',
+ *       APPROVED: 'bg-blue-100 text-blue-800',
+ *       ORDERED: 'bg-purple-100 text-purple-800',
+ *       RECEIVED: 'bg-green-100 text-green-800',
+ *       CANCELLED: 'bg-red-100 text-red-800'
+ *     }
+ *     return colors[status] || colors.PENDING
+ *   }}
+ * />
+ * ```
+ *
+ * @remarks
+ * - "Create Order" button initiates new purchase order workflow
+ * - Table columns: Order #, Vendor, Date, Total, Status, Items
+ * - Order dates formatted using browser locale settings
+ * - Total amounts displayed with currency formatting (2 decimal places)
+ * - Status badges color-coded based on order state
+ * - Item count shows number of line items in each order
+ * - Hover effect on table rows for better interactivity
+ * - Responsive table with horizontal scroll on smaller screens
+ * - Typical order statuses: PENDING, APPROVED, ORDERED, RECEIVED, CANCELLED
+ *
+ * @security
+ * - Purchase order data visible to authorized procurement staff only
+ * - Vendor information and pricing restricted by role-based permissions
+ * - Order creation requires appropriate authorization
+ *
+ * @compliance
+ * - Purchase order history provides audit trail for procurement
+ * - Supports tracking of medical supply ordering for compliance
+ * - Vendor relationship documentation for healthcare facility audits
+ * - Order records retained according to regulatory requirements
+ */
 export default function InventoryOrdersTab({ orders, getStatusBadgeColor }: InventoryOrdersTabProps) {
   return (
     <div className="space-y-4">

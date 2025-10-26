@@ -1,17 +1,44 @@
 /**
+ * @fileoverview Apollo Server Setup and Integration for Hapi.js
+ *
+ * Configures and integrates Apollo Server with the Hapi.js framework to provide
+ * a GraphQL API endpoint for the White Cross healthcare platform. Implements
+ * authentication, authorization, error handling, and development tooling.
+ *
+ * @module api/graphql/server
+ * @since 1.0.0
+ *
+ * @requires @apollo/server - Apollo Server for GraphQL
+ * @requires @hapi/hapi - Hapi.js framework
+ * @requires ./schema - GraphQL type definitions
+ * @requires ./resolvers - GraphQL resolver implementations
+ *
+ * @security JWT authentication integrated via Hapi auth context
+ * @compliance HIPAA - Implements secure PHI data access through GraphQL
+ *
  * LOC: GQL-SERVER-001
  * WC-GQL-SERVER-001 | Apollo Server Setup for Hapi
- * 
+ *
  * Purpose: Configure and integrate Apollo Server with Hapi.js
  * Inspired by: TwentyHQ GraphQL API implementation
  * Features: Authentication integration, error handling, playground
- * 
+ *
  * UPSTREAM (imports from):
  *   - GraphQL schema and resolvers
  *   - Hapi server
- * 
+ *
  * DOWNSTREAM (imported by):
  *   - Main server index
+ *
+ * @example
+ * Import and register with Hapi server:
+ * ```typescript
+ * import { registerGraphQL } from './api/graphql/server';
+ *
+ * // In server initialization
+ * await registerGraphQL(hapiServer);
+ * // GraphQL endpoint now available at POST/GET /graphql
+ * ```
  */
 
 import { ApolloServer } from '@apollo/server';
@@ -21,7 +48,27 @@ import typeDefs from './schema';
 import resolvers from './resolvers';
 
 /**
- * GraphQL context from Hapi request
+ * GraphQL execution context passed to all resolvers.
+ *
+ * Contains authenticated user information from Hapi auth credentials
+ * and access to Hapi request/response objects for advanced operations.
+ *
+ * @interface GraphQLContext
+ * @property {any} [user] - Authenticated user from Hapi JWT auth (undefined if not authenticated)
+ * @property {Request} request - Hapi.js request object
+ * @property {ResponseToolkit} h - Hapi.js response toolkit
+ *
+ * @example
+ * Usage in GraphQL resolver:
+ * ```typescript
+ * const resolver = async (parent, args, context: GraphQLContext) => {
+ *   if (!context.user) {
+ *     throw new GraphQLError('Authentication required');
+ *   }
+ *   const userId = context.user.id;
+ *   // Perform authenticated operation
+ * };
+ * ```
  */
 interface GraphQLContext {
   user?: any;
@@ -30,7 +77,32 @@ interface GraphQLContext {
 }
 
 /**
- * Create Apollo Server instance
+ * Create and configure Apollo Server instance with healthcare platform settings.
+ *
+ * Initializes Apollo Server with GraphQL schema, resolvers, error formatting,
+ * and development tooling. Configures error handling to sanitize sensitive
+ * information in production while providing detailed debugging in development.
+ *
+ * @function createApolloServer
+ * @returns {ApolloServer<GraphQLContext>} Configured Apollo Server instance
+ *
+ * @example
+ * ```typescript
+ * const apolloServer = createApolloServer();
+ * await apolloServer.start();
+ * // Server ready to execute GraphQL operations
+ * ```
+ *
+ * @example
+ * Server configuration features:
+ * ```typescript
+ * const server = createApolloServer();
+ * // - Type-safe GraphQL schema
+ * // - Authenticated context with user credentials
+ * // - Error sanitization for HIPAA compliance
+ * // - Development playground enabled
+ * // - Stacktraces in non-production only
+ * ```
  */
 export function createApolloServer() {
   const server = new ApolloServer<GraphQLContext>({
@@ -43,7 +115,7 @@ export function createApolloServer() {
     formatError: (formattedError, error) => {
       // Log errors
       console.error('GraphQL Error:', formattedError);
-      
+
       // Return sanitized error to client
       return {
         message: formattedError.message,
@@ -61,11 +133,91 @@ export function createApolloServer() {
 }
 
 /**
- * Register GraphQL endpoint with Hapi server
+ * Register GraphQL API endpoint with Hapi server.
+ *
+ * Integrates Apollo Server with Hapi.js by registering POST and GET routes
+ * at `/graphql`. Configures authentication integration, request parsing,
+ * error handling, and development tooling (GraphQL Playground).
+ *
+ * Features:
+ * - Optional authentication (supports both authenticated and public queries)
+ * - Automatic context building from Hapi auth credentials
+ * - Error handling with appropriate HTTP status codes (200, 400, 401, 500)
+ * - GraphQL Playground for development/testing
+ * - Introspection query support
+ *
+ * @async
+ * @function registerGraphQL
+ * @param {Server} hapiServer - Hapi.js server instance to register routes on
+ * @returns {Promise<ApolloServer<GraphQLContext>>} Started Apollo Server instance
+ *
+ * @throws {Error} When Apollo Server fails to start
+ * @throws {Error} When route registration fails
+ *
+ * @example
+ * Basic registration in server initialization:
+ * ```typescript
+ * import Hapi from '@hapi/hapi';
+ * import { registerGraphQL } from './api/graphql/server';
+ *
+ * const server = Hapi.server({ port: 3001 });
+ * await registerGraphQL(server);
+ * await server.start();
+ * console.log('GraphQL endpoint: http://localhost:3001/graphql');
+ * ```
+ *
+ * @example
+ * Making GraphQL requests:
+ * ```typescript
+ * // POST request with query
+ * const response = await fetch('http://localhost:3001/graphql', {
+ *   method: 'POST',
+ *   headers: {
+ *     'Content-Type': 'application/json',
+ *     'Authorization': 'Bearer <jwt-token>'
+ *   },
+ *   body: JSON.stringify({
+ *     query: `
+ *       query GetStudents {
+ *         students(page: 1, limit: 20) {
+ *           students { id firstName lastName }
+ *           pagination { total }
+ *         }
+ *       }
+ *     `
+ *   })
+ * });
+ * ```
+ *
+ * @example
+ * GraphQL mutation with variables:
+ * ```typescript
+ * fetch('http://localhost:3001/graphql', {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({
+ *     query: `
+ *       mutation CreateContact($input: ContactInput!) {
+ *         createContact(input: $input) {
+ *           id
+ *           fullName
+ *         }
+ *       }
+ *     `,
+ *     variables: {
+ *       input: {
+ *         firstName: "John",
+ *         lastName: "Doe",
+ *         type: "guardian"
+ *       }
+ *     }
+ *   })
+ * });
+ * ```
  */
 export async function registerGraphQL(hapiServer: Server) {
   const apolloServer = createApolloServer();
-  
+
   // Start Apollo Server
   await apolloServer.start();
 

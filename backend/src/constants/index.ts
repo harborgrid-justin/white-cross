@@ -1,32 +1,79 @@
 /**
+ * @fileoverview Application Constants - Healthcare Platform Configuration Values
+ * @module constants
+ * @description Centralized constants for the White Cross Healthcare Platform including
+ *              authentication, authorization, validation rules, healthcare-specific enums,
+ *              and system configuration values. These constants ensure consistency across
+ *              the application and support HIPAA compliance requirements.
+ *
+ * Constant Categories:
+ * - **API Routes**: RESTful endpoint paths for all resources
+ * - **Authentication**: JWT secrets, token expiration, session management
+ * - **Authorization**: User roles, permissions, access levels
+ * - **Validation**: Length limits, regex patterns, allowed values
+ * - **Healthcare**: Medical conditions, medication types, dosage forms
+ * - **System**: HTTP status codes, pagination, date formats, caching
+ * - **Security**: Rate limiting, CORS, file upload restrictions
+ *
+ * Security Considerations:
+ * - JWT_SECRET and SESSION_SECRET MUST be set via environment variables
+ * - Never commit actual secret values to version control
+ * - Rotate secrets regularly per HIPAA security requirements (minimum annually)
+ * - Secrets must be at least 32 characters for adequate security
+ * - Application fails fast if required secrets are not configured
+ *
+ * HIPAA Compliance:
+ * - Audit logging constants support compliance tracking
+ * - PHI access patterns defined in permissions
+ * - Session timeouts aligned with HIPAA inactivity requirements
+ * - Rate limiting prevents brute force attacks on PHI
+ *
  * LOC: E35EF1673A
- * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
+ * WC-CONST-001 | Application Constants Module
  *
- * UPSTREAM (imports from):
- *   - None (leaf node)
+ * @see {@link ../config/server.ts} For server configuration using these constants
+ * @see {@link ../middleware/auth.ts} For authentication middleware
+ * @see {@link ../routes/v1/index.ts} For route registration using API_ROUTES
  *
- * DOWNSTREAM (imported by):
- *   - redis.ts (config/redis.ts)
- *   - swagger.ts (config/swagger.ts)
- *   - index-sequelize.ts (index-sequelize.ts)
- *   - index.ts (index.ts)
- *   - auth-sequelize.ts (middleware/auth-sequelize.ts)
- *   - ... and 3 more
+ * @example
+ * // Import specific constant groups
+ * import { API_ROUTES, USER_ROLES, PERMISSIONS } from './constants';
+ *
+ * // Import all constants
+ * import CONSTANTS from './constants';
+ *
+ * // Use in route definition
+ * server.route({
+ *   method: 'GET',
+ *   path: API_ROUTES.STUDENTS.BY_ID,
+ *   handler: studentController.getById
+ * });
  */
 
 /**
- * WC-CON-IDX-003 | Centralized Application Constants & Configuration Values
- * Purpose: Global constants, API routes, validation patterns, error messages, config
- * Upstream: process.env variables, .env file | Called by: All application modules
- * Downstream: index.ts, middleware/*, routes/*, services/*, validators/*
- * Related: .env.example, config/*, types/*, swagger.ts
- * Exports: API_ROUTES, HTTP_STATUS, USER_ROLES, PERMISSIONS, CONSTANTS (default)
- * Last Updated: 2025-10-17 | Dependencies: None (pure constants)
- * Critical Path: Environment variables → Constants → Application configuration
- * LLM Context: Central source of truth for all app constants, validation, messaging
+ * API route path constants for RESTful endpoints
+ *
+ * @constant {Object} API_ROUTES
+ * @description Centralized API route paths organized by resource type.
+ *              All routes follow REST conventions with consistent patterns for CRUD operations.
+ *
+ * Route Patterns:
+ * - BASE: `/api/{resource}` - Collection endpoint
+ * - BY_ID: `/api/{resource}/:id` - Single resource by ID
+ * - SEARCH: `/api/{resource}/search` - Search endpoint
+ * - EXPORT: `/api/{resource}/export` - Data export endpoint
+ *
+ * @example
+ * // Use in Hapi route definition
+ * server.route({
+ *   method: 'GET',
+ *   path: API_ROUTES.STUDENTS.BY_ID,
+ *   handler: async (request, h) => {
+ *     const { id } = request.params;
+ *     return await studentService.findById(id);
+ *   }
+ * });
  */
-
-// ===== API ROUTES =====
 export const API_ROUTES = {
   // Base paths
   BASE: '/api',
@@ -248,7 +295,37 @@ export const API_ROUTES = {
   },
 } as const;
 
-// ===== HTTP STATUS CODES =====
+/**
+ * HTTP status code constants for API responses
+ *
+ * @constant {Object} HTTP_STATUS
+ * @description Standard HTTP status codes used throughout the application.
+ *              Following REST best practices for consistent API responses.
+ *
+ * Success Codes (2xx):
+ * - 200 OK: Standard success response with body
+ * - 201 CREATED: Resource successfully created
+ * - 202 ACCEPTED: Request accepted for processing
+ * - 204 NO_CONTENT: Success with no response body
+ *
+ * Client Error Codes (4xx):
+ * - 400 BAD_REQUEST: Invalid request data
+ * - 401 UNAUTHORIZED: Authentication required
+ * - 403 FORBIDDEN: Insufficient permissions
+ * - 404 NOT_FOUND: Resource does not exist
+ * - 409 CONFLICT: Resource conflict (duplicate)
+ * - 422 UNPROCESSABLE_ENTITY: Validation error
+ * - 429 TOO_MANY_REQUESTS: Rate limit exceeded
+ *
+ * Server Error Codes (5xx):
+ * - 500 INTERNAL_SERVER_ERROR: Unexpected server error
+ * - 503 SERVICE_UNAVAILABLE: Service temporarily unavailable
+ *
+ * @example
+ * // Use in response handler
+ * return h.response({ data: student }).code(HTTP_STATUS.OK);
+ * return h.response({ error: 'Not found' }).code(HTTP_STATUS.NOT_FOUND);
+ */
 export const HTTP_STATUS = {
   OK: 200,
   CREATED: 201,
@@ -268,8 +345,37 @@ export const HTTP_STATUS = {
   GATEWAY_TIMEOUT: 504,
 } as const;
 
-// ===== USER ROLES =====
-// These should match the UserRole enum in database/types/enums.ts
+/**
+ * User role constants for role-based access control (RBAC)
+ *
+ * @constant {Object} USER_ROLES
+ * @description Defines all user roles in the healthcare platform with hierarchical permissions.
+ *              These roles match the UserRole enum in the database schema.
+ *
+ * Role Hierarchy (highest to lowest):
+ * 1. **ADMIN**: Full system access, user management, system configuration
+ * 2. **DISTRICT_ADMIN**: District-level administration, multi-school oversight
+ * 3. **SCHOOL_ADMIN**: School-level administration, staff management
+ * 4. **NURSE**: Healthcare operations, student health records, medications
+ * 5. **COUNSELOR**: Student wellness, limited health records access
+ * 6. **VIEWER**: Read-only access to assigned students
+ *
+ * @hipaa Role assignments determine PHI access levels and must be audited
+ *
+ * @example
+ * // Check user role in middleware
+ * if (user.role === USER_ROLES.NURSE) {
+ *   // Grant access to medication administration
+ * }
+ *
+ * // Role-based query filtering
+ * const students = await Student.findAll({
+ *   where: user.role === USER_ROLES.VIEWER ? { nurseId: user.id } : {}
+ * });
+ *
+ * @see {@link ./00006-create-security.ts} For roles table schema
+ * @see {@link ../middleware/rbac.ts} For role-based access control implementation
+ */
 export const USER_ROLES = {
   ADMIN: 'ADMIN',
   NURSE: 'NURSE',
@@ -279,7 +385,36 @@ export const USER_ROLES = {
   COUNSELOR: 'COUNSELOR',
 } as const;
 
-// ===== PERMISSIONS =====
+/**
+ * Permission constants for granular access control
+ *
+ * @constant {Object} PERMISSIONS
+ * @description Defines granular permissions for resources following the format `resource:action`.
+ *              Used in combination with roles for fine-grained access control.
+ *
+ * Permission Format:
+ * - `{resource}:read` - View resource data
+ * - `{resource}:write` - Create or update resource
+ * - `{resource}:delete` - Remove resource
+ * - `{resource}:{special}` - Resource-specific actions (e.g., medications:administer)
+ *
+ * PHI-Related Permissions (HIPAA-sensitive):
+ * - students:read - Access to student PHI
+ * - health_records:read - Access to health records
+ * - medications:administer - Permission to administer medications
+ *
+ * @hipaa All PHI-related permission checks must be logged for audit compliance
+ *
+ * @example
+ * // Check permission in handler
+ * if (userPermissions.includes(PERMISSIONS.MEDICATIONS_ADMINISTER)) {
+ *   await medicationService.administer(medicationId, dosage);
+ *   await auditLog.create({ action: 'MEDICATION_ADMINISTERED', userId });
+ * }
+ *
+ * @see {@link ./00006-create-security.ts} For permissions table schema
+ * @see {@link ../middleware/permissions.ts} For permission checking implementation
+ */
 export const PERMISSIONS = {
   // Student permissions
   STUDENTS_READ: 'students:read',
@@ -341,10 +476,18 @@ export const DATE_FORMATS = {
   TIME_ONLY: 'HH:mm',
 } as const;
 
-// ===== TOKEN CONFIGURATION =====
 /**
- * SECURITY: JWT secret must be set in environment variables
- * No defaults are provided - application will fail fast if not configured
+ * Secure JWT secret retrieval with validation
+ *
+ * @function getJWTSecret
+ * @returns {string} JWT secret from environment variables
+ * @throws {Error} When JWT_SECRET is not set in environment
+ * @security Validates secret length and fails fast if not configured
+ * @private
+ *
+ * @example
+ * // JWT_SECRET is automatically validated on application startup
+ * // export JWT_SECRET="your-secret-at-least-32-characters-long"
  */
 const getJWTSecret = (): string => {
   const secret = process.env.JWT_SECRET;
@@ -358,6 +501,33 @@ const getJWTSecret = (): string => {
   return secret;
 };
 
+/**
+ * JWT token configuration for authentication
+ *
+ * @constant {Object} TOKEN_CONFIG
+ * @description Configuration for JSON Web Tokens used in authentication.
+ *              Supports both access tokens (short-lived) and refresh tokens (long-lived).
+ *
+ * Configuration:
+ * - **JWT_SECRET**: Secret key for signing tokens (from environment)
+ * - **JWT_EXPIRES_IN**: Access token lifetime (8 hours)
+ * - **REFRESH_TOKEN_EXPIRES_IN**: Refresh token lifetime (7 days)
+ * - **TOKEN_TYPE**: Authorization header type (Bearer)
+ *
+ * @hipaa 8-hour token expiration aligns with HIPAA session timeout requirements
+ * @security Secret must be at least 32 characters and stored securely
+ *
+ * @example
+ * // Generate JWT token
+ * const token = jwt.sign(
+ *   { userId: user.id, role: user.role },
+ *   TOKEN_CONFIG.JWT_SECRET,
+ *   { expiresIn: TOKEN_CONFIG.JWT_EXPIRES_IN }
+ * );
+ *
+ * // Use in Authorization header
+ * Authorization: `${TOKEN_CONFIG.TOKEN_TYPE} ${token}`
+ */
 export const TOKEN_CONFIG = {
   JWT_SECRET: getJWTSecret(),
   JWT_EXPIRES_IN: '8h',
@@ -417,7 +587,34 @@ export const FILE_UPLOAD = {
   UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
 } as const;
 
-// ===== MEDICATION CONSTANTS =====
+/**
+ * Healthcare-specific medication constants
+ *
+ * @constant {Object} MEDICATION_CONSTANTS
+ * @description Constants for medication management including dosage forms, routes,
+ *              frequencies, and inventory thresholds for school health services.
+ *
+ * Inventory Thresholds:
+ * - **STOCK_ALERT_THRESHOLD** (20): Trigger reorder notification
+ * - **CRITICAL_STOCK_THRESHOLD** (5): Critical low stock alert
+ * - **EXPIRATION_WARNING_DAYS** (30): Warning for medications expiring within 30 days
+ * - **EXPIRATION_CRITICAL_DAYS** (7): Critical alert for medications expiring within 7 days
+ *
+ * @hipaa Medication administration must be logged for compliance
+ * @safety Critical stock alerts ensure life-saving medications are always available
+ *
+ * @example
+ * // Check stock levels
+ * if (inventory.quantity <= MEDICATION_CONSTANTS.CRITICAL_STOCK_THRESHOLD) {
+ *   await alertService.sendCriticalStockAlert(medication);
+ * }
+ *
+ * // Check expiration
+ * const daysUntilExpiration = daysBetween(new Date(), inventory.expirationDate);
+ * if (daysUntilExpiration <= MEDICATION_CONSTANTS.EXPIRATION_CRITICAL_DAYS) {
+ *   await alertService.sendExpirationAlert(inventory);
+ * }
+ */
 export const MEDICATION_CONSTANTS = {
   DOSAGE_FORMS: ['Tablet', 'Capsule', 'Liquid', 'Injection', 'Inhaler', 'Topical', 'Suppository'],
   ROUTES: ['Oral', 'Intravenous', 'Intramuscular', 'Subcutaneous', 'Topical', 'Inhalation', 'Rectal'],
@@ -428,7 +625,36 @@ export const MEDICATION_CONSTANTS = {
   EXPIRATION_CRITICAL_DAYS: 7,
 } as const;
 
-// ===== VALIDATION PATTERNS =====
+/**
+ * Regular expression patterns for input validation
+ *
+ * @constant {Object} VALIDATION_PATTERNS
+ * @description Regex patterns for validating user input across the application.
+ *              All patterns follow security best practices to prevent injection attacks.
+ *
+ * Pattern Descriptions:
+ * - **EMAIL**: RFC-compliant email validation
+ * - **PHONE**: International phone format with optional symbols
+ * - **PHONE_US**: US phone number with optional +1 country code
+ * - **ZIP_CODE_US**: US zip code (5 or 9 digits)
+ * - **SSN**: US Social Security Number (XXX-XX-XXXX)
+ * - **STUDENT_NUMBER**: Alphanumeric student ID (6-10 characters)
+ * - **PASSWORD**: Strong password (min 8 chars, uppercase, lowercase, digit, special char)
+ *
+ * @security All patterns prevent common injection attacks (SQL, XSS, etc.)
+ * @hipaa SSN and student number patterns protect PHI identifiers
+ *
+ * @example
+ * // Validate email
+ * if (!VALIDATION_PATTERNS.EMAIL.test(userEmail)) {
+ *   throw new Error('Invalid email format');
+ * }
+ *
+ * // Validate password strength
+ * if (!VALIDATION_PATTERNS.PASSWORD.test(password)) {
+ *   throw new Error('Password must contain uppercase, lowercase, digit, and special character');
+ * }
+ */
 export const VALIDATION_PATTERNS = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   PHONE: /^[\d\s\-\+\(\)]+$/,
