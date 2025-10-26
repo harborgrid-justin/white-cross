@@ -1,7 +1,7 @@
 import { ServerRoute } from '@hapi/hapi';
 import Joi from 'joi';
-import { ClinicVisitService } from '@/services/clinical/ClinicVisitService';
-import { VisitDisposition } from '@/database/models/clinical/ClinicVisit';
+import { ClinicVisitService } from '../../../services/clinical/ClinicVisitService';
+import { VisitDisposition } from '../../../database/models/clinical/ClinicVisit';
 
 const clinicVisitService = new ClinicVisitService();
 

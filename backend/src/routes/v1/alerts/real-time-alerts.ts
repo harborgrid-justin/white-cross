@@ -1,11 +1,11 @@
 import { ServerRoute } from '@hapi/hapi';
 import Joi from 'joi';
-import { RealTimeAlertService } from '@/services/alerts/RealTimeAlertService';
-import { AlertSeverity, AlertStatus, AlertCategory } from '@/database/models/alerts/AlertInstance';
-import { DeliveryChannel } from '@/database/models/alerts/AlertSubscription';
-import { WebSocketService } from '@/infrastructure/websocket/WebSocketService';
-import { EmailService } from '@/infrastructure/email/EmailService';
-import { SMSService } from '@/infrastructure/sms/SMSService';
+import { RealTimeAlertService } from '../../../services/alerts/RealTimeAlertService';
+import { AlertSeverity, AlertStatus, AlertCategory } from '../../../database/models/alerts/AlertInstance';
+import { DeliveryChannel } from '../../../database/models/alerts/AlertSubscription';
+import { WebSocketService } from '../../../infrastructure/websocket/WebSocketService';
+import { EmailService } from '../../../infrastructure/email/EmailService';
+import { SMSService } from '../../../infrastructure/sms/SMSService';
 
 // Instantiate service with dependencies
 const wsService = new WebSocketService();
@@ -49,7 +49,7 @@ const realTimeAlertRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const alert = await alertService.createAlert(request.payload as any, userId);
         return h.response(alert).code(201);
       } catch (error) {
@@ -144,7 +144,7 @@ const realTimeAlertRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const { notes } = request.payload as any;
         const alert = await alertService.acknowledgeAlert(request.params.id, userId, notes);
         return h.response(alert).code(200);
@@ -176,7 +176,7 @@ const realTimeAlertRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const { resolution } = request.payload as any;
         const alert = await alertService.resolveAlert(request.params.id, userId, resolution);
         return h.response(alert).code(200);
@@ -209,7 +209,7 @@ const realTimeAlertRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const { escalationReason, escalationLevel } = request.payload as any;
         const alert = await alertService.escalateAlert(
           request.params.id,
@@ -246,7 +246,7 @@ const realTimeAlertRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const { dismissalReason } = request.payload as any;
         const alert = await alertService.dismissAlert(request.params.id, userId, dismissalReason);
         return h.response(alert).code(200);
@@ -354,7 +354,7 @@ const realTimeAlertRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const { schoolId, channels, severityFilter, categoryFilter, quietHoursStart, quietHoursEnd } =
           request.payload as any;
 

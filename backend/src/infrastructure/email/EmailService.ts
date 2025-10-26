@@ -22,7 +22,7 @@
  * ```
  */
 
-import { AlertSeverity, AlertCategory } from '@/database/models/alerts/AlertInstance';
+import { AlertSeverity, AlertCategory } from '../../database/models/alerts/AlertInstance';
 
 export interface AlertEmailData {
   title: string;

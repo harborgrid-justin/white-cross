@@ -193,7 +193,7 @@
  *         />
  *       </div>
  *       <div className="space-y-4">
- *         {/* Step content */}
+ *         Step content goes here
  *       </div>
  *     </div>
  *   );
@@ -366,9 +366,9 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
             sizeClasses[size]
           )}
           role="progressbar"
-          aria-valuenow={value}
+          aria-valuenow={Number.isFinite(value) ? Number(value) : 0}
           aria-valuemin={0}
-          aria-valuemax={max}
+          aria-valuemax={Number.isFinite(max) ? Number(max) : 100}
           aria-label={label || `Progress: ${Math.round(percentage)}%`}
         >
           <div

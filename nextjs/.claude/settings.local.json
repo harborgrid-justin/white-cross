@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//f/temp/white-cross/frontend/src/pages/admin/**)",
+      "Read(//f/temp/white-cross/frontend/src/pages/**)",
+      "Read(//f/temp/white-cross/**)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(for file in F:/temp/white-cross/nextjs/src/components/ui/inputs/*.tsx F:/temp/white-cross/nextjs/src/components/ui/buttons/*.tsx)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(! echo \"$file\")",
+      "Bash(then if ! head -1 \"$file\")",
+      "Bash(then echo \"$file\" fi fi done)",
+      "Bash(find:*)",
+      "Bash(for file in Checkbox.tsx Input.tsx Radio.tsx SearchInput.tsx Select.tsx Switch.tsx Textarea.tsx)",
+      "Bash(do sed -i \"1i''use client'';\\n\" \"$file\")",
+      "Bash(done)",
+      "Bash(for file in BackButton.tsx Button.tsx RollbackButton.tsx)",
+      "Bash(while read file)",
+      "Bash(do if ! head -1 \"$file\")",
+      "Bash(then sed -i \"1i''''use client'''';\\n\" \"$file\" fi done)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(npm test:*)",
+      "Bash(npx storybook@latest init:*)",
+      "Bash(python3:*)",
+      "Bash(npm run build-storybook:*)",
+      "Bash(npm pkg set:*)",
+      "Bash(tree:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,6 +1,6 @@
-import DrugCatalog from '@/database/models/clinical/DrugCatalog';
-import DrugInteraction, { InteractionSeverity } from '@/database/models/clinical/DrugInteraction';
-import StudentDrugAllergy from '@/database/models/clinical/StudentDrugAllergy';
+import DrugCatalog from '../../database/models/clinical/DrugCatalog';
+import DrugInteraction, { InteractionSeverity } from '../../database/models/clinical/DrugInteraction';
+import StudentDrugAllergy from '../../database/models/clinical/StudentDrugAllergy';
 import { Op } from 'sequelize';
 
 export interface DrugSearchDTO {

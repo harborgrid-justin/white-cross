@@ -27,6 +27,7 @@ export enum AlertStatus {
   ACKNOWLEDGED = 'ACKNOWLEDGED',
   RESOLVED = 'RESOLVED',
   ESCALATED = 'ESCALATED',
+  DISMISSED = 'DISMISSED',
   CANCELLED = 'CANCELLED',
   EXPIRED = 'EXPIRED',
 }
@@ -40,6 +41,8 @@ export interface AlertInstanceAttributes {
   category: AlertCategory;
   status: AlertStatus;
   studentId?: string;
+  userId?: string;
+  schoolId?: string;
   relatedEntityType?: string;
   relatedEntityId?: string;
   metadata?: Record<string, any>;
@@ -52,6 +55,12 @@ export interface AlertInstanceAttributes {
   resolvedBy?: string;
   resolutionNotes?: string;
   expiresAt?: Date;
+  createdBy?: string;
+  notes?: string;
+  escalationLevel?: number;
+  escalationReason?: string;
+  autoEscalateAfter?: number;
+  requiresAcknowledgment?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,6 +83,8 @@ class AlertInstance extends Model<AlertInstanceAttributes, AlertInstanceCreation
   public category!: AlertCategory;
   public status!: AlertStatus;
   public studentId?: string;
+  public userId?: string;
+  public schoolId?: string;
   public relatedEntityType?: string;
   public relatedEntityId?: string;
   public metadata?: Record<string, any>;
@@ -86,6 +97,12 @@ class AlertInstance extends Model<AlertInstanceAttributes, AlertInstanceCreation
   public resolvedBy?: string;
   public resolutionNotes?: string;
   public expiresAt?: Date;
+  public createdBy?: string;
+  public notes?: string;
+  public escalationLevel?: number;
+  public escalationReason?: string;
+  public autoEscalateAfter?: number;
+  public requiresAcknowledgment?: boolean;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -135,6 +152,16 @@ class AlertInstance extends Model<AlertInstanceAttributes, AlertInstanceCreation
   }
 
   /**
+   * Escalate the alert
+   */
+  public async escalate(level: number, reason: string): Promise<void> {
+    this.status = AlertStatus.ESCALATED;
+    this.escalationLevel = level;
+    this.escalationReason = reason;
+    await this.save();
+  }
+
+  /**
    * Initialize the AlertInstance model
    */
   public static initialize(sequelize: Sequelize): typeof AlertInstance {
@@ -175,6 +202,16 @@ class AlertInstance extends Model<AlertInstanceAttributes, AlertInstanceCreation
           type: DataTypes.UUID,
           allowNull: true,
           field: 'student_id',
+        },
+        userId: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          field: 'user_id',
+        },
+        schoolId: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          field: 'school_id',
         },
         relatedEntityType: {
           type: DataTypes.STRING(100),
@@ -235,6 +272,37 @@ class AlertInstance extends Model<AlertInstanceAttributes, AlertInstanceCreation
           type: DataTypes.DATE,
           allowNull: true,
           field: 'expires_at',
+        },
+        createdBy: {
+          type: DataTypes.UUID,
+          allowNull: true,
+          field: 'created_by',
+        },
+        notes: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
+        escalationLevel: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          defaultValue: 0,
+          field: 'escalation_level',
+        },
+        escalationReason: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'escalation_reason',
+        },
+        autoEscalateAfter: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          field: 'auto_escalate_after',
+        },
+        requiresAcknowledgment: {
+          type: DataTypes.BOOLEAN,
+          allowNull: true,
+          defaultValue: false,
+          field: 'requires_acknowledgment',
         },
         createdAt: {
           type: DataTypes.DATE,
@@ -329,6 +397,41 @@ class AlertInstance extends Model<AlertInstanceAttributes, AlertInstanceCreation
         acknowledgedAt: null,
       },
       order: [['triggeredAt', 'ASC']],
+    });
+  }
+
+  /**
+   * Find active alerts for a user
+   */
+  public static async findActiveAlertsForUser(userId: string): Promise<AlertInstance[]> {
+    return this.findAll({
+      where: {
+        userId,
+        status: [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED],
+      },
+      order: [
+        ['severity', 'DESC'],
+        ['triggeredAt', 'DESC'],
+      ],
+    });
+  }
+
+  /**
+   * Find alerts expiring soon
+   */
+  public static async findExpiringSoon(hours: number = 1): Promise<AlertInstance[]> {
+    const expiryThreshold = new Date();
+    expiryThreshold.setHours(expiryThreshold.getHours() + hours);
+
+    return this.findAll({
+      where: {
+        status: [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED],
+        expiresAt: {
+          $lte: expiryThreshold,
+          $gt: new Date(),
+        },
+      },
+      order: [['expiresAt', 'ASC']],
     });
   }
 }

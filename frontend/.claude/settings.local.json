@@ -5,7 +5,11 @@
       "Read(//f/temp/white-cross/.temp/**)",
       "Bash(mkdir:*)",
       "Bash(tee:*)",
-      "Bash(md5sum:*)"
+      "Bash(md5sum:*)",
+      "Bash(tree:*)",
+      "Bash(xargs:*)",
+      "Bash(ls -la \"F:\\temp\\white-cross\\frontend\\src\\types\\api\"\" && ls -la \"F:tempwhite-crossfrontendsrctypesclinical\"\")",
+      "Bash(ls -la \"F:\\temp\\white-cross\\frontend\\src\\types\\compliance\"\" && ls -la \"F:tempwhite-crossfrontendsrctypesgraphql\"\")"
     ],
     "deny": [],
     "ask": []

@@ -141,6 +141,23 @@ import ClinicVisit from './clinical/ClinicVisit';
 import BillingClaim from './financial/BillingClaim';
 
 /**
+ * Initialize models that require explicit initialization
+ */
+function initializeModels() {
+  PHIDisclosure.initialize(sequelize);
+  PHIDisclosureAudit.initialize(sequelize);
+  AlertInstance.initialize(sequelize);
+  AlertDefinition.initialize(sequelize);
+  AlertSubscription.initialize(sequelize);
+  AlertDeliveryLog.initialize(sequelize);
+  DrugCatalog.initialize(sequelize);
+  DrugInteraction.initialize(sequelize);
+  StudentDrugAllergy.initialize(sequelize);
+  ClinicVisit.initialize(sequelize);
+  BillingClaim.initialize(sequelize);
+}
+
+/**
  * Define all model associations
  * Based on Prisma schema relationships
  */
@@ -505,6 +522,9 @@ export function setupAssociations() {
   User.hasMany(AlertInstance, { foreignKey: 'createdBy', as: 'createdAlerts' });
   User.hasMany(AlertSubscription, { foreignKey: 'userId', as: 'alertSubscriptions' });
 }
+
+// Initialize models that require explicit initialization
+initializeModels();
 
 // Initialize associations
 setupAssociations();

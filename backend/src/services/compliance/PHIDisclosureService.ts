@@ -1,5 +1,5 @@
-import PHIDisclosure, { DisclosureType, DisclosurePurpose, DisclosureMethod, RecipientType } from '@/database/models/compliance/PHIDisclosure';
-import PHIDisclosureAudit from '@/database/models/compliance/PHIDisclosureAudit';
+import PHIDisclosure, { DisclosureType, DisclosurePurpose, DisclosureMethod, RecipientType } from '../../database/models/compliance/PHIDisclosure';
+import PHIDisclosureAudit from '../../database/models/compliance/PHIDisclosureAudit';
 import { Op } from 'sequelize';
 
 export interface CreateDisclosureDTO {

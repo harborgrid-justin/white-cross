@@ -1,0 +1,221 @@
+import { Meta, ColorPalette, ColorItem, Typeset } from '@storybook/blocks';
+
+<Meta title="Design System/Overview" />
+
+# Design System
+
+The White Cross design system provides a consistent visual language across the healthcare platform.
+
+## Colors
+
+### Primary Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Primary Blue"
+    subtitle="Main brand color"
+    colors={{
+      'primary-50': '#eff6ff',
+      'primary-100': '#dbeafe',
+      'primary-200': '#bfdbfe',
+      'primary-300': '#93c5fd',
+      'primary-400': '#60a5fa',
+      'primary-500': '#3b82f6',
+      'primary-600': '#2563eb',
+      'primary-700': '#1d4ed8',
+      'primary-800': '#1e40af',
+      'primary-900': '#1e3a8a',
+    }}
+  />
+  <ColorItem
+    title="Secondary Gray"
+    subtitle="Alternative actions"
+    colors={{
+      'secondary-50': '#f9fafb',
+      'secondary-100': '#f3f4f6',
+      'secondary-200': '#e5e7eb',
+      'secondary-300': '#d1d5db',
+      'secondary-400': '#9ca3af',
+      'secondary-500': '#6b7280',
+      'secondary-600': '#4b5563',
+      'secondary-700': '#374151',
+      'secondary-800': '#1f2937',
+      'secondary-900': '#111827',
+    }}
+  />
+</ColorPalette>
+
+### Semantic Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Success Green"
+    subtitle="Positive actions"
+    colors={{
+      'success-50': '#f0fdf4',
+      'success-500': '#22c55e',
+      'success-600': '#16a34a',
+      'success-700': '#15803d',
+    }}
+  />
+  <ColorItem
+    title="Warning Yellow"
+    subtitle="Caution messages"
+    colors={{
+      'warning-50': '#fffbeb',
+      'warning-500': '#f59e0b',
+      'warning-600': '#d97706',
+      'warning-700': '#b45309',
+    }}
+  />
+  <ColorItem
+    title="Danger Red"
+    subtitle="Errors and destructive actions"
+    colors={{
+      'danger-50': '#fef2f2',
+      'danger-500': '#ef4444',
+      'danger-600': '#dc2626',
+      'danger-700': '#b91c1c',
+    }}
+  />
+  <ColorItem
+    title="Info Blue"
+    subtitle="Informational messages"
+    colors={{
+      'info-50': '#eff6ff',
+      'info-500': '#3b82f6',
+      'info-600': '#2563eb',
+      'info-700': '#1d4ed8',
+    }}
+  />
+</ColorPalette>
+
+## Typography
+
+### Font Families
+
+- **Body**: Inter, system-ui, sans-serif
+- **Headings**: Inter, system-ui, sans-serif
+- **Monospace**: 'Fira Code', Consolas, Monaco, monospace
+
+### Font Sizes
+
+<Typeset
+  fontSizes={[
+    { size: '0.75rem', name: 'xs' },
+    { size: '0.875rem', name: 'sm' },
+    { size: '1rem', name: 'base' },
+    { size: '1.125rem', name: 'lg' },
+    { size: '1.25rem', name: 'xl' },
+    { size: '1.5rem', name: '2xl' },
+    { size: '1.875rem', name: '3xl' },
+    { size: '2.25rem', name: '4xl' },
+  ]}
+  fontFamily="Inter, system-ui, sans-serif"
+  sampleText="The quick brown fox jumps over the lazy dog"
+/>
+
+### Font Weights
+
+- **Normal**: 400
+- **Medium**: 500
+- **Semibold**: 600
+- **Bold**: 700
+
+## Spacing
+
+The spacing scale uses a 4px base unit:
+
+| Token | Value | Example Use Case |
+|-------|-------|------------------|
+| `0` | 0px | No spacing |
+| `1` | 0.25rem (4px) | Tight spacing |
+| `2` | 0.5rem (8px) | Small gaps |
+| `3` | 0.75rem (12px) | Default spacing |
+| `4` | 1rem (16px) | Medium gaps |
+| `6` | 1.5rem (24px) | Large gaps |
+| `8` | 2rem (32px) | Section spacing |
+| `12` | 3rem (48px) | Major sections |
+| `16` | 4rem (64px) | Page sections |
+
+## Border Radius
+
+- **None**: 0px
+- **SM**: 0.125rem (2px)
+- **Default**: 0.25rem (4px)
+- **MD**: 0.375rem (6px)
+- **LG**: 0.5rem (8px)
+- **XL**: 0.75rem (12px)
+- **2XL**: 1rem (16px)
+- **Full**: 9999px (circular)
+
+## Shadows
+
+### Box Shadows
+
+- **SM**: `0 1px 2px 0 rgb(0 0 0 / 0.05)`
+- **Default**: `0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)`
+- **MD**: `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)`
+- **LG**: `0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`
+- **XL**: `0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)`
+- **2XL**: `0 25px 50px -12px rgb(0 0 0 / 0.25)`
+
+## Breakpoints
+
+- **SM**: 640px
+- **MD**: 768px
+- **LG**: 1024px
+- **XL**: 1280px
+- **2XL**: 1536px
+
+## Dark Mode
+
+All components support dark mode using the `dark:` prefix. Dark mode colors:
+
+- **Background**: gray-900 (#111827)
+- **Surface**: gray-800 (#1f2937)
+- **Text**: gray-100 (#f3f4f6)
+- **Borders**: gray-700 (#374151)
+
+## Accessibility
+
+### Color Contrast
+
+All color combinations meet WCAG 2.1 AA standards:
+
+- **Normal text**: 4.5:1 contrast ratio
+- **Large text**: 3:1 contrast ratio
+- **UI components**: 3:1 contrast ratio
+
+### Focus States
+
+All interactive elements have visible focus indicators:
+
+- **Focus ring**: 2px solid primary-500
+- **Focus offset**: 2px
+- **Dark mode**: Adjusted for visibility
+
+## Icons
+
+The platform uses **Lucide React** for icons:
+
+- Consistent 24px or 16px sizes
+- Stroke width: 2px
+- Accessible with aria-labels
+- Semantic usage
+
+## Animation
+
+### Transitions
+
+- **Duration**: 150ms (default), 200ms (complex), 300ms (page)
+- **Easing**: ease-in-out (default), ease-out (enter), ease-in (exit)
+- **Properties**: opacity, transform, colors
+
+### Reduced Motion
+
+All animations respect `prefers-reduced-motion` preference.
+
+---
+
+*Design system maintained by White Cross Design Team*

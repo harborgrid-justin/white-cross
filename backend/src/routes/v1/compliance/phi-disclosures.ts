@@ -1,7 +1,7 @@
 import { ServerRoute } from '@hapi/hapi';
 import Joi from 'joi';
-import { PHIDisclosureService } from '@/services/compliance/PHIDisclosureService';
-import { DisclosureType, DisclosurePurpose, DisclosureMethod, RecipientType } from '@/database/models/compliance/PHIDisclosure';
+import { PHIDisclosureService } from '../../../services/compliance/PHIDisclosureService';
+import { DisclosureType, DisclosurePurpose, DisclosureMethod, RecipientType } from '../../../database/models/compliance/PHIDisclosure';
 
 const phiDisclosureService = new PHIDisclosureService();
 
@@ -54,7 +54,7 @@ const phiDisclosureRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const ipAddress = request.info.remoteAddress;
         const userAgent = request.headers['user-agent'];
 
@@ -123,7 +123,7 @@ const phiDisclosureRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const ipAddress = request.info.remoteAddress;
         const userAgent = request.headers['user-agent'];
 
@@ -173,7 +173,7 @@ const phiDisclosureRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const ipAddress = request.info.remoteAddress;
         const userAgent = request.headers['user-agent'];
 
@@ -211,7 +211,7 @@ const phiDisclosureRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const ipAddress = request.info.remoteAddress;
         const userAgent = request.headers['user-agent'];
 
@@ -296,7 +296,7 @@ const phiDisclosureRoutes: ServerRoute[] = [
     },
     handler: async (request, h) => {
       try {
-        const userId = request.auth.credentials.userId;
+        const userId = request.auth.credentials.userId as string;
         const { notes } = request.payload as any;
 
         const disclosure = await phiDisclosureService.completeFollowUp(

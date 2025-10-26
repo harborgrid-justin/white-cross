@@ -20,7 +20,7 @@
  * ```
  */
 
-import { AlertSeverity } from '@/database/models/alerts/AlertInstance';
+import { AlertSeverity } from '../../database/models/alerts/AlertInstance';
 
 export interface AlertSMSData {
   title: string;

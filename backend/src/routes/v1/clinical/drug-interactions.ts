@@ -1,7 +1,7 @@
 import { ServerRoute } from '@hapi/hapi';
 import Joi from 'joi';
-import { DrugInteractionService } from '@/services/clinical/DrugInteractionService';
-import { InteractionSeverity } from '@/database/models/clinical/DrugInteraction';
+import { DrugInteractionService } from '../../../services/clinical/DrugInteractionService';
+import { InteractionSeverity } from '../../../database/models/clinical/DrugInteraction';
 
 const drugInteractionService = new DrugInteractionService();
 

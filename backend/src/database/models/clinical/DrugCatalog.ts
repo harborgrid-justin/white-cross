@@ -5,6 +5,7 @@ export enum DrugInteractionSeverity { NONE = 'NONE', MINOR = 'MINOR', MODERATE =
 export interface DrugCatalogAttributes {
   id: string;
   rxnormId?: string;
+  rxnormCode?: string;
   genericName: string;
   brandNames?: string[];
   drugClass?: string;
@@ -23,6 +24,7 @@ export interface DrugCatalogCreationAttributes extends Optional<DrugCatalogAttri
 class DrugCatalog extends Model<DrugCatalogAttributes, DrugCatalogCreationAttributes> implements DrugCatalogAttributes {
   public id!: string;
   public rxnormId?: string;
+  public rxnormCode?: string;
   public genericName!: string;
   public brandNames?: string[];
   public drugClass?: string;
@@ -40,6 +42,7 @@ class DrugCatalog extends Model<DrugCatalogAttributes, DrugCatalogCreationAttrib
       {
         id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
         rxnormId: { type: DataTypes.STRING(50), allowNull: true, unique: true, field: 'rxnorm_id' },
+        rxnormCode: { type: DataTypes.STRING(50), allowNull: true, unique: true, field: 'rxnorm_code' },
         genericName: { type: DataTypes.STRING(255), allowNull: false, field: 'generic_name' },
         brandNames: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true, field: 'brand_names' },
         drugClass: { type: DataTypes.STRING(100), allowNull: true, field: 'drug_class' },
@@ -57,8 +60,8 @@ class DrugCatalog extends Model<DrugCatalogAttributes, DrugCatalogCreationAttrib
     return DrugCatalog;
   }
 
-  public static async searchByName(query: string): Promise<DrugCatalog[]> {
-    const { Op } = sequelize;
+  public static async searchByName(query: string, limit: number = 20): Promise<DrugCatalog[]> {
+    const { Op } = require('sequelize');
     return this.findAll({
       where: {
         [Op.or]: [
@@ -67,7 +70,7 @@ class DrugCatalog extends Model<DrugCatalogAttributes, DrugCatalogCreationAttrib
         ],
         isActive: true,
       },
-      limit: 20,
+      limit,
     });
   }
 }

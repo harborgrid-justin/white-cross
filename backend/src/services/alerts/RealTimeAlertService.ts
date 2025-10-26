@@ -1,11 +1,11 @@
-import AlertInstance, { AlertSeverity, AlertStatus, AlertCategory } from '@/database/models/alerts/AlertInstance';
-import AlertDefinition from '@/database/models/alerts/AlertDefinition';
-import AlertSubscription, { DeliveryChannel } from '@/database/models/alerts/AlertSubscription';
-import AlertDeliveryLog from '@/database/models/alerts/AlertDeliveryLog';
+import AlertInstance, { AlertSeverity, AlertStatus, AlertCategory } from '../../database/models/alerts/AlertInstance';
+import AlertDefinition from '../../database/models/alerts/AlertDefinition';
+import AlertSubscription, { DeliveryChannel } from '../../database/models/alerts/AlertSubscription';
+import AlertDeliveryLog from '../../database/models/alerts/AlertDeliveryLog';
 import { Op } from 'sequelize';
-import { WebSocketService } from '@/infrastructure/websocket/WebSocketService';
-import { EmailService } from '@/infrastructure/email/EmailService';
-import { SMSService } from '@/infrastructure/sms/SMSService';
+import { WebSocketService } from '../../infrastructure/websocket/WebSocketService';
+import { EmailService } from '../../infrastructure/email/EmailService';
+import { SMSService } from '../../infrastructure/sms/SMSService';
 
 export interface CreateAlertDTO {
   definitionId?: string;

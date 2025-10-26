@@ -1,4 +1,4 @@
-import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
+import { Model, DataTypes, Optional, Sequelize, Op } from 'sequelize';
 
 export enum KeyType { MASTER = 'MASTER', DATA_ENCRYPTION = 'DATA_ENCRYPTION', BACKUP = 'BACKUP', ARCHIVE = 'ARCHIVE' }
 export enum KeyStatus { ACTIVE = 'ACTIVE', ROTATING = 'ROTATING', EXPIRED = 'EXPIRED', REVOKED = 'REVOKED', ARCHIVED = 'ARCHIVED' }
@@ -77,7 +77,7 @@ class EncryptionKey extends Model<EncryptionKeyAttributes, EncryptionKeyCreation
   }
 
   public static async findKeysNeedingRotation(): Promise<EncryptionKey[]> {
-    return this.findAll({ where: { status: KeyStatus.ACTIVE, expiresAt: { [sequelize.Op.lte]: new Date() } } });
+    return this.findAll({ where: { status: KeyStatus.ACTIVE, expiresAt: { [Op.lte]: new Date() } } });
   }
 }
 

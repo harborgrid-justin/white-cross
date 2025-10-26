@@ -1,4 +1,4 @@
-import ClinicVisit, { VisitDisposition } from '@/database/models/clinical/ClinicVisit';
+import ClinicVisit, { VisitDisposition } from '../../database/models/clinical/ClinicVisit';
 import { Op } from 'sequelize';
 
 export interface CheckInDTO {

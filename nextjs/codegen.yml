@@ -1,0 +1,45 @@
+# GraphQL Code Generator Configuration
+# Generates TypeScript types from GraphQL schema and operations
+
+overwrite: true
+schema: 'http://localhost:3001/graphql'
+documents: 'src/graphql/**/*.ts'
+generates:
+  src/graphql/types/generated.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      # Type generation options
+      avoidOptionals: false
+      maybeValue: T | null
+      inputMaybeValue: T | null | undefined
+
+      # React Apollo options
+      withHooks: true
+      withHOC: false
+      withComponent: false
+
+      # Naming conventions
+      enumsAsTypes: true
+      constEnums: false
+
+      # Import options
+      useTypeImports: true
+
+      # Scalars
+      scalars:
+        DateTime: string
+        JSON: any
+
+      # Fragment masking
+      fragmentMasking: false
+
+      # Additional options
+      skipTypename: false
+      nonOptionalTypename: true
+
+hooks:
+  afterAllFileWrite:
+    - prettier --write

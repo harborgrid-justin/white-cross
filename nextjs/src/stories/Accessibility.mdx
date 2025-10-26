@@ -1,0 +1,257 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Guidelines/Accessibility" />
+
+# Accessibility Guidelines
+
+White Cross healthcare platform is committed to WCAG 2.1 AA compliance, ensuring all users can access critical healthcare functionality.
+
+## Core Principles
+
+### 1. Perceivable
+
+**Color Contrast**
+- Text: Minimum 4.5:1 contrast ratio
+- Large text (18pt+): Minimum 3:1 contrast ratio
+- UI components: Minimum 3:1 contrast ratio
+- All combinations tested in light and dark modes
+
+**Alternative Text**
+- All images have descriptive alt text
+- Icons have aria-labels or aria-hidden="true"
+- Charts include data tables for screen readers
+
+**Responsive Text**
+- Text can be resized up to 200% without loss of functionality
+- No horizontal scrolling at 320px width
+- Zoom-friendly layouts
+
+### 2. Operable
+
+**Keyboard Navigation**
+- All interactive elements accessible via keyboard
+- Logical tab order throughout application
+- Visible focus indicators (2px primary-500 ring)
+- Keyboard shortcuts documented
+- Skip navigation links for main content
+
+**Focus Management**
+- Modal dialogs trap focus
+- Focus returns to trigger element on close
+- Focus moves to newly created elements
+- No keyboard traps
+
+**Time Limits**
+- Session timeout warnings (5 minutes before)
+- Ability to extend timeout
+- No time-based content changes without control
+
+### 3. Understandable
+
+**Clear Labels**
+- All form fields have visible labels
+- Required fields clearly marked (*)
+- Error messages are descriptive
+- Helper text provides guidance
+
+**Consistent Navigation**
+- Navigation order consistent across pages
+- Breadcrumbs show current location
+- Predictable component behavior
+
+**Error Prevention**
+- Confirmation dialogs for destructive actions
+- Form validation before submission
+- Clear error messages with recovery steps
+
+### 4. Robust
+
+**Semantic HTML**
+- Proper heading hierarchy (h1 → h2 → h3)
+- Semantic elements (nav, main, aside, article)
+- Button vs. link usage (button for actions, link for navigation)
+- Form labels associated with inputs
+
+**ARIA Attributes**
+- role attributes where needed
+- aria-label for icon buttons
+- aria-describedby for helper text
+- aria-invalid for error states
+- aria-live for dynamic updates
+
+## Component-Specific Guidelines
+
+### Buttons
+
+```tsx
+// ✅ Good: Descriptive text
+<Button>Save Patient Record</Button>
+
+// ✅ Good: Icon button with aria-label
+<Button icon={<Download />} aria-label="Download report" />
+
+// ❌ Bad: No accessible label
+<Button><DownloadIcon /></Button>
+```
+
+### Forms
+
+```tsx
+// ✅ Good: Label, required indicator, helper text
+<Input
+  label="Medical Record Number"
+  required
+  helperText="Format: MRN-XXXXX"
+  error={errors.mrn}
+/>
+
+// ❌ Bad: Placeholder as label
+<Input placeholder="Enter MRN" />
+```
+
+### Modals
+
+```tsx
+// ✅ Good: Proper ARIA attributes
+<Modal
+  open={isOpen}
+  onClose={handleClose}
+  aria-labelledby="modal-title"
+  aria-modal="true"
+>
+  <ModalTitle id="modal-title">Confirm Action</ModalTitle>
+  {/* Content */}
+</Modal>
+
+// ❌ Bad: No title or ARIA
+<Modal open={isOpen}>{/* Content */}</Modal>
+```
+
+### Tables
+
+```tsx
+// ✅ Good: Proper table structure
+<table>
+  <caption>Patient Medications</caption>
+  <thead>
+    <tr>
+      <th scope="col">Medication</th>
+      <th scope="col">Dosage</th>
+    </tr>
+  </thead>
+  <tbody>{/* Rows */}</tbody>
+</table>
+```
+
+## Testing Checklist
+
+### Manual Testing
+
+- [ ] All functionality accessible via keyboard
+- [ ] Tab order is logical
+- [ ] Focus indicators visible
+- [ ] No keyboard traps
+- [ ] Screen reader announces content correctly
+- [ ] Color is not sole indicator of information
+- [ ] Text can be resized to 200%
+- [ ] Works with high contrast mode
+
+### Automated Testing
+
+- [ ] axe-core violations = 0
+- [ ] Lighthouse accessibility score ≥ 95
+- [ ] WAVE errors = 0
+- [ ] Color contrast checks pass
+
+### Screen Reader Testing
+
+Test with at least two screen readers:
+
+- **Windows**: NVDA (free) or JAWS
+- **macOS**: VoiceOver (built-in)
+- **Mobile**: TalkBack (Android), VoiceOver (iOS)
+
+## Common Patterns
+
+### Loading States
+
+```tsx
+// Screen reader announces loading
+<div role="status" aria-live="polite" aria-busy="true">
+  <LoadingSpinner />
+  <span className="sr-only">Loading patient data...</span>
+</div>
+```
+
+### Error Messages
+
+```tsx
+// Associate error with input
+<Input
+  id="email"
+  label="Email"
+  aria-invalid={!!error}
+  aria-describedby={error ? "email-error" : undefined}
+/>
+{error && (
+  <p id="email-error" role="alert" className="text-danger-600">
+    {error}
+  </p>
+)}
+```
+
+### Dynamic Content
+
+```tsx
+// Announce updates to screen readers
+<div aria-live="polite" aria-atomic="true">
+  {successMessage && <Alert>{successMessage}</Alert>}
+</div>
+```
+
+## Healthcare-Specific Considerations
+
+### PHI Access
+
+- Screen reader users must receive same information
+- Alternative text must not expose PHI unnecessarily
+- Masked fields should announce "Password" or "Hidden"
+
+### Emergency Alerts
+
+- Use aria-live="assertive" for critical alerts
+- Ensure alerts are keyboard accessible
+- Visual and auditory alerts for critical information
+
+### Medication Administration
+
+- Confirmation dialogs must be keyboard accessible
+- All medication details available to screen readers
+- Error states clearly announced
+
+## Resources
+
+### Tools
+
+- **axe DevTools**: Browser extension for accessibility testing
+- **WAVE**: Web accessibility evaluation tool
+- **NVDA**: Free screen reader for Windows
+- **VoiceOver**: Built-in macOS/iOS screen reader
+- **Lighthouse**: Chrome DevTools accessibility audit
+
+### Documentation
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [React Accessibility Docs](https://react.dev/learn/accessibility)
+- [Next.js Accessibility](https://nextjs.org/docs/accessibility)
+
+### Testing Services
+
+- **Accessibility Insights**: Microsoft's testing tool
+- **Pa11y**: Automated accessibility testing
+- **Deque axe**: Industry-standard testing engine
+
+---
+
+*Accessibility is not a feature, it's a requirement. Every user deserves equal access to healthcare information.*
