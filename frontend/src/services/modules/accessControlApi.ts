@@ -1,13 +1,107 @@
 /**
- * WF-COMP-268 | accessControlApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Access Control and RBAC Management API service
+ * @module services/modules/accessControlApi
+ * @category Services - Security & Access Control
+ *
+ * Provides comprehensive Role-Based Access Control (RBAC) management, security incident
+ * tracking, session management, and IP restriction capabilities for the White Cross
+ * healthcare platform. Implements enterprise-grade security controls with audit logging.
+ *
+ * Key Features:
+ * - Role management (create, update, delete roles)
+ * - Permission management (create and assign permissions)
+ * - Role-Permission assignments (many-to-many relationship)
+ * - User-Role assignments (dynamic role switching)
+ * - Permission checking and validation
+ * - Session management and tracking
+ * - Security incident logging and monitoring
+ * - IP restriction management (allowlist/blocklist)
+ * - Security statistics and analytics
+ * - Default role initialization
+ *
+ * RBAC Hierarchy:
+ * - System Admin > District Admin > School Admin > Nurse > Counselor > Viewer
+ * - Hierarchical role inheritance with permission aggregation
+ * - Dynamic permission checking at runtime
+ * - Resource-level and action-level permissions
+ *
+ * Security Features:
+ * - Role-based permission enforcement on all endpoints
+ * - Automatic audit logging for all access control changes
+ * - Session tracking with IP and user agent logging
+ * - Security incident classification (LOW, MEDIUM, HIGH, CRITICAL)
+ * - IP restriction for enhanced security
+ * - Multi-session management per user
+ * - Automatic session expiration handling
+ *
+ * Permission Model:
+ * - Resource-based permissions (e.g., 'students', 'medications', 'reports')
+ * - Action-based permissions (e.g., 'read', 'create', 'update', 'delete')
+ * - Combined permission format: 'resource:action' (e.g., 'students:read')
+ * - Wildcard permissions supported ('*:*' for super admin)
+ *
+ * Security Incident Tracking:
+ * - Failed login attempts monitoring
+ * - Unauthorized access attempts logging
+ * - Suspicious activity detection
+ * - Incident severity classification
+ * - Automatic alerting for critical incidents
+ *
+ * Session Management:
+ * - Multi-device session support
+ * - Session termination (single or all user sessions)
+ * - Session activity tracking
+ * - Automatic cleanup of expired sessions
+ *
+ * IP Restriction Management:
+ * - IP allowlist for trusted networks
+ * - IP blocklist for banned addresses
+ * - CIDR notation support for network ranges
+ * - Geographic IP filtering capabilities
+ *
+ * @example Setup RBAC for new user
+ * ```typescript
+ * import { accessControlApi } from '@/services/modules/accessControlApi';
+ *
+ * // Assign role to user
+ * const assignment = await accessControlApi.assignRoleToUser(
+ *   'user-uuid-123',
+ *   'role-nurse-uuid'
+ * );
+ *
+ * // Check user permissions
+ * const hasAccess = await accessControlApi.checkPermission(
+ *   'user-uuid-123',
+ *   'students',
+ *   'read'
+ * );
+ * console.log(`User can read students: ${hasAccess.hasPermission}`);
+ * ```
+ *
+ * @example Manage user sessions
+ * ```typescript
+ * // Get all active sessions for user
+ * const { sessions } = await accessControlApi.getUserSessions('user-uuid-123');
+ * console.log(`Active sessions: ${sessions.length}`);
+ *
+ * // Terminate all sessions (force logout)
+ * await accessControlApi.deleteAllUserSessions('user-uuid-123');
+ * ```
+ *
+ * @example Track security incidents
+ * ```typescript
+ * const incidents = await accessControlApi.getSecurityIncidents({
+ *   severity: 'HIGH',
+ *   startDate: '2025-01-01',
+ *   endDate: '2025-01-31'
+ * });
+ * console.log(`High severity incidents: ${incidents.total}`);
+ * ```
+ *
+ * @see {@link usersApi} for user management operations
+ * @see {@link authApi} for authentication operations
+ * @see {@link Role} for role data type definition
+ * @see {@link Permission} for permission data type definition
  */
 
 import type {

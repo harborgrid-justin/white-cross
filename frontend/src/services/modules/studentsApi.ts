@@ -1,13 +1,51 @@
 /**
- * WF-COMP-292 | studentsApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/student.types | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, classes | Key Features: arrow component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Students API Service
+ *
+ * Provides comprehensive frontend access to student management endpoints including
+ * student CRUD operations, enrollment, transfers, nurse assignments, and PHI-protected
+ * data access. All operations include HIPAA-compliant audit logging and comprehensive
+ * validation aligned with backend Sequelize model constraints.
+ *
+ * **Key Features:**
+ * - Student CRUD operations with comprehensive validation
+ * - Student search and filtering with pagination
+ * - Nurse assignment and transfer management
+ * - Student enrollment and reactivation workflows
+ * - Grade-level and assigned student queries
+ * - Bulk update operations for efficiency
+ * - PHI-compliant data export with audit logging
+ * - Health and mental health record access
+ * - Soft delete with reactivation support
+ *
+ * **HIPAA Compliance:**
+ * - All student operations trigger PHI access audit logs via auditService
+ * - Student demographic data treated as Protected Health Information (PHI)
+ * - Success and failure logging for all PHI access operations
+ * - Audit context includes user identity, timestamp, and operation details
+ * - Export operations require explicit audit trail for compliance
+ * - Mental health records have additional access restrictions
+ *
+ * **Validation and Data Integrity:**
+ * - Frontend validation mirrors backend Sequelize model constraints
+ * - Zod schemas enforce data integrity before API calls
+ * - Student number format: Alphanumeric 4-20 chars (e.g., "STU-2025-001")
+ * - Medical record number format: Alphanumeric 5-20 chars (e.g., "MRN-12345")
+ * - Phone number validation: US formats supported
+ * - Date of birth validation: 3-100 years ago
+ * - Grade validation: K-12, Pre-K, TK, or custom formats
+ *
+ * **TanStack Query Integration:**
+ * - Student list queries: 5-minute cache, invalidate on create/update/delete
+ * - Individual student: 2-minute cache, invalidate on update
+ * - Assigned students: 5-minute cache, nurse-specific queries
+ * - Statistics: 10-minute cache, invalidate on data changes
+ * - Search results: No cache (dynamic queries)
+ * - Exports: No cache (one-time operations with audit)
+ *
+ * @module services/modules/studentsApi
+ * @see {@link studentManagementApi} for photo, barcode, transcript management
+ * @see {@link emergencyContactsApi} for student emergency contact operations
+ * @see {@link healthRecordsApi} for comprehensive health record access
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
@@ -32,6 +70,27 @@ import {
 
 /**
  * API response wrapper matching backend response structure
+ *
+ * Standardizes all student API responses for consistent error handling
+ * and data extraction across the frontend.
+ *
+ * @interface BackendApiResponse
+ * @template T - The type of data returned in the response
+ *
+ * @property {boolean} success - Indicates if the operation succeeded
+ * @property {T} [data] - Response data if successful
+ * @property {Object} [error] - Error object if operation failed
+ * @property {string} [error.message] - Human-readable error message
+ * @property {string} [message] - Optional success/info message
+ *
+ * @example
+ * ```typescript
+ * const response: BackendApiResponse<{ student: Student }> = {
+ *   success: true,
+ *   data: { student: studentData },
+ *   message: 'Student created successfully'
+ * };
+ * ```
  */
 interface BackendApiResponse<T> {
   success: boolean;
@@ -43,27 +102,74 @@ interface BackendApiResponse<T> {
 }
 
 /**
- * Validation schemas matching backend Sequelize model constraints
- * Ensures data integrity before sending to API
+ * Validation constants and schemas matching backend Sequelize model constraints
+ *
+ * All validation rules mirror the backend Student model to ensure data integrity
+ * before API calls, reducing unnecessary network requests and providing immediate
+ * feedback to users.
  */
 
-// Valid grade values for K-12 education system
+/**
+ * Valid grade values for K-12 education system
+ *
+ * Supports standard K-12 grades plus common variations and pre-kindergarten formats.
+ * Custom grade formats are also validated via regex pattern matching.
+ *
+ * @constant {readonly string[]}
+ *
+ * @example
+ * ```typescript
+ * VALID_GRADES.includes('K'); // true
+ * VALID_GRADES.includes('5'); // true
+ * VALID_GRADES.includes('Pre-K'); // true
+ * ```
+ */
 const VALID_GRADES = [
   'K', 'K-1', 'K-2', 'K-3', 'K-4', 'K-5', // Kindergarten variations
   '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
   'Pre-K', 'PK', 'TK', // Pre-kindergarten variations
 ] as const;
 
-// Phone number regex (US format: (123) 456-7890, 123-456-7890, 1234567890)
+/**
+ * Phone number validation regex for US formats
+ *
+ * Supports:
+ * - (123) 456-7890
+ * - 123-456-7890
+ * - 1234567890
+ * - +1-123-456-7890
+ *
+ * @constant {RegExp}
+ */
 const PHONE_REGEX = /^(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
-// Email validation regex
+/**
+ * Email validation regex (basic format check)
+ *
+ * Validates standard email format: user@domain.tld
+ *
+ * @constant {RegExp}
+ */
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Medical record number format (alphanumeric, 5-20 chars)
+/**
+ * Medical record number format validation
+ *
+ * Format: Alphanumeric with hyphens, 5-20 characters, uppercase
+ * Examples: MRN-12345, MEDICAL-001, A1B2C3D4E5
+ *
+ * @constant {RegExp}
+ */
 const MEDICAL_RECORD_REGEX = /^[A-Z0-9-]{5,20}$/;
 
-// Student number format (alphanumeric, 4-20 chars)
+/**
+ * Student number format validation
+ *
+ * Format: Alphanumeric with hyphens, 4-20 characters, uppercase
+ * Examples: STU-2025-001, STUDENT-123, A1B2C3
+ *
+ * @constant {RegExp}
+ */
 const STUDENT_NUMBER_REGEX = /^[A-Z0-9-]{4,20}$/;
 
 /**

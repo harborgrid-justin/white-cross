@@ -1,7 +1,67 @@
 /**
- * Incidents Page Routes
- * 
- * Comprehensive route configuration for incident management functionality.
+ * Incidents Page Routes Configuration
+ *
+ * Comprehensive route configuration for enterprise-grade incident management
+ * and emergency response tracking in school healthcare settings.
+ *
+ * @module pages/incidents/routes
+ *
+ * @remarks
+ * This module configures all routing for the incident management system, including:
+ *
+ * **Route Categories:**
+ * - Dashboard and analytics views
+ * - Incident report CRUD operations
+ * - Witness statement collection and management
+ * - Follow-up action tracking and assignment
+ * - Timeline and history visualization
+ * - Document and evidence management
+ * - Parent/guardian notification workflows
+ * - Search and filtering interfaces
+ * - Statistics and compliance reporting
+ * - Print and export functionality
+ *
+ * **Role-Based Access Control:**
+ * - **ADMIN**: Full access to all incident features
+ * - **NURSE**: Create, edit, and manage incidents
+ * - **COUNSELOR**: Create, edit, and manage incidents
+ * - **SCHOOL_ADMIN**: View-only access to incidents and reports
+ * - **DISTRICT_ADMIN**: Access to statistics and exports
+ *
+ * **Emergency Response Workflows:**
+ * - Severity-based routing to appropriate views
+ * - Critical incident fast-path routes
+ * - Pending incident review queues
+ * - Follow-up required incident tracking
+ * - Unnotified parent alert routing
+ *
+ * **HIPAA Compliance:**
+ * All routes enforce authentication via ProtectedRoute wrapper.
+ * Access to PHI-containing incident data is logged for audit purposes.
+ *
+ * **Accessibility:**
+ * - Semantic route structure for screen readers
+ * - Logical navigation hierarchy
+ * - Consistent URL patterns for predictable navigation
+ *
+ * @example
+ * ```tsx
+ * // In main app router
+ * import { IncidentRoutes } from '@/pages/incidents/routes';
+ *
+ * function AppRouter() {
+ *   return (
+ *     <Routes>
+ *       {IncidentRoutes()}
+ *       // ... other routes
+ *     </Routes>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link ProtectedRoute} for authentication and authorization
+ * @see {@link IncidentsDashboard} for dashboard component
+ * @see {@link IncidentReportsList} for list view
  */
 
 import React from 'react';
@@ -30,7 +90,12 @@ import {
 
 /**
  * Incident Routes Component
- * Defines all routes for the incident management module
+ *
+ * Renders all route definitions for the incident management module with
+ * role-based access control and emergency response workflows.
+ *
+ * @component
+ * @returns {JSX.Element} React Router route configuration
  */
 export const IncidentRoutes = () => (
   <>

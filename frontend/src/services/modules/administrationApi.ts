@@ -1,13 +1,151 @@
 /**
- * WF-COMP-269 | administrationApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/administration | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview System Administration and Configuration API service
+ * @module services/modules/administrationApi
+ * @category Services - Administration & System Management
+ *
+ * Provides comprehensive system administration capabilities for the White Cross platform
+ * including district/school management, user administration, system configuration, license
+ * management, backup operations, training modules, and system health monitoring.
+ *
+ * Key Features:
+ * - User management with RBAC enforcement
+ * - District hierarchy management
+ * - School administration and enrollment tracking
+ * - System configuration management (16 categories)
+ * - License tier management (TRIAL, BASIC, PROFESSIONAL, ENTERPRISE)
+ * - Automated backup scheduling and management
+ * - Performance metrics collection and monitoring
+ * - Training module management and completion tracking
+ * - System health monitoring and diagnostics
+ * - Audit log access for administrative actions
+ *
+ * Organizational Hierarchy:
+ * ```
+ * District (Top Level)
+ *   └── Schools (Multiple per district)
+ *       └── Users (Assigned to specific schools)
+ *           └── Students (Managed by school nurses)
+ * ```
+ *
+ * User Management:
+ * - Create, update, deactivate users
+ * - Role assignment (ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, COUNSELOR, VIEWER)
+ * - User filtering by role, school, active status
+ * - Full-text search across user data
+ * - Password reset (admin-initiated)
+ * - Multi-factor authentication configuration
+ *
+ * District Management:
+ * - CRUD operations for districts
+ * - Contact information tracking
+ * - Geographic data (address, city, state, zip)
+ * - District-level license assignment
+ * - Multi-district support for large deployments
+ *
+ * School Management:
+ * - CRUD operations for schools
+ * - School-district association
+ * - Enrollment tracking (total student count)
+ * - Principal assignment
+ * - School-specific configuration overrides
+ *
+ * System Configuration Categories:
+ * - GENERAL: Core system settings
+ * - SECURITY: Authentication, authorization, encryption
+ * - NOTIFICATION: Email, SMS, push notification settings
+ * - INTEGRATION: External system connection parameters
+ * - BACKUP: Backup schedule and retention policies
+ * - PERFORMANCE: Caching, query optimization
+ * - HEALTHCARE: HIPAA compliance settings
+ * - MEDICATION: Medication administration rules
+ * - APPOINTMENTS: Scheduling configuration
+ * - UI: User interface customization
+ * - QUERY: Database query limits
+ * - FILE_UPLOAD: File size and type restrictions
+ * - RATE_LIMITING: API rate limit configuration
+ * - SESSION: Session timeout and management
+ * - EMAIL: Email server configuration
+ * - SMS: SMS gateway configuration
+ *
+ * License Management:
+ * - TRIAL: Up to 10 users, 2 schools, time-limited
+ * - BASIC: Up to 50 users, 5 schools
+ * - PROFESSIONAL: Up to 500 users, 50 schools
+ * - ENTERPRISE: Unlimited users and schools
+ * - Feature enablement by license tier
+ * - License expiration tracking
+ * - Automatic license enforcement
+ *
+ * Training Module Management:
+ * - Training content creation and versioning
+ * - Category organization (HIPAA_COMPLIANCE, MEDICATION_MANAGEMENT, etc.)
+ * - Required vs optional training designation
+ * - Completion tracking per user
+ * - Training certificates generation
+ * - Continuing education credits tracking
+ *
+ * System Health Monitoring:
+ * - Database connection status
+ * - API response time metrics
+ * - Memory usage tracking
+ * - Disk space monitoring
+ * - Integration health checks
+ * - Background job status
+ *
+ * @example Create district with validation
+ * ```typescript
+ * import { administrationApi } from '@/services/modules/administrationApi';
+ *
+ * const district = await administrationApi.createDistrict({
+ *   name: 'Springfield School District',
+ *   code: 'SSD-001',
+ *   address: '123 Main Street',
+ *   city: 'Springfield',
+ *   state: 'IL',
+ *   zipCode: '62701',
+ *   phone: '(555) 123-4567',
+ *   email: 'admin@springfield.edu',
+ *   website: 'https://springfield.edu'
+ * });
+ * console.log(`District created: ${district.id}`);
+ * ```
+ *
+ * @example Manage system configuration
+ * ```typescript
+ * const config = await administrationApi.setConfiguration({
+ *   key: 'session.timeout',
+ *   value: '3600',
+ *   category: 'SESSION',
+ *   valueType: 'NUMBER',
+ *   description: 'Session timeout in seconds',
+ *   isEditable: true,
+ *   requiresRestart: false
+ * }, 'admin-user-uuid');
+ * ```
+ *
+ * @example Create enterprise license
+ * ```typescript
+ * const license = await administrationApi.createLicense({
+ *   licenseKey: 'ENT-2025-ABC123',
+ *   type: 'ENTERPRISE',
+ *   features: ['unlimited_users', 'all_integrations', 'priority_support'],
+ *   issuedTo: 'Springfield School District',
+ *   districtId: 'district-uuid-123',
+ *   notes: 'Annual renewal 2026-01-01'
+ * });
+ * ```
+ *
+ * @example Monitor system health
+ * ```typescript
+ * const health = await administrationApi.getSystemHealth();
+ * console.log(`System status: ${health.status}`);
+ * console.log(`Database: ${health.database.status}`);
+ * console.log(`API latency: ${health.api.averageResponseTime}ms`);
+ * ```
+ *
+ * @see {@link usersApi} for detailed user management
+ * @see {@link accessControlApi} for RBAC configuration
+ * @see {@link complianceApi} for compliance training tracking
  */
 
 import type { ApiClient } from '../core/ApiClient';

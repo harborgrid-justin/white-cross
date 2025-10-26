@@ -1,10 +1,142 @@
 /**
- * Complete Documents API Implementation
- * Enhanced with digital signatures, versioning, advanced search, and bulk operations
+ * @fileoverview Complete Documents API Implementation
+ * @module services/modules/documentsApi
+ * @category Healthcare - Documents
+ *
+ * Comprehensive document management API client for the White Cross healthcare platform.
+ * Handles student health documents, consent forms, medical records, administrative
+ * documents with full lifecycle management including versioning, digital signatures,
+ * sharing, and compliance tracking.
+ *
+ * **Key Features:**
+ * - **Document CRUD**: Complete create, read, update, delete operations
+ * - **Version Control**: Track document revisions with full version history
+ * - **Digital Signatures**: Cryptographic signing with multiple signature types
+ * - **Advanced Search**: Full-text search with filters, sorting, and pagination
+ * - **Bulk Operations**: Mass delete and download with progress tracking
+ * - **Template Management**: Reusable document templates for common forms
+ * - **Access Control**: Share documents with granular permissions
+ * - **Audit Trail**: Complete access logging for HIPAA compliance
+ * - **Categorization**: Organize documents by type, category, and tags
+ *
+ * **Healthcare Compliance:**
+ * - HIPAA-compliant document access logging
+ * - PHI detection and protection in document content
+ * - Audit trail for all document operations
+ * - Secure sharing with expiration and permissions
+ * - Document retention and archival policies
+ *
+ * **Document Types:**
+ * - Consent Forms (immunization, treatment, field trips)
+ * - Medical Records (doctor notes, prescriptions, test results)
+ * - Health Plans (504 plans, IEPs, care plans)
+ * - Administrative (enrollment forms, emergency contacts)
+ * - Insurance Documents (cards, claims, authorizations)
+ *
+ * **Signature Types:**
+ * - ELECTRONIC: Click-to-sign electronic signature
+ * - DIGITAL: Cryptographic digital signature with certificate
+ * - BIOMETRIC: Signature pad or touchscreen signature
+ * - PIN: PIN-based signature for authentication
+ *
+ * @example Basic document operations
+ * ```typescript
+ * import { documentsApi } from '@/services/modules/documentsApi';
+ *
+ * // Create a new document
+ * const { document } = await documentsApi.createDocument({
+ *   studentId: 'student-123',
+ *   title: 'Immunization Consent Form',
+ *   category: 'CONSENT',
+ *   description: 'Annual flu shot consent',
+ *   fileUrl: 'https://storage.example.com/doc.pdf',
+ *   expirationDate: '2025-12-31'
+ * });
+ *
+ * // Get all documents for a student
+ * const { documents, pagination } = await documentsApi.getDocuments({
+ *   studentId: 'student-123',
+ *   category: 'CONSENT',
+ *   page: 1,
+ *   limit: 20
+ * });
+ * ```
+ *
+ * @example Digital signature workflow
+ * ```typescript
+ * // Sign a document electronically
+ * const { signature } = await documentsApi.signDocument('doc-123', {
+ *   signedBy: 'user-456',
+ *   signedByRole: 'School Nurse',
+ *   signatureType: 'ELECTRONIC',
+ *   signatureData: 'data:image/png;base64,...',
+ *   ipAddress: '192.168.1.1'
+ * });
+ *
+ * // Verify signature validity
+ * const verification = await documentsApi.verifySignature(signature.id);
+ * if (verification.isValid) {
+ *   console.log('Signature verified!');
+ * }
+ * ```
+ *
+ * @example Version control workflow
+ * ```typescript
+ * // Create a new version of a document
+ * const { document: newVersion } = await documentsApi.createDocumentVersion(
+ *   'parent-doc-123',
+ *   {
+ *     versionNumber: 2,
+ *     notes: 'Updated with current school year information',
+ *     fileUrl: 'https://storage.example.com/doc-v2.pdf'
+ *   }
+ * );
+ *
+ * // Compare two versions
+ * const comparison = await documentsApi.compareVersions(
+ *   'doc-123',
+ *   'version-1-id',
+ *   'version-2-id'
+ * );
+ * console.log(`Changes: ${comparison.differences.length} modifications`);
+ * ```
+ *
+ * @example Bulk download with progress tracking
+ * ```typescript
+ * // Download multiple documents with progress callback
+ * const { blob, fileName, documentCount } = await documentsApi.bulkDownload(
+ *   {
+ *     documentIds: ['doc-1', 'doc-2', 'doc-3'],
+ *     format: 'zip',
+ *     includeMetadata: true,
+ *     includeSignatures: true
+ *   },
+ *   {
+ *     onProgress: (progress) => {
+ *       console.log(`${progress.percentage}% complete`);
+ *       console.log(`Processed: ${progress.processedDocuments}/${progress.totalDocuments}`);
+ *     },
+ *     timeout: 300000 // 5 minutes
+ *   }
+ * );
+ *
+ * // Save the downloaded archive
+ * const url = URL.createObjectURL(blob);
+ * const link = document.createElement('a');
+ * link.href = url;
+ * link.download = fileName;
+ * link.click();
+ * ```
+ *
+ * @see {@link createDocumentsApi} Factory function for creating API instances
+ * @see {@link DocumentsApi} Interface definition
+ * @see {@link Document} Document type definition
+ * @see {@link DocumentVersion} Version type definition
+ * @see {@link DocumentSignature} Signature type definition
  *
  * PHI Protection: All document operations log access for HIPAA compliance
  * Type Safety: Full TypeScript coverage with Zod validation
- * Features: Signing, versioning, search, bulk download with progress tracking
+ * Error Handling: Comprehensive error handling with retry logic
  */
 
 import type { ApiClient } from '../core/ApiClient';

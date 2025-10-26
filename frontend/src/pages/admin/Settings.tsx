@@ -26,15 +26,49 @@
 import React from 'react'
 
 /**
- * Settings Page - System Administration
+ * Settings Page - System Administration.
  *
  * Admin-only access for system configuration management.
  * Provides centralized control over system-wide settings and preferences.
  *
- * RBAC: Requires 'admin' or 'system.config' permission.
- * Audit: All configuration changes are logged.
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <Settings />
+ * ```
+ *
+ * @remarks
+ * **RBAC Requirements:**
+ * - Requires 'admin' or 'system.config' permission to access
+ * - Elevated privileges needed for critical system modifications
+ *
+ * **Features:** (Under Development)
+ * - System-wide configuration management
+ * - Application preferences control
+ * - Feature flag management
+ * - Integration settings
+ * - Security policy configuration
+ * - Notification preferences
+ *
+ * **State Management:**
+ * - Settings will persist to backend configuration store
+ * - Real-time validation of configuration changes
+ * - Rollback capability for critical settings
+ *
+ * **Accessibility:**
+ * - Form controls with proper labels
+ * - Keyboard navigation support
+ * - Screen reader compatibility
+ *
+ * **Audit & Compliance:**
+ * - All settings modifications are logged with user attribution
+ * - Configuration change history maintained
+ * - HIPAA-compliant audit trail for PHI-related settings
  *
  * @returns {JSX.Element} The settings administration interface
+ *
+ * @see {@link ConfigurationManager} for detailed configuration interface (when implemented)
  */
 export default function Settings() {
   return (

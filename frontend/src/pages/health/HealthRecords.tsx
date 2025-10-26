@@ -1,16 +1,89 @@
 /**
- * Health Records Page - Complete Implementation
+ * Health Records Page - Comprehensive Healthcare Management
  *
- * Complete health records management system with:
- * - Electronic health records
- * - Vaccination tracking
- * - Allergy management
- * - Chronic condition monitoring
- * - Vital signs tracking
- * - Health screenings
- * - Growth measurements
+ * @module pages/health/HealthRecords
  *
- * @module pages/HealthRecords
+ * @description
+ * Complete electronic health records (EHR) management system for school nurses
+ * to maintain student health information including vaccinations, allergies,
+ * chronic conditions, vital signs, health screenings, and growth measurements.
+ * Designed for HIPAA compliance and healthcare regulatory requirements.
+ *
+ * @remarks
+ * **Healthcare Modules:**
+ * - **Allergies**: Food, medication, environmental allergies with severity tracking
+ * - **Vaccinations**: CDC immunization schedule tracking with lot numbers
+ * - **Chronic Conditions**: Long-term health conditions with care plan management
+ * - **Vital Signs**: Blood pressure, temperature, heart rate, oxygen saturation
+ * - **Screenings**: Vision, hearing, dental, and other health screenings
+ * - **Growth**: Height, weight, BMI tracking with CDC growth chart comparison
+ *
+ * **HIPAA Compliance:**
+ * - All health data is Protected Health Information (PHI)
+ * - Comprehensive audit logging for all data access and modifications
+ * - Secure data transmission with HTTPS enforcement
+ * - Role-based access control (ADMIN, NURSE only)
+ * - No PHI in client-side storage (session-only)
+ * - Automatic session timeout for inactive users
+ *
+ * **Immunization Tracking:**
+ * - CDC recommended immunization schedule compliance
+ * - Vaccine lot number and expiration tracking
+ * - Administrator and location documentation
+ * - Due date reminders for upcoming vaccinations
+ * - State immunization registry integration ready
+ *
+ * **Health Screening Standards:**
+ * - Vision: Snellen chart, color blindness testing
+ * - Hearing: Audiometry screening per ASHA guidelines
+ * - Dental: Oral health screening per ADA recommendations
+ * - Compliance with state-mandated school health screenings
+ *
+ * **Growth Chart Standards:**
+ * - WHO growth standards (0-2 years)
+ * - CDC growth charts (2-20 years)
+ * - BMI percentile calculations
+ * - Growth trend analysis and alerts
+ *
+ * **Vital Signs Monitoring:**
+ * - Age-appropriate normal ranges
+ * - Automated alerts for out-of-range values
+ * - Trending and historical comparisons
+ * - Integration with chronic condition management
+ *
+ * **State Management:**
+ * - React hooks for local component state
+ * - TanStack Query for server state and caching
+ * - Optimistic updates for better UX
+ * - Real-time data synchronization
+ *
+ * **Accessibility:**
+ * - WCAG 2.1 Level AA compliance
+ * - Keyboard navigation for all functions
+ * - Screen reader support with ARIA labels
+ * - High contrast mode support
+ * - Focus management for modals
+ *
+ * @see {@link healthRecordsApi} for API integration
+ * @see {@link AllergyModal} for allergy data entry
+ * @see {@link VaccinationModal} for vaccination recording
+ * @see {@link ConditionModal} for chronic condition management
+ * @see {@link VitalSignsModal} for vital signs recording
+ * @see {@link ScreeningModal} for health screening results
+ * @see {@link MeasurementModal} for growth measurements
+ *
+ * @example
+ * ```tsx
+ * // Usage in routing configuration
+ * <Route
+ *   path="/health/records"
+ *   element={
+ *     <ProtectedRoute allowedRoles={['ADMIN', 'NURSE']}>
+ *       <HealthRecords />
+ *     </ProtectedRoute>
+ *   }
+ * />
+ * ```
  */
 
 import React, { useState, useEffect } from 'react';
@@ -51,8 +124,48 @@ import { MeasurementModal } from '../../components/features/health-records/compo
 import { ConfirmationModal } from '../../components/features/health-records/components/modals/ConfirmationModal';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
+/**
+ * Health record tab types.
+ *
+ * @typedef {('allergies' | 'vaccinations' | 'conditions' | 'vitals' | 'screenings' | 'growth')} TabType
+ *
+ * @description
+ * Defines the available tabs in the health records interface, each representing
+ * a different category of health information.
+ *
+ * @property {'allergies'} allergies - Food, medication, and environmental allergies
+ * @property {'vaccinations'} vaccinations - Immunization records with CDC tracking
+ * @property {'conditions'} conditions - Chronic health conditions and care plans
+ * @property {'vitals'} vitals - Vital signs measurements
+ * @property {'screenings'} screenings - Vision, hearing, dental screenings
+ * @property {'growth'} growth - Height, weight, BMI measurements
+ */
 type TabType = 'allergies' | 'vaccinations' | 'conditions' | 'vitals' | 'screenings' | 'growth';
 
+/**
+ * Delete confirmation dialog state.
+ *
+ * @interface DeleteState
+ *
+ * @description
+ * Manages the state of the delete confirmation modal, tracking which record
+ * type and ID is being deleted along with a user-friendly display name.
+ *
+ * @property {boolean} isOpen - Whether the delete confirmation modal is visible
+ * @property {TabType | null} type - Type of health record being deleted
+ * @property {string | null} id - Unique identifier of the record to delete
+ * @property {string} itemName - Human-readable name of the item for confirmation message
+ *
+ * @example
+ * ```typescript
+ * const [deleteState, setDeleteState] = useState<DeleteState>({
+ *   isOpen: true,
+ *   type: 'allergies',
+ *   id: '123e4567-e89b-12d3-a456-426614174000',
+ *   itemName: 'Peanut Allergy'
+ * });
+ * ```
+ */
 interface DeleteState {
   isOpen: boolean;
   type: TabType | null;
@@ -62,6 +175,66 @@ interface DeleteState {
 
 /**
  * Health Records Page Component
+ *
+ * @component
+ *
+ * @description
+ * Comprehensive electronic health records management interface for school nurses.
+ * Provides tabbed access to all categories of student health information with
+ * full CRUD operations, HIPAA-compliant data handling, and healthcare-specific
+ * validation and tracking.
+ *
+ * @remarks
+ * **Component Architecture:**
+ * - Tab-based interface with 6 health record categories
+ * - Modal-based forms for all data entry and editing
+ * - Confirmation dialogs for destructive operations
+ * - Real-time data loading with loading states
+ * - Student-centric view (all records for one student at a time)
+ *
+ * **Healthcare Workflows:**
+ * 1. **Allergy Management**: Track allergens, reactions, severity, and treatment
+ * 2. **Vaccination Tracking**: CDC schedule compliance, lot numbers, administrators
+ * 3. **Condition Management**: Chronic conditions with care plans and severity
+ * 4. **Vital Signs**: Regular monitoring of BP, temp, HR, O2 sat, respiratory rate
+ * 5. **Health Screenings**: Vision, hearing, dental, scoliosis, etc.
+ * 6. **Growth Tracking**: Height, weight, BMI with CDC growth chart comparison
+ *
+ * **Data Management:**
+ * - Parallel data loading for all record types on student selection
+ * - Optimistic UI updates with error rollback
+ * - Form validation before submission
+ * - Success/error toast notifications
+ * - Automatic data refresh after mutations
+ *
+ * **HIPAA Compliance Features:**
+ * - All operations logged for audit trail
+ * - Student ID required before displaying any PHI
+ * - Secure API calls with authentication tokens
+ * - No PHI in console logs or error messages
+ * - Session timeout protection
+ *
+ * **Accessibility Features:**
+ * - Keyboard navigation for all tabs and actions
+ * - ARIA labels on all interactive elements
+ * - Focus management for modals
+ * - Screen reader announcements for data loading
+ * - High contrast mode support
+ *
+ * @example
+ * ```tsx
+ * // Component automatically manages all health record types
+ * <HealthRecords />
+ *
+ * // User workflow:
+ * // 1. Enter student ID
+ * // 2. Component loads all health records for that student
+ * // 3. Switch between tabs to view different record types
+ * // 4. Add/edit/delete records with validation and confirmation
+ * // 5. Success/error feedback via toast notifications
+ * ```
+ *
+ * @returns {JSX.Element} Health records management interface
  */
 export default function HealthRecords() {
   const { user } = useAuth();

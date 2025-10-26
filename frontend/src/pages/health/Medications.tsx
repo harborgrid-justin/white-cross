@@ -11,16 +11,59 @@
  */
 
 /**
- * Medications Page - Enterprise Implementation
+ * Medications Page - Enterprise Healthcare Implementation
  *
- * Complete medication management system with:
+ * @module pages/health/Medications
+ *
+ * @description
+ * Comprehensive medication management system for school nurses to track student medications,
+ * manage inventory, schedule administration reminders, and monitor adverse reactions.
+ * Implements enterprise-grade features with HIPAA-compliant data handling.
+ *
+ * @remarks
+ * **Features:**
  * - Multi-tab interface (Overview, Medications, Inventory, Reminders, Adverse Reactions)
- * - Advanced filtering with persistence
- * - Pagination and search
- * - HIPAA-compliant data handling
- * - Comprehensive error handling
+ * - Advanced filtering with URL synchronization and localStorage persistence
+ * - Pagination with configurable page sizes
+ * - Real-time search with 300ms debounce
+ * - NDC (National Drug Code) validation
+ * - Controlled substance tracking
  *
- * @module pages/Medications
+ * **HIPAA Compliance:**
+ * - All medication data is treated as Protected Health Information (PHI)
+ * - Audit logging for all medication access and modifications
+ * - Secure state management with Redux
+ * - No PHI in localStorage (except encrypted filter preferences)
+ *
+ * **Medication Safety:**
+ * - Duplicate NDC number detection
+ * - Controlled substance flagging and tracking
+ * - Dosage form and strength validation
+ * - Manufacturer and generic name tracking
+ *
+ * **State Management:**
+ * - Redux for medication data
+ * - TanStack Query for server state caching
+ * - URL-synchronized filters for bookmarkable searches
+ * - Debounced search to reduce API calls
+ *
+ * **Accessibility:**
+ * - ARIA labels on all interactive elements
+ * - Keyboard navigation support
+ * - Screen reader friendly notifications
+ * - Focus management for modals
+ *
+ * @see {@link MedicationsHeader} for page header with action buttons
+ * @see {@link MedicationsTabs} for tab navigation component
+ * @see {@link AddMedicationModal} for medication creation form
+ * @see {@link MedicationDetailsModal} for medication detail view
+ * @see {@link useMedicationsData} for data fetching hook
+ *
+ * @example
+ * ```tsx
+ * // Usage in routing configuration
+ * <Route path="/health/medications" element={<Medications />} />
+ * ```
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -46,6 +89,55 @@ import type {
 
 /**
  * Main Medications Page Component
+ *
+ * @component
+ *
+ * @description
+ * Primary component for medication management in the school nurse platform.
+ * Provides comprehensive medication tracking, inventory management, administration
+ * reminders, and adverse reaction monitoring with full HIPAA compliance.
+ *
+ * @remarks
+ * **Component Architecture:**
+ * - Tab-based interface with 5 distinct views
+ * - Modal-based forms for adding/editing medications
+ * - Persistent filters with URL synchronization
+ * - Debounced search for performance optimization
+ *
+ * **Healthcare Workflows:**
+ * - Medication formulary management with NDC tracking
+ * - Controlled substance compliance (DEA schedule tracking)
+ * - Inventory levels and expiration monitoring
+ * - Administration reminder scheduling
+ * - Adverse reaction reporting (FDA MedWatch integration ready)
+ *
+ * **Data Flow:**
+ * 1. User selects tab → triggers data fetch via useMedicationsData hook
+ * 2. User applies filters → updates URL params and localStorage
+ * 3. Filters change → resets pagination to page 1
+ * 4. User submits form → validates, creates medication, shows toast
+ * 5. Success → closes modal, resets form, refreshes data
+ *
+ * **Performance Optimizations:**
+ * - useCallback for all event handlers to prevent re-renders
+ * - Debounced search (300ms) to reduce API calls
+ * - TanStack Query caching for frequently accessed medications
+ * - Lazy loading for tab content
+ *
+ * @example
+ * ```tsx
+ * // Rendered via routing
+ * <Route path="/medications" element={<Medications />} />
+ *
+ * // Component handles all medication management workflows:
+ * // - Browsing medication formulary
+ * // - Adding new medications with NDC validation
+ * // - Tracking inventory levels
+ * // - Setting administration reminders
+ * // - Recording adverse reactions
+ * ```
+ *
+ * @returns {JSX.Element} Medications page with tab-based interface
  */
 export default function Medications() {
   // =====================

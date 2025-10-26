@@ -1,25 +1,138 @@
 /**
- * Multi-Factor Authentication API Service
- *
- * Provides MFA setup, verification, and management for enhanced security.
- * Covers legacy /v1 endpoints for MFA and admin features.
- *
- * Features:
- * - MFA setup (TOTP, SMS, Email)
- * - MFA verification
- * - Backup codes generation
- * - MFA device management
- * - Admin feature reporting
- * - Bulk messaging capabilities
- *
- * Security:
- * - Time-based One-Time Password (TOTP) support
- * - SMS verification with rate limiting
- * - Backup codes for account recovery
- * - Audit logging for MFA events
- * - Session management post-MFA
- *
+ * @fileoverview Multi-Factor Authentication (MFA) API service
  * @module services/modules/mfaApi
+ * @category Services - Authentication & Security
+ *
+ * Provides comprehensive Multi-Factor Authentication (MFA) capabilities for enhanced
+ * account security. Implements TOTP (Time-based One-Time Password), SMS verification,
+ * email verification, and backup code generation with device management.
+ *
+ * Key Features:
+ * - MFA setup and configuration
+ * - Multiple MFA methods (TOTP, SMS, Email)
+ * - TOTP QR code generation for authenticator apps
+ * - SMS-based one-time password delivery
+ * - Email-based verification codes
+ * - Backup code generation and validation
+ * - MFA device management (multiple devices per user)
+ * - MFA enforcement policies
+ * - Admin MFA status reporting
+ * - Bulk user messaging capabilities
+ *
+ * Supported MFA Methods:
+ * - TOTP (Time-based One-Time Password): Google Authenticator, Authy, Microsoft Authenticator
+ * - SMS: One-time password sent via text message
+ * - EMAIL: One-time password sent via email
+ *
+ * TOTP Implementation:
+ * - RFC 6238 compliant
+ * - 30-second time step
+ * - 6-digit codes
+ * - SHA-1 algorithm
+ * - QR code generation for easy setup
+ * - Secret key backup for manual entry
+ *
+ * SMS Verification:
+ * - E.164 international phone number format
+ * - Carrier agnostic delivery
+ * - 6-digit numeric codes
+ * - 10-minute expiration
+ * - Rate limiting to prevent abuse
+ *
+ * Email Verification:
+ * - 6-digit alphanumeric codes
+ * - 15-minute expiration
+ * - HTML email templates
+ * - Resend capability with cooldown
+ *
+ * Backup Codes:
+ * - 10 single-use backup codes generated
+ * - 8-character alphanumeric format
+ * - Used when primary MFA method unavailable
+ * - Secure storage (hashed)
+ * - Remaining code count tracking
+ *
+ * Device Management:
+ * - Multiple MFA devices per user
+ * - Device naming for identification
+ * - Primary device designation
+ * - Device removal capabilities
+ * - Last verification timestamp tracking
+ *
+ * MFA Enforcement:
+ * - Role-based MFA requirements
+ * - Grace period for new users
+ * - MFA bypass for emergency access (admin only)
+ * - Mandatory MFA for privileged roles (ADMIN, DISTRICT_ADMIN)
+ *
+ * Security Features:
+ * - Rate limiting on verification attempts
+ * - Automatic account lockout after repeated failures
+ * - Audit logging for all MFA events
+ * - Device fingerprinting for anomaly detection
+ * - IP-based access restrictions
+ *
+ * @example Setup TOTP MFA
+ * ```typescript
+ * import { mfaApi } from '@/services/modules/mfaApi';
+ *
+ * // Initiate TOTP setup
+ * const setup = await mfaApi.setupMfa({
+ *   method: 'TOTP',
+ *   deviceName: 'iPhone 14 Pro'
+ * });
+ * console.log(`Secret: ${setup.secret}`);
+ * console.log(`QR Code: ${setup.qrCode}`); // Display QR code to user
+ *
+ * // Verify TOTP code from authenticator app
+ * const verified = await mfaApi.verifyMfa({
+ *   method: 'TOTP',
+ *   code: '123456'
+ * });
+ * if (verified.success) {
+ *   console.log('TOTP MFA enabled successfully');
+ * }
+ * ```
+ *
+ * @example Setup SMS MFA
+ * ```typescript
+ * const smsSetup = await mfaApi.setupMfa({
+ *   method: 'SMS',
+ *   phoneNumber: '+15551234567'
+ * });
+ * console.log('SMS code sent, check your phone');
+ *
+ * // Verify SMS code
+ * const smsVerified = await mfaApi.verifyMfa({
+ *   method: 'SMS',
+ *   code: '789012'
+ * });
+ * ```
+ *
+ * @example Generate backup codes
+ * ```typescript
+ * const backupCodes = await mfaApi.regenerateBackupCodes();
+ * console.log('Save these backup codes in a secure location:');
+ * backupCodes.backupCodes.forEach(code => console.log(code));
+ * ```
+ *
+ * @example Get MFA status
+ * ```typescript
+ * const status = await mfaApi.getMfaStatus();
+ * console.log(`MFA enabled: ${status.enabled}`);
+ * console.log(`Active methods: ${status.methods.map(m => m.method).join(', ')}`);
+ * console.log(`Backup codes remaining: ${status.backupCodesRemaining}`);
+ * ```
+ *
+ * @example Admin MFA reporting
+ * ```typescript
+ * const report = await mfaApi.getAdminFeatureReport('2025-01-01', '2025-01-31');
+ * console.log(`Top features: ${report.topFeatures.length}`);
+ * ```
+ *
+ * @see {@link authApi} for authentication workflows
+ * @see {@link https://tools.ietf.org/html/rfc6238 RFC 6238 - TOTP Specification}
+ * @see {@link https://www.twilio.com/docs/verify Twilio Verify API} for SMS implementation
  */
 
 import type { ApiClient } from '../core/ApiClient';
