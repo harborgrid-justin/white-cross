@@ -51,7 +51,12 @@
       "Bash(fi)",
       "Bash(git restore:*)",
       "Bash(npx eslint:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(ls:*)",
+      "Bash(test:*)",
+      "Bash(xargs ls:*)",
+      "Bash(chmod:*)",
+      "Bash(/f/temp/white-cross/.temp/deduplication-analysis.sh)"
     ],
     "deny": [],
     "ask": []

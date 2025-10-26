@@ -1,0 +1,98 @@
+# =============================================================================
+# Docker Ignore - Next.js White Cross Healthcare Platform
+# =============================================================================
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+test-results
+playwright-report
+tests/screenshots
+tests/videos
+
+# Build artifacts
+.next
+out
+dist
+build
+.cache
+.turbo
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.test
+!.env.example
+!.env.production.example
+!.env.staging.example
+
+# IDE and Editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Documentation
+*.md
+!README.md
+docs
+.storybook
+storybook-static
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Misc
+.prettierrc*
+.eslintrc*
+.editorconfig
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Testing
+jest.config.*
+playwright.config.*
+cypress
+cypress.config.*
+vitest.config.*
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+__mocks__
+
+# Temporary files
+.temp
+tmp
+temp
+*.tmp
+
+# Backup files
+*.backup
+*.bak

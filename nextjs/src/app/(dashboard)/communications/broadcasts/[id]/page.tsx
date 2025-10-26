@@ -1,0 +1,24 @@
+/**
+ * Broadcast Detail Page
+ *
+ * View broadcast details and statistics
+ */
+
+import React from 'react';
+import { Metadata } from 'next';
+import { BroadcastDetailContent } from './BroadcastDetailContent';
+
+export const metadata: Metadata = {
+  title: 'Broadcast Details | Communications',
+  description: 'View broadcast details and statistics'
+};
+
+interface BroadcastDetailPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function BroadcastDetailPage({ params }: BroadcastDetailPageProps) {
+  return <BroadcastDetailContent broadcastId={params.id} />;
+}
