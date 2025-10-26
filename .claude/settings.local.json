@@ -56,7 +56,11 @@
       "Bash(test:*)",
       "Bash(xargs ls:*)",
       "Bash(chmod:*)",
-      "Bash(/f/temp/white-cross/.temp/deduplication-analysis.sh)"
+      "Bash(/f/temp/white-cross/.temp/deduplication-analysis.sh)",
+      "Bash(head:*)",
+      "Bash(npm list:*)",
+      "Bash(ANALYZE=true npm run build:*)",
+      "Bash(set:*)"
     ],
     "deny": [],
     "ask": []

@@ -80,3 +80,12 @@ export { default as integrationReducer } from './integrationSlice';
 // COMPLIANCE & ACCESS CONTROL
 // ============================================================
 export { default as complianceReducer } from './complianceSlice';
+
+// ============================================================
+// UI PREFERENCES & NOTIFICATIONS (NEW)
+// ============================================================
+export { default as themeReducer } from './themeSlice';
+export type { ThemeState, ThemeMode, ColorScheme, UIDensity } from './themeSlice';
+
+export { default as notificationsReducer } from './notificationsSlice';
+export type { NotificationsState, Notification, NotificationType, NotificationPriority } from './notificationsSlice';
