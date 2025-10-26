@@ -12,7 +12,7 @@
 
 import React from 'react'
 import { Plus } from 'lucide-react'
-import { Vendor } from '../../../../../types'
+import type { Vendor } from '@/types/inventory'
 
 interface InventoryVendorsTabProps {
   vendors: Vendor[]

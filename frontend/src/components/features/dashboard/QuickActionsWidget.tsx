@@ -88,7 +88,7 @@ const getColorClasses = (color: QuickAction['color'], darkMode: boolean) => {
   return colors[color || 'blue'];
 };
 
-const getSizeClasses = (size: QuickActionsWidgetProps['size']) => {
+const getSizeClasses = (size?: 'sm' | 'md' | 'lg') => {
   const sizes = {
     sm: {
       icon: 'w-5 h-5',

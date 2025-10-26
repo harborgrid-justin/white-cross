@@ -23,23 +23,23 @@ interface ScreeningModalProps {
 }
 
 const SCREENING_TYPES: { value: ScreeningType; label: string }[] = [
-  { value: 'VISION', label: 'Vision' },
-  { value: 'HEARING', label: 'Hearing' },
-  { value: 'DENTAL', label: 'Dental' },
-  { value: 'SCOLIOSIS', label: 'Scoliosis' },
-  { value: 'BMI', label: 'BMI' },
-  { value: 'BLOOD_PRESSURE', label: 'Blood Pressure' },
-  { value: 'MENTAL_HEALTH', label: 'Mental Health' },
-  { value: 'DEVELOPMENTAL', label: 'Developmental' },
-  { value: 'OTHER', label: 'Other' },
+  { value: ScreeningType.VISION, label: 'Vision' },
+  { value: ScreeningType.HEARING, label: 'Hearing' },
+  { value: ScreeningType.DENTAL, label: 'Dental' },
+  { value: ScreeningType.SCOLIOSIS, label: 'Scoliosis' },
+  { value: ScreeningType.BMI, label: 'BMI' },
+  { value: ScreeningType.BLOOD_PRESSURE, label: 'Blood Pressure' },
+  { value: ScreeningType.MENTAL_HEALTH, label: 'Mental Health' },
+  { value: ScreeningType.DEVELOPMENTAL, label: 'Developmental' },
+  { value: ScreeningType.OTHER, label: 'Other' },
 ];
 
 const SCREENING_OUTCOMES: { value: ScreeningOutcome; label: string }[] = [
-  { value: 'PASS', label: 'Passed' },
-  { value: 'FAIL', label: 'Failed' },
-  { value: 'REFER', label: 'Refer' },
-  { value: 'INCONCLUSIVE', label: 'Inconclusive' },
-  { value: 'INCOMPLETE', label: 'Incomplete' },
+  { value: ScreeningOutcome.PASSED, label: 'Passed' },
+  { value: ScreeningOutcome.FAILED, label: 'Failed' },
+  { value: ScreeningOutcome.REFER, label: 'Refer' },
+  { value: ScreeningOutcome.INCONCLUSIVE, label: 'Inconclusive' },
+  { value: ScreeningOutcome.DECLINED, label: 'Declined' },
 ];
 
 export const ScreeningModal: React.FC<ScreeningModalProps> = ({
@@ -47,7 +47,7 @@ export const ScreeningModal: React.FC<ScreeningModalProps> = ({
   onClose,
   onSave,
   screening,
-  errors = {},
+  errors = {} as ScreeningFormErrors,
   title,
 }) => {
   if (!isOpen) return null;

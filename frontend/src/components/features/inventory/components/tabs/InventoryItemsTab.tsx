@@ -12,7 +12,7 @@
 
 import React from 'react'
 import { Search } from 'lucide-react'
-import { InventoryItem } from '../../../../../types'
+import type { InventoryItem } from '@/types/inventory'
 
 interface InventoryItemsTabProps {
   items: InventoryItem[]

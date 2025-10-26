@@ -12,7 +12,7 @@
 
 import React from 'react'
 import { Bell } from 'lucide-react'
-import { InventoryAlert } from '../../../../types'
+import { InventoryAlert } from '@/pages/inventory/store/inventorySlice'
 
 interface InventoryAlertsProps {
   alerts: InventoryAlert[]

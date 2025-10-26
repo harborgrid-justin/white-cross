@@ -36,7 +36,7 @@ export function useAppointmentsList(
   filters?: AppointmentListFilters,
   options?: Omit<UseQueryOptions<PaginatedResponse<Appointment>>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
   const { logCompliantAccess } = useHealthcareCompliance();
 
   return useQuery({
@@ -72,7 +72,7 @@ export function useUpcomingAppointments(
   limit?: number,
   options?: Omit<UseQueryOptions<{ appointments: Appointment[] }>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
   const { logCompliantAccess } = useHealthcareCompliance();
 
   return useQuery({
@@ -105,7 +105,7 @@ export function useAppointmentStatistics(
   filters?: { nurseId?: string; dateFrom?: string; dateTo?: string },
   options?: Omit<UseQueryOptions<AppointmentStatistics>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
 
   return useQuery({
     queryKey: appointmentQueryKeys.statistics.global(filters),
@@ -129,7 +129,7 @@ export function useWaitlist(
   filters?: WaitlistFilters,
   options?: Omit<UseQueryOptions<{ waitlist: WaitlistEntryData[] }>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
   const { logCompliantAccess } = useHealthcareCompliance();
 
   return useQuery({
@@ -163,7 +163,7 @@ export function useAvailabilitySlots(
   duration?: number,
   options?: Omit<UseQueryOptions<{ slots: AvailabilitySlot[] }>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
 
   return useQuery({
     queryKey: appointmentQueryKeys.availability.byNurse(nurseId, date, duration),
@@ -189,7 +189,7 @@ export function useNurseAvailability(
   date?: string,
   options?: Omit<UseQueryOptions<{ availability: NurseAvailability[] }>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
 
   return useQuery({
     queryKey: appointmentQueryKeys.availability.nurseSchedule(nurseId, date),
@@ -214,7 +214,7 @@ export function useAppointmentDetails(
   appointmentId: string,
   options?: Omit<UseQueryOptions<{ appointment: Appointment }>, 'queryKey' | 'queryFn'>
 ) {
-  const { handleApiError } = useApiError();
+  const { handleError: handleApiError } = useApiError();
   const { logCompliantAccess } = useHealthcareCompliance();
 
   return useQuery({

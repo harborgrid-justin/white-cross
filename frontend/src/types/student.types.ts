@@ -444,6 +444,7 @@ export interface StudentFilters {
   search?: string
   grade?: string
   isActive?: boolean
+  includeInactive?: boolean
   nurseId?: string
   hasAllergies?: boolean
   hasMedications?: boolean
@@ -468,6 +469,7 @@ export interface PaginationMetadata {
 export interface PaginatedStudentsResponse {
   students: Student[]
   pagination: PaginationMetadata
+  total: number // Convenience field matching pagination.total
 }
 
 /**

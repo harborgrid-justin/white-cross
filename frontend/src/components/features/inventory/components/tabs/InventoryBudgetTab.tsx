@@ -12,7 +12,17 @@
 
 import React from 'react'
 import { Plus } from 'lucide-react'
-import { BudgetCategory } from '../../../../../types'
+
+// Budget Category type definition
+interface BudgetCategory {
+  id: string
+  name: string
+  description?: string
+  fiscalYear: number
+  allocatedAmount: number
+  spentAmount: number
+  utilizationPercentage?: number
+}
 
 interface InventoryBudgetTabProps {
   categories: BudgetCategory[]

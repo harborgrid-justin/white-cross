@@ -33,7 +33,7 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
   onClose,
   onSave,
   measurement,
-  errors = {},
+  errors = {} as GrowthMeasurementFormErrors,
   title = 'Add Growth Measurement'
 }) => {
   if (!isOpen) return null
