@@ -59,7 +59,12 @@ class ImportExportService {
         patientId,
         exportDate: new Date(),
         version: '1.0',
-        data: {}
+        data: {
+          healthRecords: [],
+          allergies: [],
+          vaccinations: [],
+          chronicConditions: []
+        }
       };
 
       // Build where clause for date filtering
@@ -77,7 +82,7 @@ class ImportExportService {
           where: whereClause,
           order: [['createdAt', 'DESC']]
         });
-        exportData.data.healthRecords = healthRecords.map(record => record.toJSON());
+        exportData.data.healthRecords = healthRecords.map(record => record.toJSON() as any);
       }
 
       // Export allergies
@@ -524,10 +529,10 @@ class ImportExportService {
       exportData.data.healthRecords.forEach(record => {
         csvRows.push([
           'Health Record',
-          record.date,
-          record.type,
-          record.value || '',
-          record.notes || ''
+          (record as any).date,
+          (record as any).type,
+          (record as any).value || '',
+          (record as any).notes || ''
         ].map(field => `"${field}"`).join(','));
       });
     }

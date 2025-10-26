@@ -1063,7 +1063,7 @@ export class StudentService {
     try {
       const students = await Student.findAll({
         where: {
-          assignedNurseId: nurseId,
+          nurseId: nurseId,
           isActive: true
         },
         order: [['lastName', 'ASC'], ['firstName', 'ASC']]

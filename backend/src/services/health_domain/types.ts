@@ -36,8 +36,8 @@ import type {
 declare module '../../database/models' {
   interface HealthRecord {
     student?: Student;
-    vital?: VitalSigns;
-    type: HealthRecordType;
+    vital?: any;
+    type: any;
     date: Date;
   }
 

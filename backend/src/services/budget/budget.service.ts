@@ -749,7 +749,7 @@ export class BudgetService {
 
             return {
               ...category,
-              transactions: transactions.transactions.map((t) => t.get({ plain: true }))
+              transactions: transactions.rows.map((t) => t.get({ plain: true }))
             };
           })
         )

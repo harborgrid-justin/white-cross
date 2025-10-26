@@ -439,12 +439,12 @@ export class HealthRecordService {
 
       // Validate allergen is not empty
       if (!data.allergen || data.allergen.trim().length === 0) {
-        throw ValidationError.missingField('allergen', 'Allergen name is required');
+        throw ValidationError.missingField('allergen');
       }
 
       // Validate severity is provided
       if (!data.severity) {
-        throw ValidationError.missingField('severity', 'Allergy severity is required');
+        throw ValidationError.missingField('severity');
       }
 
       // Validate reaction format if provided
@@ -720,10 +720,10 @@ export class HealthRecordService {
         HealthRecord.findAll({
           where: {
             studentId,
-            vitalSigns: { [Op.ne]: null }
-          },
-          attributes: ['id', 'recordDate', 'type', 'vitalSigns', 'notes'],
-          order: [['recordDate', 'DESC']],
+            vital: { [Op.ne]: null }
+          } as any,
+          attributes: ['id', 'date', 'type', 'vital', 'notes'],
+          order: [['date', 'DESC']],
           limit: 5,
           raw: true
         }),
@@ -732,9 +732,9 @@ export class HealthRecordService {
           where: {
             studentId,
             type: 'VACCINATION'
-          },
-          attributes: ['id', 'recordDate', 'diagnosis', 'treatment', 'notes'],
-          order: [['recordDate', 'DESC']],
+          } as any,
+          attributes: ['id', 'date', 'description', 'notes'],
+          order: [['date', 'DESC']],
           limit: 10,
           raw: true
         }),
@@ -774,11 +774,11 @@ export class HealthRecordService {
         student,
         allergies,
         recentVitals: recentRecords,
-        recentVaccinations: vaccinations.slice(0, 5),
-        recordCounts: recordCounts.reduce((acc: Record<string, number>, curr: any) => {
+        recentVaccinations: Array.isArray(vaccinations) ? vaccinations.slice(0, 5) : [],
+        recordCounts: Array.isArray(recordCounts) ? recordCounts.reduce((acc: Record<string, number>, curr: any) => {
           acc[curr.type] = parseInt(curr.count, 10);
           return acc;
-        }, {} as Record<string, number>)
+        }, {} as Record<string, number>) : {}
       };
 
       // Cache result for 1 hour
@@ -1145,7 +1145,7 @@ export class HealthRecordService {
       logger.info(`Bulk delete completed: ${deletedCount} records deleted, ${notFoundCount} not found`);
 
       if (recordsToDelete.length > 0) {
-        const studentNames = [...new Set(recordsToDelete.map(r => `${r.student!.firstName} ${r.student!.lastName}`))];
+        const studentNames = Array.from(new Set(recordsToDelete.map(r => `${r.student!.firstName} ${r.student!.lastName}`)));
         logger.info(`Records deleted for students: ${studentNames.join(', ')}`);
       }
 
@@ -1430,7 +1430,7 @@ export class HealthRecordService {
       });
 
       if (!record) {
-        throw new NotFoundError(`Health record with ID ${id} not found`);
+        throw new NotFoundError('HealthRecord', id);
       }
 
       logger.info(`Retrieved health record: ${id}`);
@@ -1449,7 +1449,7 @@ export class HealthRecordService {
       const record = await HealthRecord.findByPk(id);
 
       if (!record) {
-        throw new NotFoundError(`Health record with ID ${id} not found`);
+        throw new NotFoundError('HealthRecord', id);
       }
 
       await record.destroy();
@@ -1476,7 +1476,7 @@ export class HealthRecordService {
       });
 
       if (!allergy) {
-        throw new NotFoundError(`Allergy with ID ${id} not found`);
+        throw new NotFoundError('Allergy', id);
       }
 
       logger.info(`Retrieved allergy: ${id}`);
@@ -1510,7 +1510,7 @@ export class HealthRecordService {
       });
 
       if (!condition) {
-        throw new NotFoundError(`Chronic condition with ID ${id} not found`);
+        throw new NotFoundError('ChronicCondition', id);
       }
 
       logger.info(`Retrieved chronic condition: ${id}`);
@@ -1544,7 +1544,7 @@ export class HealthRecordService {
       });
 
       if (!vaccination) {
-        throw new NotFoundError(`Vaccination with ID ${id} not found`);
+        throw new NotFoundError('Vaccination', id);
       }
 
       logger.info(`Retrieved vaccination: ${id}`);
@@ -1660,11 +1660,11 @@ export class HealthRecordService {
         this.getStudentChronicConditions(studentId),
         this.getStudentVaccinations(studentId),
         this.getRecentVitals(studentId, 5),
-        this.getStudentHealthRecords(studentId, { limit: 10 })
+        this.getStudentHealthRecords(studentId, 1, 10)
       ]);
 
       if (!student) {
-        throw new NotFoundError(`Student with ID ${studentId} not found`);
+        throw new NotFoundError('Student', studentId);
       }
 
       const summary = {

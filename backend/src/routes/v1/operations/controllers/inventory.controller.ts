@@ -17,6 +17,12 @@ import {
   preparePayload
 } from '../../../shared/utils';
 import { parsePagination, buildPaginationMeta } from '../../../shared/utils';
+import {
+  CreateInventoryItemData,
+  UpdateInventoryItemData,
+  CreateVendorData,
+  CreatePurchaseOrderData
+} from '../../../../services/inventory/types';
 
 export class InventoryController {
   /**
@@ -63,7 +69,7 @@ export class InventoryController {
    * Create new inventory item
    */
   static async createItem(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const item = await ItemOperations.createInventoryItem(request.payload);
+    const item = await ItemOperations.createInventoryItem(request.payload as CreateInventoryItemData);
     return createdResponse(h, { item });
   }
 
@@ -72,7 +78,7 @@ export class InventoryController {
    */
   static async updateItem(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const item = await ItemOperations.updateInventoryItem(id, request.payload);
+    const item = await ItemOperations.updateInventoryItem(id, request.payload as UpdateInventoryItemData);
     return successResponse(h, { item });
   }
 
@@ -109,7 +115,7 @@ export class InventoryController {
     const { id } = request.params;
     const payload = request.payload as any;
     const { quantity, reason } = payload;
-    const performedBy = request.auth.credentials.userId;
+    const performedBy = request.auth.credentials.id;
 
     const result = await StockService.adjustStock(id, quantity, reason, performedBy);
 
@@ -144,7 +150,7 @@ export class InventoryController {
     const { id } = request.params;
     const payload = request.payload as any;
     const { countedQuantity, notes } = payload;
-    const performedBy = request.auth.credentials.userId;
+    const performedBy = request.auth.credentials.id;
 
     // Get current stock
     const currentStock = await StockService.getCurrentStock(id);
@@ -210,7 +216,7 @@ export class InventoryController {
   static async createPurchaseOrder(request: AuthenticatedRequest, h: ResponseToolkit) {
     const orderData = preparePayload(request.payload, {
       dateFields: ['orderDate', 'expectedDate']
-    });
+    }) as unknown as CreatePurchaseOrderData;
 
     const order = await OrderOperations.createPurchaseOrder(orderData);
 
@@ -254,7 +260,7 @@ export class InventoryController {
    * Create new supplier
    */
   static async createSupplier(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const supplier = await SupplierOperations.createVendor(request.payload);
+    const supplier = await SupplierOperations.createVendor(request.payload as CreateVendorData);
     return createdResponse(h, { supplier });
   }
 
@@ -263,7 +269,7 @@ export class InventoryController {
    */
   static async updateSupplier(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const supplier = await SupplierOperations.updateVendor(id, request.payload);
+    const supplier = await SupplierOperations.updateVendor(id, request.payload as Partial<CreateVendorData>);
     return successResponse(h, { supplier });
   }
 

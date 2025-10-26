@@ -185,7 +185,9 @@ export class ConfigManager {
         integrationType: data.type,
         action: 'create',
         status: 'success',
-        details: { message: 'Integration configuration created' }
+        details: {
+          metadata: { message: 'Integration configuration created' }
+        }
       });
 
       const integrationData = integration.get({ plain: true });
@@ -286,8 +288,10 @@ export class ConfigManager {
         action: 'update',
         status: 'success',
         details: {
-          message: 'Integration configuration updated',
-          updatedFields: Object.keys(data)
+          metadata: {
+            message: 'Integration configuration updated',
+            updatedFields: Object.keys(data)
+          }
         }
       });
 
