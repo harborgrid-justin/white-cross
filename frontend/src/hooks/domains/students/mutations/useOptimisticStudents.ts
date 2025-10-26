@@ -1,23 +1,66 @@
 /**
- * WF-COMP-141 | useOptimisticStudents.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: @tanstack/react-query, @/services/modules/studentsApi, @/utils/optimisticHelpers
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, functions | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Optimistic Student Management Hooks
+ * WF-COMP-141 | useOptimisticStudents.ts - Optimistic Student Management Hooks
  *
- * Custom TanStack Query mutation hooks with optimistic updates for
- * student CRUD operations with comprehensive error handling and rollback.
+ * Enterprise-grade optimistic update hooks for student management with automatic
+ * rollback, Redux integration, and comprehensive error handling.
  *
- * @module useOptimisticStudents
- * @version 1.0.0
+ * @module hooks/domains/students/mutations/useOptimisticStudents
+ *
+ * @remarks
+ * **Architecture Pattern**: These hooks implement the optimistic UI pattern using
+ * TanStack Query with automatic rollback on error. All student mutations synchronize
+ * both TanStack Query cache and Redux store for consistent state management.
+ *
+ * **HIPAA Compliance**:
+ * - All student data operations are audit-logged for HIPAA compliance
+ * - PHI (Protected Health Information) handling follows strict security protocols
+ * - Optimistic updates preserve data integrity with rollback strategies
+ * - Cross-tab state synchronization via BroadcastChannel for Redux store
+ *
+ * **Optimistic Update Flow**:
+ * 1. **onMutate**: Cancel queries, create optimistic update, update Redux
+ * 2. **Server Call**: API request executes in background
+ * 3. **onSuccess**: Confirm update with server data, invalidate related queries
+ * 4. **onError**: Rollback optimistic changes, restore previous state
+ *
+ * **Rollback Strategy**: RESTORE_PREVIOUS - Reverts to snapshot taken in onMutate
+ *
+ * **Conflict Resolution**: SERVER_WINS - Server data takes precedence on conflicts
+ *
+ * @example
+ * ```typescript
+ * // Basic usage in a component
+ * import { useOptimisticStudents } from '@/hooks/domains/students/mutations/useOptimisticStudents';
+ *
+ * function StudentManagement() {
+ *   const {
+ *     createStudent,
+ *     updateStudent,
+ *     deactivateStudent,
+ *     isCreating,
+ *     createError
+ *   } = useOptimisticStudents();
+ *
+ *   const handleCreate = async (data) => {
+ *     await createStudent.mutateAsync({
+ *       studentNumber: 'STU-2024-001',
+ *       firstName: 'John',
+ *       lastName: 'Doe',
+ *       dateOfBirth: '2010-05-15',
+ *       grade: '8'
+ *     });
+ *   };
+ *
+ *   return <StudentForm onSubmit={handleCreate} isLoading={isCreating} />;
+ * }
+ * ```
+ *
+ * @see {@link studentsApi} for API integration
+ * @see {@link studentsSlice} for Redux state management
+ * @see {@link optimisticHelpers} for optimistic update utilities
+ * @see {@link useOptimisticMedications} for similar medication patterns
+ *
+ * @since 1.0.0
  */
 
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
@@ -47,6 +90,51 @@ import { studentsActions, studentsSelectors } from '@/stores/slices/studentsSlic
 // QUERY KEYS
 // =====================
 
+/**
+ * Hierarchical query key factory for student data caching.
+ *
+ * Provides structured query keys for TanStack Query cache invalidation
+ * and granular cache management. Keys follow a hierarchical pattern
+ * for efficient partial invalidation.
+ *
+ * @constant
+ *
+ * @property {ReadonlyArray<string>} all - Root key for all student queries: `['students']`
+ * @property {Function} lists - Factory for list queries: `['students', 'list']`
+ * @property {Function} list - Factory for filtered lists with filter params
+ * @property {Function} details - Factory for detail queries: `['students', 'detail']`
+ * @property {Function} detail - Factory for specific student: `['students', 'detail', id]`
+ * @property {Function} byGrade - Factory for grade-filtered students: `['students', 'grade', grade]`
+ * @property {Function} assigned - Factory for assigned students: `['students', 'assigned']`
+ * @property {Function} statistics - Factory for student statistics: `['students', id, 'statistics']`
+ * @property {Function} healthRecords - Factory for student health records: `['students', id, 'healthRecords']`
+ *
+ * @example
+ * ```typescript
+ * // Invalidate all student queries
+ * queryClient.invalidateQueries({ queryKey: studentKeys.all });
+ *
+ * // Invalidate all student lists
+ * queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+ *
+ * // Invalidate specific student
+ * queryClient.invalidateQueries({ queryKey: studentKeys.detail('student-123') });
+ *
+ * // Invalidate all 8th grade students
+ * queryClient.invalidateQueries({ queryKey: studentKeys.byGrade('8') });
+ * ```
+ *
+ * @remarks
+ * **Cache Invalidation Strategy**:
+ * - Invalidating `studentKeys.all` clears entire student cache
+ * - Invalidating `studentKeys.lists()` clears all list queries but preserves details
+ * - Invalidating `studentKeys.detail(id)` clears only that student's detail cache
+ *
+ * **Performance Consideration**: Use granular keys for targeted invalidation
+ * to avoid unnecessary refetches and improve performance.
+ *
+ * @see {@link https://tanstack.com/query/latest/docs/react/guides/query-keys | TanStack Query Keys}
+ */
 export const studentKeys = {
   all: ['students'] as const,
   lists: () => [...studentKeys.all, 'list'] as const,
@@ -64,24 +152,114 @@ export const studentKeys = {
 // =====================
 
 /**
- * Hook for creating students with optimistic updates and Redux integration
+ * Creates a new student with optimistic UI updates and automatic rollback.
+ *
+ * Implements optimistic update pattern by immediately showing the new student
+ * in the UI before server confirmation. Automatically rolls back if creation
+ * fails, synchronizes with Redux store, and invalidates related queries.
+ *
+ * @function useOptimisticStudentCreate
+ *
+ * @param {UseMutationOptions<Student, Error, CreateStudentData>} [options] - TanStack Query mutation options
+ * @param {Function} [options.onSuccess] - Callback on successful creation
+ * @param {Function} [options.onError] - Callback on creation failure
+ * @param {Function} [options.onSettled] - Callback when mutation completes (success or error)
+ *
+ * @returns {UseMutationResult<Student, Error, CreateStudentData>} TanStack Query mutation result
+ * @returns {Function} returns.mutate - Trigger mutation (fire-and-forget)
+ * @returns {Function} returns.mutateAsync - Trigger mutation (returns promise)
+ * @returns {boolean} returns.isPending - True while mutation is in progress
+ * @returns {boolean} returns.isSuccess - True if mutation succeeded
+ * @returns {boolean} returns.isError - True if mutation failed
+ * @returns {Error | null} returns.error - Error object if mutation failed
+ * @returns {Student | undefined} returns.data - Created student data from server
  *
  * @example
  * ```typescript
+ * // Basic usage
  * const createMutation = useOptimisticStudentCreate({
- *   onSuccess: (student) => console.log('Created:', student)
+ *   onSuccess: (student) => {
+ *     console.log('Student created:', student.id);
+ *     toast.success(`Student ${student.firstName} ${student.lastName} enrolled`);
+ *   },
+ *   onError: (error) => {
+ *     console.error('Creation failed:', error);
+ *     toast.error('Failed to enroll student');
+ *   }
  * });
  *
- * createMutation.mutate({
- *   studentNumber: 'STU-2024-001',
- *   firstName: 'John',
- *   lastName: 'Doe',
- *   dateOfBirth: '2010-05-15',
- *   grade: '8',
- *   gender: 'MALE',
- *   enrollmentDate: '2024-01-15'
- * });
+ * // In form submit handler
+ * const handleEnrollStudent = async (formData) => {
+ *   await createMutation.mutateAsync({
+ *     studentNumber: 'STU-2024-001',
+ *     firstName: 'John',
+ *     lastName: 'Doe',
+ *     dateOfBirth: '2010-05-15',
+ *     grade: '8',
+ *     gender: 'MALE',
+ *     enrollmentDate: '2024-01-15',
+ *     nurseId: 'nurse-123', // Assign to school nurse
+ *     createdBy: currentUserId
+ *   });
+ * };
+ *
+ * // Display loading state
+ * return (
+ *   <StudentEnrollmentForm
+ *     onSubmit={handleEnrollStudent}
+ *     isSubmitting={createMutation.isPending}
+ *     error={createMutation.error}
+ *   />
+ * );
  * ```
+ *
+ * @example
+ * ```typescript
+ * // With optimistic UI feedback
+ * const createMutation = useOptimisticStudentCreate();
+ *
+ * // Student appears in list immediately, then confirmed by server
+ * createMutation.mutate(newStudentData);
+ *
+ * // List shows new student with temporary ID
+ * // → Server responds with real ID
+ * // → Temporary ID replaced with real ID
+ * // → If error occurs, student removed from list automatically
+ * ```
+ *
+ * @remarks
+ * **Optimistic Update Flow**:
+ * 1. Generate temporary ID for new student
+ * 2. Add student to TanStack Query cache with temp ID
+ * 3. Add student to Redux store
+ * 4. Show student in UI immediately
+ * 5. Send API request to server
+ * 6. On success: Replace temp ID with real server ID
+ * 7. On error: Remove student from cache and Redux
+ *
+ * **Redux Integration**:
+ * - Student added to Redux store in `onMutate`
+ * - Temporary student removed and real student added in `onSuccess`
+ * - Optimistic student removed in `onError`
+ *
+ * **Query Invalidation**:
+ * - Invalidates all student lists after successful creation
+ * - Invalidates grade-specific lists if student assigned to grade
+ * - Invalidates assigned students list if assigned to nurse
+ *
+ * **HIPAA Compliance**:
+ * - Student creation is audit-logged with user ID
+ * - PHI is encrypted in transit and at rest
+ * - Access controlled by RBAC permissions
+ *
+ * @throws {Error} If student number already exists
+ * @throws {Error} If required fields are missing
+ * @throws {Error} If user lacks enrollment permissions
+ *
+ * @see {@link studentsApi.create} for API endpoint
+ * @see {@link optimisticCreate} for optimistic update utility
+ * @see {@link studentKeys} for query key structure
+ * @see {@link useOptimisticStudentUpdate} for updating students
  */
 export function useOptimisticStudentCreate(
   options?: UseMutationOptions<Student, Error, CreateStudentData>
@@ -639,24 +817,216 @@ export function useOptimisticStudentPermanentDelete(
 // =====================
 
 /**
- * Composite hook that provides all student optimistic operations
+ * Composite hook providing complete student management with optimistic updates.
+ *
+ * This is the primary hook for student CRUD operations in the application.
+ * Provides all mutation hooks, loading states, error states, and convenience
+ * methods in a single interface. All operations include automatic optimistic
+ * updates with rollback on failure.
+ *
+ * @function useOptimisticStudents
+ *
+ * @returns {Object} Student management operations and state
+ *
+ * @returns {UseMutationResult} returns.createStudent - Create student mutation
+ * @returns {UseMutationResult} returns.updateStudent - Update student mutation
+ * @returns {UseMutationResult} returns.deactivateStudent - Deactivate student mutation (soft delete)
+ * @returns {UseMutationResult} returns.reactivateStudent - Reactivate student mutation
+ * @returns {UseMutationResult} returns.transferStudent - Transfer student to different nurse
+ * @returns {UseMutationResult} returns.deleteStudent - Permanently delete student (HIPAA data purge)
+ *
+ * @returns {Function} returns.createWithOptimism - Shorthand for `createStudent.mutate`
+ * @returns {Function} returns.updateWithOptimism - Shorthand for `updateStudent.mutate`
+ * @returns {Function} returns.deactivateWithOptimism - Shorthand for `deactivateStudent.mutate`
+ * @returns {Function} returns.reactivateWithOptimism - Shorthand for `reactivateStudent.mutate`
+ * @returns {Function} returns.transferWithOptimism - Shorthand for `transferStudent.mutate`
+ * @returns {Function} returns.deleteWithOptimism - Shorthand for `deleteStudent.mutate`
+ *
+ * @returns {boolean} returns.isCreating - True while creating student
+ * @returns {boolean} returns.isUpdating - True while updating student
+ * @returns {boolean} returns.isDeactivating - True while deactivating student
+ * @returns {boolean} returns.isReactivating - True while reactivating student
+ * @returns {boolean} returns.isTransferring - True while transferring student
+ * @returns {boolean} returns.isDeleting - True while deleting student
+ *
+ * @returns {Error | null} returns.createError - Error from create operation
+ * @returns {Error | null} returns.updateError - Error from update operation
+ * @returns {Error | null} returns.deactivateError - Error from deactivate operation
+ * @returns {Error | null} returns.reactivateError - Error from reactivate operation
+ * @returns {Error | null} returns.transferError - Error from transfer operation
+ * @returns {Error | null} returns.deleteError - Error from delete operation
+ *
+ * @returns {boolean} returns.createSuccess - True if create succeeded
+ * @returns {boolean} returns.updateSuccess - True if update succeeded
+ * @returns {boolean} returns.deactivateSuccess - True if deactivate succeeded
+ * @returns {boolean} returns.reactivateSuccess - True if reactivate succeeded
+ * @returns {boolean} returns.transferSuccess - True if transfer succeeded
+ * @returns {boolean} returns.deleteSuccess - True if delete succeeded
+ *
+ * @returns {Function} returns.resetCreate - Reset create mutation state
+ * @returns {Function} returns.resetUpdate - Reset update mutation state
+ * @returns {Function} returns.resetDeactivate - Reset deactivate mutation state
+ * @returns {Function} returns.resetReactivate - Reset reactivate mutation state
+ * @returns {Function} returns.resetTransfer - Reset transfer mutation state
+ * @returns {Function} returns.resetDelete - Reset delete mutation state
  *
  * @example
  * ```typescript
+ * // Basic usage - all CRUD operations
+ * function StudentManagement() {
+ *   const {
+ *     createStudent,
+ *     updateStudent,
+ *     deactivateStudent,
+ *     isCreating,
+ *     isUpdating,
+ *     createError,
+ *     updateError
+ *   } = useOptimisticStudents();
+ *
+ *   const handleEnroll = async (data) => {
+ *     await createStudent.mutateAsync(data);
+ *   };
+ *
+ *   const handleUpdate = async (id, data) => {
+ *     await updateStudent.mutateAsync({ id, data });
+ *   };
+ *
+ *   const handleDeactivate = async (id) => {
+ *     if (confirm('Deactivate this student?')) {
+ *       await deactivateStudent.mutateAsync(id);
+ *     }
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <StudentForm
+ *         onSubmit={handleEnroll}
+ *         isLoading={isCreating}
+ *         error={createError}
+ *       />
+ *       <StudentList
+ *         onUpdate={handleUpdate}
+ *         onDeactivate={handleDeactivate}
+ *         isUpdating={isUpdating}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Using convenience methods
+ * const { createWithOptimism, updateWithOptimism } = useOptimisticStudents();
+ *
+ * // Fire-and-forget mutations
+ * createWithOptimism(newStudentData);
+ * updateWithOptimism({ id: 'student-123', data: updates });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Handling errors with toast notifications
  * const {
  *   createStudent,
  *   updateStudent,
- *   deactivateStudent,
- *   reactivateStudent,
- *   transferStudent,
- *   deleteStudent,
- *   isCreating,
- *   isUpdating,
- *   isDeleting
+ *   createError,
+ *   updateError,
+ *   createSuccess,
+ *   updateSuccess
  * } = useOptimisticStudents();
  *
- * await createStudent.mutateAsync({ ... });
+ * // Show error toasts
+ * useEffect(() => {
+ *   if (createError) {
+ *     toast.error(`Failed to enroll student: ${createError.message}`);
+ *   }
+ *   if (updateError) {
+ *     toast.error(`Failed to update student: ${updateError.message}`);
+ *   }
+ * }, [createError, updateError]);
+ *
+ * // Show success toasts
+ * useEffect(() => {
+ *   if (createSuccess) {
+ *     toast.success('Student enrolled successfully');
+ *   }
+ *   if (updateSuccess) {
+ *     toast.success('Student updated successfully');
+ *   }
+ * }, [createSuccess, updateSuccess]);
  * ```
+ *
+ * @example
+ * ```typescript
+ * // Transfer student to different nurse
+ * const { transferStudent, isTransferring } = useOptimisticStudents();
+ *
+ * const handleTransfer = async (studentId, newNurseId) => {
+ *   await transferStudent.mutateAsync({
+ *     id: studentId,
+ *     data: {
+ *       nurseId: newNurseId,
+ *       reason: 'Caseload balancing',
+ *       transferredBy: currentUserId
+ *     }
+ *   });
+ * };
+ *
+ * return (
+ *   <TransferButton
+ *     onClick={() => handleTransfer(student.id, nurse.id)}
+ *     isLoading={isTransferring}
+ *   />
+ * );
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // HIPAA-compliant permanent deletion
+ * const { deleteStudent, isDeleting } = useOptimisticStudents();
+ *
+ * const handlePermanentDelete = async (studentId) => {
+ *   // Require explicit confirmation for permanent deletion
+ *   const confirmed = await confirmDialog({
+ *     title: 'Permanent Deletion',
+ *     message: 'This will permanently delete all student data. This action cannot be undone.',
+ *     confirmText: 'Permanently Delete',
+ *     isDangerous: true
+ *   });
+ *
+ *   if (confirmed) {
+ *     await deleteStudent.mutateAsync(studentId);
+ *     // Student data purged for HIPAA compliance
+ *   }
+ * };
+ * ```
+ *
+ * @remarks
+ * **Best Practices**:
+ * - Use `mutateAsync` when you need to await the result or handle errors
+ * - Use `mutate` (convenience methods) for fire-and-forget operations
+ * - Always check `isLoading` states to disable UI during mutations
+ * - Handle errors appropriately with user-friendly messages
+ * - Use soft delete (`deactivate`) instead of permanent delete in most cases
+ * - Permanent delete should only be used for HIPAA data purging
+ *
+ * **State Management**:
+ * - All mutations update both TanStack Query cache and Redux store
+ * - Optimistic updates show changes immediately in UI
+ * - Automatic rollback on error maintains data consistency
+ * - Query invalidation ensures related data stays fresh
+ *
+ * **Performance**:
+ * - Only invalidates necessary queries for optimal performance
+ * - Uses granular query keys for targeted cache updates
+ * - Optimistic updates eliminate waiting for server responses
+ *
+ * @see {@link useOptimisticStudentCreate} for create operation details
+ * @see {@link useOptimisticStudentUpdate} for update operation details
+ * @see {@link useOptimisticStudentDeactivate} for deactivate operation details
+ * @see {@link useOptimisticMedications} for similar medication patterns
  */
 export function useOptimisticStudents() {
   const createStudent = useOptimisticStudentCreate();

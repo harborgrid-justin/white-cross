@@ -1,16 +1,65 @@
 /**
- * CreateIncidentForm Component
+ * Create Incident Form Component
  *
- * Wizard-style multi-step form for creating new incident reports.
- * Provides a guided experience with progress tracking and auto-save.
+ * Three-step wizard for creating comprehensive incident reports with
+ * guided workflow, validation, and auto-save functionality. Provides
+ * school nurses with a structured approach to documenting incidents.
  *
- * Features:
- * - 3-step wizard: Basic Info → Details → Review & Submit
- * - Progress indicator
- * - Back/Next/Submit navigation
- * - Auto-save drafts to localStorage
- * - Field validation per step
- * - Final review before submission
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <CreateIncidentForm
+ *   onSuccess={() => navigate('/incidents')}
+ *   onCancel={() => setShowForm(false)}
+ * />
+ * ```
+ *
+ * @remarks
+ * **Workflow Steps**:
+ * - **Step 1: Basic Information** - Student selection, type, severity, location, datetime
+ * - **Step 2: Incident Details** - Description, actions taken, follow-up requirements, parent notification
+ * - **Step 3: Review & Submit** - Final review of all entered data before submission
+ *
+ * **Key Features**:
+ * - **Auto-save**: Drafts saved to localStorage every 1 second
+ * - **Progressive Validation**: Validates each step before advancing
+ * - **Draft Recovery**: Automatically loads unsubmitted drafts on mount
+ * - **Student Lookup**: Integrates with TanStack Query for real-time student data
+ * - **Conditional Fields**: Shows follow-up notes and notification method based on checkboxes
+ * - **Visual Progress**: Step indicator shows current position in wizard
+ *
+ * **State Management**:
+ * - Uses `react-hook-form` for form state and validation
+ * - Integrates with `useOptimisticIncidents` custom hook for API mutations
+ * - TanStack Query for student list fetching
+ *
+ * **Validation Rules**:
+ * - Required fields: studentId, type, severity, location, occurredAt, description (min 10 chars), actionsTaken (min 10 chars)
+ * - Optional fields: followUpNotes, parentNotificationMethod (required if parent checkbox checked)
+ *
+ * **Permission Requirements**:
+ * - User must have ADMIN, NURSE, or COUNSELOR role (enforced at route level)
+ *
+ * **HIPAA Compliance**:
+ * - Draft data stored in localStorage temporarily (cleared on submit or explicit clear)
+ * - All submissions generate audit log entries
+ * - Student PHI visible only to authorized roles
+ *
+ * **Error Handling**:
+ * - Network errors shown via toast notifications
+ * - Form validation errors displayed inline per field
+ * - Failed submissions allow retry without data loss
+ *
+ * **Accessibility**:
+ * - ARIA labels on all form inputs
+ * - Keyboard navigation supported (Tab, Enter, Esc)
+ * - Error messages announced to screen readers
+ * - Focus management between wizard steps
+ *
+ * @see {@link useOptimisticIncidents} for incident mutation hooks
+ * @see {@link IncidentType} for available incident types
+ * @see {@link IncidentSeverity} for severity levels
  */
 
 import React, { useState, useEffect } from 'react';
@@ -26,12 +75,36 @@ import { studentsApi } from '@/services/modules/studentsApi';
 import toast from 'react-hot-toast';
 import { AlertCircle, Loader2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
+/**
+ * Props for CreateIncidentForm component
+ *
+ * @property {() => void} [onSuccess] - Callback invoked after successful incident creation
+ * @property {() => void} [onCancel] - Callback invoked when user cancels the form
+ * @property {string} [className] - Additional CSS classes for the form container
+ */
 interface CreateIncidentFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   className?: string;
 }
 
+/**
+ * Form data structure for incident creation
+ *
+ * Organized by wizard step for progressive collection of incident details.
+ *
+ * @property {string} studentId - UUID of the student involved in the incident (required)
+ * @property {IncidentType} type - Type of incident (INJURY, ILLNESS, BEHAVIORAL, etc.) (required)
+ * @property {IncidentSeverity} severity - Severity level (LOW, MEDIUM, HIGH, CRITICAL) (required)
+ * @property {string} occurredAt - ISO 8601 datetime when incident occurred (required)
+ * @property {string} location - Location where incident took place (required)
+ * @property {string} description - Detailed description of the incident, minimum 10 characters (required)
+ * @property {string} actionsTaken - Immediate actions taken by staff, minimum 10 characters (required)
+ * @property {boolean} followUpRequired - Whether follow-up actions are needed (required)
+ * @property {string} [followUpNotes] - Notes about required follow-up actions (optional, shown if followUpRequired is true)
+ * @property {boolean} parentNotified - Whether parent/guardian has been notified (required)
+ * @property {string} [parentNotificationMethod] - Method used to notify parent (email, SMS, phone, in-person) (optional, shown if parentNotified is true)
+ */
 interface IncidentFormData {
   // Step 1: Basic Info
   studentId: string;
@@ -49,13 +122,15 @@ interface IncidentFormData {
   parentNotificationMethod?: string;
 }
 
+/**
+ * Wizard step identifier (1, 2, or 3)
+ */
 type WizardStep = 1 | 2 | 3;
 
-const STORAGE_KEY = 'incident-draft';
-
 /**
- * CreateIncidentForm component - Multi-step wizard for incident creation
+ * LocalStorage key for draft persistence
  */
+const STORAGE_KEY = 'incident-draft';
 const CreateIncidentForm: React.FC<CreateIncidentFormProps> = ({
   onSuccess,
   onCancel,

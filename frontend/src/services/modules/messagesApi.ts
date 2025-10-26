@@ -1,6 +1,102 @@
 /**
- * Messages API Module
- * Provides frontend access to messaging and communications endpoints
+ * @fileoverview Messages API Module - Direct messaging and communication management
+ * @module services/modules/messagesApi
+ * @category Services
+ *
+ * Provides comprehensive direct messaging functionality for secure communication
+ * between users in the healthcare platform. Supports inbox management, message
+ * threads, file attachments, templates, and delivery tracking.
+ *
+ * **NOTE**: This module is deprecated in favor of `communicationsApi.ts` which
+ * provides a unified API for both broadcasts and direct messaging. This module
+ * is maintained for backward compatibility.
+ *
+ * ## Key Features
+ *
+ * **Direct Messaging**:
+ * - Send secure messages between nurses, staff, administrators, and parents
+ * - Thread support for conversation continuity
+ * - Read/unread status tracking
+ * - Priority levels (LOW, NORMAL, HIGH, URGENT)
+ * - File attachments with secure storage
+ *
+ * **Inbox Management**:
+ * - Retrieve inbox and sent messages
+ * - Filter by status, priority, sender, recipient
+ * - Pagination support for large message volumes
+ * - Unread message count tracking
+ *
+ * **Message Templates**:
+ * - Pre-defined templates for common communications
+ * - Variable substitution for personalization
+ * - Category-based organization
+ * - Template usage tracking
+ *
+ * **Delivery Status**:
+ * - Track message delivery across channels
+ * - Retry logic for failed deliveries
+ * - Delivery confirmation timestamps
+ *
+ * ## Healthcare-Specific Features
+ *
+ * **PHI Compliance**:
+ * - HIPAA-compliant message encryption
+ * - Secure attachment handling
+ * - Audit logging for all message operations
+ * - Access control enforcement
+ * - No PHI in notification previews
+ *
+ * **Emergency Messaging**:
+ * - URGENT priority for time-critical communications
+ * - Multi-channel delivery for urgent messages
+ * - Delivery confirmation requirements
+ * - Escalation workflows
+ *
+ * **Real-time Updates** (Socket.io):
+ * - Event: `message:received` for new messages
+ * - Event: `message:read` for read receipts
+ * - Live inbox updates
+ * - Notification delivery status
+ *
+ * **TanStack Query Integration**:
+ * - Query key: `['messages', 'inbox', filters]`
+ * - Cache invalidation on send/receive
+ * - Optimistic updates for instant UI
+ * - Background refetching
+ *
+ * @example
+ * ```typescript
+ * // Send urgent message to nurse
+ * const message = await messagesApi.create({
+ *   subject: 'Student Needs Immediate Attention',
+ *   body: 'Student experiencing severe allergic reaction symptoms. Please come to classroom 305 immediately.',
+ *   recipientId: nurseUserId,
+ *   priority: 'URGENT'
+ * });
+ *
+ * // Get inbox with unread messages
+ * const inbox = await messagesApi.getInbox({
+ *   page: 1,
+ *   limit: 20,
+ *   unreadOnly: true
+ * });
+ *
+ * // Reply to message
+ * const reply = await messagesApi.reply(originalMessageId, {
+ *   body: 'On my way to classroom 305. ETA 2 minutes.'
+ * });
+ *
+ * // Use with TanStack Query
+ * const { data, isLoading } = useQuery({
+ *   queryKey: ['messages', 'inbox'],
+ *   queryFn: () => messagesApi.getInbox(),
+ *   refetchInterval: 30000 // Poll every 30 seconds
+ * });
+ * ```
+ *
+ * @see {@link CommunicationsApi} for the unified communications API (recommended)
+ * @see {@link notificationsApi} for system notifications
+ * @deprecated Use {@link CommunicationsApi} for new implementations
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
