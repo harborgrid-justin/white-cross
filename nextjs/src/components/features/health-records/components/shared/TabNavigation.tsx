@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-027 | TabNavigation.tsx - React component or utility module
  * Purpose: react component or utility module

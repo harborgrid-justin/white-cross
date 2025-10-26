@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * HealthRecordModal Component - Create/Edit Health Record Modal
  *

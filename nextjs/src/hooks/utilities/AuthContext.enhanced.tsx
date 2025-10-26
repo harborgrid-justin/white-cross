@@ -15,7 +15,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { authApi } from '../services/modules/authApi';
 import { User } from '../types';
-import SessionExpiredModal from '../components/SessionExpiredModal';
+import { SessionExpiredModal } from '@/components/shared/security/SessionExpiredModal';
 import { secureTokenManager } from '../services/security/SecureTokenManager';
 import { csrfProtection } from '../services/security/CsrfProtection';
 import { auditService, initializeAuditService, cleanupAuditService } from '../services/audit/AuditService';

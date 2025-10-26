@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Modal } from '@/components/ui/overlays/Modal';
 import { Button } from '@/components/ui/buttons/Button';

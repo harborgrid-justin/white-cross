@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Redux Integration Demo Component
  *

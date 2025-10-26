@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Button } from '@/components/ui/buttons/Button';
 import { FileQuestion, Plus, Search, Inbox, Database, AlertCircle } from 'lucide-react';

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Witness Statement Collection Form
  * @module components/incidents/WitnessStatementForm

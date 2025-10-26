@@ -581,7 +581,7 @@ export function ExampleErrorHandling() {
 
 // Placeholder imports for example (replace with actual imports in real code)
 import React from 'react';
-import { OptimisticUpdateIndicator } from '@/components/shared/OptimisticUpdateIndicator';
-import { UpdateToast } from '@/components/shared/UpdateToast';
+import { OptimisticUpdateIndicator } from '@/components/ui/feedback/OptimisticUpdateIndicator';
+import { UpdateToast } from '@/components/ui/feedback/UpdateToast';
 import { ConflictResolutionModal } from '@/components/shared/data';
-import { RollbackButton } from '@/components/shared/RollbackButton';
+import { RollbackButton } from '@/components/ui/buttons/RollbackButton';

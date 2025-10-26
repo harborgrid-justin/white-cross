@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-IDX-299 | index.tsx - React component or utility module
  * Purpose: react component or utility module

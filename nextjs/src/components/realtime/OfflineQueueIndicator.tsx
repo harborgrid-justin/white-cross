@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Offline Queue Indicator Component
  * @module components/realtime/OfflineQueueIndicator

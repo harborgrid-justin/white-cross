@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Comprehensive Incident Report Form
  * @module components/incidents/IncidentReportForm

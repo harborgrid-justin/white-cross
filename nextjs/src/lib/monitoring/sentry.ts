@@ -1,22 +1,58 @@
 /**
- * Sentry Error Tracking and Performance Monitoring
+ * Sentry Error Tracking and Performance Monitoring (Lazy Loaded)
  *
  * Provides comprehensive error tracking, performance monitoring,
  * and session replay for production environments.
+ *
+ * PERFORMANCE OPTIMIZATION: Lazy loads Sentry SDK to reduce initial bundle size by ~150KB (gzipped)
  */
 
-import * as Sentry from '@sentry/nextjs';
+import type * as SentryTypes from '@sentry/nextjs';
+
+// Track initialization state
+let sentryInitialized = false;
+let sentryInitPromise: Promise<typeof SentryTypes> | null = null;
 
 /**
- * Initialize Sentry for Next.js
- * Should be called in instrumentation.ts
+ * Lazy load Sentry SDK
+ * Only loads in production to minimize bundle size
  */
-export function initSentry() {
+async function loadSentry(): Promise<typeof SentryTypes | null> {
+  // Skip in development to save bundle size
+  if (process.env.NODE_ENV !== 'production') {
+    return null;
+  }
+
+  // Return existing promise if already loading
+  if (sentryInitPromise) {
+    return sentryInitPromise;
+  }
+
+  // Load Sentry dynamically
+  sentryInitPromise = import('@sentry/nextjs');
+  return sentryInitPromise;
+}
+
+/**
+ * Initialize Sentry for Next.js (Lazy Loaded)
+ * Should be called after initial page load to improve performance
+ */
+export async function initSentry() {
+  if (sentryInitialized) {
+    return;
+  }
+
   const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
   const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || process.env.NODE_ENV;
 
   if (!SENTRY_DSN) {
     console.warn('Sentry DSN not configured, error tracking disabled');
+    return;
+  }
+
+  // Lazy load Sentry
+  const Sentry = await loadSentry();
+  if (!Sentry) {
     return;
   }
 
@@ -64,10 +100,10 @@ export function initSentry() {
 
     // Additional configuration
     integrations: [
-      new Sentry.BrowserTracing({
+      Sentry.browserTracingIntegration({
         tracePropagationTargets: ['localhost', /^https:\/\/.*\.whitecross\.com/],
       }),
-      new Sentry.Replay({
+      Sentry.replayIntegration({
         maskAllText: true, // HIPAA compliance: mask all text
         blockAllMedia: true, // HIPAA compliance: block all media
       }),
@@ -86,6 +122,8 @@ export function initSentry() {
     // Release tracking
     release: process.env.NEXT_PUBLIC_SENTRY_RELEASE || process.env.VERCEL_GIT_COMMIT_SHA,
   });
+
+  sentryInitialized = true;
 }
 
 /**
@@ -113,16 +151,19 @@ function sanitizePHI(text: string): string {
 }
 
 /**
- * Capture exception with context
+ * Capture exception with context (Lazy Loaded)
  */
-export function captureException(
+export async function captureException(
   error: Error,
   context?: {
     tags?: Record<string, string>;
     extra?: Record<string, unknown>;
-    level?: Sentry.SeverityLevel;
+    level?: SentryTypes.SeverityLevel;
   }
 ) {
+  const Sentry = await loadSentry();
+  if (!Sentry) return;
+
   if (context?.tags) {
     Sentry.setTags(context.tags);
   }
@@ -137,16 +178,19 @@ export function captureException(
 }
 
 /**
- * Capture message with context
+ * Capture message with context (Lazy Loaded)
  */
-export function captureMessage(
+export async function captureMessage(
   message: string,
   context?: {
     tags?: Record<string, string>;
     extra?: Record<string, unknown>;
-    level?: Sentry.SeverityLevel;
+    level?: SentryTypes.SeverityLevel;
   }
 ) {
+  const Sentry = await loadSentry();
+  if (!Sentry) return;
+
   const sanitizedMessage = sanitizePHI(message);
 
   if (context?.tags) {
@@ -161,13 +205,16 @@ export function captureMessage(
 }
 
 /**
- * Set user context (no PHI)
+ * Set user context (no PHI) (Lazy Loaded)
  */
-export function setUserContext(user: {
+export async function setUserContext(user: {
   id: string;
   role?: string;
   organizationId?: string;
 }) {
+  const Sentry = await loadSentry();
+  if (!Sentry) return;
+
   Sentry.setUser({
     id: user.id,
     // DO NOT include name, email, or other PHI
@@ -177,20 +224,26 @@ export function setUserContext(user: {
 }
 
 /**
- * Clear user context
+ * Clear user context (Lazy Loaded)
  */
-export function clearUserContext() {
+export async function clearUserContext() {
+  const Sentry = await loadSentry();
+  if (!Sentry) return;
+
   Sentry.setUser(null);
 }
 
 /**
- * Start transaction for performance monitoring
+ * Start transaction for performance monitoring (Lazy Loaded)
  */
-export function startTransaction(
+export async function startTransaction(
   name: string,
   operation: string,
   data?: Record<string, unknown>
 ) {
+  const Sentry = await loadSentry();
+  if (!Sentry) return undefined;
+
   return Sentry.startTransaction({
     name,
     op: operation,
@@ -199,14 +252,17 @@ export function startTransaction(
 }
 
 /**
- * Add breadcrumb for debugging
+ * Add breadcrumb for debugging (Lazy Loaded)
  */
-export function addBreadcrumb(
+export async function addBreadcrumb(
   message: string,
   category?: string,
-  level?: Sentry.SeverityLevel,
+  level?: SentryTypes.SeverityLevel,
   data?: Record<string, unknown>
 ) {
+  const Sentry = await loadSentry();
+  if (!Sentry) return;
+
   const sanitizedMessage = sanitizePHI(message);
 
   Sentry.addBreadcrumb({
@@ -219,7 +275,7 @@ export function addBreadcrumb(
 }
 
 /**
- * Wrap async function with error tracking
+ * Wrap async function with error tracking (Lazy Loaded)
  */
 export function withSentry<T extends (...args: any[]) => Promise<any>>(
   fn: T,
@@ -229,7 +285,7 @@ export function withSentry<T extends (...args: any[]) => Promise<any>>(
     try {
       return await fn(...args);
     } catch (error) {
-      captureException(error as Error, {
+      await captureException(error as Error, {
         tags: {
           function: functionName || fn.name,
         },
@@ -238,8 +294,3 @@ export function withSentry<T extends (...args: any[]) => Promise<any>>(
     }
   }) as T;
 }
-
-/**
- * Export Sentry for advanced usage
- */
-export { Sentry };

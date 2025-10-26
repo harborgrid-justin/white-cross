@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-064 | ReduxTest.tsx - React component or utility module
  * Purpose: react component or utility module

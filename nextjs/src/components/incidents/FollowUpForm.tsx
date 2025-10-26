@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Follow-Up Action Form
  * @module components/incidents/FollowUpForm

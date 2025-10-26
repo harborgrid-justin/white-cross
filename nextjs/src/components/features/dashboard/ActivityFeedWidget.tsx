@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ActivityFeedWidget Component - Recent Activity Timeline
  *

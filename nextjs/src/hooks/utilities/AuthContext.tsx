@@ -13,7 +13,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authApi } from '../../services/api'
 import { User } from '../../types'
-import SessionExpiredModal from '../../components/SessionExpiredModal'
+import { SessionExpiredModal } from '@/components/shared/security/SessionExpiredModal'
 import { tokenSecurityManager, legacyTokenUtils, validateTokenFormat, isTokenExpired } from '../../utils/tokenSecurity'
 
 // Extend Window interface for Cypress

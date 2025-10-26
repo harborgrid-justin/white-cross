@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Multi-Series Line Chart Component
  *

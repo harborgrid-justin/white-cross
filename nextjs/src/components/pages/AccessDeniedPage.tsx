@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * AccessDeniedPage Component - 403 Access Denied Error Page
  *

@@ -1,25 +1,55 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useAppointmentsList, useAppointmentStatistics } from '@/hooks/domains/appointments';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for AppointmentCalendar to reduce bundle size
+const AppointmentCalendar = dynamic(
+  () => import('@/components/appointments/AppointmentCalendar'),
+  {
+    ssr: false,
+    loading: () => <CalendarSkeleton />,
+  }
+);
 
 type ViewMode = 'calendar' | 'list';
-type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no-show';
+type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no-show' | 'confirmed' | 'in-progress';
 
 interface Appointment {
   id: string;
   studentId: string;
   studentName?: string;
+  appointmentType?: string;
   reason: string;
-  scheduledFor: string;
+  scheduledFor?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
   duration: number;
   status: AppointmentStatus;
   nurseId?: string;
   nurseName?: string;
   notes?: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
+}
+
+/**
+ * Calendar Loading Skeleton
+ */
+function CalendarSkeleton() {
+  return (
+    <div className="overflow-hidden bg-white shadow sm:rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-96 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -48,6 +78,27 @@ export default function AppointmentsPage() {
   });
 
   const { data: statistics } = useAppointmentStatistics();
+
+  // Transform appointments to format expected by calendar
+  const calendarAppointments = React.useMemo(() => {
+    if (!appointments) return [];
+
+    return appointments.map((apt: Appointment) => ({
+      id: apt.id,
+      studentId: apt.studentId,
+      studentName: apt.studentName,
+      nurseId: apt.nurseId,
+      nurseName: apt.nurseName,
+      appointmentType: apt.appointmentType || 'General',
+      scheduledDate: apt.scheduledDate || apt.scheduledFor?.split('T')[0] || '',
+      scheduledTime: apt.scheduledTime || apt.scheduledFor?.split('T')[1]?.slice(0, 5) || '',
+      duration: apt.duration,
+      status: apt.status as 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'no-show',
+      reason: apt.reason,
+      notes: apt.notes,
+      priority: apt.priority || 'medium',
+    }));
+  }, [appointments]);
 
   if (error) {
     return (
@@ -288,13 +339,20 @@ export default function AppointmentsPage() {
           )}
         </div>
       ) : (
-        <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <p className="text-sm text-gray-500">
-              Calendar view coming soon. Use list view to see appointments.
-            </p>
-          </div>
-        </div>
+        <Suspense fallback={<CalendarSkeleton />}>
+          <AppointmentCalendar
+            appointments={calendarAppointments}
+            initialView="timeGridWeek"
+            editable={true}
+            selectable={true}
+            showWeekends={false}
+            workingHours={{
+              start: '08:00',
+              end: '17:00',
+              daysOfWeek: [1, 2, 3, 4, 5],
+            }}
+          />
+        </Suspense>
       )}
     </div>
   );
