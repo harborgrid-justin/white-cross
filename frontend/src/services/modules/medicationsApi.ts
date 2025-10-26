@@ -1,13 +1,47 @@
 /**
- * WF-COMP-289 | medicationsApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/medications | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, classes | Key Features: arrow component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Medications API Service
+ *
+ * Provides comprehensive frontend access to medication management endpoints including
+ * medication administration, inventory tracking, prescription management, and adverse
+ * reaction reporting. All operations include comprehensive validation, audit logging,
+ * and HIPAA-compliant PHI protection.
+ *
+ * **Key Features:**
+ * - Medication CRUD operations with validation
+ * - Student medication assignment and tracking
+ * - Administration logging with Five Rights verification
+ * - Inventory management with expiration tracking
+ * - Adverse reaction reporting and monitoring
+ * - Medication schedule and reminder management
+ * - DEA-compliant controlled substance handling
+ *
+ * **HIPAA Compliance:**
+ * - All medication operations trigger PHI access audit logs
+ * - Student medication data treated as Protected Health Information (PHI)
+ * - Audit logging includes success/failure status and context
+ * - Administration events logged immediately for compliance
+ * - Adverse reactions trigger critical audit logs
+ *
+ * **Medication Safety:**
+ * - Five Rights verification (Right Patient, Medication, Dose, Route, Time)
+ * - NDC validation for medication identification
+ * - Dosage format validation (mg, ml, tablets, etc.)
+ * - Frequency pattern validation (QID, TID, BID, PRN, etc.)
+ * - Controlled substance DEA schedule tracking
+ * - Allergy and contraindication checking before administration
+ * - Witness requirements for controlled substances
+ *
+ * **TanStack Query Integration:**
+ * - Medications list: 5-minute cache, invalidate on create/update
+ * - Student medications: 2-minute cache, invalidate on assignment
+ * - Inventory: 1-minute cache, invalidate on quantity changes
+ * - Administration logs: No cache (real-time critical)
+ * - Reminders: 30-second cache, frequent polling
+ *
+ * @module services/modules/medicationsApi
+ * @see {@link medication/api/AdministrationApi} for detailed administration workflow
+ * @see {@link medication/api/PrescriptionApi} for prescription management
+ * @see {@link medication/api/MedicationFormularyApi} for drug database
  */
 
 import type { ApiClient } from '../core/ApiClient';
@@ -39,6 +73,20 @@ import {
   MedicationScheduleResponse
 } from '../../types/medications';
 
+/**
+ * Medication filtering and pagination options
+ *
+ * @interface MedicationFilters
+ *
+ * @property {string} [search] - Text search across medication name, generic name, and NDC
+ * @property {string} [category] - Medication category (e.g., "Analgesic", "Antibiotic")
+ * @property {boolean} [isActive] - Filter by active/inactive status
+ * @property {boolean} [controlledSubstance] - Filter DEA-scheduled controlled substances
+ * @property {number} [page] - Page number for pagination (1-indexed)
+ * @property {number} [limit] - Results per page (default: 20, max: 100)
+ * @property {string} [sort] - Sort field (name, createdAt, updatedAt)
+ * @property {'asc' | 'desc'} [order] - Sort direction
+ */
 export interface MedicationFilters {
   search?: string;
   category?: string;
@@ -50,6 +98,19 @@ export interface MedicationFilters {
   order?: 'asc' | 'desc';
 }
 
+/**
+ * Request data for creating a new medication in the formulary
+ *
+ * @interface CreateMedicationRequest
+ *
+ * @property {string} name - Medication brand/trade name
+ * @property {string} [genericName] - Generic/chemical name
+ * @property {string} dosageForm - Dosage form (tablet, capsule, liquid, etc.)
+ * @property {string} strength - Strength with units (e.g., "500mg", "10mg/ml")
+ * @property {string} [manufacturer] - Manufacturer name
+ * @property {string} [ndc] - National Drug Code (format: XXXXX-XXXX-XX)
+ * @property {boolean} [isControlled] - True if DEA-scheduled controlled substance
+ */
 export interface CreateMedicationRequest {
   name: string;
   genericName?: string;
@@ -60,6 +121,19 @@ export interface CreateMedicationRequest {
   isControlled?: boolean;
 }
 
+/**
+ * Request data for adding medication to inventory
+ *
+ * @interface CreateInventoryRequest
+ *
+ * @property {string} medicationId - UUID of medication in formulary
+ * @property {string} batchNumber - Manufacturer batch/lot number
+ * @property {string} expirationDate - Expiration date (ISO 8601)
+ * @property {number} quantity - Initial quantity in stock
+ * @property {number} [reorderLevel] - Quantity threshold for reorder alerts
+ * @property {number} [costPerUnit] - Cost per unit for budget tracking
+ * @property {string} [supplier] - Supplier/distributor name
+ */
 export interface CreateInventoryRequest {
   medicationId: string;
   batchNumber: string;
@@ -70,6 +144,14 @@ export interface CreateInventoryRequest {
   supplier?: string;
 }
 
+/**
+ * Request data for updating inventory quantity
+ *
+ * @interface UpdateInventoryRequest
+ *
+ * @property {number} quantity - New quantity (replaces current quantity)
+ * @property {string} [reason] - Reason for adjustment (for audit trail)
+ */
 export interface UpdateInventoryRequest {
   quantity: number;
   reason?: string;
@@ -81,18 +163,39 @@ export interface UpdateInventoryRequest {
 
 /**
  * NDC (National Drug Code) Format Validation
- * Format: XXXXX-XXXX-XX (5-4-2) or XXXXX-XXX-XX (5-3-2)
+ *
+ * Validates 10-digit NDC in 5-4-2 or 5-3-2 format.
+ * Examples: "12345-1234-12" or "12345-123-12"
+ *
+ * @constant {RegExp}
  */
 const ndcRegex = /^[0-9]{5}-([0-9]{3,4})-[0-9]{2}$/;
 
 /**
  * Dosage format validation
- * Supports: "500mg", "10ml", "2 tablets", "1 unit", etc.
+ *
+ * Validates dosage strings with numeric value and unit.
+ * Supports: mg, g, mcg, ml, L, units, tablets, capsules, drops, puff, patch, spray, application, mEq, %
+ *
+ * Examples: "500mg", "10ml", "2 tablets", "1 unit"
+ *
+ * @constant {RegExp}
  */
 const dosageRegex = /^[0-9]+(\.[0-9]+)?\s*(mg|g|mcg|ml|L|units?|tablets?|capsules?|drops?|puff|patch|spray|application|mEq|%)$/i;
 
 /**
  * Frequency validation patterns
+ *
+ * Supports common medical frequency notations:
+ * - Daily frequencies: "once daily", "twice daily", "1x daily", "2x daily"
+ * - Numeric frequencies: "three times daily", "four times a day"
+ * - Hourly intervals: "every 4 hours", "every 6 hrs"
+ * - Medical abbreviations: "QID", "TID", "BID", "QD", "QHS", "PRN", "AC", "PC", "HS"
+ * - As needed: "as needed"
+ * - Meal-related: "before meals", "after breakfast", "at bedtime"
+ * - Long-term: "weekly", "monthly"
+ *
+ * @constant {RegExp[]}
  */
 const frequencyPatterns = [
   /^(once|twice|1x|2x|3x|4x)\s*(daily|per day)$/i,
@@ -109,11 +212,18 @@ const frequencyPatterns = [
 
 /**
  * Strength format validation
+ *
+ * Validates medication strength with numeric value and unit.
+ * Examples: "500mg", "10ml", "50mcg", "100units", "5mEq"
+ *
+ * @constant {RegExp}
  */
 const strengthRegex = /^[0-9]+(\.[0-9]+)?\s*(mg|g|mcg|ml|L|units?|mEq|%)$/i;
 
 /**
- * Valid dosage forms
+ * Valid dosage forms recognized by the system
+ *
+ * @constant {ReadonlyArray<string>}
  */
 const dosageForms = [
   'Tablet',
@@ -135,6 +245,8 @@ const dosageForms = [
 
 /**
  * Valid administration routes
+ *
+ * @constant {ReadonlyArray<string>}
  */
 const administrationRoutes = [
   'Oral',
@@ -153,11 +265,24 @@ const administrationRoutes = [
 
 /**
  * DEA Schedules for controlled substances
+ *
+ * - Schedule I: High abuse potential, no accepted medical use
+ * - Schedule II: High abuse potential, accepted medical use (morphine, oxycodone)
+ * - Schedule III: Moderate abuse potential (codeine, ketamine)
+ * - Schedule IV: Low abuse potential (alprazolam, diazepam)
+ * - Schedule V: Lowest abuse potential (cough preparations with codeine)
+ *
+ * @constant {ReadonlyArray<string>}
  */
 const deaSchedules = ['I', 'II', 'III', 'IV', 'V'] as const;
 
 /**
- * Frequency validator
+ * Frequency validator function
+ *
+ * Validates medication frequency against supported patterns.
+ *
+ * @param {string} value - Frequency string to validate
+ * @returns {boolean} True if frequency matches a valid pattern
  */
 const frequencyValidator = (value: string) => {
   const normalizedValue = value.trim().toLowerCase();
@@ -165,7 +290,11 @@ const frequencyValidator = (value: string) => {
 };
 
 /**
- * Schema for creating a new medication
+ * Schema for creating a new medication in the formulary
+ *
+ * Validates all required fields and enforces DEA compliance rules.
+ *
+ * @constant {z.ZodObject}
  */
 const createMedicationSchema = z.object({
   name: z.string()
@@ -219,7 +348,15 @@ const createMedicationSchema = z.object({
 
 /**
  * Schema for assigning medication to student (prescription)
- * Implements Five Rights validation
+ *
+ * Implements Five Rights validation:
+ * - Right Patient (studentId UUID required)
+ * - Right Medication (medicationId UUID required)
+ * - Right Dose (dosage validation)
+ * - Right Route (administration route required)
+ * - Right Time (start/end dates validated)
+ *
+ * @constant {z.ZodObject}
  */
 const assignMedicationSchema = z.object({
   studentId: z.string()
@@ -294,7 +431,11 @@ const assignMedicationSchema = z.object({
 
 /**
  * Schema for logging medication administration
- * CRITICAL: Implements Five Rights validation
+ *
+ * CRITICAL: Implements Five Rights validation for patient safety.
+ * All administration events must pass validation before being logged.
+ *
+ * @constant {z.ZodObject}
  */
 const logAdministrationSchema = z.object({
   studentMedicationId: z.string()
@@ -343,7 +484,11 @@ const logAdministrationSchema = z.object({
 });
 
 /**
- * Schema for adding to inventory
+ * Schema for adding medication to inventory
+ *
+ * Validates batch tracking, expiration dates, and quantity management.
+ *
+ * @constant {z.ZodObject}
  */
 const addToInventorySchema = z.object({
   medicationId: z.string()
@@ -384,7 +529,12 @@ const addToInventorySchema = z.object({
 });
 
 /**
- * Schema for reporting adverse reaction
+ * Schema for reporting adverse reactions
+ *
+ * CRITICAL: Adverse reactions are patient safety events requiring immediate
+ * documentation and reporting to prescribing physician.
+ *
+ * @constant {z.ZodObject}
  */
 const reportAdverseReactionSchema = z.object({
   studentMedicationId: z.string()
@@ -417,7 +567,40 @@ const reportAdverseReactionSchema = z.object({
     ),
 });
 
-// Medications API class
+/**
+ * Medications API Service
+ *
+ * Handles all medication-related API operations including medication management,
+ * student medication assignments, administration logging, inventory tracking,
+ * and adverse reaction reporting.
+ *
+ * **Authentication**: All methods require valid JWT authentication
+ * **Authorization**: Most methods require nurse or admin role
+ * **Rate Limiting**: 100 requests per minute per user
+ *
+ * @class
+ * @see {@link createMedicationsApi} for factory function
+ * @see {@link medicationsApi} for singleton instance
+ *
+ * @example
+ * ```typescript
+ * import { medicationsApi } from '@/services/modules/medicationsApi';
+ *
+ * // Get all active medications
+ * const medications = await medicationsApi.getAll({ isActive: true });
+ *
+ * // Assign medication to student
+ * const assignment = await medicationsApi.assignToStudent({
+ *   studentId: 'student-uuid',
+ *   medicationId: 'medication-uuid',
+ *   dosage: '500mg',
+ *   frequency: 'twice daily',
+ *   route: 'Oral',
+ *   startDate: '2025-10-26',
+ *   prescribedBy: 'Dr. Smith'
+ * });
+ * ```
+ */
 export class MedicationsApi {
   private client: ApiClient;
 
@@ -426,7 +609,34 @@ export class MedicationsApi {
   }
 
   /**
-   * Get all medications with optional filtering
+   * Get all medications with optional filtering and pagination
+   *
+   * Retrieves medications from the formulary with support for search, filtering,
+   * sorting, and pagination. Results include full medication details.
+   *
+   * **Cache Strategy**: 5-minute cache, invalidated on create/update
+   * **HIPAA Compliance**: Audit log generated for medication list access
+   *
+   * @param {MedicationFilters} [filters={}] - Filter and pagination options
+   * @returns {Promise<MedicationsResponse>} Paginated medications list
+   * @throws {ApiError} If request fails or network error occurs
+   *
+   * @example
+   * ```typescript
+   * // Search for controlled substances
+   * const medications = await medicationsApi.getAll({
+   *   search: 'morphine',
+   *   controlledSubstance: true,
+   *   page: 1,
+   *   limit: 20
+   * });
+   * console.log(`Found ${medications.total} controlled substances`);
+   * ```
+   *
+   * @remarks
+   * **TanStack Query**: Use with queryKey: ['medications', filters]
+   * **Performance**: Indexed search on name, genericName, and NDC
+   * **Pagination**: Returns total count for pagination UI
    */
   async getAll(filters: MedicationFilters = {}): Promise<MedicationsResponse> {
     try {
@@ -461,6 +671,25 @@ export class MedicationsApi {
 
   /**
    * Get medication by ID
+   *
+   * Retrieves complete medication details including formulation, strength,
+   * dosage form, manufacturer, and controlled substance information.
+   *
+   * **HIPAA Compliance**: Generates PHI access audit log
+   *
+   * @param {string} id - Medication UUID
+   * @returns {Promise<Medication>} Medication details
+   * @throws {ApiError} If medication not found or request fails
+   *
+   * @example
+   * ```typescript
+   * const medication = await medicationsApi.getById('medication-uuid');
+   * console.log(`${medication.name} (${medication.genericName})`);
+   * console.log(`Strength: ${medication.strength}, Form: ${medication.dosageForm}`);
+   * if (medication.isControlled) {
+   *   console.log(`DEA Schedule: ${medication.deaSchedule}`);
+   * }
+   * ```
    */
   async getById(id: string): Promise<Medication> {
     try {
@@ -491,7 +720,40 @@ export class MedicationsApi {
   }
 
   /**
-   * Create new medication
+   * Create new medication in the formulary
+   *
+   * Adds a new medication to the system formulary with full validation.
+   * Requires admin privileges.
+   *
+   * **Validation**: Comprehensive Zod schema validation including NDC format,
+   * strength format, and DEA schedule compliance
+   * **HIPAA Compliance**: Creates audit log with medication details
+   * **DEA Compliance**: Enforces DEA schedule for controlled substances
+   *
+   * @param {CreateMedicationRequest} medicationData - Medication information
+   * @returns {Promise<{medication: Medication}>} Created medication
+   * @throws {ValidationError} If validation fails with specific field errors
+   * @throws {ApiError} If creation fails or unauthorized
+   *
+   * @example
+   * ```typescript
+   * // Create controlled substance with DEA schedule
+   * const result = await medicationsApi.create({
+   *   name: 'Morphine Sulfate ER',
+   *   genericName: 'morphine sulfate',
+   *   dosageForm: 'Tablet',
+   *   strength: '30mg',
+   *   manufacturer: 'Generic Pharma',
+   *   ndc: '12345-1234-12',
+   *   isControlled: true
+   * });
+   * console.log(`Created: ${result.medication.name}`);
+   * ```
+   *
+   * @remarks
+   * **Cache Invalidation**: Invalidates medications list query
+   * **Authorization**: Requires admin or pharmacist role
+   * **Audit Trail**: Creates permanent audit log entry
    */
   async create(medicationData: CreateMedicationRequest): Promise<{ medication: Medication }> {
     try {
@@ -533,7 +795,24 @@ export class MedicationsApi {
   }
 
   /**
-   * Update medication
+   * Update medication information
+   *
+   * Updates an existing medication in the formulary. Partial updates supported.
+   * Requires admin privileges.
+   *
+   * @param {string} id - Medication UUID
+   * @param {Partial<CreateMedicationRequest>} medicationData - Fields to update
+   * @returns {Promise<Medication>} Updated medication
+   * @throws {ApiError} If update fails or medication not found
+   *
+   * @example
+   * ```typescript
+   * // Update strength and manufacturer
+   * const updated = await medicationsApi.update('medication-uuid', {
+   *   strength: '60mg',
+   *   manufacturer: 'New Manufacturer'
+   * });
+   * ```
    */
   async update(id: string, medicationData: Partial<CreateMedicationRequest>): Promise<Medication> {
     try {
@@ -551,7 +830,14 @@ export class MedicationsApi {
   }
 
   /**
-   * Delete medication
+   * Delete medication from formulary
+   *
+   * Soft deletes medication (marks as inactive). Medication history preserved.
+   * Requires admin privileges.
+   *
+   * @param {string} id - Medication UUID
+   * @returns {Promise<{id: string}>} Deleted medication ID
+   * @throws {ApiError} If deletion fails or medication not found
    */
   async delete(id: string): Promise<{ id: string }> {
     try {
@@ -568,7 +854,43 @@ export class MedicationsApi {
   }
 
   /**
-   * Assign medication to student
+   * Assign medication to student (create prescription)
+   *
+   * Creates a new student medication assignment with prescription details.
+   * Implements Five Rights validation before assignment.
+   *
+   * **Five Rights Validation**:
+   * - Right Patient: studentId UUID validation
+   * - Right Medication: medicationId UUID validation
+   * - Right Dose: dosage format validation
+   * - Right Route: administration route validation
+   * - Right Time: start/end date validation
+   *
+   * @param {StudentMedicationFormData} assignmentData - Prescription details
+   * @returns {Promise<StudentMedication>} Created student medication assignment
+   * @throws {ValidationError} If Five Rights validation fails
+   * @throws {ApiError} If assignment fails
+   *
+   * @example
+   * ```typescript
+   * // Assign antibiotic with specific schedule
+   * const assignment = await medicationsApi.assignToStudent({
+   *   studentId: 'student-uuid',
+   *   medicationId: 'amoxicillin-uuid',
+   *   dosage: '500mg',
+   *   frequency: 'three times daily',
+   *   route: 'Oral',
+   *   startDate: '2025-10-26',
+   *   endDate: '2025-11-02',
+   *   prescribedBy: 'Dr. Johnson',
+   *   prescriptionNumber: 'RX123456',
+   *   instructions: 'Take with food. Complete full course.'
+   * });
+   * ```
+   *
+   * @remarks
+   * **HIPAA Compliance**: Generates PHI access audit log
+   * **Cache Invalidation**: Invalidates student medications query
    */
   async assignToStudent(assignmentData: StudentMedicationFormData): Promise<StudentMedication> {
     try {
@@ -590,7 +912,49 @@ export class MedicationsApi {
 
   /**
    * Log medication administration
-   * CRITICAL: This is a patient safety operation and must be audited
+   *
+   * CRITICAL: Records medication administration with Five Rights verification.
+   * All administration events must be logged immediately for compliance and
+   * patient safety tracking.
+   *
+   * **Five Rights Enforcement**:
+   * - Patient verification via barcode/photo
+   * - Medication verification via NDC/barcode
+   * - Dosage calculation and verification
+   * - Route confirmation
+   * - Time window validation
+   *
+   * **Safety Checks**:
+   * - Allergy verification required
+   * - Patient identification confirmed
+   * - Witness signature for controlled substances
+   * - Side effect monitoring
+   *
+   * @param {MedicationAdministrationData} logData - Administration details
+   * @returns {Promise<MedicationLog>} Created administration log
+   * @throws {ValidationError} If validation or Five Rights check fails
+   * @throws {ApiError} If logging fails
+   *
+   * @example
+   * ```typescript
+   * // Log morning medication administration
+   * const log = await medicationsApi.logAdministration({
+   *   studentMedicationId: 'prescription-uuid',
+   *   dosageGiven: '500mg',
+   *   timeGiven: '2025-10-26T08:00:00Z',
+   *   notes: 'Student took medication without difficulty',
+   *   patientVerified: true,
+   *   allergyChecked: true,
+   *   deviceId: 'tablet-123'
+   * });
+   * console.log(`Administration logged: ${log.id}`);
+   * ```
+   *
+   * @remarks
+   * **CRITICAL**: NO optimistic updates - wait for server confirmation
+   * **Audit Logging**: Immediate audit log on success and failure
+   * **Cache**: No caching - administration logs are real-time
+   * **Offline**: Queue for later submission if offline
    */
   async logAdministration(logData: MedicationAdministrationData): Promise<MedicationLog> {
     try {
@@ -608,7 +972,6 @@ export class MedicationsApi {
         action: AuditAction.ADMINISTER_MEDICATION,
         resourceType: AuditResourceType.MEDICATION_LOG,
         resourceId: medicationLog.id,
-        // Note: studentId is available through medicationLog.studentMedication relation if needed
         status: AuditStatus.SUCCESS,
         isPHI: true,
         metadata: {
@@ -641,6 +1004,21 @@ export class MedicationsApi {
 
   /**
    * Get administration logs for a student
+   *
+   * Retrieves paginated medication administration history for a student.
+   * Includes medication details, dosages, times, and any reported side effects.
+   *
+   * @param {string} studentId - Student UUID
+   * @param {number} [page=1] - Page number
+   * @param {number} [limit=20] - Results per page
+   * @returns {Promise<StudentMedicationsResponse>} Paginated administration logs
+   * @throws {ApiError} If request fails
+   *
+   * @example
+   * ```typescript
+   * const logs = await medicationsApi.getStudentLogs('student-uuid', 1, 50);
+   * console.log(`Total administrations: ${logs.total}`);
+   * ```
    */
   async getStudentLogs(studentId: string, page: number = 1, limit: number = 20): Promise<StudentMedicationsResponse> {
     try {
@@ -658,6 +1036,21 @@ export class MedicationsApi {
 
   /**
    * Get medication inventory with alerts
+   *
+   * Retrieves current inventory status including low stock alerts,
+   * expiring medication warnings, and controlled substance tracking.
+   *
+   * **Cache Strategy**: 1-minute cache, invalidated on quantity changes
+   *
+   * @returns {Promise<InventoryResponse>} Inventory with alerts
+   * @throws {ApiError} If request fails
+   *
+   * @example
+   * ```typescript
+   * const inventory = await medicationsApi.getInventory();
+   * const lowStock = inventory.items.filter(item => item.quantity <= item.reorderLevel);
+   * console.log(`${lowStock.length} medications need reordering`);
+   * ```
    */
   async getInventory(): Promise<InventoryResponse> {
     try {
@@ -673,6 +1066,26 @@ export class MedicationsApi {
 
   /**
    * Add medication to inventory
+   *
+   * Records new inventory batch with expiration tracking and reorder levels.
+   * Validates batch numbers and expiration dates.
+   *
+   * @param {CreateInventoryRequest} inventoryData - Inventory details
+   * @returns {Promise<InventoryItem>} Created inventory item
+   * @throws {ApiError} If creation fails
+   *
+   * @example
+   * ```typescript
+   * const item = await medicationsApi.addToInventory({
+   *   medicationId: 'medication-uuid',
+   *   batchNumber: 'LOT123456',
+   *   expirationDate: '2026-12-31',
+   *   quantity: 500,
+   *   reorderLevel: 50,
+   *   costPerUnit: 0.25,
+   *   supplier: 'McKesson'
+   * });
+   * ```
    */
   async addToInventory(inventoryData: CreateInventoryRequest): Promise<InventoryItem> {
     try {
@@ -689,6 +1102,13 @@ export class MedicationsApi {
 
   /**
    * Update inventory quantity
+   *
+   * Updates current inventory quantity with reason tracking for audit trail.
+   *
+   * @param {string} id - Inventory item UUID
+   * @param {UpdateInventoryRequest} updateData - Quantity and reason
+   * @returns {Promise<InventoryItem>} Updated inventory item
+   * @throws {ApiError} If update fails
    */
   async updateInventoryQuantity(id: string, updateData: UpdateInventoryRequest): Promise<InventoryItem> {
     try {
@@ -706,7 +1126,16 @@ export class MedicationsApi {
   }
 
   /**
-   * Get medication schedule for a date range
+   * Get medication schedule for date range
+   *
+   * Retrieves scheduled medication administrations for specified date range.
+   * Useful for generating daily medication administration records (MAR).
+   *
+   * @param {string} [startDate] - Start date (ISO 8601)
+   * @param {string} [endDate] - End date (ISO 8601)
+   * @param {string} [nurseId] - Filter by assigned nurse
+   * @returns {Promise<StudentMedication[]>} Scheduled medications
+   * @throws {ApiError} If request fails
    */
   async getSchedule(startDate?: string, endDate?: string, nurseId?: string): Promise<StudentMedication[]> {
     try {
@@ -726,7 +1155,16 @@ export class MedicationsApi {
   }
 
   /**
-   * Get medication reminders for a specific date
+   * Get medication reminders for specific date
+   *
+   * Retrieves upcoming medication administration reminders.
+   * Used for nurse dashboard and notification system.
+   *
+   * **Cache Strategy**: 30-second cache with frequent polling
+   *
+   * @param {string} [date] - Date for reminders (ISO 8601), defaults to today
+   * @returns {Promise<MedicationReminder[]>} Medication reminders
+   * @throws {ApiError} If request fails
    */
   async getReminders(date?: string): Promise<MedicationReminder[]> {
     try {
@@ -744,7 +1182,37 @@ export class MedicationsApi {
 
   /**
    * Report adverse reaction
-   * CRITICAL: Patient safety event that must be immediately audited
+   *
+   * CRITICAL: Reports medication adverse reaction or side effect.
+   * Patient safety event requiring immediate documentation and physician notification.
+   *
+   * **Severity Levels**:
+   * - MILD: Minor discomfort, no intervention required
+   * - MODERATE: Discomfort requiring monitoring or minor intervention
+   * - SEVERE: Significant symptoms requiring medical intervention
+   * - LIFE_THREATENING: Immediate emergency response required
+   *
+   * @param {AdverseReactionData | AdverseReactionFormData} reactionData - Reaction details
+   * @returns {Promise<AdverseReaction>} Created adverse reaction report
+   * @throws {ApiError} If reporting fails
+   *
+   * @example
+   * ```typescript
+   * // Report severe allergic reaction
+   * const report = await medicationsApi.reportAdverseReaction({
+   *   studentMedicationId: 'prescription-uuid',
+   *   severity: 'SEVERE',
+   *   reaction: 'Hives, facial swelling, difficulty breathing',
+   *   actionTaken: 'Administered EpiPen, called 911, notified parents',
+   *   notes: 'Student responded well to epinephrine. Transported to ER.',
+   *   reportedAt: new Date().toISOString()
+   * });
+   * ```
+   *
+   * @remarks
+   * **CRITICAL**: Generates immediate audit log
+   * **Notification**: Triggers alerts to prescribing physician
+   * **Follow-up**: Requires physician review and documentation
    */
   async reportAdverseReaction(reactionData: AdverseReactionData | AdverseReactionFormData): Promise<AdverseReaction> {
     try {
@@ -790,6 +1258,13 @@ export class MedicationsApi {
 
   /**
    * Get adverse reactions
+   *
+   * Retrieves adverse reaction history filtered by medication or student.
+   *
+   * @param {string} [medicationId] - Filter by medication
+   * @param {string} [studentId] - Filter by student
+   * @returns {Promise<AdverseReaction[]>} Adverse reactions
+   * @throws {ApiError} If request fails
    */
   async getAdverseReactions(medicationId?: string, studentId?: string): Promise<AdverseReaction[]> {
     try {
@@ -809,6 +1284,14 @@ export class MedicationsApi {
 
   /**
    * Deactivate student medication
+   *
+   * Discontinues an active student medication prescription.
+   * Soft delete preserving history for audit trail.
+   *
+   * @param {string} studentMedicationId - Student medication UUID
+   * @param {string} [reason] - Reason for discontinuation
+   * @returns {Promise<StudentMedication>} Deactivated student medication
+   * @throws {ApiError} If deactivation fails
    */
   async deactivateStudentMedication(studentMedicationId: string, reason?: string): Promise<StudentMedication> {
     try {
@@ -827,6 +1310,12 @@ export class MedicationsApi {
 
   /**
    * Get medication statistics
+   *
+   * Retrieves aggregated medication statistics including administration counts,
+   * controlled substance tracking, and compliance metrics.
+   *
+   * @returns {Promise<MedicationStats>} Medication statistics
+   * @throws {ApiError} If request fails
    */
   async getStats(): Promise<MedicationStats> {
     try {
@@ -842,6 +1331,12 @@ export class MedicationsApi {
 
   /**
    * Get medication alerts
+   *
+   * Retrieves system alerts including low inventory, expiring medications,
+   * missing administrations, and compliance warnings.
+   *
+   * @returns {Promise<MedicationAlertsResponse>} Medication alerts
+   * @throws {ApiError} If request fails
    */
   async getAlerts(): Promise<MedicationAlertsResponse> {
     try {
@@ -857,6 +1352,12 @@ export class MedicationsApi {
 
   /**
    * Get medication form options
+   *
+   * Retrieves dropdown options for medication forms, routes, frequencies, etc.
+   * Used for populating form dropdowns and validation.
+   *
+   * @returns {Promise<MedicationFormOptions>} Form options
+   * @throws {ApiError} If request fails
    */
   async getFormOptions(): Promise<MedicationFormOptions> {
     try {
@@ -871,25 +1372,63 @@ export class MedicationsApi {
   }
 
   /**
-   * Administer medication (alias for logAdministration for backward compatibility)
+   * Administer medication (alias for logAdministration)
+   *
+   * @deprecated Use logAdministration() for consistency
+   * @see {@link logAdministration}
    */
   async administer(logData: MedicationAdministrationData): Promise<MedicationLog> {
     return this.logAdministration(logData);
   }
 
   /**
-   * Update inventory (alias for updateInventoryQuantity for backward compatibility)
+   * Update inventory (alias for updateInventoryQuantity)
+   *
+   * @deprecated Use updateInventoryQuantity() for clarity
+   * @see {@link updateInventoryQuantity}
    */
   async updateInventory(id: string, updateData: UpdateInventoryRequest): Promise<InventoryItem> {
     return this.updateInventoryQuantity(id, updateData);
   }
 }
 
-// Factory function for creating MedicationsApi instances
+/**
+ * Factory function for creating MedicationsApi instances
+ *
+ * Creates a new MedicationsApi instance with the provided ApiClient.
+ * Use this for testing with mock clients or custom configurations.
+ *
+ * @param {ApiClient} client - Configured ApiClient instance
+ * @returns {MedicationsApi} New MedicationsApi instance
+ *
+ * @example
+ * ```typescript
+ * import { createMedicationsApi } from '@/services/modules/medicationsApi';
+ * import { mockApiClient } from '@/test/mocks';
+ *
+ * const medicationsApi = createMedicationsApi(mockApiClient);
+ * ```
+ */
 export function createMedicationsApi(client: ApiClient): MedicationsApi {
   return new MedicationsApi(client);
 }
 
 // Export singleton instance
 import { apiClient } from '../core/ApiClient';
+
+/**
+ * Singleton MedicationsApi instance
+ *
+ * Pre-configured with the default apiClient. Use this for all production code.
+ *
+ * @constant {MedicationsApi}
+ *
+ * @example
+ * ```typescript
+ * import { medicationsApi } from '@/services/modules/medicationsApi';
+ *
+ * // Use directly in components or services
+ * const medications = await medicationsApi.getAll();
+ * ```
+ */
 export const medicationsApi = createMedicationsApi(apiClient);

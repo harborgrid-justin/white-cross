@@ -1,3 +1,39 @@
+/**
+ * WF-APP-001 | App.tsx - Root Application Component
+ *
+ * This is the main application component that orchestrates all providers,
+ * initializes application services, and handles backend connectivity checks.
+ * It implements a healthcare-grade initialization sequence ensuring all
+ * security, audit, and monitoring services are ready before rendering the UI.
+ *
+ * @module App
+ *
+ * @remarks
+ * **HIPAA Compliance**: This component ensures audit logging is initialized
+ * before any PHI can be accessed. It also verifies backend health to prevent
+ * unauthorized operation without proper API connectivity.
+ *
+ * **Initialization Sequence**:
+ * 1. Bootstrap application services (security, audit, cache, monitoring)
+ * 2. Setup query persistence (non-PHI only)
+ * 3. Verify backend API health
+ * 4. Render application with all providers
+ *
+ * **Provider Stack** (outermost to innermost):
+ * - GlobalErrorBoundary: Catches and logs all React errors
+ * - ApolloProvider: GraphQL client for healthcare data
+ * - QueryClientProvider: TanStack Query for REST API data
+ * - Redux Provider: Global state management
+ * - AuthProvider: Authentication context
+ * - BrowserRouter: Client-side routing
+ *
+ * @see {@link bootstrap.ts} for initialization logic
+ * @see {@link config/apolloClient.ts} for GraphQL configuration
+ * @see {@link config/queryClient.ts} for REST API configuration
+ *
+ * Last Updated: 2025-10-26 | File Type: .tsx
+ */
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -16,8 +52,38 @@ import { queryClient, setupQueryPersistence } from './config/queryClient';
 import { apolloClient } from './config/apolloClient';
 
 /**
- * Check if the backend API is reachable
- * This prevents the blank page issue when backend is not running
+ * Backend health check status type.
+ * @typedef {'checking' | 'available' | 'unavailable'} BackendStatus
+ */
+type BackendStatus = 'checking' | 'available' | 'unavailable';
+
+/**
+ * Bootstrap initialization status type.
+ * @typedef {'initializing' | 'ready' | 'failed'} BootstrapStatus
+ */
+type BootstrapStatus = 'initializing' | 'ready' | 'failed';
+
+/**
+ * Checks if the backend API is reachable by calling the health endpoint.
+ *
+ * This function prevents the application from rendering with a blank page
+ * when the backend is not running. It uses a 5-second timeout to avoid
+ * hanging the initialization process.
+ *
+ * @returns {Promise<boolean>} True if backend is healthy, false otherwise
+ *
+ * @remarks
+ * The health endpoint is accessed at `/health` (not `/api/health`). This
+ * endpoint does not require authentication and should always be available
+ * when the backend is running.
+ *
+ * @example
+ * ```typescript
+ * const isHealthy = await checkBackendHealth();
+ * if (!isHealthy) {
+ *   console.error('Backend is not available');
+ * }
+ * ```
  */
 async function checkBackendHealth(): Promise<boolean> {
   try {
@@ -36,7 +102,43 @@ async function checkBackendHealth(): Promise<boolean> {
   }
 }
 
-// Main App Component
+/**
+ * Root Application Component
+ *
+ * Orchestrates the entire application initialization sequence and provider stack.
+ * Manages backend connectivity, bootstrap status, and error states.
+ *
+ * @returns {JSX.Element} The root application component with all providers
+ *
+ * @remarks
+ * **State Management**:
+ * - `backendStatus`: Tracks backend API connectivity ('checking' | 'available' | 'unavailable')
+ * - `bootstrapStatus`: Tracks initialization status ('initializing' | 'ready' | 'failed')
+ * - `bootstrapError`: Stores initialization error message if bootstrap fails
+ *
+ * **Initialization Flow**:
+ * 1. Component mounts → `useEffect` triggers initialization
+ * 2. Call `initializeApp()` to bootstrap all services
+ * 3. Setup query persistence for non-PHI data
+ * 4. Check backend health via `/health` endpoint
+ * 5. Render appropriate UI based on status
+ *
+ * **Error Handling**:
+ * - Bootstrap failures → Show error screen with reload option
+ * - Backend unavailable → Show connection error with retry
+ * - Runtime errors → Caught by GlobalErrorBoundary
+ *
+ * @example
+ * ```typescript
+ * // In main.tsx
+ * import App from './App';
+ * ReactDOM.createRoot(document.getElementById('root')!).render(
+ *   <React.StrictMode>
+ *     <App />
+ *   </React.StrictMode>
+ * );
+ * ```
+ */
 function App() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
   const [bootstrapStatus, setBootstrapStatus] = useState<'initializing' | 'ready' | 'failed'>('initializing');

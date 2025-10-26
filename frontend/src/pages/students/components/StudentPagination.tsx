@@ -1,22 +1,31 @@
 /**
- * WF-COMP-100 | StudentPagination.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Student Pagination Component
- * Pagination controls for student list
+ * Student Pagination Component - White Cross Healthcare Platform
+ *
+ * @fileoverview Pagination controls for student list with page navigation,
+ * results-per-page selector, and page indicator. Automatically calculates
+ * result ranges and provides Previous/Next/Last navigation buttons.
+ *
+ * @module pages/students/components/StudentPagination
+ * @version 1.0.0
  */
 
 import React from 'react'
 
+/**
+ * Props for the StudentPagination component.
+ *
+ * @interface StudentPaginationProps
+ * @property {number} currentPage - Current active page number (1-indexed)
+ * @property {number} totalPages - Total number of pages available
+ * @property {number} perPage - Number of results displayed per page (10, 25, or 50)
+ * @property {number} totalResults - Total number of student records available
+ * @property {(page: number) => void} onPageChange - Callback fired when page changes
+ * @property {(perPage: number) => void} onPerPageChange - Callback fired when results-per-page changes
+ *
+ * @remarks
+ * All page navigation resets to page 1 when changing the perPage value to ensure
+ * a consistent user experience.
+ */
 interface StudentPaginationProps {
   currentPage: number
   totalPages: number
@@ -26,6 +35,63 @@ interface StudentPaginationProps {
   onPerPageChange: (perPage: number) => void
 }
 
+/**
+ * Student Pagination Component.
+ *
+ * Comprehensive pagination controls for navigating through student records.
+ * Includes page number buttons, previous/next/last navigation, results-per-page
+ * selector, and a clear display of current result range.
+ *
+ * @component
+ * @param {StudentPaginationProps} props - Component props
+ * @returns {React.ReactElement | null} Rendered pagination controls or null if no results
+ *
+ * @remarks
+ * Design Pattern: Controlled component - all state is managed by parent component.
+ *
+ * Features:
+ * - Displays current result range (e.g., "Showing 1 to 20 of 156 results")
+ * - Results-per-page selector (10, 25, 50 options)
+ * - Previous/Next/Last navigation buttons
+ * - Direct page number navigation (displays all page buttons)
+ * - Automatic calculation of start/end indices
+ * - Disabled state for boundary pages
+ * - Returns null when no results to display
+ * - Test IDs for automated testing
+ *
+ * Accessibility:
+ * - Clear visual feedback for current page
+ * - Disabled state for unavailable navigation
+ * - Test IDs on all interactive elements
+ *
+ * @example
+ * ```tsx
+ * import { StudentPagination } from './components/StudentPagination';
+ *
+ * function StudentList() {
+ *   const [pagination, setPagination] = useState({
+ *     currentPage: 1,
+ *     perPage: 25,
+ *     totalResults: 156
+ *   });
+ *   const totalPages = Math.ceil(pagination.totalResults / pagination.perPage);
+ *
+ *   return (
+ *     <>
+ *       {/* Student list rendering */}
+ *       <StudentPagination
+ *         currentPage={pagination.currentPage}
+ *         totalPages={totalPages}
+ *         perPage={pagination.perPage}
+ *         totalResults={pagination.totalResults}
+ *         onPageChange={(page) => setPagination({ ...pagination, currentPage: page })}
+ *         onPerPageChange={(perPage) => setPagination({ ...pagination, perPage, currentPage: 1 })}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ */
 export const StudentPagination: React.FC<StudentPaginationProps> = ({
   currentPage,
   totalPages,

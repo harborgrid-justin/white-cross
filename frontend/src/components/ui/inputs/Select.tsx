@@ -5,7 +5,7 @@
  * Downstream: Forms, filters | Called by: Form components
  * Related: Input component, form validation
  * Exports: Select component | Key Features: Search, multi-select, validation
- * Last Updated: 2025-10-21 | File Type: .tsx
+ * Last Updated: 2025-10-26 | File Type: .tsx
  * Critical Path: User selection → Validation → State update
  * LLM Context: Select component for White Cross healthcare platform
  */
@@ -14,15 +14,53 @@ import React, { useState, useRef, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Utility function for merging class names
+/**
+ * Utility function for merging Tailwind CSS class names.
+ *
+ * @param inputs - Array of class name strings or undefined values
+ * @returns Merged and deduplicated class name string
+ *
+ * @internal
+ */
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
+/**
+ * Option object for Select component.
+ *
+ * @interface SelectOption
+ *
+ * @property {string | number} value - Unique value for the option
+ * @property {string} label - Display text for the option
+ * @property {boolean} [disabled=false] - Whether option is disabled/non-selectable
+ */
 export interface SelectOption {
   value: string | number;
   label: string;
   disabled?: boolean;
 }
 
+/**
+ * Props for the Select component.
+ *
+ * @interface SelectProps
+ * @extends {Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size' | 'value' | 'onChange'>}
+ *
+ * @property {string} [label] - Label text displayed above the select
+ * @property {string} [error] - Error message text (displays in red below select)
+ * @property {string} [helperText] - Helper text displayed below select when no error
+ * @property {boolean} [required=false] - Whether select is required (shows asterisk)
+ * @property {('default' | 'filled' | 'outlined')} [variant='default'] - Visual style variant
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Select size affecting padding and text size
+ * @property {SelectOption[]} options - Array of options to display in dropdown
+ * @property {string | number | (string | number)[]} [value] - Current selected value(s)
+ * @property {(value: string | number | (string | number)[]) => void} [onChange] - Callback when selection changes
+ * @property {string} [placeholder='Select an option...'] - Placeholder text when no selection
+ * @property {boolean} [searchable=false] - Enable search/filter functionality
+ * @property {boolean} [multiple=false] - Allow multiple selection
+ * @property {boolean} [clearable=false] - Show clear button to remove selection
+ * @property {boolean} [loading=false] - Loading state showing spinner
+ * @property {number} [maxHeight=200] - Maximum height of dropdown list in pixels
+ */
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size' | 'value' | 'onChange'> {
   label?: string;
   error?: string;
@@ -41,18 +79,139 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
   maxHeight?: number;
 }
 
+/**
+ * Select variant style configurations.
+ *
+ * @constant
+ * @internal
+ */
 const selectVariants = {
   default: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
   filled: 'bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500',
   outlined: 'border-2 border-gray-300 focus:border-blue-500 focus:ring-0'
 };
 
+/**
+ * Select size configurations.
+ *
+ * @constant
+ * @internal
+ */
 const selectSizes = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-3 py-2 text-sm',
   lg: 'px-4 py-3 text-base'
 };
 
+/**
+ * Advanced select/dropdown component with search, multi-select, and accessibility.
+ *
+ * A fully-featured custom select component that goes beyond native HTML select
+ * elements. Includes search/filter, multi-select, keyboard navigation, loading
+ * states, and comprehensive accessibility support. Built as a custom dropdown
+ * using ARIA combobox pattern.
+ *
+ * **Features:**
+ * - 3 visual variants (default, filled, outlined)
+ * - 3 size options (sm, md, lg)
+ * - Searchable/filterable options
+ * - Single or multiple selection
+ * - Clearable selection
+ * - Loading state with spinner
+ * - Disabled options support
+ * - Click-outside to close
+ * - Keyboard navigation (Arrow keys, Enter, Escape)
+ * - Dark mode support
+ * - Custom dropdown max-height
+ *
+ * **Accessibility:**
+ * - role="combobox" for main trigger
+ * - role="listbox" for options list
+ * - role="option" for each selectable item
+ * - aria-expanded state
+ * - aria-selected for selected options
+ * - aria-disabled for disabled options
+ * - aria-labelledby connecting label
+ * - aria-describedby for error/helper text
+ * - aria-multiselectable for multi-select mode
+ * - Keyboard navigation support (arrows, enter, escape)
+ * - Focus management
+ *
+ * @component
+ * @param {SelectProps} props - Select component props
+ * @param {React.Ref<HTMLDivElement>} ref - Forwarded ref to select container
+ * @returns {JSX.Element} Rendered custom select dropdown
+ *
+ * @example
+ * ```tsx
+ * // Basic single select
+ * <Select
+ *   label="Blood Type"
+ *   options={bloodTypeOptions}
+ *   value={bloodType}
+ *   onChange={(value) => setBloodType(value as string)}
+ *   placeholder="Select blood type"
+ * />
+ *
+ * // Searchable select
+ * <Select
+ *   label="Medication"
+ *   options={medicationOptions}
+ *   searchable
+ *   value={selectedMed}
+ *   onChange={setSelectedMed}
+ *   helperText="Start typing to filter medications"
+ * />
+ *
+ * // Multi-select with clear
+ * <Select
+ *   label="Allergies"
+ *   options={allergyOptions}
+ *   multiple
+ *   clearable
+ *   value={selectedAllergies}
+ *   onChange={setSelectedAllergies}
+ *   placeholder="Select all that apply"
+ * />
+ *
+ * // With error state
+ * <Select
+ *   label="Insurance Provider"
+ *   options={insuranceOptions}
+ *   required
+ *   value={insurance}
+ *   onChange={setInsurance}
+ *   error="Please select an insurance provider"
+ * />
+ *
+ * // Loading state (fetching options)
+ * <Select
+ *   label="Primary Care Physician"
+ *   options={doctors}
+ *   loading={isLoadingDoctors}
+ *   value={selectedDoctor}
+ *   onChange={setSelectedDoctor}
+ * />
+ * ```
+ *
+ * @remarks
+ * **Healthcare Context**:
+ * - Use for medical code selection (ICD-10, CPT)
+ * - Medication selection with search
+ * - Provider/facility selection
+ * - Insurance selection
+ * - Multi-select for allergies, conditions
+ * - Diagnosis code selection
+ *
+ * **Keyboard Navigation**:
+ * - Enter/Space: Open/close dropdown
+ * - Arrow Down/Up: Navigate options
+ * - Escape: Close dropdown
+ * - Type to search (when searchable)
+ *
+ * @see {@link SelectProps} for detailed prop documentation
+ * @see {@link SelectOption} for option object structure
+ */
 export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
   ({
     className,

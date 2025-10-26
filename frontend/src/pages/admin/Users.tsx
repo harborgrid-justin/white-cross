@@ -59,8 +59,13 @@ const roles = ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 
 const departments = ['IT', 'Cardiology', 'Emergency', 'Front Desk', 'Radiology', 'Laboratory', 'Surgery', 'Nursing', 'Administration'];
 
 /**
- * User Form Modal Component
- * Handles both create and edit operations
+ * Props for the UserFormModal component.
+ *
+ * @interface UserFormModalProps
+ * @property {User | null} user - User object for editing, null for creating new user
+ * @property {boolean} isOpen - Controls modal visibility state
+ * @property {() => void} onClose - Callback invoked when modal should close
+ * @property {() => void} onSuccess - Callback invoked after successful user creation/update
  */
 interface UserFormModalProps {
   user: User | null;
@@ -68,6 +73,35 @@ interface UserFormModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
+/**
+ * User Form Modal Component.
+ *
+ * Modal dialog for creating new users or editing existing user accounts.
+ * Handles form validation, API submission, and error handling for user management operations.
+ *
+ * @component
+ * @param {UserFormModalProps} props - Component props
+ *
+ * @example
+ * ```tsx
+ * <UserFormModal
+ *   user={selectedUser}
+ *   isOpen={showModal}
+ *   onClose={() => setShowModal(false)}
+ *   onSuccess={handleUserSaved}
+ * />
+ * ```
+ *
+ * @remarks
+ * - **RBAC**: Inherits permissions from parent Users page
+ * - **Validation**: Email format, password strength (8+ chars), required fields
+ * - **Edit Mode**: Password field optional - leave blank to keep existing password
+ * - **Accessibility**: Keyboard navigation (Esc to close), focus management
+ * - **Error Handling**: Displays API errors via toast notifications
+ *
+ * @see {@link Users} for the parent user management page
+ */
 
 const UserFormModal: React.FC<UserFormModalProps> = ({ user, isOpen, onClose, onSuccess }) => {
   const isEditMode = !!user;
@@ -321,17 +355,50 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, isOpen, onClose, on
 };
 
 /**
- * Users Page Component
+ * Users Page Component.
  *
  * Comprehensive user management interface for system administrators.
  * Provides CRUD operations for user accounts with role-based access control,
  * permission management, and activity monitoring.
  *
- * RBAC: Requires 'admin' or 'user.manage' permission.
- * Audit: All user operations are logged for compliance.
- * Security: User data is validated before any modifications.
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <Users />
+ * ```
+ *
+ * @remarks
+ * **RBAC Requirements:**
+ * - Requires 'admin' or 'user.manage' permission to access
+ * - System roles cannot be modified without elevated privileges
+ *
+ * **Features:**
+ * - Multi-filter search (name, email, role, department, status)
+ * - Real-time user statistics dashboard
+ * - User activation/deactivation with status tracking
+ * - Password reset capability for administrators
+ * - Last login timestamp tracking
+ *
+ * **State Management:**
+ * - Uses local state for UI management
+ * - API integration via usersApi service module
+ * - Real-time statistics calculation from user data
+ *
+ * **Accessibility:**
+ * - Keyboard navigation throughout table and forms
+ * - Screen reader-friendly labels and ARIA attributes
+ * - Focus management in modals
+ *
+ * **Audit & Compliance:**
+ * - All user operations (create, update, delete, status changes) are logged
+ * - PHI-compliant data handling in user records
+ * - HIPAA-compliant audit trail via backend logging
  *
  * @returns {JSX.Element} The rendered user management page
+ *
+ * @see {@link UserFormModal} for user creation/editing interface
+ * @see {@link usersApi} for API integration details
  */
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);

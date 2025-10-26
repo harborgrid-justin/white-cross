@@ -1,28 +1,131 @@
 /**
- * WF-COMP-280 | integrationApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants, types, classes | Key Features: arrow component
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Integration Hub API Module
- * Provides enterprise-grade integration management capabilities
+ * @fileoverview Enterprise Integration Hub API service
+ * @module services/modules/integrationApi
+ * @category Services - System Integration & External APIs
  *
- * Supports:
- * - SIS (Student Information System)
- * - EHR (Electronic Health Records)
- * - Pharmacy Management
- * - Laboratory Information System
- * - Insurance Verification
- * - Parent Portal
- * - Health Application
- * - Government Reporting
+ * Provides comprehensive enterprise integration management for external healthcare,
+ * educational, and administrative systems. Implements secure authentication, data
+ * synchronization, webhook management, and integration monitoring with support for
+ * 8 major integration types.
+ *
+ * Supported Integration Types:
+ * - SIS (Student Information System) - PowerSchool, Infinite Campus, etc.
+ * - EHR (Electronic Health Records) - Epic, Cerner, Allscripts
+ * - PHARMACY - Pharmacy management systems for prescription sync
+ * - LABORATORY - Lab information systems for test results
+ * - INSURANCE - Insurance verification and eligibility checking
+ * - PARENT_PORTAL - Parent communication platforms
+ * - HEALTH_APP - Student health tracking mobile apps
+ * - GOVERNMENT_REPORTING - State health reporting systems
+ *
+ * Key Features:
+ * - Integration CRUD operations (Create, Read, Update, Delete)
+ * - Connection testing with latency metrics
+ * - Data synchronization (inbound, outbound, bidirectional)
+ * - Webhook configuration with signature validation
+ * - Field mapping and data transformation
+ * - Integration monitoring and health status
+ * - Batch operations (enable/disable multiple integrations)
+ * - Integration logs and error tracking
+ * - Statistics and performance analytics
+ *
+ * Authentication Methods:
+ * - API Key: Simple token-based authentication
+ * - Basic Auth: Username/password authentication
+ * - OAuth 2.0: Industry-standard authorization (4 grant types supported)
+ * - JWT: JSON Web Token authentication
+ * - Certificate: Client certificate authentication
+ * - Custom: Flexible custom authentication mechanisms
+ *
+ * OAuth 2.0 Grant Types:
+ * - authorization_code: Web application flow
+ * - client_credentials: Server-to-server flow
+ * - password: Resource owner password flow
+ * - refresh_token: Token refresh flow
+ *
+ * Data Synchronization:
+ * - Scheduled sync with cron expressions
+ * - Manual sync trigger capabilities
+ * - Sync direction control (inbound/outbound/bidirectional)
+ * - Field mapping with data type validation
+ * - Transform rules for data conversion
+ * - Conflict resolution strategies
+ * - Sync status tracking (success/failed/pending)
+ *
+ * Webhook Support:
+ * - Webhook URL configuration
+ * - HMAC signature validation for security
+ * - Retry policy with exponential backoff
+ * - Event filtering by type
+ * - Webhook secret management
+ * - Webhook delivery tracking
+ *
+ * Security Features:
+ * - Endpoint URL validation (HTTPS required in production)
+ * - Strong credential requirements (no weak passwords)
+ * - Comprehensive Zod schema validation
+ * - Rate limiting configuration
+ * - Timeout management (1-300 seconds)
+ * - Certificate path validation
+ *
+ * Integration Monitoring:
+ * - Real-time health status (healthy/degraded/critical)
+ * - Last sync timestamp tracking
+ * - Success/failure rate calculation
+ * - Error log aggregation
+ * - Performance metrics (latency, throughput)
+ * - Integration uptime monitoring
+ *
+ * @example Setup SIS integration with OAuth 2.0
+ * ```typescript
+ * import { integrationApi } from '@/services/modules/integrationApi';
+ *
+ * const sisIntegration = await integrationApi.create({
+ *   name: 'PowerSchool SIS',
+ *   type: 'SIS',
+ *   endpoint: 'https://api.powerschool.com/v1',
+ *   settings: {
+ *     authMethod: 'oauth2',
+ *     oauth2Config: {
+ *       clientId: 'your-client-id',
+ *       clientSecret: 'your-client-secret',
+ *       authorizationUrl: 'https://oauth.powerschool.com/authorize',
+ *       tokenUrl: 'https://oauth.powerschool.com/token',
+ *       grantType: 'client_credentials',
+ *       scope: ['students.read', 'enrollments.read']
+ *     },
+ *     syncDirection: 'inbound',
+ *     syncSchedule: '0 2 * * *', // Daily at 2 AM
+ *     autoSync: true
+ *   }
+ * });
+ * console.log(`SIS integration created: ${sisIntegration.id}`);
+ * ```
+ *
+ * @example Test integration connection
+ * ```typescript
+ * const { result } = await integrationApi.testConnection('integration-uuid-123');
+ * console.log(`Connection status: ${result.status}`);
+ * console.log(`Latency: ${result.latency}ms`);
+ * ```
+ *
+ * @example Trigger manual sync
+ * ```typescript
+ * const { result } = await integrationApi.sync('integration-uuid-456');
+ * console.log(`Records processed: ${result.recordsProcessed}`);
+ * console.log(`Errors: ${result.errors.length}`);
+ * ```
+ *
+ * @example Get integration health status
+ * ```typescript
+ * const health = await integrationApi.getHealthStatus();
+ * console.log(`Overall health: ${health.overall}`);
+ * console.log(`Healthy integrations: ${health.summary.healthy}`);
+ * console.log(`Error integrations: ${health.summary.error}`);
+ * ```
+ *
+ * @see {@link https://oauth.net/2/ OAuth 2.0 Specification}
+ * @see {@link https://jwt.io/ JWT Documentation}
  */
 
 import type { ApiClient } from '../core/ApiClient';

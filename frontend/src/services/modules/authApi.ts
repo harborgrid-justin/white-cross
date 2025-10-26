@@ -1,60 +1,107 @@
 /**
- * @fileoverview Authentication API service with secure credential validation
+ * @fileoverview Authentication API service with JWT-based secure credential validation
  * @module services/modules/authApi
- * @category Services
- * 
- * Provides authentication and authorization API endpoints including login,
- * registration, token refresh, and password management with strong security validation.
- * 
+ * @category Services - Authentication & Security
+ *
+ * Provides enterprise-grade authentication and authorization API endpoints for the
+ * White Cross healthcare platform. Implements JWT-based authentication with OAuth 2.0
+ * support, strong password validation, and comprehensive session management.
+ *
  * Key Features:
- * - User authentication (login/logout)
- * - User registration with role-based access
- * - Token refresh for session management
- * - Password validation (12+ chars, uppercase, lowercase, number, special char)
- * - Email verification
- * - Password reset flow
- * - Multi-factor authentication support
- * - Session management
- * 
- * Security:
- * - Strong password requirements enforced
- * - Zod schema validation for all inputs
- * - Secure token storage via tokenUtils
+ * - User authentication (login/logout) with JWT tokens
+ * - User registration with role-based access control (RBAC)
+ * - Token refresh mechanism for session continuity
+ * - Strong password validation (12+ chars, uppercase, lowercase, number, special char)
+ * - Email verification workflow
+ * - Password reset flow with secure tokens
+ * - Multi-factor authentication (MFA) integration
+ * - OAuth 2.0 support (Google, Microsoft)
+ * - Session management and token validation
+ * - Development user listing (dev environment only)
+ *
+ * Security Features:
+ * - Strong password requirements enforced client-side and server-side
+ * - Zod schema validation for all authentication inputs
+ * - Secure token storage via tokenUtils (sessionStorage)
  * - CSRF protection on state-changing operations
- * - Rate limiting on login attempts (backend)
- * - No PHI in authentication data
- * 
+ * - Rate limiting on login attempts (backend-enforced)
+ * - No PHI (Protected Health Information) in authentication data
+ * - Automatic token expiration detection
+ * - Secure password reset with time-limited tokens
+ *
  * Token Management:
- * - Access tokens stored in sessionStorage
- * - Refresh tokens for automatic renewal
- * - Token expiration handling
+ * - Access tokens stored in sessionStorage for security
+ * - Refresh tokens for automatic session renewal
+ * - Token expiration handling with automatic cleanup
  * - Automatic logout on token expiry
- * 
- * @example
+ * - JWT payload parsing for expiration checking
+ *
+ * RBAC Roles:
+ * - ADMIN: Full system access
+ * - NURSE: Healthcare provider access
+ * - SCHOOL_ADMIN: School-level administration
+ * - DISTRICT_ADMIN: District-level administration
+ * - VIEWER: Read-only access
+ * - COUNSELOR: Student counseling access
+ *
+ * OAuth 2.0 Integration:
+ * - Google OAuth for Google Workspace users
+ * - Microsoft OAuth for Microsoft 365 users
+ * - Automatic redirect-based authentication flow
+ *
+ * @example Login with email and password
  * ```typescript
- * // Login
- * const { user, token } = await authApi.login({
- *   email: 'nurse@school.edu',
- *   password: 'SecurePass123!',
- *   rememberMe: true
- * });
- * 
- * // Register new user
+ * import { authApi } from '@/services/modules/authApi';
+ *
+ * try {
+ *   const { user, token } = await authApi.login({
+ *     email: 'nurse@school.edu',
+ *     password: 'SecurePass123!',
+ *     rememberMe: true
+ *   });
+ *   console.log(`Logged in as ${user.firstName} ${user.lastName}`);
+ *   console.log(`Role: ${user.role}`);
+ * } catch (error) {
+ *   console.error('Login failed:', error.message);
+ * }
+ * ```
+ *
+ * @example Register new user with role assignment
+ * ```typescript
  * const response = await authApi.register({
  *   email: 'newuser@school.edu',
  *   password: 'SecurePass123!',
  *   firstName: 'Jane',
  *   lastName: 'Doe',
  *   role: 'NURSE',
- *   schoolId: 'school-123'
+ *   schoolId: 'school-uuid-here'
  * });
- * 
- * // Refresh token
- * const { token: newToken } = await authApi.refreshToken();
- * 
- * // Logout
- * await authApi.logout();
+ * console.log(`User registered: ${response.user.email}`);
  * ```
+ *
+ * @example Refresh expired token
+ * ```typescript
+ * if (authApi.isTokenExpired()) {
+ *   const { token: newToken } = await authApi.refreshToken();
+ *   console.log('Token refreshed successfully');
+ * }
+ * ```
+ *
+ * @example Logout user
+ * ```typescript
+ * await authApi.logout();
+ * console.log('User logged out, tokens cleared');
+ * ```
+ *
+ * @example OAuth login with Google
+ * ```typescript
+ * // Redirects to Google OAuth consent screen
+ * await authApi.loginWithGoogle();
+ * ```
+ *
+ * @see {@link https://jwt.io/ JWT Documentation}
+ * @see {@link https://oauth.net/2/ OAuth 2.0 Specification}
+ * @see {@link tokenUtils} for token storage utilities
  */
 
 import type { ApiClient } from '../core/ApiClient';
@@ -179,7 +226,59 @@ export class AuthApi {
   constructor(private readonly client: ApiClient) {}
 
   /**
-   * Login user with email and password
+   * Authenticate user with email and password credentials
+   *
+   * Validates user credentials against the backend authentication service and
+   * returns a JWT access token with user information. Automatically stores tokens
+   * in sessionStorage for subsequent authenticated requests.
+   *
+   * @param {LoginCredentials} credentials - User login credentials
+   * @param {string} credentials.email - User email address (validated format)
+   * @param {string} credentials.password - User password (minimum 12 characters)
+   * @param {boolean} [credentials.rememberMe] - Whether to remember user session
+   * @returns {Promise<AuthResponse>} Authentication response with user and tokens
+   * @returns {User} AuthResponse.user - Authenticated user object with role and permissions
+   * @returns {string} AuthResponse.token - JWT access token for API authentication
+   * @returns {string} AuthResponse.refreshToken - Refresh token for session renewal
+   * @returns {number} AuthResponse.expiresIn - Token expiration time in seconds (86400 = 24 hours)
+   * @throws {ValidationError} If email format is invalid or password is too short
+   * @throws {ApiError} If authentication fails due to invalid credentials
+   * @throws {ApiError} If backend service is unavailable or returns non-2xx status
+   *
+   * @example Successful login
+   * ```typescript
+   * const response = await authApi.login({
+   *   email: 'nurse@school.edu',
+   *   password: 'SecurePass123!',
+   *   rememberMe: true
+   * });
+   * console.log(`Welcome, ${response.user.firstName}!`);
+   * console.log(`Token expires in ${response.expiresIn} seconds`);
+   * ```
+   *
+   * @example Handle login errors
+   * ```typescript
+   * try {
+   *   await authApi.login({ email: 'test@example.com', password: 'short' });
+   * } catch (error) {
+   *   if (error.name === 'ValidationError') {
+   *     console.error('Invalid input:', error.validationErrors);
+   *   } else {
+   *     console.error('Login failed:', error.message);
+   *   }
+   * }
+   * ```
+   *
+   * @remarks
+   * - Tokens are automatically stored in sessionStorage via tokenUtils
+   * - Backend enforces rate limiting (max attempts per IP address)
+   * - Successful login triggers audit log entry in backend
+   * - MFA-enabled accounts require additional verification step
+   * - Account lockout occurs after multiple failed attempts
+   *
+   * @see {@link logout} to end user session
+   * @see {@link refreshToken} to renew access token
+   * @see {@link verifyToken} to validate token status
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
@@ -226,7 +325,68 @@ export class AuthApi {
   }
 
   /**
-   * Register new user
+   * Register new user account with role-based access control
+   *
+   * Creates a new user account in the system with specified role and school assignment.
+   * Performs comprehensive validation of email uniqueness, password strength, and
+   * role permissions. Automatically authenticates the user and returns tokens upon
+   * successful registration.
+   *
+   * @param {RegisterData} userData - User registration data
+   * @param {string} userData.email - Unique email address (validated format, max 255 chars)
+   * @param {string} userData.password - Strong password (min 12 chars, uppercase, lowercase, number, special char)
+   * @param {string} userData.firstName - User first name (min 1 char, max 100 chars)
+   * @param {string} userData.lastName - User last name (min 1 char, max 100 chars)
+   * @param {string} userData.role - User role (ADMIN | NURSE | SCHOOL_ADMIN | DISTRICT_ADMIN | VIEWER | COUNSELOR)
+   * @param {string} [userData.schoolId] - Associated school UUID (required for NURSE, SCHOOL_ADMIN, COUNSELOR roles)
+   * @returns {Promise<AuthResponse>} Authentication response with new user and tokens
+   * @throws {ValidationError} If email is invalid, password is weak, or required fields are missing
+   * @throws {ApiError} If email already exists in system
+   * @throws {ApiError} If role assignment is not permitted
+   * @throws {ApiError} If school ID is invalid or not found
+   *
+   * @example Register nurse for specific school
+   * ```typescript
+   * const response = await authApi.register({
+   *   email: 'new.nurse@school.edu',
+   *   password: 'VerySecure123!@#',
+   *   firstName: 'Jane',
+   *   lastName: 'Doe',
+   *   role: 'NURSE',
+   *   schoolId: 'abc-123-def-456'
+   * });
+   * console.log(`Account created for ${response.user.email}`);
+   * ```
+   *
+   * @example Handle registration validation errors
+   * ```typescript
+   * try {
+   *   await authApi.register({
+   *     email: 'invalid-email',
+   *     password: 'weak',
+   *     firstName: 'John',
+   *     lastName: 'Smith',
+   *     role: 'NURSE'
+   *   });
+   * } catch (error) {
+   *   if (error.name === 'ValidationError') {
+   *     Object.entries(error.validationErrors).forEach(([field, messages]) => {
+   *       console.error(`${field}: ${messages.join(', ')}`);
+   *     });
+   *   }
+   * }
+   * ```
+   *
+   * @remarks
+   * - Email must be unique across entire platform
+   * - Password requirements enforced: 12+ chars, uppercase, lowercase, digit, special char (@$!%*?&)
+   * - ADMIN and DISTRICT_ADMIN roles may require additional approval
+   * - New users receive email verification link (if email service configured)
+   * - Audit log created for all registration attempts
+   * - RBAC permissions automatically assigned based on role
+   *
+   * @see {@link login} to authenticate existing user
+   * @see {@link usersApi} for additional user management operations
    */
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {

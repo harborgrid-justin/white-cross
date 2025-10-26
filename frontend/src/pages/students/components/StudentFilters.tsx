@@ -1,24 +1,44 @@
 /**
- * WF-COMP-099 | StudentFilters.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react, react-hot-toast
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Student Filters Component
- * Search and filter controls for student list
+ * Student Filters Component - White Cross Healthcare Platform
+ *
+ * @fileoverview Comprehensive search and filter controls for student list management.
+ * Provides real-time search, multi-criteria filtering, sorting, and view toggling
+ * for student records with an intuitive collapsible filter panel.
+ *
+ * @module pages/students/components/StudentFilters
+ * @version 1.0.0
  */
 
 import React from 'react'
 import { Search, Filter, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
+/**
+ * Props for the StudentFilters component.
+ *
+ * @interface StudentFiltersProps
+ * @property {string} searchTerm - Current search query string
+ * @property {string} sortBy - Current sort configuration (e.g., "lastName-asc", "grade-desc")
+ * @property {boolean} showFilters - Whether the advanced filters panel is visible
+ * @property {string} gradeFilter - Selected grade filter value (e.g., "K", "1", "12", or "" for all)
+ * @property {string} genderFilter - Selected gender filter value ("MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY", or "" for all)
+ * @property {string} statusFilter - Selected status filter value ("active", "inactive", or "" for all)
+ * @property {boolean} showArchived - Whether archived/inactive students are being displayed
+ * @property {number} resultsCount - Total number of students matching current filters
+ * @property {(value: string) => void} onSearchChange - Callback fired when search term changes
+ * @property {() => void} onClearSearch - Callback to clear the search input
+ * @property {(value: string) => void} onSortChange - Callback fired when sort option changes
+ * @property {() => void} onToggleFilters - Callback to toggle advanced filters panel visibility
+ * @property {(value: string) => void} onGradeFilterChange - Callback fired when grade filter changes
+ * @property {(value: string) => void} onGenderFilterChange - Callback fired when gender filter changes
+ * @property {(value: string) => void} onStatusFilterChange - Callback fired when status filter changes
+ * @property {() => void} onToggleArchived - Callback to toggle between active and archived student views
+ *
+ * @remarks
+ * - All filter changes are handled by parent component for state management
+ * - Toast notifications provide user feedback for filter actions
+ * - Filters are client-side or server-side depending on parent implementation
+ */
 interface StudentFiltersProps {
   searchTerm: string
   sortBy: string
@@ -38,6 +58,70 @@ interface StudentFiltersProps {
   onToggleArchived: () => void
 }
 
+/**
+ * Student Filters Component.
+ *
+ * Provides a comprehensive filtering interface for the student list with search,
+ * sort, multi-criteria filters, and view mode toggles. Features a collapsible
+ * advanced filter panel for grade, gender, and status filtering.
+ *
+ * @component
+ * @param {StudentFiltersProps} props - Component props
+ * @returns {React.ReactElement} Rendered filter controls
+ *
+ * @remarks
+ * Design Pattern: Controlled component - all state is managed by parent component.
+ *
+ * Features:
+ * - Real-time search with clear button and result count display
+ * - Sort by last name (A-Z/Z-A) or grade (low to high/high to low)
+ * - Collapsible advanced filters panel
+ * - Grade filter (K-12)
+ * - Gender filter (MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY)
+ * - Status filter (active, inactive)
+ * - Toggle between active and archived student views
+ * - One-click filter reset functionality
+ * - Toast notifications for user feedback
+ *
+ * Accessibility:
+ * - All inputs have aria-label attributes
+ * - Clear visual feedback for active filters
+ * - Keyboard navigation support
+ * - Test IDs for automated testing
+ *
+ * @example
+ * ```tsx
+ * import { StudentFilters } from './components/StudentFilters';
+ *
+ * function StudentList() {
+ *   const [filters, setFilters] = useState({
+ *     searchTerm: '',
+ *     sortBy: '',
+ *     gradeFilter: '',
+ *     genderFilter: '',
+ *     statusFilter: '',
+ *     showArchived: false,
+ *     showFilters: false
+ *   });
+ *   const [resultsCount, setResultsCount] = useState(0);
+ *
+ *   return (
+ *     <StudentFilters
+ *       {...filters}
+ *       resultsCount={resultsCount}
+ *       onSearchChange={(value) => setFilters({ ...filters, searchTerm: value })}
+ *       onClearSearch={() => setFilters({ ...filters, searchTerm: '' })}
+ *       onSortChange={(value) => setFilters({ ...filters, sortBy: value })}
+ *       onToggleFilters={() => setFilters({ ...filters, showFilters: !filters.showFilters })}
+ *       onGradeFilterChange={(value) => setFilters({ ...filters, gradeFilter: value })}
+ *       onGenderFilterChange={(value) => setFilters({ ...filters, genderFilter: value })}
+ *       onStatusFilterChange={(value) => setFilters({ ...filters, statusFilter: value })}
+ *       onToggleArchived={() => setFilters({ ...filters, showArchived: !filters.showArchived })}
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export const StudentFilters: React.FC<StudentFiltersProps> = ({
   searchTerm,
   sortBy,
@@ -56,10 +140,30 @@ export const StudentFilters: React.FC<StudentFiltersProps> = ({
   onStatusFilterChange,
   onToggleArchived
 }) => {
+  /**
+   * Applies the currently selected filters and shows success notification.
+   *
+   * @function applyFilters
+   * @returns {void}
+   *
+   * @remarks
+   * This is primarily for user feedback. Actual filtering logic is handled
+   * by the parent component through the onChange callbacks.
+   */
   const applyFilters = () => {
     toast.success('Filters applied')
   }
 
+  /**
+   * Resets all filter values to their defaults and closes the filter panel.
+   *
+   * @function resetFilters
+   * @returns {void}
+   *
+   * @remarks
+   * Clears grade, gender, status, and sort filters by invoking parent callbacks
+   * with empty strings, then collapses the advanced filters panel.
+   */
   const resetFilters = () => {
     onGradeFilterChange('')
     onGenderFilterChange('')

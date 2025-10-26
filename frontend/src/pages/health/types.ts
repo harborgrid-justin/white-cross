@@ -1,10 +1,23 @@
 /**
  * Health Page Types
  *
- * Type definitions for health management functionality.
- * Supports appointments, medications, health records, and related features.
+ * Comprehensive type definitions for health records management functionality in the
+ * White Cross healthcare platform. Provides type safety for appointments, medications,
+ * health records, screenings, immunizations, and related healthcare data.
  *
  * @module pages/health/types
+ *
+ * @remarks
+ * HIPAA Compliance: Many types in this module contain PHI (Protected Health Information)
+ * and require secure handling, audit logging, and proper access controls.
+ *
+ * Healthcare Standards: Types follow healthcare industry standards for immunizations,
+ * screenings, and medical history documentation to ensure interoperability and compliance.
+ *
+ * @see {@link useHealthRecordsPageData} for hook-based data access
+ * @see {@link HealthComponents} for UI components
+ *
+ * @since 1.0.0
  */
 
 // =====================
@@ -12,12 +25,38 @@
 // =====================
 
 /**
- * View mode for displaying appointments
+ * View mode for displaying appointments in different layouts.
+ *
+ * @typedef {string} ViewMode
+ *
+ * @property {string} list - List view for detailed appointment information
+ * @property {string} calendar - Calendar view for scheduling visualization
+ * @property {string} grid - Grid view for compact display
+ *
+ * @example
+ * ```typescript
+ * const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+ * ```
  */
 export type ViewMode = 'list' | 'calendar' | 'grid';
 
 /**
- * Tab selection for medications interface
+ * Tab selection for medications management interface.
+ *
+ * Defines the available tabs in the medications section of the health module.
+ *
+ * @typedef {string} MedicationTab
+ *
+ * @property {string} overview - Overview dashboard with statistics and alerts
+ * @property {string} medications - Medication list and management
+ * @property {string} inventory - Inventory tracking and stock management
+ * @property {string} reminders - Upcoming medication reminders and due doses
+ * @property {string} adverse-reactions - Adverse reaction reports and tracking
+ *
+ * @example
+ * ```typescript
+ * const [activeTab, setActiveTab] = useState<MedicationTab>('overview');
+ * ```
  */
 export type MedicationTab = 'overview' | 'medications' | 'inventory' | 'reminders' | 'adverse-reactions';
 
@@ -26,7 +65,34 @@ export type MedicationTab = 'overview' | 'medications' | 'inventory' | 'reminder
 // =====================
 
 /**
- * Appointment filter configuration
+ * Appointment filter configuration for querying and filtering appointments.
+ *
+ * Supports comprehensive filtering by status, type, date range, personnel,
+ * and search terms.
+ *
+ * @interface AppointmentFilters
+ *
+ * @property {'all' | 'scheduled' | 'completed' | 'cancelled' | 'no-show'} [filterStatus] - Filter by appointment status
+ * @property {'all' | string} [filterType] - Filter by appointment type (e.g., "Checkup", "Immunization", "Sick visit")
+ * @property {string} [dateFrom] - Start date for date range filter (ISO format)
+ * @property {string} [dateTo] - End date for date range filter (ISO format)
+ * @property {string} [studentId] - Filter by specific student (PHI)
+ * @property {string} [nurseId] - Filter by assigned nurse
+ * @property {string} [search] - Search term for student name or appointment notes
+ *
+ * @example
+ * ```typescript
+ * const filters: AppointmentFilters = {
+ *   filterStatus: 'scheduled',
+ *   dateFrom: '2025-10-26',
+ *   dateTo: '2025-10-31',
+ *   nurseId: 'nurse-123'
+ * };
+ * ```
+ *
+ * @remarks
+ * PHI Protection: Filters containing studentId involve PHI and should be logged
+ * for audit purposes.
  */
 export interface AppointmentFilters {
   filterStatus?: 'all' | 'scheduled' | 'completed' | 'cancelled' | 'no-show';
@@ -39,12 +105,44 @@ export interface AppointmentFilters {
 }
 
 /**
- * Sortable columns for appointments
+ * Sortable columns for appointment list sorting.
+ *
+ * @typedef {string} AppointmentSortColumn
+ *
+ * @property {string} scheduledAt - Sort by appointment date and time
+ * @property {string} type - Sort by appointment type
+ * @property {string} status - Sort by appointment status
+ * @property {string} studentName - Sort by student name (alphabetically)
  */
 export type AppointmentSortColumn = 'scheduledAt' | 'type' | 'status' | 'studentName';
 
 /**
- * Appointment statistics summary
+ * Appointment statistics summary for dashboard display.
+ *
+ * Provides aggregate counts and metrics for appointment management overview.
+ *
+ * @interface AppointmentStatistics
+ *
+ * @property {number} total - Total number of appointments in the system
+ * @property {number} scheduled - Count of scheduled (upcoming) appointments
+ * @property {number} completed - Count of completed appointments
+ * @property {number} cancelled - Count of cancelled appointments
+ * @property {number} noShow - Count of no-show appointments
+ * @property {number} todayAppointments - Count of appointments scheduled for today
+ * @property {number} upcomingAppointments - Count of appointments in next 7 days
+ *
+ * @example
+ * ```typescript
+ * const stats: AppointmentStatistics = {
+ *   total: 150,
+ *   scheduled: 45,
+ *   completed: 85,
+ *   cancelled: 15,
+ *   noShow: 5,
+ *   todayAppointments: 8,
+ *   upcomingAppointments: 32
+ * };
+ * ```
  */
 export interface AppointmentStatistics {
   total: number;

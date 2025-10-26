@@ -1,13 +1,33 @@
 /**
- * WF-COMP-269 | administrationApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/administration | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Administration Service Layer (alternative export)
+ * @module services/modules/AdministrationService
+ * @category Services - Administration & System Management
+ *
+ * Alternative export of the AdministrationApi class with consistent interface.
+ * This file provides the same administration capabilities as administrationApi.ts
+ * but with a different export pattern for compatibility with various import styles.
+ *
+ * This module re-exports the AdministrationApi class functionality including:
+ * - User management with RBAC
+ * - District and school hierarchy management
+ * - System configuration management
+ * - License management
+ * - Backup operations
+ * - Performance metrics
+ * - Training module management
+ * - System health monitoring
+ *
+ * @see {@link administrationApi} for the primary export
+ * @see {@link AdministrationApi} for the class implementation
+ *
+ * @example Using AdministrationService
+ * ```typescript
+ * import { AdministrationApi } from '@/services/modules/AdministrationService';
+ * import { apiClient } from '@/services/core/ApiClient';
+ *
+ * const adminService = new AdministrationApi(apiClient);
+ * const districts = await adminService.getDistricts();
+ * ```
  */
 
 import type { ApiClient } from '../core/ApiClient';

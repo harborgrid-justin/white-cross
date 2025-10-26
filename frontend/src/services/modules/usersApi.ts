@@ -1,6 +1,92 @@
 /**
- * Users API Module
- * Provides frontend access to user management endpoints
+ * @fileoverview User Management API service for RBAC operations
+ * @module services/modules/usersApi
+ * @category Services - User Management & RBAC
+ *
+ * Provides comprehensive user management capabilities for the White Cross healthcare
+ * platform with Role-Based Access Control (RBAC), user lifecycle management, and
+ * administrative operations.
+ *
+ * Key Features:
+ * - User CRUD operations (Create, Read, Update, Delete/Deactivate)
+ * - User filtering and pagination with search
+ * - Role-based access control (RBAC) management
+ * - Password management (change password, admin reset)
+ * - User activation and deactivation workflows
+ * - User statistics and analytics
+ * - Available nurse lookup for assignments
+ * - School and district user filtering
+ *
+ * RBAC Roles Supported:
+ * - ADMIN: Full system administration access
+ * - NURSE: Healthcare provider with PHI access
+ * - SCHOOL_ADMIN: School-level administrative access
+ * - DISTRICT_ADMIN: District-level administrative access
+ * - READ_ONLY: View-only access without modification rights
+ * - COUNSELOR: Student counseling and health support access
+ *
+ * Security & Access Control:
+ * - Admin-level authentication required for all operations
+ * - Role-based permissions enforced on backend
+ * - Audit logging for all user management actions
+ * - Password complexity requirements enforced
+ * - User deactivation instead of hard deletion (HIPAA compliance)
+ * - No PHI exposure in user management endpoints
+ *
+ * User Lifecycle States:
+ * - Active: User can authenticate and access system
+ * - Inactive/Deactivated: User cannot authenticate, data retained for audit
+ * - Pending: User created but not yet activated
+ *
+ * Search and Filtering:
+ * - Full-text search across name and email fields
+ * - Filter by role (ADMIN, NURSE, SCHOOL_ADMIN, etc.)
+ * - Filter by school assignment
+ * - Filter by active/inactive status
+ * - Pagination support for large user bases
+ *
+ * @example Create new nurse user
+ * ```typescript
+ * import { usersApi } from '@/services/modules/usersApi';
+ *
+ * const newNurse = await usersApi.create({
+ *   email: 'jane.nurse@school.edu',
+ *   password: 'SecurePassword123!',
+ *   firstName: 'Jane',
+ *   lastName: 'Nurse',
+ *   role: 'NURSE',
+ *   schoolId: 'school-uuid-123',
+ *   phone: '555-0100',
+ *   department: 'Health Services'
+ * });
+ * console.log(`Created nurse: ${newNurse.id}`);
+ * ```
+ *
+ * @example Search and filter users
+ * ```typescript
+ * const results = await usersApi.getAll({
+ *   search: 'john',
+ *   role: 'NURSE',
+ *   schoolId: 'school-uuid-123',
+ *   isActive: true,
+ *   page: 1,
+ *   limit: 20
+ * });
+ * console.log(`Found ${results.total} nurses matching criteria`);
+ * ```
+ *
+ * @example Get available nurses for assignment
+ * ```typescript
+ * const availableNurses = await usersApi.getAvailableNurses('school-uuid-123');
+ * availableNurses.forEach(nurse => {
+ *   console.log(`${nurse.firstName} ${nurse.lastName}: ${nurse.availability}`);
+ *   console.log(`Assigned students: ${nurse.assignedStudents}`);
+ * });
+ * ```
+ *
+ * @see {@link authApi} for user authentication operations
+ * @see {@link accessControlApi} for role and permission management
+ * @see {@link User} for user data type definition
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';

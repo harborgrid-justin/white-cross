@@ -1,14 +1,115 @@
+/**
+ * Vendor Domain Query Hooks
+ *
+ * Provides TanStack Query hooks for fetching vendor data including vendors,
+ * contracts, evaluations, payments, documents, analytics, and compliance information.
+ * All hooks leverage React Query's caching, automatic revalidation, and error handling.
+ *
+ * @module hooks/domains/vendors/queries
+ *
+ * @remarks
+ * **Hook Categories:**
+ * - **Vendor Queries**: useVendor, useVendors, useVendorsPaginated
+ * - **Contract Queries**: useVendorContract, useVendorContracts
+ * - **Evaluation Queries**: useVendorEvaluation, useVendorEvaluations
+ * - **Payment Queries**: useVendorPayments
+ * - **Document Queries**: useVendorDocuments
+ * - **Analytics Queries**: useVendorAnalytics, useVendorPerformance
+ * - **Compliance Queries**: useVendorCompliance
+ * - **Search Queries**: useVendorSearch, useVendorRecommendations
+ *
+ * **TanStack Query Features:**
+ * - Automatic caching with configurable stale times (see VENDORS_CACHE_CONFIG)
+ * - Background refetching when data becomes stale
+ * - Automatic retry with exponential backoff (3 attempts)
+ * - Query deduplication for parallel requests
+ * - Cache invalidation via vendorKeys factory
+ *
+ * @see {@link vendorKeys} for query key structure
+ * @see {@link VENDORS_CACHE_CONFIG} for cache configuration
+ * @see {@link useVendorMutations} for data modification hooks
+ *
+ * @since 1.0.0
+ */
+
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { vendorKeys } from '../config';
-import type { 
-  Vendor, 
-  VendorContract, 
-  VendorEvaluation, 
-  VendorPayment, 
-  VendorDocument 
+import type {
+  Vendor,
+  VendorContract,
+  VendorEvaluation,
+  VendorPayment,
+  VendorDocument
 } from '../config';
 
-// Vendor Queries
+/**
+ * Fetches a single vendor by ID with complete details.
+ *
+ * Returns vendor information including contacts, addresses, insurance, performance
+ * metrics, and compliance status. Automatically caches results for 10 minutes.
+ *
+ * @param {string} vendorId - Unique vendor identifier
+ * @returns TanStack Query result with vendor data and query states
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * function VendorDetail({ vendorId }: Props) {
+ *   const { data: vendor, isLoading, error } = useVendor(vendorId);
+ *
+ *   if (isLoading) return <LoadingSpinner />;
+ *   if (error) return <ErrorMessage error={error} />;
+ *   if (!vendor) return <NotFound />;
+ *
+ *   return (
+ *     <div>
+ *       <h1>{vendor.name}</h1>
+ *       <VendorStatus status={vendor.status} />
+ *       <PerformanceMetrics
+ *         rating={vendor.overallRating}
+ *         deliveryRate={vendor.onTimeDeliveryRate}
+ *         qualityScore={vendor.qualityRating}
+ *       />
+ *       <ContactList contacts={[vendor.primaryContact, ...vendor.alternateContacts]} />
+ *     </div>
+ *   );
+ * }
+ *
+ * // With refetch on interval for active vendors
+ * const { data: vendor, refetch } = useVendor(vendorId);
+ * useEffect(() => {
+ *   if (vendor?.status === 'ACTIVE') {
+ *     const interval = setInterval(refetch, 60000); // Refresh every minute
+ *     return () => clearInterval(interval);
+ *   }
+ * }, [vendor, refetch]);
+ * ```
+ *
+ * @remarks
+ * **TanStack Query Configuration:**
+ * - Query Key: vendorKeys.detail(vendorId) - ['vendors', 'detail', vendorId]
+ * - Stale Time: 10 minutes (VENDORS_CACHE_CONFIG.VENDORS_STALE_TIME)
+ * - Enabled: Only when vendorId is truthy (prevents invalid requests)
+ * - Retry: 3 attempts with exponential backoff
+ * - Refetch on Mount: Yes, if data is stale
+ * - Refetch on Window Focus: Yes, if data is stale
+ *
+ * **Performance Considerations:**
+ * - Results cached in memory for instant re-renders
+ * - Parallel requests to same vendor deduplicated automatically
+ * - Background refetching keeps data fresh without blocking UI
+ * - Optimistic updates possible via queryClient.setQueryData()
+ *
+ * **Error Handling:**
+ * - Network errors: Automatic retry with backoff
+ * - 404 Not Found: Error state with status code
+ * - 403 Forbidden: Insufficient permissions
+ * - 500 Server Error: Backend error state
+ *
+ * @see {@link useVendors} for fetching multiple vendors with filters
+ * @see {@link useUpdateVendor} for updating vendor data
+ * @see {@link useVendorWorkflow} for complete vendor management workflow
+ */
 export const useVendor = (vendorId: string) => {
   return useQuery({
     queryKey: vendorKeys.detail(vendorId),

@@ -1,25 +1,174 @@
 /**
- * System Configuration API Service
+ * @fileoverview System Configuration API Service
  *
  * Provides comprehensive system administration, configuration management,
- * integration orchestration, and data synchronization capabilities.
+ * integration orchestration, and data synchronization capabilities for
+ * enterprise healthcare platform administration.
  *
- * Features:
- * - System configuration management
- * - Feature flag administration
- * - Grade transition operations
- * - System health monitoring
- * - Integration lifecycle management
- * - Data synchronization with SIS/EHR systems
- * - School/district management
+ * ## Features
  *
- * Security:
- * - Admin-only access to most endpoints
+ * ### Configuration Management
+ * - System-wide configuration key-value store
+ * - Category-based organization (GENERAL, SECURITY, NOTIFICATION, etc.)
+ * - Type-safe value storage (STRING, NUMBER, BOOLEAN, JSON)
+ * - Public vs private configuration separation
+ * - Configuration change audit trail
+ *
+ * ### Feature Flag System
+ * - Feature toggle management with gradual rollout
+ * - User/role/school-specific enablement
+ * - Percentage-based feature distribution
+ * - Real-time feature flag checks
+ * - Metadata support for feature configuration
+ *
+ * ### Grade Transition Operations
+ * - Academic year student grade promotions
+ * - Dry-run mode for validation
+ * - Bulk student update capabilities
+ * - Configurable promotion rules
+ * - Status tracking (PENDING, IN_PROGRESS, COMPLETED, FAILED)
+ *
+ * ### System Health Monitoring
+ * - Component health checks (database, redis, storage, email, SMS)
+ * - Performance metrics (requests/min, response time, error rate)
+ * - Resource utilization (memory, CPU)
+ * - Real-time status aggregation
+ *
+ * ### Integration Management
+ * - SIS (Student Information System) integration
+ * - EHR (Electronic Health Records) integration
+ * - Pharmacy system integration
+ * - Email/SMS service providers
+ * - Payment gateway integration
+ * - Identity provider (SSO/SAML) integration
+ *
+ * ### Data Synchronization
+ * - Scheduled and manual sync operations
+ * - Full and incremental sync modes
+ * - Sync progress tracking
+ * - Error handling and retry logic
+ * - Sync history and logging
+ *
+ * ### School/District Management
+ * - Multi-tenant school hierarchy
+ * - District-level administration
+ * - School-specific settings
+ * - Contact information management
+ *
+ * ## Security & Access Control
+ *
+ * ### Admin-Only Endpoints
+ * All endpoints in this module require admin-level permissions:
+ * - SYSTEM_ADMIN role for system-wide operations
+ * - DISTRICT_ADMIN role for district-scoped operations
  * - Audit logging for all configuration changes
- * - Secure credential management for integrations
- * - Rate limiting on sync operations
+ * - IP whitelisting for sensitive operations (optional)
+ *
+ * ### Credential Management
+ * - Encrypted credential storage for integrations
+ * - Credential rotation support
+ * - Never expose credentials in API responses
+ * - Secure credential transmission (TLS required)
+ *
+ * ### Rate Limiting
+ * - Configuration reads: 100 requests/minute
+ * - Configuration updates: 10 requests/minute
+ * - Sync operations: 5 requests/minute (to prevent abuse)
+ * - Integration tests: 20 requests/minute
+ *
+ * ### HIPAA Compliance
+ * - All operations are audit logged
+ * - PHI access is tracked for compliance reporting
+ * - Secure credential storage for external integrations
+ * - Data encryption at rest and in transit
+ *
+ * ## Integration Patterns
+ *
+ * ### SIS Integration Workflow
+ * ```typescript
+ * // 1. Create integration configuration
+ * const integration = await systemApi.createIntegration({
+ *   name: 'PowerSchool SIS',
+ *   type: 'SIS',
+ *   provider: 'PowerSchool',
+ *   config: {
+ *     apiUrl: 'https://ps.school.edu/api',
+ *     version: 'v3'
+ *   },
+ *   credentials: {
+ *     clientId: 'xxx',
+ *     clientSecret: 'yyy'
+ *   },
+ *   syncEnabled: true,
+ *   syncInterval: 60 // minutes
+ * });
+ *
+ * // 2. Test connection
+ * const testResult = await systemApi.testIntegration(integration.id);
+ * if (testResult.success) {
+ *   console.log(`Connection successful in ${testResult.responseTime}ms`);
+ * }
+ *
+ * // 3. Trigger sync
+ * const syncResult = await systemApi.syncStudents({
+ *   integrationId: integration.id,
+ *   fullSync: false
+ * });
+ * ```
+ *
+ * ### EHR Integration Workflow
+ * ```typescript
+ * // Configure EHR integration with FHIR support
+ * const ehrIntegration = await systemApi.createIntegration({
+ *   name: 'Epic MyChart',
+ *   type: 'EHR',
+ *   provider: 'Epic',
+ *   config: {
+ *     fhirEndpoint: 'https://fhir.epic.com/R4',
+ *     resourceTypes: ['Patient', 'Observation', 'Medication']
+ *   },
+ *   credentials: {
+ *     apiKey: 'xxx'
+ *   }
+ * });
+ * ```
+ *
+ * ## Usage Examples
+ *
+ * ### Feature Flag Management
+ * ```typescript
+ * // Create feature flag with gradual rollout
+ * const flag = await systemApi.createFeatureFlag({
+ *   name: 'New Medication UI',
+ *   key: 'new-medication-ui',
+ *   description: 'Enable new medication administration interface',
+ *   isEnabled: true,
+ *   enabledPercentage: 25, // 25% rollout
+ *   metadata: {
+ *     rolloutPhase: 'beta',
+ *     targetDate: '2025-11-01'
+ *   }
+ * });
+ *
+ * // Check if enabled for specific user
+ * const isEnabled = await systemApi.isFeatureEnabled('new-medication-ui', userId);
+ * ```
+ *
+ * ### System Configuration
+ * ```typescript
+ * // Update system configuration
+ * const config = await systemApi.updateConfig('email.provider', {
+ *   value: 'sendgrid',
+ *   description: 'Email service provider'
+ * });
+ *
+ * // Get all security configurations
+ * const securityConfig = await systemApi.getConfig('SECURITY');
+ * ```
  *
  * @module services/modules/systemApi
+ * @see {@link IntegrationApi} for detailed integration management
+ * @see {@link AdministrationApi} for school/district management
  */
 
 import type { ApiClient } from '../core/ApiClient';

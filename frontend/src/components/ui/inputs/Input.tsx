@@ -5,7 +5,7 @@
  * Downstream: Forms, search, data entry | Called by: Form components
  * Related: Form validation, user input handling
  * Exports: Input component | Key Features: Validation, states, accessibility
- * Last Updated: 2025-10-21 | File Type: .tsx
+ * Last Updated: 2025-10-26 | File Type: .tsx
  * Critical Path: User input → Validation → State update
  * LLM Context: Core input component for White Cross healthcare platform
  */
@@ -14,9 +14,33 @@ import React from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Utility function for merging class names
+/**
+ * Utility function for merging Tailwind CSS class names.
+ * Combines clsx for conditional classes with tailwind-merge for deduplication.
+ *
+ * @param inputs - Array of class name strings or undefined values
+ * @returns Merged and deduplicated class name string
+ *
+ * @internal
+ */
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
+/**
+ * Props for the Input component.
+ *
+ * @interface InputProps
+ * @extends {Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>}
+ *
+ * @property {string} [label] - Label text displayed above the input
+ * @property {string} [error] - Error message text (displays in red below input)
+ * @property {string} [helperText] - Helper text displayed below input when no error
+ * @property {boolean} [required=false] - Whether input is required (shows asterisk)
+ * @property {('default' | 'filled' | 'outlined')} [variant='default'] - Visual style variant
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Input size affecting padding and text size
+ * @property {React.ReactNode} [icon] - Icon element to display inside input
+ * @property {('left' | 'right')} [iconPosition='left'] - Icon placement relative to text
+ * @property {boolean} [loading=false] - Loading state showing spinner animation
+ */
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: string;
@@ -29,18 +53,111 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   loading?: boolean;
 }
 
+/**
+ * Input variant style configurations.
+ * Each variant includes border, focus states, background, and dark mode support.
+ *
+ * @constant
+ * @internal
+ */
 const inputVariants = {
   default: 'border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white',
   filled: 'bg-gray-50 border-gray-200 focus:bg-white focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-700 dark:focus:bg-gray-800',
   outlined: 'border-2 border-gray-300 focus:border-primary-500 focus:ring-0 dark:bg-gray-800 dark:border-gray-600 dark:text-white'
 };
 
+/**
+ * Input size configurations.
+ * Defines padding and text size for each size variant.
+ *
+ * @constant
+ * @internal
+ */
 const inputSizes = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-3 py-2 text-sm',
   lg: 'px-4 py-3 text-base'
 };
 
+/**
+ * Core input component with label, error states, and icon support.
+ *
+ * A flexible, accessible text input component with label, error handling,
+ * helper text, icons, and loading states. Optimized with React.forwardRef
+ * for parent component DOM access.
+ *
+ * **Features:**
+ * - 3 visual variants (default, filled, outlined)
+ * - 3 size options (sm, md, lg)
+ * - Label with required indicator
+ * - Error state with validation message
+ * - Helper text for guidance
+ * - Icon support (left or right)
+ * - Loading state with spinner
+ * - Dark mode support
+ * - Full accessibility
+ *
+ * **Accessibility:**
+ * - Semantic label with htmlFor association
+ * - aria-invalid for error state
+ * - aria-required for required fields
+ * - aria-describedby linking to error/helper text
+ * - aria-busy during loading
+ * - Screen reader text for loading spinner
+ * - Unique ID generation for proper associations
+ *
+ * @component
+ * @param {InputProps} props - Input component props
+ * @param {React.Ref<HTMLInputElement>} ref - Forwarded ref to input element
+ * @returns {JSX.Element} Rendered input with label and validation
+ *
+ * @example
+ * ```tsx
+ * // Basic input with label
+ * <Input label="Email" type="email" placeholder="Enter your email" />
+ *
+ * // Required input with helper text
+ * <Input
+ *   label="Password"
+ *   type="password"
+ *   required
+ *   helperText="Must be at least 8 characters"
+ * />
+ *
+ * // Input with error state
+ * <Input
+ *   label="Username"
+ *   value={username}
+ *   error="Username is already taken"
+ *   onChange={(e) => setUsername(e.target.value)}
+ * />
+ *
+ * // Input with left icon
+ * <Input
+ *   label="Search"
+ *   icon={<SearchIcon />}
+ *   iconPosition="left"
+ *   placeholder="Search patients..."
+ * />
+ *
+ * // Large filled variant with loading
+ * <Input
+ *   label="Medical Record Number"
+ *   variant="filled"
+ *   size="lg"
+ *   loading={isSearching}
+ * />
+ * ```
+ *
+ * @remarks
+ * **Healthcare Context**: Ensure proper input validation for medical data:
+ * - Use type="number" for vital signs, dosages
+ * - Validate medical record numbers with appropriate patterns
+ * - Provide clear error messages for invalid medical data
+ * - Mark required fields (*, allergies, medications)
+ *
+ * @see {@link InputProps} for detailed prop documentation
+ */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({
     className,

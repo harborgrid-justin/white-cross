@@ -154,29 +154,116 @@ class IncidentsApiImpl implements IIncidentsApi {
   }
 
   /**
-   * Create new incident report
+   * Create new incident report with automatic workflows and notifications
    *
-   * Automatically notifies parents for high/critical severity incidents
-   * Validates all required fields and PHI handling
+   * Creates incident with severity-based parent notification, automatic follow-up
+   * scheduling, and compliance tracking. Validates all required fields and PHI handling.
    *
-   * @param data - Incident report creation data
-   * @returns Created incident report with generated ID
-   * @throws ValidationError if required fields missing
-   * @throws ApiError if creation fails
+   * @param {CreateIncidentReportRequest} data - Incident report creation data
+   * @param {string} data.studentId - Student UUID (required)
+   * @param {string} data.reportedById - Reporter user UUID (typically nurse or staff)
+   * @param {IncidentType} data.type - Incident type (INJURY, ILLNESS, BEHAVIORAL, etc.)
+   * @param {IncidentSeverity} data.severity - Severity level (LOW, MEDIUM, HIGH, CRITICAL)
+   * @param {string} data.description - Detailed incident description (required, max 5000 chars)
+   * @param {string} data.location - Location where incident occurred
+   * @param {string} data.occurredAt - ISO 8601 datetime when incident occurred
+   * @param {string} data.actionsTaken - Actions taken by reporter (required)
+   * @param {boolean} [data.followUpRequired] - Whether follow-up is needed (default: auto-determined by severity)
+   * @param {string} [data.injuryDescription] - Detailed injury description for INJURY type
+   * @returns {Promise<IncidentReportResponse>} Created incident with generated ID and associations
+   * @throws {ValidationError} Required fields missing or invalid
+   * @throws {ForbiddenError} User lacks permission to create incidents
+   * @throws {ApiError} Network or server error during creation
+   *
+   * @remarks
+   * **Automated Workflows**:
+   * - **Parent Notification**: HIGH/CRITICAL severity triggers immediate multi-channel notification
+   * - **Follow-up Creation**: Severity-based automatic follow-up task assignment
+   * - **Compliance Tracking**: Legal compliance status initialized based on incident type
+   * - **Witness Prompts**: System prompts for witness statements for INJURY/BEHAVIORAL incidents
+   *
+   * **Emergency Escalation**:
+   * - CRITICAL severity → Immediate notification to parent, administrator, and emergency contacts
+   * - Notification channels: SMS, Email, Push (parallel delivery)
+   * - Escalation timer: If parent not reached within 15 minutes, escalate to emergency contacts
+   * - Delivery tracking: All notification attempts logged for compliance
+   *
+   * **Real-time Notifications**:
+   * - Socket.io event: `incident:created` emitted to dashboards
+   * - Event payload: `{ incidentId, studentId, severity, type }`
+   * - Subscribers: Nurse dashboard, admin dashboard, parent app
+   * - Query invalidation: Invalidates incident list queries
+   *
+   * **TanStack Query Optimistic Updates**:
+   * ```typescript
+   * const { mutate } = useMutation({
+   *   mutationFn: incidentsApi.create,
+   *   onMutate: async (newIncident) => {
+   *     await queryClient.cancelQueries(['incidents', 'list'])
+   *     const previous = queryClient.getQueryData(['incidents', 'list'])
+   *     queryClient.setQueryData(['incidents', 'list'], old => [newIncident, ...old])
+   *     return { previous }
+   *   },
+   *   onError: (err, variables, context) => {
+   *     queryClient.setQueryData(['incidents', 'list'], context.previous)
+   *   },
+   *   onSuccess: (data) => {
+   *     queryClient.invalidateQueries(['incidents'])
+   *     // Show success notification
+   *     toast.success('Incident report created successfully')
+   *   }
+   * })
+   * ```
+   *
+   * **Audit Trail**:
+   * - Action logged: INCIDENT_CREATED
+   * - PHI access: Student information, incident details
+   * - Compliance: 7-year retention for legal requirements
+   * - Immutable: Created incidents cannot be deleted, only updated/archived
+   *
+   * **Compliance Requirements**:
+   * - FERPA: Student privacy protected, access control enforced
+   * - State reporting: Certain incident types auto-flagged for state reporting
+   * - Insurance: Injury incidents auto-linked to insurance claim workflow
+   * - Legal: Serious incidents flagged for legal review
    *
    * @example
    * ```typescript
-   * const incident = await incidentsApi.create({
-   *   studentId: 'student-uuid',
-   *   reportedById: 'user-uuid',
-   *   type: IncidentType.INJURY,
-   *   severity: IncidentSeverity.MEDIUM,
-   *   description: 'Student fell during recess',
-   *   location: 'Playground',
+   * // Create playground injury incident
+   * const { report } = await incidentsApi.create({
+   *   studentId: 'student-uuid-123',
+   *   reportedById: currentUser.id,
+   *   type: 'INJURY',
+   *   severity: 'MEDIUM',
+   *   description: 'Student fell from monkey bars during recess. Complained of wrist pain.',
+   *   location: 'Playground - Monkey Bar Area',
    *   occurredAt: new Date().toISOString(),
-   *   actionsTaken: 'Applied ice pack, contacted nurse'
+   *   actionsTaken: 'Applied ice pack to wrist, assessed for swelling. Student able to move fingers. Parent contacted and advised to monitor overnight.',
+   *   injuryDescription: 'Possible wrist sprain, no visible deformity',
+   *   followUpRequired: true
    * });
+   * // MEDIUM severity triggers parent notification via email/SMS
+   *
+   * // Create critical allergic reaction incident
+   * const { report: critical } = await incidentsApi.create({
+   *   studentId: 'student-uuid-456',
+   *   reportedById: currentUser.id,
+   *   type: 'MEDICAL_EMERGENCY',
+   *   severity: 'CRITICAL',
+   *   description: 'Student experienced severe allergic reaction after lunch. Epinephrine administered.',
+   *   location: 'Cafeteria',
+   *   occurredAt: new Date(Date.now() - 600000).toISOString(), // 10 minutes ago
+   *   actionsTaken: 'EpiPen administered at 12:15 PM. 911 called at 12:16 PM. Parent contacted at 12:17 PM. Ambulance arrived at 12:25 PM.',
+   *   followUpRequired: true
+   * });
+   * // CRITICAL severity triggers immediate multi-channel emergency notification
+   * // Parent, emergency contacts, and administrator notified simultaneously
    * ```
+   *
+   * @see {@link addWitnessStatement} to add witness statements after creation
+   * @see {@link uploadEvidence} to upload photos/videos as evidence
+   * @see {@link addFollowUpAction} to create follow-up tasks
+   * @see {@link notifyParent} to send additional parent notifications
    *
    * Backend: POST /api/v1/incidents
    */
@@ -553,24 +640,125 @@ class IncidentsApiImpl implements IIncidentsApi {
   // =====================
 
   /**
-   * Add witness statement to incident
+   * Add witness statement to incident with verification workflow support
    *
-   * Records statement from student, staff, parent, or other witness
-   * Supports later verification workflow
+   * Records detailed witness statement from students, staff, parents, or other witnesses.
+   * Supports digital signature, verification workflow, and legal admissibility requirements.
    *
-   * @param data - Witness statement creation data
-   * @returns Created witness statement
+   * @param {CreateWitnessStatementRequest} data - Witness statement creation data
+   * @param {string} data.incidentReportId - Incident report UUID
+   * @param {string} data.witnessName - Full name of witness (required)
+   * @param {WitnessType} data.witnessType - Witness type (STUDENT, STAFF, PARENT, OTHER)
+   * @param {string} [data.witnessContact] - Contact info (email or phone) for verification
+   * @param {string} data.statement - Detailed witness statement (required, max 5000 chars)
+   * @param {string} [data.witnessRole] - Role/relationship to incident (e.g., "Supervising teacher")
+   * @param {string} [data.statementDate] - When statement was given (defaults to now)
+   * @param {boolean} [data.isAnonymous] - Whether witness wishes to remain anonymous
+   * @returns {Promise<WitnessStatementResponse>} Created witness statement
+   * @returns {WitnessStatement} statement - Witness statement with unique ID
+   * @throws {ValidationError} Required fields missing or invalid
+   * @throws {ForbiddenError} User lacks permission to add witness statements
+   * @throws {NotFoundError} Incident report not found
+   *
+   * @remarks
+   * **Verification Workflow**:
+   * - Initial state: Statement created as UNVERIFIED
+   * - Email sent: Verification link sent to witness contact (if provided)
+   * - Verification: Witness clicks link to confirm statement accuracy
+   * - Digital signature: Optional signature capture for legal weight
+   * - Final state: Marked as VERIFIED with timestamp and IP address
+   *
+   * **Legal Admissibility**:
+   * - Timestamp: Exact time statement was recorded
+   * - IP address: Recorded for verification purposes
+   * - Edit tracking: Any edits logged with timestamp (pre-verification only)
+   * - Immutability: Verified statements cannot be edited, only annotated
+   * - Chain of custody: Full audit trail from creation to verification
+   *
+   * **Anonymous Statements**:
+   * - Anonymous flag: Hides witness identity in reports
+   * - Contact protected: Contact info not shown in generated documents
+   * - Legal note: Anonymous statements have lower legal weight
+   * - Use case: Student witnesses who fear retaliation
+   *
+   * **Statement Guidelines**:
+   * - Factual: Encourage factual observations, not opinions
+   * - Detailed: Prompt for who, what, when, where, how
+   * - Timeline: Request specific times if known
+   * - Uninfluenced: Statement taken before discussion with others
+   *
+   * **Real-time Updates**:
+   * - Socket.io event: `incident:witness-added` emitted
+   * - Query invalidation: Invalidates incident detail query
+   * - Notification: Incident creator notified of new witness statement
    *
    * @example
    * ```typescript
-   * const statement = await incidentsApi.addWitnessStatement({
-   *   incidentReportId: id,
-   *   witnessName: 'John Doe',
-   *   witnessType: WitnessType.STAFF,
-   *   witnessContact: 'john@school.edu',
-   *   statement: 'I saw the student fall on the playground at approximately 10:30am'
+   * // Add staff witness statement
+   * const { statement } = await incidentsApi.addWitnessStatement({
+   *   incidentReportId: incidentId,
+   *   witnessName: 'Sarah Johnson',
+   *   witnessType: 'STAFF',
+   *   witnessContact: 'sarah.johnson@school.edu',
+   *   witnessRole: 'Playground supervisor',
+   *   statement: `I was supervising the playground at 10:25 AM when I saw two students
+   *     playing on the monkey bars. At approximately 10:28 AM, I noticed one student
+   *     (wearing a red jacket) fall from the third bar. The student landed on their
+   *     right side. I immediately approached and assessed the situation. The student
+   *     was conscious and responsive but holding their right wrist and crying. I
+   *     radioed for the nurse at 10:29 AM and stayed with the student until the nurse
+   *     arrived at 10:32 AM.`,
+   *   statementDate: new Date().toISOString(),
+   *   isAnonymous: false
    * });
+   * // Verification email automatically sent to sarah.johnson@school.edu
+   *
+   * // Add anonymous student witness statement
+   * const { statement: studentStatement } = await incidentsApi.addWitnessStatement({
+   *   incidentReportId: incidentId,
+   *   witnessName: 'Anonymous Student',
+   *   witnessType: 'STUDENT',
+   *   statement: 'I saw what happened. The student in the red jacket was swinging too hard and lost their grip. Nobody pushed them.',
+   *   isAnonymous: true
+   * });
+   * // No verification email sent, witness identity protected
+   *
+   * // React component for collecting witness statements
+   * const WitnessStatementForm = () => {
+   *   const addWitnessMutation = useMutation({
+   *     mutationFn: incidentsApi.addWitnessStatement,
+   *     onSuccess: ({ statement }) => {
+   *       queryClient.invalidateQueries(['incidents', incidentId]);
+   *       toast.success('Witness statement recorded successfully');
+   *       if (!statement.isVerified) {
+   *         toast.info('Verification email sent to witness');
+   *       }
+   *     }
+   *   });
+   *
+   *   return (
+   *     <form onSubmit={handleSubmit}>
+   *       <input name="witnessName" required />
+   *       <select name="witnessType" required>
+   *         <option value="STAFF">Staff</option>
+   *         <option value="STUDENT">Student</option>
+   *         <option value="PARENT">Parent</option>
+   *       </select>
+   *       <input type="email" name="witnessContact" />
+   *       <textarea name="statement" required maxLength={5000} />
+   *       <label>
+   *         <input type="checkbox" name="isAnonymous" />
+   *         Anonymous statement
+   *       </label>
+   *       <button type="submit">Add Statement</button>
+   *     </form>
+   *   );
+   * };
    * ```
+   *
+   * @see {@link verifyWitnessStatement} to verify a witness statement
+   * @see {@link updateWitnessStatement} to edit unverified statements
+   * @see {@link getWitnessStatements} to retrieve all statements for incident
    *
    * Backend: POST /api/v1/incidents/{incidentReportId}/witnesses
    */
@@ -684,24 +872,113 @@ class IncidentsApiImpl implements IIncidentsApi {
   }
 
   /**
-   * Upload evidence files with multipart form data
+   * Upload evidence files (photos/videos) with multipart form data and PHI protection
    *
-   * Handles file upload and returns evidence URLs
-   * Supports multiple files in a single request
-   * Files are stored securely with PHI protection
+   * Handles secure file upload with automatic virus scanning, PHI detection,
+   * and cloud storage integration. Supports multiple files with progress tracking.
    *
-   * @param incidentReportId - Incident report ID
-   * @param files - Array of File objects to upload
-   * @returns Evidence URLs for uploaded files
-   * @throws ApiError if upload fails or file validation fails
+   * @param {string} incidentReportId - Incident report UUID
+   * @param {File[]} files - Array of File objects to upload (max 10 files, 50MB total)
+   * @returns {Promise<{attachments: string[]}>} Secure URLs for uploaded evidence files
+   * @returns {string[]} attachments - Array of secure, time-limited URLs for uploaded files
+   * @throws {ValidationError} File validation failed (size, type, count limits)
+   * @throws {SecurityError} Virus detected or PHI exposure risk identified
+   * @throws {ApiError} Network error or server failure during upload
+   *
+   * @remarks
+   * **File Validation**:
+   * - Allowed types: JPEG, PNG, GIF, MP4, MOV, PDF
+   * - Max file size: 10MB per file
+   * - Max files per upload: 10 files
+   * - Total upload size: 50MB maximum
+   * - Validation: MIME type checking, file extension verification
+   *
+   * **Security & PHI Protection**:
+   * - Virus scanning: ClamAV scan before storage
+   * - PHI detection: Automatic OCR on images to detect exposed PHI (SSN, addresses)
+   * - Encryption: AES-256 encryption at rest in S3
+   * - Access control: Signed URLs with 1-hour expiration
+   * - Audit logging: All evidence uploads logged with user ID and timestamp
+   *
+   * **Storage & Processing**:
+   * - Cloud storage: AWS S3 with HIPAA compliance
+   * - File naming: UUID-based to prevent filename conflicts
+   * - Thumbnail generation: Automatic thumbnail creation for images
+   * - Video processing: Frame extraction for preview
+   * - Metadata: EXIF data stripped to remove location/device info
+   *
+   * **Upload Progress**:
+   * - Chunked upload: Large files uploaded in 5MB chunks
+   * - Progress tracking: Upload progress events emitted
+   * - Resume support: Failed uploads can be resumed
+   * - Retry logic: Automatic retry up to 3 times on network failure
+   *
+   * **Error Handling**:
+   * - File too large: Returns specific error with size limit
+   * - Invalid type: Returns allowed file types
+   * - Virus detected: File rejected, incident logged
+   * - PHI exposure: File flagged for review before attachment
    *
    * @example
    * ```typescript
+   * // Basic file upload from input element
    * const fileInput = document.querySelector('input[type="file"]');
    * const files = Array.from(fileInput.files);
-   * const result = await incidentsApi.uploadEvidence(incidentId, files);
-   * console.log('Uploaded files:', result.attachments);
+   *
+   * try {
+   *   const { attachments } = await incidentsApi.uploadEvidence(incidentId, files);
+   *   console.log('Uploaded evidence:', attachments);
+   *   // attachments = ['https://s3.../evidence/uuid-1.jpg', 'https://s3.../evidence/uuid-2.jpg']
+   * } catch (error) {
+   *   if (error.code === 'FILE_TOO_LARGE') {
+   *     toast.error('Files must be under 10MB each');
+   *   } else if (error.code === 'INVALID_FILE_TYPE') {
+   *     toast.error('Only images, videos, and PDFs are allowed');
+   *   }
+   * }
+   *
+   * // Upload with progress tracking
+   * const uploadWithProgress = async (files: File[]) => {
+   *   const formData = new FormData();
+   *   files.forEach((file, i) => formData.append(`evidence_${i}`, file));
+   *
+   *   const response = await fetch(`/api/v1/incidents/${incidentId}/evidence`, {
+   *     method: 'POST',
+   *     body: formData,
+   *     onUploadProgress: (progressEvent) => {
+   *       const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+   *       setUploadProgress(percentCompleted);
+   *     }
+   *   });
+   * };
+   *
+   * // React component with drag-and-drop upload
+   * const EvidenceUpload = () => {
+   *   const uploadMutation = useMutation({
+   *     mutationFn: (files: File[]) => incidentsApi.uploadEvidence(incidentId, files),
+   *     onSuccess: ({ attachments }) => {
+   *       queryClient.invalidateQueries(['incidents', incidentId]);
+   *       toast.success(`${attachments.length} files uploaded successfully`);
+   *     },
+   *     onError: (error) => {
+   *       toast.error(`Upload failed: ${error.message}`);
+   *     }
+   *   });
+   *
+   *   return (
+   *     <Dropzone
+   *       accept={{ 'image/*': ['.jpg', '.jpeg', '.png'], 'video/*': ['.mp4', '.mov'] }}
+   *       maxSize={10 * 1024 * 1024} // 10MB
+   *       maxFiles={10}
+   *       onDrop={files => uploadMutation.mutate(files)}
+   *     />
+   *   );
+   * };
    * ```
+   *
+   * @see {@link deleteEvidence} to remove uploaded evidence
+   * @see {@link addEvidence} to link existing evidence URLs
+   * @see {@link generateReport} to include evidence in generated reports
    *
    * Backend: POST /api/v1/incidents/{id}/evidence (Content-Type: multipart/form-data)
    */

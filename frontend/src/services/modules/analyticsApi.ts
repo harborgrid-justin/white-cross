@@ -1,6 +1,194 @@
 /**
- * Complete Analytics API Module
- * Comprehensive analytics and reporting capabilities with dashboards, custom reports, and advanced features
+ * @fileoverview Complete Analytics API Module - Comprehensive healthcare analytics and reporting
+ * @module services/modules/analyticsApi
+ * @category Services
+ *
+ * Provides comprehensive analytics, reporting, and dashboard capabilities for healthcare
+ * metrics, trends, and insights. Supports real-time dashboards, custom reports, predictive
+ * analytics, and compliance reporting with intelligent caching and data aggregation.
+ *
+ * ## Key Features
+ *
+ * **Health Metrics & Trends**:
+ * - Student health metrics tracking (vitals, conditions, medications)
+ * - Health trend analysis over time
+ * - Population health insights
+ * - Chronic condition monitoring
+ * - Medication adherence tracking
+ *
+ * **Incident Analytics**:
+ * - Incident trends by type, severity, location
+ * - Injury hotspot identification
+ * - Incident frequency analysis
+ * - Safety metric tracking
+ * - Comparative period analysis
+ *
+ * **Medication Analytics**:
+ * - Medication usage patterns
+ * - Adherence rate tracking
+ * - Dosage compliance monitoring
+ * - Stock level analytics
+ * - Cost analysis
+ *
+ * **Appointment Analytics**:
+ * - Appointment volume trends
+ * - No-show rate analysis
+ * - Nurse utilization metrics
+ * - Appointment type distribution
+ * - Wait time analysis
+ *
+ * **Dashboard Support**:
+ * - Nurse dashboard with daily metrics
+ * - Admin dashboard with system overview
+ * - School dashboard with institution metrics
+ * - Customizable widgets
+ * - Real-time data updates
+ *
+ * **Custom Reporting**:
+ * - Flexible report generation
+ * - Custom query builder
+ * - Multiple export formats (PDF, Excel, CSV)
+ * - Scheduled report delivery
+ * - Template-based reports
+ *
+ * ## Advanced Features
+ *
+ * **Intelligent Caching**:
+ * - Multi-level cache with TTL
+ * - Cache invalidation patterns
+ * - Query parameter-based cache keys
+ * - Configurable cache duration
+ * - Manual cache clearing
+ *
+ * **Real-time Analytics**:
+ * - Live dashboard updates via polling
+ * - Socket.io integration for instant updates
+ * - Configurable refresh intervals
+ * - Event-driven invalidation
+ * - Subscription-based data streaming
+ *
+ * **Predictive Analytics**:
+ * - Trend forecasting
+ * - Seasonal pattern detection
+ * - Risk prediction models
+ * - Capacity planning insights
+ *
+ * **Drill-down Analysis**:
+ * - Summary to detail navigation
+ * - Multi-level data exploration
+ * - Contextual filtering
+ * - Related data discovery
+ *
+ * ## Healthcare-Specific Analytics
+ *
+ * **Compliance Reporting**:
+ * - HIPAA audit trail analytics
+ * - FERPA compliance tracking
+ * - State reporting requirements
+ * - Immunization compliance rates
+ * - Health screening compliance
+ *
+ * **Population Health**:
+ * - Student health demographics
+ * - Chronic condition prevalence
+ * - Immunization coverage rates
+ * - Health risk stratification
+ * - Intervention effectiveness tracking
+ *
+ * **Resource Utilization**:
+ * - Nurse workload analysis
+ * - Supply consumption tracking
+ * - Appointment capacity utilization
+ * - Cost per student metrics
+ * - Budget variance analysis
+ *
+ * **Safety & Risk Analytics**:
+ * - Incident pattern detection
+ * - High-risk location identification
+ * - Injury trend analysis
+ * - Preventive measure effectiveness
+ * - Safety score calculation
+ *
+ * ## Performance & Optimization
+ *
+ * **Caching Strategy**:
+ * - Dashboard data: 3-minute cache
+ * - Metrics: 5-minute cache
+ * - Trends: 10-minute cache
+ * - Reports: 1-minute cache
+ * - Automatic cache warming
+ *
+ * **Query Optimization**:
+ * - Aggregation at database level
+ * - Indexed query patterns
+ * - Pagination support
+ * - Incremental loading
+ * - Background processing
+ *
+ * **TanStack Query Integration**:
+ * - Query key: `['analytics', type, params]`
+ * - Automatic background refetching
+ * - Stale-while-revalidate pattern
+ * - Query deduplication
+ * - Parallel query execution
+ *
+ * @example
+ * ```typescript
+ * // Get nurse dashboard with caching
+ * const dashboard = await analyticsApi.getNurseDashboard(nurseId, {
+ *   includeWidgets: true,
+ *   dateRange: { startDate: '2025-01-01', endDate: '2025-01-31' }
+ * });
+ * console.log('Today\'s appointments:', dashboard.todaysAppointments);
+ * console.log('Pending tasks:', dashboard.pendingTasks);
+ *
+ * // Generate custom report
+ * const report = await analyticsApi.createCustomReport({
+ *   name: 'Monthly Incident Summary',
+ *   reportType: 'INCIDENTS',
+ *   dateRange: { startDate: '2025-01-01', endDate: '2025-01-31' },
+ *   groupBy: ['type', 'severity'],
+ *   metrics: ['count', 'avgResponseTime'],
+ *   filters: { schoolId: 'school-123' },
+ *   exportFormat: 'PDF'
+ * });
+ *
+ * // Subscribe to real-time dashboard updates
+ * const unsubscribe = analyticsApi.subscribeToRealTimeUpdates(
+ *   'nurse',
+ *   { nurseId },
+ *   (data) => {
+ *     console.log('Dashboard updated:', data);
+ *     updateUI(data);
+ *   },
+ *   30000 // Poll every 30 seconds
+ * );
+ *
+ * // Get health trends with comparison
+ * const trends = await analyticsApi.getHealthTrends({
+ *   startDate: '2025-01-01',
+ *   endDate: '2025-01-31',
+ *   period: 'weekly',
+ *   includeComparison: true,
+ *   comparisonPeriod: 'PREVIOUS_PERIOD'
+ * });
+ *
+ * // Clear cache for fresh data
+ * analyticsApi.clearCache('dashboard'); // Clear all dashboard caches
+ * analyticsApi.clearCache(); // Clear all caches
+ *
+ * // Use with TanStack Query
+ * const { data, isLoading, refetch } = useQuery({
+ *   queryKey: ['analytics', 'nurse-dashboard', nurseId],
+ *   queryFn: () => analyticsApi.getNurseDashboard(nurseId),
+ *   staleTime: 180000, // Consider data fresh for 3 minutes
+ *   refetchInterval: 180000 // Auto-refetch every 3 minutes
+ * });
+ * ```
+ *
+ * @see {@link appointmentsApi} for appointment data
+ * @see {@link incidentsApi} for incident data
+ * @see {@link medicationsApi} for medication data
  */
 
 import type { ApiClient } from '../core/ApiClient';

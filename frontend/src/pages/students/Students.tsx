@@ -1,10 +1,68 @@
 /**
  * Students Page - White Cross Healthcare Platform
- * Student management and overview
+ *
+ * Comprehensive student management interface providing CRUD operations for student records
+ * with integrated health information, emergency contacts, and appointment scheduling.
+ *
+ * **Features:**
+ * - Server-side pagination with configurable page sizes
+ * - Real-time search across student name and student number
+ * - Grade-level filtering with multi-select support
+ * - Inline student editing with validation
+ * - Soft delete (deactivation) with confirmation
+ * - Quick access to health records, appointments, and emergency contacts
+ * - Medical condition and allergy indicators
+ * - Role-based action visibility (RBAC)
+ *
+ * **State Management:**
+ * - Local component state for UI interactions
+ * - Direct API calls via studentsApi service
+ * - Optimistic updates for edit operations
+ *
+ * **Healthcare Integration:**
+ * - Displays medical conditions and allergies inline
+ * - Links to comprehensive health records
+ * - Appointment scheduling integration
+ * - Emergency contact quick access
  *
  * @fileoverview Students management page component with role-based access control
  * @module pages/students/Students
- * @version 1.0.0
+ * @version 2.0.0
+ *
+ * @component
+ * @returns {React.FC} Students management page component
+ *
+ * @example
+ * ```tsx
+ * import Students from './pages/students/Students';
+ *
+ * function App() {
+ *   return <Students />;
+ * }
+ * ```
+ *
+ * @remarks
+ * **FERPA Compliance**: All student data displayed is subject to FERPA regulations.
+ * Ensure proper access controls and audit logging are in place.
+ *
+ * **PHI Warning**: Medical conditions and allergies are Protected Health Information.
+ * Access requires NURSE, ADMIN, or COUNSELOR role. All views are audited.
+ *
+ * **Permissions**:
+ * - View: All authenticated users
+ * - Create/Edit: ADMIN or NURSE roles
+ * - Delete (Deactivate): ADMIN role only
+ * - View Health Records: ADMIN, NURSE, or COUNSELOR roles
+ *
+ * **Soft Delete**: Delete operations perform soft delete (isActive = false) rather than
+ * hard delete to maintain referential integrity and audit trail.
+ *
+ * **Export Functionality**: Currently placeholder. Should implement PHI filtering and
+ * audit logging when completed.
+ *
+ * @see {@link studentsApi} for API integration
+ * @see {@link useAuth} for authentication context
+ * @since 1.0.0
  */
 
 import React, { useState, useEffect } from 'react'
@@ -261,7 +319,26 @@ const Students: React.FC = () => {
     }
   }
 
-  // Delete confirmation modal component
+  /**
+   * Delete Confirmation Modal Component
+   *
+   * Modal dialog for confirming student deactivation with clear warnings.
+   * Uses soft delete to maintain data integrity and audit trail.
+   *
+   * @component
+   * @returns {JSX.Element | null} Modal dialog or null if not shown
+   *
+   * @remarks
+   * **Soft Delete**: This performs a soft delete (isActive = false) to preserve
+   * referential integrity with health records, appointments, and emergency contacts.
+   *
+   * **Audit Trail**: The deactivation action should be logged for compliance purposes.
+   *
+   * @example
+   * ```tsx
+   * <DeleteConfirmModal />
+   * ```
+   */
   const DeleteConfirmModal: React.FC = () => {
     if (!showDeleteModal || !selectedStudent) return null
 
@@ -327,7 +404,33 @@ const Students: React.FC = () => {
     )
   }
 
-  // Edit Student Modal component
+  /**
+   * Edit Student Modal Component
+   *
+   * Modal form for editing existing student information with validation.
+   * Provides inline editing without navigation to separate page.
+   *
+   * @component
+   * @returns {JSX.Element | null} Modal dialog or null if not shown
+   *
+   * @remarks
+   * **Validation**: Performs client-side validation for required fields before submission.
+   * Server-side validation is also performed by the API.
+   *
+   * **PHI Data**: Contains student demographic and medical record number which may be
+   * considered PHI in healthcare contexts. Ensure proper access logging.
+   *
+   * **Student Number**: Student number field is disabled to prevent accidental changes
+   * that could break integrations with external systems.
+   *
+   * **Optimistic Updates**: Updates local state immediately upon successful API response
+   * to provide responsive UX.
+   *
+   * @example
+   * ```tsx
+   * <EditStudentModal />
+   * ```
+   */
   const EditStudentModal: React.FC = () => {
     if (!showEditModal || !editingStudent) return null
 

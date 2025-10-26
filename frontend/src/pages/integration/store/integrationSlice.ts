@@ -1,6 +1,38 @@
 /**
  * Integration Redux Slice
- * Manages integration state with comprehensive service adapter integration
+ *
+ * Manages integration state for external system connections including EHR, SIS, LMS,
+ * Finance, HR, Health, Insurance, Laboratory, and Pharmacy systems. Provides comprehensive
+ * state management for integration configuration, synchronization, monitoring, and logging.
+ *
+ * @module IntegrationSlice
+ *
+ * @remarks
+ * Security: Integration credentials are not stored in Redux state - use secure backend storage
+ * Admin: Integration management requires 'admin.integrations' or 'integrations.manage' permission
+ * Architecture: Uses service adapter pattern to decouple Redux from API implementation
+ *
+ * @example
+ * ```typescript
+ * // Fetch all integrations
+ * dispatch(fetchIntegrations());
+ *
+ * // Filter by type
+ * dispatch(fetchIntegrations('EHR'));
+ *
+ * // Create new integration
+ * dispatch(createIntegration({
+ *   name: 'Hospital EHR',
+ *   type: 'EHR',
+ *   config: { endpoint: 'https://ehr.hospital.com', apiKey: 'xxx' }
+ * }));
+ *
+ * // Test connection
+ * dispatch(testConnection(integrationId));
+ *
+ * // Sync data
+ * dispatch(syncIntegration(integrationId));
+ * ```
  */
 
 import { createSlice, createAsyncThunk, createSelector, PayloadAction } from '@reduxjs/toolkit';
@@ -26,69 +58,222 @@ import type {
   SyncStatus,
 } from '../../../types/integrations';
 
-// Service Adapter Class
+/**
+ * Integration API Service Adapter
+ *
+ * Provides a clean interface between Redux thunks and the integration API service.
+ * Decouples state management from API implementation details.
+ *
+ * @class
+ *
+ * @remarks
+ * Pattern: Service Adapter - wraps integrationApi for testability and abstraction
+ * Error Handling: All methods may throw errors that should be caught by async thunks
+ */
 export class IntegrationApiService {
-  // Core integration management
+  /**
+   * Retrieves all integrations, optionally filtered by type.
+   *
+   * @param {IntegrationType} [type] - Integration type filter (EHR, SIS, LMS, etc.)
+   * @returns {Promise<IntegrationListResponse>} List of integrations with pagination
+   * @throws {Error} If API request fails
+   */
   async getIntegrations(type?: IntegrationType) {
     return await integrationApi.getAll(type);
   }
 
+  /**
+   * Retrieves a single integration by ID.
+   *
+   * @param {string} id - Integration ID
+   * @returns {Promise<IntegrationResponse>} Integration details
+   * @throws {Error} If integration not found or API request fails
+   */
   async getIntegrationById(id: string) {
     return await integrationApi.getById(id);
   }
 
+  /**
+   * Creates a new integration configuration.
+   *
+   * @param {CreateIntegrationRequest} data - Integration configuration data
+   * @returns {Promise<IntegrationResponse>} Created integration
+   * @throws {Error} If validation fails or API request fails
+   *
+   * @example
+   * ```typescript
+   * const integration = await service.createIntegration({
+   *   name: 'District EHR',
+   *   type: 'EHR',
+   *   config: {
+   *     endpoint: 'https://ehr.example.com',
+   *     authType: 'oauth',
+   *     credentials: { clientId: 'xxx', clientSecret: 'yyy' }
+   *   }
+   * });
+   * ```
+   */
   async createIntegration(data: CreateIntegrationRequest) {
     return await integrationApi.create(data);
   }
 
+  /**
+   * Updates an existing integration configuration.
+   *
+   * @param {string} id - Integration ID
+   * @param {UpdateIntegrationRequest} data - Updated configuration data
+   * @returns {Promise<IntegrationResponse>} Updated integration
+   * @throws {Error} If integration not found or validation fails
+   */
   async updateIntegration(id: string, data: UpdateIntegrationRequest) {
     return await integrationApi.update(id, data);
   }
 
+  /**
+   * Deletes an integration configuration.
+   *
+   * @param {string} id - Integration ID
+   * @returns {Promise<void>}
+   * @throws {Error} If integration not found or deletion fails
+   *
+   * @remarks
+   * Warning: This permanently deletes the integration. Sync history may be retained for audit.
+   */
   async deleteIntegration(id: string) {
     return await integrationApi.delete(id);
   }
 
-  // Connection and sync operations
+  /**
+   * Tests connection to an external system.
+   *
+   * @param {string} id - Integration ID
+   * @returns {Promise<{result: ConnectionTestResult}>} Connection test result
+   * @throws {Error} If test fails or integration not found
+   *
+   * @remarks
+   * Network: May take several seconds depending on external system response time
+   * Timeout: Typically 30 seconds before timing out
+   */
   async testConnection(id: string) {
     return await integrationApi.testConnection(id);
   }
 
+  /**
+   * Initiates data synchronization with an external system.
+   *
+   * @param {string} id - Integration ID
+   * @returns {Promise<{result: SyncResult}>} Synchronization result
+   * @throws {Error} If sync fails or integration not active
+   *
+   * @remarks
+   * Async Operation: Sync may complete in background for large datasets
+   * Rate Limiting: Respects external system rate limits
+   * Conflict Resolution: Uses last-write-wins strategy by default
+   */
   async syncIntegration(id: string) {
     return await integrationApi.sync(id);
   }
 
-  // Logging and monitoring
+  /**
+   * Retrieves logs for a specific integration.
+   *
+   * @param {string} id - Integration ID
+   * @param {LogFilters} [filters={}] - Optional log filters (level, dateRange, etc.)
+   * @returns {Promise<IntegrationLogsResponse>} Filtered integration logs
+   * @throws {Error} If integration not found
+   */
   async getIntegrationLogs(id: string, filters: LogFilters = {}) {
     return await integrationApi.getLogs(id, filters);
   }
 
+  /**
+   * Retrieves logs for all integrations.
+   *
+   * @param {LogFilters} [filters={}] - Optional log filters
+   * @returns {Promise<IntegrationLogsResponse>} All integration logs
+   */
   async getAllLogs(filters: LogFilters = {}) {
     return await integrationApi.getAllLogs(filters);
   }
 
+  /**
+   * Retrieves integration statistics and metrics.
+   *
+   * @returns {Promise<IntegrationStatisticsResponse>} Integration statistics
+   *
+   * @remarks
+   * Metrics include: sync success rates, error counts, data volumes, response times
+   */
   async getStatistics() {
     return await integrationApi.getStatistics();
   }
 
+  /**
+   * Retrieves health status for all integrations.
+   *
+   * @returns {Promise<IntegrationHealthStatusResponse>} Health status of all integrations
+   *
+   * @remarks
+   * Health Check: Includes connectivity, recent errors, and sync status
+   */
   async getHealthStatus() {
     return await integrationApi.getHealthStatus();
   }
 
-  // Batch operations
+  /**
+   * Enables multiple integrations in a single batch operation.
+   *
+   * @param {string[]} ids - Array of integration IDs
+   * @returns {Promise<BatchOperationResult>} Batch operation results
+   *
+   * @remarks
+   * Atomicity: Partial failures are reported individually
+   * Performance: More efficient than individual enable operations
+   */
   async batchEnableIntegrations(ids: string[]) {
     return await integrationApi.batchEnable(ids);
   }
 
+  /**
+   * Disables multiple integrations in a single batch operation.
+   *
+   * @param {string[]} ids - Array of integration IDs
+   * @returns {Promise<BatchOperationResult>} Batch operation results
+   *
+   * @remarks
+   * Side Effects: Disabling stops all scheduled syncs for the integration
+   */
   async batchDisableIntegrations(ids: string[]) {
     return await integrationApi.batchDisable(ids);
   }
 }
 
-// Create service instance
+/**
+ * Integration service singleton instance
+ *
+ * @constant
+ * @type {IntegrationApiService}
+ */
 const integrationService = new IntegrationApiService();
 
-// State interface
+/**
+ * Integration Redux state interface
+ *
+ * @interface IntegrationState
+ * @property {IntegrationConfig[]} integrations - List of all integration configurations
+ * @property {IntegrationConfig | null} currentIntegration - Currently selected integration
+ * @property {IntegrationLog[]} logs - Integration operation logs
+ * @property {IntegrationStatistics | null} statistics - Integration metrics and statistics
+ * @property {any | null} healthStatus - Overall integration health status
+ * @property {Record<string, ConnectionTestResult>} connectionTests - Connection test results by integration ID
+ * @property {Record<string, SyncResult>} syncResults - Sync results by integration ID
+ * @property {string[]} selectedIntegrationIds - IDs of integrations selected for batch operations
+ * @property {Object} filters - Active filters for integration list
+ * @property {Object} pagination - Pagination state for integrations
+ * @property {Object} logPagination - Pagination state for logs
+ * @property {Object} loading - Loading states for different operations
+ * @property {Object} error - Error messages for different operations
+ */
 interface IntegrationState {
   integrations: IntegrationConfig[];
   currentIntegration: IntegrationConfig | null;
@@ -186,7 +371,15 @@ const initialState: IntegrationState = {
   },
 };
 
-// Async thunks
+/**
+ * Async thunk to fetch all integrations
+ *
+ * @async
+ * @function fetchIntegrations
+ * @param {IntegrationType} [type] - Optional integration type filter
+ * @returns {Promise<IntegrationListResponse>} Integration list response
+ * @throws {Error} If API request fails
+ */
 export const fetchIntegrations = createAsyncThunk(
   'integration/fetchIntegrations',
   async (type?: IntegrationType) => {
@@ -195,6 +388,15 @@ export const fetchIntegrations = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to fetch a single integration by ID
+ *
+ * @async
+ * @function fetchIntegrationById
+ * @param {string} id - Integration ID
+ * @returns {Promise<IntegrationResponse>} Integration details
+ * @throws {Error} If integration not found
+ */
 export const fetchIntegrationById = createAsyncThunk(
   'integration/fetchIntegrationById',
   async (id: string) => {
@@ -203,6 +405,19 @@ export const fetchIntegrationById = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to create a new integration
+ *
+ * @async
+ * @function createIntegration
+ * @param {CreateIntegrationRequest} data - Integration configuration
+ * @returns {Promise<IntegrationResponse>} Created integration
+ * @throws {Error} If validation fails or creation fails
+ *
+ * @remarks
+ * Security: Requires 'integrations.create' permission
+ * Validation: Endpoint URL and credentials are validated before saving
+ */
 export const createIntegration = createAsyncThunk(
   'integration/createIntegration',
   async (data: CreateIntegrationRequest) => {
@@ -211,6 +426,20 @@ export const createIntegration = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to update an existing integration
+ *
+ * @async
+ * @function updateIntegration
+ * @param {Object} params - Update parameters
+ * @param {string} params.id - Integration ID
+ * @param {UpdateIntegrationRequest} params.data - Updated configuration
+ * @returns {Promise<IntegrationResponse>} Updated integration
+ * @throws {Error} If integration not found or update fails
+ *
+ * @remarks
+ * Security: Requires 'integrations.update' permission
+ */
 export const updateIntegration = createAsyncThunk(
   'integration/updateIntegration',
   async ({ id, data }: { id: string; data: UpdateIntegrationRequest }) => {
@@ -219,6 +448,19 @@ export const updateIntegration = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to delete an integration
+ *
+ * @async
+ * @function deleteIntegration
+ * @param {string} id - Integration ID
+ * @returns {Promise<string>} Deleted integration ID
+ * @throws {Error} If integration not found or deletion fails
+ *
+ * @remarks
+ * Security: Requires 'integrations.delete' permission
+ * Warning: Permanently deletes integration configuration
+ */
 export const deleteIntegration = createAsyncThunk(
   'integration/deleteIntegration',
   async (id: string) => {
@@ -227,6 +469,19 @@ export const deleteIntegration = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to test connection to an external system
+ *
+ * @async
+ * @function testConnection
+ * @param {string} id - Integration ID
+ * @returns {Promise<{id: string, result: ConnectionTestResult}>} Test result
+ * @throws {Error} If connection test fails
+ *
+ * @remarks
+ * Network: May timeout after 30 seconds
+ * Security: Does not store credentials in Redux state
+ */
 export const testConnection = createAsyncThunk(
   'integration/testConnection',
   async (id: string) => {
@@ -235,6 +490,20 @@ export const testConnection = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to initiate data synchronization
+ *
+ * @async
+ * @function syncIntegration
+ * @param {string} id - Integration ID
+ * @returns {Promise<{id: string, result: SyncResult}>} Sync result
+ * @throws {Error} If sync fails or integration is inactive
+ *
+ * @remarks
+ * Performance: Large syncs may take several minutes
+ * Rate Limiting: Respects external system quotas
+ * Conflict Resolution: Last-write-wins by default
+ */
 export const syncIntegration = createAsyncThunk(
   'integration/syncIntegration',
   async (id: string) => {
@@ -243,6 +512,16 @@ export const syncIntegration = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to fetch logs for a specific integration
+ *
+ * @async
+ * @function fetchIntegrationLogs
+ * @param {Object} params - Fetch parameters
+ * @param {string} params.id - Integration ID
+ * @param {LogFilters} [params.filters] - Optional log filters
+ * @returns {Promise<IntegrationLogsResponse>} Integration logs
+ */
 export const fetchIntegrationLogs = createAsyncThunk(
   'integration/fetchIntegrationLogs',
   async ({ id, filters }: { id: string; filters?: LogFilters }) => {
@@ -251,6 +530,14 @@ export const fetchIntegrationLogs = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to fetch all integration logs
+ *
+ * @async
+ * @function fetchAllLogs
+ * @param {LogFilters} [filters] - Optional log filters (severity, dateRange, etc.)
+ * @returns {Promise<IntegrationLogsResponse>} All integration logs
+ */
 export const fetchAllLogs = createAsyncThunk(
   'integration/fetchAllLogs',
   async (filters?: LogFilters) => {
@@ -259,6 +546,16 @@ export const fetchAllLogs = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to fetch integration statistics
+ *
+ * @async
+ * @function fetchStatistics
+ * @returns {Promise<IntegrationStatisticsResponse>} Integration statistics
+ *
+ * @remarks
+ * Metrics: Includes success rates, error counts, data volumes, response times
+ */
 export const fetchStatistics = createAsyncThunk(
   'integration/fetchStatistics',
   async () => {
@@ -267,6 +564,13 @@ export const fetchStatistics = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to fetch health status for all integrations
+ *
+ * @async
+ * @function fetchHealthStatus
+ * @returns {Promise<IntegrationHealthStatusResponse>} Health status
+ */
 export const fetchHealthStatus = createAsyncThunk(
   'integration/fetchHealthStatus',
   async () => {
@@ -275,6 +579,18 @@ export const fetchHealthStatus = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to enable multiple integrations
+ *
+ * @async
+ * @function batchEnableIntegrations
+ * @param {string[]} ids - Array of integration IDs to enable
+ * @returns {Promise<BatchOperationResult>} Batch operation results
+ *
+ * @remarks
+ * Security: Requires 'integrations.update' permission
+ * Atomicity: Partial failures are reported individually
+ */
 export const batchEnableIntegrations = createAsyncThunk(
   'integration/batchEnableIntegrations',
   async (ids: string[]) => {
@@ -283,6 +599,18 @@ export const batchEnableIntegrations = createAsyncThunk(
   }
 );
 
+/**
+ * Async thunk to disable multiple integrations
+ *
+ * @async
+ * @function batchDisableIntegrations
+ * @param {string[]} ids - Array of integration IDs to disable
+ * @returns {Promise<BatchOperationResult>} Batch operation results
+ *
+ * @remarks
+ * Security: Requires 'integrations.update' permission
+ * Side Effects: Stops all scheduled syncs for disabled integrations
+ */
 export const batchDisableIntegrations = createAsyncThunk(
   'integration/batchDisableIntegrations',
   async (ids: string[]) => {
@@ -514,7 +842,18 @@ const integrationSlice = createSlice({
   },
 });
 
-// Export actions
+/**
+ * Integration slice actions
+ *
+ * @exports clearCurrentIntegration - Clear currently selected integration
+ * @exports setFilters - Update integration filters
+ * @exports setPagination - Update pagination state
+ * @exports setLogPagination - Update log pagination state
+ * @exports toggleIntegrationSelection - Toggle integration selection for batch ops
+ * @exports selectAllIntegrations - Select all integrations for batch operations
+ * @exports clearSelection - Clear all selected integrations
+ * @exports clearErrors - Clear all error messages
+ */
 export const {
   clearCurrentIntegration,
   setFilters,
@@ -526,22 +865,55 @@ export const {
   clearErrors,
 } = integrationSlice.actions;
 
-// Selectors
+// Basic Selectors
+
+/** Selects all integrations from state */
 export const selectIntegrations = (state: { integration: IntegrationState }) => state.integration.integrations;
+
+/** Selects currently selected integration */
 export const selectCurrentIntegration = (state: { integration: IntegrationState }) => state.integration.currentIntegration;
+
+/** Selects integration logs */
 export const selectLogs = (state: { integration: IntegrationState }) => state.integration.logs;
+
+/** Selects integration statistics */
 export const selectStatistics = (state: { integration: IntegrationState }) => state.integration.statistics;
+
+/** Selects integration health status */
 export const selectHealthStatus = (state: { integration: IntegrationState }) => state.integration.healthStatus;
+
+/** Selects connection test results */
 export const selectConnectionTests = (state: { integration: IntegrationState }) => state.integration.connectionTests;
+
+/** Selects sync results */
 export const selectSyncResults = (state: { integration: IntegrationState }) => state.integration.syncResults;
+
+/** Selects IDs of integrations selected for batch operations */
 export const selectSelectedIntegrationIds = (state: { integration: IntegrationState }) => state.integration.selectedIntegrationIds;
+
+/** Selects active filters */
 export const selectFilters = (state: { integration: IntegrationState }) => state.integration.filters;
+
+/** Selects pagination state */
 export const selectPagination = (state: { integration: IntegrationState }) => state.integration.pagination;
+
+/** Selects log pagination state */
 export const selectLogPagination = (state: { integration: IntegrationState }) => state.integration.logPagination;
+
+/** Selects loading states */
 export const selectLoading = (state: { integration: IntegrationState }) => state.integration.loading;
+
+/** Selects error messages */
 export const selectErrors = (state: { integration: IntegrationState }) => state.integration.error;
 
-// Advanced selectors
+// Derived Selectors
+
+/**
+ * Memoized selector for filtered integrations
+ *
+ * @function selectFilteredIntegrations
+ * @returns {IntegrationConfig[]} Integrations filtered by type, status, and search term
+ */
 export const selectFilteredIntegrations = createSelector(
   [selectIntegrations, selectFilters],
   (integrations, filters) => {
@@ -558,11 +930,23 @@ export const selectFilteredIntegrations = createSelector(
   }
 );
 
+/**
+ * Memoized selector for active integrations only
+ *
+ * @function selectActiveIntegrations
+ * @returns {IntegrationConfig[]} Only active integrations
+ */
 export const selectActiveIntegrations = createSelector(
   [selectIntegrations],
   (integrations) => integrations.filter(i => i.isActive)
 );
 
+/**
+ * Memoized selector for integrations grouped by type
+ *
+ * @function selectIntegrationsByType
+ * @returns {Record<IntegrationType, IntegrationConfig[]>} Integrations grouped by type
+ */
 export const selectIntegrationsByType = createSelector(
   [selectIntegrations],
   (integrations) => {
@@ -577,15 +961,21 @@ export const selectIntegrationsByType = createSelector(
   }
 );
 
+/**
+ * Memoized selector for integration health metrics
+ *
+ * @function selectIntegrationMetrics
+ * @returns {Object} Metrics including total, active, healthy, errors, and health rate
+ */
 export const selectIntegrationMetrics = createSelector(
   [selectIntegrations, selectConnectionTests, selectSyncResults],
   (integrations, connectionTests, syncResults) => {
     const total = integrations.length;
     const active = integrations.filter(i => i.isActive).length;
-    const healthy = integrations.filter(i => 
+    const healthy = integrations.filter(i =>
       i.isActive && i.status === 'ACTIVE' && i.lastSyncStatus === 'success'
     ).length;
-    const errors = integrations.filter(i => 
+    const errors = integrations.filter(i =>
       i.status === 'ERROR' || i.lastSyncStatus === 'failed'
     ).length;
 
@@ -599,11 +989,23 @@ export const selectIntegrationMetrics = createSelector(
   }
 );
 
+/**
+ * Memoized selector for recent logs (last 10)
+ *
+ * @function selectRecentLogs
+ * @returns {IntegrationLog[]} Most recent 10 logs
+ */
 export const selectRecentLogs = createSelector(
   [selectLogs],
-  (logs) => logs.slice(0, 10) // Recent 10 logs
+  (logs) => logs.slice(0, 10)
 );
 
+/**
+ * Memoized selector for critical logs (failed or with errors)
+ *
+ * @function selectCriticalLogs
+ * @returns {IntegrationLog[]} Logs with failed status or error messages
+ */
 export const selectCriticalLogs = createSelector(
   [selectLogs],
   (logs) => logs.filter(log => log.status === 'failed' || log.errorMessage)

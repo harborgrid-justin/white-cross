@@ -1,13 +1,123 @@
 /**
- * WF-COMP-291 | reportsApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils, ../utils/apiUtils
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Healthcare Analytics and Reporting API service
+ * @module services/modules/reportsApi
+ * @category Services - Analytics & Reporting
+ *
+ * Provides comprehensive healthcare analytics, reporting, and data visualization
+ * capabilities for the White Cross platform. Implements health trend analysis,
+ * medication usage tracking, incident statistics, custom report generation, and
+ * HIPAA-compliant data aggregation.
+ *
+ * Key Features:
+ * - Health trend analysis and pattern recognition
+ * - Medication usage and compliance reporting
+ * - Incident statistics and safety analytics
+ * - Attendance correlation with health data
+ * - Performance metrics tracking
+ * - Real-time dashboard data aggregation
+ * - Custom report builder with templates
+ * - Report scheduling and automation
+ * - Multi-format export (CSV, PDF, Excel, JSON)
+ * - Report sharing and distribution
+ * - Historical report archive
+ *
+ * Health Trend Analysis:
+ * - Chronic condition tracking over time
+ * - Seasonal illness pattern detection
+ * - Immunization coverage analysis
+ * - Allergy prevalence statistics
+ * - Health screenings compliance tracking
+ * - Emergency visit frequency analysis
+ *
+ * Medication Reporting:
+ * - Medication administration compliance rates
+ * - Controlled substance tracking and reconciliation
+ * - Medication error incident analysis
+ * - Stock level and usage forecasting
+ * - Prescription refill tracking
+ * - Adverse drug event monitoring
+ *
+ * Incident Statistics:
+ * - Incident type distribution analysis
+ * - Location-based incident patterns
+ * - Time-of-day incident correlation
+ * - Severity trend analysis
+ * - Follow-up completion rates
+ * - Recurring incident identification
+ *
+ * Compliance Reporting:
+ * - HIPAA compliance score calculation
+ * - Consent form completion tracking
+ * - Policy acknowledgment rates
+ * - Audit log completeness verification
+ * - Training completion statistics
+ * - Documentation quality metrics
+ *
+ * Custom Report Builder:
+ * - Drag-and-drop report designer
+ * - Reusable report templates
+ * - Custom field selection
+ * - Filter and grouping configuration
+ * - Chart type selection (bar, line, pie, scatter)
+ * - Scheduled report generation
+ * - Email distribution lists
+ *
+ * Data Aggregation:
+ * - De-identified health data aggregation for analytics
+ * - HIPAA-compliant data anonymization
+ * - No PHI in exported reports without authorization
+ * - Aggregate statistics across schools and districts
+ * - Year-over-year comparison reporting
+ *
+ * @example Generate health trends report
+ * ```typescript
+ * import { reportsApi } from '@/services/modules/reportsApi';
+ *
+ * const trends = await reportsApi.getHealthTrends({
+ *   startDate: '2024-09-01',
+ *   endDate: '2025-06-01',
+ *   schoolId: 'school-uuid-123'
+ * });
+ * console.log(`Total health visits: ${trends.summary.totalVisits}`);
+ * console.log(`Top diagnosis: ${trends.topDiagnoses[0].code}`);
+ * ```
+ *
+ * @example Create custom report
+ * ```typescript
+ * const customReport = await reportsApi.generateCustomReport({
+ *   name: 'Monthly Medication Compliance',
+ *   dataSource: 'MEDICATION_ADMINISTRATION',
+ *   fields: ['studentName', 'medicationName', 'complianceRate'],
+ *   filters: { schoolId: 'school-123', month: 'JANUARY' },
+ *   groupBy: ['medicationName'],
+ *   chartType: 'BAR'
+ * });
+ * console.log(`Report generated: ${customReport.id}`);
+ * ```
+ *
+ * @example Schedule automated report
+ * ```typescript
+ * const scheduled = await reportsApi.scheduleReport({
+ *   templateId: 'template-uuid-456',
+ *   frequency: 'WEEKLY',
+ *   dayOfWeek: 'FRIDAY',
+ *   recipients: ['principal@school.edu', 'nurse@school.edu'],
+ *   format: 'PDF'
+ * });
+ * console.log(`Report scheduled with ID: ${scheduled.id}`);
+ * ```
+ *
+ * @example Export report to Excel
+ * ```typescript
+ * const blob = await reportsApi.exportReport({
+ *   reportId: 'report-uuid-789',
+ *   format: 'XLSX'
+ * });
+ * // Download blob as Excel file
+ * ```
+ *
+ * @see {@link dashboardApi} for real-time dashboard metrics
+ * @see {@link complianceApi} for compliance-specific reports
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';

@@ -1,24 +1,32 @@
 /**
- * WF-COMP-096 | StudentDetailsModal.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react, @/types/student.types
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Student Details Modal Component
- * Displays detailed student information including emergency contacts and medical info
+ * Student Details Modal Component - White Cross Healthcare Platform
+ *
+ * Comprehensive student details viewer modal displaying demographic information,
+ * emergency contacts, and critical medical alerts. Provides quick access to essential
+ * student data without navigating away from the main student list.
+ *
+ * @fileoverview FERPA-compliant student details modal with PHI warnings
+ * @module pages/students/components/modals/StudentDetailsModal
+ * @version 1.0.0
  */
 
 import React from 'react'
 import { X } from 'lucide-react'
 import { Student, getPrimaryContact } from '@/types/student.types'
 
+/**
+ * Props for the StudentDetailsModal component.
+ *
+ * @interface StudentDetailsModalProps
+ * @property {boolean} show - Controls modal visibility
+ * @property {Student | null} student - Student record to display, or null if no student selected
+ * @property {() => void} onClose - Callback when modal is closed
+ * @property {() => void} onEditEmergencyContact - Callback when user clicks to edit emergency contact
+ *
+ * @remarks
+ * **PHI Display**: Modal displays critical medical information (allergies, medications).
+ * Ensure proper access controls and audit logging are in place.
+ */
 interface StudentDetailsModalProps {
   show: boolean
   student: Student | null
@@ -26,6 +34,108 @@ interface StudentDetailsModalProps {
   onEditEmergencyContact: () => void
 }
 
+/**
+ * Student Details Modal Component.
+ *
+ * Full-page modal displaying comprehensive student information organized into sections:
+ * basic demographics, emergency contacts with inline editing, and critical medical alerts
+ * for allergies and medications. Enables quick reference without leaving the student list.
+ *
+ * @component
+ * @param {StudentDetailsModalProps} props - Component props
+ * @returns {React.ReactElement | null} Rendered modal or null when not shown or no student
+ *
+ * @example
+ * ```tsx
+ * import { StudentDetailsModal } from './modals/StudentDetailsModal';
+ *
+ * function StudentList() {
+ *   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+ *   const [showDetailsModal, setShowDetailsModal] = useState(false);
+ *   const [showContactModal, setShowContactModal] = useState(false);
+ *
+ *   const handleRowClick = (student: Student) => {
+ *     setSelectedStudent(student);
+ *     setShowDetailsModal(true);
+ *   };
+ *
+ *   return (
+ *     <>
+ *       <StudentTable students={students} onRowClick={handleRowClick} />
+ *       <StudentDetailsModal
+ *         show={showDetailsModal}
+ *         student={selectedStudent}
+ *         onClose={() => setShowDetailsModal(false)}
+ *         onEditEmergencyContact={() => {
+ *           setShowDetailsModal(false);
+ *           setShowContactModal(true);
+ *         }}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Information Sections**:
+ *
+ * 1. **Basic Information** (FERPA-protected):
+ *    - Student ID/Number
+ *    - Grade Level
+ *    - Date of Birth
+ *    - Gender
+ *
+ * 2. **Emergency Contact** (Critical for Safety):
+ *    - Primary contact name, phone, relationship
+ *    - Inline "Edit" button for quick updates
+ *    - Typically parent or legal guardian
+ *
+ * 3. **Medical Information** (PHI - HIPAA-protected):
+ *    - Critical Allergies: Red alert boxes with allergen and severity
+ *    - Medications: Blue information boxes with medication name and dosage
+ *    - Visual color coding for quick recognition
+ *
+ * **FERPA Compliance**:
+ * - All student demographic data is educational record under FERPA
+ * - Access restricted to school officials with legitimate educational interest
+ * - Modal view should be audit logged for compliance tracking
+ *
+ * **PHI Handling**:
+ * - Allergies and medications are Protected Health Information under HIPAA
+ * - Access requires NURSE, ADMIN, or COUNSELOR role
+ * - All PHI views must be logged with user, timestamp, and reason
+ * - Color-coded alerts (red for allergies, blue for medications) for quick recognition
+ *
+ * **Emergency Contact Management**:
+ * - Displays primary contact (highest priority) from emergencyContacts array
+ * - Uses getPrimaryContact() utility to find primary contact
+ * - "Edit" button opens EmergencyContactModal for inline editing
+ * - Contact updates critical for emergency response readiness
+ *
+ * **Medical Alerts**:
+ * - **Critical Allergies**: Prominently displayed in red for immediate visibility
+ * - **Medications**: Listed for awareness of ongoing treatments
+ * - Severity levels shown for allergies (MILD, MODERATE, SEVERE, LIFE_THREATENING)
+ * - Dosage information shown for medications
+ * - Essential for school nurses and emergency responders
+ *
+ * **Accessibility**:
+ * - Close button with X icon and aria-label
+ * - Test IDs for automated testing
+ * - Color-coded sections with semantic meaning
+ * - Clear visual hierarchy
+ *
+ * **UI/UX Features**:
+ * - Two-thirds width modal for comfortable reading
+ * - Grid layout for organized information display
+ * - Inline emergency contact editing without closing modal
+ * - Color-coded medical alerts for quick recognition
+ * - Empty states handled gracefully (no contacts, no medical info)
+ *
+ * @see {@link EmergencyContactModal} for emergency contact editing
+ * @see {@link Student} for student data model
+ * @see {@link getPrimaryContact} for contact prioritization utility
+ */
 export const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
   show,
   student,

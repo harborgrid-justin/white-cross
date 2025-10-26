@@ -1,13 +1,12 @@
 /**
- * WF-COMP-091 | StudentHealthRecord.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../contexts/AuthContext, ../services/api | Dependencies: react-router-dom, lucide-react, ../contexts/AuthContext
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: useState, useEffect, functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Student Health Record Component - White Cross Healthcare Platform
+ *
+ * @fileoverview Comprehensive student health record viewer with HIPAA-compliant
+ * access controls, audit logging, and sensitive data warnings. Implements a
+ * two-stage access confirmation flow for sensitive health records.
+ *
+ * @module pages/students/components/StudentHealthRecord
+ * @version 1.0.0
  */
 
 import React, { useState, useEffect } from 'react'
@@ -16,8 +15,69 @@ import { Shield, AlertTriangle, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../../../contexts/AuthContext'
 import { healthRecordsApi } from '../../../../services/api'
 
+/**
+ * Props for the StudentHealthRecord component.
+ *
+ * @interface StudentHealthRecordProps
+ *
+ * @remarks
+ * Currently empty as all required data is extracted from URL params and auth context.
+ * Future enhancements may include optional props for pre-loaded student data.
+ */
 interface StudentHealthRecordProps {}
 
+/**
+ * Student Health Record Component.
+ *
+ * HIPAA-compliant health record viewer with comprehensive access controls and
+ * audit logging. Implements a two-stage confirmation flow for sensitive records
+ * and automatically logs all PHI access attempts.
+ *
+ * @component
+ * @returns {React.ReactElement} Rendered health record viewer with appropriate access controls
+ *
+ * @remarks
+ * HIPAA Compliance Features:
+ * - All access attempts are logged to audit trail via `healthRecordsApi.logAccess()`
+ * - Sensitive records require explicit user confirmation before viewing
+ * - Restricted records trigger automatic redirect to access denied page
+ * - User role and access type are recorded in audit log
+ * - Confirmation modal displays HIPAA access requirements
+ *
+ * Access Control Levels:
+ * 1. **Restricted**: User lacks permissions → Redirect to /access-denied
+ * 2. **Sensitive**: Requires confirmation → Show warning modal with HIPAA notice
+ * 3. **Standard**: Normal access → Load and display immediately
+ *
+ * State Management:
+ * - `loading`: Indicates initial data fetch in progress
+ * - `showSensitiveWarning`: Controls sensitive data confirmation modal
+ * - `hasConfirmedAccess`: Tracks whether user has confirmed sensitive access
+ *
+ * Route Parameters:
+ * - `studentId`: Extracted from URL params, identifies the student record to display
+ *
+ * Security:
+ * - Access logging happens immediately on component mount
+ * - Restricted records detected by ID pattern (e.g., "restricted-*")
+ * - Sensitive records detected by ID pattern (e.g., "sensitive-*")
+ * - Real implementations should use API-driven permission checks
+ *
+ * @example
+ * ```tsx
+ * // Route configuration
+ * <Route
+ *   path="/health-records/student/:studentId"
+ *   element={<StudentHealthRecord />}
+ * />
+ *
+ * // Navigation
+ * navigate(`/health-records/student/${studentId}`);
+ * ```
+ *
+ * @see {@link healthRecordsApi.logAccess} for audit logging API
+ * @see {@link healthRecordsApi.getStudentHealthRecords} for data fetching API
+ */
 export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
   const { studentId } = useParams<{ studentId: string }>()
   const { user } = useAuth()
@@ -26,6 +86,23 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
   const [hasConfirmedAccess, setHasConfirmedAccess] = useState(false)
 
   useEffect(() => {
+    /**
+     * Logs the PHI access attempt to the audit trail.
+     *
+     * @async
+     * @function logAccessAttempt
+     * @returns {Promise<void>} Promise that resolves when access is logged
+     *
+     * @remarks
+     * HIPAA Requirement: All PHI access must be logged with:
+     * - User ID and role
+     * - Student ID being accessed
+     * - Timestamp
+     * - Access type (DIRECT_ACCESS, API_ACCESS, etc.)
+     * - Resource type (HEALTH_RECORD, MEDICATION, etc.)
+     *
+     * Logs are sent to backend audit service and stored for compliance reporting.
+     */
     const logAccessAttempt = async () => {
       try {
         await healthRecordsApi.logAccess({
@@ -47,7 +124,7 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
     if (studentId) {
       // Log access attempt
       logAccessAttempt()
-      
+
       // Check if this is a restricted record (should redirect to access denied)
       if (studentId.includes('restricted')) {
         // This should be handled by the route configuration in App.tsx
@@ -55,7 +132,7 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
         window.location.href = `/access-denied?studentId=${studentId}&resource=student records&reason=insufficient permissions`
         return
       }
-      
+
       // Check if this is a sensitive record
       if (studentId.includes('sensitive')) {
         setShowSensitiveWarning(true)
@@ -65,6 +142,21 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
     }
   }, [studentId, user?.role])
 
+  /**
+   * Handles user confirmation to access sensitive health record.
+   *
+   * @async
+   * @function handleConfirmAccess
+   * @returns {Promise<void>} Promise that resolves when access is granted
+   *
+   * @remarks
+   * Fetches the sensitive health record data from the API after user confirmation.
+   * On success, hides the warning modal and displays the record.
+   * On failure, still allows access to prevent user frustration (should be enhanced
+   * to properly handle errors in production).
+   *
+   * Access confirmation is itself an auditable event that should be logged.
+   */
   const handleConfirmAccess = async () => {
     try {
       // Make API call to get sensitive record (this will be intercepted by Cypress)
@@ -82,6 +174,16 @@ export const StudentHealthRecord: React.FC<StudentHealthRecordProps> = () => {
     }
   }
 
+  /**
+   * Handles user cancellation of sensitive access.
+   *
+   * @function handleCancelAccess
+   * @returns {void}
+   *
+   * @remarks
+   * Navigates back to previous page when user declines to access sensitive record.
+   * Access cancellation should ideally be logged for audit purposes.
+   */
   const handleCancelAccess = () => {
     window.history.back()
   }
