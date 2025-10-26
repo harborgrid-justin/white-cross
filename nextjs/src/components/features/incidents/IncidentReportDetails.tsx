@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Incident Report Details - View comprehensive incident information
  * @module components/features/incidents/IncidentReportDetails

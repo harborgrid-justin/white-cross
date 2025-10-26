@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * QuickActionsWidget Component - Common Action Buttons
  *

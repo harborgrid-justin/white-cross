@@ -11,7 +11,15 @@
  */
 
 import { AxiosResponse, AxiosError } from 'axios';
-import moment from 'moment';
+import {
+  formatISO,
+  parseISO,
+  isValid,
+  format,
+  isBefore,
+  differenceInMilliseconds,
+  addMilliseconds
+} from 'date-fns';
 import debug from 'debug';
 
 const log = debug('whitecross:api-utils');
@@ -147,37 +155,47 @@ export const buildPaginationParams = (
   return buildUrlParams(params);
 };
 
-// Date formatting utilities with moment integration
-export const formatDateForApi = (date: Date | string | moment.Moment): string => {
+// Date formatting utilities with date-fns
+export const formatDateForApi = (date: Date | string): string => {
   try {
-    if (moment.isMoment(date)) {
-      return date.toISOString();
-    }
-
     if (typeof date === 'string') {
-      // Validate if it's already a valid ISO string
-      if (moment(date, moment.ISO_8601, true).isValid()) {
-        return date;
+      // Try to parse as ISO string first
+      const parsed = parseISO(date);
+      if (isValid(parsed)) {
+        return formatISO(parsed);
       }
-      return moment(date).toISOString();
+      // If not valid ISO, try as Date constructor
+      const fallback = new Date(date);
+      if (isValid(fallback)) {
+        return formatISO(fallback);
+      }
+      throw new Error('Invalid date format');
     }
 
     if (date instanceof Date) {
-      return moment(date).toISOString();
+      if (isValid(date)) {
+        return formatISO(date);
+      }
+      throw new Error('Invalid date');
     }
 
     throw new Error('Invalid date format');
   } catch (error) {
     log('Error formatting date for API:', error);
-    return moment().toISOString(); // Fallback to current time
+    return formatISO(new Date()); // Fallback to current time
   }
 };
 
 export const parseDateFromApi = (dateString: string): Date => {
   try {
-    const momentDate = moment(dateString);
-    if (momentDate.isValid()) {
-      return momentDate.toDate();
+    const parsedDate = parseISO(dateString);
+    if (isValid(parsedDate)) {
+      return parsedDate;
+    }
+    // Fallback: try Date constructor
+    const fallback = new Date(dateString);
+    if (isValid(fallback)) {
+      return fallback;
     }
     throw new Error('Invalid date string');
   } catch (error) {
@@ -187,45 +205,60 @@ export const parseDateFromApi = (dateString: string): Date => {
 };
 
 // Enhanced date utilities
-export const formatDateForDisplay = (date: Date | string | moment.Moment): string => {
+export const formatDateForDisplay = (date: Date | string): string => {
   try {
-    return moment(date).format('MMM DD, YYYY');
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    if (isValid(dateObj)) {
+      return format(dateObj, 'MMM dd, yyyy');
+    }
+    return 'Invalid Date';
   } catch (error) {
     log('Error formatting date for display:', error);
     return 'Invalid Date';
   }
 };
 
-export const formatDateTimeForDisplay = (date: Date | string | moment.Moment): string => {
+export const formatDateTimeForDisplay = (date: Date | string): string => {
   try {
-    return moment(date).format('MMM DD, YYYY HH:mm');
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    if (isValid(dateObj)) {
+      return format(dateObj, 'MMM dd, yyyy HH:mm');
+    }
+    return 'Invalid Date';
   } catch (error) {
     log('Error formatting datetime for display:', error);
     return 'Invalid Date';
   }
 };
 
-export const isDateExpired = (date: Date | string | moment.Moment): boolean => {
+export const isDateExpired = (date: Date | string): boolean => {
   try {
-    return moment(date).isBefore(moment());
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    if (isValid(dateObj)) {
+      return isBefore(dateObj, new Date());
+    }
+    return false;
   } catch (error) {
     log('Error checking if date is expired:', error);
     return false;
   }
 };
 
-export const getTimeUntilExpiry = (date: Date | string | moment.Moment): string => {
+export const getTimeUntilExpiry = (date: Date | string): string => {
   try {
-    const expiry = moment(date);
-    const now = moment();
-    const diff = expiry.diff(now);
+    const expiryDate = typeof date === 'string' ? parseISO(date) : date;
+    if (!isValid(expiryDate)) {
+      return 'Unknown';
+    }
+
+    const now = new Date();
+    const diff = differenceInMilliseconds(expiryDate, now);
 
     if (diff <= 0) return 'Expired';
 
-    const duration = moment.duration(diff);
-    const days = Math.floor(duration.asDays());
-    const hours = Math.floor(duration.asHours()) % 24;
-    const minutes = Math.floor(duration.asMinutes()) % 60;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (days > 0) return `${days}d ${hours}h`;
     if (hours > 0) return `${hours}h ${minutes}m`;

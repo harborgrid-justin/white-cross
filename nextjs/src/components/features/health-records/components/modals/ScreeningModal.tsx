@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ScreeningModal.tsx - Modal for health screenings
  * Purpose: Create and edit health screening records

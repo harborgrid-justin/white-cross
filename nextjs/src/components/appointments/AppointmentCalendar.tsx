@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Appointment Calendar Component
  * @module components/appointments/AppointmentCalendar

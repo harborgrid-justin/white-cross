@@ -54,3 +54,4 @@
 export { Badge, type BadgeProps } from './Badge';
 export { Avatar, AvatarGroup, type AvatarProps } from './Avatar';
 export { StatsCard, type StatsCardProps } from './StatsCard';
+export { Accordion, AccordionItem, type AccordionProps, type AccordionItemProps } from './Accordion';

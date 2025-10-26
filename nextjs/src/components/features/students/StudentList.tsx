@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { DataTable, DataTableColumn } from '../shared/DataTable';
 import { BulkActionBar } from '../shared/BulkActionBar';

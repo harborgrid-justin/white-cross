@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * RecordsTab Component - Health Records List View
  *

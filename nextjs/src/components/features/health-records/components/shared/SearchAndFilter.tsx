@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * SearchAndFilter Component - Search input with filter and sort controls
  *

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * AlertsWidget Component - Critical Alerts Display
  *

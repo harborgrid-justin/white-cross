@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Custom Report Builder Component
  * Drag-and-drop interface for building custom reports

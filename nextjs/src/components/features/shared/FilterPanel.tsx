@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/buttons/Button';
 import { Card } from '@/components/ui/layout/Card';

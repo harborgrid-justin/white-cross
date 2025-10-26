@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/buttons/Button';
 import { Badge } from '@/components/ui/display/Badge';

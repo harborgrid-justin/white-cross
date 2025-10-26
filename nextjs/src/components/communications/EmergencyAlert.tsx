@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Emergency Alert Component
  *

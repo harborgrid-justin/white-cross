@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Heat Map Chart Component
  *

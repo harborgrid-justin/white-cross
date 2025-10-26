@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Analytics Dashboard Component
  * Main dashboard with customizable widgets

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Communication Hub - Multi-tab interface for messaging
  * @module components/features/communication/CommunicationHub

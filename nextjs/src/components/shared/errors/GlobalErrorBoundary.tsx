@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-ERROR-001 | GlobalErrorBoundary.tsx - Application-wide Error Boundary
  * Purpose: Catch and handle React errors gracefully with audit logging

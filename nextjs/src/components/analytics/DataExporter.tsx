@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Data Exporter Component
  * Export analytics data in multiple formats

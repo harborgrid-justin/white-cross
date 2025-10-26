@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Create Incident Report - Multi-step form for new incidents
  * @module components/features/incidents/CreateIncidentReport

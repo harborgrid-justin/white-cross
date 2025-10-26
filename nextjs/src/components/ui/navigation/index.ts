@@ -17,3 +17,18 @@ export {
 
 // Additional navigation components
 export { Pagination, type PaginationProps } from './Pagination';
+export {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuDivider,
+  type DropdownMenuProps,
+  type DropdownMenuItemProps,
+  type DropdownMenuDividerProps,
+  type MenuItemVariant
+} from './DropdownMenu';
+export {
+  CommandPalette,
+  type CommandPaletteProps,
+  type Command,
+  type CommandGroup
+} from './CommandPalette';

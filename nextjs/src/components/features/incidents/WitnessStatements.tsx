@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Witness Statements - Manage witness statements for incident
  * @module components/features/incidents/WitnessStatements

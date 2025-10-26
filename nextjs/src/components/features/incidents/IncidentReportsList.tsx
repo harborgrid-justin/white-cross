@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Incident Reports List - Main incident management interface
  * @module components/features/incidents/IncidentReportsList

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * VitalSignsModal.tsx - Modal for recording vital signs
  * Purpose: Create and edit vital signs records

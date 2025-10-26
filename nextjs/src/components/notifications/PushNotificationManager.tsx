@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Push Notification Manager Component
  *

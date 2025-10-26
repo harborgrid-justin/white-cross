@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-010 | CommunicationComposeTab.tsx - React component or utility module
  * Purpose: react component or utility module

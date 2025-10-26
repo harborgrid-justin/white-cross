@@ -14,4 +14,6 @@ export { SearchInput } from './SearchInput';
 
 // Additional input components
 export { DatePicker, type DatePickerProps } from './DatePicker';
+export { TimePicker, type TimePickerProps, type TimeFormat } from './TimePicker';
 export { FileUpload, type FileUploadProps, type UploadedFile } from './FileUpload';
+export { Combobox, type ComboboxProps, type ComboboxOption } from './Combobox';

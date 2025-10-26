@@ -20,7 +20,7 @@ import { useWitnessStatements } from '@/hooks/domains/incidents';
 import { Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from '@/components/ui/overlays/Modal';
 import { Button } from '@/components/ui/buttons/Button';
 import { Badge } from '@/components/ui/display/Badge';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import WitnessStatementForm from './WitnessStatementForm';
 import {
   User,

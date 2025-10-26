@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Stacked Bar Chart Component
  *

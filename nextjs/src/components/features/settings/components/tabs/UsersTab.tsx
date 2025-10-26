@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * UsersTab Component - User Management for Admin Settings
  *
