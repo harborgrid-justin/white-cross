@@ -86,6 +86,8 @@ import { ConsentForm } from './compliance/ConsentForm';
 import { ConsentSignature } from './compliance/ConsentSignature';
 import { PolicyDocument } from './compliance/PolicyDocument';
 import { PolicyAcknowledgment } from './compliance/PolicyAcknowledgment';
+import PHIDisclosure from './compliance/PHIDisclosure';
+import PHIDisclosureAudit from './compliance/PHIDisclosureAudit';
 
 // ============ SECURITY MODELS ============
 import { Role } from './security/Role';
@@ -96,6 +98,7 @@ import { Session } from './security/Session';
 import { LoginAttempt } from './security/LoginAttempt';
 import { SecurityIncident } from './security/SecurityIncident';
 import { IpRestriction } from './security/IpRestriction';
+import EncryptionKey from './security/EncryptionKey';
 
 // ============ COMMUNICATION MODELS ============
 import { MessageTemplate } from './communication/MessageTemplate';
@@ -121,6 +124,21 @@ import { PerformanceMetric } from './administration/PerformanceMetric';
 import { License } from './administration/License';
 import { TrainingModule } from './administration/TrainingModule';
 import { TrainingCompletion } from './administration/TrainingCompletion';
+
+// ============ ALERTS MODELS ============
+import AlertInstance from './alerts/AlertInstance';
+import AlertDefinition from './alerts/AlertDefinition';
+import AlertSubscription from './alerts/AlertSubscription';
+import AlertDeliveryLog from './alerts/AlertDeliveryLog';
+
+// ============ CLINICAL MODELS ============
+import DrugCatalog from './clinical/DrugCatalog';
+import DrugInteraction from './clinical/DrugInteraction';
+import StudentDrugAllergy from './clinical/StudentDrugAllergy';
+import ClinicVisit from './clinical/ClinicVisit';
+
+// ============ FINANCIAL MODELS ============
+import BillingClaim from './financial/BillingClaim';
 
 /**
  * Define all model associations
@@ -442,6 +460,50 @@ export function setupAssociations() {
 
   // ============ TRAINING COMPLETION ASSOCIATIONS (lines 1380-1382 in Prisma) ============
   TrainingCompletion.belongsTo(TrainingModule, { foreignKey: 'moduleId', as: 'module' });
+
+  // ============ PHI DISCLOSURE ASSOCIATIONS (Feature 30) ============
+  PHIDisclosure.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  PHIDisclosure.belongsTo(User, { foreignKey: 'disclosedBy', as: 'discloser' });
+  PHIDisclosure.hasMany(PHIDisclosureAudit, { foreignKey: 'disclosureId', as: 'auditTrail', onDelete: 'CASCADE' });
+
+  PHIDisclosureAudit.belongsTo(PHIDisclosure, { foreignKey: 'disclosureId', as: 'disclosure' });
+
+  // ============ ALERT ASSOCIATIONS (Feature 26) ============
+  AlertDefinition.hasMany(AlertInstance, { foreignKey: 'definitionId', as: 'instances' });
+
+  AlertInstance.belongsTo(AlertDefinition, { foreignKey: 'definitionId', as: 'definition' });
+  AlertInstance.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  AlertInstance.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+  AlertInstance.hasMany(AlertDeliveryLog, { foreignKey: 'alertId', as: 'deliveryLogs', onDelete: 'CASCADE' });
+
+  AlertSubscription.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+  AlertDeliveryLog.belongsTo(AlertInstance, { foreignKey: 'alertId', as: 'alert' });
+
+  // ============ DRUG CATALOG ASSOCIATIONS (Feature 48) ============
+  DrugCatalog.hasMany(DrugInteraction, { foreignKey: 'drug1Id', as: 'interactionsAs Drug1' });
+  DrugCatalog.hasMany(DrugInteraction, { foreignKey: 'drug2Id', as: 'interactionsAsDrug2' });
+  DrugCatalog.hasMany(StudentDrugAllergy, { foreignKey: 'drugId', as: 'allergies' });
+
+  DrugInteraction.belongsTo(DrugCatalog, { foreignKey: 'drug1Id', as: 'drug1' });
+  DrugInteraction.belongsTo(DrugCatalog, { foreignKey: 'drug2Id', as: 'drug2' });
+
+  StudentDrugAllergy.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  StudentDrugAllergy.belongsTo(DrugCatalog, { foreignKey: 'drugId', as: 'drug' });
+
+  // ============ CLINIC VISIT ASSOCIATIONS (Feature 17) ============
+  ClinicVisit.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+  ClinicVisit.belongsTo(User, { foreignKey: 'attendedBy', as: 'nurse' });
+
+  Student.hasMany(ClinicVisit, { foreignKey: 'studentId', as: 'clinicVisits', onDelete: 'CASCADE' });
+  Student.hasMany(PHIDisclosure, { foreignKey: 'studentId', as: 'phiDisclosures', onDelete: 'CASCADE' });
+  Student.hasMany(AlertInstance, { foreignKey: 'studentId', as: 'alerts', onDelete: 'CASCADE' });
+  Student.hasMany(StudentDrugAllergy, { foreignKey: 'studentId', as: 'drugAllergies', onDelete: 'CASCADE' });
+
+  User.hasMany(ClinicVisit, { foreignKey: 'attendedBy', as: 'clinicVisitsAttended' });
+  User.hasMany(PHIDisclosure, { foreignKey: 'disclosedBy', as: 'phiDisclosures' });
+  User.hasMany(AlertInstance, { foreignKey: 'createdBy', as: 'createdAlerts' });
+  User.hasMany(AlertSubscription, { foreignKey: 'userId', as: 'alertSubscriptions' });
 }
 
 // Initialize associations
@@ -525,6 +587,23 @@ export {
   License,
   TrainingModule,
   TrainingCompletion,
+  // Compliance models (Phase 2)
+  PHIDisclosure,
+  PHIDisclosureAudit,
+  // Security models (Phase 2)
+  EncryptionKey,
+  // Alerts models (Phase 2)
+  AlertInstance,
+  AlertDefinition,
+  AlertSubscription,
+  AlertDeliveryLog,
+  // Clinical models (Phase 2)
+  DrugCatalog,
+  DrugInteraction,
+  StudentDrugAllergy,
+  ClinicVisit,
+  // Financial models (Phase 2)
+  BillingClaim,
 };
 
 export default sequelize;
