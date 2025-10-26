@@ -17,7 +17,12 @@
 
 import { ResponseToolkit } from '@hapi/hapi';
 import Boom from '@hapi/boom';
-import { EmergencyContactService } from '../../../../services/emergencyContactService';
+import {
+  EmergencyContactService,
+  CreateEmergencyContactData,
+  UpdateEmergencyContactData,
+  NotificationData
+} from '../../../../services/emergencyContactService';
 import { AuthenticatedRequest } from '../../../shared/types/route.types';
 import {
   successResponse,
@@ -127,7 +132,8 @@ export class EmergencyContactsController {
    * // Returns: { contact: { id: 'contact-uuid', firstName: 'Jane', ... } }
    */
   static async create(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const contact = await EmergencyContactService.createEmergencyContact(request.payload);
+    const payload = request.payload as CreateEmergencyContactData;
+    const contact = await EmergencyContactService.createEmergencyContact(payload);
 
     return createdResponse(h, { contact });
   }
@@ -182,7 +188,8 @@ export class EmergencyContactsController {
    */
   static async update(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const contact = await EmergencyContactService.updateEmergencyContact(id, request.payload);
+    const payload = request.payload as UpdateEmergencyContactData;
+    const contact = await EmergencyContactService.updateEmergencyContact(id, payload);
 
     return successResponse(h, { contact });
   }
@@ -293,9 +300,10 @@ export class EmergencyContactsController {
    */
   static async sendEmergencyNotification(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { studentId } = request.params;
+    const payload = request.payload as NotificationData;
     const results = await EmergencyContactService.sendEmergencyNotification(
       studentId,
-      request.payload
+      payload
     );
 
     return successResponse(h, { results });
@@ -347,9 +355,10 @@ export class EmergencyContactsController {
    */
   static async sendContactNotification(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
+    const payload = request.payload as NotificationData;
     const result = await EmergencyContactService.sendContactNotification(
       id,
-      request.payload
+      payload
     );
 
     return successResponse(h, { result });
@@ -408,7 +417,8 @@ export class EmergencyContactsController {
    */
   static async verifyContact(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const { method } = request.payload;
+    const payload = request.payload as { method: 'sms' | 'email' | 'voice' };
+    const { method } = payload;
 
     const result = await EmergencyContactService.verifyContact(id, method);
 
