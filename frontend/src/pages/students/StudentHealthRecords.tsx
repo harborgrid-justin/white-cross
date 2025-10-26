@@ -1,9 +1,74 @@
 /**
  * Student Health Records Page - White Cross Healthcare Platform
  *
+ * Comprehensive health records management system providing complete electronic health
+ * record (EHR) functionality for school nurses to track and manage student health data.
+ *
+ * **Features:**
+ * - Multi-tab interface for different record types (all, allergies, conditions, vaccinations, vital signs, growth, screenings)
+ * - Complete CRUD operations for all health record types
+ * - TanStack Query integration for real-time data synchronization
+ * - Delete confirmation with audit trail
+ * - Severity and status badge visualization
+ * - Responsive table layouts with empty states
+ * - URL-based tab state persistence
+ *
+ * **Health Record Types:**
+ * - **All Records**: Complete health visit history
+ * - **Allergies**: Allergen tracking with severity and reaction details
+ * - **Conditions**: Chronic condition monitoring with care plans
+ * - **Vaccinations**: Immunization tracking with lot numbers and administration details
+ * - **Vital Signs**: Blood pressure, temperature, heart rate, O2 saturation
+ * - **Growth**: Height, weight, BMI measurements over time
+ * - **Screenings**: Vision, hearing, dental, and general health screenings
+ *
+ * **Data Management:**
+ * - TanStack Query for server state management
+ * - Optimistic updates for responsive UX
+ * - Automatic cache invalidation on mutations
+ * - Real-time data synchronization
+ *
  * @fileoverview Comprehensive health records management with HIPAA compliance
  * @module pages/students/StudentHealthRecords
  * @version 2.0.0
+ *
+ * @component
+ * @returns {React.FC} Student health records page component
+ *
+ * @example
+ * ```tsx
+ * // Used in routing with student ID parameter
+ * <Route path="/health-records/student/:studentId" element={<StudentHealthRecords />} />
+ * ```
+ *
+ * @remarks
+ * **HIPAA Compliance**: This component handles Protected Health Information (PHI).
+ * All data access must be audited and logged for compliance purposes.
+ *
+ * **Access Control**: Requires NURSE, ADMIN, or COUNSELOR role to access health records.
+ * Implement role-based access control before rendering sensitive data.
+ *
+ * **Audit Logging**: All view, create, update, and delete operations on health records
+ * must be logged with user ID, timestamp, and action type.
+ *
+ * **Data Encryption**: Health record data must be encrypted in transit (HTTPS) and
+ * at rest in the database.
+ *
+ * **Critical Allergies**: Life-threatening allergies display prominent warnings.
+ * Nurses must review critical allergy information before medication administration.
+ *
+ * **Vaccination Compliance**: Track vaccination status against state requirements.
+ * Generate compliance reports for school enrollment verification.
+ *
+ * **Growth Tracking**: BMI calculations follow CDC growth chart standards.
+ * Flag abnormal growth patterns for nurse review.
+ *
+ * **Screening Outcomes**: Failed screenings trigger follow-up workflows.
+ * Parent notification required for screening referrals.
+ *
+ * @see {@link useHealthRecords} for data fetching hook
+ * @see {@link healthRecordsApi} for API integration
+ * @since 1.0.0
  */
 
 import React, { useState } from 'react';
@@ -80,12 +145,55 @@ import type {
 // TYPES
 // ============================================================================
 
+/**
+ * Valid tab values for health records navigation.
+ *
+ * @typedef {string} TabValue
+ *
+ * @property {'all'} all - All health records and visit history
+ * @property {'allergies'} allergies - Allergy information with severity levels
+ * @property {'conditions'} conditions - Chronic health conditions and care plans
+ * @property {'vaccinations'} vaccinations - Immunization records and compliance tracking
+ * @property {'vital-signs'} vital-signs - Blood pressure, temperature, heart rate measurements
+ * @property {'growth'} growth - Height, weight, BMI tracking over time
+ * @property {'screenings'} screenings - Vision, hearing, dental, and health screenings
+ *
+ * @remarks
+ * Tab selection is synced with URL query parameters for deep linking and bookmarking.
+ * Default tab is 'all' when no query parameter is present.
+ */
 type TabValue = 'all' | 'allergies' | 'conditions' | 'vaccinations' | 'vital-signs' | 'growth' | 'screenings';
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
 
+/**
+ * Student Health Records Main Component
+ *
+ * Manages the display and interaction with student health records across multiple
+ * health data categories with TanStack Query integration for real-time updates.
+ *
+ * **State Management:**
+ * - URL-based tab state via React Router's useSearchParams
+ * - TanStack Query for server state (health records data)
+ * - Local state for modal visibility and selected records
+ *
+ * **Data Fetching:**
+ * - Parallel queries for all health record types
+ * - Automatic refetching on tab changes
+ * - Optimistic updates for create/update/delete operations
+ * - Query invalidation on mutations
+ *
+ * **User Interactions:**
+ * - Tab navigation with URL sync
+ * - Record selection for edit/delete operations
+ * - Modal-based CRUD operations
+ * - Confirmation dialogs for destructive actions
+ *
+ * @component
+ * @returns {JSX.Element} Rendered health records interface
+ */
 const StudentHealthRecords: React.FC = () => {
   // Get student ID from URL params
   const { studentId } = useParams<{ studentId: string }>();

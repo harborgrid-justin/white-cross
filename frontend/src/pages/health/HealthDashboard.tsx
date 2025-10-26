@@ -1,10 +1,94 @@
 /**
  * HealthDashboard - Comprehensive Health Monitoring Dashboard
  *
- * Main dashboard for health records monitoring showing student health overview,
- * immunization status, upcoming screenings, medical alerts, and health trends.
+ * Central command center for school health operations providing real-time visibility
+ * into student health status, immunization compliance, scheduled screenings, critical
+ * alerts, and health trends analysis.
  *
+ * **Features:**
+ * - Real-time health statistics overview (total students, immunization rates, pending screenings, critical alerts)
+ * - Interactive health trends charts (visits, screenings, incidents over time)
+ * - Immunization status visualization with compliance tracking
+ * - Chronic condition distribution analysis
+ * - Vaccination campaign progress monitoring
+ * - Critical health alerts with action buttons
+ * - Recent activity feed for health record changes
+ * - Upcoming screening schedule overview
+ * - Allergy and emergency contact status
+ *
+ * **Dashboard Widgets:**
+ * - **Stats Widgets**: Key metrics with trend indicators
+ * - **Chart Widgets**: Line, bar, pie, and donut charts for data visualization
+ * - **Progress Widgets**: Vaccination campaign completion tracking
+ * - **Alerts Widget**: Critical health alerts requiring immediate attention
+ * - **Activity Feed**: Recent health record modifications
+ * - **Quick Actions**: Common tasks accessible from dashboard
+ *
+ * **Data Sources:**
+ * - Health records database (allergies, conditions, vaccinations, vital signs)
+ * - Screening schedule system
+ * - Immunization compliance tracking
+ * - Incident reporting system
+ * - Emergency contact database
+ *
+ * **Interactivity:**
+ * - Time range selection for trend charts (7d, 30d, 90d, 1y)
+ * - Export functionality for charts and reports
+ * - Refresh buttons for real-time data updates
+ * - Alert dismissal and action routing
+ * - Widget collapsing for focused view
+ *
+ * @fileoverview Main dashboard for health records monitoring
  * @module pages/health/HealthDashboard
+ * @version 2.0.0
+ *
+ * @component
+ * @returns {React.FC} Health monitoring dashboard component
+ *
+ * @example
+ * ```tsx
+ * import HealthDashboard from './pages/health/HealthDashboard';
+ *
+ * function App() {
+ *   return <HealthDashboard />;
+ * }
+ * ```
+ *
+ * @remarks
+ * **HIPAA Compliance**: Dashboard displays aggregated health data that may be PHI.
+ * Individual student identification is minimized. Access requires appropriate healthcare role.
+ *
+ * **Real-time Updates**: Consider implementing WebSocket or Server-Sent Events for
+ * real-time dashboard updates of critical alerts and statistics.
+ *
+ * **Performance**: Dashboard loads multiple datasets. Implement data aggregation at
+ * the API level and use React Query caching to optimize performance.
+ *
+ * **Mock Data**: Current implementation uses mock data for demonstration. Replace
+ * mock* constants with actual API calls before production deployment.
+ *
+ * **Critical Alerts**: Life-threatening allergies, missing immunizations, and failed
+ * screenings requiring referrals display as critical alerts with immediate action buttons.
+ *
+ * **Immunization Compliance**: Tracks vaccination status against state requirements.
+ * Generates compliance percentage for school enrollment verification.
+ *
+ * **Growth Tracking**: BMI calculations follow CDC growth chart standards. Flags
+ * abnormal growth patterns for nurse review and parent notification.
+ *
+ * **Screening Outcomes**: Failed screenings automatically generate follow-up tasks
+ * and parent notification requirements.
+ *
+ * **Emergency Preparedness**: Dashboard highlights students with critical medical
+ * conditions requiring emergency action plans and staff training.
+ *
+ * **Accessibility**: All charts and widgets include ARIA labels and keyboard navigation.
+ * Color-blind friendly palettes used for data visualization.
+ *
+ * @see {@link DashboardGrid} for responsive grid layout
+ * @see {@link ChartWidget} for chart components
+ * @see {@link AlertsWidget} for critical alerts display
+ * @since 1.0.0
  */
 
 import React, { useState, useMemo } from 'react';

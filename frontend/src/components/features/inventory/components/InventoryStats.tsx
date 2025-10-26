@@ -18,6 +18,15 @@ import {
   ShoppingCart
 } from 'lucide-react'
 
+/**
+ * Props for the InventoryStats component
+ *
+ * @interface InventoryStatsProps
+ * @property {number} totalItems - Total number of inventory items tracked
+ * @property {number} activeAlerts - Number of active inventory alerts (low stock, expiring items, etc.)
+ * @property {number} activeVendors - Number of active vendor relationships
+ * @property {number} pendingOrders - Number of purchase orders pending fulfillment
+ */
 interface InventoryStatsProps {
   totalItems: number
   activeAlerts: number
@@ -25,6 +34,38 @@ interface InventoryStatsProps {
   pendingOrders: number
 }
 
+/**
+ * InventoryStats - Displays inventory management statistics in a dashboard grid
+ *
+ * Renders a responsive grid showing key inventory metrics including total items,
+ * active alerts, active vendors, and pending orders. Used in the inventory
+ * management dashboard to provide at-a-glance insights into medical supply inventory status.
+ *
+ * @param {InventoryStatsProps} props - Component props
+ * @returns {JSX.Element} Statistics grid with four metric cards
+ *
+ * @example
+ * ```tsx
+ * <InventoryStats
+ *   totalItems={342}
+ *   activeAlerts={12}
+ *   activeVendors={8}
+ *   pendingOrders={5}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Grid layout adapts from 1 column (mobile) to 4 columns (desktop)
+ * - Color-coded icons: blue (items), red (alerts), green (vendors), purple (orders)
+ * - Each card displays metric name, count, and associated icon
+ * - Active alerts indicate items requiring attention (low stock, expiring, etc.)
+ * - Pending orders show purchase orders awaiting vendor fulfillment
+ *
+ * @security
+ * - Does not display sensitive vendor pricing information
+ * - Statistics are aggregated counts only, no detailed item data
+ * - Suitable for dashboard displays with appropriate role-based access
+ */
 export default function InventoryStats({
   totalItems,
   activeAlerts,

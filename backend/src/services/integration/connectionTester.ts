@@ -84,7 +84,9 @@ export class ConnectionTester {
         status: testResult.success ? 'success' : 'failed',
         duration: responseTime,
         errorMessage: testResult.success ? undefined : testResult.message,
-        details: testResult.details
+        details: testResult.details ? {
+          metadata: testResult.details as Record<string, unknown>
+        } : undefined
       });
 
       logger.info(`Connection test ${testResult.success ? 'succeeded' : 'failed'} for ${integration.name}`);

@@ -232,7 +232,63 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   constructor(private readonly client: ApiClient) {}
 
   /**
-   * Get all appointments with optional filtering
+   * Get all appointments with optional filtering and pagination
+   *
+   * Retrieves appointments with comprehensive filtering by date range, nurse,
+   * student, status, and type. Supports pagination for large result sets.
+   *
+   * @param {AppointmentFilters} [filters] - Optional filters for appointment query
+   * @param {string} [filters.startDate] - Start date for date range filter (ISO 8601)
+   * @param {string} [filters.endDate] - End date for date range filter (ISO 8601)
+   * @param {string} [filters.nurseId] - Filter by nurse UUID
+   * @param {string} [filters.studentId] - Filter by student UUID
+   * @param {AppointmentStatus} [filters.status] - Filter by appointment status
+   * @param {AppointmentType} [filters.type] - Filter by appointment type
+   * @param {number} [filters.page] - Page number for pagination (1-indexed)
+   * @param {number} [filters.limit] - Number of results per page (default: 20)
+   * @returns {Promise<PaginatedResponse<Appointment>>} Paginated list of appointments with metadata
+   * @throws {ValidationError} Invalid filter parameters
+   * @throws {ForbiddenError} User lacks permission to view appointments
+   *
+   * @remarks
+   * **TanStack Query Integration**:
+   * - Query key: `['appointments', 'list', filters]`
+   * - Cache time: 5 minutes
+   * - Stale time: 1 minute
+   * - Invalidate on: appointment creation, update, cancellation
+   *
+   * **Real-time Updates**:
+   * - Socket.io event: `appointment:updated` triggers query invalidation
+   * - Optimistic updates for local changes
+   * - Background refetch on window focus
+   *
+   * **RBAC Enforcement**:
+   * - Nurses see only their own appointments unless admin
+   * - Admins see all appointments in their school/district
+   * - Parents see only their children's appointments
+   *
+   * @example
+   * ```typescript
+   * // Get today's scheduled appointments for a nurse
+   * const today = new Date().toISOString().split('T')[0];
+   * const { data, pagination } = await appointmentsApi.getAll({
+   *   startDate: today,
+   *   endDate: today,
+   *   nurseId: currentNurse.id,
+   *   status: 'SCHEDULED',
+   *   page: 1,
+   *   limit: 20
+   * });
+   *
+   * // Use with TanStack Query
+   * const { data, isLoading } = useQuery({
+   *   queryKey: ['appointments', 'list', filters],
+   *   queryFn: () => appointmentsApi.getAll(filters)
+   * });
+   * ```
+   *
+   * @see {@link getById} for retrieving single appointment details
+   * @see {@link getUpcoming} for upcoming appointments without pagination
    */
   async getAll(filters?: AppointmentFilters): Promise<PaginatedResponse<Appointment>> {
     try {
@@ -245,7 +301,92 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   }
 
   /**
-   * Create a new appointment
+   * Create a new appointment with conflict detection and notifications
+   *
+   * Creates appointment with automatic conflict checking, waitlist processing,
+   * and parent notification. Validates nurse availability and student scheduling.
+   *
+   * @param {CreateAppointmentData} appointmentData - Appointment creation data
+   * @param {string} appointmentData.studentId - Student UUID (required)
+   * @param {string} appointmentData.nurseId - Nurse UUID (required)
+   * @param {AppointmentType} appointmentData.type - Appointment type (CHECKUP, MEDICATION, INJURY, etc.)
+   * @param {string} appointmentData.scheduledAt - ISO 8601 datetime for appointment
+   * @param {number} appointmentData.duration - Duration in minutes (default: 30)
+   * @param {string} [appointmentData.reason] - Reason for appointment (optional)
+   * @param {AppointmentPriority} [appointmentData.priority] - Priority level (default: NORMAL)
+   * @returns {Promise<{appointment: Appointment}>} Created appointment with generated ID
+   * @throws {ValidationError} Invalid appointment data or scheduling conflict
+   * @throws {ForbiddenError} User lacks permission to create appointments
+   * @throws {ConflictError} Nurse unavailable or student has conflicting appointment
+   *
+   * @remarks
+   * **Automated Workflows**:
+   * - Conflict detection: Checks nurse availability and student scheduling
+   * - Waitlist processing: Removes student from waitlist if exists
+   * - Parent notification: Sends notification for high-priority appointments
+   * - Reminder scheduling: Automatically schedules 24-hour reminder
+   *
+   * **Real-time Notifications**:
+   * - Socket.io event: `appointment:created` emitted to relevant users
+   * - Notification channels: Nurse dashboard, student view, parent app
+   * - Query invalidation: Invalidates appointment list and calendar queries
+   *
+   * **TanStack Query Optimistic Updates**:
+   * ```typescript
+   * useMutation({
+   *   mutationFn: appointmentsApi.create,
+   *   onMutate: async (newAppt) => {
+   *     // Optimistically add to UI
+   *     await queryClient.cancelQueries(['appointments', 'list'])
+   *     const previous = queryClient.getQueryData(['appointments', 'list'])
+   *     queryClient.setQueryData(['appointments', 'list'], old => [...old, newAppt])
+   *     return { previous }
+   *   },
+   *   onError: (err, variables, context) => {
+   *     // Rollback on error
+   *     queryClient.setQueryData(['appointments', 'list'], context.previous)
+   *   },
+   *   onSuccess: () => {
+   *     // Invalidate to refetch with server data
+   *     queryClient.invalidateQueries(['appointments'])
+   *   }
+   * })
+   * ```
+   *
+   * **Audit Trail**:
+   * - Action logged: APPOINTMENT_CREATED
+   * - PHI access: Student and nurse information
+   * - Retention: 7 years for HIPAA compliance
+   *
+   * @example
+   * ```typescript
+   * // Create routine checkup appointment
+   * const { appointment } = await appointmentsApi.create({
+   *   studentId: 'student-uuid-123',
+   *   nurseId: 'nurse-uuid-456',
+   *   type: 'CHECKUP',
+   *   scheduledAt: '2025-01-15T10:00:00Z',
+   *   duration: 30,
+   *   reason: 'Annual health screening',
+   *   priority: 'NORMAL'
+   * });
+   *
+   * // Create urgent medication administration appointment
+   * const { appointment: urgentAppt } = await appointmentsApi.create({
+   *   studentId: 'student-uuid-789',
+   *   nurseId: 'nurse-uuid-456',
+   *   type: 'MEDICATION',
+   *   scheduledAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+   *   duration: 15,
+   *   reason: 'Emergency inhaler administration',
+   *   priority: 'URGENT'
+   * });
+   * // Note: URGENT priority triggers immediate parent notification
+   * ```
+   *
+   * @see {@link checkConflicts} to check for scheduling conflicts before creating
+   * @see {@link addToWaitlist} to add student to waitlist if slot unavailable
+   * @see {@link scheduleReminder} to schedule custom reminders
    */
   async create(appointmentData: CreateAppointmentData): Promise<{ appointment: Appointment }> {
     try {
@@ -269,7 +410,70 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   }
 
   /**
-   * Cancel an appointment
+   * Cancel an appointment with automatic notifications and waitlist processing
+   *
+   * Cancels appointment, notifies affected parties, and offers slot to waitlisted
+   * students. Updates appointment status and triggers cleanup workflows.
+   *
+   * @param {string} id - Appointment UUID to cancel
+   * @param {string} [reason] - Optional cancellation reason for audit trail
+   * @returns {Promise<{appointment: Appointment}>} Cancelled appointment with updated status
+   * @throws {NotFoundError} Appointment not found
+   * @throws {ForbiddenError} User lacks permission to cancel appointment
+   * @throws {InvalidOperationError} Cannot cancel completed or already-cancelled appointment
+   *
+   * @remarks
+   * **Automated Workflows**:
+   * - Status update: Changes status to CANCELLED
+   * - Notification: Sends cancellation notification to student/parent and nurse
+   * - Waitlist processing: Offers slot to next waitlisted student if applicable
+   * - Reminder cancellation: Cancels all pending reminders for this appointment
+   * - Calendar update: Updates nurse availability calendar
+   *
+   * **Real-time Notifications**:
+   * - Socket.io event: `appointment:cancelled` with appointment ID and reason
+   * - Notification recipients: Nurse, student, parent (if configured)
+   * - Query invalidation: Updates all appointment-related queries
+   *
+   * **Waitlist Integration**:
+   * - If cancellation creates available slot, notifies next waitlist entry
+   * - Waitlist entry receives notification with booking link
+   * - Time-limited offer (default: 2 hours to accept)
+   *
+   * **Audit Trail**:
+   * - Action logged: APPOINTMENT_CANCELLED with reason
+   * - Cancellation tracking for no-show rate statistics
+   * - Retention: 7 years for compliance
+   *
+   * @example
+   * ```typescript
+   * // Cancel with reason
+   * const { appointment } = await appointmentsApi.cancel(
+   *   'appointment-uuid-123',
+   *   'Student absent from school'
+   * );
+   *
+   * // Cancel and handle waitlist notification
+   * const { appointment: cancelled } = await appointmentsApi.cancel(
+   *   'appointment-uuid-456',
+   *   'Nurse emergency - rescheduling required'
+   * );
+   * // System automatically notifies next waitlisted student
+   *
+   * // Use with TanStack Query mutation
+   * const { mutate: cancelAppointment } = useMutation({
+   *   mutationFn: ({ id, reason }) => appointmentsApi.cancel(id, reason),
+   *   onSuccess: () => {
+   *     queryClient.invalidateQueries(['appointments'])
+   *     queryClient.invalidateQueries(['waitlist'])
+   *     toast.success('Appointment cancelled successfully')
+   *   }
+   * });
+   * ```
+   *
+   * @see {@link reschedule} to reschedule instead of cancelling
+   * @see {@link getWaitlist} to view waitlisted students
+   * @see {@link notifyWaitlistEntry} to manually notify waitlist entry
    */
   async cancel(id: string, reason?: string): Promise<{ appointment: Appointment }> {
     try {
@@ -469,8 +673,77 @@ class AppointmentsApiImpl implements IAppointmentsApi {
 
   // Reminder Management
   /**
-   * Process pending reminders
-   * Processes all reminders that are due to be sent
+   * Process pending appointment reminders with multi-channel delivery
+   *
+   * Processes all reminders scheduled for delivery, supporting email, SMS, and
+   * push notifications. Typically called by scheduled job but can be triggered manually.
+   *
+   * @returns {Promise<ReminderProcessingResult>} Processing results with success/failure counts
+   * @returns {number} result.processed - Total reminders processed
+   * @returns {number} result.sent - Successfully sent reminders
+   * @returns {number} result.failed - Failed reminders
+   * @returns {Array<{reminderId: string, error: string}>} result.errors - Detailed failure information
+   * @throws {ForbiddenError} Only admins and system jobs can process reminders
+   *
+   * @remarks
+   * **Processing Logic**:
+   * - Queries reminders scheduled for delivery within next 5 minutes
+   * - Attempts delivery via configured channels (email, SMS, push)
+   * - Retries failed deliveries up to 3 times with exponential backoff
+   * - Updates reminder status after processing
+   * - Logs all delivery attempts for audit trail
+   *
+   * **Notification Channels**:
+   * - Email: Sent via SendGrid/AWS SES
+   * - SMS: Sent via Twilio
+   * - Push: Sent via Firebase Cloud Messaging
+   * - Priority: Tries all channels, marks success if any succeed
+   *
+   * **Scheduling Pattern**:
+   * - Automated: Runs every 5 minutes via cron job
+   * - Manual: Can be triggered for immediate processing
+   * - Default reminder time: 24 hours before appointment
+   * - Custom reminders: Can be scheduled at any time
+   *
+   * **Error Handling**:
+   * - Individual failures don't stop batch processing
+   * - Failed reminders logged with reason
+   * - Automatic retry on transient failures
+   * - Permanent failures (invalid phone/email) marked as FAILED
+   *
+   * **Performance**:
+   * - Batch size: 100 reminders per execution
+   * - Parallel processing: Up to 10 concurrent notifications
+   * - Timeout: 30 seconds per reminder
+   * - Circuit breaker: Stops after 50% failure rate
+   *
+   * @example
+   * ```typescript
+   * // Manual reminder processing (admin only)
+   * const result = await appointmentsApi.processPendingReminders();
+   * console.log(`Processed ${result.processed} reminders`);
+   * console.log(`Success: ${result.sent}, Failed: ${result.failed}`);
+   *
+   * // Check for errors
+   * if (result.failed > 0) {
+   *   console.error('Failed reminders:', result.errors);
+   *   // Alert admin or retry failures
+   * }
+   *
+   * // Typical cron job usage
+   * cron.schedule('0/5 * * * *', async () => {
+   *   try {
+   *     const result = await appointmentsApi.processPendingReminders();
+   *     logger.info('Reminders processed', result);
+   *   } catch (error) {
+   *     logger.error('Reminder processing failed', error);
+   *   }
+   * });
+   * ```
+   *
+   * @see {@link scheduleReminder} to create custom reminders
+   * @see {@link getAppointmentReminders} to view scheduled reminders
+   * @see {@link cancelReminder} to cancel pending reminders
    */
   async processPendingReminders(): Promise<ReminderProcessingResult> {
     try {

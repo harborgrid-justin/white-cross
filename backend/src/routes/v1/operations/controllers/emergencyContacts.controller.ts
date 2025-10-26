@@ -132,8 +132,9 @@ export class EmergencyContactsController {
    * // Returns: { contact: { id: 'contact-uuid', firstName: 'Jane', ... } }
    */
   static async create(request: AuthenticatedRequest, h: ResponseToolkit) {
-    const payload = request.payload as CreateEmergencyContactData;
-    const contact = await EmergencyContactService.createEmergencyContact(payload);
+    const contact = await EmergencyContactService.createEmergencyContact(
+      request.payload as CreateEmergencyContactData
+    );
 
     return createdResponse(h, { contact });
   }
@@ -188,8 +189,10 @@ export class EmergencyContactsController {
    */
   static async update(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const payload = request.payload as UpdateEmergencyContactData;
-    const contact = await EmergencyContactService.updateEmergencyContact(id, payload);
+    const contact = await EmergencyContactService.updateEmergencyContact(
+      id,
+      request.payload as UpdateEmergencyContactData
+    );
 
     return successResponse(h, { contact });
   }
@@ -303,7 +306,7 @@ export class EmergencyContactsController {
     const payload = request.payload as NotificationData;
     const results = await EmergencyContactService.sendEmergencyNotification(
       studentId,
-      payload
+      request.payload as NotificationData
     );
 
     return successResponse(h, { results });
@@ -358,7 +361,7 @@ export class EmergencyContactsController {
     const payload = request.payload as NotificationData;
     const result = await EmergencyContactService.sendContactNotification(
       id,
-      payload
+      request.payload as NotificationData
     );
 
     return successResponse(h, { result });
@@ -417,8 +420,7 @@ export class EmergencyContactsController {
    */
   static async verifyContact(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { id } = request.params;
-    const payload = request.payload as { method: 'sms' | 'email' | 'voice' };
-    const { method } = payload;
+    const { method } = request.payload as { method: 'sms' | 'email' | 'voice' };
 
     const result = await EmergencyContactService.verifyContact(id, method);
 

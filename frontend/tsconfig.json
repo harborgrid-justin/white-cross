@@ -14,6 +14,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Module interop */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
     /* Linting */
     "strict": false,
     "noUnusedLocals": false,
@@ -21,16 +26,18 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Path mapping */
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+
+    /* Testing */
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   },
   "include": ["src"],
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
-    "**/*.test.tsx",
     "**/*.example.ts",
     "**/*.example.tsx",
     "**/*.examples.ts",

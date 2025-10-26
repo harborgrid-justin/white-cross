@@ -37,7 +37,7 @@ import {
   IncidentStatus,
   ActionPriority,
   ActionStatus,
-} from '../types/incidents';
+} from '../../types/incidents';
 
 // =====================
 // TYPE DEFINITIONS

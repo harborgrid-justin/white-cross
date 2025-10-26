@@ -12,12 +12,66 @@
 
 import React from 'react'
 import { Plus } from 'lucide-react'
-import { Vendor } from '../../../../../types'
+import type { Vendor } from '@/types/inventory'
 
+/**
+ * Props for the InventoryVendorsTab component
+ *
+ * @interface InventoryVendorsTabProps
+ * @property {Vendor[]} vendors - Array of vendor records to display
+ */
 interface InventoryVendorsTabProps {
   vendors: Vendor[]
 }
 
+/**
+ * InventoryVendorsTab - Vendor relationship management interface
+ *
+ * Displays a grid of vendor cards with contact information, ratings, and payment
+ * terms. Supports adding new vendors and managing existing vendor relationships
+ * for medical supply procurement and inventory management.
+ *
+ * @param {InventoryVendorsTabProps} props - Component props
+ * @returns {JSX.Element} Vendor cards grid with add vendor button
+ *
+ * @example
+ * ```tsx
+ * <InventoryVendorsTab
+ *   vendors={[
+ *     {
+ *       id: '1',
+ *       name: 'Medical Supplies Inc.',
+ *       contactName: 'John Smith',
+ *       email: 'john@medicalsupplies.com',
+ *       phone: '555-0123',
+ *       rating: 4.5,
+ *       paymentTerms: 'Net 30'
+ *     }
+ *   ]}
+ * />
+ * ```
+ *
+ * @remarks
+ * - "Add Vendor" button initiates new vendor creation workflow
+ * - Grid layout adapts: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+ * - Each vendor card displays: name, rating, contact person, email, phone, payment terms
+ * - Rating displayed as star icon with numerical value (e.g., "★ 4.5/5")
+ * - Hover effect with shadow transition for better interactivity
+ * - Contact information displayed only if available
+ * - Payment terms help procurement staff understand vendor billing practices
+ *
+ * @security
+ * - Vendor information visible to authorized procurement and inventory staff
+ * - Contact details and payment terms restricted by role-based permissions
+ * - Vendor creation requires appropriate authorization
+ * - Sensitive contract terms not displayed in card view
+ *
+ * @compliance
+ * - Vendor records support procurement audit requirements
+ * - Contact information enables proper vendor communication
+ * - Payment terms documentation for financial compliance
+ * - Vendor ratings help ensure quality medical supply sourcing
+ */
 export default function InventoryVendorsTab({ vendors }: InventoryVendorsTabProps) {
   return (
     <div className="space-y-4">

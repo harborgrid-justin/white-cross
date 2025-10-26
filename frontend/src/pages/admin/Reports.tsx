@@ -20,6 +20,68 @@ import toast from 'react-hot-toast'
 import { DATE_CALCULATIONS, QUERY_INTERVALS } from '../../constants'
 import type { TabType, DateRange } from './types'
 
+/**
+ * Reports & Analytics Page Component.
+ *
+ * Comprehensive reporting and analytics interface providing health trends,
+ * compliance reports, and performance dashboards for school health data.
+ *
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <Reports />
+ * ```
+ *
+ * @remarks
+ * **RBAC Requirements:**
+ * - Requires 'admin' or 'reports.view' permission to access
+ * - Elevated privileges needed for compliance and audit reports
+ *
+ * **Features:**
+ * - Multi-tab interface: Overview, Health Analytics, Medication Reports, Incident Statistics
+ * - Attendance correlation analysis
+ * - Real-time dashboard with auto-refresh (QUERY_INTERVALS.DASHBOARD)
+ * - Compliance reporting for regulatory requirements
+ * - Custom report generation and export (CSV, PDF, Excel)
+ * - Date range filtering for all report types
+ *
+ * **State Management:**
+ * - TanStack Query for server state management with auto-refetch
+ * - Conditional query execution based on active tab
+ * - Optimized data fetching (queries disabled when tab inactive)
+ *
+ * **Data Integration:**
+ * - Health trends tracking over time
+ * - Medication usage statistics and patterns
+ * - Incident frequency and severity analysis
+ * - Attendance correlation with health events
+ * - Compliance metrics and audit readiness
+ *
+ * **Export Functionality:**
+ * - Multi-format export support (CSV, PDF, Excel)
+ * - Custom report type selection
+ * - Date range filtering for exported data
+ * - Toast notifications for export status
+ *
+ * **Accessibility:**
+ * - Tab navigation with keyboard support
+ * - Screen reader-friendly labels and ARIA attributes
+ * - Date picker with keyboard navigation
+ * - Focus management in modal dialogs
+ *
+ * **Performance:**
+ * - Smart query caching via TanStack Query
+ * - Conditional data fetching (enabled only for active tab)
+ * - Auto-refresh intervals for real-time dashboards
+ * - Optimistic UI updates
+ *
+ * @returns {JSX.Element} The rendered reports and analytics interface
+ *
+ * @see {@link reportsApi} for API integration details
+ * @see {@link DATE_CALCULATIONS} for date range utilities
+ * @see {@link QUERY_INTERVALS} for auto-refresh configuration
+ */
 export default function Reports() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [dateRange, setDateRange] = useState<DateRange>({

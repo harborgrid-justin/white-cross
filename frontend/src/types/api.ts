@@ -549,18 +549,21 @@ export interface AdverseReactionFormData {
   onset: string;
   duration?: string;
   treatment?: string;
-  followUpRequired: boolean;
+  reportedAt: string;
+  actionTaken: string;
+  followUpRequired?: boolean;
   followUpNotes?: string;
 }
 
 export interface AppointmentFormData {
   studentId: string;
+  nurseId: string;
   type: AppointmentType;
   scheduledAt: string;
   duration: number;
   reason: string;
   notes?: string;
-  followUpRequired: boolean;
+  followUpRequired?: boolean;
   followUpDate?: string;
 }
 

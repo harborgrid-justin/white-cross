@@ -1,10 +1,99 @@
 /**
  * AddCommentDialog Component
  *
- * Modal dialog for adding comments/notes to incident reports.
- * Supports character limit, importance marking, and auto-focus.
+ * Modal dialog for adding comments and notes to incident reports with
+ * HIPAA-compliant audit logging and importance flagging for emergency
+ * response coordination.
  *
  * @component
+ *
+ * @remarks
+ * This component provides a production-grade interface for documenting
+ * incident-related observations, follow-up notes, and critical updates:
+ *
+ * **Emergency Response Features:**
+ * - Character limit enforcement (1000 chars) for concise documentation
+ * - "Mark as Important" flag for critical updates requiring attention
+ * - Auto-focus on textarea for rapid data entry during emergencies
+ * - Keyboard shortcuts (Ctrl+Enter) for fast submission
+ * - Real-time character counter with visual warnings
+ *
+ * **Form Validation:**
+ * - Required comment text validation
+ * - Maximum length enforcement with visual feedback
+ * - Color-coded character counter (warning at <100 chars, danger when exceeded)
+ * - Submit button disabled until validation passes
+ *
+ * **HIPAA Compliance:**
+ * - Comments are part of official incident record
+ * - All comment submissions logged for audit purposes
+ * - Visual compliance notice displayed to users
+ * - PHI handling guidelines enforced
+ *
+ * **User Experience:**
+ * - Auto-focus on textarea when modal opens
+ * - Loading state during submission prevents double-submit
+ * - Cannot close modal during submission to prevent data loss
+ * - Reset form state on open/close
+ * - Accessible keyboard navigation (ESC to close, Tab for focus)
+ *
+ * **Accessibility (WCAG 2.1 AA):**
+ * - Semantic HTML with proper labels
+ * - ARIA attributes for character count and validation
+ * - Keyboard shortcuts announced via aria-describedby
+ * - Focus management with useRef
+ * - Screen reader friendly error messages
+ *
+ * @example
+ * ```tsx
+ * import { useState } from 'react';
+ * import AddCommentDialog from '@/pages/incidents/components/AddCommentDialog';
+ *
+ * function IncidentDetailPage() {
+ *   const [showCommentDialog, setShowCommentDialog] = useState(false);
+ *   const [isSubmitting, setIsSubmitting] = useState(false);
+ *   const incidentId = "INC-2025-001";
+ *
+ *   const handleAddComment = async (comment: string, isImportant: boolean) => {
+ *     setIsSubmitting(true);
+ *     try {
+ *       await addIncidentComment(incidentId, {
+ *         text: comment,
+ *         isImportant,
+ *         timestamp: new Date().toISOString(),
+ *         author: currentUser.id
+ *       });
+ *       toast.success('Comment added to incident record');
+ *     } catch (error) {
+ *       toast.error('Failed to add comment');
+ *     } finally {
+ *       setIsSubmitting(false);
+ *     }
+ *   };
+ *
+ *   return (
+ *     <>
+ *       <button onClick={() => setShowCommentDialog(true)}>
+ *         Add Comment
+ *       </button>
+ *
+ *       <AddCommentDialog
+ *         isOpen={showCommentDialog}
+ *         onClose={() => setShowCommentDialog(false)}
+ *         incidentId={incidentId}
+ *         onSuccess={handleAddComment}
+ *         loading={isSubmitting}
+ *         maxLength={1000}
+ *         showImportanceOption={true}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link IncidentReportDetails} for usage in incident detail views
+ * @see {@link CommentsList} for displaying comment history
+ * @see {@link NotesEditor} for alternative note-taking interface
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,22 +107,28 @@ import {
 } from '@/components/ui/overlays/Modal';
 import { Button } from '@/components/ui/buttons/Button';
 
+/**
+ * Props for the AddCommentDialog component
+ *
+ * @interface AddCommentDialogProps
+ *
+ * @property {boolean} isOpen - Controls dialog visibility, typically managed by parent component state
+ * @property {() => void} onClose - Callback invoked when user closes dialog (ESC, backdrop click, or cancel button)
+ * @property {string} incidentId - Unique identifier of the incident report to attach comment to (e.g., "INC-2025-001")
+ * @property {(comment: string, isImportant: boolean) => void} [onSuccess] - Callback invoked after successful comment addition with trimmed comment text and importance flag
+ * @property {boolean} [loading=false] - Shows loading spinner on submit button and disables form during API submission
+ * @property {number} [maxLength=1000] - Maximum allowed characters for comment text with visual counter and validation
+ * @property {boolean} [showImportanceOption=true] - Shows "Mark as Important" checkbox for flagging critical updates
+ * @property {string} [className] - Additional CSS classes applied to modal content container for custom styling
+ */
 export interface AddCommentDialogProps {
-  /** Whether the dialog is open */
   isOpen: boolean;
-  /** Callback when dialog should close */
   onClose: () => void;
-  /** ID of the incident report to add comment to */
   incidentId: string;
-  /** Callback when comment is successfully added */
   onSuccess?: (comment: string, isImportant: boolean) => void;
-  /** Show loading state during submission */
   loading?: boolean;
-  /** Maximum character count (default: 1000) */
   maxLength?: number;
-  /** Show importance checkbox (default: true) */
   showImportanceOption?: boolean;
-  /** Additional CSS classes */
   className?: string;
 }
 

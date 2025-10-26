@@ -1,11 +1,96 @@
 /**
  * MedicationFilters Component
- * Purpose: Filter controls for medications list
- * Features: Active status, student, medication type, prescriber filters
+ *
+ * Comprehensive filtering interface for medication lists allowing nurses and administrators
+ * to quickly narrow down medications by status, route, frequency, and other criteria.
+ * Supports multiple active filters with visual tags and one-click clearing.
+ *
+ * @component
+ *
+ * @param {MedicationFiltersProps} props - Component properties
+ * @param {Record<string, any>} props.filters - Current active filter values
+ * @param {(filters: Record<string, any>) => void} props.onFiltersChange - Callback invoked when filters change
+ * @param {string} [props.studentId] - Optional student ID to pre-filter medications
+ *
+ * @returns {React.FC<MedicationFiltersProps>} Medication filters component
+ *
+ * @example
+ * ```tsx
+ * import { MedicationFilters } from './components/MedicationFilters';
+ *
+ * function MedicationList() {
+ *   const [filters, setFilters] = useState({});
+ *
+ *   const handleFiltersChange = (newFilters) => {
+ *     setFilters(newFilters);
+ *     // Fetch medications with new filters
+ *   };
+ *
+ *   return (
+ *     <MedicationFilters
+ *       filters={filters}
+ *       onFiltersChange={handleFiltersChange}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Filter Criteria**:
+ * - **Status**: Active, Inactive, or All medications
+ * - **Route**: Oral, Topical, Injection, Inhaled, Other
+ * - **Frequency**: Once Daily, Twice Daily, Three Times Daily, As Needed, Other
+ *
+ * **Medication Safety**:
+ * - Route filtering helps ensure proper administration methods
+ * - Active status filter prevents accidental viewing of discontinued medications
+ * - Frequency filters support scheduling and administration timing
+ *
+ * **State Management**:
+ * - Local state: Manages filter values for immediate UI feedback
+ * - Parent callback: onFiltersChange fired on every filter modification
+ * - Filter persistence: Parent component responsible for persisting filters
+ *
+ * **User Experience**:
+ * - Real-time filtering with immediate callback invocation
+ * - Visual filter tags showing currently applied filters
+ * - Individual filter removal via × button on tags
+ * - Clear All Filters button for quick reset
+ * - Empty state handling when no filters applied
+ *
+ * **Filter Operations**:
+ * - Filters are combined using AND logic (all must match)
+ * - Empty filter values are ignored in filtering logic
+ * - Filter state synced between local component and parent
+ *
+ * **Accessibility**:
+ * - Labeled select elements with proper for/id associations
+ * - Keyboard navigation support for all controls
+ * - Clear button accessible via keyboard and screen readers
+ * - Filter tags announce removal actions
+ *
+ * @see {@link MedicationsList} for filtered list display
+ * @see {@link MedicationSearchBar} for text-based search
+ * @see {@link medicationsSlice} for Redux state management
+ *
+ * @since 1.0.0
  */
 
 import React, { useState } from 'react';
 
+/**
+ * Props for MedicationFilters component
+ *
+ * @interface MedicationFiltersProps
+ *
+ * @property {Record<string, any>} filters - Object containing current filter key-value pairs
+ * @property {(filters: Record<string, any>) => void} onFiltersChange - Callback function receiving updated filters object
+ * @property {string} [studentId] - Optional student ID for pre-filtering medications to specific student
+ *
+ * @remarks
+ * Filter object structure: { active: 'true', route: 'ORAL', frequency: 'TWICE_DAILY' }
+ * Empty or undefined filter values are treated as "show all" for that criterion.
+ */
 interface MedicationFiltersProps {
   filters: any;
   onFiltersChange: (filters: any) => void;

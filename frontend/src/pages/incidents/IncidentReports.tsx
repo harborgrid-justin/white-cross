@@ -28,50 +28,50 @@ import {
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { incidentsApi } from '../../services/modules/incidentsApi'
-import type { IncidentReportListResponse, IncidentReport as APIIncidentReport } from '../../types/incidents'
-
-/**
- * Incident Report Interface
- */
-export interface IncidentReport {
-  id: string
-  incidentNumber: string
-  title: string
-  description: string
-  type: 'INJURY' | 'ILLNESS' | 'BEHAVIORAL' | 'SAFETY' | 'MEDICAL_EMERGENCY' | 'OTHER'
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED'
-  studentId: string
-  studentName: string
-  reportedBy: string
-  reportedByRole: string
-  incidentDate: string
-  incidentTime: string
-  location: string
-  witnessCount: number
-  actionsTaken: string
-  followUpRequired: boolean
-  parentNotified: boolean
-  createdAt: string
-  updatedAt: string
-  student?: {
-    firstName: string
-    lastName: string
-  }
-  reportedBy?: {
-    firstName: string
-    lastName: string
-  }
-}
+import type {
+  IncidentReportListResponse,
+  IncidentReport,
+  IncidentType,
+  IncidentSeverity,
+  IncidentStatus
+} from '../../types/incidents'
 
 /**
  * Filter State Interface
+ *
+ * Comprehensive filter criteria for incident reports list.
+ * Supports multi-dimensional filtering across various incident attributes.
+ *
+ * @interface FilterState
+ *
+ * @property {string} search - Full-text search query across description, location, student name, and reporter name
+ * @property {string | IncidentType | 'all'} type - Filter by incident type (INJURY, ILLNESS, BEHAVIORAL, etc.) or 'all'
+ * @property {string | IncidentSeverity | 'all'} severity - Filter by severity level (LOW, MEDIUM, HIGH, CRITICAL) or 'all'
+ * @property {string | IncidentStatus | 'all'} status - Filter by incident status (DRAFT, SUBMITTED, UNDER_REVIEW, etc.) or 'all'
+ * @property {string} dateFrom - Start date for date range filter (ISO 8601 format)
+ * @property {string} dateTo - End date for date range filter (ISO 8601 format)
+ * @property {boolean | null} followUpRequired - Filter by follow-up requirement status (true, false, or null for all)
+ * @property {boolean | null} parentNotified - Filter by parent notification status (true, false, or null for all)
+ *
+ * @example
+ * ```typescript
+ * const filters: FilterState = {
+ *   search: 'playground',
+ *   type: IncidentType.INJURY,
+ *   severity: IncidentSeverity.HIGH,
+ *   status: IncidentStatus.UNDER_REVIEW,
+ *   dateFrom: '2025-01-01',
+ *   dateTo: '2025-01-31',
+ *   followUpRequired: true,
+ *   parentNotified: false
+ * };
+ * ```
  */
 interface FilterState {
   search: string
-  type: string
-  severity: string
-  status: string
+  type: string | IncidentType | 'all'
+  severity: string | IncidentSeverity | 'all'
+  status: string | IncidentStatus | 'all'
   dateFrom: string
   dateTo: string
   followUpRequired: boolean | null
@@ -81,23 +81,62 @@ interface FilterState {
 /**
  * Incident Reports Page Component
  *
+ * Main incident management interface for school nurses and administrators.
+ * Provides comprehensive incident tracking with advanced filtering, search,
+ * and data export capabilities.
+ *
+ * @component
+ *
+ * @remarks
  * Features:
- * - Comprehensive incident list with filtering
- * - Search across multiple fields
- * - Status and severity badges
- * - Pagination
- * - Export functionality
- * - Role-based permissions
- * - Responsive design
- * - Loading and error states
- * - Delete functionality with confirmation
+ * - **Search & Filter**: Full-text search with multi-criteria filtering
+ * - **List View**: Paginated table with sortable columns
+ * - **Status Indicators**: Visual badges for severity, status, and follow-up needs
+ * - **Pagination**: Server-side pagination supporting large datasets
+ * - **Export**: Data export for reporting (Admin/Nurse/School Admin only)
+ * - **RBAC**: Role-based access control for all operations
+ * - **Responsive**: Mobile-friendly table layout
+ * - **Loading States**: Skeleton screens during data fetch
+ * - **Error Handling**: User-friendly error messages with retry
+ * - **Delete Confirmation**: Modal confirmation before deletion
+ *
+ * Access Control:
+ * - View: All authenticated users
+ * - Create: ADMIN, NURSE, COUNSELOR
+ * - Edit: ADMIN, NURSE
+ * - Delete: ADMIN only
+ * - Export: ADMIN, NURSE, SCHOOL_ADMIN
+ *
+ * HIPAA Compliance:
+ * - All incident data access is audit logged
+ * - PHI is displayed but never cached locally
+ * - Export functions comply with data retention policies
+ *
+ * @example
+ * ```tsx
+ * // Rendered via React Router
+ * <Route path="/incident-reports" element={<IncidentReports />} />
+ *
+ * // Component displays incident list with filters
+ * // Users can:
+ * // 1. Search and filter incidents
+ * // 2. Click to view incident details
+ * // 3. Create new incidents (if permitted)
+ * // 4. Export data (if permitted)
+ * // 5. Delete incidents (ADMIN only)
+ * ```
+ *
+ * @returns {JSX.Element} Incident reports list page with search, filters, and actions
+ *
+ * @see {@link module:services/modules/incidentsApi} for API integration
+ * @see {@link module:types/incidents} for incident type definitions
  */
 const IncidentReports: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
   // State management
-  const [reports, setReports] = useState<any[]>([])
+  const [reports, setReports] = useState<IncidentReport[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -108,7 +147,7 @@ const IncidentReports: React.FC = () => {
 
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [reportToDelete, setReportToDelete] = useState<any | null>(null)
+  const [reportToDelete, setReportToDelete] = useState<IncidentReport | null>(null)
   const [deleting, setDeleting] = useState(false)
 
   // Filter state
@@ -211,7 +250,7 @@ const IncidentReports: React.FC = () => {
     setCurrentPage(1)
   }
 
-  const handleDeleteClick = (report: any) => {
+  const handleDeleteClick = (report: IncidentReport) => {
     setReportToDelete(report)
     setDeleteConfirmOpen(true)
   }

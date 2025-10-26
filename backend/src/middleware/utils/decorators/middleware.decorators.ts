@@ -136,18 +136,18 @@ const VALIDATION_RULES_KEY = Symbol('validationRules');
 export function RequireRole(role: UserRole) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     Reflect.defineMetadata(REQUIRED_ROLE_KEY, role, target, propertyName);
-    
+
     const method = descriptor.value;
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: DecoratorContext, ...args: any[]) {
       const user = this.getCurrentUser?.() || args.find((arg: any) => arg?.user)?.user;
-      
+
       if (!user || !isUserRole(user, role)) {
         throw new Error(`Access denied. Required role: ${role}`);
       }
-      
+
       return method.apply(this, args);
     };
-    
+
     return descriptor;
   };
 }
@@ -158,18 +158,18 @@ export function RequireRole(role: UserRole) {
 export function RequirePermissions(...permissions: Permission[]) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     Reflect.defineMetadata(REQUIRED_PERMISSIONS_KEY, permissions, target, propertyName);
-    
+
     const method = descriptor.value;
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: DecoratorContext, ...args: any[]) {
       const user = this.getCurrentUser?.() || args.find((arg: any) => arg?.user)?.user;
-      
+
       if (!user || !hasRequiredPermissions(user, permissions)) {
         throw new Error(`Access denied. Required permissions: ${permissions.join(', ')}`);
       }
-      
+
       return method.apply(this, args);
     };
-    
+
     return descriptor;
   };
 }
@@ -292,16 +292,16 @@ export function AuditLog(options: {
 } = { action: 'unknown', resource: 'unknown' }) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     Reflect.defineMetadata(AUDIT_ENABLED_KEY, options, target, propertyName);
-    
+
     const method = descriptor.value;
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (this: DecoratorContext, ...args: any[]) {
       const startTime = Date.now();
       const context = args.find((arg: any) => arg?.correlationId) as MiddlewareContext;
       const user = this.getCurrentUser?.() || args.find((arg: any) => arg?.user)?.user;
-      
+
       try {
         const result = await method.apply(this, args);
-        
+
         // Log successful audit event
         await logAuditEvent({
           timestamp: new Date().toISOString(),
@@ -323,9 +323,11 @@ export function AuditLog(options: {
           phiAccessed: options.includePHI || false,
           complianceFlags: options.includePHI ? ['phi_access'] : []
         });
-        
+
         return result;
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
         // Log failed audit event
         await logAuditEvent({
           timestamp: new Date().toISOString(),
@@ -339,7 +341,7 @@ export function AuditLog(options: {
           details: {
             method: propertyName,
             duration: Date.now() - startTime,
-            error: error.message,
+            error: errorMessage,
             ...(options.includeRequestBody && { requestBody: sanitizeForAudit(args) })
           },
           ipAddress: this.getRequestIP?.() || 'unknown',
@@ -347,11 +349,11 @@ export function AuditLog(options: {
           phiAccessed: options.includePHI || false,
           complianceFlags: ['access_failure', ...(options.includePHI ? ['phi_access'] : [])]
         });
-        
+
         throw error;
       }
     };
-    
+
     return descriptor;
   };
 }
@@ -467,12 +469,12 @@ export function PHIAccess(options: {
 } = {}) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     Reflect.defineMetadata(PHI_ACCESS_KEY, options, target, propertyName);
-    
+
     const method = descriptor.value;
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: DecoratorContext, ...args: any[]) {
       const user = this.getCurrentUser?.() || args.find((arg: any) => arg?.user)?.user;
       const request = args.find((arg: any) => arg?.params || arg?.body);
-      
+
       // Check if user has PHI access permissions
       if (!user || !hasPhiAccess(user)) {
         // Check for emergency override
@@ -483,25 +485,25 @@ export function PHIAccess(options: {
           throw new Error('Access denied. PHI access not authorized.');
         }
       }
-      
+
       // Extract patient ID if specified
       if (options.patientIdParam && request) {
-        const patientId = request.params?.[options.patientIdParam] || 
+        const patientId = request.params?.[options.patientIdParam] ||
                          request.body?.[options.patientIdParam];
-        
+
         if (patientId && !canAccessPatient(user, patientId)) {
           throw new Error(`Access denied. Cannot access patient: ${patientId}`);
         }
       }
-      
+
       // Require justification for PHI access
       if (options.justificationRequired && !this.getAccessJustification?.()) {
         throw new Error('PHI access requires justification');
       }
-      
+
       return method.apply(this, args);
     };
-    
+
     return descriptor;
   };
 }
@@ -517,23 +519,23 @@ export function RateLimit(options: {
 }) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     Reflect.defineMetadata(RATE_LIMIT_KEY, options, target, propertyName);
-    
+
     const method = descriptor.value;
     const callTracker = new Map<string, { count: number; resetTime: number }>();
-    
-    descriptor.value = function (...args: any[]) {
+
+    descriptor.value = function (this: DecoratorContext, ...args: any[]) {
       // Skip rate limiting if condition is met
       if (options.skipIf && options.skipIf(args)) {
         return method.apply(this, args);
       }
-      
-      const key = options.keyGenerator ? 
-        options.keyGenerator(args) : 
+
+      const key = options.keyGenerator ?
+        options.keyGenerator(args) :
         this.getRequestIP?.() || 'default';
-      
+
       const now = Date.now();
       let tracker = callTracker.get(key);
-      
+
       // Initialize or reset tracker if window expired
       if (!tracker || now > tracker.resetTime) {
         tracker = {
@@ -542,18 +544,18 @@ export function RateLimit(options: {
         };
         callTracker.set(key, tracker);
       }
-      
+
       // Check rate limit
       if (tracker.count >= options.maxCalls) {
         throw new Error(`Rate limit exceeded. Max ${options.maxCalls} calls per ${options.windowMs}ms`);
       }
-      
+
       // Increment counter
       tracker.count++;
-      
+
       return method.apply(this, args);
     };
-    
+
     return descriptor;
   };
 }
@@ -668,6 +670,15 @@ export function Cache(options: {
   };
 }
 
+// Type for class instance with optional helper methods
+interface DecoratorContext {
+  getCurrentUser?: () => HealthcareUser | undefined;
+  getRequestIP?: () => string;
+  getUserAgent?: () => string;
+  isEmergencyAccess?: () => boolean;
+  getAccessJustification?: () => string | undefined;
+}
+
 // Helper functions
 function isUserRole(user: HealthcareUser, requiredRole: UserRole): boolean {
   const roleHierarchy = {
@@ -676,7 +687,7 @@ function isUserRole(user: HealthcareUser, requiredRole: UserRole): boolean {
     [UserRole.ADMINISTRATOR]: 3,
     [UserRole.SYSTEM_ADMIN]: 4
   };
-  
+
   return roleHierarchy[user.role] >= roleHierarchy[requiredRole];
 }
 

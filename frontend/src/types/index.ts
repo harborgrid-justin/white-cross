@@ -40,6 +40,49 @@ export * from './api'
 // export * from './purchaseOrders'
 // export * from './inventory'
 
+// Export appointment-specific types (avoiding enum conflicts with common.ts)
+export type {
+  Appointment,
+  AppointmentReminder,
+  AppointmentWaitlist,
+  NurseAvailability,
+  AvailabilitySlot,
+  CreateAppointmentData,
+  UpdateAppointmentData,
+  AppointmentFilters,
+  NurseAvailabilityData,
+  WaitlistEntryData,
+  WaitlistFilters,
+  ReminderData,
+  RecurrencePattern,
+  RecurringAppointmentData,
+  AppointmentStatistics,
+  ReminderProcessingResult,
+  ConflictCheckResult,
+  CalendarExportOptions,
+  AppointmentFormData,
+  WaitlistFormData,
+  AvailabilityFormData,
+  PopulatedAppointment,
+  PopulatedWaitlistEntry,
+  AppointmentCalendarEvent,
+  AppointmentTimeSlot,
+  AppointmentNotification,
+} from './appointments'
+
+// Re-export appointment enums (these take precedence over common.ts type aliases)
+export {
+  AppointmentType,
+  AppointmentStatus,
+  WaitlistPriority,
+  WaitlistStatus,
+  ReminderStatus,
+  MessageType,
+  RecurrenceFrequency,
+  APPOINTMENT_VALIDATION,
+  APPOINTMENT_STATUS_TRANSITIONS,
+} from './appointments'
+
 // Safe exports (no conflicts with common/api)
 export * from './analytics'
 export * from './accessControl'

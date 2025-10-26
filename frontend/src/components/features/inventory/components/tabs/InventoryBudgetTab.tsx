@@ -12,12 +12,86 @@
 
 import React from 'react'
 import { Plus } from 'lucide-react'
-import { BudgetCategory } from '../../../../../types'
 
+/**
+ * Budget category data structure
+ *
+ * @interface BudgetCategory
+ * @property {string} id - Unique budget category identifier
+ * @property {string} name - Category name (e.g., "Medical Supplies", "Equipment")
+ * @property {string} [description] - Optional category description
+ * @property {number} fiscalYear - Fiscal year for this budget allocation
+ * @property {number} allocatedAmount - Total budget allocated for this category
+ * @property {number} spentAmount - Amount spent to date in this category
+ * @property {number} [utilizationPercentage] - Calculated percentage of budget utilized
+ */
+interface BudgetCategory {
+  id: string
+  name: string
+  description?: string
+  fiscalYear: number
+  allocatedAmount: number
+  spentAmount: number
+  utilizationPercentage?: number
+}
+
+/**
+ * Props for the InventoryBudgetTab component
+ *
+ * @interface InventoryBudgetTabProps
+ * @property {BudgetCategory[]} categories - Array of budget categories to display
+ */
 interface InventoryBudgetTabProps {
   categories: BudgetCategory[]
 }
 
+/**
+ * InventoryBudgetTab - Budget management and tracking interface
+ *
+ * Displays budget categories with allocated amounts, spent amounts, remaining
+ * balances, and utilization percentages. Provides visual progress bars to track
+ * budget consumption and identify categories approaching or exceeding limits.
+ *
+ * @param {InventoryBudgetTabProps} props - Component props
+ * @returns {JSX.Element} Budget category grid with utilization tracking
+ *
+ * @example
+ * ```tsx
+ * <InventoryBudgetTab
+ *   categories={[
+ *     {
+ *       id: '1',
+ *       name: 'Medical Supplies',
+ *       description: 'General medical and first aid supplies',
+ *       fiscalYear: 2024,
+ *       allocatedAmount: 50000,
+ *       spentAmount: 38500,
+ *       utilizationPercentage: 77
+ *     }
+ *   ]}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Grid layout adapts from 1 column (mobile) to 2 columns (desktop)
+ * - Each card shows: name, description, fiscal year, allocated/spent/remaining amounts
+ * - Utilization bar color-coded: green (<75%), yellow (75-90%), red (>90%)
+ * - "Add Category" button enables creation of new budget categories
+ * - Remaining amount calculated as allocated minus spent
+ * - Utilization percentage displayed with one decimal place
+ * - Currency formatted to 2 decimal places
+ *
+ * @security
+ * - Budget information visible to authorized budget managers only
+ * - Financial data access controlled by role-based permissions
+ * - Creation of new categories requires appropriate authorization
+ *
+ * @compliance
+ * - Supports budget tracking required for healthcare facility management
+ * - Fiscal year tracking enables multi-year budget comparisons
+ * - Utilization monitoring helps prevent budget overruns
+ * - Audit trail maintained for budget allocations and expenditures
+ */
 export default function InventoryBudgetTab({ categories }: InventoryBudgetTabProps) {
   return (
     <div className="space-y-4">

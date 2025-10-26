@@ -1,10 +1,85 @@
 /**
  * Medications Main Page Component
- * Purpose: Primary entry point for medication management
- * Features: Dashboard view with tabs, routing, and comprehensive medication oversight
  *
- * This component serves as the main container for all medication-related functionality,
- * providing role-based access control and a unified interface for healthcare staff.
+ * Primary entry point for comprehensive medication management in school healthcare settings.
+ * Provides a tabbed interface with role-based access control for medication tracking,
+ * administration, inventory management, and adverse reaction reporting.
+ *
+ * **Features:**
+ * - Multi-tab interface (Overview, List, Inventory, Reminders, Adverse Reactions)
+ * - Role-based tab visibility and access control
+ * - Real-time medication statistics dashboard
+ * - Quick action buttons for common workflows
+ * - URL-based tab state persistence
+ * - Responsive design for mobile and tablet devices
+ *
+ * **Medication Safety:**
+ * - DEA-compliant controlled substance tracking
+ * - Medication administration verification
+ * - Drug interaction checking integration
+ * - Witness requirements for high-risk medications
+ * - Parent consent tracking and validation
+ *
+ * **Tab Structure:**
+ * - **Overview**: Dashboard with quick stats and actions
+ * - **List**: Complete medication catalog with search and filtering
+ * - **Inventory**: Stock levels, expiration tracking, reorder alerts
+ * - **Reminders**: Scheduled medication administration reminders
+ * - **Adverse Reactions**: Adverse event reporting and tracking
+ *
+ * **State Management:**
+ * - Local component state for UI interactions
+ * - Redux store via useSelector for user authentication
+ * - URL query parameters for tab persistence
+ *
+ * @fileoverview Primary entry point for medication management
+ * @module pages/medications/Medications
+ * @version 2.0.0
+ *
+ * @component
+ * @returns {React.FC} Medications management page component
+ *
+ * @example
+ * ```tsx
+ * import Medications from './pages/medications/Medications';
+ *
+ * function App() {
+ *   return <Medications />;
+ * }
+ * ```
+ *
+ * @remarks
+ * **HIPAA Compliance**: All medication records contain PHI and must be handled according
+ * to HIPAA regulations. Access is logged for audit purposes.
+ *
+ * **Medication Safety**: This component implements multiple layers of medication safety:
+ * - Five Rights verification (Right patient, drug, dose, route, time)
+ * - Allergy checking before administration
+ * - Drug interaction screening
+ * - Dosage calculation validation
+ *
+ * **Controlled Substances**: Medications classified as controlled substances under DEA
+ * schedules require additional tracking and documentation. Witness signatures may be
+ * required for Schedule II medications.
+ *
+ * **Permissions**:
+ * - Overview Tab: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN
+ * - List Tab: ADMIN, NURSE, SCHOOL_ADMIN, DISTRICT_ADMIN, COUNSELOR
+ * - Inventory Tab: ADMIN, NURSE, SCHOOL_ADMIN
+ * - Reminders Tab: ADMIN, NURSE
+ * - Adverse Reactions Tab: ADMIN, NURSE, SCHOOL_ADMIN
+ *
+ * **Parent Consent**: Required for non-emergency medication administration.
+ * System validates consent before allowing medication administration.
+ *
+ * **Emergency Medications**: Emergency medications (e.g., epinephrine auto-injectors)
+ * may be administered without prior consent in life-threatening situations.
+ * Incident must be documented and parents notified immediately.
+ *
+ * @see {@link MedicationsOverviewTab} for dashboard view
+ * @see {@link MedicationsListTab} for medication catalog
+ * @see {@link medicationsSlice} for Redux state management
+ * @since 1.0.0
  */
 
 import React, { useState, useEffect } from 'react';
@@ -21,10 +96,48 @@ import MedicationsRemindersTab from './components/tabs/MedicationsRemindersTab';
 import MedicationsAdverseReactionsTab from './components/tabs/MedicationsAdverseReactionsTab';
 
 /**
- * Available tabs in the medications interface
+ * Available tabs in the medications interface.
+ *
+ * @typedef {string} MedicationTab
+ *
+ * @property {'overview'} overview - Dashboard with statistics and quick actions
+ * @property {'list'} list - Complete medication catalog with search/filter
+ * @property {'inventory'} inventory - Stock tracking and expiration management
+ * @property {'reminders'} reminders - Scheduled medication administration alerts
+ * @property {'adverse-reactions'} adverse-reactions - Adverse event reporting
+ *
+ * @remarks
+ * Tab selection is synced with URL query parameters for bookmarking and navigation.
+ * Each tab has specific role requirements for access control.
  */
 type MedicationTab = 'overview' | 'list' | 'inventory' | 'reminders' | 'adverse-reactions';
 
+/**
+ * Configuration for a single medication tab.
+ *
+ * @interface TabConfig
+ *
+ * @property {MedicationTab} id - Unique tab identifier
+ * @property {string} label - Display label for tab button
+ * @property {string} icon - Emoji icon for visual identification
+ * @property {React.ComponentType} component - React component to render for this tab
+ * @property {string[]} requiredRoles - Array of roles allowed to access this tab
+ *
+ * @remarks
+ * Role-based access control is enforced at the tab level. Users without required
+ * roles will not see the tab in the navigation and cannot access it via URL.
+ *
+ * @example
+ * ```typescript
+ * const tabConfig: TabConfig = {
+ *   id: 'overview',
+ *   label: 'Overview',
+ *   icon: '📊',
+ *   component: MedicationsOverviewTab,
+ *   requiredRoles: ['ADMIN', 'NURSE']
+ * };
+ * ```
+ */
 interface TabConfig {
   id: MedicationTab;
   label: string;
@@ -34,7 +147,29 @@ interface TabConfig {
 }
 
 /**
- * Tab configuration with role-based access control
+ * Tab configuration with role-based access control.
+ *
+ * Defines all available tabs in the medications interface with their display properties,
+ * components, and role requirements for access control.
+ *
+ * @constant {TabConfig[]} TABS
+ *
+ * @remarks
+ * **Access Control**: Each tab specifies required roles. Users must have at least one
+ * of the specified roles to access the tab.
+ *
+ * **Tab Ordering**: Tabs are displayed in the order defined in this array. Most commonly
+ * accessed tabs should appear first for better UX.
+ *
+ * **Component Lazy Loading**: Consider implementing React.lazy() for tab components to
+ * reduce initial bundle size and improve load performance.
+ *
+ * @example
+ * ```typescript
+ * // Check if user has access to a tab
+ * const hasAccess = TABS.find(tab => tab.id === 'inventory')
+ *   ?.requiredRoles.includes(user.role);
+ * ```
  */
 const TABS: TabConfig[] = [
   {

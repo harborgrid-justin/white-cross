@@ -173,7 +173,7 @@ export function useMedicationStatistics(
         ]);
         
         return {
-          activePrescriptions: medicationsResult.total || 0,
+          activePrescriptions: medicationsResult.pagination?.total || 0,
           scheduledToday: scheduleResult.schedule?.length || 0,
           completedToday: 0, // Would need completion tracking
           prescriptionsTrend: 0, // Would need historical data

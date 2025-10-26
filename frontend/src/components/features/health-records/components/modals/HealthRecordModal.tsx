@@ -1,18 +1,44 @@
 /**
- * WF-COMP-059 | HealthRecordModal.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: useState, functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * HealthRecordModal Component - Create/Edit Health Record Modal
+ *
+ * Modal dialog for creating and editing student health records with comprehensive
+ * validation and PHI data handling. Includes fields for record type, provider
+ * information, and detailed descriptions.
+ *
+ * @module components/features/health-records/modals/HealthRecordModal
+ *
+ * HIPAA Compliance:
+ * - All form data contains Protected Health Information (PHI)
+ * - Form validation prevents invalid PHI data entry
+ * - No client-side PHI persistence - cleared on modal close
+ * - Audit logging should be implemented on the backend for all PHI access
+ *
+ * @component
+ * @since 2025-10-17
  */
 
 import React, { useState } from 'react'
 import { X } from 'lucide-react'
 
+/**
+ * Props for HealthRecordModal component
+ *
+ * @interface HealthRecordModalProps
+ * @property {boolean} isOpen - Whether modal is currently displayed
+ * @property {() => void} onClose - Callback when modal should close
+ * @property {(data: any) => void} onSave - Callback with form data when saved
+ * @property {any} [initialData] - Pre-populated data for editing existing records
+ *
+ * @example
+ * ```tsx
+ * <HealthRecordModal
+ *   isOpen={isModalOpen}
+ *   onClose={() => setIsModalOpen(false)}
+ *   onSave={(data) => createHealthRecord(data)}
+ *   initialData={existingRecord}
+ * />
+ * ```
+ */
 interface HealthRecordModalProps {
   isOpen: boolean
   onClose: () => void

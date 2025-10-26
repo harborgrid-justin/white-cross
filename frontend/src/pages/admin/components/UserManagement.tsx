@@ -1,18 +1,67 @@
 /**
  * UserManagement Component
- * 
+ *
  * User Management for admin module.
  */
 
 import React from 'react';
 import { useAppSelector } from '../../../hooks/shared/store-hooks-index';
 
+/**
+ * Props for the UserManagement component.
+ *
+ * @interface UserManagementProps
+ * @property {string} [className] - Optional CSS class names for styling customization
+ */
 interface UserManagementProps {
   className?: string;
 }
 
 /**
- * UserManagement component - User Management
+ * User Management Component.
+ *
+ * Administrative interface for managing user accounts, roles, and permissions.
+ * Provides comprehensive user lifecycle management functionality.
+ *
+ * @component
+ * @param {UserManagementProps} props - Component props
+ *
+ * @example
+ * ```tsx
+ * <UserManagement className="admin-panel" />
+ * ```
+ *
+ * @remarks
+ * **RBAC Requirements:**
+ * - Requires 'admin' or 'user.manage' permission
+ * - Role assignment requires 'user.permissions' permission
+ *
+ * **Features:** (Under Development)
+ * - User account CRUD operations
+ * - Role and permission assignment
+ * - User activation/deactivation
+ * - Password reset functionality
+ * - User activity tracking
+ * - Department and team management
+ *
+ * **State Management:**
+ * - Connected to admin Redux slice via useAppSelector
+ * - Access to user management state
+ * - Real-time user statistics
+ *
+ * **Accessibility:**
+ * - Screen reader-friendly labels
+ * - Keyboard navigation support
+ * - Form validation feedback
+ *
+ * **Audit & Compliance:**
+ * - All user modifications logged
+ * - HIPAA-compliant audit trail
+ *
+ * @returns {JSX.Element} The rendered user management interface
+ *
+ * @see {@link useAppSelector} for Redux state access
+ * @see {@link Users} for the main user management page
  */
 const UserManagement: React.FC<UserManagementProps> = ({ className = '' }) => {
   return (

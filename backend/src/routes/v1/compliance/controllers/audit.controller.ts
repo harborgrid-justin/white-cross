@@ -1,7 +1,42 @@
 /**
- * Audit Log Controller
- * Business logic for comprehensive audit trail and security logging
- * HIPAA Compliance: All PHI access must be logged per 45 CFR § 164.308(a)(1)(ii)(D)
+ * @fileoverview Audit Log Controller - Comprehensive audit trail and security logging
+ *
+ * Provides HTTP request handlers for audit log management, PHI access tracking,
+ * security analysis, and compliance reporting. Implements comprehensive audit
+ * trail per HIPAA requirements with support for:
+ * - Audit log CRUD operations and querying
+ * - PHI access tracking and monitoring
+ * - Security incident detection and analysis
+ * - Compliance report generation
+ * - Log archival and retention management
+ *
+ * @module routes/v1/compliance/controllers/audit
+ * @since 1.0.0
+ *
+ * @requires @hapi/hapi - Hapi.js framework types
+ * @requires ../../../../services/audit/* - Audit service layer
+ * @requires ../../../shared/types/route.types - Request/Response types
+ * @requires ../../../shared/utils - Response utilities
+ *
+ * @compliance HIPAA - 45 CFR § 164.308(a)(1)(ii)(D) - Information system activity review
+ * @compliance HIPAA - 45 CFR § 164.312(b) - Audit controls for PHI access
+ * @compliance HITECH - 13402 - Breach notification requires audit trail
+ *
+ * @security All audit operations require authentication
+ * @security PHI access logging is mandatory and cannot be disabled
+ *
+ * @example
+ * Import and use in route definitions:
+ * ```typescript
+ * import { AuditController } from './controllers/audit.controller';
+ *
+ * server.route({
+ *   method: 'GET',
+ *   path: '/api/v1/audit/logs',
+ *   handler: AuditController.listAuditLogs,
+ *   options: { auth: 'jwt' }
+ * });
+ * ```
  */
 
 import { ResponseToolkit } from '@hapi/hapi';
@@ -23,7 +58,14 @@ import { SecurityAnalysisService } from '../../../../services/audit/securityAnal
 import { PHIAccessType, PHIDataCategory } from '../../../../services/audit/types';
 
 /**
- * Payload Interfaces
+ * Payload interface for creating audit log entries.
+ *
+ * @interface CreateAuditLogPayload
+ * @property {string} [userId] - ID of user performing action (auto-populated if not provided)
+ * @property {string} action - Action performed (e.g., "CREATE", "UPDATE", "DELETE", "VIEW")
+ * @property {string} entityType - Type of entity accessed (e.g., "Student", "Medication", "HealthRecord")
+ * @property {string} entityId - UUID of entity accessed
+ * @property {Record<string, any>} [changes] - Object containing before/after values for updates
  */
 interface CreateAuditLogPayload {
   userId?: string;
@@ -33,6 +75,19 @@ interface CreateAuditLogPayload {
   changes?: Record<string, any>;
 }
 
+/**
+ * Payload interface for logging PHI access events.
+ *
+ * @interface LogPhiAccessPayload
+ * @property {string} [userId] - ID of user accessing PHI (auto-populated if not provided)
+ * @property {string} accessType - Type of PHI access (READ, WRITE, PRINT, EXPORT, TRANSMIT)
+ * @property {string} entityType - PHI entity type (HealthRecord, Medication, etc.)
+ * @property {string} entityId - UUID of PHI entity accessed
+ * @property {string} studentId - UUID of student whose PHI was accessed
+ * @property {string} dataCategory - Category of PHI (MEDICAL, MENTAL_HEALTH, DENTAL, etc.)
+ * @property {boolean} [success] - Whether access was successful (default: true)
+ * @property {string} [errorMessage] - Error message if access failed
+ */
 interface LogPhiAccessPayload {
   userId?: string;
   accessType: string;
@@ -44,25 +99,115 @@ interface LogPhiAccessPayload {
   errorMessage?: string;
 }
 
+/**
+ * Payload interface for running security analysis.
+ *
+ * @interface RunSecurityAnalysisPayload
+ * @property {string} startDate - Analysis start date (ISO 8601)
+ * @property {string} endDate - Analysis end date (ISO 8601)
+ * @property {string} [analysisType] - Type of analysis to run (e.g., "ANOMALY_DETECTION", "BREACH_RISK")
+ */
 interface RunSecurityAnalysisPayload {
   startDate: string;
   endDate: string;
   analysisType?: string;
 }
 
+/**
+ * Payload interface for archiving old audit logs.
+ *
+ * @interface ArchiveLogsPayload
+ * @property {number} olderThanDays - Archive logs older than this many days
+ * @property {boolean} [dryRun] - If true, only simulate archival without actually moving logs
+ */
 interface ArchiveLogsPayload {
   olderThanDays: number;
   dryRun?: boolean;
 }
 
+/**
+ * Audit Controller - HTTP request handlers for audit log management.
+ *
+ * Provides comprehensive audit trail management including:
+ * - General audit log CRUD operations
+ * - PHI-specific access tracking
+ * - Security analysis and anomaly detection
+ * - Compliance reporting
+ * - Log retention and archival
+ *
+ * @class AuditController
+ * @static
+ * @since 1.0.0
+ *
+ * @compliance HIPAA - Implements audit controls per 45 CFR § 164.312(b)
+ * @compliance HITECH - Supports breach notification requirements
+ *
+ * @example
+ * Use in Hapi route definitions:
+ * ```typescript
+ * server.route({
+ *   method: 'GET',
+ *   path: '/api/v1/audit/logs',
+ *   handler: AuditController.listAuditLogs,
+ *   options: {
+ *     auth: 'jwt',
+ *     tags: ['api', 'audit'],
+ *     description: 'List audit logs with filters'
+ *   }
+ * });
+ * ```
+ */
 export class AuditController {
   /**
-   * AUDIT LOG MANAGEMENT
-   */
-
-  /**
-   * List audit logs with filtering and pagination
-   * GET /api/v1/audit/logs
+   * List audit logs with pagination and advanced filtering.
+   *
+   * Retrieves audit log entries with support for filtering by user, entity type,
+   * action, date range, and IP address. Commonly used for security reviews,
+   * compliance audits, and incident investigation.
+   *
+   * @route GET /api/v1/audit/logs
+   * @authentication JWT required - Admin or Compliance Officer role
+   *
+   * @param {AuthenticatedRequest} request - Authenticated request with query parameters:
+   * @param {number} [request.query.page=1] - Page number for pagination
+   * @param {number} [request.query.limit=20] - Items per page (max 100)
+   * @param {string} [request.query.userId] - Filter by user UUID
+   * @param {string} [request.query.entityType] - Filter by entity type
+   * @param {string} [request.query.action] - Filter by action type
+   * @param {string} [request.query.startDate] - Filter logs after this date (ISO 8601)
+   * @param {string} [request.query.endDate] - Filter logs before this date (ISO 8601)
+   * @param {string} [request.query.ipAddress] - Filter by IP address
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   *
+   * @returns {Promise<Response>} HTTP 200 with paginated audit logs
+   * @returns {200} { data: AuditLog[], pagination: PaginationMeta }
+   *
+   * @throws {UnauthorizedError} When JWT token is missing or invalid (401)
+   * @throws {ForbiddenError} When user lacks audit log access permission (403)
+   * @throws {ValidationError} When query parameters are invalid (400)
+   *
+   * @compliance HIPAA - Provides audit trail access per 45 CFR § 164.308(a)(1)(ii)(D)
+   *
+   * @example
+   * Query audit logs for specific user over date range:
+   * ```typescript
+   * // GET /api/v1/audit/logs?userId=123&startDate=2025-10-01&endDate=2025-10-31
+   * const request = {
+   *   query: {
+   *     userId: '123',
+   *     startDate: '2025-10-01',
+   *     endDate: '2025-10-31',
+   *     page: 1,
+   *     limit: 50
+   *   },
+   *   auth: { credentials: { userId: 'admin-uuid', role: 'ADMIN' } }
+   * };
+   * const response = await AuditController.listAuditLogs(request, h);
+   * // Returns: {
+   * //   data: [{ id: 'uuid', action: 'VIEW', entityType: 'Student', ... }],
+   * //   pagination: { page: 1, limit: 50, total: 234, totalPages: 5 }
+   * // }
+   * ```
    */
   static async listAuditLogs(request: AuthenticatedRequest, h: ResponseToolkit) {
     const { page, limit } = parsePagination(request.query);

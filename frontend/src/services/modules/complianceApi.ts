@@ -1,13 +1,105 @@
 /**
- * WF-COMP-274 | complianceApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview HIPAA/FERPA Compliance Management API service
+ * @module services/modules/complianceApi
+ * @category Services - Compliance & Healthcare Regulations
+ *
+ * Provides comprehensive HIPAA (Health Insurance Portability and Accountability Act) and
+ * FERPA (Family Educational Rights and Privacy Act) compliance management capabilities
+ * for the White Cross healthcare platform. Implements compliance tracking, consent
+ * management, policy acknowledgment, and audit trail functionality.
+ *
+ * Key Features:
+ * - Compliance report generation and tracking
+ * - HIPAA/FERPA compliance checklist management
+ * - Consent form creation and digital signature capture
+ * - Student consent tracking and management
+ * - Policy document management and acknowledgment
+ * - Compliance statistics and analytics
+ * - Audit log access for compliance verification
+ * - Automated compliance report generation
+ *
+ * HIPAA Compliance:
+ * - PHI (Protected Health Information) access tracking
+ * - Consent management for PHI disclosure
+ * - Audit trails for all PHI operations
+ * - Privacy policy acknowledgment tracking
+ * - Breach notification workflows
+ * - Business Associate Agreement (BAA) management
+ * - Minimum necessary standard enforcement
+ * - Security incident response tracking
+ *
+ * FERPA Compliance:
+ * - Educational records access control
+ * - Parental consent for information disclosure
+ * - Student rights acknowledgment (age 18+)
+ * - Directory information consent management
+ * - Third-party disclosure tracking
+ * - Annual notification requirements
+ *
+ * Consent Form Management:
+ * - Digital consent form templates
+ * - Electronic signature capture
+ * - Multi-party consent support (parent, guardian, student)
+ * - Consent withdrawal tracking
+ * - Consent expiration management
+ * - Consent audit trail
+ *
+ * Compliance Reports:
+ * - Automated compliance checklist generation
+ * - Evidence collection and documentation
+ * - Findings and recommendations tracking
+ * - Compliance score calculation
+ * - Report status lifecycle (DRAFT, SUBMITTED, APPROVED, REJECTED)
+ * - Historical compliance tracking
+ *
+ * Policy Document Management:
+ * - Policy creation and versioning
+ * - Policy approval workflows
+ * - User acknowledgment tracking
+ * - Policy review reminders
+ * - Policy expiration management
+ * - Policy distribution tracking
+ *
+ * @example Generate compliance report
+ * ```typescript
+ * import { complianceApi } from '@/services/modules/complianceApi';
+ *
+ * const report = await complianceApi.generateReport(
+ *   'HIPAA_ANNUAL',
+ *   'FISCAL_YEAR_2025'
+ * );
+ * console.log(`Report created with ${report.checklistItems.length} items`);
+ * ```
+ *
+ * @example Capture digital consent signature
+ * ```typescript
+ * const signature = await complianceApi.signConsentForm({
+ *   consentFormId: 'consent-uuid-123',
+ *   studentId: 'student-uuid-456',
+ *   signedBy: 'John Parent',
+ *   relationship: 'PARENT',
+ *   signatureData: base64SignatureImage
+ * });
+ * console.log(`Consent signed at ${signature.signedAt}`);
+ * ```
+ *
+ * @example Track policy acknowledgment
+ * ```typescript
+ * const ack = await complianceApi.acknowledgePolicy('policy-uuid-789');
+ * console.log(`Policy acknowledged by user ${ack.userId}`);
+ * ```
+ *
+ * @example Get compliance statistics
+ * ```typescript
+ * const stats = await complianceApi.getStatistics('QUARTERLY');
+ * console.log(`Compliance score: ${stats.overallScore}%`);
+ * console.log(`Total reports: ${stats.totalReports}`);
+ * console.log(`Open findings: ${stats.openFindings}`);
+ * ```
+ *
+ * @see {@link auditApi} for detailed audit logging
+ * @see {@link https://www.hhs.gov/hipaa HIPAA Regulations}
+ * @see {@link https://www2.ed.gov/policy/gen/guid/fpco/ferpa FERPA Regulations}
  */
 
 import type { IComplianceApi } from '../types'

@@ -1,25 +1,93 @@
 /**
- * WF-IDX-159 | Appointments.tsx - Appointments Management Page
- * Purpose: Comprehensive appointment scheduling and management with full CRUD operations
- * Upstream: ../../services/api, ../../contexts/AuthContext | Dependencies: lucide-react, ../../services/api, react-hot-toast
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export | Key Features: useState, useEffect, component, CRUD operations
- * Last Updated: 2025-10-25 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: Appointments page with CREATE, READ, UPDATE, DELETE functionality
- */
-
-/**
- * Appointments Page
- * Comprehensive appointment scheduling and management
- * @module pages/health/Appointments
+ * Appointments Management Page - Health Module
  *
- * Features:
- * - CREATE: Schedule new appointments via modal form
- * - READ: Display appointments list with filtering
- * - UPDATE: Edit existing appointments (full implementation)
- * - DELETE: Cancel appointments with confirmation
+ * Comprehensive appointment scheduling and management system providing full CRUD operations
+ * for student healthcare visits. Integrates with student records, nurse schedules, and
+ * health records for seamless healthcare coordination.
+ *
+ * **Features:**
+ * - Complete CRUD operations (Create, Read, Update, Delete/Cancel)
+ * - Advanced filtering by status, type, and date range
+ * - Server-side pagination with configurable page sizes
+ * - Appointment statistics dashboard (total, scheduled, completed, today)
+ * - Calendar export functionality (iCal format)
+ * - Real-time appointment updates via TanStack Query
+ * - No-show tracking and reporting
+ * - Appointment status management
+ *
+ * **Appointment Types:**
+ * - Routine Checkup: Regular health assessments
+ * - Medication Administration: Scheduled medication doses
+ * - Injury Assessment: Accident/injury evaluation
+ * - Illness Evaluation: Sick student assessment
+ * - Follow-up: Post-treatment or screening follow-up
+ * - Screening: Vision, hearing, dental screenings
+ * - Emergency: Urgent healthcare needs
+ *
+ * **Workflow:**
+ * 1. Schedule appointment via modal form
+ * 2. Student arrives and appointment marked IN_PROGRESS
+ * 3. Nurse completes visit and updates to COMPLETED
+ * 4. Health records updated with visit details
+ * 5. Parent notification if required
+ *
+ * **State Management:**
+ * - TanStack Query for server state (appointments data)
+ * - URL-based filters with usePersistedFilters hook
+ * - Local state for modal visibility and form data
+ * - Optimistic updates for responsive UX
+ *
+ * **Permissions:**
+ * - View Appointments: All authenticated healthcare staff
+ * - Create/Schedule: ADMIN, NURSE roles
+ * - Edit/Update: ADMIN, NURSE roles (scheduled appointments only)
+ * - Cancel: ADMIN, NURSE roles
+ * - Mark No-Show: ADMIN, NURSE roles
+ *
+ * @module pages/health/Appointments
+ * @version 2.0.0
+ *
+ * @component
+ * @returns {React.FC} Appointments management page component
+ *
+ * @example
+ * ```tsx
+ * import Appointments from './pages/health/Appointments';
+ *
+ * function App() {
+ *   return <Appointments />;
+ * }
+ * ```
+ *
+ * @remarks
+ * **HIPAA Compliance**: Appointment records contain PHI (student health information).
+ * All access must be logged for audit purposes. Student names visible only to authorized staff.
+ *
+ * **Parent Notification**: Parents must be notified of appointment outcomes, especially
+ * for injury assessments, illness evaluations, or when referrals are made.
+ *
+ * **Emergency Appointments**: Emergency appointments bypass normal scheduling and can be
+ * created with minimal information. Full details captured during or after visit.
+ *
+ * **No-Show Tracking**: Frequent no-shows may indicate transportation issues, language
+ * barriers, or other family challenges requiring social services intervention.
+ *
+ * **Calendar Integration**: Export functionality generates iCal files compatible with
+ * Google Calendar, Outlook, and Apple Calendar for nurse scheduling.
+ *
+ * **Appointment Conflicts**: System should check for scheduling conflicts (nurse availability,
+ * student class schedule) before confirming appointments.
+ *
+ * **Follow-up Reminders**: Automated reminders sent to students/parents 24 hours before
+ * scheduled appointments to reduce no-show rates.
+ *
+ * **Accessibility**: Form inputs include proper labels, error messages, and keyboard
+ * navigation support for compliance with accessibility standards.
+ *
+ * @see {@link AppointmentModal} for create/edit form
+ * @see {@link useAppointmentsData} for data fetching hook
+ * @see {@link appointmentsApi} for API integration
+ * @since 1.0.0
  */
 
 import React, { useState, useEffect } from 'react'

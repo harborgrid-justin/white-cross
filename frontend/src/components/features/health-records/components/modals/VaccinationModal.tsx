@@ -34,7 +34,7 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
   onClose,
   onSave,
   vaccination,
-  errors = {},
+  errors = {} as VaccinationFormErrors,
   title
 }) => {
   if (!isOpen) return null

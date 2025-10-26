@@ -87,7 +87,13 @@ export class SyncManager {
         recordsFailed: syncResult.recordsFailed,
         duration,
         errorMessage: syncResult.errors?.join('; '),
-        details: { errors: syncResult.errors }
+        details: {
+          errors: syncResult.errors?.map((error, index) => ({
+            code: 'SYNC_ERROR',
+            message: error,
+            field: `record_${index}`
+          }))
+        }
       });
 
       logger.info(`Sync ${syncResult.success ? 'completed' : 'failed'} for ${integration.name}`);

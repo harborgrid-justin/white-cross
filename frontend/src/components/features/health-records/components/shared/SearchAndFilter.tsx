@@ -1,18 +1,51 @@
 /**
- * WF-COMP-025 | SearchAndFilter.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * SearchAndFilter Component - Search input with filter and sort controls
+ *
+ * Reusable component providing search, filter, and sort functionality for
+ * lists and tables. Used across health records, students, and other data views.
+ *
+ * @module components/features/health-records/shared/SearchAndFilter
+ * @component
+ * @since 2025-10-17
  */
 
 import React from 'react'
 import { Search, Filter } from 'lucide-react'
 
+/**
+ * Props for SearchAndFilter component
+ *
+ * @interface SearchAndFilterProps
+ * @property {string} searchQuery - Current search query value
+ * @property {(query: string) => void} onSearchChange - Callback when search changes
+ * @property {Array<{value: string, label: string}>} [filterOptions=[]] - Filter dropdown options
+ * @property {string} [filterValue=''] - Current filter selection
+ * @property {(value: string) => void} [onFilterChange] - Callback when filter changes
+ * @property {Array<{value: string, label: string}>} [sortOptions=[]] - Sort dropdown options
+ * @property {string} [sortValue=''] - Current sort selection
+ * @property {(value: string) => void} [onSortChange] - Callback when sort changes
+ * @property {string} [searchPlaceholder='Search...'] - Placeholder text for search input
+ * @property {boolean} [showFilter=true] - Show filter dropdown
+ * @property {boolean} [showSort=true] - Show sort dropdown
+ * @property {Object} [testIds={}] - Test IDs for testing automation
+ * @property {string} [testIds.search] - Test ID for search input
+ * @property {string} [testIds.filter] - Test ID for filter select
+ * @property {string} [testIds.sort] - Test ID for sort select
+ *
+ * @example
+ * ```tsx
+ * <SearchAndFilter
+ *   searchQuery={query}
+ *   onSearchChange={setQuery}
+ *   filterOptions={[
+ *     { value: 'all', label: 'All Types' },
+ *     { value: 'physical', label: 'Physical Exams' }
+ *   ]}
+ *   filterValue={filterType}
+ *   onFilterChange={setFilterType}
+ * />
+ * ```
+ */
 interface SearchAndFilterProps {
   searchQuery: string
   onSearchChange: (query: string) => void

@@ -213,7 +213,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
   autoRefresh = false,
   refreshInterval = 30000,
 }) => {
-  const { handleApiError } = useApiError();
+  const { handleError } = useApiError();
   const { logCompliantAccess } = useHealthcareCompliance();
   const queryClient = useQueryClient();
 
@@ -366,7 +366,8 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
           },
         ].slice(0, displayLimit) as ActivityItem[];
       } catch (err: any) {
-        throw handleApiError(err, 'fetch_incident_activity_log');
+        handleError(err, 'fetch_incident_activity_log');
+        throw err;
       }
     },
     staleTime: autoRefresh ? 0 : 1000 * 60 * 5, // 5 minutes if not auto-refresh

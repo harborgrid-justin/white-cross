@@ -60,14 +60,16 @@ export interface UpdateIntegrationConfigData {
 
 /**
  * Integration test result details
+ * Flexible structure to accommodate different integration types
  */
 export interface IntegrationTestDetails {
-  endpointReachable: boolean;
-  authenticationValid: boolean;
-  dataFormatValid: boolean;
+  endpointReachable?: boolean;
+  authenticationValid?: boolean;
+  dataFormatValid?: boolean;
   latency?: number;
   serverVersion?: string;
   capabilities?: string[];
+  [key: string]: any; // Allow additional properties for integration-specific details
 }
 
 /**
@@ -77,7 +79,7 @@ export interface IntegrationTestResult {
   success: boolean;
   message: string;
   responseTime?: number;
-  details?: IntegrationTestDetails;
+  details?: IntegrationTestDetails | Record<string, any>;
 }
 
 /**

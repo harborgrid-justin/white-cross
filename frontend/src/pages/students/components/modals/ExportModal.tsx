@@ -1,22 +1,31 @@
 /**
- * WF-COMP-094 | ExportModal.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Export Modal Component
- * Format selection for student data export
+ * Export Modal Component - White Cross Healthcare Platform
+ *
+ * Format selection dialog for exporting student data to CSV or PDF formats.
+ * Enables bulk export operations for reporting, data analysis, and record keeping
+ * with FERPA-compliant data privacy controls.
+ *
+ * @fileoverview Student data export modal with FERPA privacy controls
+ * @module pages/students/components/modals/ExportModal
+ * @version 1.0.0
  */
 
 import React from 'react'
 
+/**
+ * Props for the ExportModal component.
+ *
+ * @interface ExportModalProps
+ * @property {boolean} show - Controls modal visibility
+ * @property {number} selectedCount - Number of students selected for export
+ * @property {() => void} onExportCSV - Callback when CSV export format is selected
+ * @property {() => void} onExportPDF - Callback when PDF export format is selected
+ * @property {() => void} onCancel - Callback when user cancels export operation
+ *
+ * @remarks
+ * **Data Privacy**: Exported student data is FERPA-protected educational records.
+ * Implement appropriate security controls and audit logging for exports.
+ */
 interface ExportModalProps {
   show: boolean
   selectedCount: number
@@ -25,6 +34,111 @@ interface ExportModalProps {
   onCancel: () => void
 }
 
+/**
+ * Export Modal Component.
+ *
+ * Simple format selection dialog for student data export operations. Displays
+ * the number of selected students and provides options for CSV (data analysis)
+ * or PDF (printable reports) export formats.
+ *
+ * @component
+ * @param {ExportModalProps} props - Component props
+ * @returns {React.ReactElement | null} Rendered modal or null when not visible
+ *
+ * @example
+ * ```tsx
+ * import { ExportModal } from './modals/ExportModal';
+ *
+ * function StudentListWithExport() {
+ *   const [showExportModal, setShowExportModal] = useState(false);
+ *   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+ *
+ *   const handleExportCSV = async () => {
+ *     const data = await studentsApi.exportStudents(selectedStudents, 'csv');
+ *     downloadFile(data, 'students.csv');
+ *     setShowExportModal(false);
+ *   };
+ *
+ *   const handleExportPDF = async () => {
+ *     const data = await studentsApi.exportStudents(selectedStudents, 'pdf');
+ *     downloadFile(data, 'students.pdf');
+ *     setShowExportModal(false);
+ *   };
+ *
+ *   return (
+ *     <>
+ *       <button onClick={() => setShowExportModal(true)}>
+ *         Export Selected ({selectedStudents.length})
+ *       </button>
+ *       <ExportModal
+ *         show={showExportModal}
+ *         selectedCount={selectedStudents.length}
+ *         onExportCSV={handleExportCSV}
+ *         onExportPDF={handleExportPDF}
+ *         onCancel={() => setShowExportModal(false)}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Export Formats**:
+ *
+ * 1. **CSV (Comma-Separated Values)**:
+ *    - Ideal for data analysis in Excel, Google Sheets
+ *    - Easy import into other systems
+ *    - Supports bulk data processing
+ *    - Lightweight file format
+ *
+ * 2. **PDF (Portable Document Format)**:
+ *    - Ideal for printable reports
+ *    - Maintains formatting across devices
+ *    - Suitable for physical records
+ *    - Professional document appearance
+ *
+ * **FERPA Compliance**:
+ * - All exported data is educational records under FERPA
+ * - Exports should be audit logged with:
+ *   - User performing export
+ *   - Timestamp of export
+ *   - Number and IDs of students exported
+ *   - Export format selected
+ *   - Reason/purpose for export
+ * - Exported files must be stored securely
+ * - Access to exported data should be restricted
+ * - Consider encryption for exported files
+ *
+ * **Data Privacy Controls**:
+ * - Export operations should require elevated permissions
+ * - Consider implementing export approval workflow for large exports
+ * - PHI (allergies, medications) should be excluded or require additional consent
+ * - Limit exportable fields based on user role
+ * - Implement download tracking and file lifecycle management
+ *
+ * **Use Cases**:
+ * - **Reporting**: Export for school administration reports
+ * - **Data Analysis**: Export to Excel for enrollment trends, demographics
+ * - **Record Keeping**: PDF exports for physical filing
+ * - **System Migration**: CSV export for moving data between systems
+ * - **Parent Communication**: Generate printable student rosters
+ *
+ * **Security Considerations**:
+ * - Verify user has permission to export student data
+ * - Implement rate limiting to prevent bulk data extraction
+ * - Log all export attempts (successful and failed)
+ * - Consider requiring two-factor authentication for exports
+ * - Automatically expire downloaded files after period
+ *
+ * **Accessibility**:
+ * - Clear format options with descriptive labels
+ * - Selected count displayed prominently
+ * - Test IDs for automated testing
+ * - Keyboard navigation support
+ *
+ * @see {@link Students} for student selection interface
+ * @see {@link studentsApi.exportStudents} for export API
+ */
 export const ExportModal: React.FC<ExportModalProps> = ({
   show,
   selectedCount,

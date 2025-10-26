@@ -18,6 +18,17 @@ import {
   XCircle
 } from 'lucide-react'
 
+/**
+ * Props for the CommunicationStats component
+ *
+ * @interface CommunicationStatsProps
+ * @property {object | null} statistics - Communication statistics data
+ * @property {number} [statistics.totalMessages] - Total number of messages sent
+ * @property {object} [statistics.deliveryStatus] - Message delivery status breakdown
+ * @property {number} [statistics.deliveryStatus.DELIVERED] - Number of successfully delivered messages
+ * @property {number} [statistics.deliveryStatus.PENDING] - Number of pending messages
+ * @property {number} [statistics.deliveryStatus.FAILED] - Number of failed messages
+ */
 interface CommunicationStatsProps {
   statistics: {
     totalMessages?: number
@@ -29,6 +40,41 @@ interface CommunicationStatsProps {
   } | null
 }
 
+/**
+ * CommunicationStats - Displays communication statistics in a dashboard grid
+ *
+ * Renders a responsive grid showing total messages sent and their delivery status
+ * breakdown (delivered, pending, failed). Used in the communication center dashboard
+ * to provide at-a-glance insights into message delivery performance.
+ *
+ * @param {CommunicationStatsProps} props - Component props
+ * @returns {JSX.Element | null} Statistics grid or null if no data available
+ *
+ * @example
+ * ```tsx
+ * <CommunicationStats
+ *   statistics={{
+ *     totalMessages: 1250,
+ *     deliveryStatus: {
+ *       DELIVERED: 1180,
+ *       PENDING: 45,
+ *       FAILED: 25
+ *     }
+ *   }}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Returns null if statistics data is not provided
+ * - Displays "0" for missing or undefined counts
+ * - Grid layout adapts from 1 column (mobile) to 4 columns (desktop)
+ * - Color-coded icons: blue (total), green (delivered), yellow (pending), red (failed)
+ *
+ * @security
+ * - Does not display PHI (Protected Health Information)
+ * - Statistics are aggregated counts only, no individual recipient data
+ * - Suitable for display in audit logs and dashboards
+ */
 export default function CommunicationStats({ statistics }: CommunicationStatsProps) {
   if (!statistics) return null
 

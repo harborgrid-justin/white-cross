@@ -41,7 +41,64 @@ import InventoryAnalyticsTab from '../../components/features/inventory/component
 import type { InventoryTab, InventorySortColumn, InventoryFilters } from './types';
 
 /**
- * Main Inventory Page Component
+ * Main Inventory Page Component.
+ *
+ * Comprehensive medical inventory management system for school health offices.
+ * Provides real-time stock tracking, automated reorder alerts, vendor management,
+ * purchase order tracking, budget monitoring, and analytics.
+ *
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <Inventory />
+ * ```
+ *
+ * @remarks
+ * **RBAC Requirements:**
+ * - Requires 'admin' or 'inventory.view' permission to access
+ * - 'inventory.manage' permission required for add/edit/delete operations
+ *
+ * **Features:**
+ * - **Items Management**: Real-time stock tracking with category organization
+ * - **Vendor Management**: Vendor directory with contact and performance tracking
+ * - **Purchase Orders**: Order creation, approval workflow, and receiving tracking
+ * - **Budget Monitoring**: Category-based budget allocation and spending analysis
+ * - **Analytics**: Usage trends, cost analysis, and inventory optimization
+ * - **Automated Alerts**: Low stock warnings, expiration notifications, budget alerts
+ *
+ * **State Management:**
+ * - **Filter Persistence**: usePersistedFilters with localStorage and URL sync
+ * - **Pagination**: usePageState with configurable page sizes (10, 20, 50, 100)
+ * - **Sorting**: useSortState with persistent user preferences
+ * - **Data Fetching**: Custom useInventoryData hook with conditional loading
+ *
+ * **Advanced Features:**
+ * - Tab-based navigation (Items, Vendors, Orders, Budget, Analytics)
+ * - Multi-criteria filtering (search, category, alert level, stock status)
+ * - Real-time statistics dashboard
+ * - URL state synchronization for shareable links
+ * - Debounced search (300ms) for performance
+ *
+ * **Accessibility:**
+ * - Tab navigation with keyboard support (Arrow keys, Home, End)
+ * - Screen reader-friendly table headers and labels
+ * - ARIA attributes for interactive elements
+ * - Focus management in modals and dropdowns
+ * - High-contrast status indicators
+ *
+ * **Performance Optimizations:**
+ * - Conditional data fetching (load only active tab data)
+ * - Filter debouncing to reduce API calls
+ * - Pagination to limit rendered items
+ * - Memoized filter logic via useInventoryFilters
+ * - Automatic reset to page 1 on filter changes
+ *
+ * @returns {JSX.Element} The rendered inventory management interface
+ *
+ * @see {@link useInventoryData} for data fetching hook
+ * @see {@link useInventoryFilters} for filtering logic
+ * @see {@link usePersistedFilters} for filter persistence
  */
 export default function Inventory() {
   // =====================

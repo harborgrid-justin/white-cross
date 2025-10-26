@@ -1,29 +1,135 @@
 /**
- * WF-COMP-097 | StudentFormFields.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: react, @/types/student.types
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component, arrow component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Student Form Fields Component
- * Reusable form fields for student data entry
+ * Student Form Fields Component - White Cross Healthcare Platform
+ *
+ * Reusable form field collection for student data entry. Contains all input fields
+ * required for student demographic, enrollment, and contact information with
+ * integrated validation error display.
+ *
+ * @fileoverview Reusable student form fields with FERPA-compliant data validation
+ * @module pages/students/components/modals/StudentFormFields
+ * @version 1.0.0
  */
 
 import React from 'react'
 import { StudentFormData, ValidationErrors } from '@/types/student.types'
 
+/**
+ * Props for the StudentFormFields component.
+ *
+ * @interface StudentFormFieldsProps
+ * @property {StudentFormData} formData - Current form data state for all student fields
+ * @property {ValidationErrors} errors - Validation error messages keyed by field name
+ * @property {(field: keyof StudentFormData, value: string) => void} onInputChange - Callback fired when any field value changes
+ *
+ * @remarks
+ * **Component Design**: Presentational component with no internal state. All state
+ * management delegated to parent component for maximum reusability.
+ */
 interface StudentFormFieldsProps {
   formData: StudentFormData
   errors: ValidationErrors
   onInputChange: (field: keyof StudentFormData, value: string) => void
 }
 
+/**
+ * Student Form Fields Component.
+ *
+ * Comprehensive form field collection for student record creation and editing.
+ * Includes required demographic fields (name, DOB, grade), optional health fields
+ * (medical record number), enrollment tracking, and emergency contact information.
+ *
+ * @component
+ * @param {StudentFormFieldsProps} props - Component props
+ * @returns {React.ReactElement} Rendered form fields with validation errors
+ *
+ * @example
+ * ```tsx
+ * import { StudentFormFields } from './StudentFormFields';
+ *
+ * function StudentForm() {
+ *   const [formData, setFormData] = useState<StudentFormData>(initialData);
+ *   const [errors, setErrors] = useState<ValidationErrors>({});
+ *
+ *   const handleChange = (field: keyof StudentFormData, value: string) => {
+ *     setFormData({ ...formData, [field]: value });
+ *   };
+ *
+ *   return (
+ *     <form onSubmit={handleSubmit}>
+ *       <StudentFormFields
+ *         formData={formData}
+ *         errors={errors}
+ *         onInputChange={handleChange}
+ *       />
+ *       <button type="submit">Save Student</button>
+ *     </form>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Field Categories**:
+ *
+ * 1. **Required Demographics** (FERPA-protected):
+ *    - Student Number: Unique identifier within school system
+ *    - First Name, Last Name: Legal name for official records
+ *    - Date of Birth: Used for age verification and grade placement
+ *    - Grade: Current grade level (K-12)
+ *    - Gender: Self-identified gender (MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY)
+ *
+ * 2. **Emergency Contact** (Critical for Safety):
+ *    - Emergency Contact Phone: Primary contact for emergencies
+ *
+ * 3. **Optional Health Integration**:
+ *    - Medical Record Number: Links to external health record systems (MRN)
+ *    - Used to correlate with hospital, clinic, or insurance records
+ *
+ * 4. **Optional Enrollment Tracking**:
+ *    - Enrollment Date: Date student joined the school
+ *    - Email: Student contact email (for older students)
+ *
+ * **Form Validation**:
+ * - Required field validation enforced by parent component
+ * - Email format validation when provided
+ * - Phone number format validation for emergency contact
+ * - Date validation for DOB and enrollment date
+ * - Student number uniqueness checked server-side
+ * - Inline error display below each field
+ *
+ * **FERPA Compliance**:
+ * - All student demographic data is educational record under FERPA
+ * - Parental consent may be required for data collection
+ * - Data access restricted to school officials with legitimate educational interest
+ * - Changes to student records should trigger audit log entries
+ *
+ * **Grade Level Options**:
+ * - Kindergarten (K)
+ * - Grades 1-12 (elementary, middle, high school)
+ * - Supports standard K-12 education system
+ *
+ * **Gender Options** (Privacy-Conscious):
+ * - MALE, FEMALE, OTHER: Standard options
+ * - PREFER_NOT_TO_SAY: Respects student privacy
+ * - Aligns with modern educational privacy standards
+ *
+ * **Accessibility**:
+ * - All inputs have associated labels for screen readers
+ * - Error messages linked to fields via aria-describedby
+ * - Semantic HTML with proper input types
+ * - Test IDs for automated testing and E2E verification
+ *
+ * **UI/UX Patterns**:
+ * - Consistent spacing with space-y-4 utility
+ * - Standard input-field styling via CSS classes
+ * - Red error text displayed below fields when validation fails
+ * - Placeholder text provides input format examples
+ * - Date inputs use native date picker for better UX
+ * - Select dropdowns for constrained choices (grade, gender)
+ *
+ * @see {@link StudentFormModal} for parent modal component
+ * @see {@link StudentFormData} for form data type definition
+ * @see {@link ValidationErrors} for error structure
+ */
 export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
   formData,
   errors,

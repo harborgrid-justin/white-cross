@@ -1,3 +1,71 @@
+/**
+ * @fileoverview Dashboard Redux Slice
+ *
+ * Comprehensive state management for nurse dashboard with real-time statistics, recent activities,
+ * upcoming appointments, health alerts, and chart data. Provides aggregated view of daily operations
+ * including student health status, appointment schedules, and critical alerts requiring immediate attention.
+ *
+ * **Key Features:**
+ * - Real-time dashboard statistics (total students, appointments today, pending medications)
+ * - Recent activity feed with filtering and pagination
+ * - Upcoming appointments view with priority indicators
+ * - Health alerts with severity levels (critical, high, medium, low)
+ * - Chart data for visualizations (medication trends, appointment patterns, health metrics)
+ * - Quick actions for common nurse workflows
+ * - Date range filtering for historical data
+ * - School/district scope selection for multi-location support
+ * - Automatic cache refresh with configurable intervals
+ *
+ * **State Management Architecture:**
+ * - Redux Toolkit with manual slice creation (not using EntityAdapter)
+ * - Separate loading/error states for each dashboard section
+ * - No localStorage persistence (dashboard data is transient)
+ * - Real-time polling via TanStack Query (30-second intervals)
+ * - Optimistic health alert management
+ *
+ * **HIPAA Compliance:**
+ * - All dashboard operations trigger PHI access audit logs
+ * - Dashboard displays student counts but not identifiable information in summaries
+ * - Activity feed contains PHI (student names, actions) - requires audit logging
+ * - Health alerts may contain student identifiers - logged access
+ * - No caching of dashboard data in localStorage
+ * - Role-based data filtering (nurses see only assigned students)
+ *
+ * **Dashboard Data Types:**
+ * - **Statistics**: Aggregate counts, trends, and metrics
+ * - **Recent Activities**: Last 10-50 nurse actions with timestamps
+ * - **Upcoming Appointments**: Next 24 hours with conflict indicators
+ * - **Health Alerts**: Critical issues requiring immediate attention
+ * - **Chart Data**: Time-series data for visualizations
+ * - **Quick Actions**: Contextual shortcuts for common tasks
+ *
+ * **Real-Time Update Strategy:**
+ * - Auto-refresh every 30 seconds for critical dashboard sections
+ * - Manual refresh via refreshDashboardCache action
+ * - Optimistic updates for alert acknowledgment
+ * - Server-sent events for critical health alerts (future enhancement)
+ * - Background polling without blocking UI
+ *
+ * **TanStack Query Integration:**
+ * - Dashboard stats: 30-second cache with auto-refresh
+ * - Recent activities: 1-minute cache, invalidate on new actions
+ * - Upcoming appointments: 30-second cache with polling
+ * - Health alerts: 15-second cache, real-time critical alerts
+ * - Chart data: 5-minute cache, invalidate on data changes
+ *
+ * **Performance Optimizations:**
+ * - Bulk data loading via fetchCompleteDashboardData (reduces API calls)
+ * - Selective re-rendering with memoized selectors
+ * - Lazy loading for chart data (load only when chart tab active)
+ * - Debounced date range updates
+ * - Cached scope selections
+ *
+ * @module pages/dashboard/store/dashboardSlice
+ * @see {@link services/modules/dashboardApi} for API implementation
+ * @see {@link types/dashboard} for type definitions
+ * @see {@link hooks/useDashboard} for React hooks integration
+ */
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { dashboardApi } from '../../../services';
 import type {
@@ -15,9 +83,27 @@ import type {
 
 /**
  * Dashboard API Service Adapter
- * 
- * Provides a clean interface to the dashboard API methods
- * with consistent error handling and response formatting.
+ *
+ * Provides a clean interface to dashboard API methods with consistent error handling,
+ * response formatting, and support for multiple data aggregation patterns. Handles both
+ * individual section fetching and bulk dashboard data loading.
+ *
+ * @class DashboardApiService
+ *
+ * @remarks
+ * **Authentication**: All methods require valid JWT token with nurse/admin role
+ * **Authorization**: Data filtered by user's assigned students/schools
+ * **Rate Limiting**: 200 requests per minute (dashboard has high refresh rate)
+ * **Audit Logging**: Dashboard views trigger PHI access audit logs
+ * **Caching**: Server-side caching for 15-30 seconds depending on data type
+ * **Performance**: Use getCompleteDashboardData() for initial load to reduce round trips
+ *
+ * @example
+ * ```typescript
+ * const apiService = new DashboardApiService();
+ * const stats = await apiService.getDashboardStats();
+ * console.log(`Total students: ${stats.totalStudents}`);
+ * ```
  */
 class DashboardApiService {
   /**

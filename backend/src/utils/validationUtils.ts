@@ -12,7 +12,22 @@
  * @security XSS prevention
  */
 
-import { isValid as isValidDate, parseISO, differenceInDays } from 'date-fns';
+// Note: date-fns import commented out - install package if needed
+// import { isValid as isValidDate, parseISO, differenceInDays } from 'date-fns';
+
+// Fallback implementations for date validation
+const isValidDate = (date: Date): boolean => {
+  return date instanceof Date && !isNaN(date.getTime());
+};
+
+const parseISO = (dateString: string): Date => {
+  return new Date(dateString);
+};
+
+const differenceInDays = (date1: Date, date2: Date): number => {
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.floor((date1.getTime() - date2.getTime()) / msPerDay);
+};
 
 /**
  * Medication frequency patterns allowed in the system

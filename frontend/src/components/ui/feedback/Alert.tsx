@@ -1,6 +1,31 @@
+/**
+ * WF-ALERT-001 | Alert.tsx - Alert Component
+ * Purpose: Alert notification component with multiple variants and dismissible functionality
+ * Upstream: Design system | Dependencies: React, Tailwind CSS, cn utility
+ * Downstream: Pages, forms, notifications | Called by: Application components
+ * Related: AlertBanner, Toast components
+ * Exports: Alert, AlertTitle, AlertDescription components | Key Features: Variants, sizes, dismissible, icons
+ * Last Updated: 2025-10-26 | File Type: .tsx
+ * Critical Path: Render alert → User reads message → Optional dismiss action
+ * LLM Context: Alert component for White Cross healthcare platform
+ */
+
 import React from 'react';
 import { cn } from '../../../utils/cn';
 
+/**
+ * Props for the Alert component.
+ *
+ * @interface AlertProps
+ * @extends {React.HTMLAttributes<HTMLDivElement>}
+ *
+ * @property {('default' | 'primary' | 'success' | 'warning' | 'error' | 'danger' | 'info')} [variant='default'] - Visual style variant indicating alert severity/type
+ * @property {('sm' | 'md' | 'lg')} [size='md'] - Alert size affecting padding and text size
+ * @property {boolean} [dismissible=false] - Whether alert can be dismissed by user
+ * @property {() => void} [onDismiss] - Callback function executed when alert is dismissed
+ * @property {React.ReactNode} [icon] - Custom icon to display (overrides default variant icon)
+ * @property {boolean} [showIcon=true] - Whether to display icon in alert
+ */
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
@@ -10,21 +35,95 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   showIcon?: boolean;
 }
 
+/**
+ * Props for the AlertTitle component.
+ *
+ * @interface AlertTitleProps
+ * @extends {React.HTMLAttributes<HTMLHeadingElement>}
+ */
 interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
 
+/**
+ * Props for the AlertDescription component.
+ *
+ * @interface AlertDescriptionProps
+ * @extends {React.HTMLAttributes<HTMLParagraphElement>}
+ */
 interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
 
+/**
+ * Alert component for displaying important messages to users.
+ *
+ * A flexible alert component with multiple severity levels, customizable icons,
+ * and optional dismiss functionality. Includes proper ARIA attributes for
+ * accessibility based on alert severity.
+ *
+ * **Features:**
+ * - 7 visual variants (default, primary, success, warning, error, danger, info)
+ * - 3 size options (sm, md, lg)
+ * - Dismissible with custom callback
+ * - Default icons per variant or custom icons
+ * - Dark mode support
+ * - Accessible with appropriate aria-live regions
+ *
+ * **Accessibility:**
+ * - role="alert" for screen readers
+ * - aria-live="assertive" for critical alerts (error, danger, warning)
+ * - aria-live="polite" for informational alerts
+ * - aria-atomic="true" for complete message reading
+ * - Screen reader text for dismiss button
+ *
+ * @component
+ * @param {AlertProps} props - Alert component props
+ * @param {React.Ref<HTMLDivElement>} ref - Forwarded ref to alert element
+ * @returns {JSX.Element} Rendered alert element
+ *
+ * @example
+ * ```tsx
+ * // Success alert
+ * <Alert variant="success">
+ *   <AlertTitle>Success!</AlertTitle>
+ *   <AlertDescription>Your changes have been saved.</AlertDescription>
+ * </Alert>
+ *
+ * // Error alert with dismiss
+ * <Alert variant="error" dismissible onDismiss={() => console.log('Dismissed')}>
+ *   <AlertTitle>Error</AlertTitle>
+ *   <AlertDescription>Please correct the errors below.</AlertDescription>
+ * </Alert>
+ *
+ * // Warning with custom icon
+ * <Alert variant="warning" icon={<CustomIcon />}>
+ *   Important notice here
+ * </Alert>
+ *
+ * // Large primary alert
+ * <Alert variant="primary" size="lg">
+ *   <AlertDescription>New feature available!</AlertDescription>
+ * </Alert>
+ * ```
+ *
+ * @remarks
+ * **Healthcare Context**: Use appropriate variants for medical notifications:
+ * - error/danger: Critical health alerts, medication errors
+ * - warning: Important reminders, missing information
+ * - success: Successful health record updates
+ * - info: General health information, appointment reminders
+ *
+ * @see {@link AlertTitle} for alert title component
+ * @see {@link AlertDescription} for alert description component
+ */
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
-  ({ 
-    className, 
-    variant = 'default', 
+  ({
+    className,
+    variant = 'default',
     size = 'md',
     dismissible = false,
     onDismiss,
     icon,
     showIcon = true,
     children,
-    ...props 
+    ...props
   }, ref) => {
     const variantClasses = {
       default: 'bg-gray-50 border-gray-200 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200',
@@ -144,6 +243,33 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   }
 );
 
+/**
+ * Alert title heading component.
+ *
+ * Renders a semantic heading (h3) for the alert title with consistent styling.
+ * Should be used as the first child within an Alert component for proper hierarchy.
+ *
+ * **Features:**
+ * - Semantic h3 heading for accessibility
+ * - Consistent typography (font-medium, text-sm)
+ * - Bottom margin for spacing
+ * - Inherits text color from parent Alert
+ *
+ * @component
+ * @param {AlertTitleProps} props - Alert title props
+ * @param {React.Ref<HTMLHeadingElement>} ref - Forwarded ref to heading element
+ * @returns {JSX.Element} Rendered alert title heading
+ *
+ * @example
+ * ```tsx
+ * <Alert variant="warning">
+ *   <AlertTitle>Attention Required</AlertTitle>
+ *   <AlertDescription>Please review your information.</AlertDescription>
+ * </Alert>
+ * ```
+ *
+ * @see {@link Alert} for parent alert component
+ */
 const AlertTitle = React.forwardRef<HTMLHeadingElement, AlertTitleProps>(
   ({ className, children, ...props }, ref) => {
     return (
@@ -158,6 +284,36 @@ const AlertTitle = React.forwardRef<HTMLHeadingElement, AlertTitleProps>(
   }
 );
 
+/**
+ * Alert description component.
+ *
+ * Renders the main content/description text within an alert. Automatically
+ * styled with appropriate opacity for visual hierarchy.
+ *
+ * **Features:**
+ * - Consistent text size (text-sm)
+ * - Reduced opacity (90%) for hierarchy
+ * - Inherits text color from parent Alert
+ * - Supports rich content (not just text)
+ *
+ * @component
+ * @param {AlertDescriptionProps} props - Alert description props
+ * @param {React.Ref<HTMLParagraphElement>} ref - Forwarded ref to description element
+ * @returns {JSX.Element} Rendered alert description
+ *
+ * @example
+ * ```tsx
+ * <Alert variant="info">
+ *   <AlertTitle>New Information</AlertTitle>
+ *   <AlertDescription>
+ *     Your account has been updated with the latest security features.
+ *     <a href="/security">Learn more</a>
+ *   </AlertDescription>
+ * </Alert>
+ * ```
+ *
+ * @see {@link Alert} for parent alert component
+ */
 const AlertDescription = React.forwardRef<HTMLParagraphElement, AlertDescriptionProps>(
   ({ className, children, ...props }, ref) => {
     return (

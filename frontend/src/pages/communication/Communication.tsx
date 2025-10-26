@@ -1,8 +1,5 @@
 /**
- * Communication Page - White Cross Healthcare Platform
- * Message center and communication tools with full CRUD operations
- *
- * @fileoverview Communication management page component
+ * @fileoverview Communication management page - Multi-channel messaging system for healthcare communication
  * @module pages/communication/Communication
  * @version 2.0.0
  */
@@ -45,14 +42,61 @@ import type {
 } from '../../types/communication'
 
 /**
- * Communication Page Component
+ * @component Communication
+ * Main communication management page providing multi-channel messaging capabilities
+ * for school nurses to communicate with parents, students, and staff.
  *
- * Features:
- * - Message composition with recipient selection
- * - Message history with pagination and filters
- * - Template management with CRUD operations
- * - Delivery status tracking
- * - Multi-channel support (EMAIL, SMS, PUSH, VOICE)
+ * This component serves as the central hub for all healthcare-related communications,
+ * offering three primary modes: message composition, message history, and template management.
+ * It supports multiple delivery channels (email, SMS, push notifications, voice) with
+ * priority-based routing and category-based organization.
+ *
+ * @example
+ * ```tsx
+ * <ProtectedRoute allowedRoles={['ADMIN', 'NURSE', 'STAFF']}>
+ *   <Communication />
+ * </ProtectedRoute>
+ * ```
+ *
+ * @remarks
+ * ## Healthcare Communication Workflows
+ * - **Multi-Channel Delivery**: Supports EMAIL, SMS, PUSH_NOTIFICATION, and VOICE channels
+ * - **Priority Levels**: LOW, MEDIUM, HIGH, URGENT for message prioritization
+ * - **Message Categories**: EMERGENCY, HEALTH_UPDATE, APPOINTMENT_REMINDER, MEDICATION_REMINDER,
+ *   GENERAL, INCIDENT_NOTIFICATION, COMPLIANCE
+ * - **Recipient Types**: PARENT, STUDENT, NURSE, EMERGENCY_CONTACT, ADMIN
+ * - **Template System**: Reusable templates with variable substitution for common communications
+ * - **Message History**: Paginated message list with filtering by category and priority
+ * - **Deletion Policy**: Only scheduled messages can be deleted per compliance requirements
+ *
+ * ## API Integration
+ * - Uses `communicationApi` service from TanStack Query for server state management
+ * - All API calls include error handling with user-friendly toast notifications
+ * - Message list supports pagination with configurable page size (default: 20 per page)
+ * - Template management with create/read operations
+ *
+ * ## State Management
+ * - Local component state for UI management (tabs, modals, forms)
+ * - No Redux integration - all server state managed via TanStack Query
+ * - Form state reset after successful operations
+ *
+ * ## PHI Handling
+ * - Message content may contain PHI (student health information)
+ * - No local storage persistence - all data fetched from server
+ * - Audit logging handled server-side for message access and delivery
+ * - Secure transmission via HTTPS enforced
+ *
+ * ## Accessibility Features
+ * - Tab navigation with keyboard support
+ * - ARIA labels on interactive elements
+ * - Screen reader announcements for success/error states via toast
+ * - Modal focus management with escape key support
+ * - Color-coded priority and category badges with semantic meaning
+ *
+ * @see {@link communicationApi} for API service methods
+ * @see {@link Message} for message data structure
+ * @see {@link MessageTemplate} for template data structure
+ * @see {@link CreateMessageData} for message composition interface
  */
 const Communication: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'compose' | 'history' | 'templates'>('compose')

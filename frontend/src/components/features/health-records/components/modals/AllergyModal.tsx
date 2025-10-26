@@ -28,7 +28,7 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
   onClose,
   onSave,
   allergy,
-  errors = {},
+  errors = {} as AllergyFormErrors,
   title
 }) => {
   if (!isOpen) return null

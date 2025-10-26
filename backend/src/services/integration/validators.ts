@@ -116,7 +116,8 @@ export class ValidationService {
     }
 
     // At least one authentication method should be provided
-    if (!apiKey && !username && !password && (!settings || !settings.oauth2Config)) {
+    // Note: oauth2Config is not part of IntegrationSettings, it's handled via AuthenticationConfig
+    if (!apiKey && !username && !password) {
       throw new Error('At least one authentication method (API Key, username/password, or OAuth2) must be configured');
     }
 

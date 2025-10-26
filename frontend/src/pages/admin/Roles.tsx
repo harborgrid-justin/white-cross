@@ -39,8 +39,14 @@ import type { Role, Permission } from '@/types/accessControl';
 import type { CreateRoleData, UpdateRoleData } from '@/types/accessControl';
 
 /**
- * Role Form Modal Component
- * Handles both create and edit operations with permission management
+ * Props for the RoleFormModal component.
+ *
+ * @interface RoleFormModalProps
+ * @property {Role | null} role - Role object for editing, null for creating new role
+ * @property {Permission[]} permissions - Array of all available permissions for assignment
+ * @property {boolean} isOpen - Controls modal visibility state
+ * @property {() => void} onClose - Callback invoked when modal should close
+ * @property {() => void} onSuccess - Callback invoked after successful role creation/update
  */
 interface RoleFormModalProps {
   role: Role | null;
@@ -49,6 +55,37 @@ interface RoleFormModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
+/**
+ * Role Form Modal Component.
+ *
+ * Modal dialog for creating new roles or editing existing roles in the RBAC system.
+ * Provides permission selection interface grouped by category.
+ *
+ * @component
+ * @param {RoleFormModalProps} props - Component props
+ *
+ * @example
+ * ```tsx
+ * <RoleFormModal
+ *   role={selectedRole}
+ *   permissions={allPermissions}
+ *   isOpen={showModal}
+ *   onClose={() => setShowModal(false)}
+ *   onSuccess={handleRoleSaved}
+ * />
+ * ```
+ *
+ * @remarks
+ * - **RBAC**: System roles cannot be edited (read-only)
+ * - **Validation**: Role name required, at least one permission must be selected
+ * - **Permission Management**: Add/remove permissions with diff-based updates
+ * - **Accessibility**: Checkbox groups with labels, keyboard navigation
+ * - **Grouping**: Permissions organized by resource category for easier management
+ *
+ * @see {@link Roles} for the parent roles management page
+ * @see {@link Permission} for permission data structure
+ */
 
 const RoleFormModal: React.FC<RoleFormModalProps> = ({ role, permissions, isOpen, onClose, onSuccess }) => {
   const isEditMode = !!role;
@@ -279,8 +316,13 @@ const RoleFormModal: React.FC<RoleFormModalProps> = ({ role, permissions, isOpen
 };
 
 /**
- * Permission Viewer Modal
- * Displays all permissions assigned to a role
+ * Props for the PermissionViewerModal component.
+ *
+ * @interface PermissionViewerProps
+ * @property {Role | null} role - Role object whose permissions should be displayed
+ * @property {Permission[]} permissions - Array of all available permissions for reference
+ * @property {boolean} isOpen - Controls modal visibility state
+ * @property {() => void} onClose - Callback invoked when modal should close
  */
 interface PermissionViewerProps {
   role: Role | null;
@@ -288,6 +330,34 @@ interface PermissionViewerProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+/**
+ * Permission Viewer Modal Component.
+ *
+ * Read-only modal displaying all permissions assigned to a specific role.
+ * Organizes permissions by category for easy review.
+ *
+ * @component
+ * @param {PermissionViewerProps} props - Component props
+ *
+ * @example
+ * ```tsx
+ * <PermissionViewerModal
+ *   role={selectedRole}
+ *   permissions={allPermissions}
+ *   isOpen={showPermissions}
+ *   onClose={() => setShowPermissions(false)}
+ * />
+ * ```
+ *
+ * @remarks
+ * - **Read-Only**: Displays permissions without edit capability
+ * - **Grouping**: Permissions grouped by resource category
+ * - **Visual Indicators**: Checkmark icons indicate active permissions
+ * - **Accessibility**: Semantic HTML structure, keyboard navigation
+ *
+ * @see {@link Roles} for the parent roles management page
+ */
 
 const PermissionViewerModal: React.FC<PermissionViewerProps> = ({ role, permissions, isOpen, onClose }) => {
   if (!isOpen || !role) return null;
@@ -366,16 +436,56 @@ const PermissionViewerModal: React.FC<PermissionViewerProps> = ({ role, permissi
 };
 
 /**
- * Roles Page Component
+ * Roles Page Component.
  *
- * Manages the role-based access control system, allowing administrators
- * to create, edit, and manage roles with associated permissions.
+ * Comprehensive role management interface for the RBAC (Role-Based Access Control) system.
+ * Allows administrators to create, edit, and manage roles with associated permissions.
  *
- * RBAC: Requires 'admin' or 'user.permissions' permission.
- * Audit: All role operations are logged.
- * Security: System roles cannot be modified or deleted.
+ * @component
+ *
+ * @example
+ * ```tsx
+ * <Roles />
+ * ```
+ *
+ * @remarks
+ * **RBAC Requirements:**
+ * - Requires 'admin' or 'user.permissions' permission to access
+ * - System roles are read-only and cannot be modified or deleted
+ *
+ * **Features:**
+ * - Role CRUD operations with permission assignment
+ * - Permission matrix viewer for each role
+ * - User count tracking per role
+ * - Role hierarchy support (system vs custom roles)
+ * - Search and filtering capabilities
+ *
+ * **State Management:**
+ * - Uses local state for UI management
+ * - API integration via accessControlApi service module
+ * - Real-time role and permission statistics
+ *
+ * **Permission Management:**
+ * - Granular permission assignment per role
+ * - Permission diff-based updates (add/remove only changed permissions)
+ * - Category-based permission grouping for easier management
+ *
+ * **Accessibility:**
+ * - Keyboard navigation throughout tables and modals
+ * - Screen reader-friendly labels and ARIA attributes
+ * - Focus management in modal dialogs
+ * - Disabled state for system role modifications
+ *
+ * **Audit & Compliance:**
+ * - All role operations (create, update, delete, permission changes) are logged
+ * - Role assignment changes tracked for compliance
+ * - HIPAA-compliant audit trail via backend
  *
  * @returns {JSX.Element} The rendered roles management page
+ *
+ * @see {@link RoleFormModal} for role creation/editing interface
+ * @see {@link PermissionViewerModal} for permission viewing interface
+ * @see {@link accessControlApi} for API integration details
  */
 export const Roles: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);

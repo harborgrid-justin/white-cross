@@ -1,24 +1,141 @@
 /**
- * Contacts API Service
- *
- * Provides comprehensive contact management for students including guardians,
- * emergency contacts, authorized pickups, and other relationships.
- *
- * Features:
- * - Contact CRUD operations
- * - Relationship-based filtering
- * - Contact search with autocomplete
- * - Contact statistics and analytics
- * - Verification and validation
- * - PHI-compliant contact management
- *
- * Security:
- * - Automatic audit logging for PHI access
- * - Role-based access control
- * - Contact information encryption (backend)
- * - Secure notification delivery
- *
+ * @fileoverview Contacts API Service - Comprehensive student contact management
  * @module services/modules/contactsApi
+ * @category Services
+ *
+ * Provides comprehensive contact management for students including parents, guardians,
+ * emergency contacts, authorized pickups, medical providers, and other relationships.
+ * Supports contact verification, emergency workflows, and notification delivery.
+ *
+ * ## Key Features
+ *
+ * **Contact Management**:
+ * - Complete CRUD operations for all contact types
+ * - Relationship-based organization (PARENT, GUARDIAN, EMERGENCY, etc.)
+ * - Priority levels (PRIMARY, SECONDARY, TERTIARY)
+ * - Contact verification workflows
+ * - Bulk import capabilities
+ *
+ * **Relationship Types**:
+ * - Parents and legal guardians
+ * - Emergency contacts
+ * - Authorized pickup persons
+ * - Medical providers
+ * - Case workers and social services
+ * - Grandparents and extended family
+ *
+ * **Search & Discovery**:
+ * - Full-text search with autocomplete
+ * - Filter by relationship, priority, verification status
+ * - Student-specific contact retrieval
+ * - Emergency contact quick lookup
+ *
+ * **Contact Verification**:
+ * - Email/phone verification workflows
+ * - Annual verification reminders
+ * - Verification status tracking
+ * - Last verified timestamp
+ *
+ * ## Healthcare-Specific Features
+ *
+ * **Emergency Contact Management**:
+ * - Priority-based contact ordering for emergencies
+ * - Multi-contact notification workflows
+ * - Escalation when primary contacts unreachable
+ * - Emergency contact quick access
+ * - 24/7 availability tracking
+ *
+ * **Authorization & Permissions**:
+ * - Healthcare decision authorization tracking
+ * - Medical record access permissions
+ * - Student pickup authorization
+ * - Permission expiration and renewal
+ * - Legal guardian designation
+ *
+ * **PHI Compliance**:
+ * - HIPAA-compliant contact information storage
+ * - Automatic audit logging for all PHI access
+ * - Encrypted contact information (backend)
+ * - Role-based access control (RBAC)
+ * - Secure notification delivery
+ * - Contact information masking in logs
+ *
+ * **Notification Integration**:
+ * - Emergency notification workflows
+ * - Incident report notifications
+ * - Appointment reminders
+ * - Healthcare alerts
+ * - Multi-channel delivery (email, SMS, voice)
+ *
+ * **Real-time Updates** (Socket.io):
+ * - Event: `contact:updated` for contact changes
+ * - Event: `contact:verified` for verification completion
+ * - Event: `emergency:contact-notified` for emergency notifications
+ * - Live contact status updates
+ *
+ * **TanStack Query Integration**:
+ * - Query key: `['contacts', studentId, filters]`
+ * - Cache invalidation on contact updates
+ * - Optimistic updates for instant UI
+ * - Background refetching for verification status
+ *
+ * **Compliance & Audit**:
+ * - FERPA compliance for student/parent privacy
+ * - Complete audit trail for contact access
+ * - Contact information change tracking
+ * - Verification history retention
+ * - Legal documentation support
+ *
+ * @example
+ * ```typescript
+ * // Create emergency contact
+ * const contact = await contactsApi.create({
+ *   studentId: 'student-uuid-123',
+ *   firstName: 'John',
+ *   lastName: 'Doe',
+ *   relationship: 'PARENT',
+ *   priority: 'PRIMARY',
+ *   phoneNumber: '555-123-4567',
+ *   alternatePhone: '555-987-6543',
+ *   email: 'john.doe@example.com',
+ *   isEmergencyContact: true,
+ *   canPickup: true,
+ *   canViewHealthRecords: true,
+ *   canAuthorizeHealthcare: true,
+ *   address: {
+ *     street: '123 Main St',
+ *     city: 'Springfield',
+ *     state: 'IL',
+ *     zipCode: '62701'
+ *   }
+ * });
+ *
+ * // Get emergency contacts for student (ordered by priority)
+ * const emergencyContacts = await contactsApi.getEmergencyContacts(studentId);
+ *
+ * // Search contacts with autocomplete
+ * const searchResults = await contactsApi.search('john doe', {
+ *   relationship: 'PARENT',
+ *   isVerified: true
+ * });
+ *
+ * // Verify contact information
+ * const verified = await contactsApi.verify(contactId);
+ *
+ * // Get authorized pickup list
+ * const authorizedPickups = await contactsApi.getAuthorizedPickups(studentId);
+ *
+ * // Use with TanStack Query for real-time updates
+ * const { data: contacts } = useQuery({
+ *   queryKey: ['contacts', studentId],
+ *   queryFn: () => contactsApi.getAll({ studentId }),
+ *   refetchInterval: 60000 // Refresh every minute
+ * });
+ * ```
+ *
+ * @see {@link studentsApi} for student information
+ * @see {@link incidentsApi} for emergency notifications
+ * @see {@link communicationsApi} for contact notifications
  */
 
 import type { ApiClient } from '../core/ApiClient';

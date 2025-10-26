@@ -13,6 +13,16 @@
 import React from 'react'
 import { Bell, AlertCircle, Mail, MessageSquare, Smartphone, Phone } from 'lucide-react'
 
+/**
+ * Emergency alert form data structure
+ *
+ * @interface EmergencyFormData
+ * @property {string} title - Alert title (e.g., "Medical Emergency - Building A")
+ * @property {string} message - Detailed alert message describing the emergency situation
+ * @property {string} severity - Alert severity level: "LOW", "MEDIUM", "HIGH", or "CRITICAL"
+ * @property {string} audience - Target audience: "ALL_STAFF", "NURSES_ONLY", or "SPECIFIC_GROUPS"
+ * @property {string[]} channels - Communication channels to use: "EMAIL", "SMS", "PUSH_NOTIFICATION", "VOICE"
+ */
 interface EmergencyFormData {
   title: string
   message: string
@@ -21,6 +31,15 @@ interface EmergencyFormData {
   channels: string[]
 }
 
+/**
+ * Props for the CommunicationEmergencyTab component
+ *
+ * @interface CommunicationEmergencyTabProps
+ * @property {EmergencyFormData} formData - Current emergency alert form data
+ * @property {function} onFormChange - Callback when form data changes
+ * @property {function} onSubmit - Form submission handler
+ * @property {boolean} loading - Loading state during alert submission
+ */
 interface CommunicationEmergencyTabProps {
   formData: EmergencyFormData
   onFormChange: (data: EmergencyFormData) => void
@@ -28,6 +47,46 @@ interface CommunicationEmergencyTabProps {
   loading: boolean
 }
 
+/**
+ * CommunicationEmergencyTab - Emergency alert composition and sending interface
+ *
+ * Provides a specialized form for sending high-priority emergency alerts to school
+ * staff members. Supports multiple communication channels, severity levels, and
+ * audience targeting for critical healthcare situations.
+ *
+ * @param {CommunicationEmergencyTabProps} props - Component props
+ * @returns {JSX.Element} Emergency alert form
+ *
+ * @example
+ * ```tsx
+ * <CommunicationEmergencyTab
+ *   formData={emergencyFormData}
+ *   onFormChange={handleFormChange}
+ *   onSubmit={handleEmergencySubmit}
+ *   loading={isSending}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Displays prominent warning banner about high-priority nature
+ * - Requires at least one communication channel to be selected
+ * - Submit button disabled when loading or no channels selected
+ * - Validates required fields (title, message) before submission
+ * - Severity levels: LOW, MEDIUM, HIGH, CRITICAL
+ * - Target audiences: ALL_STAFF, NURSES_ONLY, SPECIFIC_GROUPS
+ * - Communication channels: EMAIL, SMS, PUSH_NOTIFICATION, VOICE
+ *
+ * @security
+ * - Emergency alerts sent with highest priority routing
+ * - All emergency communications logged in audit trail
+ * - Requires appropriate role permissions to send emergency alerts
+ * - Does not include PHI in alert messages
+ *
+ * @compliance
+ * - Emergency alert delivery follows HIPAA security requirements
+ * - Audit logging enabled for all emergency communications
+ * - Channel selection respects user communication preferences
+ */
 export default function CommunicationEmergencyTab({
   formData,
   onFormChange,

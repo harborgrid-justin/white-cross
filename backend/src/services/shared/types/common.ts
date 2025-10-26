@@ -154,8 +154,8 @@ export type { ValidationError } from '../../../types/validation';
 // Validation result
 export interface ValidationResult {
   isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationError[];
+  errors: ValidationErrorType[];
+  warnings: ValidationErrorType[];
 }
 
 // Export/import operation result

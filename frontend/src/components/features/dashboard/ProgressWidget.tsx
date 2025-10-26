@@ -14,8 +14,23 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 // TYPES
 // ============================================================================
 
+/**
+ * Progress status indicators
+ * @typedef {'on-track' | 'at-risk' | 'behind' | 'complete'} ProgressStatus
+ */
 export type ProgressStatus = 'on-track' | 'at-risk' | 'behind' | 'complete';
 
+/**
+ * Progress item data structure
+ * @interface ProgressItem
+ * @property {string} id - Unique identifier
+ * @property {string} label - Progress item label
+ * @property {number} current - Current value
+ * @property {number} target - Target value
+ * @property {ProgressStatus} [status] - Progress status affecting color
+ * @property {string} [description] - Additional description
+ * @property {number} [trend] - Percentage change from previous period
+ */
 export interface ProgressItem {
   id: string;
   label: string;
@@ -23,9 +38,21 @@ export interface ProgressItem {
   target: number;
   status?: ProgressStatus;
   description?: string;
-  trend?: number; // Percentage change from previous period
+  trend?: number;
 }
 
+/**
+ * Props for ProgressWidget component
+ * @interface ProgressWidgetProps
+ * @property {string} title - Widget title
+ * @property {string} [subtitle] - Optional subtitle
+ * @property {ProgressItem[]} items - Array of progress items
+ * @property {boolean} [loading=false] - Show loading state
+ * @property {boolean} [darkMode=false] - Enable dark theme
+ * @property {string} [className=''] - Additional CSS classes
+ * @property {boolean} [showPercentage=true] - Display percentages instead of fractions
+ * @property {boolean} [showTrend=true] - Show trend indicators
+ */
 export interface ProgressWidgetProps {
   title: string;
   subtitle?: string;
@@ -92,15 +119,31 @@ const getStatusBadge = (status: ProgressStatus, darkMode: boolean) => {
 // ============================================================================
 
 /**
- * ProgressWidget Component
+ * ProgressWidget Component - Progress tracking for goals and tasks
  *
- * Features:
- * - Multiple progress items
- * - Progress bars with color coding
- * - Percentage display
- * - Status badges
- * - Trend indicators
- * - Dark mode support
+ * Displays multiple progress items with animated progress bars, status badges,
+ * and trend indicators. Useful for tracking goals, completion rates, and KPIs.
+ *
+ * @component
+ * @param {ProgressWidgetProps} props - Component props
+ * @returns {React.ReactElement} Rendered progress widget
+ *
+ * @example
+ * ```tsx
+ * <ProgressWidget
+ *   title="Health Screening Goals"
+ *   items={[
+ *     {
+ *       id: '1',
+ *       label: 'Vision Screenings',
+ *       current: 145,
+ *       target: 200,
+ *       status: 'on-track',
+ *       trend: 12
+ *     }
+ *   ]}
+ * />
+ * ```
  */
 export const ProgressWidget = React.memo<ProgressWidgetProps>(({
   title,

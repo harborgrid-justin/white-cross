@@ -12,13 +12,70 @@
 
 import React from 'react'
 import { Bell } from 'lucide-react'
-import { InventoryAlert } from '../../../../types'
+import { InventoryAlert } from '@/pages/inventory/store/inventorySlice'
 
+/**
+ * Props for the InventoryAlerts component
+ *
+ * @interface InventoryAlertsProps
+ * @property {InventoryAlert[]} alerts - Array of active inventory alert records
+ * @property {function} getAlertBadgeColor - Function to determine CSS classes for severity badge styling
+ */
 interface InventoryAlertsProps {
   alerts: InventoryAlert[]
   getAlertBadgeColor: (severity: string) => string
 }
 
+/**
+ * InventoryAlerts - Displays active inventory alerts and warnings
+ *
+ * Renders a scrollable list of inventory alerts including low stock warnings,
+ * expiring items, and critical supply shortages. Alerts are color-coded by
+ * severity (CRITICAL, HIGH, MEDIUM) to help prioritize inventory management actions.
+ *
+ * @param {InventoryAlertsProps} props - Component props
+ * @returns {JSX.Element | null} Alerts panel or null if no alerts exist
+ *
+ * @example
+ * ```tsx
+ * <InventoryAlerts
+ *   alerts={[
+ *     {
+ *       id: '1',
+ *       type: 'LOW_STOCK',
+ *       severity: 'CRITICAL',
+ *       message: 'Epinephrine auto-injectors below minimum stock level'
+ *     }
+ *   ]}
+ *   getAlertBadgeColor={(severity) => {
+ *     const colors = {
+ *       CRITICAL: 'bg-red-100 text-red-800',
+ *       HIGH: 'bg-orange-100 text-orange-800',
+ *       MEDIUM: 'bg-yellow-100 text-yellow-800'
+ *     }
+ *     return colors[severity] || colors.MEDIUM
+ *   }}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Returns null if alerts array is empty (component not rendered)
+ * - Displays up to 10 most recent alerts, scrollable if more exist
+ * - Severity levels: CRITICAL (red), HIGH (orange), MEDIUM (yellow)
+ * - Alert types include: LOW_STOCK, EXPIRING_SOON, OUT_OF_STOCK, REORDER_NEEDED
+ * - Background color matches severity for quick visual identification
+ * - Icon (Bell) indicates alert notification functionality
+ *
+ * @security
+ * - Alert messages should not contain sensitive pricing information
+ * - Suitable for display to authorized inventory management staff
+ * - Access controlled by role-based permissions
+ *
+ * @compliance
+ * - Critical medical supply alerts support healthcare safety protocols
+ * - Alert history maintained in audit trail for compliance reporting
+ * - Helps ensure continuous availability of essential medical supplies
+ */
 export default function InventoryAlerts({ alerts, getAlertBadgeColor }: InventoryAlertsProps) {
   if (alerts.length === 0) return null
 

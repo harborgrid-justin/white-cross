@@ -12,8 +12,19 @@
 
 import React from 'react'
 import { Search } from 'lucide-react'
-import { InventoryItem } from '../../../../../types'
+import type { InventoryItem } from '@/types/inventory'
 
+/**
+ * Props for the InventoryItemsTab component
+ *
+ * @interface InventoryItemsTabProps
+ * @property {InventoryItem[]} items - Array of inventory items to display
+ * @property {string[]} categories - Array of available item categories for filtering
+ * @property {string} searchQuery - Current search query string
+ * @property {string} selectedCategory - Currently selected category filter ("all" for no filter)
+ * @property {function} onSearchChange - Callback when search query changes
+ * @property {function} onCategoryChange - Callback when category filter changes
+ */
 interface InventoryItemsTabProps {
   items: InventoryItem[]
   categories: string[]
@@ -23,6 +34,49 @@ interface InventoryItemsTabProps {
   onCategoryChange: (category: string) => void
 }
 
+/**
+ * InventoryItemsTab - Inventory items list with search and filtering
+ *
+ * Displays a searchable, filterable table of all inventory items including stock
+ * levels, reorder points, costs, locations, and status. Supports real-time search
+ * by item name or category, and category-based filtering for efficient inventory management.
+ *
+ * @param {InventoryItemsTabProps} props - Component props
+ * @returns {JSX.Element} Inventory items table with search and filter controls
+ *
+ * @example
+ * ```tsx
+ * <InventoryItemsTab
+ *   items={inventoryItems}
+ *   categories={['Medical Supplies', 'First Aid', 'Medications', 'Equipment']}
+ *   searchQuery={searchQuery}
+ *   selectedCategory={selectedCategory}
+ *   onSearchChange={setSearchQuery}
+ *   onCategoryChange={setSelectedCategory}
+ * />
+ * ```
+ *
+ * @remarks
+ * - Search filters by item name and category (case-insensitive)
+ * - Category filter supports "all" option to show all items
+ * - Stock levels color-coded: red (below reorder level), green (adequate stock)
+ * - Status badges show active/inactive items
+ * - Table columns: Item, Category, Stock, Reorder Level, Unit Cost, Location, Status
+ * - SKU displayed as secondary text under item name if available
+ * - Hover effect on table rows for better interactivity
+ * - Responsive table with horizontal scroll on smaller screens
+ *
+ * @security
+ * - Item details visible to authorized inventory management staff only
+ * - Cost information may be restricted based on user role
+ * - Access controlled by role-based permissions
+ *
+ * @compliance
+ * - Supports medical supply tracking for healthcare compliance
+ * - Reorder level tracking helps maintain adequate stock of critical items
+ * - Location tracking aids in inventory audits
+ * - Status tracking prevents use of inactive/discontinued items
+ */
 export default function InventoryItemsTab({
   items,
   categories,

@@ -16,9 +16,9 @@
  * Final 15 production-ready features completing the 45-feature set
  */
 
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
-import { Student } from '../database/models';
+import { Student } from '../../database/models';
 import { PredictiveAnalyticsService, HealthTrendPrediction } from './predictiveAnalyticsService';
 import { InventoryOptimizationService, InventoryReorderPoint } from './inventoryOptimizationService';
 import { VendorManagementService, VendorRating } from './vendorManagementService';

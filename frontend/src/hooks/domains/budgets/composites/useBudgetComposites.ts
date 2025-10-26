@@ -1,17 +1,52 @@
+/**
+ * Budget Domain Composite Hooks
+ *
+ * Provides high-level composite hooks that orchestrate multiple queries and mutations
+ * for complete budget workflows. Combines data fetching, mutations, and business logic
+ * into unified interfaces for complex budget management operations.
+ *
+ * @module hooks/domains/budgets/composites/useBudgetComposites
+ *
+ * @remarks
+ * **Architecture:**
+ * - Combines multiple query and mutation hooks
+ * - Aggregates loading states and errors
+ * - Provides unified action interfaces
+ * - Implements workflow-specific business logic
+ *
+ * **Composite Patterns:**
+ * - Budget Workflow: Complete budget management lifecycle
+ * - Budget Planning: Planning and forecasting workflows
+ * - Transaction Management: Transaction approval and processing
+ * - Budget Dashboard: Performance metrics aggregation
+ * - Budget Comparison: Multi-budget analysis
+ *
+ * **Benefits:**
+ * - Simplified component code
+ * - Consistent workflow patterns
+ * - Centralized business logic
+ * - Reduced boilerplate
+ *
+ * @see {@link useBudgetQueries} for query hooks
+ * @see {@link useBudgetMutations} for mutation hooks
+ *
+ * @since 1.0.0
+ */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { budgetKeys } from '../config';
-import { 
-  useBudget, 
-  useBudgets, 
-  useBudgetCategories, 
-  useBudgetTransactions, 
+import {
+  useBudget,
+  useBudgets,
+  useBudgetCategories,
+  useBudgetTransactions,
   useBudgetAnalytics,
-  useBudgetStatus 
+  useBudgetStatus
 } from '../queries/useBudgetQueries';
-import { 
-  useCreateBudget, 
-  useUpdateBudget, 
-  useCreateBudgetCategory, 
+import {
+  useCreateBudget,
+  useUpdateBudget,
+  useCreateBudgetCategory,
   useCreateBudgetTransaction,
   useApproveBudget,
   useApproveTransaction,
@@ -19,7 +54,98 @@ import {
 } from '../mutations/useBudgetMutations';
 import type { Budget, BudgetCategory, BudgetTransaction } from '../config';
 
-// Budget Management Workflow
+/**
+ * Complete budget management workflow hook.
+ *
+ * Orchestrates budget data fetching, category management, transaction creation,
+ * analytics, and approval workflows. Provides unified interface for all budget
+ * operations with coordinated loading states.
+ *
+ * @param {string} [budgetId] - Optional budget ID to manage
+ *
+ * @returns {Object} Workflow interface with data, actions, and states
+ * @returns {Budget} returns.budget - Budget data
+ * @returns {BudgetCategory[]} returns.categories - Budget categories
+ * @returns {BudgetTransaction[]} returns.transactions - Budget transactions
+ * @returns {Object} returns.analytics - Budget analytics data
+ * @returns {Object} returns.status - Real-time budget status
+ * @returns {boolean} returns.isLoading - True when loading core data
+ * @returns {function} returns.createCategory - Create category action
+ * @returns {function} returns.createTransaction - Create transaction action
+ * @returns {function} returns.submitForApproval - Submit budget for approval
+ * @returns {function} returns.approveBudget - Approve budget action
+ *
+ * @example
+ * ```typescript
+ * function BudgetManagementPage({ budgetId }: Props) {
+ *   const {
+ *     budget,
+ *     categories,
+ *     transactions,
+ *     analytics,
+ *     status,
+ *     isLoading,
+ *     createCategory,
+ *     createTransaction,
+ *     submitForApproval,
+ *     approveBudget,
+ *     isSubmitting,
+ *     isApproving
+ *   } = useBudgetWorkflow(budgetId);
+ *
+ *   if (isLoading) return <LoadingSpinner />;
+ *
+ *   return (
+ *     <div>
+ *       <BudgetHeader budget={budget} status={status} />
+ *       <BudgetAnalytics data={analytics} />
+ *       <CategoriesPanel
+ *         categories={categories}
+ *         onCreateCategory={createCategory}
+ *       />
+ *       <TransactionsPanel
+ *         transactions={transactions}
+ *         onCreateTransaction={createTransaction}
+ *       />
+ *       <WorkflowActions
+ *         budget={budget}
+ *         onSubmit={() => submitForApproval({ budgetId, submissionNote: 'Ready for review' })}
+ *         onApprove={() => approveBudget({ budgetId })}
+ *         isSubmitting={isSubmitting}
+ *         isApproving={isApproving}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Data Aggregation:**
+ * - Fetches budget, categories, transactions in parallel
+ * - Loads analytics and status with separate loading states
+ * - Coordinates refetching across all data sources
+ *
+ * **Workflow Actions:**
+ * - submitForApproval: Custom mutation for workflow transition
+ * - Other actions: Delegates to mutation hooks
+ * - All actions invalidate relevant queries
+ *
+ * **Loading States:**
+ * - isLoading: Core data (budget, categories, transactions)
+ * - isLoadingAnalytics: Analytics data
+ * - isLoadingStatus: Status data
+ * - isCreatingCategory/Transaction: Action states
+ *
+ * **Real-time Updates:**
+ * - Status polling every 30 seconds
+ * - Automatic refetch on window focus
+ * - Manual refetch functions provided
+ *
+ * @see {@link useBudgetPlanning} for planning workflow
+ * @see {@link useTransactionManagement} for transaction workflow
+ *
+ * @since 1.0.0
+ */
 export const useBudgetWorkflow = (budgetId?: string) => {
   const queryClient = useQueryClient();
   
@@ -88,7 +214,64 @@ export const useBudgetWorkflow = (budgetId?: string) => {
   };
 };
 
-// Budget Planning & Forecasting
+/**
+ * Budget planning and forecasting workflow hook.
+ *
+ * Orchestrates budget creation, cloning, forecasting, and draft budget management.
+ * Ideal for annual budget planning cycles and fiscal year rollover workflows.
+ *
+ * @param {string} [departmentId] - Optional department ID filter
+ * @param {number} [fiscalYear] - Optional fiscal year filter
+ *
+ * @returns {Object} Planning workflow interface
+ * @returns {Budget[]} returns.budgets - Draft budgets for planning
+ * @returns {function} returns.createBudget - Create new budget
+ * @returns {function} returns.updateBudget - Update budget
+ * @returns {function} returns.cloneBudget - Clone existing budget for new fiscal year
+ * @returns {function} returns.generateForecast - Generate spending forecast
+ * @returns {Object} returns.forecastData - Generated forecast data
+ *
+ * @example
+ * ```typescript
+ * function BudgetPlanningPage({ departmentId }: Props) {
+ *   const {
+ *     budgets,
+ *     createBudget,
+ *     cloneBudget,
+ *     generateForecast,
+ *     forecastData,
+ *     isGeneratingForecast
+ *   } = useBudgetPlanning(departmentId, 2024);
+ *
+ *   const handleCloneLastYear = () => {
+ *     const lastYearBudget = budgets.find(b => b.fiscalYear === '2023');
+ *     if (lastYearBudget) {
+ *       cloneBudget({
+ *         sourceBudgetId: lastYearBudget.id,
+ *         newName: '2024 Health Services Budget',
+ *         fiscalYear: '2024'
+ *       });
+ *     }
+ *   };
+ *
+ *   return <PlanningInterface budgets={budgets} onClone={handleCloneLastYear} />;
+ * }
+ * ```
+ *
+ * @remarks
+ * **Workflow Actions:**
+ * - cloneBudget: Copies budget structure for new fiscal year
+ * - generateForecast: ML-based spending projections
+ * - createBudget: Start from scratch
+ *
+ * **Forecasting:**
+ * - Based on historical spending patterns
+ * - Confidence intervals for projections
+ * - Category-level recommendations
+ *
+ * @see {@link useBudgetWorkflow}
+ * @since 1.0.0
+ */
 export const useBudgetPlanning = (departmentId?: string, fiscalYear?: number) => {
   const queryClient = useQueryClient();
   
@@ -176,7 +359,73 @@ export const useBudgetPlanning = (departmentId?: string, fiscalYear?: number) =>
   };
 };
 
-// Transaction Management & Approval
+/**
+ * Transaction management and approval workflow hook.
+ *
+ * Orchestrates transaction fetching, filtering, approval, rejection, and batch
+ * processing. Ideal for transaction approval queues and transaction management pages.
+ *
+ * @param {string} [budgetId] - Optional budget ID to filter transactions
+ *
+ * @returns {Object} Transaction management interface
+ * @returns {BudgetTransaction[]} returns.pendingTransactions - Pending approval transactions
+ * @returns {BudgetTransaction[]} returns.allTransactions - All transactions
+ * @returns {function} returns.approveTransaction - Approve single transaction
+ * @returns {function} returns.bulkApprove - Approve multiple transactions
+ * @returns {function} returns.batchProcess - Process approvals and rejections together
+ * @returns {Object} returns.batchResults - Results of batch processing
+ *
+ * @example
+ * ```typescript
+ * function TransactionApprovalQueue({ budgetId }: Props) {
+ *   const {
+ *     pendingTransactions,
+ *     approveTransaction,
+ *     bulkApprove,
+ *     batchProcess,
+ *     isApproving,
+ *     isBatchProcessing
+ *   } = useTransactionManagement(budgetId);
+ *
+ *   const [selected, setSelected] = useState<string[]>([]);
+ *
+ *   const handleBulkApprove = () => {
+ *     bulkApprove(selected, {
+ *       onSuccess: () => {
+ *         toast.success(`Approved ${selected.length} transactions`);
+ *         setSelected([]);
+ *       }
+ *     });
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <TransactionList
+ *         transactions={pendingTransactions}
+ *         selectedIds={selected}
+ *         onSelectionChange={setSelected}
+ *       />
+ *       <button onClick={handleBulkApprove} disabled={selected.length === 0}>
+ *         Approve Selected ({selected.length})
+ *       </button>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Batch Processing:**
+ * - batchProcess allows simultaneous approve/reject
+ * - Atomic operation - all succeed or all fail
+ * - Efficient cache invalidation
+ *
+ * **Filtering:**
+ * - pendingTransactions: Pre-filtered PENDING status
+ * - allTransactions: All statuses for reference
+ *
+ * @see {@link useBudgetWorkflow}
+ * @since 1.0.0
+ */
 export const useTransactionManagement = (budgetId?: string) => {
   const queryClient = useQueryClient();
   
@@ -245,7 +494,76 @@ export const useTransactionManagement = (budgetId?: string) => {
   };
 };
 
-// Budget Performance Dashboard
+/**
+ * Budget performance dashboard data aggregation hook.
+ *
+ * Aggregates budgets, performance metrics, and alerts for comprehensive dashboard views.
+ * Provides real-time alerts with 30-second refresh interval.
+ *
+ * @param {Object} [filters] - Optional filters for dashboard scope
+ * @param {string} [filters.departmentId] - Filter by department
+ * @param {number} [filters.fiscalYear] - Filter by fiscal year
+ *
+ * @returns {Object} Dashboard data interface
+ * @returns {Budget[]} returns.budgets - Filtered budgets
+ * @returns {Object} returns.metrics - Aggregated performance metrics
+ * @returns {Object} returns.alerts - Critical, warning, and info alerts
+ * @returns {number} returns.utilizationRate - Average utilization percentage
+ * @returns {number} returns.budgetsCount - Total budget count
+ * @returns {number} returns.criticalAlertsCount - Number of critical alerts
+ *
+ * @example
+ * ```typescript
+ * function BudgetDashboard({ departmentId }: Props) {
+ *   const {
+ *     budgets,
+ *     metrics,
+ *     alerts,
+ *     utilizationRate,
+ *     criticalAlertsCount,
+ *     isLoadingMetrics,
+ *     isLoadingAlerts
+ *   } = useBudgetDashboard({ departmentId, fiscalYear: 2024 });
+ *
+ *   return (
+ *     <div>
+ *       <MetricsSummary
+ *         totalBudgeted={metrics?.totalAllocated}
+ *         totalSpent={metrics?.totalSpent}
+ *         utilizationRate={utilizationRate}
+ *       />
+ *       <AlertsPanel
+ *         critical={alerts?.critical}
+ *         warnings={alerts?.warnings}
+ *       />
+ *       <BudgetsList budgets={budgets} />
+ *       <TopCategoriesChart data={metrics?.topCategories} />
+ *       <TrendsChart data={metrics?.monthlyTrends} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Metrics Included:**
+ * - Total budgets, allocated, spent, remaining
+ * - Average utilization across all budgets
+ * - Budgets over budget / at risk counts
+ * - Top spending categories
+ * - Monthly spending trends
+ *
+ * **Alerts:**
+ * - Critical: >95% utilization or over budget
+ * - Warnings: 80-95% utilization
+ * - Info: Status changes, approvals
+ * - Auto-refreshes every 30 seconds
+ *
+ * **Performance:**
+ * - Metrics query dependent on budgets
+ * - Alerts polled for real-time updates
+ *
+ * @since 1.0.0
+ */
 export const useBudgetDashboard = (filters?: {
   departmentId?: string;
   fiscalYear?: number;
@@ -347,7 +665,85 @@ export const useBudgetDashboard = (filters?: {
   };
 };
 
-// Budget Comparison & Analysis
+/**
+ * Multi-budget comparison and analysis hook.
+ *
+ * Compares performance across multiple budgets with insights and recommendations.
+ * Generates comparative reports for budget analysis and optimization.
+ *
+ * @param {string[]} budgetIds - Array of budget IDs to compare (2-10 budgets)
+ *
+ * @returns {Object} Comparison interface
+ * @returns {Object} returns.comparison - Comparison data with budgets and insights
+ * @returns {Object} returns.comparison.budgets - Per-budget comparison metrics
+ * @returns {Object} returns.comparison.insights - AI-generated insights and recommendations
+ * @returns {function} returns.generateReport - Generate downloadable comparison report
+ * @returns {boolean} returns.isGeneratingReport - True when generating report
+ *
+ * @example
+ * ```typescript
+ * function BudgetComparisonPage({ budgetIds }: Props) {
+ *   const {
+ *     comparison,
+ *     generateReport,
+ *     isLoading,
+ *     isGeneratingReport
+ *   } = useBudgetComparison(budgetIds);
+ *
+ *   if (isLoading) return <LoadingSpinner />;
+ *   if (!comparison) return null;
+ *
+ *   const handleExport = () => {
+ *     generateReport({
+ *       reportType: 'EXECUTIVE_SUMMARY',
+ *       includeRecommendations: true
+ *     }, {
+ *       onSuccess: (blob) => {
+ *         const url = URL.createObjectURL(blob);
+ *         const a = document.createElement('a');
+ *         a.href = url;
+ *         a.download = 'budget-comparison.pdf';
+ *         a.click();
+ *       }
+ *     });
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <ComparisonTable budgets={comparison.budgets} />
+ *       <InsightsPanel insights={comparison.insights} />
+ *       <button onClick={handleExport} disabled={isGeneratingReport}>
+ *         Export Report
+ *       </button>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * **Comparison Metrics:**
+ * - Total allocated, spent, variance per budget
+ * - Utilization percentages
+ * - Performance ratings (EXCELLENT, GOOD, AVERAGE, POOR)
+ * - Category-level breakdowns
+ *
+ * **Insights:**
+ * - Best/worst performers identification
+ * - Most efficient budget analysis
+ * - Budgets needing attention
+ * - Actionable recommendations
+ *
+ * **Report Generation:**
+ * - Types: COMPARISON, ANALYSIS, EXECUTIVE_SUMMARY
+ * - PDF format with charts and tables
+ * - Optional recommendations section
+ *
+ * **Limitations:**
+ * - Maximum 10 budgets recommended
+ * - Requires budgetIds.length > 1
+ *
+ * @since 1.0.0
+ */
 export const useBudgetComparison = (budgetIds: string[]) => {
   const queryClient = useQueryClient();
   

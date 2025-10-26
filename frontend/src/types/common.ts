@@ -317,36 +317,28 @@ export type MedicationRoute = 'ORAL' | 'TOPICAL' | 'INJECTION' | 'INHALATION' | 
 /**
  * Appointment type enumeration for healthcare visits.
  *
- * @typedef {('ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY')} AppointmentType
+ * NOTE: This is now defined as an enum in appointments.ts
+ * Re-export it here for backward compatibility with existing code.
  *
- * Types:
- * - ROUTINE_CHECKUP: Scheduled wellness visit
- * - MEDICATION_ADMINISTRATION: Scheduled medication dose administration
- * - INJURY_ASSESSMENT: Evaluation of physical injury
- * - ILLNESS_EVALUATION: Assessment of illness symptoms
- * - FOLLOW_UP: Follow-up visit from previous appointment
- * - SCREENING: Health screening (vision, hearing, etc.)
- * - EMERGENCY: Urgent/emergency medical attention
- *
+ * @see {@link ./appointments.ts:AppointmentType} for the canonical enum definition
  * @see {@link backend/src/database/types/enums.ts:AppointmentType}
+ *
+ * @deprecated Import from './appointments' directly for better type safety
  */
-export type AppointmentType = 'ROUTINE_CHECKUP' | 'MEDICATION_ADMINISTRATION' | 'INJURY_ASSESSMENT' | 'ILLNESS_EVALUATION' | 'FOLLOW_UP' | 'SCREENING' | 'EMERGENCY';
+export type { AppointmentType } from './appointments';
 
 /**
  * Appointment status enumeration tracking appointment lifecycle.
  *
- * @typedef {('SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW')} AppointmentStatus
+ * NOTE: This is now defined as an enum in appointments.ts
+ * Re-export it here for backward compatibility with existing code.
  *
- * Statuses:
- * - SCHEDULED: Appointment booked, awaiting start
- * - IN_PROGRESS: Appointment currently in session
- * - COMPLETED: Appointment finished successfully
- * - CANCELLED: Appointment cancelled before completion
- * - NO_SHOW: Student did not attend scheduled appointment
- *
+ * @see {@link ./appointments.ts:AppointmentStatus} for the canonical enum definition
  * @see {@link backend/src/database/types/enums.ts:AppointmentStatus}
+ *
+ * @deprecated Import from './appointments' directly for better type safety
  */
-export type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+export type { AppointmentStatus } from './appointments';
 
 /**
  * Incident type enumeration for health and safety events.
@@ -386,9 +378,16 @@ export type ComplianceStatus = 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDE
 
 /**
  * Message type enumeration for communication channels
+ *
+ * NOTE: This is now defined as an enum in appointments.ts
+ * Re-export it here for backward compatibility with existing code.
+ *
+ * @see {@link ./appointments.ts:MessageType} for the canonical enum definition
  * @aligned_with backend/src/database/types/enums.ts:MessageType
+ *
+ * @deprecated Import from './appointments' directly for better type safety
  */
-export type MessageType = 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION' | 'VOICE';
+export type { MessageType } from './appointments';
 
 /**
  * Message priority enumeration

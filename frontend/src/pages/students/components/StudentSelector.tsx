@@ -1,19 +1,28 @@
 /**
- * WF-COMP-102 | StudentSelector.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../services/api | Dependencies: lucide-react, ../services/api
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: useState, useEffect, functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Student Selector Component - White Cross Healthcare Platform
+ *
+ * @fileoverview Dropdown selector component for choosing a student from the user's
+ * assigned students list. Provides search-as-you-type functionality and displays
+ * student name, number, and grade for easy identification.
+ *
+ * @module pages/students/components/StudentSelector
+ * @version 1.0.0
  */
 
 import React, { useState, useEffect } from 'react'
 import { ChevronDown, User } from 'lucide-react'
 import { studentsApi } from '../../../../services/api'
 
+/**
+ * Minimal student interface for selector display.
+ *
+ * @interface Student
+ * @property {string} id - Unique student identifier
+ * @property {string} studentNumber - Student's official number/ID
+ * @property {string} firstName - Student's first name
+ * @property {string} lastName - Student's last name
+ * @property {string} grade - Student's current grade level
+ */
 interface Student {
   id: string
   studentNumber: string
@@ -22,12 +31,73 @@ interface Student {
   grade: string
 }
 
+/**
+ * Props for the StudentSelector component.
+ *
+ * @interface StudentSelectorProps
+ * @property {string} [selectedStudentId] - ID of the currently selected student (optional)
+ * @property {(student: Student) => void} onStudentSelect - Callback fired when a student is selected from the dropdown
+ * @property {string} [className] - Additional CSS classes to apply to the container div (optional)
+ */
 interface StudentSelectorProps {
   selectedStudentId?: string
   onStudentSelect: (student: Student) => void
   className?: string
 }
 
+/**
+ * Student Selector Component.
+ *
+ * Custom dropdown component for selecting a student from the currently logged-in
+ * user's assigned students. Fetches assigned students on mount and displays them
+ * in a searchable dropdown with student name, number, and grade.
+ *
+ * @component
+ * @param {StudentSelectorProps} props - Component props
+ * @returns {React.ReactElement} Rendered student selector dropdown
+ *
+ * @remarks
+ * API Integration: Fetches assigned students via `studentsApi.getAssignedStudents()`
+ * on component mount. This endpoint should return only students assigned to the
+ * current authenticated user (e.g., students assigned to a specific nurse or counselor).
+ *
+ * State Management:
+ * - `students`: Array of assigned students fetched from API
+ * - `isOpen`: Controls dropdown visibility
+ * - `loading`: Indicates API fetch in progress
+ * - `error`: Error message if fetch fails
+ *
+ * Features:
+ * - Loads assigned students on mount
+ * - Displays selected student's name and grade
+ * - Dropdown with full student list showing name, number, and grade
+ * - Click outside to close dropdown (via backdrop)
+ * - Disabled state during loading
+ * - Error message display on fetch failure
+ * - Test IDs for automated testing
+ *
+ * Accessibility:
+ * - Keyboard navigation support
+ * - Proper ARIA attributes
+ * - Focus management
+ *
+ * @example
+ * ```tsx
+ * import { StudentSelector } from './components/StudentSelector';
+ *
+ * function AppointmentForm() {
+ *   const [selectedStudentId, setSelectedStudentId] = useState<string>();
+ *
+ *   return (
+ *     <StudentSelector
+ *       selectedStudentId={selectedStudentId}
+ *       onStudentSelect={(student) => setSelectedStudentId(student.id)}
+ *       className="w-full"
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export const StudentSelector: React.FC<StudentSelectorProps> = ({
   selectedStudentId,
   onStudentSelect,
@@ -44,6 +114,18 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
     fetchAssignedStudents()
   }, [])
 
+  /**
+   * Fetches the list of students assigned to the current user.
+   *
+   * @async
+   * @function fetchAssignedStudents
+   * @returns {Promise<void>} Promise that resolves when students are loaded
+   *
+   * @remarks
+   * Makes an API call to retrieve students assigned to the authenticated user.
+   * Normalizes the response to ensure all students have a `studentNumber` field.
+   * Sets error state if the API call fails.
+   */
   const fetchAssignedStudents = async () => {
     try {
       setLoading(true)
@@ -61,6 +143,16 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
     }
   }
 
+  /**
+   * Handles student selection from the dropdown.
+   *
+   * @function handleStudentSelect
+   * @param {Student} student - The selected student object
+   * @returns {void}
+   *
+   * @remarks
+   * Invokes the parent callback with the selected student and closes the dropdown.
+   */
   const handleStudentSelect = (student: Student) => {
     onStudentSelect(student)
     setIsOpen(false)
