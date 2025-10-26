@@ -104,6 +104,9 @@ import type {
   InventoryTransaction
 } from './api'
 
+// Re-export core medication types for convenience
+export type { Medication, StudentMedication, MedicationReminder, AdverseReaction, InventoryItem, InventoryTransaction }
+
 /**
  * Medication administration log
  * @aligned_with backend/src/database/models/medications/MedicationLog.ts
@@ -183,9 +186,14 @@ export interface MedicationAdministrationData {
   nurseId?: string
   dosageGiven: string
   timeGiven: string
+  scheduledTime?: string
   notes?: string
   sideEffects?: string
   deviceId?: string
+  witnessId?: string
+  witnessName?: string
+  patientVerified?: boolean
+  allergyChecked?: boolean
 }
 
 export interface AdverseReactionData {

@@ -33,7 +33,7 @@ beforeAll(() => {
   });
 
   // Mock IntersectionObserver
-  global.IntersectionObserver = class IntersectionObserver {
+  globalThis.IntersectionObserver = class IntersectionObserver {
     constructor() {}
     disconnect() {}
     observe() {}
@@ -44,7 +44,7 @@ beforeAll(() => {
   } as any;
 
   // Mock ResizeObserver
-  global.ResizeObserver = class ResizeObserver {
+  globalThis.ResizeObserver = class ResizeObserver {
     constructor() {}
     disconnect() {}
     observe() {}
@@ -105,16 +105,4 @@ expect.extend({
   },
 });
 
-// Extend Vitest matchers type definitions
-declare module 'vitest' {
-  interface Assertion<T = any> {
-    toBeValidToken(): T;
-    toBeWithinTimeRange(expected: number, toleranceMs?: number): T;
-    toHaveCsrfToken(): T;
-  }
-  interface AsymmetricMatchersContaining {
-    toBeValidToken(): any;
-    toBeWithinTimeRange(expected: number, toleranceMs?: number): any;
-    toHaveCsrfToken(): any;
-  }
-}
+// Custom matcher type definitions are in vitest.d.ts

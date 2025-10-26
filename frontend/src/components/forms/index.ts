@@ -1,6 +1,6 @@
 /**
  * Form Components
- * 
+ *
  * Specialized form components and form-related utilities.
  * Note: Most form components are feature-specific and located within their respective feature directories.
  */
@@ -13,3 +13,6 @@
 
 // This index currently serves as documentation of the form architecture.
 // Generic/shared form utilities could be added here in the future.
+
+// Export empty object to make this a valid module
+export {}

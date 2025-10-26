@@ -171,7 +171,19 @@ export function useCreateAppointment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: AppointmentFormData) => appointmentsApi.create(data),
+    mutationFn: (data: AppointmentFormData) => {
+      // Convert AppointmentFormData to CreateAppointmentData
+      const createData = {
+        studentId: data.studentId,
+        nurseId: data.nurseId,
+        type: data.type,
+        scheduledAt: data.scheduledAt.toISOString(),
+        duration: data.duration,
+        reason: data.reason,
+        notes: data.notes,
+      };
+      return appointmentsApi.create(createData);
+    },
     onMutate: async (newAppointment) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: appointmentKeys.lists() });
@@ -212,8 +224,14 @@ export function useUpdateAppointment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<AppointmentFormData> }) =>
-      appointmentsApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<AppointmentFormData> }) => {
+      // Convert Partial<AppointmentFormData> to UpdateAppointmentData
+      const updateData = {
+        ...data,
+        scheduledAt: data.scheduledAt ? data.scheduledAt.toISOString() : undefined,
+      };
+      return appointmentsApi.update(id, updateData);
+    },
     onSuccess: (data) => {
       // Invalidate affected queries
       queryClient.invalidateQueries({ queryKey: appointmentKeys.lists() });

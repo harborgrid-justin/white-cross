@@ -28,50 +28,22 @@ import {
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { incidentsApi } from '../../services/modules/incidentsApi'
-import type { IncidentReportListResponse, IncidentReport as APIIncidentReport } from '../../types/incidents'
-
-/**
- * Incident Report Interface
- */
-export interface IncidentReport {
-  id: string
-  incidentNumber: string
-  title: string
-  description: string
-  type: 'INJURY' | 'ILLNESS' | 'BEHAVIORAL' | 'SAFETY' | 'MEDICAL_EMERGENCY' | 'OTHER'
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED'
-  studentId: string
-  studentName: string
-  reportedBy: string
-  reportedByRole: string
-  incidentDate: string
-  incidentTime: string
-  location: string
-  witnessCount: number
-  actionsTaken: string
-  followUpRequired: boolean
-  parentNotified: boolean
-  createdAt: string
-  updatedAt: string
-  student?: {
-    firstName: string
-    lastName: string
-  }
-  reportedBy?: {
-    firstName: string
-    lastName: string
-  }
-}
+import type {
+  IncidentReportListResponse,
+  IncidentReport,
+  IncidentType,
+  IncidentSeverity,
+  IncidentStatus
+} from '../../types/incidents'
 
 /**
  * Filter State Interface
  */
 interface FilterState {
   search: string
-  type: string
-  severity: string
-  status: string
+  type: string | IncidentType | 'all'
+  severity: string | IncidentSeverity | 'all'
+  status: string | IncidentStatus | 'all'
   dateFrom: string
   dateTo: string
   followUpRequired: boolean | null
@@ -97,7 +69,7 @@ const IncidentReports: React.FC = () => {
   const navigate = useNavigate()
 
   // State management
-  const [reports, setReports] = useState<any[]>([])
+  const [reports, setReports] = useState<IncidentReport[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -108,7 +80,7 @@ const IncidentReports: React.FC = () => {
 
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [reportToDelete, setReportToDelete] = useState<any | null>(null)
+  const [reportToDelete, setReportToDelete] = useState<IncidentReport | null>(null)
   const [deleting, setDeleting] = useState(false)
 
   // Filter state
@@ -211,7 +183,7 @@ const IncidentReports: React.FC = () => {
     setCurrentPage(1)
   }
 
-  const handleDeleteClick = (report: any) => {
+  const handleDeleteClick = (report: IncidentReport) => {
     setReportToDelete(report)
     setDeleteConfirmOpen(true)
   }

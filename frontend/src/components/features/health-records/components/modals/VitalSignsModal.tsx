@@ -31,7 +31,7 @@ export const VitalSignsModal: React.FC<VitalSignsModalProps> = ({
   onClose,
   onSave,
   vitalSigns,
-  errors = {},
+  errors = {} as VitalSignsFormErrors,
   title,
 }) => {
   if (!isOpen) return null;

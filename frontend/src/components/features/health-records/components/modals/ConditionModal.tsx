@@ -28,7 +28,7 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
   onClose,
   onSave,
   condition,
-  errors = {},
+  errors = {} as ConditionFormErrors,
   title
 }) => {
   if (!isOpen) return null

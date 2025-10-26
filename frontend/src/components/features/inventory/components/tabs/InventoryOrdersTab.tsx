@@ -12,7 +12,7 @@
 
 import React from 'react'
 import { Plus } from 'lucide-react'
-import { PurchaseOrder } from '../../../../../types'
+import type { PurchaseOrder } from '@/types/inventory'
 
 interface InventoryOrdersTabProps {
   orders: PurchaseOrder[]

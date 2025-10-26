@@ -389,6 +389,17 @@ export interface AppointmentStatistics {
   byType: Record<AppointmentType, number>;
   noShowRate: number; // Percentage
   completionRate: number; // Percentage
+
+  // Optional alternative property names for backward compatibility
+  totalCount?: number;
+  completed?: number;
+  completedCount?: number;
+  upcoming?: number;
+  upcomingCount?: number;
+  cancelled?: number;
+  cancelledCount?: number;
+  trend?: number;
+  percentageChange?: number;
 }
 
 /**

@@ -43,7 +43,7 @@ interface State {
   errorType?: 'auth' | 'circuit-breaker' | 'forbidden' | 'api' | 'unknown';
 }
 
-export class HealthRecordsErrorBoundary extends Component<Props, State> {
+export class HealthRecordsErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
   };

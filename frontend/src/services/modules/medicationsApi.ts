@@ -493,7 +493,7 @@ export class MedicationsApi {
   /**
    * Create new medication
    */
-  async create(medicationData: CreateMedicationRequest): Promise<Medication> {
+  async create(medicationData: CreateMedicationRequest): Promise<{ medication: Medication }> {
     try {
       createMedicationSchema.parse(medicationData);
 
@@ -517,7 +517,7 @@ export class MedicationsApi {
         },
       });
 
-      return medication;
+      return { medication };
     } catch (error) {
       if (error.name === 'ZodError') {
         throw new Error(`Validation error: ${error.errors[0].message}`);
@@ -746,7 +746,7 @@ export class MedicationsApi {
    * Report adverse reaction
    * CRITICAL: Patient safety event that must be immediately audited
    */
-  async reportAdverseReaction(reactionData: AdverseReactionData): Promise<AdverseReaction> {
+  async reportAdverseReaction(reactionData: AdverseReactionData | AdverseReactionFormData): Promise<AdverseReaction> {
     try {
       const response = await this.client.post<ApiResponse<{ report: AdverseReaction }>>(
         `${API_ENDPOINTS.MEDICATIONS.BASE}/adverse-reaction`,
@@ -868,6 +868,20 @@ export class MedicationsApi {
     } catch (error) {
       throw createApiError(error, 'Failed to fetch form options');
     }
+  }
+
+  /**
+   * Administer medication (alias for logAdministration for backward compatibility)
+   */
+  async administer(logData: MedicationAdministrationData): Promise<MedicationLog> {
+    return this.logAdministration(logData);
+  }
+
+  /**
+   * Update inventory (alias for updateInventoryQuantity for backward compatibility)
+   */
+  async updateInventory(id: string, updateData: UpdateInventoryRequest): Promise<InventoryItem> {
+    return this.updateInventoryQuantity(id, updateData);
   }
 }
 

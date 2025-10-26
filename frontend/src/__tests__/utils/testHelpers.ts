@@ -236,7 +236,7 @@ export function mockIndexedDB() {
     deleteDatabase: vi.fn(() => Promise.resolve()),
   };
 
-  (global as any).indexedDB = mockIDB;
+  (globalThis as any).indexedDB = mockIDB;
 
   return mockIDB;
 }

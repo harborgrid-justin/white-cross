@@ -92,8 +92,8 @@ export function useAppointmentMutations(
   options: AppointmentMutationOptions = {}
 ): AppointmentMutationsResult {
   const queryClient = useQueryClient();
-  const { handleApiError } = useApiError();
-  const { invalidateCacheManager } = useCacheManager();
+  const { handleError: handleApiError } = useApiError();
+  const { invalidateCache } = useCacheManager();
   const { logCompliantAccess } = useHealthcareCompliance();
 
   // Create appointment mutation
@@ -108,7 +108,18 @@ export function useAppointmentMutations(
           { operation: 'create_appointment' }
         );
 
-        const result = await appointmentsApi.create(data);
+        // Convert AppointmentFormData to CreateAppointmentData
+        const createData = {
+          studentId: data.studentId,
+          nurseId: data.nurseId,
+          type: data.type,
+          scheduledAt: data.scheduledAt.toISOString(),
+          duration: data.duration,
+          reason: data.reason,
+          notes: data.notes,
+        };
+
+        const result = await appointmentsApi.create(createData);
         
         if (!result.appointment) {
           throw new Error(APPOINTMENT_ERROR_CODES.CREATE_FAILED);
@@ -171,7 +182,13 @@ export function useAppointmentMutations(
           { appointmentId: id }
         );
 
-        const result = await appointmentsApi.update(id, data);
+        // Convert Partial<AppointmentFormData> to UpdateAppointmentData
+        const updateData = {
+          ...data,
+          scheduledAt: data.scheduledAt ? data.scheduledAt.toISOString() : undefined,
+        };
+
+        const result = await appointmentsApi.update(id, updateData);
         
         if (!result.appointment) {
           throw new Error(APPOINTMENT_ERROR_CODES.UPDATE_FAILED);
