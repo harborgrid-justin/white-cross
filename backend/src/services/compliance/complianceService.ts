@@ -69,4 +69,4 @@ export {
   UpdatePolicyData,
   ComplianceStatistics,
   PaginationResult
-} from './compliance';
+} from './index';

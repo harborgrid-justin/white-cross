@@ -22,7 +22,8 @@ import { validateUUID } from '../validation/commonValidators';
 import {
   ErrorMetadata,
   ApplicationError,
-  SequelizeValidationErrorItem
+  SequelizeValidationErrorItem,
+  ValidationErrorCode
 } from '../../../types/validation';
 import { Model, ModelStatic, Transaction, Op, Sequelize } from 'sequelize';
 
@@ -284,15 +285,19 @@ export abstract class BaseService {
       } catch (error) {
         results.failed++;
         results.errors.push(`Item ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        
-        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error, { item });
+
+        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error, {
+          additionalContext: { item }
+        });
       }
     }
 
     this.logInfo(`Bulk operation ${operation} completed`, {
-      processed: results.processed,
-      successful: results.successful,
-      failed: results.failed
+      additionalContext: {
+        processed: results.processed,
+        successful: results.successful,
+        failed: results.failed
+      }
     });
 
     return results;
@@ -335,7 +340,7 @@ export abstract class BaseService {
   protected buildSearchClause(
     searchTerm: string,
     searchFields: string[]
-  ): Record<string, unknown> | Record<string, never> {
+  ): Record<string, unknown> {
     if (!searchTerm || searchFields.length === 0) {
       return {};
     }
@@ -344,7 +349,7 @@ export abstract class BaseService {
       [Op.or]: searchFields.map(field => ({
         [field]: { [Op.iLike]: `%${searchTerm}%` }
       }))
-    };
+    } as Record<string, unknown>;
   }
 
   /**
@@ -412,7 +417,7 @@ export abstract class BaseService {
         };
       }
 
-      await entity.update({ isActive: false } as Partial<T>);
+      await entity.update({ isActive: false } as unknown as Partial<T>);
 
       await this.addAuditEntry('soft_delete', model.name, id, userId);
 
@@ -447,7 +452,7 @@ export abstract class BaseService {
         };
       }
 
-      await entity.update({ isActive: true } as Partial<T>);
+      await entity.update({ isActive: true } as unknown as Partial<T>);
 
       await this.addAuditEntry('reactivate', model.name, id, userId);
 
@@ -533,9 +538,9 @@ export abstract class BaseService {
 
     // Execute query
     const { rows, count } = await model.findAndCountAll({
-      where,
-      include,
-      order,
+      where: where as any,
+      include: include as any,
+      order: order as any,
       attributes,
       offset,
       limit,
@@ -607,7 +612,7 @@ export abstract class BaseService {
     const dateClause: Record<string, unknown> = {};
 
     if (startDate || endDate) {
-      const rangeConditions: Record<string, unknown> = {};
+      const rangeConditions: Record<string | symbol, unknown> = {};
 
       if (startDate) {
         rangeConditions[Op.gte] = startDate;
@@ -687,7 +692,7 @@ export abstract class BaseService {
     requiredFields: string[],
     fieldLabels?: Record<string, string>
   ): ValidationResult {
-    const errors: Array<{ field: string; message: string; code: string }> = [];
+    const errors: Array<{ field: string; message: string; code: ValidationErrorCode }> = [];
 
     for (const field of requiredFields) {
       const value = data[field];
@@ -697,7 +702,7 @@ export abstract class BaseService {
         errors.push({
           field,
           message: `${label} is required`,
-          code: 'REQUIRED_FIELD_MISSING',
+          code: ValidationErrorCode.REQUIRED_FIELD,
         });
       }
     }

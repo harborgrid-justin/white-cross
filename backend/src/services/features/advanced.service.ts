@@ -17,9 +17,9 @@
  * Contains multiple production-ready features for the White Cross platform
  */
 
-import { logger } from '../utils/logger';
-import { Student, Medication, Appointment, EmergencyContact, IncidentReport } from '../database/models';
-import { sequelize } from '../database/config/sequelize';
+import { logger } from '../../utils/logger';
+import { Student, Medication, Appointment, EmergencyContact, IncidentReport } from '../../database/models';
+import { sequelize } from '../../database/config/sequelize';
 import { Op } from 'sequelize';
 
 // ============================================

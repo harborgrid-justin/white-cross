@@ -22,7 +22,7 @@
  */
 
 import { Op } from 'sequelize';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 import {
   Document,

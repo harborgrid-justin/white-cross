@@ -30,6 +30,7 @@ import {
   sequelize
 } from '../database/models';
 import { ContactPriority } from '../database/types/enums';
+import { NotFoundError } from '../shared/errors';
 
 export interface CreateEmergencyContactData {
   studentId: string;
@@ -731,7 +732,7 @@ export class EmergencyContactService {
       });
 
       if (!contact) {
-        throw new NotFoundError(`Emergency contact with ID ${id} not found`);
+        throw new NotFoundError('EmergencyContact', id);
       }
 
       logger.info(`Retrieved emergency contact: ${id}`);

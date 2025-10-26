@@ -131,7 +131,7 @@ export class MedicationCrudService {
       const whereClause: any = {};
       if (search) {
         whereClause[Op.or] = [
-          { medicationName: { [Op.iLike]: `%${search}%` } }
+          { name: { [Op.iLike]: `%${search}%` } }
         ];
       }
 
@@ -139,7 +139,7 @@ export class MedicationCrudService {
         where: whereClause,
         offset,
         limit,
-        order: [['medicationName', 'ASC']],
+        order: [['name', 'ASC']],
         distinct: true
       });
 
@@ -223,21 +223,20 @@ export class MedicationCrudService {
    */
   static async createMedication(data: CreateMedicationData) {
     try {
-      // Check if medication with same name exists for the student
+      // Check if medication with same name already exists in formulary
       const existingMedication = await Medication.findOne({
         where: {
-          medicationName: data.medicationName,
-          studentId: data.studentId
+          name: data.name
         }
       });
 
       if (existingMedication) {
-        throw new Error('Medication with same name already exists for this student');
+        throw new Error('Medication with same name already exists in formulary');
       }
 
       const medication = await Medication.create(data);
 
-      logger.info(`Medication created: ${medication.medicationName} for student ${medication.studentId}`);
+      logger.info(`Medication created in formulary: ${medication.name}`);
       return medication;
     } catch (error) {
       logger.error('Error creating medication:', error);
@@ -334,8 +333,13 @@ export class MedicationCrudService {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: medications, count: total } = await Medication.findAndCountAll({
+      // Query StudentMedication with Medication details included
+      const { rows: studentMedications, count: total } = await StudentMedication.findAndCountAll({
         where: { studentId },
+        include: [{
+          model: Medication,
+          as: 'medication'
+        }],
         offset,
         limit,
         order: [['createdAt', 'DESC']],
@@ -343,9 +347,9 @@ export class MedicationCrudService {
       });
 
       return {
-        medications,
+        medications: studentMedications,
         total,
-        data: medications,
+        data: studentMedications,
         pagination: {
           page,
           limit,
@@ -487,7 +491,7 @@ export class MedicationCrudService {
 
       await medication.update({
         isActive: false,
-        endDate: new Date()
+        deletedAt: new Date()
       });
 
       logger.info(`Medication deactivated: ${id} - Reason: ${reason} (${deactivationType})`);
@@ -511,7 +515,7 @@ export class MedicationCrudService {
 
       await medication.update({
         isActive: true,
-        endDate: null
+        deletedAt: undefined
       });
 
       logger.info(`Medication activated: ${id}`);
@@ -594,10 +598,10 @@ export class MedicationCrudService {
       });
 
       // Combine standard forms with existing forms from database
-      const allForms = [...new Set([
+      const allForms = Array.from(new Set([
         ...MEDICATION_DOSAGE_FORMS,
         ...existingForms.map((f: any) => f.dosageForm).filter(Boolean)
-      ])].sort();
+      ])).sort();
 
       const formOptions = {
         dosageForms: allForms,

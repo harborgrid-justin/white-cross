@@ -1,5 +1,5 @@
 import { Op, Transaction } from 'sequelize';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 import { handleSequelizeError } from '../../utils/sequelizeErrorHandler';
 import {
   Message,

@@ -44,5 +44,5 @@
  */
 
 // Re-export everything from the modular implementation
-export * from './chronicCondition';
-export { ChronicConditionService as default } from './chronicCondition';
+export * from './index';
+export { ChronicConditionService as default } from './index';
