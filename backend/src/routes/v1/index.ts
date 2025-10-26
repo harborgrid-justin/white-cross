@@ -14,6 +14,8 @@ import { communicationRoutes } from './communication';
 import { incidentsRoutes } from './incidents';
 import { routes as analyticsRoutes } from './analytics';
 import { systemModuleRoutes } from './system';
+import { alertsRoutes } from './alerts';
+import { clinicalRoutes } from './clinical';
 
 /**
  * All v1 API routes organized by module
@@ -23,11 +25,13 @@ import { systemModuleRoutes } from './system';
  * - Healthcare: Medications, health records
  * - Operations: Students, emergency contacts, appointments
  * - Documents: Document management, signatures, templates
- * - Compliance: Audit logs, compliance reports, policies, consents
+ * - Compliance: Audit logs, compliance reports, policies, consents, PHI disclosure tracking
  * - Communications: Messages, broadcasts, notifications
  * - Incidents: Incident reporting, evidence, witnesses, follow-ups
  * - Analytics: Health metrics, analytics, and reporting
  * - System: System administration, integrations, and configuration
+ * - Alerts: Real-time emergency alerting with multi-channel delivery (Phase 2)
+ * - Clinical: Clinic visits and drug interaction checking (Phase 2)
  */
 export const v1Routes: ServerRoute[] = [
   ...coreRoutes,
@@ -39,7 +43,9 @@ export const v1Routes: ServerRoute[] = [
   ...communicationRoutes,
   ...incidentsRoutes,
   ...analyticsRoutes,
-  ...systemModuleRoutes
+  ...systemModuleRoutes,
+  ...alertsRoutes,           // Phase 2: Real-time alerts (14 routes)
+  ...clinicalRoutes,         // Phase 2: Clinical operations (32 routes)
 ];
 
 /**
@@ -56,7 +62,9 @@ export const getV1RouteStats = () => {
     communication: communicationRoutes.length,
     incidents: incidentsRoutes.length,
     analytics: analyticsRoutes.length,
-    system: systemModuleRoutes.length
+    system: systemModuleRoutes.length,
+    alerts: alertsRoutes.length,
+    clinical: clinicalRoutes.length,
   };
 
   return {

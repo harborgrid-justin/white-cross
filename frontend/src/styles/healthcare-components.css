@@ -1,0 +1,841 @@
+/**
+ * HEALTHCARE-SPECIFIC COMPONENT STYLES
+ * Extended component utilities for 15 critical school nurse SaaS features
+ *
+ * This file provides pre-built component classes using Tailwind utilities
+ * for healthcare-specific UI patterns.
+ */
+
+@layer components {
+  /* ============================================
+     ALERT SEVERITY SYSTEM
+     For: Real-Time Alerts, Tamper Alerts, Outbreak Detection
+     ============================================ */
+
+  /* Info Alert */
+  .alert-severity-info {
+    @apply bg-blue-50 border-2 border-blue-200 text-blue-800 p-4 rounded-lg flex items-start gap-3
+           dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200;
+  }
+
+  /* Low Severity Alert */
+  .alert-severity-low {
+    @apply bg-green-50 border-2 border-green-200 text-green-800 p-4 rounded-lg flex items-start gap-3
+           dark:bg-green-950 dark:border-green-800 dark:text-green-200;
+  }
+
+  /* Medium Severity Alert */
+  .alert-severity-medium {
+    @apply bg-yellow-50 border-2 border-yellow-300 text-yellow-900 p-4 rounded-lg flex items-start gap-3
+           dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200;
+  }
+
+  /* High Severity Alert */
+  .alert-severity-high {
+    @apply bg-orange-50 border-2 border-orange-300 text-orange-900 p-4 rounded-lg flex items-start gap-3 shadow-md
+           dark:bg-orange-950 dark:border-orange-700 dark:text-orange-200;
+  }
+
+  /* Critical Severity Alert */
+  .alert-severity-critical {
+    @apply bg-red-50 border-2 border-red-400 text-red-900 p-4 rounded-lg flex items-start gap-3 shadow-lg
+           dark:bg-red-950 dark:border-red-700 dark:text-red-200;
+  }
+
+  /* Emergency Alert - High contrast, attention-grabbing */
+  .alert-severity-emergency {
+    @apply bg-red-900 border-4 border-red-600 text-white p-6 rounded-lg flex items-start gap-4 shadow-heavy
+           animate-pulse-danger font-semibold text-lg;
+  }
+
+  /* Alert with icon */
+  .alert-icon {
+    @apply flex-shrink-0 w-6 h-6;
+  }
+
+  /* Alert with dismiss button */
+  .alert-dismissible {
+    @apply relative pr-12;
+  }
+
+  .alert-dismiss-btn {
+    @apply absolute top-4 right-4 text-current opacity-50 hover:opacity-100 transition-opacity;
+  }
+
+  /* ============================================
+     DRUG INTERACTION CHECKER
+     For: Drug Interaction Checker, Medication Management
+     ============================================ */
+
+  /* Interaction severity badges */
+  .interaction-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .interaction-none {
+    @apply bg-green-100 text-green-800 border border-green-300
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .interaction-minor {
+    @apply bg-lime-100 text-lime-800 border border-lime-300
+           dark:bg-lime-900 dark:text-lime-200 dark:border-lime-700;
+  }
+
+  .interaction-moderate {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .interaction-major {
+    @apply bg-orange-100 text-orange-800 border border-orange-400
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  .interaction-severe {
+    @apply bg-red-100 text-red-800 border-2 border-red-500 font-bold
+           dark:bg-red-900 dark:text-red-200 dark:border-red-600 shadow-glow-danger;
+  }
+
+  .interaction-unknown {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  /* Drug interaction card */
+  .drug-interaction-card {
+    @apply bg-white rounded-lg border-2 p-4 space-y-3 shadow-sm
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  .drug-interaction-card-warning {
+    @apply border-orange-400 bg-orange-50 dark:bg-orange-950 dark:border-orange-700;
+  }
+
+  .drug-interaction-card-danger {
+    @apply border-red-500 bg-red-50 dark:bg-red-950 dark:border-red-700 shadow-glow-danger;
+  }
+
+  /* ============================================
+     IMMUNIZATION DASHBOARD & UI
+     For: Immunization Dashboard, Immunization UI, Immunization Compliance
+     ============================================ */
+
+  /* Immunization compliance badges */
+  .immunization-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase;
+  }
+
+  .immunization-compliant {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .immunization-partial {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .immunization-overdue {
+    @apply bg-orange-100 text-orange-800 border border-orange-400
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  .immunization-noncompliant {
+    @apply bg-red-100 text-red-800 border-2 border-red-500
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  .immunization-exempt {
+    @apply bg-purple-100 text-purple-800 border border-purple-400
+           dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700;
+  }
+
+  .immunization-pending {
+    @apply bg-blue-100 text-blue-800 border border-blue-400
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .immunization-unknown {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  /* Immunization dashboard card */
+  .immunization-dashboard-card {
+    @apply bg-white rounded-lg shadow-soft border border-gray-200 p-6
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  .immunization-progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-4 overflow-hidden
+           dark:bg-gray-700;
+  }
+
+  .immunization-progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+
+  /* ============================================
+     PHI DISCLOSURE TRACKING
+     For: PHI Disclosure Tracking, HIPAA Compliance
+     ============================================ */
+
+  /* PHI protection level badges */
+  .phi-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded text-xs font-medium uppercase;
+  }
+
+  .phi-public {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  .phi-limited {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .phi-protected {
+    @apply bg-orange-100 text-orange-800 border-2 border-orange-500
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  .phi-sensitive {
+    @apply bg-red-100 text-red-800 border-2 border-red-600 font-semibold
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700 shadow-phi-sensitive;
+  }
+
+  .phi-redacted {
+    @apply bg-gray-300 text-gray-600 border border-gray-400
+           dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600;
+  }
+
+  /* PHI disclosure tracking card */
+  .phi-disclosure-card {
+    @apply bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg shadow-sm
+           dark:bg-orange-950 dark:border-orange-600;
+  }
+
+  /* PHI field wrapper with visual indicator */
+  .phi-field {
+    @apply relative pl-2 border-l-4 border-orange-500;
+  }
+
+  .phi-field-sensitive {
+    @apply border-l-4 border-red-600;
+  }
+
+  /* ============================================
+     ENCRYPTION & SECURITY UI
+     For: Encryption UI, Secure Document Sharing
+     ============================================ */
+
+  /* Encryption status badges */
+  .encryption-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase;
+  }
+
+  .encryption-encrypted {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .encryption-partial {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .encryption-unencrypted {
+    @apply bg-red-100 text-red-800 border-2 border-red-500
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  .encryption-encrypting {
+    @apply bg-blue-100 text-blue-800 border border-blue-400 animate-pulse
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .encryption-rotated {
+    @apply bg-purple-100 text-purple-800 border border-purple-400
+           dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700;
+  }
+
+  .encryption-expired {
+    @apply bg-orange-100 text-orange-800 border border-orange-400
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  /* Secure document card */
+  .secure-document-card {
+    @apply bg-white border-2 border-green-200 rounded-lg p-4 shadow-sm
+           dark:bg-gray-800 dark:border-green-800;
+  }
+
+  .secure-document-icon {
+    @apply w-5 h-5 text-green-600 dark:text-green-400;
+  }
+
+  /* ============================================
+     CLINIC VISIT TRACKING
+     For: Clinic Visit Tracking, Attendance
+     ============================================ */
+
+  /* Visit status badges */
+  .visit-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium uppercase;
+  }
+
+  .visit-checked-in {
+    @apply bg-blue-100 text-blue-800 border border-blue-400
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .visit-in-progress {
+    @apply bg-purple-100 text-purple-800 border border-purple-400
+           dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700;
+  }
+
+  .visit-completed {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .visit-missed {
+    @apply bg-orange-100 text-orange-800 border border-orange-400
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  .visit-cancelled {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  /* Visit tracking timeline */
+  .visit-timeline {
+    @apply relative border-l-2 border-gray-300 pl-6 space-y-6
+           dark:border-gray-700;
+  }
+
+  .visit-timeline-item {
+    @apply relative;
+  }
+
+  .visit-timeline-dot {
+    @apply absolute -left-7 top-1 w-4 h-4 rounded-full border-2 bg-white
+           dark:bg-gray-800;
+  }
+
+  /* ============================================
+     MEDICAID BILLING
+     For: Medicaid Billing Integration, Claims Management
+     ============================================ */
+
+  /* Billing status badges */
+  .billing-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase;
+  }
+
+  .billing-draft {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  .billing-submitted {
+    @apply bg-blue-100 text-blue-800 border border-blue-400
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .billing-approved {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .billing-paid {
+    @apply bg-emerald-100 text-emerald-800 border-2 border-emerald-500 font-bold
+           dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700;
+  }
+
+  .billing-rejected {
+    @apply bg-red-100 text-red-800 border-2 border-red-500
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  .billing-review {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .billing-appealed {
+    @apply bg-purple-100 text-purple-800 border border-purple-400
+           dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700;
+  }
+
+  /* Billing card */
+  .billing-card {
+    @apply bg-white border border-gray-200 rounded-lg p-5 shadow-soft
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  .billing-amount {
+    @apply text-2xl font-bold text-gray-900 dark:text-white;
+  }
+
+  /* ============================================
+     SYNC STATUS (State Registry, SIS Integration)
+     For: State Registry Integration, SIS Integration, Export Scheduling
+     ============================================ */
+
+  /* Sync status badges */
+  .sync-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium uppercase;
+  }
+
+  .sync-synced {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .sync-syncing {
+    @apply bg-blue-100 text-blue-800 border border-blue-400 animate-pulse
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .sync-failed {
+    @apply bg-red-100 text-red-800 border-2 border-red-500
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  .sync-pending {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .sync-partial {
+    @apply bg-orange-100 text-orange-800 border border-orange-400
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  .sync-never {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  .sync-conflict {
+    @apply bg-red-200 text-red-900 border-2 border-red-600 font-semibold
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  /* Sync progress card */
+  .sync-progress-card {
+    @apply bg-white border border-gray-200 rounded-lg p-4 space-y-3
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  /* ============================================
+     EXPORT & SCHEDULING
+     For: Export Scheduling, Report Generation
+     ============================================ */
+
+  /* Export status badges */
+  .export-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium uppercase;
+  }
+
+  .export-scheduled {
+    @apply bg-blue-100 text-blue-800 border border-blue-400
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .export-running {
+    @apply bg-purple-100 text-purple-800 border border-purple-400 animate-pulse
+           dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700;
+  }
+
+  .export-completed {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .export-failed {
+    @apply bg-red-100 text-red-800 border-2 border-red-500
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  .export-cancelled {
+    @apply bg-gray-100 text-gray-700 border border-gray-300
+           dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600;
+  }
+
+  .export-pending {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-400
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  /* ============================================
+     OUTBREAK DETECTION
+     For: Outbreak Detection, Health Trends
+     ============================================ */
+
+  /* Outbreak level indicators */
+  .outbreak-indicator {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold uppercase;
+  }
+
+  .outbreak-normal {
+    @apply bg-green-100 text-green-800 border-2 border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .outbreak-elevated {
+    @apply bg-yellow-100 text-yellow-800 border-2 border-yellow-500
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .outbreak-alert {
+    @apply bg-orange-100 text-orange-900 border-2 border-orange-600 shadow-md
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  .outbreak-outbreak {
+    @apply bg-red-100 text-red-900 border-4 border-red-600 shadow-lg font-bold
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700 shadow-glow-danger;
+  }
+
+  .outbreak-critical {
+    @apply bg-red-900 text-white border-4 border-red-600 shadow-heavy font-bold animate-pulse-danger
+           dark:bg-red-950 dark:border-red-700;
+  }
+
+  /* Outbreak dashboard card */
+  .outbreak-dashboard-card {
+    @apply bg-white border-2 rounded-lg p-6 shadow-smooth
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  /* ============================================
+     AUDIT & TAMPER ALERTS
+     For: Audit Logs, Tamper Alerts, Compliance
+     ============================================ */
+
+  /* Audit status badges */
+  .audit-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase;
+  }
+
+  .audit-clean {
+    @apply bg-green-100 text-green-800 border border-green-400
+           dark:bg-green-900 dark:text-green-200 dark:border-green-700;
+  }
+
+  .audit-reviewed {
+    @apply bg-blue-100 text-blue-800 border border-blue-400
+           dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700;
+  }
+
+  .audit-flagged {
+    @apply bg-yellow-100 text-yellow-800 border-2 border-yellow-500
+           dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700;
+  }
+
+  .audit-tampered {
+    @apply bg-red-100 text-red-900 border-4 border-red-600 font-bold shadow-glow-danger
+           dark:bg-red-900 dark:text-red-200 dark:border-red-700;
+  }
+
+  .audit-suspicious {
+    @apply bg-orange-100 text-orange-900 border-2 border-orange-500
+           dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700;
+  }
+
+  /* Tamper alert card */
+  .tamper-alert-card {
+    @apply bg-red-50 border-l-4 border-red-600 p-5 rounded-r-lg shadow-lg animate-pulse-danger
+           dark:bg-red-950 dark:border-red-700;
+  }
+
+  /* ============================================
+     DASHBOARD LAYOUTS
+     For: All dashboard features
+     ============================================ */
+
+  /* Dashboard grid layout */
+  .dashboard-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+  }
+
+  .dashboard-grid-2col {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+  }
+
+  /* Dashboard stat card */
+  .dashboard-stat-card {
+    @apply bg-white rounded-lg shadow-soft border border-gray-200 p-6 hover:shadow-smooth transition-shadow
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  .dashboard-stat-value {
+    @apply text-4xl font-bold text-gray-900 dark:text-white;
+  }
+
+  .dashboard-stat-label {
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide;
+  }
+
+  .dashboard-stat-change {
+    @apply text-sm font-semibold;
+  }
+
+  .dashboard-stat-change-positive {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .dashboard-stat-change-negative {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  /* Dashboard header */
+  .dashboard-header {
+    @apply flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8;
+  }
+
+  .dashboard-title {
+    @apply text-3xl font-bold text-gray-900 dark:text-white;
+  }
+
+  .dashboard-actions {
+    @apply flex items-center gap-3;
+  }
+
+  /* ============================================
+     FORM PATTERNS
+     For: All forms across features
+     ============================================ */
+
+  /* Form section */
+  .form-section {
+    @apply bg-white rounded-lg border border-gray-200 p-6 space-y-6
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  .form-section-header {
+    @apply text-lg font-semibold text-gray-900 dark:text-white pb-2 border-b border-gray-200
+           dark:border-gray-700;
+  }
+
+  /* Form row */
+  .form-row {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  }
+
+  .form-row-3col {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+  }
+
+  /* Form group */
+  .form-group {
+    @apply space-y-2;
+  }
+
+  /* Required field indicator (already exists but enhanced) */
+  .form-label-required {
+    @apply after:content-['*'] after:ml-1 after:text-red-500;
+  }
+
+  /* ============================================
+     DATA VISUALIZATION
+     For: Charts, Graphs, Analytics
+     ============================================ */
+
+  /* Chart container */
+  .chart-container {
+    @apply bg-white rounded-lg border border-gray-200 p-6
+           dark:bg-gray-800 dark:border-gray-700;
+  }
+
+  .chart-title {
+    @apply text-lg font-semibold text-gray-900 dark:text-white mb-4;
+  }
+
+  .chart-legend {
+    @apply flex flex-wrap items-center gap-4 mt-4 text-sm;
+  }
+
+  .chart-legend-item {
+    @apply flex items-center gap-2;
+  }
+
+  .chart-legend-dot {
+    @apply w-3 h-3 rounded-full;
+  }
+
+  /* ============================================
+     MODAL & DIALOG STYLING
+     For: All modals and dialogs
+     ============================================ */
+
+  /* Enhanced modal sizes */
+  .modal-2xl {
+    @apply max-w-2xl;
+  }
+
+  .modal-3xl {
+    @apply max-w-3xl;
+  }
+
+  .modal-4xl {
+    @apply max-w-4xl;
+  }
+
+  .modal-5xl {
+    @apply max-w-5xl;
+  }
+
+  .modal-6xl {
+    @apply max-w-6xl;
+  }
+
+  .modal-full {
+    @apply max-w-full mx-4;
+  }
+
+  /* Modal header */
+  .modal-header {
+    @apply flex items-center justify-between pb-4 border-b border-gray-200
+           dark:border-gray-700;
+  }
+
+  .modal-title {
+    @apply text-2xl font-bold text-gray-900 dark:text-white;
+  }
+
+  /* Modal body */
+  .modal-body {
+    @apply py-6 space-y-4;
+  }
+
+  /* Modal footer */
+  .modal-footer {
+    @apply flex items-center justify-end gap-3 pt-4 border-t border-gray-200
+           dark:border-gray-700;
+  }
+
+  /* ============================================
+     LOADING STATE ANIMATIONS
+     For: All async operations
+     ============================================ */
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  }
+
+  .skeleton-text {
+    @apply h-4 bg-gray-200 dark:bg-gray-700 rounded;
+  }
+
+  .skeleton-circle {
+    @apply rounded-full bg-gray-200 dark:bg-gray-700;
+  }
+
+  /* Shimmer effect */
+  .shimmer {
+    @apply relative overflow-hidden bg-gray-200 dark:bg-gray-700;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply inline-block w-8 h-8 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin;
+  }
+
+  .spinner-sm {
+    @apply w-4 h-4 border-2;
+  }
+
+  .spinner-lg {
+    @apply w-12 h-12 border-4;
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    @apply absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50
+           dark:bg-gray-900 dark:bg-opacity-75;
+  }
+
+  /* ============================================
+     RESPONSIVE UTILITIES
+     ============================================ */
+
+  /* Mobile-first container */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+  }
+
+  /* Responsive text */
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   For: PDF Reports, Print-friendly layouts
+   ============================================ */
+@media print {
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+
+  .print-no-shadow {
+    box-shadow: none !important;
+  }
+
+  .print-border {
+    border: 1px solid #000 !important;
+  }
+
+  /* Hide interactive elements when printing */
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Show print-only elements */
+  .print-show {
+    display: block !important;
+  }
+
+  /* Ensure backgrounds print */
+  .print-color-exact {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
