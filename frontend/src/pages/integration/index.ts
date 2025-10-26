@@ -1,16 +1,69 @@
 /**
  * Integration Page Module Entry Point
- * Comprehensive integration management for healthcare platform
+ *
+ * Comprehensive integration management system for healthcare platform external
+ * system connections. Supports multiple integration types including EHR, SIS,
+ * LMS, Finance, HR, Health, Insurance, Laboratory, and Pharmacy systems.
+ *
+ * @module pages/integration
+ *
+ * @remarks
+ * Security: All integration operations require 'integration.read' permission minimum
+ * Admin: Configuration and management require admin or district admin roles
+ * HIPAA: Integration credentials and PHI data are securely stored and transmitted
+ * Architecture: Feature-based organization with Redux state management
+ *
+ * @example
+ * ```typescript
+ * // Import integration routes
+ * import { IntegrationRoutes, integrationPageMeta } from '@/pages/integration';
+ *
+ * // Import integration actions and selectors
+ * import {
+ *   fetchIntegrations,
+ *   selectIntegrations
+ * } from '@/pages/integration';
+ *
+ * // Import integration components
+ * import { IntegrationDashboard } from '@/pages/integration';
+ * ```
  */
 
-// Export the main routes component
+/**
+ * Integration routes component for React Router
+ *
+ * @exports {Component} IntegrationRoutes - Main routes component
+ */
 export { default as IntegrationRoutes } from './routes';
 
 // Export store and components for external usage
 export * from './store';
 export * from './components';
 
-// Page metadata for navigation and routing
+/**
+ * Integration page metadata for navigation and routing
+ *
+ * Provides comprehensive metadata for the integration management system including
+ * navigation structure, required permissions, supported integration types, and features.
+ *
+ * @constant {Object} integrationPageMeta
+ * @property {string} title - Page title for navigation
+ * @property {string} description - Page description
+ * @property {string} path - Base routing path
+ * @property {string} icon - Icon identifier for UI
+ * @property {string} category - Navigation category
+ * @property {number} priority - Navigation priority (lower = higher priority)
+ * @property {string[]} requiredPermissions - Required permissions for access
+ * @property {Object[]} subModules - Sub-navigation modules
+ * @property {string[]} features - List of platform features
+ * @property {Object[]} integrationTypes - Supported integration types with metadata
+ *
+ * @remarks
+ * RBAC: Sub-modules have specific role requirements beyond base permissions
+ * Navigation: Priority affects ordering in navigation menus
+ * Features: Multi-protocol support including REST, SOAP, HL7, FHIR
+ * Standards: Compliant with healthcare interoperability standards
+ */
 export const integrationPageMeta = {
   title: 'Integration Management',
   description: 'Comprehensive integration hub for managing external system connections including SIS, EHR, Pharmacy, Laboratory, Insurance, and Government systems',

@@ -30,6 +30,22 @@ import { apiInstance } from './services';
 // TYPE DEFINITIONS
 // ==========================================
 
+/**
+ * Configuration options for application bootstrap.
+ *
+ * @interface BootstrapConfig
+ *
+ * @property {boolean} [enableAuditLogging=true] - Enable HIPAA-compliant audit logging for PHI access
+ * @property {boolean} [enableCaching=true] - Enable in-memory caching with LRU eviction
+ * @property {boolean} [enableMonitoring=true] - Enable health monitoring and degradation detection
+ * @property {boolean} [enablePersistence=true] - Enable IndexedDB persistence for offline support
+ * @property {boolean} [debug=false] - Enable debug logging to console
+ *
+ * @remarks
+ * All services are enabled by default. Disable specific services only in
+ * controlled environments (e.g., testing). For production healthcare
+ * applications, audit logging must remain enabled for HIPAA compliance.
+ */
 export interface BootstrapConfig {
   enableAuditLogging?: boolean;
   enableCaching?: boolean;
@@ -38,6 +54,29 @@ export interface BootstrapConfig {
   debug?: boolean;
 }
 
+/**
+ * Result of bootstrap initialization process.
+ *
+ * @interface BootstrapResult
+ *
+ * @property {boolean} success - Overall success status. True only if all critical services initialized.
+ * @property {Object} services - Individual service initialization status
+ * @property {boolean} services.tokenManager - JWT token manager initialization status
+ * @property {boolean} services.csrf - CSRF protection initialization status
+ * @property {boolean} services.audit - Audit logging service initialization status
+ * @property {boolean} services.cache - Cache manager initialization status
+ * @property {boolean} services.serviceRegistry - Service registry initialization status
+ * @property {boolean} services.healthMonitor - Health monitor initialization status
+ * @property {boolean} services.persistence - Persistence layer initialization status
+ * @property {string[]} errors - Array of error messages from failed service initializations
+ * @property {number} timestamp - Unix timestamp (ms) when bootstrap completed
+ * @property {number} duration - Bootstrap duration in milliseconds
+ *
+ * @remarks
+ * **Critical Services**: tokenManager and csrf must succeed for overall success.
+ * **Non-Critical Services**: audit, cache, monitoring, and persistence failures are
+ * logged but do not prevent application startup.
+ */
 export interface BootstrapResult {
   success: boolean;
   services: {
@@ -66,10 +105,29 @@ let bootstrapResult: BootstrapResult | null = null;
 // ==========================================
 
 /**
- * Initialize Security Layer
- * - SecureTokenManager (sessionStorage-based)
- * - CSRF Protection
- * - Security event listeners
+ * Initializes the security layer including token management and CSRF protection.
+ *
+ * This is the first and most critical initialization step. It sets up:
+ * - SecureTokenManager for JWT token handling (sessionStorage-based)
+ * - CSRF protection on all API requests
+ * - Security event listeners for token expiration
+ *
+ * @async
+ * @param {BootstrapConfig} config - Bootstrap configuration options
+ * @returns {Promise<{success: boolean; error?: string}>} Initialization result
+ *
+ * @remarks
+ * **Security Architecture**:
+ * - Tokens stored in sessionStorage (not localStorage) for better security
+ * - CSRF token automatically included in all API requests
+ * - Token validation performed before each API call
+ *
+ * **HIPAA Compliance**: This layer must initialize successfully before any
+ * PHI operations can occur. Failure to initialize security results in
+ * overall bootstrap failure.
+ *
+ * @see {@link services/security/SecureTokenManager} for token management
+ * @see {@link services/security/CsrfProtection} for CSRF implementation
  */
 async function initializeSecurity(config: BootstrapConfig): Promise<{ success: boolean; error?: string }> {
   try {
@@ -103,10 +161,34 @@ async function initializeSecurity(config: BootstrapConfig): Promise<{ success: b
 }
 
 /**
- * Initialize Audit Service
- * - Set up batching and retry logic
- * - Configure audit event listeners
- * - Note: User context set after login
+ * Initializes the HIPAA-compliant audit logging service.
+ *
+ * Sets up audit logging for all PHI access and critical operations:
+ * - Event batching for performance
+ * - Automatic retry on network failures
+ * - Structured logging format
+ * - User context association (set after login)
+ *
+ * @async
+ * @param {BootstrapConfig} config - Bootstrap configuration options
+ * @returns {Promise<{success: boolean; error?: string}>} Initialization result
+ *
+ * @remarks
+ * **HIPAA Compliance**: This service logs all access to Protected Health
+ * Information (PHI) as required by HIPAA regulations. It must be initialized
+ * before any PHI operations occur.
+ *
+ * **Audit Event Types**:
+ * - CREATE: Resource creation (e.g., new health record)
+ * - READ: PHI access (e.g., viewing patient data)
+ * - UPDATE: Resource modification
+ * - DELETE: Resource deletion
+ *
+ * **Non-Critical Failure**: If audit initialization fails, the application
+ * continues but audit logging is disabled. A warning is logged.
+ *
+ * @see {@link services/audit} for audit service implementation
+ * @see {@link services/audit/types} for audit event types
  */
 async function initializeAudit(config: BootstrapConfig): Promise<{ success: boolean; error?: string }> {
   try {
@@ -153,10 +235,32 @@ async function initializeAudit(config: BootstrapConfig): Promise<{ success: bool
 }
 
 /**
- * Initialize Cache Layer
- * - In-memory cache with LRU eviction
- * - Tag-based invalidation
- * - PHI-aware caching
+ * Initializes the in-memory cache manager with LRU eviction.
+ *
+ * Sets up caching infrastructure for:
+ * - API response caching (non-PHI only)
+ * - Tag-based cache invalidation
+ * - Automatic expiration cleanup
+ * - Performance optimization
+ *
+ * @async
+ * @param {BootstrapConfig} config - Bootstrap configuration options
+ * @returns {Promise<{success: boolean; error?: string}>} Initialization result
+ *
+ * @remarks
+ * **PHI-Aware Caching**: The cache manager is configured to NEVER cache
+ * Protected Health Information (PHI). Only non-PHI data like lookup tables,
+ * school information, and district data are cached.
+ *
+ * **Cache Strategies**:
+ * - LRU Eviction: Least Recently Used entries are removed when cache is full
+ * - Tag-Based Invalidation: Invalidate related entries by tag (e.g., all student data)
+ * - TTL-Based Expiration: Each entry has a configurable time-to-live
+ *
+ * **Startup Cleanup**: On initialization, all expired cache entries are cleared
+ * to free memory and ensure fresh data.
+ *
+ * @see {@link services/cache} for cache manager implementation
  */
 async function initializeCache(config: BootstrapConfig): Promise<{ success: boolean; error?: string }> {
   try {
@@ -191,10 +295,35 @@ async function initializeCache(config: BootstrapConfig): Promise<{ success: bool
 }
 
 /**
- * Initialize Persistence Layer
- * - IndexedDB for offline support
- * - Selective persistence (non-PHI only)
- * - Sync on reconnection
+ * Initializes the IndexedDB persistence layer for offline support.
+ *
+ * Provides client-side persistence for:
+ * - Offline application functionality
+ * - User preferences and settings
+ * - Non-PHI reference data
+ * - Automatic synchronization on reconnection
+ *
+ * @async
+ * @param {BootstrapConfig} config - Bootstrap configuration options
+ * @returns {Promise<{success: boolean; error?: string}>} Initialization result
+ *
+ * @remarks
+ * **HIPAA Compliance**: Only non-PHI data is persisted to IndexedDB. PHI
+ * data is NEVER stored in browser storage to comply with HIPAA regulations.
+ *
+ * **Persistence Strategy**:
+ * - IndexedDB: Primary storage for structured data
+ * - Automatic Sync: Queued mutations sync when connection restored
+ * - Selective Persistence: Only whitelisted data types are persisted
+ *
+ * **Non-Critical Failure**: If IndexedDB is unavailable (e.g., private browsing),
+ * the application continues without offline support. Users can still access
+ * the application online.
+ *
+ * **Supported Browsers**: IndexedDB is available in all modern browsers.
+ * Safari private mode and some corporate environments may block IndexedDB.
+ *
+ * @see {@link services/cache} for persistence manager implementation
  */
 async function initializePersistenceLayer(config: BootstrapConfig): Promise<{ success: boolean; error?: string }> {
   try {
@@ -227,10 +356,39 @@ async function initializePersistenceLayer(config: BootstrapConfig): Promise<{ su
 }
 
 /**
- * Initialize Service Registry
- * - Register all API services
- * - Set up health checks
- * - Configure circuit breakers
+ * Initializes the service registry for API service management.
+ *
+ * Sets up centralized service registration and management:
+ * - API service discovery and registration
+ * - Service health monitoring
+ * - Circuit breaker patterns for resilience
+ * - Lazy service initialization
+ *
+ * @async
+ * @param {BootstrapConfig} config - Bootstrap configuration options
+ * @returns {Promise<{success: boolean; error?: string}>} Initialization result
+ *
+ * @remarks
+ * **Service Registry Pattern**: Provides a centralized registry for all
+ * API services, enabling:
+ * - Service discovery without tight coupling
+ * - Health monitoring of individual services
+ * - Circuit breaker implementation for failing services
+ * - Graceful degradation when services are unavailable
+ *
+ * **Lazy Initialization**: Services are registered lazily as they're imported.
+ * This reduces initial load time and memory usage.
+ *
+ * **Registered Services**:
+ * - Student API
+ * - Medication API
+ * - Health Records API
+ * - Appointment API
+ * - Incident Reporting API
+ * - Communication API
+ * - Document API
+ *
+ * @see {@link services/core/ServiceRegistry} for registry implementation
  */
 async function initializeServices(config: BootstrapConfig): Promise<{ success: boolean; error?: string }> {
   try {
@@ -254,10 +412,39 @@ async function initializeServices(config: BootstrapConfig): Promise<{ success: b
 }
 
 /**
- * Initialize Health Monitoring
- * - Health checks for all services
- * - Degradation detection
- * - Performance monitoring
+ * Initializes the health monitoring system for service degradation detection.
+ *
+ * Sets up continuous health monitoring for:
+ * - Backend API availability
+ * - Service response times
+ * - Error rate tracking
+ * - Performance degradation detection
+ *
+ * @async
+ * @param {BootstrapConfig} config - Bootstrap configuration options
+ * @returns {Promise<{success: boolean; error?: string}>} Initialization result
+ *
+ * @remarks
+ * **Health Monitoring Strategy**:
+ * - Periodic health checks for all registered services
+ * - Automatic degradation detection based on error rates
+ * - Event emission for health state changes
+ * - Performance metrics collection
+ *
+ * **Monitored Metrics**:
+ * - Response Time: Average and percentile response times
+ * - Error Rate: Percentage of failed requests
+ * - Availability: Service uptime percentage
+ * - Degradation Events: When service quality decreases
+ *
+ * **Non-Critical Failure**: If monitoring initialization fails, the application
+ * continues without health monitoring. Services remain functional but degradation
+ * won't be automatically detected.
+ *
+ * **Event Listeners**: In debug mode, health events are logged to console.
+ * In production, events are sent to monitoring backends (DataDog, New Relic).
+ *
+ * @see {@link services/resilience/HealthMonitor} for health monitor implementation
  */
 async function initializeMonitoring(config: BootstrapConfig): Promise<{ success: boolean; error?: string }> {
   try {
@@ -439,22 +626,79 @@ export async function initializeApp(config: BootstrapConfig = {}): Promise<Boots
 }
 
 /**
- * Check if application is initialized
+ * Checks if the application has completed bootstrap initialization.
+ *
+ * @returns {boolean} True if bootstrap completed (successfully or with errors), false if not started
+ *
+ * @remarks
+ * This function is useful for conditional logic that should only execute
+ * after bootstrap completes. It returns true even if bootstrap had non-critical
+ * failures, as long as critical services (security) initialized successfully.
+ *
+ * @example
+ * ```typescript
+ * if (isAppInitialized()) {
+ *   // Safe to access initialized services
+ *   const token = secureTokenManager.getAccessToken();
+ * }
+ * ```
  */
 export function isAppInitialized(): boolean {
   return isInitialized;
 }
 
 /**
- * Get bootstrap result
+ * Retrieves the cached bootstrap initialization result.
+ *
+ * @returns {BootstrapResult | null} Bootstrap result object, or null if not yet initialized
+ *
+ * @remarks
+ * Use this function to inspect the bootstrap status and identify which
+ * services failed to initialize. The result is cached after the first
+ * successful bootstrap call.
+ *
+ * @example
+ * ```typescript
+ * const result = getBootstrapResult();
+ * if (result && !result.services.audit) {
+ *   console.warn('Audit logging is disabled');
+ * }
+ * ```
  */
 export function getBootstrapResult(): BootstrapResult | null {
   return bootstrapResult;
 }
 
 /**
- * Cleanup application resources
- * Call this on application shutdown or before hot reload
+ * Cleans up all application resources and services.
+ *
+ * This function should be called on application shutdown or before hot reload
+ * in development. It ensures all resources are properly released and pending
+ * operations are completed.
+ *
+ * @async
+ * @returns {Promise<void>} Resolves when cleanup is complete
+ *
+ * @remarks
+ * **Cleanup Operations**:
+ * 1. Flush pending audit events to backend
+ * 2. Clean up audit service resources
+ * 3. Clear authentication tokens from sessionStorage
+ * 4. Clear CSRF token
+ * 5. Destroy service registry and all registered services
+ *
+ * **HIPAA Compliance**: Cleanup ensures all audit events are flushed before
+ * shutdown, preventing loss of compliance audit trail.
+ *
+ * **Automatic Cleanup**: This function is automatically called on:
+ * - Page unload (beforeunload event)
+ * - Hot module reload in development (import.meta.hot.dispose)
+ *
+ * @example
+ * ```typescript
+ * // Manual cleanup
+ * await cleanupApp();
+ * ```
  */
 export async function cleanupApp(): Promise<void> {
   console.log('[Bootstrap] Starting cleanup...');
@@ -485,7 +729,36 @@ export async function cleanupApp(): Promise<void> {
 }
 
 /**
- * Reset bootstrap state (for testing)
+ * Resets the bootstrap state for testing purposes.
+ *
+ * This function is intended for use in unit tests to reset the bootstrap
+ * state between test runs. It clears the initialization flag and cached result.
+ *
+ * @returns {void}
+ *
+ * @remarks
+ * **Testing Only**: This function should NEVER be called in production code.
+ * It's exported solely for testing purposes to enable clean test isolation.
+ *
+ * **Side Effects**: After calling this function:
+ * - `isAppInitialized()` will return false
+ * - `getBootstrapResult()` will return null
+ * - Next call to `initializeApp()` will perform full initialization
+ *
+ * @internal
+ *
+ * @example
+ * ```typescript
+ * // In test setup
+ * beforeEach(() => {
+ *   resetBootstrap();
+ * });
+ *
+ * it('should initialize app successfully', async () => {
+ *   const result = await initializeApp();
+ *   expect(result.success).toBe(true);
+ * });
+ * ```
  */
 export function resetBootstrap(): void {
   isInitialized = false;

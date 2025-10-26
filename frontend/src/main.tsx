@@ -1,13 +1,35 @@
 /**
- * WF-MAIN-149 | main.tsx - Application entry point and React DOM rendering
- * Purpose: application entry point and react dom rendering
- * Upstream: ./App.tsx | Dependencies: react, react-dom/client, ./App.tsx
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: React components/utilities | Key Features: Standard module
- * Last Updated: 2025-10-21 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: application entry point and react dom rendering, part of React frontend architecture
+ * WF-MAIN-149 | main.tsx - Application Entry Point and React DOM Rendering
+ *
+ * This is the primary entry point for the White Cross healthcare platform frontend.
+ * It initializes the monitoring infrastructure before rendering the React application,
+ * ensuring all telemetry, error tracking, and performance monitoring are active from
+ * the moment the application starts.
+ *
+ * @module main
+ *
+ * @remarks
+ * **Initialization Sequence**:
+ * 1. Initialize monitoring services (Sentry, DataDog, New Relic)
+ * 2. Configure error tracking and performance monitoring
+ * 3. Render React application with StrictMode
+ *
+ * **Monitoring Services**:
+ * - Error Tracking: Sentry for exception monitoring
+ * - Metrics: DataDog and New Relic for application metrics
+ * - Performance: Web Vitals tracking for user experience monitoring
+ * - Health Checks: Periodic backend health verification
+ *
+ * **HIPAA Compliance**: All monitoring services are configured to exclude PHI
+ * data from telemetry. Error messages and logs are sanitized before transmission.
+ *
+ * Critical Path: Page load → Monitoring init → React render → App bootstrap → User interaction
+ *
+ * @see {@link App.tsx} for the root React component
+ * @see {@link services/monitoring} for monitoring configuration
+ * @see {@link bootstrap.ts} for application service initialization
+ *
+ * Last Updated: 2025-10-26 | File Type: .tsx
  */
 
 import React from 'react'
@@ -18,7 +40,44 @@ import './index.css'
 // Initialize monitoring infrastructure
 import { initializeMonitoring } from './services/monitoring'
 
-// Initialize monitoring before rendering app
+/**
+ * Initializes the application by setting up monitoring infrastructure and
+ * rendering the React application to the DOM.
+ *
+ * This function is called immediately upon module load and handles:
+ * 1. Monitoring service initialization with environment-specific configuration
+ * 2. Error handling for monitoring failures (non-blocking)
+ * 3. React application rendering with StrictMode enabled
+ *
+ * @async
+ * @returns {Promise<void>} Resolves when the application is rendered
+ *
+ * @remarks
+ * **Monitoring Configuration**:
+ * The function configures multiple monitoring backends based on environment variables:
+ * - DataDog: Application metrics and distributed tracing
+ * - New Relic: Application performance monitoring
+ * - Sentry: Error tracking and exception monitoring
+ * - Custom Logger: Structured logging with remote endpoint support
+ *
+ * **Resilience**: If monitoring initialization fails, the application continues
+ * to load normally. A warning is logged but the failure is non-blocking to ensure
+ * the healthcare application remains available even if monitoring is degraded.
+ *
+ * **StrictMode**: React StrictMode is enabled to help identify potential problems
+ * in the application during development, including unsafe lifecycle methods and
+ * deprecated API usage.
+ *
+ * @throws {Error} Monitoring initialization errors are caught and logged, but
+ * do not prevent application startup.
+ *
+ * @example
+ * ```typescript
+ * // This function is invoked automatically at the end of this file
+ * await startApp();
+ * // Application is now running
+ * ```
+ */
 const startApp = async () => {
   try {
     // Initialize monitoring with environment configuration
