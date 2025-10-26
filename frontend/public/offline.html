@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - White Cross</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 48px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: #f3f4f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: #6b7280;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .button:active {
+      transform: translateY(0);
+    }
+
+    .status {
+      margin-top: 24px;
+      padding: 16px;
+      background: #fef3c7;
+      border-radius: 8px;
+      color: #92400e;
+      font-size: 14px;
+      display: none;
+    }
+
+    .status.online {
+      background: #d1fae5;
+      color: #065f46;
+      display: block;
+    }
+
+    .status.offline {
+      background: #fecaca;
+      color: #991b1b;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 32px 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+      </svg>
+    </div>
+
+    <h1>You're Offline</h1>
+    <p>
+      It looks like you've lost your internet connection.
+      White Cross requires an active internet connection to access patient health information
+      and maintain HIPAA compliance.
+    </p>
+
+    <button class="button" onclick="tryReconnect()">
+      Try Again
+    </button>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    // Check connection status
+    function updateConnectionStatus() {
+      const status = document.getElementById('status');
+
+      if (navigator.onLine) {
+        status.className = 'status online';
+        status.textContent = '✓ Connection restored! Redirecting...';
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        status.className = 'status offline';
+        status.textContent = '✗ Still offline. Please check your internet connection.';
+      }
+    }
+
+    // Try to reconnect
+    function tryReconnect() {
+      updateConnectionStatus();
+    }
+
+    // Listen for online/offline events
+    window.addEventListener('online', () => {
+      console.log('Connection restored');
+      updateConnectionStatus();
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('Connection lost');
+      updateConnectionStatus();
+    });
+
+    // Auto-retry every 5 seconds
+    setInterval(() => {
+      if (navigator.onLine) {
+        updateConnectionStatus();
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

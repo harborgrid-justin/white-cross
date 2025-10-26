@@ -1,0 +1,590 @@
+======================================================================================
+NEXT.JS 15 APP ROUTER - COMPLETE ROUTE TREE
+White Cross Healthcare Platform
+======================================================================================
+
+nextjs/app/
+│
+├── layout.tsx ✅                          # Root layout (providers, fonts, metadata)
+├── page.tsx ✅                            # Root page (redirect to /dashboard)
+├── providers.tsx ✅                       # Client providers (Redux, Query, Apollo)
+├── globals.css ✅                         # Global styles + Tailwind CSS
+│
+├── (auth)/                                # PUBLIC ROUTES - No auth required
+│   ├── layout.tsx ✅                      # Minimal auth layout
+│   │
+│   ├── login/
+│   │   ├── page.tsx ✅                    # Login page
+│   │   ├── loading.tsx                    # Login loading state
+│   │   └── error.tsx                      # Login error boundary
+│   │
+│   └── access-denied/
+│       ├── page.tsx ✅                    # Access denied page
+│       └── loading.tsx                    # Loading state
+│
+└── (dashboard)/                           # PROTECTED ROUTES - Auth required
+    ├── layout.tsx ✅                      # Dashboard shell (sidebar + header)
+    ├── loading.tsx ✅                     # Dashboard loading state
+    ├── error.tsx ✅                       # Dashboard error boundary
+    ├── page.tsx ✅                        # Dashboard home
+    │
+    ├── students/                          # 📚 STUDENTS MODULE (5 routes)
+    │   ├── page.tsx ✅ EXAMPLE            # Students list
+    │   ├── loading.tsx                    # List loading state
+    │   ├── error.tsx                      # List error boundary
+    │   │
+    │   ├── new/
+    │   │   ├── page.tsx                   # Create student form
+    │   │   └── loading.tsx                # Form loading
+    │   │
+    │   └── [id]/
+    │       ├── page.tsx ✅ EXAMPLE        # Student detail/health records
+    │       ├── loading.tsx                # Detail loading
+    │       ├── error.tsx                  # Detail error
+    │       │
+    │       ├── edit/
+    │       │   └── page.tsx               # Edit student form
+    │       │
+    │       └── health/
+    │           └── page.tsx               # Detailed health records view
+    │
+    ├── medications/                       # 💊 MEDICATIONS MODULE (42 routes)
+    │   ├── page.tsx                       # Medications list
+    │   ├── loading.tsx                    # List loading
+    │   ├── error.tsx                      # List error
+    │   │
+    │   ├── dashboard/
+    │   │   ├── page.tsx                   # Medications dashboard
+    │   │   └── statistics/
+    │   │       └── page.tsx               # Dashboard statistics
+    │   │
+    │   ├── search/
+    │   │   └── page.tsx                   # Search medications
+    │   │
+    │   ├── lookup/
+    │   │   └── page.tsx                   # Drug database lookup
+    │   │
+    │   ├── new/
+    │   │   └── page.tsx                   # Create medication
+    │   │
+    │   ├── quick-add/
+    │   │   └── page.tsx                   # Quick medication entry
+    │   │
+    │   ├── [id]/
+    │   │   ├── page.tsx                   # Medication details
+    │   │   ├── loading.tsx                # Detail loading
+    │   │   │
+    │   │   ├── edit/
+    │   │   │   └── page.tsx               # Edit medication
+    │   │   │
+    │   │   ├── schedule/
+    │   │   │   └── page.tsx               # Configure schedule
+    │   │   │
+    │   │   ├── administer/
+    │   │   │   └── page.tsx               # Administer medication
+    │   │   │
+    │   │   ├── history/
+    │   │   │   └── page.tsx               # Administration history
+    │   │   │
+    │   │   ├── timeline/
+    │   │   │   └── page.tsx               # Medication timeline
+    │   │   │
+    │   │   ├── notes/
+    │   │   │   └── page.tsx               # Medication notes
+    │   │   │
+    │   │   ├── inventory/
+    │   │   │   └── page.tsx               # Medication inventory
+    │   │   │
+    │   │   ├── interactions/
+    │   │   │   └── page.tsx               # Check interactions
+    │   │   │
+    │   │   ├── education/
+    │   │   │   └── page.tsx               # Medication education
+    │   │   │
+    │   │   └── audit-log/
+    │   │       └── page.tsx               # Medication audit log
+    │   │
+    │   ├── student/
+    │   │   └── [studentId]/
+    │   │       ├── page.tsx               # Student's medications
+    │   │       ├── active/
+    │   │       │   └── page.tsx           # Active medications
+    │   │       ├── add/
+    │   │       │   └── page.tsx           # Add medication to student
+    │   │       ├── schedule/
+    │   │       │   └── page.tsx           # Student's medication schedule
+    │   │       ├── history/
+    │   │       │   └── page.tsx           # Student's medication history
+    │   │       ├── adherence/
+    │   │       │   └── page.tsx           # Adherence tracking
+    │   │       └── prescriptions/
+    │   │           └── page.tsx           # Student's prescriptions
+    │   │
+    │   ├── schedule/
+    │   │   └── page.tsx                   # Global administration schedule
+    │   │
+    │   ├── administration-log/
+    │   │   └── page.tsx                   # Administration log (all)
+    │   │
+    │   ├── missed-doses/
+    │   │   └── page.tsx                   # Missed doses handler
+    │   │
+    │   ├── reminders/
+    │   │   └── page.tsx                   # Administration reminders
+    │   │
+    │   ├── prescriptions/
+    │   │   ├── page.tsx                   # Prescriptions list
+    │   │   ├── new/
+    │   │   │   └── page.tsx               # Create prescription
+    │   │   ├── scan/
+    │   │   │   └── page.tsx               # Scan prescription
+    │   │   └── [prescriptionId]/
+    │   │       ├── page.tsx               # Prescription details
+    │   │       ├── edit/
+    │   │       │   └── page.tsx           # Edit prescription
+    │   │       └── refills/
+    │   │           └── page.tsx           # Manage refills
+    │   │
+    │   ├── inventory/
+    │   │   ├── page.tsx                   # Medication inventory
+    │   │   ├── stock-levels/
+    │   │   │   └── page.tsx               # Stock level monitoring
+    │   │   ├── expiration/
+    │   │   │   └── page.tsx               # Expiration tracking
+    │   │   └── adjust/
+    │   │       └── page.tsx               # Inventory adjustment
+    │   │
+    │   ├── interactions/
+    │   │   ├── check/
+    │   │   │   └── page.tsx               # Interaction checker
+    │   │   └── alerts/
+    │   │       └── page.tsx               # Interaction alerts
+    │   │
+    │   ├── contraindications/
+    │   │   └── page.tsx                   # Contraindications list
+    │   │
+    │   ├── education/
+    │   │   ├── page.tsx                   # Medication education
+    │   │   ├── side-effects/
+    │   │   │   └── page.tsx               # Side effects guide
+    │   │   └── instructions/
+    │   │       └── page.tsx               # Administration instructions
+    │   │
+    │   ├── help/
+    │   │   └── page.tsx                   # Help documentation
+    │   │
+    │   ├── adherence/
+    │   │   ├── page.tsx                   # Adherence tracker
+    │   │   └── charts/
+    │   │       └── page.tsx               # Adherence charts
+    │   │
+    │   ├── compliance/
+    │   │   └── page.tsx                   # Compliance reports
+    │   │
+    │   ├── audit-log/
+    │   │   └── page.tsx                   # Audit log (all medications)
+    │   │
+    │   ├── statistics/
+    │   │   └── page.tsx                   # Statistics overview
+    │   │
+    │   ├── metrics/
+    │   │   └── page.tsx                   # Metrics charts
+    │   │
+    │   ├── emergency/
+    │   │   └── page.tsx                   # Emergency medications panel
+    │   │
+    │   ├── export/
+    │   │   └── page.tsx                   # Export medications data
+    │   │
+    │   └── print/
+    │       ├── [id]/
+    │       │   └── page.tsx               # Print medication
+    │       └── mar/
+    │           └── [studentId]/
+    │               └── page.tsx           # Print MAR (Medication Administration Record)
+    │
+    ├── appointments/                      # 📅 APPOINTMENTS MODULE (5 routes)
+    │   ├── page.tsx                       # Appointments list/schedule
+    │   ├── loading.tsx                    # List loading
+    │   │
+    │   ├── schedule/
+    │   │   └── page.tsx                   # Calendar view
+    │   │
+    │   ├── new/
+    │   │   └── page.tsx                   # Create appointment
+    │   │
+    │   └── [id]/
+    │       ├── page.tsx                   # Appointment details
+    │       └── edit/
+    │           └── page.tsx               # Edit appointment
+    │
+    ├── health-records/                    # 🏥 HEALTH RECORDS MODULE (5 routes)
+    │   ├── page.tsx                       # Health records list
+    │   ├── loading.tsx                    # List loading
+    │   │
+    │   ├── new/
+    │   │   └── page.tsx                   # Create health record
+    │   │
+    │   ├── student/
+    │   │   └── [studentId]/
+    │   │       └── page.tsx               # Student's health records
+    │   │
+    │   └── [id]/
+    │       ├── page.tsx                   # Health record details
+    │       └── edit/
+    │           └── page.tsx               # Edit health record
+    │
+    ├── incidents/                         # 🚨 INCIDENTS MODULE (24 routes)
+    │   ├── page.tsx                       # Redirect to dashboard
+    │   │
+    │   ├── dashboard/
+    │   │   └── page.tsx                   # Incidents dashboard
+    │   │
+    │   ├── list/
+    │   │   └── page.tsx                   # Incidents list
+    │   │
+    │   ├── create/
+    │   │   └── page.tsx                   # Create incident (quick)
+    │   │
+    │   ├── new/
+    │   │   └── page.tsx                   # Create incident (full form)
+    │   │
+    │   ├── search/
+    │   │   └── page.tsx                   # Search incidents
+    │   │
+    │   ├── statistics/
+    │   │   └── page.tsx                   # Incident statistics
+    │   │
+    │   ├── reports/
+    │   │   └── page.tsx                   # Incident reports
+    │   │
+    │   ├── export/
+    │   │   └── page.tsx                   # Export incident data
+    │   │
+    │   ├── critical/
+    │   │   └── page.tsx                   # Critical incidents (filtered)
+    │   │
+    │   ├── pending/
+    │   │   └── page.tsx                   # Pending incidents (filtered)
+    │   │
+    │   ├── follow-up-required/
+    │   │   └── page.tsx                   # Incidents needing follow-up
+    │   │
+    │   ├── unnotified-parents/
+    │   │   └── page.tsx                   # Unnotified parents (filtered)
+    │   │
+    │   └── [id]/
+    │       ├── page.tsx                   # Incident details
+    │       ├── details/
+    │       │   └── page.tsx               # Detailed view (alt route)
+    │       ├── edit/
+    │       │   └── page.tsx               # Edit incident
+    │       ├── witnesses/
+    │       │   ├── page.tsx               # Witness statements list
+    │       │   └── add/
+    │       │       └── page.tsx           # Add witness statement
+    │       ├── follow-ups/
+    │       │   ├── page.tsx               # Follow-up actions list
+    │       │   └── add/
+    │       │       └── page.tsx           # Add follow-up action
+    │       ├── timeline/
+    │       │   └── page.tsx               # Incident timeline
+    │       ├── history/
+    │       │   └── page.tsx               # Incident history
+    │       ├── documents/
+    │       │   └── page.tsx               # Incident documents
+    │       ├── notifications/
+    │       │   └── page.tsx               # Parent notifications
+    │       └── print/
+    │           └── page.tsx               # Print incident report
+    │
+    ├── inventory/                         # 📦 INVENTORY MODULE (5 routes)
+    │   ├── page.tsx                       # Inventory items (default)
+    │   ├── loading.tsx                    # Loading state
+    │   │
+    │   ├── items/
+    │   │   └── page.tsx                   # Inventory items list
+    │   │
+    │   ├── alerts/
+    │   │   └── page.tsx                   # Inventory alerts (low stock, etc.)
+    │   │
+    │   ├── transactions/
+    │   │   └── page.tsx                   # Inventory transactions
+    │   │
+    │   └── vendors/
+    │       └── page.tsx                   # Inventory vendors
+    │
+    ├── admin/                             # ⚙️ ADMIN MODULE (7 routes)
+    │   ├── page.tsx                       # Admin dashboard (default: users)
+    │   ├── loading.tsx                    # Loading state
+    │   │
+    │   ├── users/
+    │   │   └── page.tsx                   # User management
+    │   │
+    │   ├── roles/
+    │   │   └── page.tsx                   # Role management
+    │   │
+    │   ├── permissions/
+    │   │   └── page.tsx                   # Permission management
+    │   │
+    │   ├── settings/
+    │   │   └── page.tsx                   # System settings
+    │   │
+    │   ├── inventory/
+    │   │   └── page.tsx                   # Admin inventory management
+    │   │
+    │   └── reports/
+    │       └── page.tsx                   # Admin reports
+    │
+    ├── budget/                            # 💰 BUDGET MODULE (5 routes)
+    │   ├── page.tsx                       # Budget home (redirect to overview)
+    │   │
+    │   ├── overview/
+    │   │   └── page.tsx                   # Budget overview
+    │   │
+    │   ├── planning/
+    │   │   └── page.tsx                   # Budget planning
+    │   │
+    │   ├── tracking/
+    │   │   └── page.tsx                   # Budget tracking
+    │   │
+    │   └── reports/
+    │       └── page.tsx                   # Budget reports
+    │
+    ├── compliance/                        # ✅ COMPLIANCE MODULE (20 routes)
+    │   ├── page.tsx                       # Compliance dashboard
+    │   ├── loading.tsx                    # Loading state
+    │   │
+    │   ├── statistics/
+    │   │   └── page.tsx                   # Compliance statistics
+    │   │
+    │   ├── reports/
+    │   │   ├── page.tsx                   # Reports list
+    │   │   ├── new/
+    │   │   │   └── page.tsx               # Create report
+    │   │   └── [id]/
+    │   │       ├── page.tsx               # Report details
+    │   │       └── edit/
+    │   │           └── page.tsx           # Edit report
+    │   │
+    │   ├── consent/
+    │   │   ├── forms/
+    │   │   │   ├── page.tsx               # Consent forms list
+    │   │   │   ├── new/
+    │   │   │   │   └── page.tsx           # Create consent form
+    │   │   │   └── [id]/
+    │   │   │       ├── page.tsx           # Consent form details
+    │   │   │       └── edit/
+    │   │   │           └── page.tsx       # Edit consent form
+    │   │   ├── sign/
+    │   │   │   └── [formId]/
+    │   │   │       └── page.tsx           # Sign consent form
+    │   │   └── student/
+    │   │       └── [studentId]/
+    │   │           └── page.tsx           # Student consent history
+    │   │
+    │   ├── policies/
+    │   │   ├── page.tsx                   # Policies list
+    │   │   ├── new/
+    │   │   │   └── page.tsx               # Create policy
+    │   │   └── [id]/
+    │   │       ├── page.tsx               # Policy details
+    │   │       ├── edit/
+    │   │       │   └── page.tsx           # Edit policy
+    │   │       ├── acknowledge/
+    │   │       │   └── page.tsx           # Acknowledge policy
+    │   │       └── acknowledgments/
+    │   │           └── page.tsx           # Policy acknowledgment history
+    │   │
+    │   └── audit/
+    │       ├── page.tsx                   # Audit logs list
+    │       ├── [id]/
+    │       │   └── page.tsx               # Audit log details
+    │       └── trail/
+    │           └── [entityType]/
+    │               └── [entityId]/
+    │                   └── page.tsx       # Audit trail for entity
+    │
+    ├── communication/                     # 💬 COMMUNICATION MODULE (4 routes)
+    │   ├── page.tsx                       # Communication home
+    │   ├── send/
+    │   │   └── page.tsx                   # Send message
+    │   ├── templates/
+    │   │   └── page.tsx                   # Message templates
+    │   └── history/
+    │       └── page.tsx                   # Communication history
+    │
+    ├── documents/                         # 📄 DOCUMENTS MODULE (5 routes)
+    │   ├── page.tsx                       # Documents list
+    │   ├── upload/
+    │   │   └── page.tsx                   # Upload document
+    │   ├── student/
+    │   │   └── [studentId]/
+    │   │       └── page.tsx               # Student's documents
+    │   └── [id]/
+    │       └── page.tsx                   # Document details
+    │
+    ├── reports/                           # 📊 REPORTS MODULE (3 routes)
+    │   ├── page.tsx                       # Reports home (redirect to generate)
+    │   ├── generate/
+    │   │   └── page.tsx                   # Generate reports
+    │   ├── scheduled/
+    │   │   └── page.tsx                   # Scheduled reports
+    │   └── [id]/
+    │       └── page.tsx                   # View report
+    │
+    ├── contacts/                          # 📞 EMERGENCY CONTACTS MODULE (5 routes)
+    │   ├── page.tsx                       # Emergency contacts list
+    │   ├── new/
+    │   │   └── page.tsx                   # Create emergency contact
+    │   ├── student/
+    │   │   └── [studentId]/
+    │   │       └── page.tsx               # Student's emergency contacts
+    │   └── [id]/
+    │       └── page.tsx                   # Emergency contact details
+    │
+    ├── configuration/                     # 🔧 CONFIGURATION MODULE (8+ routes)
+    │   ├── page.tsx                       # Configuration home
+    │   ├── list/
+    │   │   └── page.tsx                   # Configuration list
+    │   ├── editor/
+    │   │   └── page.tsx                   # Configuration editor
+    │   ├── history/
+    │   │   └── page.tsx                   # Configuration history
+    │   ├── import-export/
+    │   │   └── page.tsx                   # Import/Export configuration
+    │   ├── templates/
+    │   │   └── page.tsx                   # Configuration templates
+    │   ├── validator/
+    │   │   └── page.tsx                   # Configuration validator
+    │   ├── backup/
+    │   │   └── page.tsx                   # Configuration backup
+    │   └── security/
+    │       └── page.tsx                   # Security audit
+    │
+    ├── purchase-orders/                   # 🛒 PURCHASE ORDERS MODULE (6+ routes)
+    │   ├── page.tsx                       # Purchase orders list
+    │   ├── new/
+    │   │   └── page.tsx                   # Create purchase order
+    │   ├── pending/
+    │   │   └── page.tsx                   # Pending orders
+    │   ├── approved/
+    │   │   └── page.tsx                   # Approved orders
+    │   └── [id]/
+    │       ├── page.tsx                   # Purchase order details
+    │       └── edit/
+    │           └── page.tsx               # Edit purchase order
+    │
+    ├── vendors/                           # 🏪 VENDORS MODULE (8+ routes)
+    │   ├── page.tsx                       # Vendors list
+    │   ├── new/
+    │   │   └── page.tsx                   # Create vendor
+    │   ├── comparison/
+    │   │   └── page.tsx                   # Vendor comparison
+    │   ├── analytics/
+    │   │   └── page.tsx                   # Vendor analytics
+    │   ├── statistics/
+    │   │   └── page.tsx                   # Vendor statistics
+    │   ├── performance/
+    │   │   └── page.tsx                   # Vendor performance metrics
+    │   ├── import-export/
+    │   │   └── page.tsx                   # Import/Export vendors
+    │   └── [id]/
+    │       ├── page.tsx                   # Vendor details
+    │       └── edit/
+    │           └── page.tsx               # Edit vendor
+    │
+    ├── integrations/                      # 🔌 INTEGRATIONS MODULE (4+ routes)
+    │   ├── page.tsx                       # Integrations list
+    │   ├── new/
+    │   │   └── page.tsx                   # Add integration
+    │   ├── settings/
+    │   │   └── page.tsx                   # Integration settings
+    │   └── [id]/
+    │       └── page.tsx                   # Integration details
+    │
+    └── access-control/                    # 🔐 ACCESS CONTROL MODULE (10+ routes)
+        ├── page.tsx                       # Access control dashboard
+        ├── roles/
+        │   ├── page.tsx                   # Roles list
+        │   ├── new/
+        │   │   └── page.tsx               # Create role
+        │   ├── hierarchy/
+        │   │   └── page.tsx               # Role hierarchy
+        │   ├── templates/
+        │   │   └── page.tsx               # Role templates
+        │   └── [id]/
+        │       ├── page.tsx               # Role details
+        │       └── edit/
+        │           └── page.tsx           # Edit role
+        ├── permissions/
+        │   ├── page.tsx                   # Permissions list
+        │   ├── groups/
+        │   │   └── page.tsx               # Permission groups
+        │   └── matrix/
+        │       └── page.tsx               # Permission matrix
+        ├── users/
+        │   └── page.tsx                   # User roles list
+        ├── audit/
+        │   └── page.tsx                   # Access audit trail
+        ├── logs/
+        │   └── page.tsx                   # Access logs
+        ├── reports/
+        │   └── page.tsx                   # Access reports
+        └── settings/
+            └── page.tsx                   # Access control settings
+
+======================================================================================
+SUMMARY STATISTICS
+======================================================================================
+
+Total Modules:           20+
+Total Routes:            100+
+Completed:               6 (framework + examples)
+Remaining:               94+
+
+Route Breakdown by Module:
+- Authentication:        2 routes   ✅ Complete
+- Dashboard:             1 route    ✅ Complete
+- Students:              5 routes   ⚠️  2 examples
+- Medications:           42 routes  ⏳ To migrate
+- Appointments:          5 routes   ⏳ To migrate
+- Health Records:        5 routes   ⏳ To migrate
+- Incidents:             24 routes  ⏳ To migrate
+- Inventory:             5 routes   ⏳ To migrate
+- Admin:                 7 routes   ⏳ To migrate
+- Budget:                5 routes   ⏳ To migrate
+- Compliance:            20 routes  ⏳ To migrate
+- Communication:         4 routes   ⏳ To migrate
+- Documents:             5 routes   ⏳ To migrate
+- Reports:               3 routes   ⏳ To migrate
+- Emergency Contacts:    5 routes   ⏳ To migrate
+- Configuration:         8+ routes  ⏳ To migrate
+- Purchase Orders:       6+ routes  ⏳ To migrate
+- Vendors:               8+ routes  ⏳ To migrate
+- Integrations:          4+ routes  ⏳ To migrate
+- Access Control:        10+ routes ⏳ To migrate
+
+======================================================================================
+LEGEND
+======================================================================================
+✅ Complete     - File created and reviewed
+⚠️  Example     - Representative example created, others follow same pattern
+⏳ To migrate  - Needs migration from frontend/src/pages
+📚 Module icon  - Visual identifier for module category
+
+======================================================================================
+NOTES
+======================================================================================
+1. All routes maintain 100% feature parity with Vite + React Router implementation
+2. Dynamic routes use [param] syntax instead of :param
+3. All Client Components use 'use client' directive
+4. Layouts provide persistent UI for route groups
+5. Loading states provide instant feedback during navigation
+6. Error boundaries catch and handle route-level errors gracefully
+7. Metadata API improves SEO for all pages
+8. Intercepting routes (@modal) enable modal overlays for forms
+9. Parallel routes enable advanced UI patterns (dashboards)
+10. Middleware handles authentication and role-based access control
+
+======================================================================================
