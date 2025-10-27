@@ -11,6 +11,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { apiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS } from '@/constants/api';
+import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ActionResult } from './students.actions';
 
 // ==========================================
@@ -79,6 +80,7 @@ export interface Medication {
 
 /**
  * Create new medication prescription
+ * PHI CRITICAL: Medication records are protected health information
  */
 export async function createMedication(data: CreateMedicationData): Promise<ActionResult<Medication>> {
   try {
@@ -86,6 +88,15 @@ export async function createMedication(data: CreateMedicationData): Promise<Acti
       API_ENDPOINTS.MEDICATIONS.BASE,
       data
     );
+
+    // HIPAA AUDIT LOG - Mandatory for medication PHI creation
+    await auditLog({
+      action: AUDIT_ACTIONS.CREATE_MEDICATION,
+      resource: 'Medication',
+      resourceId: response.data.id,
+      details: `Created ${data.name} prescription for student ${data.studentId}`,
+      success: true
+    });
 
     revalidateTag('medications');
     revalidateTag(`student-medications-${data.studentId}`);
@@ -99,6 +110,16 @@ export async function createMedication(data: CreateMedicationData): Promise<Acti
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to create medication';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.CREATE_MEDICATION,
+      resource: 'Medication',
+      details: 'Failed to create medication record',
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage
@@ -112,6 +133,7 @@ export async function createMedication(data: CreateMedicationData): Promise<Acti
 
 /**
  * Update medication details
+ * PHI CRITICAL: Medication records are protected health information
  */
 export async function updateMedication(
   medicationId: string,
@@ -122,6 +144,16 @@ export async function updateMedication(
       API_ENDPOINTS.MEDICATIONS.BY_ID(medicationId),
       data
     );
+
+    // HIPAA AUDIT LOG - Mandatory for medication PHI modification
+    await auditLog({
+      action: AUDIT_ACTIONS.UPDATE_MEDICATION,
+      resource: 'Medication',
+      resourceId: medicationId,
+      details: `Updated medication record`,
+      changes: data,
+      success: true
+    });
 
     revalidateTag('medications');
     revalidateTag(`medication-${medicationId}`);
@@ -137,6 +169,17 @@ export async function updateMedication(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update medication';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.UPDATE_MEDICATION,
+      resource: 'Medication',
+      resourceId: medicationId,
+      details: 'Failed to update medication record',
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage
@@ -217,6 +260,7 @@ export async function refillMedication(
 
 /**
  * Record medication administration
+ * PHI CRITICAL: Medication administration is protected health information
  */
 export async function administerMedication(
   data: AdministerMedicationData
@@ -226,6 +270,15 @@ export async function administerMedication(
       `${API_ENDPOINTS.MEDICATIONS.BY_ID(data.medicationId)}/administer`,
       data
     );
+
+    // HIPAA AUDIT LOG - Mandatory for medication administration
+    await auditLog({
+      action: AUDIT_ACTIONS.ADMINISTER_MEDICATION,
+      resource: 'Medication',
+      resourceId: data.medicationId,
+      details: `Administered medication to student ${data.studentId} by ${data.administeredBy}`,
+      success: true
+    });
 
     revalidateTag('medications');
     revalidateTag(`medication-${data.medicationId}`);
@@ -239,6 +292,17 @@ export async function administerMedication(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to record medication administration';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.ADMINISTER_MEDICATION,
+      resource: 'Medication',
+      resourceId: data.medicationId,
+      details: 'Failed to record medication administration',
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage

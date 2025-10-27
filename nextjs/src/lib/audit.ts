@@ -108,6 +108,19 @@ export const AUDIT_ACTIONS = {
   DELETE_MEDICATION: 'DELETE_MEDICATION',
   ADMINISTER_MEDICATION: 'ADMINISTER_MEDICATION',
 
+  // Appointments
+  VIEW_APPOINTMENT: 'VIEW_APPOINTMENT',
+  LIST_APPOINTMENTS: 'LIST_APPOINTMENTS',
+  CREATE_APPOINTMENT: 'CREATE_APPOINTMENT',
+  UPDATE_APPOINTMENT: 'UPDATE_APPOINTMENT',
+  DELETE_APPOINTMENT: 'DELETE_APPOINTMENT',
+  RESCHEDULE_APPOINTMENT: 'RESCHEDULE_APPOINTMENT',
+  CANCEL_APPOINTMENT: 'CANCEL_APPOINTMENT',
+  COMPLETE_APPOINTMENT: 'COMPLETE_APPOINTMENT',
+  CONFIRM_APPOINTMENT: 'CONFIRM_APPOINTMENT',
+  NO_SHOW_APPOINTMENT: 'NO_SHOW_APPOINTMENT',
+  SEND_APPOINTMENT_REMINDER: 'SEND_APPOINTMENT_REMINDER',
+
   // Incidents
   VIEW_INCIDENT: 'VIEW_INCIDENT',
   CREATE_INCIDENT: 'CREATE_INCIDENT',
@@ -163,4 +176,175 @@ export function createAuditContext(request: Request, userId?: string) {
     ipAddress: extractIPAddress(request),
     userAgent: extractUserAgent(request)
   };
+}
+
+/**
+ * Get client IP from Next.js server context
+ *
+ * Works in server actions and components.
+ *
+ * @returns Client IP address
+ *
+ * @example
+ * ```typescript
+ * 'use server'
+ *
+ * export async function myAction() {
+ *   const ip = await getClientIP();
+ *   await auditLog({ ipAddress: ip, ... });
+ * }
+ * ```
+ */
+export async function getClientIP(): Promise<string | undefined> {
+  try {
+    const { headers } = await import('next/headers');
+    const headersList = await headers();
+
+    // Check common headers for IP
+    const ipHeaders = [
+      'x-forwarded-for',
+      'x-real-ip',
+      'cf-connecting-ip',
+      'x-client-ip',
+      'x-cluster-client-ip'
+    ];
+
+    for (const header of ipHeaders) {
+      const value = headersList.get(header);
+      if (value) {
+        // x-forwarded-for can contain multiple IPs, take the first one
+        return value.split(',')[0].trim();
+      }
+    }
+
+    return undefined;
+  } catch (error) {
+    // headers() might not be available in all contexts
+    return undefined;
+  }
+}
+
+/**
+ * Get user agent from Next.js server context
+ *
+ * Works in server actions and components.
+ *
+ * @returns User agent string
+ */
+export async function getUserAgent(): Promise<string | undefined> {
+  try {
+    const { headers } = await import('next/headers');
+    const headersList = await headers();
+    return headersList.get('user-agent') || undefined;
+  } catch (error) {
+    // headers() might not be available in all contexts
+    return undefined;
+  }
+}
+
+/**
+ * Create audit context from Next.js server context
+ *
+ * Works in server actions and server components.
+ *
+ * @param userId - Optional user ID
+ * @returns Audit context
+ *
+ * @example
+ * ```typescript
+ * 'use server'
+ *
+ * export async function updateProfile(data: FormData) {
+ *   const session = await getServerSession();
+ *   const context = await createAuditContextFromServer(session?.user.id);
+ *
+ *   await auditLog({
+ *     ...context,
+ *     action: AUDIT_ACTIONS.UPDATE_PROFILE,
+ *     resource: 'profile',
+ *     resourceId: session?.user.id
+ *   });
+ * }
+ * ```
+ */
+export async function createAuditContextFromServer(userId?: string) {
+  return {
+    userId,
+    ipAddress: await getClientIP(),
+    userAgent: await getUserAgent()
+  };
+}
+
+/**
+ * Log audit event with automatic context detection
+ *
+ * Automatically detects IP and user agent from server context.
+ *
+ * @param entry - Audit log entry
+ *
+ * @example
+ * ```typescript
+ * 'use server'
+ *
+ * export async function deleteStudent(id: string) {
+ *   const user = await getServerAuth();
+ *
+ *   await auditLogWithContext({
+ *     userId: user.id,
+ *     action: AUDIT_ACTIONS.DELETE_STUDENT,
+ *     resource: 'student',
+ *     resourceId: id
+ *   });
+ * }
+ * ```
+ */
+export async function auditLogWithContext(
+  entry: Omit<AuditLogEntry, 'ipAddress' | 'userAgent'>
+): Promise<void> {
+  const context = await createAuditContextFromServer(entry.userId);
+
+  await auditLog({
+    ...entry,
+    ipAddress: context.ipAddress,
+    userAgent: context.userAgent
+  });
+}
+
+/**
+ * Parse user agent string
+ *
+ * Extracts browser, OS, and device information from user agent.
+ *
+ * @param userAgent - User agent string
+ * @returns Parsed user agent info
+ */
+export function parseUserAgent(userAgent: string): {
+  browser: string;
+  os: string;
+  device: string;
+} {
+  const ua = userAgent.toLowerCase();
+
+  // Detect browser
+  let browser = 'Unknown';
+  if (ua.includes('chrome')) browser = 'Chrome';
+  else if (ua.includes('firefox')) browser = 'Firefox';
+  else if (ua.includes('safari')) browser = 'Safari';
+  else if (ua.includes('edge')) browser = 'Edge';
+  else if (ua.includes('opera')) browser = 'Opera';
+
+  // Detect OS
+  let os = 'Unknown';
+  if (ua.includes('windows')) os = 'Windows';
+  else if (ua.includes('mac')) os = 'macOS';
+  else if (ua.includes('linux')) os = 'Linux';
+  else if (ua.includes('android')) os = 'Android';
+  else if (ua.includes('ios') || ua.includes('iphone') || ua.includes('ipad')) os = 'iOS';
+
+  // Detect device
+  let device = 'Desktop';
+  if (ua.includes('mobile') || ua.includes('android')) device = 'Mobile';
+  else if (ua.includes('tablet') || ua.includes('ipad')) device = 'Tablet';
+
+  return { browser, os, device };
 }

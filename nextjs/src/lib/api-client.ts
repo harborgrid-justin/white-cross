@@ -184,4 +184,11 @@ export const API_ENDPOINTS = {
   // Medications
   medications: '/medications',
   medicationById: (id: string) => `/medications/${id}`,
+
+  // Forms
+  forms: '/forms',
+  formById: (id: string) => `/forms/${id}`,
+  formResponses: (formId: string) => `/forms/${formId}/responses`,
+  formResponseCount: (formId: string) => `/forms/${formId}/responses/count`,
+  formVersions: (formId: string) => `/forms/${formId}/versions`,
 } as const;
