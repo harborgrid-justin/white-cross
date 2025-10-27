@@ -139,85 +139,20 @@ export interface RefreshTokenResponse {
   expiresIn: number;
 }
 
-/**
- * Strong password validation regex
- * Requirements:
- * - Minimum 12 characters
- * - At least one uppercase letter
- * - At least one lowercase letter
- * - At least one number
- * - At least one special character (@$!%*?&)
- */
-const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
-
-/**
- * Custom password validator with detailed error messages
- */
-const validateStrongPassword = (password: string): boolean => {
-  if (password.length < 12) {
-    throw new z.ZodError([{
-      code: 'custom',
-      path: ['password'],
-      message: 'Password must be at least 12 characters long',
-    }]);
-  }
-
-  if (!/[a-z]/.test(password)) {
-    throw new z.ZodError([{
-      code: 'custom',
-      path: ['password'],
-      message: 'Password must contain at least one lowercase letter',
-    }]);
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    throw new z.ZodError([{
-      code: 'custom',
-      path: ['password'],
-      message: 'Password must contain at least one uppercase letter',
-    }]);
-  }
-
-  if (!/\d/.test(password)) {
-    throw new z.ZodError([{
-      code: 'custom',
-      path: ['password'],
-      message: 'Password must contain at least one number',
-    }]);
-  }
-
-  if (!/[@$!%*?&]/.test(password)) {
-    throw new z.ZodError([{
-      code: 'custom',
-      path: ['password'],
-      message: 'Password must contain at least one special character (@$!%*?&)',
-    }]);
-  }
-
-  return true;
-};
 
 // Validation schemas
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(12, 'Password must be at least 12 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   rememberMe: z.boolean().optional(),
 });
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string()
-    .min(12, 'Password must be at least 12 characters')
-    .regex(
-      STRONG_PASSWORD_REGEX,
-      'Password must contain uppercase, lowercase, number, and special character (@$!%*?&)'
-    )
-    .refine(validateStrongPassword, {
-      message: 'Password does not meet security requirements',
-    }),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  role: z.enum(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'READ_ONLY', 'COUNSELOR']),
+  role: z.enum(['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'VIEWER', 'COUNSELOR']),
   schoolId: z.string().optional(),
 });
 
@@ -289,6 +224,8 @@ export class AuthApi {
         credentials
       );
 
+      // ApiClient wraps backend response: response.data contains the backend response
+      // Backend returns { success: true, data: { token: "...", user: {...} } }
       if (!response.data.success || !response.data.data) {
         throw new Error('Login failed');
       }
@@ -311,7 +248,7 @@ export class AuthApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -409,7 +346,7 @@ export class AuthApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -486,7 +423,12 @@ export class AuthApi {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await this.client.get(API_ENDPOINTS.AUTH.PROFILE);
+      const response = await this.client.get<{success: boolean; data: User}>(API_ENDPOINTS.AUTH.PROFILE);
+      
+      if (!response.data.success || !response.data.data) {
+        throw new Error('Failed to get current user');
+      }
+      
       return response.data.data;
     } catch (error) {
       throw createApiError(error, 'Failed to get current user');

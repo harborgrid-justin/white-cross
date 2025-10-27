@@ -768,7 +768,7 @@ export const ENVIRONMENT = {
 
 // ===== CORS CONFIGURATION =====
 export const CORS_CONFIG = {
-  ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
   CREDENTIALS: true,
   METHODS: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   ALLOWED_HEADERS: ['Content-Type', 'Authorization', 'X-Requested-With'],
