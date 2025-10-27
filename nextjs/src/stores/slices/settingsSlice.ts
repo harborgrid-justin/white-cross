@@ -5,9 +5,9 @@
  * Handles CRUD operations for system-wide configuration values.
  */
 
-import { createEntitySlice, EntityApiService } from '../sliceFactory';
-import { SystemConfiguration, ConfigurationData, ConfigCategory } from '../../types/administration';
-import { administrationApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { SystemConfiguration, ConfigurationData, ConfigCategory } from '@/types/administration';
+import { administrationApi } from '@/services/api';
 
 // Create API service adapter for settings
 const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationData, ConfigurationData> = {

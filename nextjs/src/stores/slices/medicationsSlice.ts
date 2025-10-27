@@ -28,9 +28,9 @@
  * @since 1.0.0
  */
 
-import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
-import { Medication } from '../../types/api';
-import { medicationsApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { Medication } from '@/types/api';
+import { medicationsApi } from '@/services/api';
 
 /**
  * Data required to create a new student medication prescription.

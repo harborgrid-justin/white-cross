@@ -22,6 +22,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "downlevelIteration": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"

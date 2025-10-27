@@ -6,9 +6,9 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../../stores/reduxStore';
-import { accessControlApi } from '../../services/api';
-import { User } from '../../types';
+import { RootState } from '@/stores/reduxStore';
+import { accessControlApi } from '@/services/api';
+import { User } from '@/types';
 
 // API Service Adapter
 class AccessControlApiService {

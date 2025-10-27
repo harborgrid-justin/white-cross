@@ -125,7 +125,7 @@ export type {
 // UNIFIED HEALTH API FACTORY
 // ==========================================
 
-import type { ApiClient } from '../../core/ApiClient';
+import type { ApiClient } from '@/services/core/ApiClient';
 
 /**
  * Unified Health API Service Factory

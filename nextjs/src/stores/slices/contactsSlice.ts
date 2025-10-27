@@ -6,7 +6,7 @@
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { emergencyContactsApi, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../services/modules/emergencyContactsApi';
+import { emergencyContactsApi, CreateEmergencyContactData, UpdateEmergencyContactData } from '@/services/modules/emergencyContactsApi';
 import {
   EmergencyContact,
   EmergencyNotificationData,

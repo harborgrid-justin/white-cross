@@ -17,7 +17,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '../../middleware/withAuth';
+import { withAuth } from '@/middleware/withAuth';
 import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 
 /**

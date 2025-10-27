@@ -8,8 +8,8 @@
 import React, { useState } from 'react';
 import { MedicationList, type Medication } from '@/components/medications/core/MedicationList';
 import { Button } from '@/components/ui/Button';
-import MedicationFormModal from './MedicationFormModal';
-import MedicationDetailsModal from './MedicationDetailsModal';
+import MedicationFormModal from '../modals/MedicationFormModal';
+import MedicationDetailsModal from '../modals/MedicationDetailsModal';
 import { type MedicationFormData } from '@/components/medications/forms/MedicationForm';
 import { type MedicationDetailData } from '@/components/medications/core/MedicationDetails';
 
