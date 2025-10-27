@@ -59,7 +59,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { InventoryCategoriesContent } from './InventoryCategoriesContent';
+import { InventoryCategoriesContent } from './_components/InventoryCategoriesContent';
 
 export const metadata: Metadata = {
   title: 'Categories | Inventory',

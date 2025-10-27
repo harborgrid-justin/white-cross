@@ -55,7 +55,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { EditInventoryItemContent } from './EditInventoryItemContent';
+import { EditInventoryItemContent } from './_components/EditInventoryItemContent';
 
 export const metadata: Metadata = {
   title: 'Edit Item | Inventory',

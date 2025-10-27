@@ -87,7 +87,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { PhysicalCountsContent } from './PhysicalCountsContent';
+import { PhysicalCountsContent } from './_components/PhysicalCountsContent';
 
 export const metadata: Metadata = {
   title: 'Physical Counts | Inventory',

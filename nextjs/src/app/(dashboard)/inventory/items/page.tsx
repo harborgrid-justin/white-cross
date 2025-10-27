@@ -43,7 +43,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { InventoryItemsContent } from './InventoryItemsContent';
+import { InventoryItemsContent } from './_components/InventoryItemsContent';
 
 export const metadata: Metadata = {
   title: 'Inventory Items | White Cross',

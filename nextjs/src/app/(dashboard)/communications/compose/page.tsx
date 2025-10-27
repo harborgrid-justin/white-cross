@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { ComposeContent } from './ComposeContent';
+import { ComposeContent } from './_components/ComposeContent';
 
 export const metadata: Metadata = {
   title: 'Compose Message | Communications',

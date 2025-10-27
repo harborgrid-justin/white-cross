@@ -6,7 +6,7 @@
  * These actions power the admin monitoring dashboard and enable real-time system
  * observability for healthcare platform administrators.
  *
- * @module app/admin/actions/monitoring
+ * @module app/admin/_actions/monitoring
  * @requires next/server
  * @requires @/types/admin
  *
@@ -16,7 +16,7 @@
  *
  * @example
  * ```tsx
- * import { getSystemHealth } from '@/app/admin/actions/monitoring'
+ * import { getSystemHealth } from '@/app/admin/_actions/monitoring'
  *
  * async function AdminDashboard() {
  *   const health = await getSystemHealth()

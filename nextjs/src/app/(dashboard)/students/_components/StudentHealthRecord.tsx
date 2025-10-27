@@ -65,14 +65,14 @@ import { AlertTriangle, Pill, Shield, Stethoscope } from 'lucide-react';
  * - Screen reader friendly structure
  * - High contrast severity indicators
  *
- * @module app/(dashboard)/students/components/StudentHealthRecord
+ * @module app/(dashboard)/students/_components/StudentHealthRecord
  * @category Components
  * @subcategory Students
  * @since 1.0.0
  *
  * @example
  * ```tsx
- * import { StudentHealthRecord } from '@/app/(dashboard)/students/components/StudentHealthRecord';
+ * import { StudentHealthRecord } from '@/app/(dashboard)/students/_components/StudentHealthRecord';
  *
  * function StudentProfile() {
  *   const { data: healthRecord } = useHealthRecord(studentId);

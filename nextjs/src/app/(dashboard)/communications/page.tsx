@@ -47,7 +47,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { InboxContent } from './InboxContent';
+import { InboxContent } from './_components/InboxContent';
 
 /**
  * Metadata configuration for the Communications Inbox page.

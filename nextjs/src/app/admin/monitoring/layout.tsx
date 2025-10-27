@@ -19,6 +19,8 @@
  * @since 2025-10-26
  */
 
+import type { Metadata } from 'next';
+
 import Link from 'next/link'
 import { Activity, TrendingUp, AlertTriangle, BarChart3, Users } from 'lucide-react'
 
@@ -80,6 +82,14 @@ const monitoringTabs = [
  * // /admin/monitoring/performance -> renders PerformancePage within this layout
  * ```
  */
+/**
+ * Metadata configuration for Admin Monitoring layout
+ */
+export const metadata: Metadata = {
+  title: 'System Monitoring | Admin | White Cross',
+  description: 'Monitor system health, performance metrics, and operational status.',
+};
+
 export default function MonitoringLayout({
   children,
 }: {

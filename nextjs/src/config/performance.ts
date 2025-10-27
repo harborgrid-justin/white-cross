@@ -305,30 +305,15 @@ export const runtimeConfig = {
   compress: true,
 
   /**
-   * Enable SWC minification
-   */
-  swcMinify: true,
-
-  /**
    * Experimental features
    */
   experimental: {
-    /**
-     * Enable App Router
-     */
-    appDir: true,
-
     /**
      * Server Actions
      */
     serverActions: {
       bodySizeLimit: '2mb',
     },
-
-    /**
-     * Optimistic client cache
-     */
-    optimisticClientCache: true,
 
     /**
      * Optimize package imports

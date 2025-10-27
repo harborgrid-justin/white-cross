@@ -123,7 +123,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { InventorySettingsContent } from './InventorySettingsContent';
+import { InventorySettingsContent } from './_components/InventorySettingsContent';
 
 export const metadata: Metadata = {
   title: 'Settings | Inventory',

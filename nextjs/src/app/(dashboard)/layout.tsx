@@ -71,11 +71,23 @@
  */
 
 import { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import { Header } from '@/components/layouts/Header';
 import { Sidebar } from '@/components/layouts/Sidebar';
 import { MobileNav } from '@/components/layouts/MobileNav';
 import { Breadcrumbs } from '@/components/layouts/Breadcrumbs';
 import { Footer } from '@/components/layouts/Footer';
+
+/**
+ * Metadata configuration for Dashboard layout
+ */
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Dashboard | White Cross',
+    default: 'Dashboard | White Cross Healthcare',
+  },
+  description: 'White Cross Healthcare Platform dashboard for managing students, medications, appointments, and health records.',
+};
 
 /**
  * Props interface for the Dashboard Layout component.

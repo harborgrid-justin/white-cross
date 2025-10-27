@@ -69,7 +69,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { LowStockAlertsContent } from './LowStockAlertsContent';
+import { LowStockAlertsContent } from './_components/LowStockAlertsContent';
 
 export const metadata: Metadata = {
   title: 'Low Stock Alerts | Inventory',

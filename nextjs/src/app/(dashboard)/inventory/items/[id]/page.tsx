@@ -46,7 +46,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { InventoryItemDetailContent } from './InventoryItemDetailContent';
+import { InventoryItemDetailContent } from './_components/InventoryItemDetailContent';
 
 export const metadata: Metadata = {
   title: 'Item Details | Inventory',

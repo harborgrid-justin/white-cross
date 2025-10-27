@@ -50,7 +50,7 @@ import { MoreVertical, Eye, Edit, Archive, AlertTriangle, Pill, Shield } from 'l
  * - ARIA labels for screen readers
  * - Focus management and visual indicators
  *
- * @module app/(dashboard)/students/components/StudentTable
+ * @module app/(dashboard)/students/_components/StudentTable
  * @category Components
  * @subcategory Students
  * @since 1.0.0
@@ -58,7 +58,7 @@ import { MoreVertical, Eye, Edit, Archive, AlertTriangle, Pill, Shield } from 'l
  * @example
  * ```tsx
  * // Basic usage with student data
- * import { StudentTable } from '@/app/(dashboard)/students/components/StudentTable';
+ * import { StudentTable } from '@/app/(dashboard)/students/_components/StudentTable';
  *
  * function StudentListPage() {
  *   const [students, setStudents] = useState<StudentTableData[]>([]);
@@ -297,7 +297,7 @@ interface StudentTableProps {
  * @example
  * ```tsx
  * // Standard usage with all features enabled
- * import { StudentTable } from '@/app/(dashboard)/students/components/StudentTable';
+ * import { StudentTable } from '@/app/(dashboard)/students/_components/StudentTable';
  *
  * function StudentManagement() {
  *   const { data: students, isLoading } = useStudents();

@@ -48,14 +48,14 @@ import { X } from 'lucide-react';
  * - Clear visual focus indicators
  * - Screen reader friendly
  *
- * @module app/(dashboard)/students/components/StudentFilters
+ * @module app/(dashboard)/students/_components/StudentFilters
  * @category Components
  * @subcategory Students
  * @since 1.0.0
  *
  * @example
  * ```tsx
- * import { StudentFilters } from '@/app/(dashboard)/students/components/StudentFilters';
+ * import { StudentFilters } from '@/app/(dashboard)/students/_components/StudentFilters';
  *
  * function StudentListPage() {
  *   const [filters, setFilters] = useState<StudentFilterCriteria>({});
@@ -202,7 +202,7 @@ interface StudentFiltersProps {
  * @example
  * ```tsx
  * // Basic usage with state management
- * import { StudentFilters } from '@/app/(dashboard)/students/components/StudentFilters';
+ * import { StudentFilters } from '@/app/(dashboard)/students/_components/StudentFilters';
  *
  * function StudentManagement() {
  *   const [filters, setFilters] = useState<StudentFilterCriteria>({});

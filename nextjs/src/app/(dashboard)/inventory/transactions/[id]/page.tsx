@@ -53,7 +53,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { TransactionDetailContent } from './TransactionDetailContent';
+import { TransactionDetailContent } from './_components/TransactionDetailContent';
 
 export const metadata: Metadata = {
   title: 'Transaction Details | Inventory',

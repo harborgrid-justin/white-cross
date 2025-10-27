@@ -50,14 +50,11 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development warnings
   reactStrictMode: true,
 
-  // Use SWC minifier (faster than Terser)
-  swcMinify: true,
+  // Typed routes for better type safety (moved to root in Next.js 15+)
+  typedRoutes: true,
 
   // Enable experimental features
   experimental: {
-    // Typed routes for better type safety
-    typedRoutes: true,
-
     // Server Actions configuration
     serverActions: {
       bodySizeLimit: '2mb',

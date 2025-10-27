@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { NotificationSettingsContent } from './NotificationSettingsContent';
+import { NotificationSettingsContent } from './_components/NotificationSettingsContent';
 
 export const metadata: Metadata = {
   title: 'Notification Settings | Communications',

@@ -8,7 +8,7 @@
  *
  * @module app/admin/monitoring/health/page
  * @requires react
- * @requires @/app/admin/actions/monitoring
+ * @requires @/app/admin/_actions/monitoring
  * @requires @/components/admin
  * @requires lucide-react
  *
@@ -23,7 +23,7 @@
  */
 
 import { Suspense } from 'react'
-import { getSystemHealth } from '@/app/admin/actions/monitoring'
+import { getSystemHealth } from '@/app/admin/_actions/monitoring'
 import { AdminMetricCard, AdminStatusIndicator } from '@/components/admin'
 import {
   Activity,

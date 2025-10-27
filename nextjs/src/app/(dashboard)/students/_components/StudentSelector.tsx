@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/display/Badge';
  * WF-COMP-STUDENT-004 | StudentSelector.tsx
  * Purpose: Searchable student selector with autocomplete functionality
  *
- * @module app/(dashboard)/students/components/StudentSelector
+ * @module app/(dashboard)/students/_components/StudentSelector
  */
 
 /**

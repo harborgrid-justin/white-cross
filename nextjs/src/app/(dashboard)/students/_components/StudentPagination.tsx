@@ -6,7 +6,7 @@ import { Pagination } from '@/components/ui/navigation/Pagination';
  * WF-COMP-STUDENT-003 | StudentPagination.tsx
  * Purpose: Pagination controls for student lists with page size options
  *
- * @module app/(dashboard)/students/components/StudentPagination
+ * @module app/(dashboard)/students/_components/StudentPagination
  */
 
 /**

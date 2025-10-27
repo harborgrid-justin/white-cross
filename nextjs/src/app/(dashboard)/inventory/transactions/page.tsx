@@ -57,7 +57,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { TransactionHistoryContent } from './TransactionHistoryContent';
+import { TransactionHistoryContent } from './_components/TransactionHistoryContent';
 
 export const metadata: Metadata = {
   title: 'Transaction History | Inventory',
