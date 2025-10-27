@@ -1,12 +1,130 @@
 /**
- * @fileoverview Incident Details Page
- * @module app/(dashboard)/incidents/[id]
+ * @fileoverview Incident Detail Page - Comprehensive view of a single incident with
+ * full details, status management, witness tracking, follow-ups, and audit trail.
  *
- * Comprehensive incident details with:
- * - Full incident information
- * - Status workflow management
- * - Witness and follow-up tracking
- * - Audit trail
+ * @module app/(dashboard)/incidents/[id]/page
+ * @category Incidents - Detail Pages
+ *
+ * ## Overview
+ * Displays complete incident information with interactive status management, quick actions
+ * for witness and follow-up management, and visual timeline of incident progression.
+ * Serves as the central hub for managing a specific incident throughout its lifecycle.
+ *
+ * ## Features
+ * - **Comprehensive Incident Display**: All incident fields including type, severity, location, description
+ * - **Status Management**: Visual status badges with workflow-aware transitions
+ * - **Severity Indicators**: Color-coded severity levels (MINOR to LIFE_THREATENING)
+ * - **Quick Actions**: Sidebar with common actions (edit, add witness, create follow-up, export)
+ * - **Timeline View**: Chronological display of incident events (occurred, reported, created)
+ * - **Medical Response Details**: Displayed when medical attention was provided
+ * - **Parent Notification Tracking**: Shows notification method and timestamp
+ * - **Privacy Indicators**: Visual alerts for confidential or restricted access incidents
+ * - **Tag Management**: Display of incident tags for categorization
+ *
+ * ## Incident Status Workflow
+ * Status displayed with color-coded badges:
+ * - **PENDING_REVIEW** (yellow): Awaiting administrator review
+ * - **UNDER_INVESTIGATION** (blue): Active investigation in progress
+ * - **REQUIRES_ACTION** (orange): Additional action or information needed
+ * - **RESOLVED** (green): Investigation complete, all actions taken
+ * - **ARCHIVED** (gray): Closed and archived
+ *
+ * Users can update status via "Update Status" quick action (when authorized).
+ *
+ * ## Severity Levels & Display
+ * Color-coded severity badges:
+ * - **MINOR** (green): Minor incident, no medical attention required
+ * - **MODERATE** (yellow): Medical attention provided, no transport needed
+ * - **SERIOUS** (orange): Significant injury/illness, possible transport
+ * - **CRITICAL** (red): Severe injury/illness, immediate medical intervention
+ * - **LIFE_THREATENING** (red): Emergency medical transport, life-threatening situation
+ *
+ * Severity level determines notification requirements and mandatory reporting.
+ *
+ * ## Medical Response Information
+ * When medical response is documented (not NONE), displays:
+ * - Response type (FIRST_AID, NURSE_OFFICE, EMS_CALLED, HOSPITAL_TRANSPORT, etc.)
+ * - Medical notes and treatment provided
+ * - Medications administered (if applicable)
+ * - Follow-up care recommendations
+ *
+ * ## Parent Notification Display
+ * When parent/guardian was notified, displays:
+ * - Notification timestamp
+ * - Notification method (phone call, email, text, in-person)
+ * - Person who made notification
+ * - Parent response/acknowledgment (if recorded)
+ *
+ * ## Quick Actions Sidebar
+ * Provides one-click access to common workflows:
+ * 1. **Edit**: Navigate to incident edit form (permission-based)
+ * 2. **Add Witness**: Add witness to incident investigation
+ * 3. **Create Follow-Up**: Schedule or document follow-up action
+ * 4. **Update Status**: Change incident status (triggers workflow)
+ * 5. **Export Report**: Generate PDF report for printing or records
+ * 6. **View Witnesses**: Navigate to witnesses list page
+ * 7. **View Follow-Ups**: Navigate to follow-ups list page
+ *
+ * ## Timeline Component
+ * Displays chronological events:
+ * - **Incident Occurred**: Date/time the incident actually happened
+ * - **Reported**: Date/time the incident was reported to staff
+ * - **Created**: Date/time the incident record was created in system
+ * - **Status Changes**: Displayed in order (when implemented)
+ * - **Follow-Ups**: Links to follow-up records (when implemented)
+ *
+ * ## Privacy & Confidentiality
+ * Visual indicators for sensitive incidents:
+ * - **Confidential Record**: Red border card indicating restricted access
+ * - **Restricted Access**: Limited to authorized personnel only
+ * - Audit logging for all views of confidential incidents
+ * - PHI (Protected Health Information) handling compliance
+ *
+ * ## Integration Points
+ * - **Student Records**: Links to student profile and health history
+ * - **Witness Management**: Navigate to add/view witnesses for this incident
+ * - **Follow-Up System**: Create and track follow-up actions and appointments
+ * - **Notification System**: View notification history and send additional notifications
+ * - **Document Management**: Attach photos, documents, or evidence to incident
+ * - **Audit System**: Complete audit trail of all incident views and modifications
+ *
+ * ## Compliance Requirements
+ * - **FERPA Compliance**: Student information protected and access-controlled
+ * - **Audit Logging**: All incident detail views logged with user and timestamp
+ * - **Data Retention**: Incident preserved per district policy (typically 7 years)
+ * - **Mandatory Reporting**: Visual indicators if incident triggered mandatory reporting
+ * - **Privacy Notices**: Clear display of confidential/restricted access status
+ *
+ * ## Access Control
+ * - Authentication required (dynamic rendering enforced)
+ * - Role-based field visibility (some details restricted to administrators)
+ * - Confidential incidents restricted to authorized users
+ * - Edit capability based on user role and incident status
+ * - Medical details restricted to health staff
+ *
+ * ## Navigation & User Flow
+ * - Back navigation to incidents list (preserve filters/page)
+ * - Forward navigation to edit, witnesses, follow-ups
+ * - Breadcrumb trail showing current location
+ * - Related incident linking (similar incidents)
+ *
+ * ## Error Handling
+ * - 404 page if incident not found or user lacks permission
+ * - Error boundary catches display errors
+ * - Graceful handling of missing optional fields
+ * - Network error retry capability
+ *
+ * @see {@link getIncident} for server action fetching incident data
+ * @see {@link /incidents/[id]/edit} for incident editing workflow
+ * @see {@link /incidents/[id]/witnesses} for witness management
+ * @see {@link /incidents/[id]/follow-up} for follow-up management
+ *
+ * @example
+ * ```tsx
+ * // Rendered at route: /incidents/[id]
+ * // Fetches incident data server-side and displays comprehensive detail view
+ * // Provides navigation to related workflows (edit, witnesses, follow-ups)
+ * ```
  */
 
 import React from 'react';
@@ -24,32 +142,90 @@ export const metadata: Metadata = {
   description: 'View incident report details',
 };
 
-// Force dynamic rendering due to auth requirements
+// Force dynamic rendering due to auth requirements and real-time incident data
 export const dynamic = "force-dynamic";
 
+/**
+ * Severity color mapping for visual incident severity indicators.
+ * Maps severity levels to Tailwind-compatible color names for badge components.
+ *
+ * @constant
+ * @type {Record<string, 'green' | 'yellow' | 'orange' | 'red'>}
+ */
 const severityColors = {
-  MINOR: 'green',
-  MODERATE: 'yellow',
-  SERIOUS: 'orange',
-  CRITICAL: 'red',
-  LIFE_THREATENING: 'red',
+  MINOR: 'green',           // Minor incidents - no significant medical attention
+  MODERATE: 'yellow',       // Moderate incidents - medical attention provided
+  SERIOUS: 'orange',        // Serious incidents - significant injury or illness
+  CRITICAL: 'red',          // Critical incidents - emergency response required
+  LIFE_THREATENING: 'red',  // Life-threatening - immediate medical transport
 } as const;
 
+/**
+ * Status color mapping for workflow state visualization.
+ * Maps incident status to color-coded badges for quick status identification.
+ *
+ * @constant
+ * @type {Record<string, 'yellow' | 'blue' | 'orange' | 'green' | 'gray'>}
+ */
 const statusColors = {
-  PENDING_REVIEW: 'yellow',
-  UNDER_INVESTIGATION: 'blue',
-  REQUIRES_ACTION: 'orange',
-  RESOLVED: 'green',
-  ARCHIVED: 'gray',
+  PENDING_REVIEW: 'yellow',         // Awaiting review
+  UNDER_INVESTIGATION: 'blue',      // Active investigation
+  REQUIRES_ACTION: 'orange',        // Action needed
+  RESOLVED: 'green',                // Investigation complete
+  ARCHIVED: 'gray',                 // Closed and archived
 } as const;
 
+/**
+ * Incident Details Page Component
+ *
+ * Server component that fetches and displays comprehensive incident information
+ * including status, severity, medical response, notifications, and timeline.
+ *
+ * @component
+ * @async
+ *
+ * @param {Object} props - Component props
+ * @param {Object} props.params - Next.js dynamic route params
+ * @param {string} props.params.id - Incident UUID from route parameter
+ *
+ * @returns {Promise<JSX.Element>} Rendered incident detail page with all incident information
+ *
+ * @throws {NotFoundError} Redirects to 404 if incident not found or user lacks permission
+ *
+ * @description
+ * Displays comprehensive incident view with:
+ * - Header with incident number, status badge, and severity badge
+ * - Main info card with incident type, location, student, and reporter
+ * - Description card with full incident narrative
+ * - Medical response details (when applicable)
+ * - Parent notification information (when notified)
+ * - Quick actions sidebar for common workflows
+ * - Timeline showing incident progression
+ * - Tags for categorization
+ * - Privacy notices for confidential/restricted incidents
+ *
+ * Layout uses responsive grid:
+ * - Desktop: 2-column layout (2/3 main content, 1/3 sidebar)
+ * - Tablet/Mobile: Single column stacked layout
+ *
+ * @example
+ * ```tsx
+ * // Rendered at route: /incidents/[id]
+ * // params.id = "123e4567-e89b-12d3-a456-426614174000"
+ * <IncidentDetailsPage params={{ id: "123e4567-e89b-12d3-a456-426614174000" }} />
+ * ```
+ */
 export default async function IncidentDetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
+  // Fetch incident data from server action
+  // getIncident handles authentication, authorization, and data retrieval
   const result = await getIncident(params.id);
 
+  // Handle not found or unauthorized access
+  // Redirects to 404 page without exposing whether incident exists
   if (!result.success || !result.data) {
     notFound();
   }

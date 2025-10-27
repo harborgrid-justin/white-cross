@@ -1,5 +1,58 @@
 /**
- * Medication Compliance Analytics Page
+ * @fileoverview Medication Compliance Analytics Page
+ *
+ * Tracks and analyzes medication administration compliance rates, identifying
+ * trends in medication adherence, missed doses, and pending administrations.
+ * Critical for ensuring patient safety and meeting healthcare quality standards.
+ *
+ * @module app/(dashboard)/analytics/medication-compliance/page
+ *
+ * @remarks
+ * Key compliance metrics:
+ * - Administered: Successfully given medications
+ * - Missed: Medications not administered as scheduled
+ * - Pending: Medications due but not yet administered
+ * - Compliance Rate: (Administered / Total) * 100
+ *
+ * Visualizations:
+ * - Compliance rate trend chart (line/bar)
+ * - Status breakdown (pie chart)
+ * - Daily compliance percentages over time
+ *
+ * Features:
+ * - Date range filtering for compliance analysis
+ * - Real-time data refresh
+ * - Export compliance reports for regulatory review
+ * - Trend analysis to identify improvement opportunities
+ *
+ * Performance:
+ * - Client Component for interactive charts
+ * - Custom MedicationComplianceChart component
+ * - Efficient data fetching with loading states
+ *
+ * HIPAA compliance:
+ * - Aggregated medication data (no patient identifiers)
+ * - Compliance percentages and counts only
+ * - No individual medication or patient details exposed
+ * - All access logged for audit compliance
+ *
+ * Regulatory importance:
+ * - Medication administration compliance is a key quality indicator
+ * - Reports used for regulatory inspections and accreditation
+ * - Trend data helps identify training needs or process issues
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/medication-compliance
+ * // Nursing supervisor workflow:
+ * // 1. Review current compliance rate (94.2%)
+ * // 2. Identify trend over 30 days
+ * // 3. Export report for quality review meeting
+ * // 4. Take action on patterns of missed medications
+ * ```
+ *
+ * @see {@link /analytics} - Main analytics dashboard
+ * @see {@link /medications} - Medication management
  */
 
 'use client';
@@ -10,10 +63,64 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { getMedicationCompliance } from '@/lib/actions/analytics.actions';
 import { Download, Filter, RefreshCw } from 'lucide-react';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for real-time compliance data
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Medication Compliance Analytics Page Component
+ *
+ * Displays medication administration compliance metrics with trend analysis
+ * and export capabilities for regulatory reporting.
+ *
+ * @returns {JSX.Element} Medication compliance analytics page
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title, export, and refresh buttons
+ * 2. Filters panel: Date range selector
+ * 3. MedicationComplianceChart: Compliance trend visualization
+ * 4. Summary metrics: Administered, Missed, Pending counts
+ *
+ * State management:
+ * - `dateRange`: Selected date range (default: 30 days)
+ * - `data`: Overall compliance statistics
+ * - `trendData`: Daily compliance rates over time
+ * - `isLoading`: Data fetching state
+ * - `showExporter`: Export panel toggle
+ *
+ * Data structure:
+ * ```typescript
+ * data: {
+ *   administered: number,  // Successfully given medications
+ *   missed: number,        // Missed doses
+ *   pending: number,       // Due but not yet given
+ *   total: number          // Total medication orders
+ * }
+ *
+ * trendData: Array<{
+ *   date: string,          // "Jan 15"
+ *   complianceRate: number // 90-100% compliance
+ * }>
+ * ```
+ *
+ * Compliance calculation:
+ * - Compliance Rate = (Administered / (Administered + Missed)) * 100
+ * - Pending doses excluded from rate calculation
+ * - Target compliance: 95% or higher
+ *
+ * @example
+ * ```tsx
+ * // Compliance monitoring workflow:
+ * // - View 30-day compliance trend (currently 94.2%)
+ * // - Identify days with low compliance (<90%)
+ * // - Export report for review with clinical leadership
+ * // - Implement process improvements based on trends
+ * ```
+ */
 export default function MedicationCompliancePage() {
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),

@@ -1,5 +1,52 @@
 /**
- * Health Metrics Analytics Page
+ * @fileoverview Health Metrics Analytics Page
+ *
+ * Comprehensive analytics dashboard for tracking student health measurements
+ * including vital signs (heart rate, blood pressure, temperature), physical
+ * measurements (weight, height, BMI), and health trends over time. Enables
+ * clinical staff to monitor student health patterns and identify anomalies.
+ *
+ * @module app/(dashboard)/analytics/health-metrics/page
+ *
+ * @remarks
+ * Tracked health metrics:
+ * - Heart Rate (bpm)
+ * - Blood Pressure (mmHg)
+ * - Temperature (°F)
+ * - Weight (lbs)
+ * - Height (inches)
+ * - BMI (Body Mass Index)
+ *
+ * Features:
+ * - Multi-metric selection (toggle individual metrics on/off)
+ * - Date range filtering (customizable start/end dates)
+ * - Interactive line charts with trend visualization
+ * - Real-time data refresh capability
+ * - Export to CSV, Excel, and PDF with customizable options
+ *
+ * Performance:
+ * - Client Component for interactive filtering and charting
+ * - Custom HealthMetricsChart component for visualization
+ * - Debounced date range changes to minimize API calls
+ * - Loading states during data fetching
+ *
+ * HIPAA compliance:
+ * - All health data is aggregated across students
+ * - No individual student identifiers in charts
+ * - Anonymized data in exports (option to de-identify)
+ * - Access to health metrics logged for audit trails
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/health-metrics
+ * // Clinical workflow:
+ * // 1. Select metrics to display (heart rate, blood pressure)
+ * // 2. Choose date range (last 30 days)
+ * // 3. View trends and identify anomalies
+ * // 4. Export report for clinical review
+ * ```
+ *
+ * @see {@link /analytics} - Main analytics dashboard
  */
 
 'use client';
@@ -10,10 +57,66 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { getHealthMetrics } from '@/lib/actions/analytics.actions';
 import { Calendar, Download, Filter, RefreshCw } from 'lucide-react';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for real-time health metrics
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Health Metrics Analytics Page Component
+ *
+ * Interactive dashboard for visualizing and analyzing student health measurements.
+ * Provides filtering, multi-metric comparison, and export capabilities.
+ *
+ * @returns {JSX.Element} Health metrics analytics page with charts and filters
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title, export, and refresh buttons
+ * 2. Filters panel: Date range selector and metric toggles
+ * 3. HealthMetricsChart: Multi-line chart with selected metrics
+ * 4. Summary statistics: Total measurements, active students, daily average
+ *
+ * State management:
+ * - `dateRange`: Selected date range {start, end} (default: 30 days)
+ * - `metrics`: Array of selected metric IDs to display
+ * - `data`: Fetched health metrics data array
+ * - `isLoading`: Loading state for data fetching
+ * - `showExporter`: Toggle for DataExporter component
+ *
+ * Data fetching:
+ * - Calls `getHealthMetrics()` server action on mount and dateRange change
+ * - Falls back to mock data for demonstration
+ * - Generates 30 days of sample data with realistic value ranges
+ *
+ * Metric configuration:
+ * - Each metric has: id, label, unit
+ * - Toggle buttons allow users to show/hide metrics
+ * - Multiple metrics can be compared simultaneously
+ *
+ * Data structure:
+ * ```typescript
+ * {
+ *   date: string,           // "Jan 15"
+ *   heartRate: number,      // 70-90 bpm
+ *   bloodPressure: number,  // 115-125 mmHg
+ *   temperature: number,    // 98-100 °F
+ *   weight: number,         // 145-150 lbs
+ *   height: number,         // 65-67 inches
+ *   bmi: number             // 22-25
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // User selects heart rate and blood pressure
+ * // Sets date range to last 7 days
+ * // Chart updates to show both metrics over time
+ * // User clicks export to generate PDF report
+ * ```
+ */
 export default function HealthMetricsPage() {
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),

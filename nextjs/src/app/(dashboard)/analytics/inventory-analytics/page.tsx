@@ -1,5 +1,61 @@
 /**
- * Inventory Analytics Page
+ * @fileoverview Inventory Analytics Page
+ *
+ * Comprehensive medication inventory analytics tracking stock levels, expiration
+ * dates, usage patterns, and low-stock alerts. Enables proactive inventory
+ * management to prevent stockouts and reduce waste from expired medications.
+ *
+ * @module app/(dashboard)/analytics/inventory-analytics/page
+ *
+ * @remarks
+ * Key inventory metrics:
+ * - Total Items: Overall medication inventory count
+ * - Low Stock: Items below minimum threshold (requires reorder)
+ * - Expiring Soon: Items expiring within 30 days
+ * - Expired: Items past expiration date (must be disposed)
+ *
+ * Analytics views:
+ * - Inventory by Category: Bar chart showing quantities per category
+ * - Expiration Status: Pie chart of expired/expiring/good items
+ * - Monthly Usage Trend: Historical usage patterns (12 months)
+ *
+ * Categories tracked:
+ * - Pain Relief (e.g., acetaminophen, ibuprofen)
+ * - Antibiotics (prescription medications)
+ * - First Aid (bandages, antiseptics)
+ * - Emergency (EpiPens, rescue inhalers)
+ * - Chronic Care (diabetes, asthma medications)
+ *
+ * Performance:
+ * - Client Component for interactive chart rendering
+ * - Recharts library for bar, pie chart visualizations
+ * - Static data with real-time updates in production
+ * - Export for inventory audits and ordering
+ *
+ * Inventory management:
+ * - Low stock alerts trigger reorder notifications
+ * - Expiration tracking prevents waste and safety issues
+ * - Usage trends inform purchasing decisions
+ * - Category analysis optimizes stock distribution
+ *
+ * Compliance:
+ * - Medication inventory records required for regulatory audits
+ * - Controlled substance tracking (DEA requirements)
+ * - Expiration date monitoring for patient safety
+ * - Audit trail for all inventory transactions
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/inventory-analytics
+ * // School nurse workflow:
+ * // 1. Review low stock items (30 items)
+ * // 2. Check expiring medications (28 in next 30 days)
+ * // 3. Analyze usage trends for forecasting
+ * // 4. Export report for purchasing approval
+ * ```
+ *
+ * @see {@link /analytics} - Main analytics dashboard
+ * @see {@link /inventory} - Inventory management
  */
 
 'use client';
@@ -10,10 +66,73 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { CHART_COLORS, CHART_PALETTE, CHART_TOOLTIP_STYLE } from '@/lib/analytics/charts';
 import { Package, AlertTriangle, Calendar, Download, TrendingDown } from 'lucide-react';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for real-time inventory data
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Inventory Analytics Page Component
+ *
+ * Dashboard for monitoring medication inventory levels, expiration status,
+ * and usage trends. Provides actionable insights for inventory management.
+ *
+ * @returns {JSX.Element} Inventory analytics page with charts and statistics
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title and export button
+ * 2. Stats cards: Total Items, Low Stock, Expiring Soon, Expired
+ * 3. Inventory by Category: Bar chart with quantity and low stock counts
+ * 4. Expiration Status: Pie chart showing breakdown of item status
+ * 5. Monthly Usage Trend: Bar chart showing 12-month usage history
+ *
+ * State management:
+ * - `showExporter`: Toggle for DataExporter component visibility
+ *
+ * Data structures:
+ * ```typescript
+ * categoryData: Array<{
+ *   category: string,      // "Pain Relief", "Antibiotics", etc.
+ *   quantity: number,      // Total items in category
+ *   lowStock: number,      // Items below reorder threshold
+ *   color: string          // Chart color from palette
+ * }>
+ *
+ * expirationData: Array<{
+ *   name: string,          // "Expired", "Expiring Soon", "Good"
+ *   value: number,         // Count of items
+ *   color: string          // danger, warning, success colors
+ * }>
+ *
+ * usageTrend: Array<{
+ *   month: string,         // "Jan", "Feb", etc.
+ *   usage: number          // Items consumed that month
+ * }>
+ * ```
+ *
+ * Chart configurations:
+ * - Uses CHART_COLORS, CHART_PALETTE for consistent theming
+ * - CHART_TOOLTIP_STYLE for uniform tooltip appearance
+ * - ResponsiveContainer ensures proper sizing
+ * - Rounded bar corners (radius: [8, 8, 0, 0])
+ *
+ * Alerts and thresholds:
+ * - Low Stock: Items requiring reorder
+ * - Expiring Soon: <30 days until expiration
+ * - Expired: Past expiration date, must be removed
+ *
+ * @example
+ * ```tsx
+ * // Inventory audit workflow:
+ * // - Check stats cards for issues (30 low stock, 12 expired)
+ * // - Review category distribution for reordering
+ * // - Analyze usage trends to forecast future needs
+ * // - Export inventory report for administrative review
+ * ```
+ */
 export default function InventoryAnalyticsPage() {
   const [showExporter, setShowExporter] = useState(false);
 

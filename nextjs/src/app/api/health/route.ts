@@ -1,10 +1,24 @@
 /**
- * Health Check Endpoint
+ * @fileoverview Application Health Check API Route
  *
- * Provides comprehensive health status for the Next.js application
- * and its dependencies (database, Redis, backend API).
+ * Provides comprehensive health status monitoring for the Next.js application
+ * and its critical dependencies (backend API, database, Redis cache).
+ * Used by load balancers, monitoring systems, and operational dashboards.
  *
- * Returns 200 if all systems are healthy, 503 if any system is down.
+ * @module api/health
+ *
+ * @security
+ * - Public endpoint (no authentication required)
+ * - Safe for high-frequency polling by monitoring systems
+ * - No sensitive information exposed in responses
+ * - Cache-Control headers prevent response caching
+ *
+ * @monitoring
+ * - Backend API health and response latency
+ * - Redis cache connectivity and response time
+ * - PostgreSQL database connectivity and response time
+ * - Next.js server process uptime
+ * - Overall system health aggregation
  */
 
 import { NextResponse } from 'next/server';
@@ -129,7 +143,71 @@ async function checkDatabase(): Promise<HealthCheck> {
 /**
  * GET /api/health
  *
- * Returns comprehensive health status
+ * Returns comprehensive health status for all system components with latency metrics.
+ * Performs parallel health checks on all dependencies to minimize response time.
+ *
+ * @async
+ * @returns {Promise<NextResponse>} JSON response with health status
+ * @returns {string} response.status - Overall health: 'healthy' | 'unhealthy'
+ * @returns {string} response.timestamp - ISO 8601 timestamp of health check
+ * @returns {number} response.uptime - Server process uptime in seconds
+ * @returns {number} response.latency - Total health check latency in milliseconds
+ * @returns {Object} response.checks - Health check results for each component
+ * @returns {Object} response.checks.server - Next.js server health (always 'ok' if responding)
+ * @returns {Object} response.checks.backend - Backend API health check
+ * @returns {string} response.checks.backend.status - 'ok' | 'error'
+ * @returns {number} response.checks.backend.latency - Response time in milliseconds
+ * @returns {string} [response.checks.backend.message] - Error message if unhealthy
+ * @returns {Object} response.checks.redis - Redis cache health check
+ * @returns {Object} response.checks.database - PostgreSQL database health check
+ *
+ * @throws {200} OK - All systems healthy
+ * @throws {503} Service Unavailable - One or more systems unhealthy
+ *
+ * @example
+ * // All systems healthy
+ * GET /api/health
+ *
+ * // Response (200 OK)
+ * {
+ *   "status": "healthy",
+ *   "timestamp": "2025-10-27T08:33:00.000Z",
+ *   "uptime": 3600,
+ *   "latency": 145,
+ *   "checks": {
+ *     "server": { "status": "ok", "latency": 0 },
+ *     "backend": { "status": "ok", "latency": 45 },
+ *     "redis": { "status": "ok", "latency": 12 },
+ *     "database": { "status": "ok", "latency": 88 }
+ *   }
+ * }
+ *
+ * @example
+ * // Backend unavailable
+ * GET /api/health
+ *
+ * // Response (503 Service Unavailable)
+ * {
+ *   "status": "unhealthy",
+ *   "timestamp": "2025-10-27T08:33:00.000Z",
+ *   "uptime": 3600,
+ *   "latency": 5023,
+ *   "checks": {
+ *     "server": { "status": "ok", "latency": 0 },
+ *     "backend": {
+ *       "status": "error",
+ *       "message": "Backend unreachable",
+ *       "latency": 5000
+ *     },
+ *     "redis": { "status": "ok", "latency": 15 },
+ *     "database": { "status": "ok", "latency": 8 }
+ *   }
+ * }
+ *
+ * @method GET
+ * @access Public
+ * @rateLimit None - Designed for high-frequency monitoring
+ * @cache No-cache headers to ensure fresh health data
  */
 export async function GET() {
   const startTime = Date.now();
@@ -186,7 +264,25 @@ export async function GET() {
 /**
  * HEAD /api/health
  *
- * Lightweight health check that only returns status code
+ * Lightweight health check that only returns HTTP status code without response body.
+ * More efficient for simple health monitoring that only needs pass/fail status.
+ *
+ * @async
+ * @returns {Promise<NextResponse>} Empty response with status code only
+ *
+ * @throws {200} OK - Backend API is healthy
+ * @throws {503} Service Unavailable - Backend API is unhealthy or unreachable
+ *
+ * @example
+ * // Lightweight health check
+ * HEAD /api/health
+ *
+ * // Response: 200 OK (no body)
+ *
+ * @method HEAD
+ * @access Public
+ * @rateLimit None
+ * @timeout 3 seconds
  */
 export async function HEAD() {
   try {

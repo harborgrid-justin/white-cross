@@ -8,14 +8,108 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { X } from 'lucide-react';
 
 /**
- * WF-COMP-STUDENT-001 | StudentFilters.tsx
- * Purpose: Filter controls for student list with search, grade, status, and health filters
+ * @fileoverview Student list filtering component with healthcare-specific filters.
+ *
+ * Provides comprehensive filtering controls for student management including
+ * text search, grade level selection, enrollment status, and health record filters.
+ * Implements HIPAA-compliant filtering without exposing PHI in filter options.
+ *
+ * **Core Features:**
+ * - Real-time text search across name and student ID
+ * - Grade level selection (K-12)
+ * - Enrollment status filtering (active, inactive, graduated, transferred)
+ * - Health record filters (allergies, medications, immunizations)
+ * - Clear/reset all filters functionality
+ * - Active filter count display
+ * - Loading state support
+ *
+ * **Healthcare Compliance:**
+ * - **HIPAA**: No PHI displayed in filter options (boolean flags only)
+ * - **FERPA**: Search queries not logged or stored without consent
+ * - Health filters use presence indicators, not medical details
+ * - Secure filter parameter transmission
+ *
+ * **Search Capabilities:**
+ * - Student first name, last name, full name
+ * - Student ID number
+ * - Case-insensitive matching
+ * - Partial match support
+ * - Real-time results (no debouncing by default - add if needed)
+ *
+ * **Filter Combination:**
+ * - Multiple filters applied with AND logic
+ * - Empty filter value treated as "show all"
+ * - Independent filter controls
+ * - Persistent filter state across navigation (when managed by parent)
+ *
+ * **Accessibility:**
+ * - Form labels properly associated with inputs
+ * - Keyboard navigation support
+ * - Clear visual focus indicators
+ * - Screen reader friendly
  *
  * @module app/(dashboard)/students/components/StudentFilters
+ * @category Components
+ * @subcategory Students
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * import { StudentFilters } from '@/app/(dashboard)/students/components/StudentFilters';
+ *
+ * function StudentListPage() {
+ *   const [filters, setFilters] = useState<StudentFilterCriteria>({});
+ *   const { data: students } = useStudents(filters);
+ *
+ *   return (
+ *     <>
+ *       <StudentFilters
+ *         filters={filters}
+ *         onFilterChange={setFilters}
+ *         onReset={() => setFilters({})}
+ *       />
+ *       <StudentTable students={students} />
+ *     </>
+ *   );
+ * }
+ * ```
  */
 
 /**
- * Student filter criteria interface
+ * Student filter criteria interface.
+ *
+ * Defines all available filter parameters for student searches.
+ * All fields are optional - empty/undefined values mean no filter applied.
+ *
+ * @interface StudentFilterCriteria
+ *
+ * @property {string} [search] - Text search across name and student ID. Case-insensitive partial match
+ * @property {string} [gradeLevel] - Grade level filter (K, 1-12). Empty string or undefined = all grades
+ * @property {('active'|'inactive'|'graduated'|'transferred'|'')} [status] - Enrollment status filter. Empty string = all statuses
+ * @property {boolean|''} [hasAllergies] - Filter for allergy presence. true = with allergies, false = no allergies, '' or undefined = all
+ * @property {boolean|''} [hasMedications] - Filter for medication presence. true = with medications, false = no medications, '' or undefined = all
+ * @property {boolean|''} [hasImmunizations] - Filter for immunization status. true = complete, false = incomplete, '' or undefined = all
+ *
+ * @hipaa Health filters use boolean flags only, no PHI details
+ * @ferpa Search queries should not be logged without proper consent
+ *
+ * @example
+ * ```tsx
+ * // Find all 10th grade active students with allergies
+ * const criteria: StudentFilterCriteria = {
+ *   gradeLevel: '10',
+ *   status: 'active',
+ *   hasAllergies: true
+ * };
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Search for specific student by name or ID
+ * const criteria: StudentFilterCriteria = {
+ *   search: 'john smith'
+ * };
+ * ```
  */
 export interface StudentFilterCriteria {
   search?: string;
@@ -27,51 +121,135 @@ export interface StudentFilterCriteria {
 }
 
 /**
- * Props for StudentFilters component
+ * Props for StudentFilters component.
+ *
+ * @interface StudentFiltersProps
+ *
+ * @property {StudentFilterCriteria} filters - Current filter values to display in controls
+ * @property {(filters: StudentFilterCriteria) => void} onFilterChange - Callback when any filter changes. Receives complete updated filter object
+ * @property {() => void} [onReset] - Optional callback when "Clear Filters" is clicked. If not provided, filters will be reset to empty object
+ * @property {boolean} [isLoading=false] - Disables all filter controls during data loading
+ *
+ * @example
+ * ```tsx
+ * <StudentFilters
+ *   filters={currentFilters}
+ *   onFilterChange={(newFilters) => {
+ *     setFilters(newFilters);
+ *     refetchStudents(newFilters);
+ *   }}
+ *   onReset={() => {
+ *     setFilters({});
+ *     refetchStudents({});
+ *   }}
+ *   isLoading={isRefetching}
+ * />
+ * ```
  */
 interface StudentFiltersProps {
-  /** Current filter values */
   filters: StudentFilterCriteria;
-  /** Callback when filters change */
   onFilterChange: (filters: StudentFilterCriteria) => void;
-  /** Optional callback when filters are reset */
   onReset?: () => void;
-  /** Whether filters are being applied (loading state) */
   isLoading?: boolean;
 }
 
 /**
  * StudentFilters Component
  *
- * Provides comprehensive filtering controls for student lists including:
- * - Text search (name, student ID)
- * - Grade level selection
- * - Enrollment status filtering
- * - Health record filters (allergies, medications, immunizations)
+ * Comprehensive filtering interface for student management with healthcare-specific
+ * filters. Provides multiple filter types that can be combined for precise student
+ * searches while maintaining HIPAA and FERPA compliance.
  *
- * **Features:**
- * - Real-time search with debouncing
- * - Multiple filter combinations
- * - Clear/reset functionality
- * - Loading states
- * - Accessible form controls
+ * **Filter Types:**
+ * 1. **Text Search**: Searches across student name and ID
+ * 2. **Grade Level**: Dropdown for K-12 grade selection
+ * 3. **Enrollment Status**: Active, inactive, graduated, transferred
+ * 4. **Health Filters**:
+ *    - Allergies: Students with/without allergy records
+ *    - Medications: Students with/without active medications
+ *    - Immunizations: Students with complete/incomplete immunizations
  *
- * **HIPAA Compliance:**
- * - No PHI displayed in filter options
- * - Filters use boolean flags only
- * - Search values are not logged
+ * **User Experience:**
+ * - Responsive grid layout (1 column mobile, 4 columns desktop)
+ * - Real-time filter application
+ * - Active filter count indicator
+ * - Disabled state during loading
+ * - One-click clear all filters
+ * - Persistent filter state (managed by parent)
+ *
+ * **Healthcare Compliance:**
+ * - **HIPAA**: Health filters show presence only, never PHI details
+ * - **FERPA**: Search queries not logged to prevent unauthorized access
+ * - No medical information in dropdown options
+ * - Secure filter transmission to backend
+ *
+ * **Implementation Notes:**
+ * - Search uses local state for immediate UI feedback
+ * - Filter changes trigger immediate parent callback
+ * - Reset button disabled when no filters active
+ * - All dropdowns default to "All" option
+ * - Boolean filters map to yes/no/all dropdown values
+ *
+ * **Performance Considerations:**
+ * - Add debouncing for search if backend search is slow (not included by default)
+ * - Consider memoizing filter change handlers for large component trees
+ * - Reduce re-renders by using controlled filter state
  *
  * @component
+ * @param {StudentFiltersProps} props - Component props
+ * @returns {JSX.Element} Rendered filter controls
+ *
  * @example
  * ```tsx
- * const [filters, setFilters] = useState<StudentFilterCriteria>({});
+ * // Basic usage with state management
+ * import { StudentFilters } from '@/app/(dashboard)/students/components/StudentFilters';
  *
- * <StudentFilters
- *   filters={filters}
- *   onFilterChange={setFilters}
- *   onReset={() => setFilters({})}
- * />
+ * function StudentManagement() {
+ *   const [filters, setFilters] = useState<StudentFilterCriteria>({});
+ *   const { data: students, isLoading } = useStudents(filters);
+ *
+ *   return (
+ *     <div>
+ *       <StudentFilters
+ *         filters={filters}
+ *         onFilterChange={setFilters}
+ *         isLoading={isLoading}
+ *       />
+ *       <StudentTable students={students} />
+ *     </div>
+ *   );
+ * }
  * ```
+ *
+ * @example
+ * ```tsx
+ * // With URL persistence (Next.js)
+ * function StudentListPage() {
+ *   const router = useRouter();
+ *   const searchParams = useSearchParams();
+ *
+ *   const filters = useMemo(() => ({
+ *     search: searchParams.get('search') || undefined,
+ *     gradeLevel: searchParams.get('grade') || undefined,
+ *     status: searchParams.get('status') as StudentFilterCriteria['status'] || undefined
+ *   }), [searchParams]);
+ *
+ *   const handleFilterChange = (newFilters: StudentFilterCriteria) => {
+ *     const params = new URLSearchParams();
+ *     Object.entries(newFilters).forEach(([key, value]) => {
+ *       if (value !== undefined && value !== '') {
+ *         params.set(key, String(value));
+ *       }
+ *     });
+ *     router.push(`/students?${params.toString()}`);
+ *   };
+ *
+ *   return <StudentFilters filters={filters} onFilterChange={handleFilterChange} />;
+ * }
+ * ```
+ *
+ * @see {@link StudentTable} for displaying filtered results
+ * @see {@link StudentFilterCriteria} for filter structure
  */
 export function StudentFilters({
   filters,

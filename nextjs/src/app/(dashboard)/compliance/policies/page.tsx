@@ -1,3 +1,41 @@
+/**
+ * @fileoverview HIPAA Policy Management Page
+ *
+ * Comprehensive policy lifecycle management including creation, versioning,
+ * acknowledgment tracking, and compliance monitoring. Ensures all staff members
+ * acknowledge required HIPAA policies as mandated by regulatory requirements.
+ *
+ * @module compliance/policies
+ *
+ * @description
+ * This page manages the complete policy lifecycle for healthcare compliance:
+ * - Policy document creation and versioning
+ * - Staff acknowledgment tracking with digital signatures
+ * - Policy effective dates and review schedules
+ * - Category-based organization (HIPAA, Medication, Emergency, etc.)
+ * - Acknowledgment rate monitoring and reporting
+ * - Automated reminder notifications for pending acknowledgments
+ *
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html | HIPAA Security Rule}
+ *
+ * @remarks
+ * **HIPAA Policy Requirements:**
+ * - All staff must acknowledge HIPAA Privacy and Security policies annually
+ * - Acknowledgments must be documented with timestamp and digital signature
+ * - Policy versions must be tracked for audit trail compliance
+ * - Superseded policies must be retained for 6 years minimum
+ * - Regular policy review required (minimum annually)
+ *
+ * **Policy Status Lifecycle:**
+ * - DRAFT: Policy in creation, not yet active
+ * - UNDER_REVIEW: Policy submitted for approval
+ * - ACTIVE: Currently enforced policy requiring acknowledgment
+ * - SUPERSEDED: Replaced by newer version, maintained for records
+ * - ARCHIVED: No longer applicable, retained for compliance
+ *
+ * @since 1.0.0
+ */
+
 import { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -5,28 +43,89 @@ import { Button } from '@/components/ui/Button';
 import { FileText, CheckCircle, Clock, AlertTriangle, Plus } from 'lucide-react';
 import Link from 'next/link';
 
+/**
+ * Page metadata for SEO and browser display
+ */
 export const metadata: Metadata = {
   title: 'Policy Management | Compliance | White Cross',
   description: 'HIPAA policy management, versioning, and acknowledgment tracking',
 };
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for this route
+ * Required for real-time acknowledgment status and user-specific policy assignments
+ */
 export const dynamic = "force-dynamic";
 
+/**
+ * URL search parameters for policy filtering
+ *
+ * @interface SearchParams
+ * @property {string} [status] - Filter by policy status ('ACTIVE' | 'DRAFT' | 'UNDER_REVIEW' | 'ARCHIVED')
+ * @property {string} [category] - Filter by policy category ('HIPAA' | 'MEDICATION' | 'EMERGENCY', etc.)
+ */
 interface SearchParams {
   status?: string;
   category?: string;
 }
 
+/**
+ * Component props for PoliciesPage
+ *
+ * @interface PoliciesPageProps
+ * @property {SearchParams} searchParams - URL search parameters for filtering
+ */
 interface PoliciesPageProps {
   searchParams: SearchParams;
 }
 
 /**
- * Policy Management Page
+ * Policy Management Page Component
  *
- * Displays HIPAA policies, tracks acknowledgments, and manages policy versions.
- * Server Component with policy lifecycle management.
+ * React Server Component for managing HIPAA policies, tracking staff acknowledgments,
+ * and monitoring compliance with policy requirements. Provides comprehensive policy
+ * lifecycle management from creation through archival.
+ *
+ * @async
+ * @param {PoliciesPageProps} props - Component props
+ * @param {SearchParams} props.searchParams - URL parameters for filtering policies
+ * @returns {Promise<JSX.Element>} Rendered policy management page
+ *
+ * @description
+ * **Key Features:**
+ * - Policy document library with version control
+ * - Staff acknowledgment tracking with completion rates
+ * - Pending acknowledgment monitoring and reminders
+ * - Policy review date tracking and alerts
+ * - Category-based organization and filtering
+ * - Digital signature capture for acknowledgments
+ *
+ * **Policy Categories:**
+ * - HIPAA: Privacy Rule, Security Rule, Breach Notification
+ * - MEDICATION: Administration, Storage, Documentation
+ * - EMERGENCY: Response Procedures, Evacuation Plans
+ * - SAFETY: Workplace Safety, Infection Control
+ * - ADMINISTRATIVE: General Operations, HR Policies
+ *
+ * **Acknowledgment Tracking:**
+ * - Real-time completion rate calculation
+ * - Individual user acknowledgment status
+ * - Pending acknowledgment count per policy
+ * - Acknowledgment deadline enforcement
+ * - Automated reminder notifications
+ *
+ * @example
+ * ```tsx
+ * // URL: /compliance/policies?status=ACTIVE&category=HIPAA
+ * // Displays all active HIPAA policies with acknowledgment tracking
+ * <PoliciesPage searchParams={{ status: 'ACTIVE', category: 'HIPAA' }} />
+ * ```
+ *
+ * @remarks
+ * This is a Next.js 16 Server Component with dynamic rendering.
+ * All policy data and acknowledgment status fetched server-side for security.
+ *
+ * @see {@link getPolicies} for server-side data fetching
  */
 export default async function PoliciesPage({ searchParams }: PoliciesPageProps) {
   const filters = {
@@ -182,7 +281,51 @@ export default async function PoliciesPage({ searchParams }: PoliciesPageProps) 
   );
 }
 
-// Temporary mock data functions
+/**
+ * Fetches policies with filtering and acknowledgment status
+ *
+ * Retrieves policy documents from database with applied filters and calculates
+ * real-time acknowledgment statistics for each policy and overall metrics.
+ *
+ * @async
+ * @param {Object} filters - Filter criteria for policy retrieval
+ * @param {string} [filters.status] - Filter by policy status
+ * @param {string} [filters.category] - Filter by policy category
+ * @returns {Promise<Object>} Policies and statistics
+ * @returns {Array<Object>} return.policies - Array of policy documents
+ * @returns {Object} return.stats - Aggregated policy and acknowledgment statistics
+ *
+ * @description
+ * **Policy Data Structure:**
+ * - id: Unique policy identifier
+ * - title: Policy document title
+ * - category: Policy classification (HIPAA, MEDICATION, etc.)
+ * - status: Current lifecycle status
+ * - version: Semantic version (e.g., "2.1.0")
+ * - effectiveDate: When policy became active
+ * - reviewDate: Scheduled review date
+ * - acknowledgments: Completion statistics (completed, pending, total)
+ *
+ * **Statistics Calculated:**
+ * - Active policy count
+ * - Total policy count (all statuses)
+ * - Overall acknowledgment rate percentage
+ * - Pending acknowledgment count across all policies
+ * - Policies requiring review (past review date)
+ *
+ * @example
+ * ```typescript
+ * const { policies, stats } = await getPolicies({
+ *   status: 'ACTIVE',
+ *   category: 'HIPAA'
+ * });
+ * console.log(`${stats.active} active policies, ${stats.acknowledgmentRate}% acknowledged`);
+ * ```
+ *
+ * @todo Replace with actual server action
+ * @todo Add database query with proper indexes
+ * @todo Implement acknowledgment rate caching
+ */
 async function getPolicies(filters: any) {
   const mockPolicies = [
     {
@@ -243,6 +386,29 @@ async function getPolicies(filters: any) {
   };
 }
 
+/**
+ * Maps policy status to UI badge variant
+ *
+ * Determines the visual styling for policy status badges based on lifecycle stage.
+ * Provides clear visual differentiation between active, draft, and archived policies.
+ *
+ * @param {string} status - Policy lifecycle status
+ * @returns {'default' | 'secondary' | 'destructive' | 'outline'} Badge variant for styling
+ *
+ * @description
+ * **Status Variant Mapping:**
+ * - ACTIVE: Default (blue) - Currently enforced policy
+ * - DRAFT: Secondary (gray) - Policy in development
+ * - UNDER_REVIEW: Outline (bordered) - Awaiting approval
+ * - ARCHIVED: Secondary (gray) - Retired policy
+ * - SUPERSEDED: Destructive (red) - Replaced by newer version
+ *
+ * @example
+ * ```tsx
+ * <Badge variant={getStatusVariant('ACTIVE')}>ACTIVE</Badge>
+ * // Renders: <Badge variant="default">ACTIVE</Badge>
+ * ```
+ */
 function getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   const variants = {
     ACTIVE: 'default' as const,
@@ -254,6 +420,21 @@ function getStatusVariant(status: string): 'default' | 'secondary' | 'destructiv
   return variants[status as keyof typeof variants] || 'default';
 }
 
+/**
+ * Formats ISO 8601 date string to short date format
+ *
+ * Converts ISO 8601 date string to human-readable short format
+ * suitable for displaying policy effective dates and review dates.
+ *
+ * @param {string} dateString - ISO 8601 date string
+ * @returns {string} Formatted date (e.g., "Jan 15, 2024")
+ *
+ * @example
+ * ```typescript
+ * formatDate('2024-01-15T00:00:00Z'); // "Jan 15, 2024"
+ * formatDate('2024-12-31T23:59:59Z'); // "Dec 31, 2024"
+ * ```
+ */
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',

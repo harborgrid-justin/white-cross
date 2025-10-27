@@ -293,7 +293,40 @@ const config: Config = {
   // PLUGINS
   // ==========================================
   plugins: [
-    // Add custom component classes
+    /**
+     * Custom Tailwind CSS plugin for healthcare-specific component classes.
+     *
+     * Adds pre-built utility classes for common healthcare UI patterns including
+     * cards, buttons, badges, and form inputs. These classes ensure visual consistency
+     * across the White Cross platform and reduce boilerplate CSS.
+     *
+     * Component Classes Added:
+     * - .healthcare-card: Healthcare data card with hover effects
+     * - .healthcare-button-primary: Primary action button (blue)
+     * - .healthcare-button-secondary: Secondary action button (white)
+     * - .healthcare-button-danger: Destructive action button (red)
+     * - .status-active: Active status badge (green)
+     * - .status-inactive: Inactive status badge (gray)
+     * - .status-warning: Warning status badge (orange)
+     * - .status-error: Error status badge (red)
+     * - .healthcare-input: Standardized form input styling
+     *
+     * @param {object} helpers - Tailwind CSS plugin helpers
+     * @param {function} helpers.addComponents - Function to add component classes
+     * @param {function} helpers.theme - Function to access theme values
+     *
+     * @example
+     * ```tsx
+     * // Use healthcare card component
+     * <div className="healthcare-card">Patient information...</div>
+     *
+     * // Use healthcare button
+     * <button className="healthcare-button-primary">Save Record</button>
+     *
+     * // Use status badge
+     * <span className="status-active">Active</span>
+     * ```
+     */
     function({ addComponents, theme }: any) {
       addComponents({
         // Healthcare Card Component

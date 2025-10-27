@@ -1,14 +1,81 @@
 /**
- * @fileoverview Medications Layout
- * @module app/(dashboard)/medications/layout
+ * @fileoverview Medications Feature Layout with Sidebar Navigation
  *
- * Layout wrapper for all medication pages with navigation and context.
+ * Feature-specific layout for the medications section of the White Cross Healthcare Platform.
+ * Provides comprehensive sidebar navigation for medication management, administration tracking,
+ * inventory control, and compliance reporting. This layout wraps all medication-related pages
+ * and enables easy access to medication workflows.
+ *
+ * @module app/(dashboard)/medications/layout
+ * @category Healthcare
+ * @subcategory Medications
+ *
+ * **Layout Hierarchy:**
+ * ```
+ * RootLayout
+ * └── DashboardLayout
+ *     └── MedicationsLayout (this file)
+ *         ├── /medications (All Medications)
+ *         ├── /medications/new (Add Medication)
+ *         ├── /medications/administration-* (Administration views)
+ *         ├── /medications/inventory/* (Inventory management)
+ *         └── /medications/reports/* (Reports)
+ * ```
+ *
+ * **Navigation Sections:**
+ * 1. Main Navigation: All medications, Add medication
+ * 2. Administration: Due, Overdue, Missed, Completed, Calendar, Schedule
+ * 3. By Type: Prescriptions, Controlled substances, OTC, As-needed, Emergency
+ * 4. Inventory: All, Low stock, Expiring soon
+ * 5. Reports: Administration, Compliance, Inventory, Refills
+ * 6. Settings: Configuration, Categories, Administration rules
+ * 7. Quick Actions: Drug interaction checker
+ *
+ * **HIPAA Compliance:**
+ * - All medication data considered PHI (Protected Health Information)
+ * - Access control enforced at route level
+ * - Audit logging for all medication operations
+ *
+ * **Accessibility:**
+ * - Semantic navigation structure
+ * - ARIA labels for navigation sections
+ * - Keyboard navigation support
+ * - Active state indicators for current route
+ *
+ * @see {@link https://nextjs.org/docs/app/building-your-application/routing/layouts-and-templates | Next.js Layouts}
+ *
+ * @example
+ * ```tsx
+ * // This layout automatically wraps all pages in app/(dashboard)/medications/
+ * // File structure:
+ * // app/(dashboard)/medications/
+ * //   layout.tsx (this file)
+ * //   page.tsx (All Medications)
+ * //   new/page.tsx (Add Medication)
+ * //   [id]/page.tsx (Medication Details)
+ * ```
+ *
+ * @since 1.0.0
  */
 
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 
+/**
+ * Metadata configuration for medications pages.
+ *
+ * Uses Next.js metadata template pattern to provide consistent page titles
+ * across all medication-related pages while maintaining SEO and accessibility.
+ *
+ * @constant
+ * @type {Metadata}
+ *
+ * @property {Object} title - Dynamic title configuration
+ * @property {string} title.template - Template for child pages: "Page Title | Medications | White Cross"
+ * @property {string} title.default - Default title when child doesn't specify: "Medications | White Cross"
+ * @property {string} description - SEO description for medication section
+ */
 export const metadata: Metadata = {
   title: {
     template: '%s | Medications | White Cross',
@@ -17,6 +84,12 @@ export const metadata: Metadata = {
   description: 'Medication management and administration tracking'
 };
 
+/**
+ * Props interface for the Medications Layout component.
+ *
+ * @interface MedicationsLayoutProps
+ * @property {React.ReactNode} children - Medication page components to render
+ */
 interface MedicationsLayoutProps {
   children: ReactNode;
 }
@@ -24,7 +97,58 @@ interface MedicationsLayoutProps {
 /**
  * Medications Layout Component
  *
- * Provides consistent layout and navigation for medication pages.
+ * Provides a consistent layout with comprehensive sidebar navigation for all medication
+ * pages. The sidebar offers quick access to medication workflows including administration
+ * tracking, inventory management, reporting, and settings.
+ *
+ * **Layout Structure:**
+ * ```
+ * ┌─────────────────┬────────────────────────────┐
+ * │                 │                            │
+ * │ Medications     │ Main Content               │
+ * │ - All           │ (medication pages)         │
+ * │ - New           │                            │
+ * │                 │                            │
+ * │ Administration  │                            │
+ * │ - Due Now       │                            │
+ * │ - Overdue       │                            │
+ * │                 │                            │
+ * │ Inventory       │                            │
+ * │ Reports         │                            │
+ * │ Settings        │                            │
+ * │                 │                            │
+ * │ [Quick Actions] │                            │
+ * └─────────────────┴────────────────────────────┘
+ * ```
+ *
+ * **Sidebar Features:**
+ * - Fixed width sidebar on desktop (hidden on mobile)
+ * - Grouped navigation by workflow type
+ * - Visual hierarchy with headings and spacing
+ * - Active route highlighting (handled by NavLink)
+ * - Quick action button for drug interactions
+ *
+ * **Responsive Behavior:**
+ * - Desktop (lg+): Sidebar visible, content area scrolls
+ * - Mobile/Tablet: Sidebar hidden (rely on main dashboard navigation)
+ *
+ * @param {MedicationsLayoutProps} props - Component properties
+ * @param {React.ReactNode} props.children - Child medication pages
+ *
+ * @returns {JSX.Element} Two-column layout with sidebar and main content
+ *
+ * @example
+ * ```tsx
+ * // Next.js automatically applies this layout:
+ * <MedicationsLayout>
+ *   <AllMedicationsPage />
+ * </MedicationsLayout>
+ * ```
+ *
+ * @remarks
+ * This is a Server Component. Navigation state and active route detection
+ * would need to be handled by client components if dynamic highlighting is needed.
+ * Currently uses standard Link components without active state detection.
  */
 export default function MedicationsLayout({ children }: MedicationsLayoutProps) {
   return (

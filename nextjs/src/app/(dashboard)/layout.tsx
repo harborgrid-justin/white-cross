@@ -1,21 +1,73 @@
 /**
- * Dashboard Layout - Main application layout with sidebar and header
+ * @fileoverview Dashboard Layout - Main Application Shell
  *
- * Purpose: Provides the authenticated application shell for all dashboard pages
- * Features:
- * - Responsive sidebar (collapsible on desktop, drawer on mobile)
- * - Top navigation header with search, notifications, user menu
- * - Auto-generated breadcrumbs
- * - Sticky header and sidebar
- * - Dark mode support
- * - Keyboard accessible
- * - Screen reader support
+ * The primary authenticated layout for the White Cross Healthcare Platform, providing
+ * a consistent application shell with sidebar navigation, header, breadcrumbs, and footer
+ * for all dashboard pages. This layout is used by all authenticated users and wraps
+ * the main application features.
  *
- * Note: This is a server component. Client-side interactivity is handled by:
- * - Header component (mobile menu toggle, user dropdown)
- * - MobileNav component (drawer state)
- * - Sidebar component (navigation state)
- * All state is managed through NavigationContext (client component)
+ * @module app/(dashboard)/layout
+ * @category Core
+ * @subcategory Layouts
+ *
+ * **Layout Position in Hierarchy:**
+ * ```
+ * RootLayout (app/layout.tsx)
+ * └── DashboardLayout (this file) - wraps (dashboard) route group
+ *     ├── Dashboard Home (dashboard/page.tsx)
+ *     ├── Medications (medications/layout.tsx → pages)
+ *     ├── Students (students/page.tsx)
+ *     ├── Appointments (appointments/page.tsx)
+ *     └── [Other dashboard features...]
+ * ```
+ *
+ * **Key Features:**
+ * - **Responsive Sidebar**: Desktop (fixed, 256px), Mobile (drawer)
+ * - **Top Navigation**: Search, notifications, user menu
+ * - **Auto-generated Breadcrumbs**: Dynamic based on current route
+ * - **Sticky Header**: Fixed positioning during scroll
+ * - **Dark Mode Support**: Full theme integration
+ * - **Skip Navigation**: Keyboard accessibility (WCAG 2.4.1)
+ * - **Footer**: Copyright and compliance information
+ *
+ * **Responsive Behavior:**
+ * - Desktop (lg+): Sidebar visible, fixed width (w-64)
+ * - Mobile/Tablet: Sidebar hidden, accessible via hamburger menu
+ * - Main content: Flex-grow to fill available space
+ * - Overflow handling: Vertical scroll in main content area
+ *
+ * **State Management:**
+ * - NavigationContext: Manages sidebar open/close state
+ * - Header component: Handles mobile menu toggle, user dropdown
+ * - MobileNav component: Controls drawer visibility
+ * - Sidebar component: Manages navigation active states
+ *
+ * **Accessibility Features:**
+ * - Skip-to-content link (keyboard users)
+ * - ARIA roles and labels
+ * - Keyboard navigation support
+ * - Screen reader announcements
+ * - Focus management
+ *
+ * @see {@link Header} for top navigation implementation
+ * @see {@link Sidebar} for sidebar navigation
+ * @see {@link MobileNav} for mobile drawer
+ * @see {@link Breadcrumbs} for dynamic breadcrumb generation
+ * @see {@link Footer} for footer content
+ *
+ * @example
+ * ```tsx
+ * // This layout automatically wraps all pages in app/(dashboard)/
+ * // File structure:
+ * // app/(dashboard)/
+ * //   layout.tsx (this file)
+ * //   dashboard/page.tsx (wrapped by this layout)
+ * //   medications/
+ * //     layout.tsx (nested, also wrapped by this layout)
+ * //     page.tsx
+ * ```
+ *
+ * @since 1.0.0
  */
 
 import { ReactNode } from 'react';
@@ -25,10 +77,99 @@ import { MobileNav } from '@/components/layouts/MobileNav';
 import { Breadcrumbs } from '@/components/layouts/Breadcrumbs';
 import { Footer } from '@/components/layouts/Footer';
 
+/**
+ * Props interface for the Dashboard Layout component.
+ *
+ * @interface DashboardLayoutProps
+ * @property {React.ReactNode} children - Child page components to render within the layout
+ */
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * Dashboard Layout Component
+ *
+ * Provides the main authenticated application shell with sidebar, header, breadcrumbs,
+ * and footer. This is a Server Component that renders the static layout structure, with
+ * client-side interactivity delegated to child components.
+ *
+ * **Layout Structure:**
+ * ```
+ * ┌─────────────────────────────────────────┐
+ * │ Header (search, notifications, user)    │
+ * ├──────────┬──────────────────────────────┤
+ * │          │ Breadcrumbs                  │
+ * │ Sidebar  ├──────────────────────────────┤
+ * │ (fixed)  │                              │
+ * │          │ Main Content                 │
+ * │          │ (scrollable)                 │
+ * │          │                              │
+ * │          ├──────────────────────────────┤
+ * │          │ Footer                       │
+ * └──────────┴──────────────────────────────┘
+ * ```
+ *
+ * **Component Responsibilities:**
+ * - Render skip-to-content link for accessibility
+ * - Render header with navigation and user controls
+ * - Render desktop sidebar (hidden on mobile)
+ * - Render mobile navigation drawer
+ * - Render breadcrumbs for route context
+ * - Render main content area with vertical scroll
+ * - Render footer with copyright and links
+ *
+ * **Client-Side State:**
+ * This Server Component does not manage state directly. Interactive features
+ * are handled by client components:
+ * - `<Header />` - Mobile menu toggle, user dropdown
+ * - `<MobileNav />` - Drawer open/close state
+ * - `<Sidebar />` - Navigation active states
+ * All state coordination happens through NavigationContext.
+ *
+ * @param {DashboardLayoutProps} props - Component properties
+ * @param {React.ReactNode} props.children - Child page components
+ *
+ * @returns {JSX.Element} The dashboard layout structure with all UI components
+ *
+ * @example
+ * ```tsx
+ * // Next.js automatically applies this layout to (dashboard) routes:
+ * <DashboardLayout>
+ *   <DashboardPage /> // or <MedicationsPage />, <StudentsPage />, etc.
+ * </DashboardLayout>
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // The rendered structure:
+ * <div className="min-h-screen bg-gray-50">
+ *   <a href="#main-content">Skip to main content</a>
+ *   <Header />
+ *   <div className="flex flex-1">
+ *     <Sidebar /> // Desktop only
+ *     <MobileNav /> // Mobile only
+ *     <main id="main-content">
+ *       <Breadcrumbs />
+ *       <div className="py-6">
+ *         {children} // Your page content
+ *       </div>
+ *       <Footer />
+ *     </main>
+ *   </div>
+ * </div>
+ * ```
+ *
+ * @remarks
+ * This is a Next.js Server Component. It does not use hooks, state, or browser APIs.
+ * All interactive features are implemented in client components that are rendered
+ * as children of this layout.
+ *
+ * The layout uses Tailwind CSS for styling with responsive breakpoints:
+ * - Mobile: Default styles
+ * - Tablet: sm (640px+)
+ * - Desktop: lg (1024px+)
+ */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   // Note: Header and MobileNav manage their own state through NavigationContext
   // No local state needed here - this is a pure server component

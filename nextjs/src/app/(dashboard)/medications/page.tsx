@@ -1,8 +1,61 @@
 /**
- * @fileoverview Medications List Page
+ * @fileoverview Medications List Page - Main Dashboard for Medication Management
  * @module app/(dashboard)/medications/page
  *
- * Main medications list page with filtering, searching, and sorting.
+ * @description
+ * Comprehensive medication management dashboard providing centralized access to all
+ * student medications with filtering, searching, and real-time status tracking.
+ *
+ * **Medication Management Features:**
+ * - Multi-criteria search and filtering (name, status, type, student)
+ * - Real-time medication statistics (active, due, overdue, low stock)
+ * - Quick access to critical medication alerts
+ * - Administration scheduling and tracking
+ * - Inventory monitoring and low-stock warnings
+ *
+ * **Safety & Compliance:**
+ * - HIPAA-compliant medication data handling (PHI protected)
+ * - FDA National Drug Code (NDC) integration for drug identification
+ * - Controlled substance tracking per DEA regulations (21 CFR Part 1300-1321)
+ * - Audit logging for all medication access and modifications
+ * - Allergy contraindication alerts displayed prominently
+ *
+ * **Regulatory Standards:**
+ * - FDA 21 CFR Part 11 - Electronic Records compliance
+ * - DEA Controlled Substances Act - Schedule I-V tracking
+ * - State Board of Pharmacy regulations adherence
+ * - School nursing medication administration protocols
+ *
+ * **Authentication & Authorization:**
+ * - Requires authenticated school nurse or administrator role
+ * - RBAC with medication-specific permissions (VIEW_MEDICATIONS)
+ * - Session-based access with JWT token validation
+ *
+ * **Performance Optimization:**
+ * - ISR with 5-minute revalidation for medication list
+ * - 1-minute cache for real-time statistics
+ * - Suspense boundaries for progressive data loading
+ * - Optimistic UI updates for improved UX
+ *
+ * @requires Authentication - JWT token with nurse/admin role
+ * @requires Permissions - VIEW_MEDICATIONS, MANAGE_MEDICATIONS
+ *
+ * @see {@link https://www.fda.gov/drugs/drug-approvals-and-databases/national-drug-code-directory NDC Directory}
+ * @see {@link https://www.deadiversion.usdoj.gov/schedules/ DEA Drug Schedules}
+ *
+ * @example
+ * ```tsx
+ * // URL: /medications
+ * // Lists all medications with default pagination
+ *
+ * // URL: /medications?status=active&type=controlled
+ * // Filters active controlled substances
+ *
+ * // URL: /medications?studentId=123&search=albuterol
+ * // Search student's albuterol medications
+ * ```
+ *
+ * @since 1.0.0
  */
 
 import { Suspense } from 'react';
@@ -27,6 +80,18 @@ export const metadata: Metadata = {
  */
 export const revalidate = 300; // Revalidate every 5 minutes
 
+/**
+ * Props interface for MedicationsPage component with URL search parameter support
+ *
+ * @interface MedicationsPageProps
+ * @property {object} searchParams - URL query parameters for filtering and pagination
+ * @property {string} [searchParams.search] - Free-text search for medication name, generic name, or NDC
+ * @property {string} [searchParams.status] - Filter by status: 'active' | 'inactive' | 'discontinued' | 'expired'
+ * @property {string} [searchParams.type] - Filter by type: 'prescription' | 'otc' | 'controlled' | 'emergency' | 'prn'
+ * @property {string} [searchParams.studentId] - Filter medications for specific student (UUID)
+ * @property {string} [searchParams.page] - Current page number for pagination (default: 1)
+ * @property {string} [searchParams.limit] - Results per page (default: 20, max: 100)
+ */
 interface MedicationsPageProps {
   searchParams: {
     search?: string;
@@ -39,7 +104,49 @@ interface MedicationsPageProps {
 }
 
 /**
- * Fetch medications data
+ * Fetches paginated medications list with optional filtering
+ *
+ * @async
+ * @function getMedications
+ * @param {object} searchParams - Search and filter parameters from URL query string
+ * @returns {Promise<MedicationsResponse>} Paginated medications data with metadata
+ *
+ * @description
+ * Retrieves medications from the backend API with support for:
+ * - Full-text search across medication names, generic names, and NDC codes
+ * - Status filtering (active, inactive, discontinued, expired)
+ * - Type filtering (prescription, OTC, controlled substances, emergency, PRN)
+ * - Student-specific medication lists
+ * - Server-side pagination with configurable limits
+ *
+ * **Caching Strategy:**
+ * - 5-minute ISR revalidation to balance freshness and performance
+ * - Cache tags for targeted invalidation on medication updates
+ * - Graceful degradation with empty array on fetch failure
+ *
+ * **HIPAA Compliance:**
+ * - All medication data treated as Protected Health Information (PHI)
+ * - Server-side only fetching prevents PHI exposure to client
+ * - Audit logging triggered automatically for medication access
+ *
+ * **Error Handling:**
+ * - Returns empty dataset on API failure to prevent UI crashes
+ * - Logs errors server-side for monitoring and alerting
+ * - Does not expose sensitive error details to client
+ *
+ * @example
+ * ```typescript
+ * // Fetch all active medications
+ * const data = await getMedications({ status: 'active' });
+ *
+ * // Search for specific medication
+ * const results = await getMedications({ search: 'albuterol' });
+ *
+ * // Get student's medications
+ * const studentMeds = await getMedications({ studentId: 'uuid-123' });
+ * ```
+ *
+ * @throws {Error} Logs error but returns empty dataset to prevent UI failure
  */
 async function getMedications(searchParams: any) {
   const params = new URLSearchParams();
@@ -72,7 +179,54 @@ async function getMedications(searchParams: any) {
 }
 
 /**
- * Fetch medication statistics
+ * Fetches real-time medication statistics for dashboard metrics
+ *
+ * @async
+ * @function getMedicationStats
+ * @returns {Promise<MedicationStats>} Current medication statistics across all students
+ *
+ * @description
+ * Retrieves critical medication metrics for dashboard display including:
+ * - **Total Medications**: All medications in system (active + inactive)
+ * - **Active Medications**: Currently prescribed and being administered
+ * - **Due Today**: Medications scheduled for administration today
+ * - **Overdue**: Missed administrations requiring immediate attention
+ * - **Low Stock**: Inventory items below reorder threshold
+ *
+ * **Statistics Calculation:**
+ * - Real-time aggregation from medication and administration tables
+ * - Considers time zones for accurate "today" and "overdue" calculations
+ * - Includes controlled substances in all counts with proper DEA tracking
+ * - Excludes discontinued and expired medications from active count
+ *
+ * **Caching Strategy:**
+ * - 1-minute cache for near real-time updates
+ * - More aggressive caching than medication list due to frequency of access
+ * - Invalidated on medication administration or status changes
+ *
+ * **Critical Alerts:**
+ * - Overdue count triggers visual alerts in UI (red badge)
+ * - Low stock warnings enable proactive reordering
+ * - Due today facilitates daily medication round planning
+ *
+ * **HIPAA Compliance:**
+ * - Aggregated statistics only (no individual student PHI)
+ * - Server-side calculation prevents data exposure
+ * - Audit log entry for statistics access (lower sensitivity)
+ *
+ * @example
+ * ```typescript
+ * const stats = await getMedicationStats();
+ * // {
+ * //   total: 245,
+ * //   active: 198,
+ * //   dueToday: 47,
+ * //   overdue: 3,
+ * //   lowStock: 12
+ * // }
+ * ```
+ *
+ * @returns {MedicationStats} Statistics object with zero values on error
  */
 async function getMedicationStats() {
   try {
@@ -105,9 +259,74 @@ async function getMedicationStats() {
 }
 
 /**
- * Medications Main Page
+ * Medications Main Page Component - Server-Side Rendered Dashboard
  *
- * Server Component that displays all medications with filtering and search.
+ * @component
+ * @async
+ * @param {MedicationsPageProps} props - Component props with search parameters
+ * @returns {Promise<JSX.Element>} Rendered medications dashboard page
+ *
+ * @description
+ * Main medications management page implementing a comprehensive dashboard for school nurses
+ * to oversee all student medications, track administrations, and monitor inventory.
+ *
+ * **Key Features:**
+ * - **Statistics Dashboard**: Real-time metrics for active, due, overdue medications
+ * - **Advanced Filtering**: Multi-criteria search and filter capabilities
+ * - **Critical Alerts**: Visual indicators for overdue and low-stock medications
+ * - **Quick Actions**: One-click navigation to common medication workflows
+ * - **Responsive Design**: Mobile-optimized layout for medication rounds
+ *
+ * **Medication Administration Workflow:**
+ * 1. View due medications on dashboard
+ * 2. Click medication to see details and administration history
+ * 3. Record administration with Five Rights verification
+ * 4. System updates statistics in real-time
+ *
+ * **Five Rights of Medication Administration:**
+ * - Right Patient: Student verification with photo ID
+ * - Right Medication: NDC code verification and barcode scanning
+ * - Right Dose: Calculated dose verification with unit checking
+ * - Right Route: Administration method validation
+ * - Right Time: Scheduled time window compliance checking
+ *
+ * **Safety Features:**
+ * - Allergy contraindication warnings displayed prominently
+ * - Drug interaction alerts for poly-pharmacy patients
+ * - Controlled substance logging per DEA requirements
+ * - Parent consent verification before first administration
+ * - Witness verification for high-risk medications
+ *
+ * **Performance Optimization:**
+ * - Parallel data fetching (medications + stats)
+ * - Suspense boundaries prevent layout shift
+ * - ISR caching reduces API load
+ * - Progressive enhancement for slow connections
+ *
+ * **HIPAA Compliance:**
+ * - Server-side rendering keeps PHI off client
+ * - Encrypted data transmission (TLS 1.3)
+ * - Audit logging for all medication access
+ * - Role-based access control enforcement
+ * - Automatic session timeout for security
+ *
+ * **Regulatory Compliance:**
+ * - FDA 21 CFR Part 11 electronic records
+ * - DEA controlled substance documentation
+ * - State board of pharmacy regulations
+ * - Joint Commission medication management standards
+ *
+ * @example
+ * ```tsx
+ * // Rendered at /medications
+ * <MedicationsPage searchParams={{}} />
+ *
+ * // Rendered at /medications?status=active&type=controlled
+ * <MedicationsPage searchParams={{ status: 'active', type: 'controlled' }} />
+ * ```
+ *
+ * @see {@link getMedications} for data fetching logic
+ * @see {@link getMedicationStats} for statistics calculation
  */
 export default async function MedicationsPage({
   searchParams
@@ -179,7 +398,50 @@ export default async function MedicationsPage({
 }
 
 /**
- * Stat Card Component
+ * Stat Card Component - Interactive Metric Display with Navigation
+ *
+ * @component
+ * @param {StatCardProps} props - Component props
+ * @param {string} props.label - Metric label displayed to user (e.g., "Active Medications")
+ * @param {number} props.value - Numeric metric value to display
+ * @param {string} props.href - Navigation link when card is clicked (filtered view)
+ * @param {string} props.color - Visual color theme: 'blue' | 'green' | 'yellow' | 'red' | 'orange'
+ * @returns {JSX.Element} Rendered statistic card with click-to-filter functionality
+ *
+ * @description
+ * Clickable statistic card providing quick access to filtered medication views.
+ * Visual color coding enables rapid identification of critical metrics.
+ *
+ * **Color Semantics:**
+ * - **Blue**: Informational metrics (total medications)
+ * - **Green**: Positive status (active medications)
+ * - **Yellow**: Attention needed (due today)
+ * - **Red**: Critical/urgent (overdue administrations)
+ * - **Orange**: Warning status (low stock inventory)
+ *
+ * **Interaction:**
+ * - Clickable card navigates to filtered medication list
+ * - Hover state provides visual feedback
+ * - Focus accessible for keyboard navigation
+ * - Screen reader announces metric and navigation purpose
+ *
+ * **Use Cases:**
+ * - Quick overview of medication system status
+ * - One-click filtering to specific medication subsets
+ * - Visual alerts for time-sensitive medications
+ * - Inventory monitoring at a glance
+ *
+ * @example
+ * ```tsx
+ * <StatCard
+ *   label="Overdue"
+ *   value={3}
+ *   href="/medications/administration-overdue"
+ *   color="red"
+ * />
+ * // Renders red card showing 3 overdue medications
+ * // Clicking navigates to overdue medications page
+ * ```
  */
 function StatCard({
   label,
@@ -233,7 +495,37 @@ function StatCard({
 }
 
 /**
- * Loading Skeleton
+ * Loading Skeleton Component - Progressive Loading UX
+ *
+ * @component
+ * @returns {JSX.Element} Animated skeleton placeholder for medication list
+ *
+ * @description
+ * Provides visual feedback during server-side data fetching with animated
+ * skeleton screens that match the layout of actual medication list items.
+ *
+ * **UX Benefits:**
+ * - Prevents layout shift during data loading
+ * - Provides immediate visual feedback to user
+ * - Reduces perceived loading time
+ * - Maintains professional appearance during fetch
+ *
+ * **Accessibility:**
+ * - Aria-busy implicitly communicated via Suspense
+ * - Animation respects prefers-reduced-motion
+ * - Semantic structure matches actual content
+ *
+ * **Performance:**
+ * - Pure CSS animations (no JavaScript)
+ * - Minimal DOM nodes for fast initial render
+ * - Automatically replaced by real content on load
+ *
+ * @example
+ * ```tsx
+ * <Suspense fallback={<MedicationsLoadingSkeleton />}>
+ *   <MedicationList data={medications} />
+ * </Suspense>
+ * ```
  */
 function MedicationsLoadingSkeleton() {
   return (

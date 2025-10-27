@@ -1,6 +1,54 @@
 /**
- * Custom Reports Page
- * List of saved custom reports
+ * @fileoverview Custom Reports List Page
+ *
+ * Management interface for user-created custom analytics reports. Displays all
+ * saved reports with metadata, provides CRUD operations, and enables quick access
+ * to report viewing and execution.
+ *
+ * @module app/(dashboard)/analytics/custom-reports/page
+ *
+ * @remarks
+ * Custom reports enable users to:
+ * - Define custom metrics and aggregations
+ * - Select specific data sources (health metrics, medications, etc.)
+ * - Choose visualization types (bar, line, pie charts)
+ * - Schedule automated report generation
+ * - Share reports with other users (public reports)
+ *
+ * Report types supported:
+ * - medication-compliance: Medication administration analytics
+ * - incident-trends: Incident pattern analysis
+ * - health-metrics: Student health measurement tracking
+ * - appointment-analytics: Appointment efficiency metrics
+ * - inventory-analytics: Medication inventory analysis
+ * - custom: User-defined multi-source reports
+ *
+ * Features:
+ * - Report list with cards displaying key metadata
+ * - Quick actions: View, Download, Edit, Delete
+ * - Color-coded report type badges
+ * - Public/Private visibility indicators
+ * - Created and last run timestamps
+ * - Empty state with call-to-action
+ *
+ * Performance:
+ * - Client Component for interactive list management
+ * - Optimistic UI updates for deletions
+ * - Toast notifications for user feedback
+ * - Loading states during data fetching
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/custom-reports
+ * // Administrator workflow:
+ * // 1. View list of saved reports
+ * // 2. Click report card to view details
+ * // 3. Use quick actions to download or edit
+ * // 4. Create new report with "Create Report" button
+ * ```
+ *
+ * @see {@link /analytics/custom-reports/new} - Create new report
+ * @see {@link /analytics/custom-reports/[id]} - View report details
  */
 
 'use client';
@@ -11,10 +59,78 @@ import { getCustomReports, deleteCustomReport } from '@/lib/actions/analytics.ac
 import { Plus, FileText, Edit, Trash2, Eye, Download, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for user-specific reports
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Custom Reports List Page Component
+ *
+ * Displays grid of saved custom reports with management actions.
+ * Integrates with server actions for CRUD operations.
+ *
+ * @returns {JSX.Element} Custom reports list page
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title and "Create Report" button
+ * 2. Loading state or empty state
+ * 3. Grid of report cards (3 columns on desktop)
+ * 4. Each card shows: name, description, type, metadata, actions
+ *
+ * State management:
+ * - `reports`: Array of custom report objects
+ * - `isLoading`: Loading state during initial fetch
+ *
+ * Report card structure:
+ * ```typescript
+ * {
+ *   id: string,
+ *   name: string,              // "Monthly Medication Compliance"
+ *   description: string,        // Report description
+ *   reportType: string,         // "medication-compliance"
+ *   createdAt: Date,           // Creation timestamp
+ *   lastRun: Date,             // Last execution timestamp
+ *   isPublic: boolean          // Public visibility flag
+ * }
+ * ```
+ *
+ * Actions:
+ * - **View**: Navigate to report detail page
+ * - **Download**: Export report data
+ * - **Edit**: Navigate to edit interface
+ * - **Delete**: Remove report with confirmation
+ *
+ * Color coding:
+ * - medication-compliance: Green
+ * - incident-trends: Orange
+ * - health-metrics: Blue
+ * - appointment-analytics: Purple
+ * - inventory-analytics: Indigo
+ * - custom: Gray
+ *
+ * Data fetching:
+ * - Calls `getCustomReports()` server action on mount
+ * - Falls back to mock data for demonstration
+ * - Refetches after deletions to update list
+ *
+ * User feedback:
+ * - Toast notifications for success/error states
+ * - Confirmation dialog before deletion
+ * - Loading spinner during operations
+ *
+ * @example
+ * ```tsx
+ * // User workflow:
+ * // 1. User navigates to /analytics/custom-reports
+ * // 2. Sees 3 saved reports in grid
+ * // 3. Clicks "View" on "Monthly Medication Compliance"
+ * // 4. Views report details and runs report
+ * ```
+ */
 export default function CustomReportsPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

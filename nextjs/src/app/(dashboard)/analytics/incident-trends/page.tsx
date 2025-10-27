@@ -1,5 +1,59 @@
 /**
- * Incident Trends Analytics Page
+ * @fileoverview Incident Trends Analytics Page
+ *
+ * Analyzes incident report patterns across multiple dimensions including type
+ * (Injury, Illness, Behavioral, Safety), severity levels, and temporal trends.
+ * Enables identification of high-risk areas and prevention opportunities.
+ *
+ * @module app/(dashboard)/analytics/incident-trends/page
+ *
+ * @remarks
+ * Incident analysis dimensions:
+ * - Total incidents over time
+ * - By Type: Injury, Illness, Behavioral, Safety
+ * - By Severity: Low, Medium, High, Critical
+ * - Temporal patterns: Daily, weekly, monthly trends
+ *
+ * Visualization options:
+ * - Chart types: Line, Area, Bar
+ * - View modes: Total, By Type, By Severity
+ * - Interactive controls for switching between views
+ *
+ * Use cases:
+ * - Identify seasonal patterns (e.g., flu season illness spikes)
+ * - Spot high-risk areas requiring intervention
+ * - Track effectiveness of safety programs
+ * - Support accreditation and regulatory reporting
+ *
+ * Performance:
+ * - Client Component for interactive chart controls
+ * - Custom IncidentTrendChart with multiple visualization modes
+ * - Efficient state management for view switching
+ * - Export functionality for reports and presentations
+ *
+ * HIPAA compliance:
+ * - Aggregated incident data (no student identifiers)
+ * - Count-based analytics only
+ * - No PHI exposed in charts or exports
+ * - Access logged for security audits
+ *
+ * Safety considerations:
+ * - High incident rates trigger alerts (in production)
+ * - Critical severity incidents flagged for immediate review
+ * - Trend analysis supports proactive safety measures
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/incident-trends
+ * // Safety coordinator workflow:
+ * // 1. View 30-day incident trends (12 this week)
+ * // 2. Switch to "By Type" to identify patterns
+ * // 3. Notice spike in behavioral incidents
+ * // 4. Export report to inform intervention planning
+ * ```
+ *
+ * @see {@link /analytics} - Main analytics dashboard
+ * @see {@link /incidents} - Incident management
  */
 
 'use client';
@@ -9,10 +63,76 @@ import { IncidentTrendChart } from '@/components/analytics/IncidentTrendChart';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { Download, Filter, RefreshCw } from 'lucide-react';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for real-time incident data
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Incident Trends Analytics Page Component
+ *
+ * Interactive dashboard for analyzing incident patterns with multiple view modes
+ * and chart type options. Supports export for safety reviews and reporting.
+ *
+ * @returns {JSX.Element} Incident trends analytics page
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title and export button
+ * 2. Display Options: View mode and chart type selectors
+ * 3. IncidentTrendChart: Customizable trend visualization
+ *
+ * State management:
+ * - `view`: View mode - 'total' | 'byType' | 'bySeverity'
+ * - `chartType`: Chart visualization - 'line' | 'area' | 'bar'
+ * - `showExporter`: Toggle for DataExporter component
+ *
+ * Data structure:
+ * ```typescript
+ * trendData: Array<{
+ *   date: string,         // "Jan 15"
+ *   total: number,        // Total incidents that day
+ *   byType: {
+ *     Injury: number,     // ~40% of total
+ *     Illness: number,    // ~30% of total
+ *     Behavioral: number, // ~20% of total
+ *     Safety: number      // ~10% of total
+ *   },
+ *   bySeverity: {
+ *     Low: number,        // ~50% of total
+ *     Medium: number,     // ~30% of total
+ *     High: number,       // ~15% of total
+ *     Critical: number    // ~5% of total
+ *   }
+ * }>
+ * ```
+ *
+ * View modes:
+ * - **Total**: Overall incident count trend
+ * - **By Type**: Separate lines for each incident type
+ * - **By Severity**: Separate lines for each severity level
+ *
+ * Chart types:
+ * - **Line**: Best for trend analysis over time
+ * - **Area**: Emphasizes volume and cumulative impact
+ * - **Bar**: Best for comparing discrete time periods
+ *
+ * Mock data generation:
+ * - 30 days of incident data
+ * - 5-20 incidents per day (random)
+ * - Realistic distribution across types and severities
+ *
+ * @example
+ * ```tsx
+ * // User workflow:
+ * // 1. Select "By Type" view mode
+ * // 2. Choose "Area" chart type for visual impact
+ * // 3. Observe injury incidents increasing over time
+ * // 4. Export data to inform safety committee meeting
+ * ```
+ */
 export default function IncidentTrendsPage() {
   const [view, setView] = useState<'total' | 'byType' | 'bySeverity'>('total');
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar'>('line');

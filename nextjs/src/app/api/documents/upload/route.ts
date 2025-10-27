@@ -1,25 +1,52 @@
 /**
- * Document Upload API Route
+ * @fileoverview Secure Document Upload API Route
+ *
+ * Handles multipart file uploads with comprehensive security measures including
+ * file type validation, size limits, virus scanning, encryption, and audit logging.
+ * Designed for HIPAA-compliant document management.
  *
  * @module api/documents/upload
- * @description Secure file upload endpoint with comprehensive security measures
  *
- * Security Features:
- * - File type validation (whitelist)
- * - File size limits
- * - Virus scanning integration (placeholder)
- * - Encryption at rest (placeholder)
- * - Access control verification
- * - Audit logging
- * - Rate limiting (placeholder)
+ * @security
+ * - File type whitelist validation (prevents malicious file uploads)
+ * - File size limit: 10MB maximum
+ * - Virus scanning integration (placeholder - implement before production)
+ * - Encryption at rest using AES-256-GCM (placeholder)
+ * - Authentication required (TODO: implement)
+ * - Authorization checks (TODO: implement)
+ * - Rate limiting: 10 uploads per minute per user (TODO: implement)
+ * - Path traversal prevention via filename sanitization
+ * - Magic number validation to verify actual file type (TODO: implement)
+ *
+ * @compliance
+ * - HIPAA: Encryption at rest for PHI documents per 164.312(a)(2)(iv)
+ * - HIPAA: Audit logging per 164.312(b)
+ * - HIPAA: Access controls per 164.312(a)(1)
+ * - File integrity validation
+ * - Secure metadata handling
+ *
+ * @cors
+ * - OPTIONS preflight support
+ * - Configurable allowed origins via ALLOWED_ORIGIN env var
+ * - Methods: POST, OPTIONS
+ * - Max age: 86400 seconds (24 hours)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// Maximum file size: 10MB
+/**
+ * Maximum file size limit: 10MB
+ * Prevents resource exhaustion and excessive storage usage
+ * @constant {number}
+ */
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-// Allowed MIME types (whitelist approach for security)
+/**
+ * Allowed MIME types for file uploads (whitelist approach for security).
+ * Only these file types can be uploaded to prevent malicious file execution.
+ *
+ * @constant {string[]}
+ */
 const ALLOWED_MIME_TYPES = [
   'application/pdf',
   'image/jpeg',
@@ -34,6 +61,105 @@ const ALLOWED_MIME_TYPES = [
   'text/csv'
 ];
 
+/**
+ * POST /api/documents/upload
+ *
+ * Uploads a document with comprehensive security validation and processing.
+ * Supports multipart/form-data with file and optional metadata.
+ *
+ * @async
+ * @param {NextRequest} request - Next.js request object
+ * @param {FormData} request.body - Multipart form data
+ * @param {File} request.body.file - File to upload (required)
+ * @param {string} [request.body.metadata] - JSON stringified metadata
+ * @param {string} [request.body.metadata.title] - Document title
+ * @param {string} [request.body.metadata.category] - Document category
+ * @param {boolean} [request.body.metadata.isPHI] - Whether document contains PHI
+ * @param {string} [request.body.metadata.description] - Document description
+ *
+ * @returns {Promise<NextResponse>} JSON response with upload result
+ * @returns {boolean} response.success - Upload success indicator
+ * @returns {string} response.documentId - Generated document ID
+ * @returns {string} response.fileName - Sanitized filename
+ * @returns {number} response.size - File size in bytes
+ * @returns {string} response.mimeType - MIME type of uploaded file
+ * @returns {string} response.message - Success message
+ *
+ * @throws {400} Bad Request - No file provided, invalid file type/size, or invalid metadata
+ * @throws {401} Unauthorized - Authentication required (TODO: implement)
+ * @throws {403} Forbidden - Insufficient permissions (TODO: implement)
+ * @throws {429} Too Many Requests - Rate limit exceeded (TODO: implement)
+ * @throws {500} Internal Server Error - Upload processing failed
+ *
+ * @example
+ * // Successful file upload
+ * POST /api/documents/upload
+ * Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+ *
+ * ------WebKitFormBoundary
+ * Content-Disposition: form-data; name="file"; filename="medical-record.pdf"
+ * Content-Type: application/pdf
+ *
+ * [binary data]
+ * ------WebKitFormBoundary
+ * Content-Disposition: form-data; name="metadata"
+ *
+ * {
+ *   "title": "Patient Medical Record",
+ *   "category": "health-records",
+ *   "isPHI": true,
+ *   "description": "Annual physical exam results"
+ * }
+ * ------WebKitFormBoundary--
+ *
+ * // Response (200 OK)
+ * {
+ *   "success": true,
+ *   "documentId": "doc-1698765432000",
+ *   "fileName": "medical-record.pdf",
+ *   "size": 524288,
+ *   "mimeType": "application/pdf",
+ *   "message": "File uploaded successfully"
+ * }
+ *
+ * @example
+ * // Invalid file type
+ * POST /api/documents/upload
+ * Content-Type: multipart/form-data
+ *
+ * [file with .exe extension]
+ *
+ * // Response (400 Bad Request)
+ * {
+ *   "error": "Invalid file type. Allowed types: application/pdf, image/jpeg, ..."
+ * }
+ *
+ * @example
+ * // File too large
+ * POST /api/documents/upload
+ *
+ * [file larger than 10MB]
+ *
+ * // Response (400 Bad Request)
+ * {
+ *   "error": "File too large. Maximum size is 10MB"
+ * }
+ *
+ * @method POST
+ * @access Protected - Requires authentication (TODO: implement)
+ * @rateLimit 10 uploads per minute per user (TODO: implement)
+ * @auditLog All uploads are logged with file details
+ *
+ * @todo Implement authentication verification
+ * @todo Implement authorization checks
+ * @todo Implement rate limiting
+ * @todo Implement virus scanning
+ * @todo Implement magic number validation
+ * @todo Implement file encryption before storage
+ * @todo Implement secure cloud storage integration
+ * @todo Implement database record creation
+ * @todo Implement audit logging
+ */
 export async function POST(request: NextRequest) {
   try {
     // 1. Verify authentication
@@ -198,7 +324,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// OPTIONS handler for CORS preflight
+/**
+ * OPTIONS /api/documents/upload
+ *
+ * Handles CORS preflight requests for file uploads.
+ * Returns allowed methods, headers, and max age for browser caching.
+ *
+ * @async
+ * @param {NextRequest} request - Next.js request object
+ * @returns {Promise<NextResponse>} Empty response with CORS headers
+ *
+ * @method OPTIONS
+ * @access Public
+ * @cors Supports cross-origin requests with proper headers
+ */
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,

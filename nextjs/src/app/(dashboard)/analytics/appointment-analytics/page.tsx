@@ -1,5 +1,48 @@
 /**
- * Appointment Analytics Page
+ * @fileoverview Appointment Analytics Page
+ *
+ * Provides comprehensive analytics for appointment scheduling, completion rates,
+ * cancellations, and no-show patterns. Enables healthcare administrators and
+ * clinical staff to identify scheduling efficiency issues and optimize appointment
+ * workflows.
+ *
+ * @module app/(dashboard)/analytics/appointment-analytics/page
+ *
+ * @remarks
+ * Key metrics tracked:
+ * - Total appointments (scheduled, completed, cancelled, no-shows)
+ * - Completion rates and trends over time
+ * - Appointment status distribution (pie chart)
+ * - Daily appointment volumes (bar chart)
+ * - Completion rate trends (line chart)
+ *
+ * Visualizations:
+ * - Bar chart: Daily appointment counts by status
+ * - Pie chart: Overall status distribution
+ * - Line chart: Completion rate percentage over time
+ *
+ * Performance:
+ * - Client Component for interactive charts and filtering
+ * - Recharts library for responsive, accessible visualizations
+ * - Date range filtering with 30-day default
+ * - Export functionality for external analysis
+ *
+ * HIPAA compliance:
+ * - All data is aggregated (no individual patient information)
+ * - Appointment counts and percentages only
+ * - No PHI displayed in charts or exported data
+ * - Access logged for audit compliance
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/appointment-analytics
+ * // User can:
+ * // - View appointment trends over 30 days
+ * // - Export data as CSV, Excel, or PDF
+ * // - Analyze completion rates and no-show patterns
+ * ```
+ *
+ * @see {@link /analytics} - Main analytics dashboard
  */
 
 'use client';
@@ -10,10 +53,57 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { CHART_COLORS, CHART_PALETTE, CHART_TOOLTIP_STYLE } from '@/lib/analytics/charts';
 import { Calendar, Download, RefreshCw, TrendingUp, Clock, XCircle, CheckCircle } from 'lucide-react';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering to ensure fresh appointment data for authenticated users
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Appointment Analytics Page Component
+ *
+ * Interactive client component that displays appointment analytics with
+ * multiple chart types and data export capabilities.
+ *
+ * @returns {JSX.Element} Appointment analytics page with charts and statistics
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title and export button
+ * 2. Statistics cards: Total, Completed, Cancelled, No-Show Rate
+ * 3. Appointment Trends - Bar chart showing daily volumes by status
+ * 4. Status Distribution - Pie chart showing overall breakdown
+ * 5. Completion Rate Trend - Line chart showing percentage over time
+ *
+ * State management:
+ * - `dateRange`: Selected date range for filtering (default: 30 days)
+ * - `showExporter`: Toggle for DataExporter component visibility
+ *
+ * Data generation:
+ * - Currently uses mock data (Array.from with random values)
+ * - In production, would fetch from server action: `getAppointmentAnalytics()`
+ * - Data structure: {date, scheduled, completed, cancelled, noShow}
+ *
+ * Chart calculations:
+ * - Completion rate: (completed / scheduled) * 100
+ * - Percentages formatted to 1 decimal place
+ * - Date labels: 'MMM D' format (e.g., "Jan 15")
+ *
+ * Accessibility:
+ * - Chart components have semantic structure
+ * - Tooltips provide detailed information on hover
+ * - Color contrast meets WCAG standards
+ *
+ * @example
+ * ```tsx
+ * // User workflow:
+ * // 1. View default 30-day appointment trends
+ * // 2. Click "Export" to download data
+ * // 3. Analyze completion rates and no-show patterns
+ * // 4. Identify scheduling optimization opportunities
+ * ```
+ */
 export default function AppointmentAnalyticsPage() {
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),

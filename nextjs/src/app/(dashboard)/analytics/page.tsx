@@ -1,6 +1,45 @@
 /**
- * Analytics Dashboard Page
- * Main analytics overview with customizable widgets
+ * @fileoverview Analytics Dashboard Main Page
+ *
+ * Central hub for accessing all analytics modules in the White Cross healthcare
+ * platform. Provides quick statistics overview and navigation to specialized
+ * analytics pages for health metrics, medication compliance, appointments,
+ * incidents, inventory, and custom reporting.
+ *
+ * @module app/(dashboard)/analytics/page
+ *
+ * @remarks
+ * This is the main landing page for the analytics section, providing:
+ * - Quick stats dashboard with key metrics (students, medications, compliance)
+ * - Module cards for navigating to specialized analytics pages
+ * - Recent report activity feed
+ * - Action buttons for data export and custom report creation
+ *
+ * Architecture:
+ * - Server Component for optimal initial page load
+ * - Static data with real-time statistics (in production, would fetch from API)
+ * - Next.js App Router with file-based routing to sub-modules
+ *
+ * Performance optimizations:
+ * - `force-dynamic` ensures fresh data for authenticated users
+ * - Minimal JavaScript shipped to client (Server Component)
+ * - Icon components tree-shaken from lucide-react
+ *
+ * HIPAA compliance:
+ * - All displayed statistics are aggregated and anonymized
+ * - No individual patient data visible on dashboard
+ * - Analytics access logged for audit trails (handled by auth middleware)
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics
+ * // Accessible to: Administrators, Clinical Staff (with analytics permission)
+ * // Navigation: Dashboard → Analytics
+ * ```
+ *
+ * @see {@link /analytics/health-metrics} - Health measurements tracking
+ * @see {@link /analytics/medication-compliance} - Medication administration monitoring
+ * @see {@link /analytics/appointment-analytics} - Appointment efficiency metrics
  */
 
 import { Metadata } from 'next';
@@ -16,12 +55,26 @@ import {
   BarChart3,
 } from 'lucide-react';
 
+/**
+ * Page metadata for SEO and browser display
+ *
+ * @type {Metadata}
+ */
 export const metadata: Metadata = {
   title: 'Analytics Dashboard | White Cross',
   description: 'Comprehensive analytics and reporting dashboard',
 };
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering to ensure authenticated users see fresh data
+ *
+ * @remarks
+ * - Disables static generation at build time
+ * - Required for authentication-protected routes
+ * - Ensures statistics are current for each user session
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
 const analyticsModules = [
@@ -75,6 +128,21 @@ const analyticsModules = [
   },
 ];
 
+/**
+ * Quick statistics displayed on analytics dashboard
+ *
+ * @remarks
+ * These statistics provide at-a-glance insights into key healthcare metrics:
+ * - Total Students: Current enrollment count with monthly change
+ * - Active Medications: Current medication orders being administered
+ * - Compliance Rate: Medication administration compliance percentage
+ * - Incidents (Week): Incident reports filed in the past 7 days
+ *
+ * In production, these would be fetched from server actions/API endpoints
+ * with real-time data aggregation.
+ *
+ * @type {Array<{label: string, value: string, change: string, trend: 'up' | 'down', icon: any}>}
+ */
 const quickStats = [
   {
     label: 'Total Students',
@@ -106,6 +174,44 @@ const quickStats = [
   },
 ];
 
+/**
+ * Analytics Dashboard Page Component
+ *
+ * Main analytics landing page that provides an overview of all analytics modules
+ * and quick access to key metrics. Serves as the navigation hub for the analytics
+ * section of the White Cross healthcare platform.
+ *
+ * @returns {JSX.Element} Analytics dashboard with module cards and quick stats
+ *
+ * @remarks
+ * Page structure:
+ * 1. Header with title and action buttons (Export Data, Create Report)
+ * 2. Quick Stats - 4 metric cards showing key indicators with trends
+ * 3. Analytics Modules - 6 module cards linking to specialized analytics pages
+ * 4. Recent Activity - Feed showing recent report generation activity
+ *
+ * Data flow (production):
+ * - Quick stats fetched via server action on page load
+ * - Module statistics updated in real-time
+ * - Recent activity pulled from audit logs
+ *
+ * Performance:
+ * - Server Component reduces client-side JavaScript
+ * - Next.js Link prefetching for fast navigation
+ * - Hover states provide visual feedback
+ *
+ * HIPAA considerations:
+ * - All statistics are aggregated (no individual patient data)
+ * - Access to this page logged in audit trail
+ * - User names in recent activity sanitized if needed
+ *
+ * @example
+ * ```tsx
+ * // Rendered by Next.js App Router at: /analytics
+ * // User navigates from main dashboard
+ * // Sees quick stats and module cards for navigation
+ * ```
+ */
 export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
