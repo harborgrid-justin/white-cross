@@ -78,7 +78,8 @@ import {
 // CONSTANTS & CONFIGURATION
 // ==========================================
 
-const BACKEND_URL = process.env.API_BASE_URL || 'http://localhost:3001/api/v1';
+// Use server-side or fallback to public env variable or default
+const BACKEND_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 const ADMIN_SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 // ==========================================
