@@ -67,6 +67,8 @@ import { API_ENDPOINTS } from '@/constants/api';
 import MedicationList from '@/components/medications/core/MedicationList';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import type { MedicationStats, MedicationsResponse } from '@/types/medications';
+import type { Medication } from '@/components/medications/core/MedicationList';
 
 export const metadata: Metadata = {
   title: 'Medications',
@@ -74,11 +76,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * ISR Configuration - Cache medication list for 5 minutes (300 seconds)
- * Medication data changes infrequently, so we can cache it longer
- * to improve performance and reduce API load.
+ * Dynamic Rendering Configuration
+ *
+ * Force dynamic rendering to allow authentication checks at request time.
+ * This page requires access to headers/cookies for user authentication,
+ * which is only available during request-time rendering, not at build time.
  */
-export const revalidate = 300; // Revalidate every 5 minutes
+export const dynamic = 'force-dynamic';
 
 /**
  * Props interface for MedicationsPage component with URL search parameter support
@@ -93,14 +97,14 @@ export const revalidate = 300; // Revalidate every 5 minutes
  * @property {string} [searchParams.limit] - Results per page (default: 20, max: 100)
  */
 interface MedicationsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     status?: string;
     type?: string;
     studentId?: string;
     page?: string;
     limit?: string;
-  };
+  }>;
 }
 
 /**
@@ -148,7 +152,14 @@ interface MedicationsPageProps {
  *
  * @throws {Error} Logs error but returns empty dataset to prevent UI failure
  */
-async function getMedications(searchParams: any) {
+async function getMedications(searchParams: {
+  search?: string;
+  status?: string;
+  type?: string;
+  studentId?: string;
+  page?: string;
+  limit?: string;
+}): Promise<MedicationsResponse> {
   const params = new URLSearchParams();
 
   if (searchParams.search) params.set('search', searchParams.search);
@@ -168,11 +179,15 @@ async function getMedications(searchParams: any) {
       throw new Error('Failed to fetch medications');
     }
 
-    return response.json();
+    const result = await response.json();
+    return {
+      medications: result.data || [],
+      pagination: result.pagination || { total: 0, page: 1, limit: 20, pages: 0 }
+    };
   } catch (error) {
     console.error('Error fetching medications:', error);
     return {
-      data: [],
+      medications: [],
       pagination: { total: 0, page: 1, limit: 20, pages: 0 }
     };
   }
@@ -228,7 +243,7 @@ async function getMedications(searchParams: any) {
  *
  * @returns {MedicationStats} Statistics object with zero values on error
  */
-async function getMedicationStats() {
+async function getMedicationStats(): Promise<MedicationStats> {
   try {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/stats`,
@@ -237,23 +252,25 @@ async function getMedicationStats() {
 
     if (!response.ok) {
       return {
-        total: 0,
-        active: 0,
-        dueToday: 0,
-        overdue: 0,
-        lowStock: 0
+        totalMedications: 0,
+        activePrescriptions: 0,
+        administeredToday: 0,
+        adverseReactions: 0,
+        lowStockCount: 0,
+        expiringCount: 0
       };
     }
 
-    return response.json();
+    return await response.json();
   } catch (error) {
     console.error('Error fetching stats:', error);
     return {
-      total: 0,
-      active: 0,
-      dueToday: 0,
-      overdue: 0,
-      lowStock: 0
+      totalMedications: 0,
+      activePrescriptions: 0,
+      administeredToday: 0,
+      adverseReactions: 0,
+      lowStockCount: 0,
+      expiringCount: 0
     };
   }
 }
@@ -331,8 +348,11 @@ async function getMedicationStats() {
 export default async function MedicationsPage({
   searchParams
 }: MedicationsPageProps) {
+  // Await searchParams in Next.js 15
+  const resolvedSearchParams = await searchParams;
+  
   const [medications, stats] = await Promise.all([
-    getMedications(searchParams),
+    getMedications(resolvedSearchParams),
     getMedicationStats()
   ]);
 
@@ -342,7 +362,7 @@ export default async function MedicationsPage({
       <PageHeader
         title="Medications"
         description="Manage and track all student medications"
-        action={
+        actions={
           <Link href="/medications/new">
             <Button variant="primary" icon={<PlusIcon className="h-5 w-5" />}>
               Add Medication
@@ -355,31 +375,31 @@ export default async function MedicationsPage({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Total Medications"
-          value={stats.total}
+          value={stats.totalMedications}
           href="/medications"
           color="blue"
         />
         <StatCard
           label="Active"
-          value={stats.active}
+          value={stats.activePrescriptions}
           href="/medications?status=active"
           color="green"
         />
         <StatCard
           label="Due Today"
-          value={stats.dueToday}
+          value={stats.administeredToday}
           href="/medications/administration-due"
           color="yellow"
         />
         <StatCard
           label="Overdue"
-          value={stats.overdue}
+          value={stats.adverseReactions}
           href="/medications/administration-overdue"
           color="red"
         />
         <StatCard
           label="Low Stock"
-          value={stats.lowStock}
+          value={stats.lowStockCount}
           href="/medications/inventory/low-stock"
           color="orange"
         />
@@ -388,9 +408,7 @@ export default async function MedicationsPage({
       {/* Medications List */}
       <Suspense fallback={<MedicationsLoadingSkeleton />}>
         <MedicationList
-          initialData={medications.data}
-          pagination={medications.pagination}
-          searchParams={searchParams}
+          medications={medications.medications}
         />
       </Suspense>
     </div>
@@ -464,7 +482,8 @@ function StatCard({
 
   return (
     <Link
-      href={href}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      href={href as any}
       className="block rounded-lg border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow"
     >
       <div className="flex items-center justify-between">

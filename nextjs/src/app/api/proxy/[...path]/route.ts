@@ -4,37 +4,42 @@ const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params);
+  const resolvedParams = await params;
+  return proxyRequest(request, resolvedParams);
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params);
+  const resolvedParams = await params;
+  return proxyRequest(request, resolvedParams);
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params);
+  const resolvedParams = await params;
+  return proxyRequest(request, resolvedParams);
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params);
+  const resolvedParams = await params;
+  return proxyRequest(request, resolvedParams);
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params);
+  const resolvedParams = await params;
+  return proxyRequest(request, resolvedParams);
 }
 
 async function proxyRequest(

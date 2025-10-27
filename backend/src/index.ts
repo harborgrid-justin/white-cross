@@ -55,7 +55,10 @@ const server = Hapi.server({
   routes: {
     cors: {
       origin: [CORS_CONFIG.ORIGIN],
-      credentials: CORS_CONFIG.CREDENTIALS
+      credentials: CORS_CONFIG.CREDENTIALS,
+      headers: [...CORS_CONFIG.ALLOWED_HEADERS],
+      additionalHeaders: ['X-Requested-With', 'Accept'],
+      additionalExposedHeaders: ['X-Total-Count']
     },
     validate: {
       failAction: async (request, h, err) => {

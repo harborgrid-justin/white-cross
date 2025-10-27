@@ -10,7 +10,8 @@
  */
 
 import React, { useState, useMemo, useCallback, memo } from 'react'
-import Link from "next/link"; import { useLocation } from 'next/link' // Migrated from react-router-dom
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Home, Users, FileHeart, Pill, Calendar, DollarSign, Package, ShoppingCart,
   Store, MessageSquare, FileText, BarChart3, AlertTriangle, Phone, Shield,
@@ -118,7 +119,7 @@ const NavItem = memo(({ item, depth = 0, onClick }: NavItemProps) => {
   return (
     <>
       <Link
-        to={item.path}
+        href={item.path}
         onClick={handleClick}
         className={`
           group flex items-center px-2 py-2.5 text-sm font-medium rounded-md
@@ -237,14 +238,14 @@ interface SidebarSectionProps {
  */
 const SidebarSection = memo(({ section, onItemClick }: SidebarSectionProps) => {
   const { user } = useAuthContext()
-  const location = useLocation()
+  const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(section.defaultCollapsed || false)
 
   // Filter and mark active items
   const filteredItems = useMemo(() => {
     const filtered = filterNavigationItems(section.items, user)
-    return markActiveNavigationItems(filtered, location.pathname)
-  }, [section.items, user, location.pathname])
+    return markActiveNavigationItems(filtered, pathname)
+  }, [section.items, user, pathname])
 
   // Check if user has access to any item in this section
   const hasAccessToSection = filteredItems.some(item => item.hasAccess)
@@ -365,14 +366,14 @@ interface SidebarProps {
  */
 export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
   const { user } = useAuthContext()
-  const { recentItems, clearRecentItems, sidebarCollapsed } = useNavigation()
-  const location = useLocation()
+  const { isSidebarCollapsed } = useNavigation()
+  const pathname = usePathname()
 
-  // Filter recent items
+  // Recent items would come from a separate context or state management
+  // For now, we'll use an empty array
   const filteredRecentItems = useMemo(() => {
-    const filtered = filterNavigationItems(recentItems, user)
-    return markActiveNavigationItems(filtered, location.pathname)
-  }, [recentItems, user, location.pathname])
+    return []
+  }, [])
 
   // Filter quick access items
   const filteredQuickAccess = useMemo(() => {
@@ -382,7 +383,7 @@ export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
     })
   }, [user])
 
-  if (sidebarCollapsed) {
+  if (isSidebarCollapsed) {
     return null
   }
 
@@ -419,7 +420,7 @@ export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
               return (
                 <Link
                   key={item.id}
-                  to={item.path}
+                  href={item.path}
                   onClick={onNavigate}
                   className="
                     flex flex-col items-center justify-center p-2 rounded-md
@@ -459,13 +460,6 @@ export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Recent
             </span>
-            <button
-              onClick={clearRecentItems}
-              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-              title="Clear recent items"
-            >
-              <X className="h-3 w-3" />
-            </button>
           </div>
           <nav className="space-y-1" role="navigation" aria-label="Recent items">
             {filteredRecentItems.slice(0, 5).map((item) => {
@@ -473,7 +467,7 @@ export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
               return (
                 <Link
                   key={item.id}
-                  to={item.path}
+                  href={item.path}
                   onClick={onNavigate}
                   className="
                     flex items-center px-3 py-2 text-sm rounded-md

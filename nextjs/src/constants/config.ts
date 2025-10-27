@@ -12,9 +12,9 @@
 export const API_CONFIG = {
   /**
    * Base URL for API requests
-   * Defaults to localhost:3001 in development, can be overridden via env var
+   * Defaults to localhost:3001/api/v1 in development, can be overridden via env var
    */
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   
   /**
    * Request timeout in milliseconds

@@ -51,26 +51,24 @@ export const metadata: Metadata = {
 };
 
 /**
- * ISR Configuration - Incremental Static Regeneration
+ * Dynamic Rendering Configuration
  *
- * Cache inventory items list for 10 minutes to improve performance while
- * maintaining reasonable data freshness. Inventory master data changes slowly
- * (new items added occasionally, metadata updates infrequent), making ISR
- * ideal for this use case.
+ * Force dynamic rendering to allow authentication checks at request time.
+ * This page requires access to headers/cookies for user authentication,
+ * which is only available during request-time rendering, not at build time.
  *
- * **Cache Strategy:**
- * - Page generated statically with 600-second (10-minute) stale time
- * - Background revalidation triggered after 10 minutes
- * - Users see cached version while new version generates
- * - Stock quantities fetched client-side for real-time accuracy
+ * **Rendering Strategy:**
+ * - Page rendered dynamically on each request
+ * - Authentication headers/cookies available at runtime
+ * - Real-time data fetching for current inventory state
  *
  * **Trade-offs:**
- * - Pro: 10x+ performance improvement on inventory list loads
- * - Pro: Reduced database load for high-traffic endpoints
- * - Con: Item metadata (name, category) may be up to 10 minutes stale
- * - Con: New items take up to 10 minutes to appear (acceptable delay)
+ * - Pro: Always shows current data with proper authentication
+ * - Pro: No build-time authentication errors
+ * - Con: Slightly slower than ISR cached responses
+ * - Mitigation: Client-side caching and optimized queries minimize impact
  */
-export const revalidate = 600; // Revalidate every 10 minutes
+export const dynamic = 'force-dynamic';
 
 /**
  * Inventory Items List Page Component

@@ -72,25 +72,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * ISR (Incremental Static Regeneration) Configuration
+ * Dynamic Rendering Configuration
  *
- * Caches the appointments calendar page for 60 seconds to balance performance
- * with data freshness. Appointments change more frequently than other healthcare
- * data (medications, health records), requiring a shorter cache duration.
- *
- * **Revalidation Strategy:**
- * - On-demand: When appointment is created/updated/deleted
- * - Time-based: Every 60 seconds for background updates
- * - Ensures nurses see recent appointments without excessive server load
- *
- * **Performance Impact:**
- * - Reduces database queries by ~95% for frequently accessed pages
- * - Average page load time: <100ms for cached content
- * - Fresh data guaranteed within 60 seconds of changes
- *
- * @constant {number} revalidate - Cache duration in seconds (60 = 1 minute)
+ * Force dynamic rendering to allow authentication checks at request time.
+ * This page requires access to headers/cookies for user authentication,
+ * which is only available during request-time rendering, not at build time.
  */
-export const revalidate = 60; // Revalidate every 1 minute
+export const dynamic = 'force-dynamic';
 
 /**
  * Appointments Calendar View Page Component

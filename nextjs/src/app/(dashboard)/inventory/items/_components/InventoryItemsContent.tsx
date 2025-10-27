@@ -32,7 +32,7 @@ export interface InventoryItem {
  *
  * @returns Rendered inventory items table
  */
-export default function InventoryItemsContent() {
+export function InventoryItemsContent() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);

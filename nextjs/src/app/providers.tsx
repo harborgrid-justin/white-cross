@@ -7,10 +7,11 @@
  * - React Query Provider
  * - Redux Provider  
  * - Apollo Provider
+ * - Auth Provider
  * - Theme Provider
  */
 
-import { ReactNode, useState } from 'react';
+import React, { type ReactNode, useState } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Provider as ReduxProvider } from 'react-redux';
@@ -18,6 +19,8 @@ import { ApolloProvider } from '@apollo/client/react';
 import { getQueryClient } from '@/config/queryClient';
 import { apolloClient } from '@/config/apolloClient';
 import { store } from '@/stores/store';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { NavigationProvider } from '@/contexts/NavigationContext';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -31,7 +34,11 @@ export function Providers({ children }: ProvidersProps) {
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
         <ApolloProvider client={apolloClient}>
-          {children}
+          <AuthProvider>
+            <NavigationProvider>
+              {children}
+            </NavigationProvider>
+          </AuthProvider>
           {process.env.NODE_ENV === 'development' && (
             <ReactQueryDevtools initialIsOpen={false} />
           )}

@@ -10,7 +10,8 @@
  */
 
 import React, { memo, useMemo } from 'react';
-import Link from "next/link"; import { useLocation } from 'next/link' // Migrated from react-router-dom;
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { getBreadcrumbs } from '../../config/navigationConfig';
@@ -104,7 +105,7 @@ export const Breadcrumbs = memo(({
   className = '',
   useContext = true,
 }: BreadcrumbsProps) => {
-  const location = useLocation();
+  const pathname = usePathname();
   const navigation = useNavigation();
 
   // Determine breadcrumb items
@@ -123,12 +124,12 @@ export const Breadcrumbs = memo(({
     }
 
     // 3. Auto-generate from current route
-    const generated = getBreadcrumbs(location.pathname);
+    const generated = getBreadcrumbs(pathname);
     return generated.map(bc => ({
       label: bc.name,
       path: bc.path,
     }));
-  }, [customItems, useContext, navigation.breadcrumbs, location.pathname]);
+  }, [customItems, useContext, navigation.breadcrumbs, pathname]);
 
   // Apply max items truncation
   const displayItems = useMemo(() => {
@@ -199,7 +200,7 @@ export const Breadcrumbs = memo(({
                 </span>
               ) : (
                 <Link
-                  to={item.path}
+                  href={item.path || '#'}
                   className="
                     text-gray-600 hover:text-gray-900
                     dark:text-gray-400 dark:hover:text-gray-100

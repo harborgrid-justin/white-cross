@@ -9,14 +9,6 @@
  */
 
 import { Container } from '@/components/layouts/Container';
-
-/**
- * ISR Configuration - Cache dashboard for 60 seconds
- * Dashboard stats are relatively stable and can be cached briefly
- * to reduce server load and improve performance.
- */
-export const revalidate = 60; // Revalidate every 60 seconds
-
 import {
   Users,
   Pill,
@@ -25,6 +17,15 @@ import {
   TrendingUp,
   Activity,
 } from 'lucide-react';
+
+/**
+ * Dynamic Rendering Configuration
+ *
+ * Force dynamic rendering to allow authentication checks at request time.
+ * This page requires access to headers/cookies for user authentication,
+ * which is only available during request-time rendering, not at build time.
+ */
+export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
   const stats = [

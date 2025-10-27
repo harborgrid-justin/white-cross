@@ -160,6 +160,16 @@ const rootReducer = combineReducers({
 });
 
 // ==========================================
+// TYPE DEFINITIONS (defined early to avoid circular deps)
+// ==========================================
+
+/**
+ * Root state type derived from the root reducer
+ * Use this type for all selectors and state access
+ */
+export type RootState = ReturnType<typeof rootReducer>;
+
+// ==========================================
 // PERSISTENCE MIDDLEWARE (HIPAA-COMPLIANT)
 // ==========================================
 
@@ -210,7 +220,7 @@ const persistenceMiddleware: Middleware = (store) => (next) => (action) => {
  * Audit logging middleware for HIPAA compliance
  * Logs access to sensitive state slices
  */
-const auditMiddleware: Middleware = (store) => (next) => (action) => {
+const auditMiddleware: Middleware = (_store) => (next) => (action) => {
   // Log sensitive actions in development
   if (process.env.NODE_ENV === 'development') {
     const sensitiveActions = [
@@ -220,8 +230,9 @@ const auditMiddleware: Middleware = (store) => (next) => (action) => {
       'emergencyContacts/',
     ];
 
-    if (sensitiveActions.some(prefix => action.type.startsWith(prefix))) {
-      console.log('[Audit] Sensitive action dispatched:', action.type);
+    const actionType = (action as { type: string }).type;
+    if (sensitiveActions.some(prefix => actionType.startsWith(prefix))) {
+      console.log('[Audit] Sensitive action dispatched:', actionType);
     }
   }
 
@@ -248,12 +259,28 @@ function loadPersistedState() {
     const authStateJson = sessionStorage.getItem('whitecross_auth');
     const authState = authStateJson ? JSON.parse(authStateJson) : {};
 
-    return {
-      ...uiState,
+    // Map persisted UI state keys to actual reducer keys
+    const mappedState: Partial<RootState> = {
       auth: authState,
     };
+
+    // Map settings directly
+    if (uiState.settings) {
+      mappedState.settings = uiState.settings;
+    }
+
+    // Map incidentReportsUI to incidentReports (only UI preferences, not data)
+    if (uiState.incidentReportsUI) {
+      mappedState.incidentReports = uiState.incidentReportsUI as any;
+    }
+
+    return mappedState;
   } catch (error) {
     console.error('[Redux] Error loading persisted state:', error);
+    // Clear corrupted localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('whitecross_ui_state');
+    }
     return undefined;
   }
 }
@@ -302,14 +329,8 @@ export const makeStore = () => {
 export const store = makeStore();
 
 // ==========================================
-// TYPE DEFINITIONS
+// TYPE DEFINITIONS (Additional Store Types)
 // ==========================================
-
-/**
- * Root state type derived from the store
- * Use this type for all selectors and state access
- */
-export type RootState = ReturnType<typeof store.getState>;
 
 /**
  * App dispatch type including thunk actions
@@ -332,7 +353,7 @@ export type AppStore = typeof store;
  * @param state - The state object to validate
  * @returns True if state is valid RootState, false otherwise
  */
-export function isValidRootState(state: any): state is RootState {
+export function isValidRootState(state: unknown): state is RootState {
   return (
     state !== null &&
     typeof state === 'object' &&
