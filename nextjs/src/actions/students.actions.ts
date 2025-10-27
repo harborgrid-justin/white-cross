@@ -27,6 +27,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { apiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS } from '@/constants/api';
+import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
   Student,
   CreateStudentData,
@@ -52,6 +53,7 @@ export interface ActionResult<T = unknown> {
 
 /**
  * Create a new student
+ * PHI CRITICAL: Student records contain protected health information
  */
 export async function createStudent(data: CreateStudentData): Promise<ActionResult<Student>> {
   try {
@@ -59,6 +61,15 @@ export async function createStudent(data: CreateStudentData): Promise<ActionResu
       API_ENDPOINTS.STUDENTS.BASE,
       data
     );
+
+    // HIPAA AUDIT LOG - Mandatory for PHI creation
+    await auditLog({
+      action: AUDIT_ACTIONS.CREATE_STUDENT,
+      resource: 'Student',
+      resourceId: response.data.id,
+      details: `Created student record`,
+      success: true
+    });
 
     // Revalidate student list pages
     revalidateTag('students');
@@ -71,6 +82,16 @@ export async function createStudent(data: CreateStudentData): Promise<ActionResu
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to create student';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.CREATE_STUDENT,
+      resource: 'Student',
+      details: 'Failed to create student record',
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage
@@ -111,6 +132,7 @@ export async function createStudentsBulk(students: CreateStudentData[]): Promise
 
 /**
  * Update student information
+ * PHI CRITICAL: Student records contain protected health information
  */
 export async function updateStudent(
   studentId: string,
@@ -121,6 +143,16 @@ export async function updateStudent(
       API_ENDPOINTS.STUDENTS.BY_ID(studentId),
       data
     );
+
+    // HIPAA AUDIT LOG - Mandatory for PHI modification
+    await auditLog({
+      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      resource: 'Student',
+      resourceId: studentId,
+      details: `Updated student record`,
+      changes: data,
+      success: true
+    });
 
     revalidateTag('students');
     revalidateTag(`student-${studentId}`);
@@ -134,6 +166,17 @@ export async function updateStudent(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update student';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      resource: 'Student',
+      resourceId: studentId,
+      details: 'Failed to update student record',
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage
@@ -174,10 +217,20 @@ export async function updateStudentsBulk(request: BulkUpdateStudentsRequest): Pr
 
 /**
  * Delete student (soft delete)
+ * PHI CRITICAL: Student records contain protected health information
  */
 export async function deleteStudent(studentId: string): Promise<ActionResult<void>> {
   try {
     await apiClient.delete(API_ENDPOINTS.STUDENTS.BY_ID(studentId));
+
+    // HIPAA AUDIT LOG - Mandatory for PHI deletion
+    await auditLog({
+      action: AUDIT_ACTIONS.DELETE_STUDENT,
+      resource: 'Student',
+      resourceId: studentId,
+      details: `Deleted student record (soft delete)`,
+      success: true
+    });
 
     revalidateTag('students');
     revalidateTag(`student-${studentId}`);
@@ -189,6 +242,17 @@ export async function deleteStudent(studentId: string): Promise<ActionResult<voi
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to delete student';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.DELETE_STUDENT,
+      resource: 'Student',
+      resourceId: studentId,
+      details: 'Failed to delete student record',
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage

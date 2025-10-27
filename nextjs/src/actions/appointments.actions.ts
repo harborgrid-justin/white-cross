@@ -107,7 +107,7 @@ export async function createAppointment(data: CreateAppointmentData): Promise<Ac
 
     // Audit logging
     await auditLog({
-      action: AUDIT_ACTIONS.CREATE_STUDENT, // TODO: Add APPOINTMENTS audit actions
+      action: AUDIT_ACTIONS.CREATE_APPOINTMENT,
       resource: 'Appointment',
       resourceId: response.data.id,
       details: `Created appointment for student ${data.studentId}`,
@@ -128,7 +128,7 @@ export async function createAppointment(data: CreateAppointmentData): Promise<Ac
     const errorMessage = error instanceof Error ? error.message : 'Failed to create appointment';
 
     await auditLog({
-      action: AUDIT_ACTIONS.CREATE_STUDENT,
+      action: AUDIT_ACTIONS.CREATE_APPOINTMENT,
       resource: 'Appointment',
       details: `Failed to create appointment: ${errorMessage}`,
       success: false,
@@ -189,7 +189,7 @@ export async function updateAppointment(
     );
 
     await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      action: AUDIT_ACTIONS.UPDATE_APPOINTMENT,
       resource: 'Appointment',
       resourceId: appointmentId,
       details: 'Appointment updated',
@@ -234,7 +234,7 @@ export async function rescheduleAppointment(
     );
 
     await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      action: AUDIT_ACTIONS.RESCHEDULE_APPOINTMENT,
       resource: 'Appointment',
       resourceId: data.appointmentId,
       details: `Rescheduled to ${data.newDate} ${data.newTime}`,
@@ -273,7 +273,7 @@ export async function cancelAppointment(
     );
 
     await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      action: AUDIT_ACTIONS.CANCEL_APPOINTMENT,
       resource: 'Appointment',
       resourceId: appointmentId,
       details: `Cancelled: ${reason}`,
@@ -312,7 +312,7 @@ export async function completeAppointment(
     );
 
     await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      action: AUDIT_ACTIONS.COMPLETE_APPOINTMENT,
       resource: 'Appointment',
       resourceId: appointmentId,
       details: 'Appointment marked as completed',
@@ -351,7 +351,7 @@ export async function markAppointmentNoShow(
     );
 
     await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_STUDENT,
+      action: AUDIT_ACTIONS.NO_SHOW_APPOINTMENT,
       resource: 'Appointment',
       resourceId: appointmentId,
       details: 'Appointment marked as no-show',
@@ -378,6 +378,7 @@ export async function markAppointmentNoShow(
 
 /**
  * Confirm appointment
+ * HIPAA: Audit logs appointment confirmation
  */
 export async function confirmAppointment(
   appointmentId: string
@@ -387,6 +388,14 @@ export async function confirmAppointment(
       `${API_ENDPOINTS.APPOINTMENTS.BY_ID(appointmentId)}/confirm`,
       {}
     );
+
+    await auditLog({
+      action: AUDIT_ACTIONS.CONFIRM_APPOINTMENT,
+      resource: 'Appointment',
+      resourceId: appointmentId,
+      details: 'Appointment confirmed',
+      success: true
+    });
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${appointmentId}`);
@@ -399,6 +408,16 @@ export async function confirmAppointment(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to confirm appointment';
+
+    await auditLog({
+      action: AUDIT_ACTIONS.CONFIRM_APPOINTMENT,
+      resource: 'Appointment',
+      resourceId: appointmentId,
+      details: `Failed to confirm appointment: ${errorMessage}`,
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage
@@ -418,7 +437,7 @@ export async function deleteAppointment(appointmentId: string): Promise<ActionRe
     await apiClient.delete(API_ENDPOINTS.APPOINTMENTS.BY_ID(appointmentId));
 
     await auditLog({
-      action: AUDIT_ACTIONS.DELETE_STUDENT,
+      action: AUDIT_ACTIONS.DELETE_APPOINTMENT,
       resource: 'Appointment',
       resourceId: appointmentId,
       details: 'Appointment deleted',
@@ -448,6 +467,7 @@ export async function deleteAppointment(appointmentId: string): Promise<ActionRe
 
 /**
  * Send appointment reminder
+ * HIPAA: Audit logs reminder notifications for appointment communications tracking
  */
 export async function sendAppointmentReminder(
   appointmentId: string,
@@ -459,6 +479,14 @@ export async function sendAppointmentReminder(
       { method }
     );
 
+    await auditLog({
+      action: AUDIT_ACTIONS.SEND_APPOINTMENT_REMINDER,
+      resource: 'Appointment',
+      resourceId: appointmentId,
+      details: `Reminder sent via ${method}`,
+      success: true
+    });
+
     return {
       success: true,
       data: response.data,
@@ -466,6 +494,16 @@ export async function sendAppointmentReminder(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to send reminder';
+
+    await auditLog({
+      action: AUDIT_ACTIONS.SEND_APPOINTMENT_REMINDER,
+      resource: 'Appointment',
+      resourceId: appointmentId,
+      details: `Failed to send reminder: ${errorMessage}`,
+      success: false,
+      errorMessage
+    });
+
     return {
       success: false,
       error: errorMessage

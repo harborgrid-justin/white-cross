@@ -8,6 +8,24 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getServerSession } from '@/lib/session';
+import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
+import { scanFile, validateScanResult } from '@/lib/documents/virus-scan';
+import { encryptFile } from '@/lib/documents/encryption';
+import { storeDocument, retrieveDocument, deleteDocument as softDeleteDocument, getDocumentMetadata } from '@/lib/documents/storage';
+import {
+  createDocumentSignature,
+  hashSignatureData,
+  validateSignatureFormat,
+  createSignatureCertificate
+} from '@/lib/documents/signatures';
+import {
+  checkDocumentAccess,
+  canDeleteDocument,
+  createDocumentShare,
+  requiresPHIAudit
+} from '@/lib/documents/access-control';
+import { getRequestContext } from '@/lib/documents/request-context';
 
 /**
  * Upload document action
@@ -31,13 +49,21 @@ export async function uploadDocumentAction(
 ) {
   try {
     // 1. Verify authentication
-    // TODO: Get session and verify user is authenticated
-    // const session = await getServerSession();
-    // if (!session) throw new Error('Unauthorized');
+    const session = await getServerSession();
+    if (!session) {
+      return { success: false, error: 'Unauthorized - Please sign in' };
+    }
 
-    // 2. Verify authorization
-    // TODO: Check permission
-    // await checkPermission(session.userId, 'documents:upload');
+    // 2. Verify authorization - check if user can upload documents
+    const hasAccess = await checkDocumentAccess(
+      session.user.id,
+      'new-document',
+      'upload',
+      session.user.role
+    );
+    if (!hasAccess) {
+      return { success: false, error: 'Access denied - Insufficient permissions to upload documents' };
+    }
 
     const file = formData.get('file') as File;
     if (!file) {
@@ -57,7 +83,7 @@ export async function uploadDocumentAction(
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      return { success: false, error: 'Invalid file type' };
+      return { success: false, error: 'Invalid file type. Allowed: PDF, images (JPEG, PNG, GIF), Word, Excel' };
     }
 
     // 4. Validate file size (10MB limit)
@@ -66,31 +92,63 @@ export async function uploadDocumentAction(
       return { success: false, error: 'File too large. Maximum size is 10MB' };
     }
 
-    // 5. TODO: Virus scanning
-    // await virusScan(file);
+    // Get request context for audit logging
+    const requestContext = await getRequestContext();
 
-    // 6. TODO: Encrypt file
-    // const encryptedBuffer = await encryptFile(file);
+    // 5. Virus scanning
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    try {
+      const scanResult = await scanFile(fileBuffer, file.name);
+      validateScanResult(scanResult);
+    } catch (scanError) {
+      // Log failed scan attempt
+      await auditLog({
+        userId: session.user.id,
+        action: 'DOCUMENT_UPLOAD_BLOCKED',
+        resource: 'document',
+        details: `Virus scan failed or threats detected: ${scanError instanceof Error ? scanError.message : 'Unknown error'}`,
+        ipAddress: requestContext.ipAddress,
+        userAgent: requestContext.userAgent,
+        success: false,
+        errorMessage: scanError instanceof Error ? scanError.message : 'Virus scan failed'
+      });
 
-    // 7. TODO: Store document
-    // const documentId = await storeDocument(encryptedBuffer, metadata);
+      return {
+        success: false,
+        error: 'File upload blocked due to security scan failure'
+      };
+    }
 
-    // 8. TODO: Create audit log entry
-    // await createAuditLog({
-    //   action: 'document.upload',
-    //   userId: session.userId,
-    //   documentId,
-    //   metadata: {
-    //     fileName: file.name,
-    //     size: file.size,
-    //     isPHI: metadata.isPHI
-    //   },
-    //   ipAddress: getClientIP(),
-    //   timestamp: new Date()
-    // });
+    // 6. Store document with encryption
+    const documentId = await storeDocument(fileBuffer, {
+      filename: file.name,
+      mimeType: file.type,
+      size: file.size,
+      title: metadata.title,
+      category: metadata.category,
+      isPHI: metadata.isPHI,
+      description: metadata.description,
+      ownerId: session.user.id
+    });
 
-    // Placeholder response
-    const documentId = `doc-${Date.now()}`;
+    // 7. Create audit log entry
+    await auditLog({
+      userId: session.user.id,
+      action: metadata.isPHI ? AUDIT_ACTIONS.UPLOAD_DOCUMENT : 'DOCUMENT_UPLOAD',
+      resource: 'document',
+      resourceId: documentId,
+      details: `Uploaded document: ${metadata.title} (${file.name})`,
+      ipAddress: requestContext.ipAddress,
+      userAgent: requestContext.userAgent,
+      success: true,
+      changes: {
+        fileName: file.name,
+        size: file.size,
+        mimeType: file.type,
+        isPHI: metadata.isPHI,
+        category: metadata.category
+      }
+    });
 
     revalidatePath('/documents');
 
@@ -130,52 +188,74 @@ export async function signDocumentAction(
 ) {
   try {
     // 1. Verify authentication
-    // TODO: const session = await getServerSession();
-    // if (!session) throw new Error('Unauthorized');
+    const session = await getServerSession();
+    if (!session) {
+      return { success: false, error: 'Unauthorized - Please sign in' };
+    }
 
     // 2. Verify agreement
     if (!agreement.agreedToTerms) {
       return { success: false, error: 'Must agree to electronic signature terms' };
     }
 
-    // 3. Validate signature data
-    if (!signatureData || signatureData.length < 100) {
-      return { success: false, error: 'Invalid signature data' };
+    // 3. Validate signature data format
+    if (!validateSignatureFormat(signatureData)) {
+      return { success: false, error: 'Invalid signature data format' };
     }
 
-    // 4. TODO: Create cryptographic hash of signature
-    // const signatureHash = await createHash('sha256', signatureData);
+    if (!signatureData || signatureData.length < 100) {
+      return { success: false, error: 'Invalid signature data - signature too short' };
+    }
 
-    // 5. TODO: Add trusted timestamp
-    // const timestamp = await getTrustedTimestamp();
+    // Get request context for audit logging
+    const requestContext = await getRequestContext();
 
-    // 6. TODO: Store signature
-    // await storeSignature({
-    //   documentId,
-    //   signatureData,
-    //   signatureHash,
-    //   timestamp,
-    //   userId: session.userId,
-    //   fullName: agreement.fullName,
-    //   email: agreement.email,
-    //   ipAddress: getClientIP(),
-    //   userAgent: getUserAgent()
-    // });
+    // 4. Create cryptographic signature with hash and timestamp
+    const signature = await createDocumentSignature(
+      documentId,
+      session.user.id,
+      signatureData,
+      {
+        fullName: agreement.fullName,
+        email: agreement.email,
+        agreedToTerms: agreement.agreedToTerms,
+        ipAddress: requestContext.ipAddress,
+        userAgent: requestContext.userAgent
+      }
+    );
 
-    // 7. TODO: Generate signed PDF with signature overlay
-    // await generateSignedPDF(documentId);
+    // 5. Store signature (placeholder - in production, save to database)
+    // TODO: Save signature to database
+    // await db.documentSignature.create({ data: signature });
+    console.log('[SignDocument] Signature created:', {
+      signatureId: signature.id,
+      documentId: signature.documentId,
+      userId: signature.userId,
+      signatureHash: signature.signatureHash
+    });
 
-    // 8. TODO: Create audit log entry
-    // await createAuditLog({
-    //   action: 'document.sign',
-    //   userId: session.userId,
-    //   documentId,
-    //   metadata: {
-    //     signatureHash,
-    //     timestamp,
-    //     agreedToTerms: true
-    //   }
-    // });
+    // 6. Generate signature certificate for legal documentation
+    const certificate = createSignatureCertificate(signature);
+
+    // 7. Create audit log entry
+    await auditLog({
+      userId: session.user.id,
+      action: 'DOCUMENT_SIGN',
+      resource: 'document',
+      resourceId: documentId,
+      details: `Document signed by ${agreement.fullName} (${agreement.email})`,
+      ipAddress: requestContext.ipAddress,
+      userAgent: requestContext.userAgent,
+      success: true,
+      changes: {
+        signatureId: signature.id,
+        signatureHash: signature.signatureHash,
+        timestamp: signature.timestamp.timestamp.toISOString(),
+        agreedToTerms: true,
+        fullName: agreement.fullName,
+        email: agreement.email
+      }
+    });
 
     revalidatePath(`/documents/${documentId}`);
     revalidatePath('/documents');
@@ -183,7 +263,8 @@ export async function signDocumentAction(
     return {
       success: true,
       message: 'Document signed successfully',
-      signatureId: `sig-${Date.now()}`
+      signatureId: signature.id,
+      certificate
     };
   } catch (error) {
     console.error('Document signing error:', error);
@@ -214,40 +295,69 @@ export async function shareDocumentAction(
 ) {
   try {
     // 1. Verify authentication
-    // TODO: const session = await getServerSession();
-    // if (!session) throw new Error('Unauthorized');
+    const session = await getServerSession();
+    if (!session) {
+      return { success: false, error: 'Unauthorized - Please sign in' };
+    }
 
-    // 2. Verify document access
-    // TODO: const hasAccess = await checkDocumentAccess(session.userId, documentId, 'share');
-    // if (!hasAccess) throw new Error('Access denied');
+    // 2. Verify document access - check if user can share this document
+    const hasAccess = await checkDocumentAccess(
+      session.user.id,
+      documentId,
+      'share',
+      session.user.role
+    );
+    if (!hasAccess) {
+      return { success: false, error: 'Access denied - You do not have permission to share this document' };
+    }
 
     // 3. Validate share recipient
     if (!shareWith.userId && !shareWith.email) {
       return { success: false, error: 'Must specify userId or email' };
     }
 
-    // 4. TODO: Create share record
-    // await createDocumentShare({
+    // Validate permissions
+    if (!shareWith.permissions || shareWith.permissions.length === 0) {
+      return { success: false, error: 'Must specify at least one permission' };
+    }
+
+    // Get request context for audit logging
+    const requestContext = await getRequestContext();
+
+    // 4. Create share record
+    const sharedAccess = await createDocumentShare({
+      documentId,
+      sharedBy: session.user.id,
+      sharedWith: shareWith.userId || shareWith.email!,
+      permissions: shareWith.permissions,
+      expiresAt: shareWith.expiresAt
+    });
+
+    // 5. Send notification (placeholder - in production, implement notification service)
+    // TODO: Send email or in-app notification to recipient
+    // await sendShareNotification({
+    //   to: shareWith.email || shareWith.userId,
     //   documentId,
-    //   sharedBy: session.userId,
-    //   sharedWith: shareWith.userId || shareWith.email,
-    //   permissions: shareWith.permissions,
-    //   expiresAt: shareWith.expiresAt
+    //   sharedBy: session.user.email,
+    //   permissions: shareWith.permissions
     // });
 
-    // 5. TODO: Send notification
-    // await sendShareNotification(shareWith, documentId);
-
-    // 6. TODO: Create audit log entry
-    // await createAuditLog({
-    //   action: 'document.share',
-    //   userId: session.userId,
-    //   documentId,
-    //   metadata: {
-    //     sharedWith: shareWith,
-    //     permissions: shareWith.permissions
-    //   }
-    // });
+    // 6. Create audit log entry
+    await auditLog({
+      userId: session.user.id,
+      action: 'DOCUMENT_SHARE',
+      resource: 'document',
+      resourceId: documentId,
+      details: `Shared document with ${shareWith.email || shareWith.userId}`,
+      ipAddress: requestContext.ipAddress,
+      userAgent: requestContext.userAgent,
+      success: true,
+      changes: {
+        sharedWith: shareWith.userId || shareWith.email,
+        permissions: shareWith.permissions,
+        expiresAt: shareWith.expiresAt?.toISOString()
+      }
+    });
 
     revalidatePath('/documents');
 
@@ -276,32 +386,65 @@ export async function shareDocumentAction(
 export async function deleteDocumentAction(documentId: string) {
   try {
     // 1. Verify authentication
-    // TODO: const session = await getServerSession();
-    // if (!session) throw new Error('Unauthorized');
+    const session = await getServerSession();
+    if (!session) {
+      return { success: false, error: 'Unauthorized - Please sign in' };
+    }
 
-    // 2. Verify permission
-    // TODO: const canDelete = await checkDocumentAccess(session.userId, documentId, 'delete');
-    // if (!canDelete) throw new Error('Access denied');
+    // 2. Verify permission - check if user can delete this document
+    const deleteCheck = await canDeleteDocument(
+      session.user.id,
+      documentId,
+      session.user.role
+    );
 
-    // 3. TODO: Check if document can be deleted
-    // const document = await getDocument(documentId);
-    // if (document.signatures.length > 0) {
-    //   return { success: false, error: 'Cannot delete signed document' };
-    // }
-    // if (document.legalHold) {
-    //   return { success: false, error: 'Document has legal hold' };
-    // }
+    if (!deleteCheck.allowed) {
+      return {
+        success: false,
+        error: `Access denied - ${deleteCheck.reason || 'Insufficient permissions to delete document'}`
+      };
+    }
 
-    // 4. TODO: Soft delete (mark as deleted, don't actually delete)
-    // await softDeleteDocument(documentId);
+    // 3. Check if document can be deleted (signatures, legal hold)
+    // In production, fetch document metadata and check constraints
+    try {
+      const metadata = await getDocumentMetadata(documentId);
 
-    // 5. TODO: Create audit log entry
-    // await createAuditLog({
-    //   action: 'document.delete',
-    //   userId: session.userId,
-    //   documentId,
-    //   metadata: {}
-    // });
+      // Check if document is already deleted
+      if ((metadata as any).deletedAt) {
+        return { success: false, error: 'Document has already been deleted' };
+      }
+
+      // Additional checks could be implemented here:
+      // - Check for signatures (if integrated with database)
+      // - Check for legal holds
+      // - Check for active shares that prevent deletion
+    } catch (metadataError) {
+      // If metadata fetch fails, document might not exist
+      return { success: false, error: 'Document not found' };
+    }
+
+    // Get request context for audit logging
+    const requestContext = await getRequestContext();
+
+    // 4. Soft delete (mark as deleted, don't actually delete files)
+    await softDeleteDocument(documentId);
+
+    // 5. Create audit log entry
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.DELETE_DOCUMENT,
+      resource: 'document',
+      resourceId: documentId,
+      details: `Document soft-deleted by ${session.user.email}`,
+      ipAddress: requestContext.ipAddress,
+      userAgent: requestContext.userAgent,
+      success: true,
+      changes: {
+        action: 'soft_delete',
+        deletedAt: new Date().toISOString()
+      }
+    });
 
     revalidatePath('/documents');
 
@@ -329,35 +472,65 @@ export async function deleteDocumentAction(documentId: string) {
 export async function getDocumentAction(documentId: string) {
   try {
     // 1. Verify authentication
-    // TODO: const session = await getServerSession();
-    // if (!session) throw new Error('Unauthorized');
+    const session = await getServerSession();
+    if (!session) {
+      return { success: false, error: 'Unauthorized - Please sign in' };
+    }
 
-    // 2. Verify access
-    // TODO: const hasAccess = await checkDocumentAccess(session.userId, documentId, 'view');
-    // if (!hasAccess) throw new Error('Access denied');
+    // 2. Verify access - check if user can view this document
+    const hasAccess = await checkDocumentAccess(
+      session.user.id,
+      documentId,
+      'view',
+      session.user.role
+    );
 
-    // 3. TODO: Fetch document
-    // const document = await getDocument(documentId);
+    if (!hasAccess) {
+      return { success: false, error: 'Access denied - You do not have permission to view this document' };
+    }
 
-    // 4. TODO: Audit log if PHI
-    // if (document.metadata.isPHI) {
-    //   await createAuditLog({
-    //     action: 'document.view',
-    //     userId: session.userId,
-    //     documentId,
-    //     metadata: { isPHI: true }
-    //   });
-    // }
+    // Get request context for audit logging
+    const requestContext = await getRequestContext();
 
-    // Placeholder response
+    // 3. Fetch and decrypt document
+    const storedDocument = await retrieveDocument(documentId);
+
+    // 4. Audit log if PHI (HIPAA requirement)
+    if (requiresPHIAudit(storedDocument.metadata)) {
+      await auditLog({
+        userId: session.user.id,
+        action: AUDIT_ACTIONS.VIEW_DOCUMENT,
+        resource: 'document',
+        resourceId: documentId,
+        details: `Viewed PHI document: ${storedDocument.metadata.title}`,
+        ipAddress: requestContext.ipAddress,
+        userAgent: requestContext.userAgent,
+        success: true,
+        changes: {
+          isPHI: true,
+          documentTitle: storedDocument.metadata.title,
+          category: storedDocument.metadata.category
+        }
+      });
+    }
+
+    // Return document with metadata (buffer can be used to generate download)
     return {
       success: true,
       document: {
-        id: documentId,
-        title: 'Sample Document',
-        metadata: {
-          isPHI: false
-        }
+        id: storedDocument.metadata.id,
+        title: storedDocument.metadata.title,
+        filename: storedDocument.metadata.filename,
+        mimeType: storedDocument.metadata.mimeType,
+        size: storedDocument.metadata.size,
+        category: storedDocument.metadata.category,
+        description: storedDocument.metadata.description,
+        isPHI: storedDocument.metadata.isPHI,
+        uploadedAt: storedDocument.metadata.uploadedAt,
+        // Note: In production, don't return the buffer directly
+        // Instead, generate a temporary signed URL or stream the file
+        // For now, we'll convert to base64 for transport
+        data: storedDocument.buffer?.toString('base64')
       }
     };
   } catch (error) {

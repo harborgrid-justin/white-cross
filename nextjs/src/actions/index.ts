@@ -18,14 +18,11 @@ export * from './health-records.actions';
 // Appointments
 export * from './appointments.actions';
 
-// Communication
-export * from './communication.actions';
-
 // Incidents
 export * from './incidents.actions';
 
-// Files & Documents
-export * from './files.actions';
+// Documents
+export * from './documents.actions';
 
 // Inventory
 export * from './inventory.actions';
@@ -33,14 +30,20 @@ export * from './inventory.actions';
 // Compliance
 export * from './compliance.actions';
 
-// Emergency Contacts
-export * from './emergency-contacts.actions';
+// Alerts & Communication
+export * from './alerts.actions';
 
-// Reports
-export * from './reports.actions';
+// Forms
+export * from './forms.actions';
 
-// User Management
-export * from './users.actions';
+// Settings
+export * from './settings.actions';
+
+// Admin
+export * from './admin.actions';
+
+// Transactions
+export * from './transaction.actions';
 
 // Authentication
 export * from './auth.actions';
