@@ -18,8 +18,12 @@ export const metadata: Metadata = {
   description: 'Interactive calendar view of all appointments',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = "force-dynamic";
+/**
+ * ISR Configuration - Cache appointments for 1 minute (60 seconds)
+ * Appointments change more frequently than medications, so we use a shorter cache
+ * to balance performance with data freshness.
+ */
+export const revalidate = 60; // Revalidate every 1 minute
 
 /**
  * Appointments Calendar View Page

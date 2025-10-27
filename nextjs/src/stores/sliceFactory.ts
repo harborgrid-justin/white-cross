@@ -19,6 +19,7 @@ import {
   SerializedError,
   EntityState,
 } from '@reduxjs/toolkit';
+import type { WritableDraft } from '@reduxjs/toolkit';
 import type {
   BaseEntity,
   HealthcareEntity,
@@ -32,8 +33,25 @@ import type {
   AsyncThunkResult,
   AsyncThunkError,
   EntityQueryParams,
+  AuditRecord,
 } from './types/entityTypes';
 import { createInitialEntityState } from './types/entityTypes';
+
+/**
+ * Data classification type for healthcare entities
+ * Matches the HealthcareEntity dataClassification field
+ */
+export type DataClassification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'PHI';
+
+/**
+ * API error structure with proper typing
+ */
+export interface ApiError {
+  message: string;
+  status?: number;
+  code?: string;
+  validationErrors?: Record<string, string[]>;
+}
 
 /**
  * Enhanced entity state that extends RTK's EntityState
@@ -85,7 +103,7 @@ export interface SliceFactoryOptions<T extends BaseEntity> {
   /** Whether to include bulk operations */
   enableBulkOperations?: boolean;
   /** Custom reducers to add to the slice */
-  extraReducers?: Record<string, (state: EnhancedEntityState<T>, action: PayloadAction<any>) => void>;
+  extraReducers?: Record<string, (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<unknown>) => void>;
   /** Custom initial state */
   customInitialState?: Partial<EnhancedEntityState<T>>;
 }
@@ -202,12 +220,38 @@ export function createEntitySlice<
   // Create initial state
   const initialState = createInitialEnhancedState<T>(adapter, customInitialState);
 
+  // Helper function to safely extract error information
+  const extractErrorInfo = (error: unknown): ApiError => {
+    if (error instanceof Error) {
+      return {
+        message: error.message,
+        status: (error as any).status,
+        code: (error as any).code,
+        validationErrors: (error as any).validationErrors,
+      };
+    }
+
+    if (typeof error === 'object' && error !== null) {
+      const err = error as Record<string, any>;
+      return {
+        message: err.message || 'An error occurred',
+        status: err.status,
+        code: err.code,
+        validationErrors: err.validationErrors,
+      };
+    }
+
+    return {
+      message: String(error) || 'An unknown error occurred',
+    };
+  };
+
   // Helper function to update loading state
   const updateLoadingState = (
-    state: any,
+    state: WritableDraft<EnhancedEntityState<T>>,
     operation: keyof EnhancedEntityState<T>['loading'],
     loading: Partial<LoadingState>
-  ) => {
+  ): void => {
     state.loading[operation] = { ...state.loading[operation], ...loading };
   };
 
@@ -218,11 +262,12 @@ export function createEntitySlice<
       try {
         const result = await apiService.getAll(params || {});
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || 'Failed to fetch list',
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || 'Failed to fetch list',
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -234,11 +279,12 @@ export function createEntitySlice<
       try {
         const result = await apiService.getById(id);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to fetch ${name}`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to fetch ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -250,12 +296,13 @@ export function createEntitySlice<
       try {
         const result = await apiService.create(data);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to create ${name}`,
-          status: error.status,
-          code: error.code,
-          validationErrors: error.validationErrors,
+          message: errorInfo.message || `Failed to create ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
+          validationErrors: errorInfo.validationErrors,
         });
       }
     }
@@ -267,12 +314,13 @@ export function createEntitySlice<
       try {
         const result = await apiService.update(id, data);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to update ${name}`,
-          status: error.status,
-          code: error.code,
-          validationErrors: error.validationErrors,
+          message: errorInfo.message || `Failed to update ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
+          validationErrors: errorInfo.validationErrors,
         });
       }
     }
@@ -284,11 +332,12 @@ export function createEntitySlice<
       try {
         const result = await apiService.delete(id);
         return { ...result, id };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to delete ${name}`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to delete ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -301,11 +350,12 @@ export function createEntitySlice<
       try {
         const result = await apiService.bulkDelete!(ids);
         return { ...result, ids };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to bulk delete ${name}s`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to bulk delete ${name}s`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -317,11 +367,12 @@ export function createEntitySlice<
       try {
         const result = await apiService.bulkUpdate!(updates);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to bulk update ${name}s`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to bulk update ${name}s`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -699,22 +750,28 @@ export function createHealthcareEntitySlice<
     ...options,
     extraReducers: {
       ...options.extraReducers,
-      
+
       // Audit trail management
-      addAuditRecord: (state, action: PayloadAction<{ entityId: string; auditRecord: any }>) => {
+      addAuditRecord: (state, action: PayloadAction<{ entityId: string; auditRecord: AuditRecord }>) => {
         const { entityId, auditRecord } = action.payload;
         const entity = state.entities[entityId];
         if (entity && 'auditTrail' in entity) {
-          (entity as any).auditTrail = [...((entity as any).auditTrail || []), auditRecord];
+          const healthcareEntity = entity as HealthcareEntity;
+          if (healthcareEntity.auditTrail) {
+            healthcareEntity.auditTrail = [...healthcareEntity.auditTrail, auditRecord];
+          } else {
+            healthcareEntity.auditTrail = [auditRecord];
+          }
         }
       },
-      
+
       // Data classification updates
-      updateDataClassification: (state, action: PayloadAction<{ entityId: string; classification: any }>) => {
+      updateDataClassification: (state, action: PayloadAction<{ entityId: string; classification: DataClassification }>) => {
         const { entityId, classification } = action.payload;
         const entity = state.entities[entityId];
         if (entity && 'dataClassification' in entity) {
-          (entity as any).dataClassification = classification;
+          const healthcareEntity = entity as HealthcareEntity;
+          healthcareEntity.dataClassification = classification;
         }
       },
     },

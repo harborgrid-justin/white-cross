@@ -57,7 +57,63 @@ import {
   type RenderedTemplate
 } from '@/lib/validations/template.schemas';
 import { ActionResponse } from '@/types/actions';
-import { fetchApi } from '@/lib/api/client';
+import { serverGet, serverPost, serverPut, serverDelete, serverFetch } from '@/lib/server/fetch';
+
+// ============================================================================
+// HELPER FUNCTION - Wrapper for server fetch to match old API contract
+// ============================================================================
+
+/**
+ * Server-side fetch wrapper that matches the old fetchApi signature
+ * This maintains backward compatibility while using server-side auth
+ */
+async function fetchApi<T>(
+  endpoint: string,
+  options?: {
+    method?: string;
+    body?: any;
+    params?: Record<string, any>;
+  }
+): Promise<{ success: boolean; data?: T; error?: string }> {
+  try {
+    const method = options?.method || 'GET';
+
+    let response: T;
+
+    if (method === 'GET') {
+      // Convert params to query string format
+      const params = options?.params ?
+        Object.entries(options.params).reduce((acc, [key, value]) => {
+          if (value !== undefined && value !== null) {
+            acc[key] = String(value);
+          }
+          return acc;
+        }, {} as Record<string, string>) :
+        undefined;
+
+      response = await serverGet<T>(endpoint, params);
+    } else if (method === 'POST') {
+      response = await serverPost<T>(endpoint, options?.body);
+    } else if (method === 'PUT') {
+      response = await serverPut<T>(endpoint, options?.body);
+    } else if (method === 'DELETE') {
+      response = await serverDelete<T>(endpoint);
+    } else {
+      throw new Error(`Unsupported method: ${method}`);
+    }
+
+    return {
+      success: true,
+      data: response
+    };
+  } catch (error) {
+    console.error(`[Server Action] fetchApi error for ${endpoint}:`, error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Request failed'
+    };
+  }
+}
 
 // ============================================================================
 // MESSAGE ACTIONS

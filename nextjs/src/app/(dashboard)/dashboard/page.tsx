@@ -10,8 +10,12 @@
 
 import { Container } from '@/components/layouts/Container';
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = "force-dynamic";
+/**
+ * ISR Configuration - Cache dashboard for 60 seconds
+ * Dashboard stats are relatively stable and can be cached briefly
+ * to reduce server load and improve performance.
+ */
+export const revalidate = 60; // Revalidate every 60 seconds
 
 import {
   Users,

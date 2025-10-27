@@ -10,6 +10,9 @@ const createJestConfig = nextJest({
 const config: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    customExportConditions: [''],
+  },
 
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
@@ -32,6 +35,7 @@ const config: Config = {
     '/out/',
     '/coverage/',
   ],
+
 
   // Coverage configuration
   collectCoverageFrom: [

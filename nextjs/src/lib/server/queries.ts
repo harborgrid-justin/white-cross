@@ -9,28 +9,42 @@
  * Features:
  * - Type-safe query builders
  * - Automatic error handling
- * - Request deduplication
- * - Cache header management
+ * - Request deduplication (React cache() API)
+ * - Standardized cache TTLs (HIPAA-compliant)
+ * - Cache tag management
  * - HIPAA-compliant (server-side only)
+ *
+ * **Request Deduplication:**
+ * All fetch functions are wrapped with React's cache() API, which automatically
+ * deduplicates requests for the same resource within a single render cycle.
+ *
+ * **Cache Strategy:**
+ * - PHI data: 30-60s TTL (HIPAA compliant)
+ * - Static data: 300s TTL (performance optimized)
+ * - See /lib/cache/README.md for full strategy
  *
  * @example
  * ```typescript
  * // In Server Component
- * import { fetchStudentsList, prefetchStudentsList } from '@/lib/server/queries';
+ * import { getStudent, prefetchStudentsList } from '@/lib/server/queries';
  *
- * export default async function StudentsPage() {
- *   // Option 1: Direct fetch
- *   const students = await fetchStudentsList({ page: 1 });
+ * export default async function StudentPage({ params }: { params: { id: string } }) {
+ *   // Multiple components can call getStudent() with same ID
+ *   // Only 1 HTTP request will be made (React cache deduplication)
+ *   const student = await getStudent(params.id);
  *
- *   // Option 2: Prefetch for TanStack Query
- *   await prefetchStudentsList({ page: 1 });
- *
- *   return <StudentsTable />;
+ *   return <StudentProfile student={student} />;
  * }
  * ```
+ *
+ * @see /lib/cache/README.md for caching strategy documentation
+ * @version 2.0.0 - Added React cache() and standardized TTLs
+ * @since 2025-10-27
  */
 
+import { cache } from 'react';
 import { prefetchQuery } from '@/lib/react-query/serverQuery';
+import { CACHE_TTL, CACHE_TAGS, buildResourceTag } from '@/lib/cache/constants';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -65,13 +79,20 @@ export interface PaginatedResponse<T> {
 // ==========================================
 
 /**
- * Base fetch utility with Next.js cache configuration
+ * Base fetch utility with standardized Next.js cache configuration
  *
  * @param url - API endpoint URL
- * @param options - Fetch options
+ * @param revalidate - Cache TTL in seconds (from CACHE_TTL constants)
+ * @param tags - Cache tags for granular invalidation
+ * @param options - Additional fetch options
  * @returns Promise resolving to response data
  */
-async function baseFetch<T>(url: string, options?: RequestInit): Promise<T> {
+async function baseFetch<T>(
+  url: string,
+  revalidate: number,
+  tags: string[],
+  options?: RequestInit
+): Promise<T> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   const fullUrl = `${baseUrl}${url}`;
 
@@ -82,10 +103,10 @@ async function baseFetch<T>(url: string, options?: RequestInit): Promise<T> {
         'Content-Type': 'application/json',
         ...options?.headers,
       },
-      // Next.js cache configuration
+      // Next.js cache configuration with standardized TTL
       next: {
-        revalidate: 60, // Revalidate every 60 seconds
-        tags: [url.split('?')[0]], // Cache tag for invalidation
+        revalidate, // Standardized cache TTL
+        tags,       // Granular cache tags
       },
     });
 
@@ -106,11 +127,34 @@ async function baseFetch<T>(url: string, options?: RequestInit): Promise<T> {
 
 /**
  * Fetch students list (server-side)
+ *
+ * **Cache Strategy**: PHI_STANDARD (60s)
+ * **Deduplication**: React cache() - multiple calls in same render return cached result
+ * **Tags**: [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI]
  */
-export async function fetchStudentsList(params?: QueryParams): Promise<PaginatedResponse<any>> {
+export const getStudentsList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
-  return baseFetch(`/api/v1/students?${searchParams.toString()}`);
-}
+  return baseFetch(
+    `/api/v1/students?${searchParams.toString()}`,
+    CACHE_TTL.PHI_STANDARD, // 60s
+    [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI]
+  );
+});
+
+/**
+ * Fetch single student (server-side)
+ *
+ * **Cache Strategy**: PHI_STANDARD (60s)
+ * **Deduplication**: React cache() - multiple components requesting same student get deduplicated
+ * **Tags**: [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI, 'student-{id}']
+ */
+export const getStudent = cache(async (id: string): Promise<any> => {
+  return baseFetch(
+    `/api/v1/students/${id}`,
+    CACHE_TTL.PHI_STANDARD, // 60s
+    [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI, buildResourceTag('student', id)]
+  );
+});
 
 /**
  * Prefetch students list for TanStack Query
@@ -118,19 +162,12 @@ export async function fetchStudentsList(params?: QueryParams): Promise<Paginated
 export async function prefetchStudentsList(params?: QueryParams): Promise<void> {
   await prefetchQuery(
     ['students', 'list', params],
-    () => fetchStudentsList(params),
+    () => getStudentsList(params),
     {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      meta: { containsPHI: false }, // List view safe for SSR
+      staleTime: CACHE_TTL.PHI_STANDARD * 1000, // Align with server cache
+      meta: { containsPHI: true }, // Student data is PHI
     }
   );
-}
-
-/**
- * Fetch single student (server-side)
- */
-export async function fetchStudent(id: string): Promise<any> {
-  return baseFetch(`/api/v1/students/${id}`);
 }
 
 /**
@@ -139,13 +176,17 @@ export async function fetchStudent(id: string): Promise<any> {
 export async function prefetchStudent(id: string): Promise<void> {
   await prefetchQuery(
     ['students', id],
-    () => fetchStudent(id),
+    () => getStudent(id),
     {
-      staleTime: 2 * 60 * 1000, // 2 minutes
+      staleTime: CACHE_TTL.PHI_STANDARD * 1000, // Align with server cache
       meta: { containsPHI: true }, // Single student has PHI
     }
   );
 }
+
+// Backward compatibility aliases
+export const fetchStudentsList = getStudentsList;
+export const fetchStudent = getStudent;
 
 // ==========================================
 // MEDICATIONS QUERIES
@@ -153,11 +194,34 @@ export async function prefetchStudent(id: string): Promise<void> {
 
 /**
  * Fetch medications list (server-side)
+ *
+ * **Cache Strategy**: PHI_FREQUENT (30s) - frequently accessed, time-sensitive
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.MEDICATIONS, CACHE_TAGS.PHI]
  */
-export async function fetchMedicationsList(params?: QueryParams): Promise<PaginatedResponse<any>> {
+export const getMedicationsList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
-  return baseFetch(`/api/v1/medications?${searchParams.toString()}`);
-}
+  return baseFetch(
+    `/api/v1/medications?${searchParams.toString()}`,
+    CACHE_TTL.PHI_FREQUENT, // 30s - frequently accessed
+    [CACHE_TAGS.MEDICATIONS, CACHE_TAGS.PHI]
+  );
+});
+
+/**
+ * Fetch single medication (server-side)
+ *
+ * **Cache Strategy**: PHI_FREQUENT (30s)
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.MEDICATIONS, CACHE_TAGS.PHI, 'medication-{id}']
+ */
+export const getMedication = cache(async (id: string): Promise<any> => {
+  return baseFetch(
+    `/api/v1/medications/${id}`,
+    CACHE_TTL.PHI_FREQUENT, // 30s
+    [CACHE_TAGS.MEDICATIONS, CACHE_TAGS.PHI, buildResourceTag('medication', id)]
+  );
+});
 
 /**
  * Prefetch medications list for TanStack Query
@@ -165,19 +229,12 @@ export async function fetchMedicationsList(params?: QueryParams): Promise<Pagina
 export async function prefetchMedicationsList(params?: QueryParams): Promise<void> {
   await prefetchQuery(
     ['medications', 'list', params],
-    () => fetchMedicationsList(params),
+    () => getMedicationsList(params),
     {
-      staleTime: 5 * 60 * 1000,
+      staleTime: CACHE_TTL.PHI_FREQUENT * 1000, // Align with server cache
       meta: { containsPHI: true }, // Medication data is PHI
     }
   );
-}
-
-/**
- * Fetch single medication (server-side)
- */
-export async function fetchMedication(id: string): Promise<any> {
-  return baseFetch(`/api/v1/medications/${id}`);
 }
 
 /**
@@ -186,13 +243,17 @@ export async function fetchMedication(id: string): Promise<any> {
 export async function prefetchMedication(id: string): Promise<void> {
   await prefetchQuery(
     ['medications', id],
-    () => fetchMedication(id),
+    () => getMedication(id),
     {
-      staleTime: 2 * 60 * 1000,
+      staleTime: CACHE_TTL.PHI_FREQUENT * 1000, // Align with server cache
       meta: { containsPHI: true },
     }
   );
 }
+
+// Backward compatibility aliases
+export const fetchMedicationsList = getMedicationsList;
+export const fetchMedication = getMedication;
 
 // ==========================================
 // APPOINTMENTS QUERIES
@@ -200,11 +261,34 @@ export async function prefetchMedication(id: string): Promise<void> {
 
 /**
  * Fetch appointments list (server-side)
+ *
+ * **Cache Strategy**: PHI_FREQUENT (30s) - appointments change frequently
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.APPOINTMENTS, CACHE_TAGS.PHI]
  */
-export async function fetchAppointmentsList(params?: QueryParams & { date?: string; nurseId?: string }): Promise<PaginatedResponse<any>> {
+export const getAppointmentsList = cache(async (params?: QueryParams & { date?: string; nurseId?: string }): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
-  return baseFetch(`/api/v1/appointments?${searchParams.toString()}`);
-}
+  return baseFetch(
+    `/api/v1/appointments?${searchParams.toString()}`,
+    CACHE_TTL.PHI_FREQUENT, // 30s - frequently changing
+    [CACHE_TAGS.APPOINTMENTS, CACHE_TAGS.PHI]
+  );
+});
+
+/**
+ * Fetch single appointment (server-side)
+ *
+ * **Cache Strategy**: PHI_FREQUENT (30s)
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.APPOINTMENTS, CACHE_TAGS.PHI, 'appointment-{id}']
+ */
+export const getAppointment = cache(async (id: string): Promise<any> => {
+  return baseFetch(
+    `/api/v1/appointments/${id}`,
+    CACHE_TTL.PHI_FREQUENT, // 30s
+    [CACHE_TAGS.APPOINTMENTS, CACHE_TAGS.PHI, buildResourceTag('appointment', id)]
+  );
+});
 
 /**
  * Prefetch appointments list for TanStack Query
@@ -212,19 +296,12 @@ export async function fetchAppointmentsList(params?: QueryParams & { date?: stri
 export async function prefetchAppointmentsList(params?: QueryParams & { date?: string; nurseId?: string }): Promise<void> {
   await prefetchQuery(
     ['appointments', 'list', params],
-    () => fetchAppointmentsList(params),
+    () => getAppointmentsList(params),
     {
-      staleTime: 2 * 60 * 1000, // 2 minutes (appointments change frequently)
-      meta: { containsPHI: false }, // List view safe
+      staleTime: CACHE_TTL.PHI_FREQUENT * 1000, // Align with server cache
+      meta: { containsPHI: true }, // Appointments contain PHI
     }
   );
-}
-
-/**
- * Fetch single appointment (server-side)
- */
-export async function fetchAppointment(id: string): Promise<any> {
-  return baseFetch(`/api/v1/appointments/${id}`);
 }
 
 /**
@@ -233,13 +310,17 @@ export async function fetchAppointment(id: string): Promise<any> {
 export async function prefetchAppointment(id: string): Promise<void> {
   await prefetchQuery(
     ['appointments', id],
-    () => fetchAppointment(id),
+    () => getAppointment(id),
     {
-      staleTime: 2 * 60 * 1000,
+      staleTime: CACHE_TTL.PHI_FREQUENT * 1000, // Align with server cache
       meta: { containsPHI: true },
     }
   );
 }
+
+// Backward compatibility aliases
+export const fetchAppointmentsList = getAppointmentsList;
+export const fetchAppointment = getAppointment;
 
 // ==========================================
 // INCIDENTS QUERIES
@@ -247,11 +328,19 @@ export async function prefetchAppointment(id: string): Promise<void> {
 
 /**
  * Fetch incident reports list (server-side)
+ *
+ * **Cache Strategy**: PHI_STANDARD (60s)
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.INCIDENTS, CACHE_TAGS.PHI]
  */
-export async function fetchIncidentsList(params?: QueryParams): Promise<PaginatedResponse<any>> {
+export const getIncidentsList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
-  return baseFetch(`/api/v1/incidents?${searchParams.toString()}`);
-}
+  return baseFetch(
+    `/api/v1/incidents?${searchParams.toString()}`,
+    CACHE_TTL.PHI_STANDARD, // 60s
+    [CACHE_TAGS.INCIDENTS, CACHE_TAGS.PHI]
+  );
+});
 
 /**
  * Prefetch incidents list for TanStack Query
@@ -259,13 +348,16 @@ export async function fetchIncidentsList(params?: QueryParams): Promise<Paginate
 export async function prefetchIncidentsList(params?: QueryParams): Promise<void> {
   await prefetchQuery(
     ['incidents', 'list', params],
-    () => fetchIncidentsList(params),
+    () => getIncidentsList(params),
     {
-      staleTime: 5 * 60 * 1000,
+      staleTime: CACHE_TTL.PHI_STANDARD * 1000, // Align with server cache
       meta: { containsPHI: true }, // Incident data may contain PHI
     }
   );
 }
+
+// Backward compatibility alias
+export const fetchIncidentsList = getIncidentsList;
 
 // ==========================================
 // DASHBOARD QUERIES
@@ -273,10 +365,18 @@ export async function prefetchIncidentsList(params?: QueryParams): Promise<void>
 
 /**
  * Fetch dashboard statistics (server-side)
+ *
+ * **Cache Strategy**: STATS (120s) - aggregated, non-PHI data
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.STATS]
  */
-export async function fetchDashboardStats(): Promise<any> {
-  return baseFetch('/api/v1/dashboard/stats');
-}
+export const getDashboardStats = cache(async (): Promise<any> => {
+  return baseFetch(
+    '/api/v1/dashboard/stats',
+    CACHE_TTL.STATS, // 120s - aggregated stats
+    [CACHE_TAGS.STATS]
+  );
+});
 
 /**
  * Prefetch dashboard statistics for TanStack Query
@@ -284,13 +384,16 @@ export async function fetchDashboardStats(): Promise<any> {
 export async function prefetchDashboardStats(): Promise<void> {
   await prefetchQuery(
     ['dashboard', 'stats'],
-    fetchDashboardStats,
+    getDashboardStats,
     {
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: CACHE_TTL.STATS * 1000, // Align with server cache
       meta: { containsPHI: false }, // Aggregated stats safe
     }
   );
 }
+
+// Backward compatibility alias
+export const fetchDashboardStats = getDashboardStats;
 
 // ==========================================
 // USERS QUERIES
@@ -298,11 +401,34 @@ export async function prefetchDashboardStats(): Promise<void> {
 
 /**
  * Fetch users list (server-side)
+ *
+ * **Cache Strategy**: STATIC (300s) - users change infrequently
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.USERS]
  */
-export async function fetchUsersList(params?: QueryParams): Promise<PaginatedResponse<any>> {
+export const getUsersList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
-  return baseFetch(`/api/v1/users?${searchParams.toString()}`);
-}
+  return baseFetch(
+    `/api/v1/users?${searchParams.toString()}`,
+    CACHE_TTL.STATIC, // 300s - users change infrequently
+    [CACHE_TAGS.USERS]
+  );
+});
+
+/**
+ * Fetch current user (server-side)
+ *
+ * **Cache Strategy**: SESSION (300s) - user profile stable during session
+ * **Deduplication**: React cache()
+ * **Tags**: [CACHE_TAGS.USERS]
+ */
+export const getCurrentUser = cache(async (): Promise<any> => {
+  return baseFetch(
+    '/api/v1/auth/me',
+    CACHE_TTL.SESSION, // 300s
+    [CACHE_TAGS.USERS]
+  );
+});
 
 /**
  * Prefetch users list for TanStack Query
@@ -310,19 +436,12 @@ export async function fetchUsersList(params?: QueryParams): Promise<PaginatedRes
 export async function prefetchUsersList(params?: QueryParams): Promise<void> {
   await prefetchQuery(
     ['users', 'list', params],
-    () => fetchUsersList(params),
+    () => getUsersList(params),
     {
-      staleTime: 10 * 60 * 1000, // 10 minutes (users change infrequently)
+      staleTime: CACHE_TTL.STATIC * 1000, // Align with server cache
       meta: { containsPHI: false },
     }
   );
-}
-
-/**
- * Fetch current user (server-side)
- */
-export async function fetchCurrentUser(): Promise<any> {
-  return baseFetch('/api/v1/auth/me');
 }
 
 /**
@@ -331,13 +450,17 @@ export async function fetchCurrentUser(): Promise<any> {
 export async function prefetchCurrentUser(): Promise<void> {
   await prefetchQuery(
     ['users', 'me'],
-    fetchCurrentUser,
+    getCurrentUser,
     {
-      staleTime: 5 * 60 * 1000,
+      staleTime: CACHE_TTL.SESSION * 1000, // Align with server cache
       meta: { containsPHI: false },
     }
   );
 }
+
+// Backward compatibility aliases
+export const fetchUsersList = getUsersList;
+export const fetchCurrentUser = getCurrentUser;
 
 // ==========================================
 // COMPOSITE PREFETCH UTILITIES
@@ -345,6 +468,9 @@ export async function prefetchCurrentUser(): Promise<void> {
 
 /**
  * Prefetch all data for dashboard page
+ *
+ * Parallel prefetch for optimal performance.
+ * Each function uses React cache() for automatic deduplication.
  */
 export async function prefetchDashboardPage(): Promise<void> {
   await Promise.all([
@@ -383,38 +509,54 @@ export async function prefetchAppointmentsPage(params?: QueryParams & { date?: s
   ]);
 }
 
+// ==========================================
+// EXPORTS
+// ==========================================
+
 export default {
-  // Students
-  fetchStudentsList,
-  prefetchStudentsList,
-  fetchStudent,
+  // Students (new cache() API)
+  getStudent,
+  getStudentsList,
   prefetchStudent,
+  prefetchStudentsList,
 
-  // Medications
-  fetchMedicationsList,
-  prefetchMedicationsList,
-  fetchMedication,
+  // Medications (new cache() API)
+  getMedication,
+  getMedicationsList,
   prefetchMedication,
+  prefetchMedicationsList,
 
-  // Appointments
-  fetchAppointmentsList,
-  prefetchAppointmentsList,
-  fetchAppointment,
+  // Appointments (new cache() API)
+  getAppointment,
+  getAppointmentsList,
   prefetchAppointment,
+  prefetchAppointmentsList,
 
-  // Incidents
-  fetchIncidentsList,
+  // Incidents (new cache() API)
+  getIncidentsList,
   prefetchIncidentsList,
 
-  // Dashboard
-  fetchDashboardStats,
+  // Dashboard (new cache() API)
+  getDashboardStats,
   prefetchDashboardStats,
 
-  // Users
-  fetchUsersList,
+  // Users (new cache() API)
+  getUsersList,
+  getCurrentUser,
   prefetchUsersList,
-  fetchCurrentUser,
   prefetchCurrentUser,
+
+  // Backward compatibility aliases
+  fetchStudent,
+  fetchStudentsList,
+  fetchMedication,
+  fetchMedicationsList,
+  fetchAppointment,
+  fetchAppointmentsList,
+  fetchIncidentsList,
+  fetchDashboardStats,
+  fetchUsersList,
+  fetchCurrentUser,
 
   // Composite
   prefetchDashboardPage,

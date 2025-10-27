@@ -2,6 +2,7 @@
 
 // Force dynamic rendering due to auth context
 export const dynamic = "force-dynamic";
+export const runtime = 'edge';
 
 /**
  * Access Denied Page

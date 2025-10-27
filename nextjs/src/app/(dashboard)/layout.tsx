@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Dashboard Layout - Main application layout with sidebar and header
  *
@@ -12,9 +10,15 @@
  * - Dark mode support
  * - Keyboard accessible
  * - Screen reader support
+ *
+ * Note: This is a server component. Client-side interactivity is handled by:
+ * - Header component (mobile menu toggle, user dropdown)
+ * - MobileNav component (drawer state)
+ * - Sidebar component (navigation state)
+ * All state is managed through NavigationContext (client component)
  */
 
-import { useState, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { Header } from '@/components/layouts/Header';
 import { Sidebar } from '@/components/layouts/Sidebar';
 import { MobileNav } from '@/components/layouts/MobileNav';
@@ -26,15 +30,8 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Mock user data - replace with actual auth context
-  const user = {
-    firstName: 'Jane',
-    lastName: 'Doe',
-    email: 'jane.doe@example.com',
-    role: 'NURSE',
-  };
+  // Note: Header and MobileNav manage their own state through NavigationContext
+  // No local state needed here - this is a pure server component
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
@@ -46,8 +43,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         Skip to main content
       </a>
 
-      {/* Top Navigation Header */}
-      <Header onMenuClick={() => setMobileMenuOpen(true)} user={user} />
+      {/* Top Navigation Header - Manages its own state via NavigationContext */}
+      <Header />
 
       {/* Main Content Area with Sidebar */}
       <div className="flex flex-1 overflow-hidden">
@@ -58,8 +55,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        {/* Mobile Sidebar (Drawer) */}
-        <MobileNav isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        {/* Mobile Sidebar (Drawer) - Manages its own state via NavigationContext */}
+        <MobileNav />
 
         {/* Main Content */}
         <main
