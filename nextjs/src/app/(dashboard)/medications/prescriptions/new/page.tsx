@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   description: 'Add new prescription with prescriber information'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 /**
  * New Prescription Page
  *

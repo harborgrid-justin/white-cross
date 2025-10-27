@@ -8,7 +8,7 @@
  */
 
 import React, { memo } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link' // Migrated from react-router-dom
 import { Heart } from 'lucide-react'
 
 // ============================================================================
@@ -86,19 +86,19 @@ export const Footer = memo(({ className = '' }: FooterProps) => {
           {/* Right Section - Links */}
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <Link
-              to="/help"
+              href="/help"
               className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
             >
               Help Center
             </Link>
             <Link
-              to="/privacy"
+              href="/privacy"
               className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              to="/terms"
+              href="/terms"
               className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
             >
               Terms of Service

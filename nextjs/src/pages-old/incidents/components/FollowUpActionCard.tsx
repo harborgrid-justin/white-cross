@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 import { useFollowUpActions } from '@/hooks/domains/incidents/FollowUpActionContext';
 import { ActionStatus, ActionPriority, type FollowUpAction } from '@/types/incidents';

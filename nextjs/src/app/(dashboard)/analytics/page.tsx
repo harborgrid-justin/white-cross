@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   description: 'Comprehensive analytics and reporting dashboard',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 const analyticsModules = [
   {
     title: 'Health Metrics',

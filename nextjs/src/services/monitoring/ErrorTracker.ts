@@ -106,7 +106,7 @@ export class ErrorTracker {
       enabled: config.enabled ?? true,
       dsn: config.dsn,
       environment: config.environment ?? 'development',
-      release: config.release ?? import.meta.env.VITE_APP_VERSION,
+      release: config.release ?? process.env.NEXT_PUBLIC_APP_VERSION,
       sampleRate: config.sampleRate ?? 1.0,
       tracesSampleRate: config.tracesSampleRate ?? 0.1,
       beforeSend: config.beforeSend,

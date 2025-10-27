@@ -10,6 +10,10 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { getHealthMetrics } from '@/lib/actions/analytics.actions';
 import { Calendar, Download, Filter, RefreshCw } from 'lucide-react';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function HealthMetricsPage() {
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),

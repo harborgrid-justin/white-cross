@@ -8,12 +8,15 @@ import { Metadata } from 'next';
 import { listIncidents } from '@/actions/incidents.actions';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
 import Link from 'next/link';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Pending Review Incidents | White Cross',
   description: 'View incidents pending review',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default async function PendingReviewPage() {
   const result = await listIncidents({ status: 'PENDING_REVIEW' });

@@ -41,8 +41,8 @@ import {
   TableLoadingState,
 } from '@/components/ui/data/Table';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
-import { Checkbox } from '@/components/ui/inputs/Checkbox';
+import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Eye,
   Edit,

@@ -80,7 +80,7 @@ let initializationPromise: Promise<void> | null = null;
  * re-initialize services.
  *
  * @param options - Initialization options
- * @param options.debug - Enable debug logging (defaults to import.meta.env.DEV)
+ * @param options.debug - Enable debug logging (defaults to process.env.NODE_ENV === 'development')
  * @param options.skipServices - Array of service names to skip during initialization
  * @returns Promise that resolves when all services are initialized
  * @throws {Error} If initialization fails
@@ -152,7 +152,7 @@ async function doInitialize(options?: {
 
     // Initialize services
     await serviceManager.initialize({
-      debug: options?.debug ?? import.meta.env.DEV,
+      debug: options?.debug ?? process.env.NODE_ENV === 'development',
       skip: options?.skipServices,
     });
 
@@ -365,7 +365,7 @@ export async function reinitializeServices(options?: {
  *   try {
  *     // Initialize all services (ServiceManager, ApiClient, etc.)
  *     await initializeServices({
- *       debug: import.meta.env.DEV
+ *       debug: process.env.NODE_ENV === 'development'
  *     });
  *
  *     // Render React app

@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: 'Track medication expiration dates and replacement needs'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = 'force-dynamic';
+
 interface ExpirationReportPageProps {
   searchParams: {
     days?: string; // Look ahead period

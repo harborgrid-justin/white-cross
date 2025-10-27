@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Update medication details and prescription information'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface EditMedicationPageProps {
   params: {
     id: string;

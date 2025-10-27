@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import {
   Shield,
   Download,
@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: 'Audit Logs | Compliance | White Cross',
   description: 'Comprehensive HIPAA-compliant audit trail with tamper-proof verification',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 interface SearchParams {
   page?: string;

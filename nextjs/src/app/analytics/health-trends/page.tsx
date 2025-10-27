@@ -13,6 +13,9 @@
 
 'use client';
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
 import React, { useState } from 'react';
 import { useMultipleAnalytics } from '@/hooks/domains/reports';
 import {

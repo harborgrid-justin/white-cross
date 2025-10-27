@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View inventory transaction history',
 };
 
+// Force dynamic rendering to avoid static generation errors with auth context
+export const dynamic = 'force-dynamic';
+
 export default function TransactionHistoryPage() {
   return <TransactionHistoryContent />;
 }

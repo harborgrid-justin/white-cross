@@ -26,9 +26,9 @@ import {
 
 // UI Components
 import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/buttons/Button';
-import { SearchInput } from '@/components/ui/inputs/SearchInput';
-import { Select } from '@/components/ui/inputs/Select';
+import { Button } from '@/components/ui/Button';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { Select } from '@/components/ui/Select';
 
 // API Client
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client';

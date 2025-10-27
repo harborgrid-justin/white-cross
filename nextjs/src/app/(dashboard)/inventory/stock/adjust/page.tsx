@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Manually adjust stock levels',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function StockAdjustmentPage() {
   return <StockAdjustmentContent />;
 }

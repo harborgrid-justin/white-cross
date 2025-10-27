@@ -136,7 +136,7 @@ export function useAudit(): UseAuditResult {
       await auditService.log(params);
     } catch (error) {
       // Error already handled by service, just log for debugging
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] Log failed:', error);
       }
     }
@@ -146,7 +146,7 @@ export function useAudit(): UseAuditResult {
     try {
       await auditService.logSuccess(params);
     } catch (error) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] LogSuccess failed:', error);
       }
     }
@@ -156,7 +156,7 @@ export function useAudit(): UseAuditResult {
     try {
       await auditService.logFailure(params, error);
     } catch (err) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] LogFailure failed:', err);
       }
     }
@@ -171,7 +171,7 @@ export function useAudit(): UseAuditResult {
     try {
       await auditService.logPHIAccess(action, studentId, resourceType, resourceId);
     } catch (error) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] LogPHIAccess failed:', error);
       }
     }
@@ -187,7 +187,7 @@ export function useAudit(): UseAuditResult {
     try {
       await auditService.logPHIModification(action, studentId, resourceType, resourceId, changes);
     } catch (error) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] LogPHIModification failed:', error);
       }
     }
@@ -202,7 +202,7 @@ export function useAudit(): UseAuditResult {
     try {
       await auditService.logAccessDenied(action, resourceType, resourceId, reason);
     } catch (error) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] LogAccessDenied failed:', error);
       }
     }
@@ -212,7 +212,7 @@ export function useAudit(): UseAuditResult {
     try {
       await auditService.flush();
     } catch (error) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.error('[useAudit] Flush failed:', error);
       }
     }

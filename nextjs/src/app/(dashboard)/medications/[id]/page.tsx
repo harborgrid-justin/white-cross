@@ -9,12 +9,16 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { PageHeader } from '@/components/layouts/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
 import MedicationDetails from '@/components/medications/core/MedicationDetails';
 import AdministrationLog from '@/components/medications/administration/AdministrationLog';
 import { Button } from '@/components/ui/Button';
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 import {
   PencilIcon,
   ClockIcon,

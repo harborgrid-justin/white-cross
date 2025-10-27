@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'Build a new custom healthcare form'
 }
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default async function NewFormPage() {
   return (
     <div className="container mx-auto px-4 py-6">

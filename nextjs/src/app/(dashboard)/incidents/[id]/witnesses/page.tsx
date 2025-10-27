@@ -7,13 +7,16 @@ import React from 'react';
 import { Metadata } from 'next';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Witnesses | White Cross',
   description: 'View and manage incident witnesses',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default function WitnessesPage({
   params,

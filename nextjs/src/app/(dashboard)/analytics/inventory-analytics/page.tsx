@@ -10,6 +10,10 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { CHART_COLORS, CHART_PALETTE, CHART_TOOLTIP_STYLE } from '@/lib/analytics/charts';
 import { Package, AlertTriangle, Calendar, Download, TrendingDown } from 'lucide-react';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function InventoryAnalyticsPage() {
   const [showExporter, setShowExporter] = useState(false);
 

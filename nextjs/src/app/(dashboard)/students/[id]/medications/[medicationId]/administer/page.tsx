@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Record medication administration with Five Rights verification'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface AdministerMedicationToStudentPageProps {
   params: {
     id: string;

@@ -14,8 +14,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/hooks/shared/store-hooks-index';
-import { Button } from '@/components/ui/buttons/Button';
-import { Textarea } from '@/components/ui/inputs/Textarea';
+import { Button } from '@/components/ui/Button';
+import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/display/Badge';
 import { fetchIncidentReportById, updateIncidentReport } from '../store/incidentReportsSlice';
 import { cn } from '@/utils/cn';

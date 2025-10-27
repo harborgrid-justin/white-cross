@@ -6,11 +6,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/feedback/EmptyState';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { Alert } from '@/components/ui/feedback/Alert';
-import { Select } from '@/components/ui/inputs/Select';
+import { Select } from '@/components/ui/Select';
 import { cn } from '@/utils/cn';
 import { useFollowUpActions } from '@/hooks/domains/incidents/FollowUpActionContext';
 import { ActionStatus, ActionPriority, type FollowUpAction } from '@/types/incidents';

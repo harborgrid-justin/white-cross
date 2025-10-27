@@ -31,7 +31,7 @@
 
 import React from 'react';
 import IncidentReportCard from './IncidentReportCard';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/feedback/EmptyState';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import { IncidentReport } from '@/types/incidents';

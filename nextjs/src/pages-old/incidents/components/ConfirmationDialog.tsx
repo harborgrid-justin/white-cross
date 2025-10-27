@@ -17,7 +17,7 @@ import {
   ModalFooter,
   ModalTitle,
 } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 
 /**
  * Confirmation dialog variant types

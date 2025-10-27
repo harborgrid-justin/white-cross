@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: 'HIPAA compliance and medication adherence tracking'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface ComplianceReportPageProps {
   searchParams: {
     startDate?: string;

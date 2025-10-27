@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Edit inventory item details',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface EditInventoryItemPageProps {
   params: {
     id: string;

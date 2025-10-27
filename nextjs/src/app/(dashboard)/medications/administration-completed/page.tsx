@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: 'Successfully administered medications for today'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = 'force-dynamic';
+
 interface CompletedPageProps {
   searchParams: {
     date?: string;

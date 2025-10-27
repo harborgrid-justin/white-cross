@@ -9,6 +9,10 @@ import { useState } from 'react';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { Download, Calendar, Database, Filter } from 'lucide-react';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function ExportPage() {
   const [selectedDataset, setSelectedDataset] = useState<string>('health-metrics');
   const [dateRange, setDateRange] = useState({

@@ -584,4 +584,4 @@ import React from 'react';
 import { OptimisticUpdateIndicator } from '@/components/ui/feedback/OptimisticUpdateIndicator';
 import { UpdateToast } from '@/components/ui/feedback/UpdateToast';
 import { ConflictResolutionModal } from '@/components/shared/data';
-import { RollbackButton } from '@/components/ui/buttons/RollbackButton';
+import { RollbackButton } from '@/components/ui/Buttons/RollbackButton';

@@ -7,7 +7,7 @@
  */
 
 import { z } from 'zod';
-import { AllergyType } from '@/types/healthRecords';
+// import { AllergyType } from '@/constants/healthRecords';
 
 /**
  * AllergySeverity enum for validation

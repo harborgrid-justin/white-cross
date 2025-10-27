@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Receive stock shipments',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function ReceiveStockPage() {
   return <ReceiveStockContent />;
 }

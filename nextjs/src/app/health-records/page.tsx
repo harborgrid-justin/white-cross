@@ -23,7 +23,7 @@ import {
 
 // UI Components
 import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/display/Badge';
 
 // API Client

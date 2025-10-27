@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Complete medication administration history with audit trail'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface AdministrationLogPageProps {
   params: {
     id: string;

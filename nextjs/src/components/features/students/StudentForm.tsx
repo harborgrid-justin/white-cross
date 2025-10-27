@@ -19,7 +19,7 @@ import { createStudent, updateStudent } from '@/app/students/actions';
 import type { Student } from '@/types/student.types';
 
 // UI Components
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/layout/Card';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { Loader2, Save, X } from 'lucide-react';

@@ -25,7 +25,7 @@ import {
 
 // UI Components
 import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { SkeletonTable } from '@/components/ui/loading/SkeletonCard';
 
 // Server utilities

@@ -7,13 +7,16 @@ import React from 'react';
 import { Metadata } from 'next';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Follow-Up Details | White Cross',
   description: 'View follow-up action details',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default function FollowUpDetailsPage({
   params,

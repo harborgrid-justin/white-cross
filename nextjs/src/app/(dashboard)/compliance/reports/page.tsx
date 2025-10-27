@@ -1,13 +1,16 @@
 import { Metadata } from 'next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { FileText, Download, Plus, TrendingUp } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Compliance Reports | White Cross',
   description: 'Generate and view HIPAA, FERPA, and custom compliance reports',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 /**
  * Compliance Reports Page

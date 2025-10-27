@@ -18,10 +18,10 @@
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useWitnessStatements } from '@/hooks/domains/incidents';
-import { Input } from '@/components/ui/inputs/Input';
-import { Textarea } from '@/components/ui/inputs/Textarea';
-import { Select, type SelectOption } from '@/components/ui/inputs/Select';
-import { Button } from '@/components/ui/buttons/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Select, type SelectOption } from '@/components/ui/Select';
+import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { Save, X } from 'lucide-react';
 import type { WitnessStatement, WitnessType, WitnessStatementFormData } from '@/types/incidents';

@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: 'Create a new incident report',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function NewIncidentPage() {
   return (
     <div className="max-w-4xl mx-auto p-6">

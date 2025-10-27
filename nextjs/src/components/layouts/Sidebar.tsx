@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo, useCallback, memo } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import Link from "next/link"; import { useLocation } from 'next/link' // Migrated from react-router-dom
 import {
   Home, Users, FileHeart, Pill, Calendar, DollarSign, Package, ShoppingCart,
   Store, MessageSquare, FileText, BarChart3, AlertTriangle, Phone, Shield,

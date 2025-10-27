@@ -30,7 +30,7 @@
 import React from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Eye, Edit, AlertCircle, UserCheck, MapPin, Calendar } from 'lucide-react';
 import {
   IncidentReport,

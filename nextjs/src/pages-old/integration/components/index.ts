@@ -71,7 +71,6 @@ export { default as HealthIntegration } from './HealthIntegration';
 export { default as HealthConfiguration } from './HealthConfiguration';
 export { default as HealthSync } from './HealthSync';
 export { default as HealthMapping } from './HealthMapping';
-export { default as HealthStatus } from './HealthStatus';
 export { default as DataSync } from './DataSync';
 export { default as SyncScheduler } from './SyncScheduler';
 export { default as SyncHistory } from './SyncHistory';

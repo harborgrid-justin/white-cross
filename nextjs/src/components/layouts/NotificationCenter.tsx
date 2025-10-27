@@ -10,7 +10,7 @@
  */
 
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'next/link' // Migrated from react-router-dom
 import {
   Bell, X, Check, CheckCheck, AlertCircle, Info, CheckCircle,
   AlertTriangle, Clock
@@ -124,7 +124,7 @@ function getRelativeTime(timestamp: number): string {
  * ```
  */
 export const NotificationCenter = memo(() => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { notificationOpen, setNotificationOpen } = useNavigation()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -192,7 +192,7 @@ export const NotificationCenter = memo(() => {
       markAsRead(notification.id)
     }
     if (notification.actionUrl) {
-      navigate(notification.actionUrl)
+      router.push(notification.actionUrl)
       setNotificationOpen(false)
     }
   }, [navigate, setNotificationOpen, markAsRead])

@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View broadcast details and statistics'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface BroadcastDetailPageProps {
   params: {
     id: string;

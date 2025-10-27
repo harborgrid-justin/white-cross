@@ -593,7 +593,7 @@ export class AuthApi {
             displayName: string;
           }>;
         };
-      }>(API_ENDPOINTS.DEV.USERS);
+      }>(API_ENDPOINTS.USERS.BASE + '/dev');
 
       if (!response.data.success || !response.data.data) {
         throw new Error('Failed to fetch development users');

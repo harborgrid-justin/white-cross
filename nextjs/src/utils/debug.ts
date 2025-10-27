@@ -13,7 +13,7 @@
 import debug from 'debug';
 
 // Enable debug logging in development
-if (import.meta.env.DEV) {
+if (process.env.NODE_ENV === 'development') {
   // Enable all debug logs in development
   debug.enable('whitecross:*');
 

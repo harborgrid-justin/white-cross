@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Manage medication stock levels and inventory tracking'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface InventoryPageProps {
   searchParams: {
     filter?: string;

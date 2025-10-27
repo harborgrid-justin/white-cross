@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: 'View all medications for this student'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface StudentMedicationsPageProps {
   params: {
     id: string;

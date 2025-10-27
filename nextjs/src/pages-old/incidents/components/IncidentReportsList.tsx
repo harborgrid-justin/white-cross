@@ -40,7 +40,7 @@ import {
   TableLoadingState,
 } from '@/components/ui/data/Table';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Eye, Edit, Trash2, AlertCircle, UserCheck } from 'lucide-react';
 import {
   IncidentReport,

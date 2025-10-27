@@ -8,12 +8,15 @@ import { Metadata } from 'next';
 import { listIncidents } from '@/actions/incidents.actions';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
 import Link from 'next/link';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Requires Action | White Cross',
   description: 'View incidents requiring action',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default async function RequiresActionPage() {
   const result = await listIncidents({ status: 'REQUIRES_ACTION' });

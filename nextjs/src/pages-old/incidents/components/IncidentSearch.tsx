@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { SearchInput } from '@/components/ui/inputs/SearchInput';
+import { SearchInput } from '@/components/ui/SearchInput';
 
 interface IncidentSearchProps {
   /** Current search query value */

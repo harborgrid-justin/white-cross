@@ -16,10 +16,10 @@ import {
   ModalFooter,
   ModalTitle
 } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/buttons/Button';
-import { Input } from '@/components/ui/inputs/Input';
-import { Textarea } from '@/components/ui/inputs/Textarea';
-import { Checkbox } from '@/components/ui/inputs/Checkbox';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import {

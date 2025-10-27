@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/display/Badge';
 import { X, Trash2, Archive, Edit, Mail, Download, MoreHorizontal } from 'lucide-react';
 import { clsx } from 'clsx';

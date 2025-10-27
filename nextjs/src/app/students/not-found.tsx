@@ -7,7 +7,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/layout/Card';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 

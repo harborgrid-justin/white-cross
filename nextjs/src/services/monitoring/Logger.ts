@@ -108,8 +108,8 @@ export class Logger {
     };
 
     this.context = {
-      environment: import.meta.env.MODE,
-      version: import.meta.env.VITE_APP_VERSION,
+      environment: process.env.NODE_ENV,
+      version: process.env.NEXT_PUBLIC_APP_VERSION,
     };
 
     this.setupTransports();
@@ -204,7 +204,7 @@ export class Logger {
   public clearContext(): void {
     this.context = {
       environment: this.config.level,
-      version: import.meta.env.VITE_APP_VERSION,
+      version: process.env.NEXT_PUBLIC_APP_VERSION,
     };
   }
 

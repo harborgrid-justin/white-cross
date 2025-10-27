@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View and search message history',
 }
 
+// Force dynamic rendering due to client-side data requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Message History Page
  *

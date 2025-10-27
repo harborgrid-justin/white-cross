@@ -6,12 +6,15 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Incident Settings | White Cross',
   description: 'Configure incident management settings',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default function IncidentSettingsPage() {
   return (

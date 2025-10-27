@@ -88,7 +88,7 @@ export class HealthRecordsErrorBoundary extends React.Component<Props, State> {
     this.cleanupHealthData();
 
     // Log error to monitoring service in production
-    if (import.meta.env.PROD) {
+    if (process.env.NODE_ENV === 'production') {
       // Integration with error monitoring service (e.g., Sentry)
       this.logErrorToMonitoring(error, errorInfo);
     }
@@ -295,7 +295,7 @@ export class HealthRecordsErrorBoundary extends React.Component<Props, State> {
               <div className="mb-6">
                 <p className="text-sm text-gray-700 leading-relaxed">{content.message}</p>
 
-                {import.meta.env.DEV && this.state.error && (
+                {process.env.NODE_ENV === 'development' && this.state.error && (
                   <details className="mt-4">
                     <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700 font-medium">
                       Error Details (Development Only)

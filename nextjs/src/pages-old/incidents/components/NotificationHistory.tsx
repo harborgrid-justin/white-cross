@@ -14,9 +14,9 @@ import {
   CardContent,
   CardFooter
 } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/buttons/Button';
-import { SearchInput } from '@/components/ui/inputs/SearchInput';
-import { Select } from '@/components/ui/inputs/Select';
+import { Button } from '@/components/ui/Button';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { Select } from '@/components/ui/Select';
 import { EmptyState } from '@/components/ui/feedback/EmptyState';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { Alert } from '@/components/ui/feedback/Alert';

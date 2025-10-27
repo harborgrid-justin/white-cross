@@ -17,13 +17,16 @@ import { listIncidents } from '@/actions/incidents.actions';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Incident Reports | White Cross',
   description: 'Manage and track incident reports',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default async function IncidentsListPage() {
   const result = await listIncidents({ limit: 50, sortBy: 'incidentDate', sortOrder: 'desc' });

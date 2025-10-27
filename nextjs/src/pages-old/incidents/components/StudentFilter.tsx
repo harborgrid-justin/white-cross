@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Select, SelectOption } from '@/components/ui/inputs/Select';
+import { Select, SelectOption } from '@/components/ui/Select';
 import { useQuery } from '@tanstack/react-query';
 import { studentsApi } from '@/services';
 import type { Student } from '@/types/student.types';

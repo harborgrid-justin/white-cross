@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'Manage reusable document templates'
 }
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
 export default async function DocumentTemplatesPage() {
   return (
     <div className="container mx-auto px-4 py-6">
