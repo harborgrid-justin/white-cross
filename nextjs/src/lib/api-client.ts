@@ -132,6 +132,7 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+export default apiClient;
 
 // Type-safe API endpoints
 export const API_ENDPOINTS = {

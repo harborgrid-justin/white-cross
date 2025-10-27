@@ -52,9 +52,6 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development warnings
   reactStrictMode: true,
 
-  // Use SWC minifier (faster than Terser)
-  swcMinify: true,
-
   // Output standalone for Docker/container deployment
   output: 'standalone',
 
@@ -64,13 +61,13 @@ const nextConfig: NextConfig = {
   // Enable gzip compression
   compress: true,
 
+  // Typed routes for better type safety (moved from experimental in Next.js 16)
+  typedRoutes: true,
+
   // ==========================================
   // EXPERIMENTAL FEATURES
   // ==========================================
   experimental: {
-    // Typed routes for better type safety
-    typedRoutes: true,
-
     // Server Actions configuration
     serverActions: {
       bodySizeLimit: '2mb',
@@ -92,20 +89,11 @@ const nextConfig: NextConfig = {
       'react-hook-form',
     ],
 
-    // Enable instrumentation for monitoring
-    instrumentationHook: true,
-
     // Enable partial pre-rendering (Next.js 15+)
     // ppr: true,
 
     // Optimize CSS
     optimizeCss: true,
-
-    // Enable server components logging in development
-    logging: {
-      level: process.env.NODE_ENV === 'development' ? 'verbose' : 'error',
-      fullUrl: process.env.NODE_ENV === 'development',
-    },
   },
 
   // ==========================================
@@ -137,17 +125,6 @@ const nextConfig: NextConfig = {
 
     // Use custom tsconfig path
     tsconfigPath: './tsconfig.json',
-  },
-
-  // ==========================================
-  // ESLINT CONFIGURATION
-  // ==========================================
-  eslint: {
-    // Fail build on ESLint errors in production
-    ignoreDuringBuilds: false,
-
-    // Specify directories to lint during build
-    dirs: ['src', 'app', 'components', 'lib', 'pages'],
   },
 
   // ==========================================
@@ -479,8 +456,7 @@ const nextConfig: NextConfig = {
   // DEV INDICATORS
   // ==========================================
   devIndicators: {
-    buildActivity: true,
-    buildActivityPosition: 'bottom-right',
+    position: 'bottom-right',
   },
 
   // ==========================================
@@ -497,8 +473,8 @@ const nextConfig: NextConfig = {
   // TURBOPACK (Next.js 16 default)
   // ==========================================
   turbopack: {
-    // Turbopack is the default in Next.js 16
-    // Additional configuration can be added here
+    // Set the workspace root to silence lockfile warnings
+    root: process.cwd().replace(/[\\/]nextjs$/, ''),
   },
 
   // ==========================================
@@ -527,3 +503,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

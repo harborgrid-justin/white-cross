@@ -4,7 +4,7 @@
  */
 
 import { createSlice, createAsyncThunk, createSelector, PayloadAction } from '@reduxjs/toolkit';
-import { configurationApi } from '../../../services/configurationApi';
+import { configurationApi } from '../../services/configurationApi';
 import type {
   SystemConfiguration,
   ConfigurationHistory,
@@ -13,7 +13,7 @@ import type {
   CreateConfigurationPayload,
   BulkUpdatePayload,
   ImportConfigurationsPayload,
-} from '../../../services/configurationApi';
+} from '../../services/configurationApi';
 
 // Service Adapter Class
 export class ConfigurationApiService {

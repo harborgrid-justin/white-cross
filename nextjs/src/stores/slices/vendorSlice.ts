@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { vendorApi } from '../../../services';
+import { vendorApi } from '../../services/api';
 import {
   Vendor,
   VendorFilters,
@@ -13,7 +13,7 @@ import {
   VendorMetrics,
   BulkVendorRatingUpdate,
   BulkVendorRatingResult,
-} from '../../../types/vendors';
+} from '../../types/vendors';
 
 // =====================
 // SERVICE ADAPTER CLASS

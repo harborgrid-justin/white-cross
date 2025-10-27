@@ -59,7 +59,7 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { administrationApi } from '../../../services/modules/administrationApi';
+import { administrationApi } from '../../services/modules/administrationApi';
 import {
   User,
   District,
@@ -81,8 +81,8 @@ import {
   CreateTrainingModuleData,
   UpdateTrainingModuleData,
   ConfigurationData,
-} from '../../../types/administration';
-import { PaginatedResponse } from '../../../services/utils/apiUtils';
+} from '../../types/administration';
+import { PaginatedResponse } from '../../services/utils/apiUtils';
 
 /**
  * Admin API Service Adapter

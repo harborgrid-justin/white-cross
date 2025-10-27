@@ -492,3 +492,9 @@ export function useAuth(): AuthContextValue {
 
   return context;
 }
+
+/**
+ * Backward compatibility alias for useAuth
+ * @deprecated Use useAuth instead
+ */
+export const useAuthContext = useAuth;

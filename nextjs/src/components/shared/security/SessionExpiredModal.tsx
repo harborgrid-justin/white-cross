@@ -20,7 +20,7 @@ interface SessionExpiredModalProps {
   onLoginAgain: () => void
 }
 
-export default function SessionExpiredModal({ isOpen, onLoginAgain }: SessionExpiredModalProps) {
+function SessionExpiredModal({ isOpen, onLoginAgain }: SessionExpiredModalProps) {
   if (!isOpen) return null
 
   return (
@@ -53,3 +53,6 @@ export default function SessionExpiredModal({ isOpen, onLoginAgain }: SessionExp
     </div>
   )
 }
+
+export { SessionExpiredModal };
+export default SessionExpiredModal;

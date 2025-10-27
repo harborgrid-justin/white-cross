@@ -67,7 +67,7 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { dashboardApi } from '../../../services';
+import { dashboardApi } from '../../services/api';
 import type {
   DashboardStats,
   DashboardRecentActivity,
@@ -79,7 +79,7 @@ import type {
   CompleteDashboardData,
   HealthAlert,
   QuickAction
-} from '../../../types/dashboard';
+} from '../../types/dashboard';
 
 /**
  * Dashboard API Service Adapter

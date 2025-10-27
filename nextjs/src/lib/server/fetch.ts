@@ -314,6 +314,13 @@ export async function serverDelete<T>(
 }
 
 // ==========================================
+// BACKWARD COMPATIBILITY ALIASES
+// ==========================================
+
+// Alias for backward compatibility
+export const fetchWithAuth = serverFetch;
+
+// ==========================================
 // TYPES FOR NEXT.JS
 // ==========================================
 

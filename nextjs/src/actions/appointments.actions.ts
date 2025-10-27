@@ -50,6 +50,48 @@ export interface Appointment {
 }
 
 // ==========================================
+// READ OPERATIONS
+// ==========================================
+
+/**
+ * Get appointments with optional filters
+ */
+export async function getAppointmentsAction(filters?: {
+  studentId?: string;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}): Promise<ActionResult<{ appointments: Appointment[]; total: number }>> {
+  try {
+    const params = new URLSearchParams();
+    if (filters?.studentId) params.append('studentId', filters.studentId);
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
+    if (filters?.dateTo) params.append('dateTo', filters.dateTo);
+    if (filters?.page) params.append('page', String(filters.page));
+    if (filters?.limit) params.append('limit', String(filters.limit));
+
+    const queryString = params.toString();
+    const url = `${API_ENDPOINTS.APPOINTMENTS.BASE}${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await apiClient.get<{ appointments: Appointment[]; total: number }>(url);
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error('Get appointments failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch appointments',
+    };
+  }
+}
+
+// ==========================================
 // CREATE OPERATIONS
 // ==========================================
 

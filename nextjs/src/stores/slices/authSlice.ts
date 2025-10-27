@@ -652,8 +652,15 @@ const authSlice = createSlice({
  *
  * @exports clearError - Clear authentication error message
  * @exports setUser - Manually set user profile (for updates, cross-tab sync)
+ * @exports clearAuthError - Alias for clearError (backward compatibility)
+ * @exports setUserFromSession - Alias for setUser (backward compatibility)
  */
 export const { clearError, setUser } = authSlice.actions;
+
+// Backward compatibility aliases
+export const clearAuthError = clearError;
+export const setUserFromSession = setUser;
+export const refreshAuthToken = refreshUser;
 
 /**
  * Authentication reducer for Redux store integration.

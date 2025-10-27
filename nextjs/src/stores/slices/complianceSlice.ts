@@ -6,8 +6,8 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../../../stores/reduxStore';
-import { complianceApi } from '../../../services';
+import { RootState } from '../../stores/reduxStore';
+import { complianceApi } from '../../services/api';
 
 // API Service Adapter
 class ComplianceApiService {

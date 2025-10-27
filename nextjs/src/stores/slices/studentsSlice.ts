@@ -38,9 +38,9 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { Student, CreateStudentData, UpdateStudentData, StudentFilters as StudentFiltersType } from '../../../types/student.types';
-import { studentsApi } from '../../../services/api';
+import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
+import { Student, CreateStudentData, UpdateStudentData, StudentFilters as StudentFiltersType } from '../../types/student.types';
+import { studentsApi } from '../../services/api';
 
 // Re-export StudentFilters type for external use
 export type { StudentFiltersType as StudentFilters };

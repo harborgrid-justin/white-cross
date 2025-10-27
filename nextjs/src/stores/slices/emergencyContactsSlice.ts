@@ -49,9 +49,9 @@
  * @since 1.0.0
  */
 
-import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { EmergencyContact, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../../types/student.types';
-import { emergencyContactsApi } from '../../../services/api';
+import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
+import { EmergencyContact, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../types/student.types';
+import { emergencyContactsApi } from '../../services/api';
 
 /**
  * Filter parameters for querying emergency contacts.

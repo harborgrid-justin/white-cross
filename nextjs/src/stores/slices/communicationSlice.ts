@@ -127,13 +127,13 @@
  * ```
  */
 
-import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { communicationApi } from '../../../services';
+import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
+import { communicationApi } from '../../services/api';
 import type {
   Message,
   CreateMessageData,
   MessageFilters
-} from '../../../types/communication';
+} from '../../types/communication';
 
 /**
  * Message update payload.

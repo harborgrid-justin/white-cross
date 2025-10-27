@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { purchaseOrderApi } from '../../../services';
+import { purchaseOrderApi } from '../../services/api';
 import {
   PurchaseOrder,
   PurchaseOrderFilters,
@@ -11,7 +11,7 @@ import {
   ReorderItem,
   VendorOrderHistory,
   PurchaseOrderStatus,
-} from '../../../types/purchaseOrders';
+} from '../../types/purchaseOrders';
 
 // =====================
 // SERVICE ADAPTER CLASS

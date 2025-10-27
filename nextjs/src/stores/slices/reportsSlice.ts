@@ -25,8 +25,8 @@
  * ```
  */
 
-import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { reportsApi } from '../../../services';
+import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
+import { reportsApi } from '../../services/api';
 
 /**
  * Report entity interface.

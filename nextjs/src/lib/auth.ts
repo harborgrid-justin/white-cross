@@ -168,3 +168,8 @@ export function hasMinimumRole(user: AuthenticatedUser, minimumRole: string): bo
 
   return userLevel >= requiredLevel;
 }
+
+/**
+ * Auth function - alias for authenticateRequest for backward compatibility
+ */
+export const auth = authenticateRequest;

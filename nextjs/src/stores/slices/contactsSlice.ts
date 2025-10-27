@@ -6,14 +6,14 @@
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { emergencyContactsApi, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../../services/modules/emergencyContactsApi';
+import { emergencyContactsApi, CreateEmergencyContactData, UpdateEmergencyContactData } from '../../services/modules/emergencyContactsApi';
 import {
   EmergencyContact,
   EmergencyNotificationData,
   EmergencyNotificationResult,
   ContactVerificationResponse,
   EmergencyContactStatistics,
-} from '../../../types/student.types';
+} from '../../types/student.types';
 
 // Contacts API Service Adapter
 export class ContactsApiService {

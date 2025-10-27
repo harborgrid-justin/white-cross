@@ -6,7 +6,7 @@
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { inventoryApi } from '../../../services';
+import { inventoryApi } from '../../services/api';
 
 // Inventory item interface
 export interface InventoryItem {

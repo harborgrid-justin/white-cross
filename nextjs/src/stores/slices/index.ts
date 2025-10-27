@@ -10,13 +10,11 @@
 // ============================================================
 // CORE SLICES - Authentication & Authorization
 // ============================================================
-export { default as authReducer, authSlice } from './authSlice';
-export type { AuthState } from './authSlice';
+export { default as authReducer } from './authSlice';
 
-export { default as usersReducer, usersSlice } from './usersSlice';
-export type { UsersState } from './usersSlice';
+export { usersReducer, usersSlice } from './usersSlice';
 
-export { default as accessControlReducer, accessControlSlice } from './accessControlSlice';
+export { default as accessControlReducer } from './accessControlSlice';
 
 // ============================================================
 // DASHBOARD & OVERVIEW
@@ -26,51 +24,45 @@ export { default as dashboardReducer } from './dashboardSlice';
 // ============================================================
 // HEALTHCARE DOMAIN
 // ============================================================
-export { default as healthRecordsReducer, healthRecordsSlice } from './healthRecordsSlice';
-export type { HealthRecordsState } from './healthRecordsSlice';
+export { healthRecordsReducer, healthRecordsSlice } from './healthRecordsSlice';
 
-export { default as medicationsReducer, medicationsSlice } from './medicationsSlice';
-export type { MedicationsState } from './medicationsSlice';
+export { medicationsReducer, medicationsSlice } from './medicationsSlice';
 
-export { default as appointmentsReducer, appointmentsSlice } from './appointmentsSlice';
-export type { AppointmentsState } from './appointmentsSlice';
+export { appointmentsReducer, appointmentsSlice } from './appointmentsSlice';
 
 // ============================================================
 // STUDENT MANAGEMENT
 // ============================================================
-export { default as studentsReducer, studentsSlice } from './studentsSlice';
-export type { StudentsState } from './studentsSlice';
+export { studentsReducer, studentsSlice } from './studentsSlice';
 
-export { default as emergencyContactsReducer, emergencyContactsSlice } from './emergencyContactsSlice';
-export type { EmergencyContactsState } from './emergencyContactsSlice';
+export { emergencyContactsReducer, emergencyContactsSlice } from './emergencyContactsSlice';
 
 // ============================================================
 // INCIDENT MANAGEMENT
 // ============================================================
-export { default as incidentReportsReducer, incidentReportsSlice } from './incidentReportsSlice';
-export type { IncidentReportsState } from './incidentReportsSlice';
+export { default as incidentReportsReducer } from './incidentReportsSlice';
 
 // ============================================================
 // ADMINISTRATION
 // ============================================================
-export { default as districtsReducer } from './districtsSlice';
-export { default as schoolsReducer } from './schoolsSlice';
-export { default as settingsReducer } from './settingsSlice';
+export { districtsReducer } from './districtsSlice';
+export { schoolsReducer } from './schoolsSlice';
+export { settingsReducer } from './settingsSlice';
 export { default as adminReducer } from './adminSlice';
 export { default as configurationReducer } from './configurationSlice';
 
 // ============================================================
 // COMMUNICATION & DOCUMENTATION
 // ============================================================
-export { default as communicationReducer } from './communicationSlice';
-export { default as documentsReducer } from './documentsSlice';
+export { communicationReducer } from './communicationSlice';
+export { documentsReducer } from './documentsSlice';
 export { default as contactsReducer } from './contactsSlice';
 
 // ============================================================
 // OPERATIONS & INVENTORY
 // ============================================================
 export { default as inventoryReducer } from './inventorySlice';
-export { default as reportsReducer } from './reportsSlice';
+export { reportsReducer } from './reportsSlice';
 export { default as budgetReducer } from './budgetSlice';
 export { default as purchaseOrderReducer } from './purchaseOrderSlice';
 export { default as vendorReducer } from './vendorSlice';

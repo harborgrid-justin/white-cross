@@ -145,9 +145,9 @@
  * ```
  */
 
-import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { documentsApi } from '../../../services';
-import type { Document as DocumentType } from '../../../types/documents';
+import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
+import { documentsApi } from '../../services/api';
+import type { Document as DocumentType } from '../../types/documents';
 
 // Use the imported Document type instead of local interface
 type Document = DocumentType;

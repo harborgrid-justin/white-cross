@@ -36,7 +36,7 @@
  */
 
 import { createSlice, createAsyncThunk, createSelector, PayloadAction } from '@reduxjs/toolkit';
-import { integrationApi } from '../../../services/modules/integrationApi';
+import { integrationApi } from '../../services/modules/integrationApi';
 import type {
   IntegrationType,
   IntegrationStatus,
@@ -56,7 +56,7 @@ import type {
   BatchOperationResult,
   IntegrationHealthStatusResponse,
   SyncStatus,
-} from '../../../types/integrations';
+} from '../../types/integrations';
 
 /**
  * Integration API Service Adapter

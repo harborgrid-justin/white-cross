@@ -47,4 +47,10 @@ export const useRouteState = () => {
   };
 };
 
+/**
+ * Backward compatibility alias for useRouteState
+ * @deprecated Use useRouteState instead
+ */
+export const useNavigationState = useRouteState;
+
 export default useRouteState;

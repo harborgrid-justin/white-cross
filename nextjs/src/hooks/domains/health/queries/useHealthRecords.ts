@@ -32,24 +32,53 @@ import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import {
   healthRecordsApi as healthRecordsApiService,
-  HealthRecord,
-  Allergy,
-  ChronicCondition,
-  VaccinationRecord,
-  GrowthMeasurement,
-  Screening,
-  HealthSummary,
-  VitalSigns,
   HealthRecordFilters,
-  PaginationParams,
+  VaccinationRecord,
+  HealthSummary,
   CreateHealthRecordRequest,
   CreateAllergyRequest,
   CreateChronicConditionRequest,
   CreateVaccinationRequest,
-  HealthRecordsApiError,
-  CircuitBreakerError,
-  PaginatedResponse,
 } from '@/services';
+
+import type {
+  HealthRecord,
+  Allergy,
+  ChronicCondition,
+  GrowthMeasurement,
+  Screening,
+  VitalSigns,
+} from '@/types/healthRecords';
+
+// Define error types locally since they don't exist in services
+class HealthRecordsApiError extends Error {
+  constructor(message: string, public statusCode?: number) {
+    super(message);
+    this.name = 'HealthRecordsApiError';
+  }
+}
+
+class CircuitBreakerError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CircuitBreakerError';
+  }
+}
+
+interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
 
 // ============================================================================
 // Constants - Healthcare-Appropriate Cache Strategy
@@ -2075,4 +2104,3 @@ export const useRecordVitals = useCreateVitalSigns;
  * @deprecated Use useExportHealthRecords instead
  */
 export const useExportHealthHistory = useExportHealthRecords;
-

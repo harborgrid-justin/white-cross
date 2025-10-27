@@ -47,9 +47,9 @@
  * @since 1.0.0
  */
 
-import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';
-import { HealthRecord } from '../../../types/student.types';
-import { healthRecordsApi } from '../../../services/api';
+import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
+import { HealthRecord } from '../../types/student.types';
+import { healthRecordsApi } from '../../services/api';
 
 /**
  * Data required to create a new health record.

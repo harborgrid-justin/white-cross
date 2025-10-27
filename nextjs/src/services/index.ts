@@ -113,7 +113,16 @@ export type {
   VaccinationRecord,
   HealthSummary,
   HealthRecordsApi,
-  HealthRecordType
+  HealthRecordType,
+  Allergy as HealthRecordAllergy,
+  ChronicCondition,
+  GrowthMeasurement,
+  Screening,
+  VitalSigns,
+  CreateHealthRecordRequest,
+  CreateAllergyRequest,
+  CreateChronicConditionRequest,
+  CreateVaccinationRequest
 } from './modules/healthRecordsApi';
 
 export { medicationsApi } from './modules/medicationsApi';

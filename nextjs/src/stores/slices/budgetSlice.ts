@@ -6,7 +6,7 @@
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { budgetApi } from '../../../services/modules/budgetApi';
+import { budgetApi } from '../../services/modules/budgetApi';
 import {
   BudgetCategory,
   BudgetTransaction,
@@ -22,7 +22,7 @@ import {
   UpdateBudgetTransactionRequest,
   BudgetTransactionFilters,
   BudgetCategoryParams,
-} from '../../../types/budget';
+} from '../../types/budget';
 
 // Budget API Service Adapter
 export class BudgetApiService {
