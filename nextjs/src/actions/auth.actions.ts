@@ -27,8 +27,10 @@ import { z } from 'zod';
 import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/lib/audit';
 import { headers } from 'next/headers';
 import type { ActionResult } from './students.actions';
+import { serverPost, getBackendUrl } from '@/lib/server/api-client';
 
-const BACKEND_URL = process.env.API_BASE_URL || 'http://localhost:3001/api/v1';
+// Use server-side or fallback to public env variable or default
+const BACKEND_URL = getBackendUrl();
 
 // ==========================================
 // VALIDATION SCHEMAS
@@ -112,18 +114,16 @@ export async function loginAction(
   try {
     const { email, password } = validatedFields.data;
 
-    // Call backend authentication endpoint
-    const response = await fetch(`${BACKEND_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    // Call backend authentication endpoint with resilient fetch
+    const result = await serverPost('/auth/login',
+      { email, password },
+      {
+        maxRetries: 2, // Retry failed network requests
+        timeout: 15000 // 15 second timeout
+      }
+    );
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-
+    if (!result.success) {
       // Audit failed login attempt
       const headersList = await headers();
       const mockRequest = {
@@ -140,17 +140,18 @@ export async function loginAction(
         ipAddress: extractIPAddress(mockRequest),
         userAgent: extractUserAgent(mockRequest),
         success: false,
-        errorMessage: error.message || 'Invalid credentials'
+        errorMessage: result.error || 'Invalid credentials'
       });
 
       return {
         errors: {
-          _form: [error.message || 'Invalid credentials'],
+          _form: [result.error || 'Invalid credentials'],
         },
       };
     }
 
-    const data = await response.json();
+    // Extract data from successful response
+    const data = result.data;
     const { token, refreshToken, user } = data;
 
     // Set HTTP-only cookies
@@ -276,23 +277,19 @@ export async function changePasswordAction(
 
     const { currentPassword, newPassword } = validatedFields.data;
 
-    const response = await fetch(`${BACKEND_URL}/auth/change-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-      }),
-    });
+    const result = await serverPost('/auth/change-password',
+      { currentPassword, newPassword },
+      {
+        headers: { 'Authorization': `Bearer ${token}` },
+        maxRetries: 1,
+        timeout: 10000
+      }
+    );
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Password change failed' }));
+    if (!result.success) {
       return {
         errors: {
-          _form: [error.message || 'Failed to change password'],
+          _form: [result.error || 'Failed to change password'],
         },
       };
     }
@@ -337,19 +334,15 @@ export async function requestPasswordResetAction(
   try {
     const validatedEmail = resetPasswordRequestSchema.parse({ email });
 
-    const response = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(validatedEmail),
-    });
+    const result = await serverPost('/auth/forgot-password',
+      validatedEmail,
+      { maxRetries: 1, timeout: 10000 }
+    );
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    if (!result.success) {
       return {
         success: false,
-        error: error.message || 'Failed to request password reset',
+        error: result.error || 'Failed to request password reset',
       };
     }
 
@@ -382,22 +375,18 @@ export async function resetPasswordAction(
       confirmPassword,
     });
 
-    const response = await fetch(`${BACKEND_URL}/auth/reset-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const result = await serverPost('/auth/reset-password',
+      {
         token: validatedData.token,
         newPassword: validatedData.password,
-      }),
-    });
+      },
+      { maxRetries: 1, timeout: 10000 }
+    );
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Reset failed' }));
+    if (!result.success) {
       return {
         success: false,
-        error: error.message || 'Failed to reset password',
+        error: result.error || 'Failed to reset password',
       };
     }
 
@@ -430,15 +419,12 @@ export async function refreshTokenAction(): Promise<ActionResult<{ token: string
       };
     }
 
-    const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken }),
-    });
+    const result = await serverPost('/auth/refresh',
+      { refreshToken },
+      { maxRetries: 1, timeout: 10000 }
+    );
 
-    if (!response.ok) {
+    if (!result.success) {
       // Clear invalid tokens
       cookieStore.delete('auth_token');
       cookieStore.delete('refresh_token');
@@ -449,7 +435,7 @@ export async function refreshTokenAction(): Promise<ActionResult<{ token: string
       };
     }
 
-    const data = await response.json();
+    const data = result.data;
     const { token } = data;
 
     // Update auth token
@@ -507,21 +493,23 @@ export async function verifySessionAction(): Promise<ActionResult<{ valid: boole
       };
     }
 
-    const response = await fetch(`${BACKEND_URL}/auth/verify`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const result = await serverPost('/auth/verify',
+      {},
+      {
+        headers: { 'Authorization': `Bearer ${token}` },
+        maxRetries: 1,
+        timeout: 5000
+      }
+    );
 
-    if (!response.ok) {
+    if (!result.success) {
       return {
         success: true,
         data: { valid: false },
       };
     }
 
-    const user = await response.json();
+    const user = result.data;
 
     return {
       success: true,
