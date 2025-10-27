@@ -1,24 +1,146 @@
 'use client';
 
 /**
- * Global Error Boundary
+ * @fileoverview Root Application Error Boundary
  *
- * Catches errors in any part of the application and displays a user-friendly error message.
- * In production, errors are logged to monitoring services (Sentry, DataDog).
+ * Next.js error boundary that catches runtime errors in any part of the application
+ * (except the root layout) and displays a user-friendly fallback UI. This component
+ * provides error recovery options, logs errors to monitoring services, and maintains
+ * HIPAA compliance by not exposing sensitive data in error messages.
  *
- * This component is a Next.js App Router error boundary and must be a Client Component.
+ * @module app/error
+ * @category Error Handling
+ * @subcategory Error Boundaries
  *
- * @see https://nextjs.org/docs/app/api-reference/file-conventions/error
+ * **Error Boundary Hierarchy:**
+ * ```
+ * global-error.tsx (catches errors in root layout)
+ * └── error.tsx (this file - catches all other errors)
+ *     ├── (dashboard)/medications/error.tsx (medication-specific errors)
+ *     ├── (dashboard)/students/error.tsx (student-specific errors)
+ *     └── [Other feature error boundaries...]
+ * ```
+ *
+ * **Key Features:**
+ * - User-friendly error UI with recovery actions
+ * - Error logging to monitoring services (Sentry, DataDog)
+ * - Development stack trace for debugging
+ * - HIPAA-compliant error handling (no PHI exposure)
+ * - Multiple recovery options (retry, dashboard, home)
+ * - Error digest tracking for production debugging
+ *
+ * **Error Handling:**
+ * - Development: Full error details with stack trace
+ * - Production: Generic message with error ID (digest)
+ * - Monitoring: Errors sent to external services
+ * - No PHI data included in error logs
+ *
+ * **Recovery Options:**
+ * 1. Try Again: Attempts to re-render the failed component
+ * 2. Go to Dashboard: Navigate to safe dashboard page
+ * 3. Return to Home: Navigate to application home
+ *
+ * @requires Client Component - Uses React hooks and browser APIs
+ *
+ * @see {@link https://nextjs.org/docs/app/api-reference/file-conventions/error | Next.js Error Handling}
+ * @see {@link https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary | React Error Boundaries}
+ *
+ * @example
+ * ```tsx
+ * // Next.js automatically uses this error boundary:
+ * // When an error occurs in any component:
+ * throw new Error('Something went wrong');
+ * // This error boundary catches it and renders fallback UI
+ * ```
+ *
+ * @since 1.0.0
  */
 
 import { useEffect } from 'react';
 import Link from 'next/link';
 
+/**
+ * Props interface for the Error Boundary component.
+ *
+ * @interface ErrorProps
+ * @property {Error & { digest?: string }} error - Error object with optional Next.js digest
+ * @property {() => void} reset - Function to attempt error recovery by re-rendering
+ */
 interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
+/**
+ * Root Error Boundary Component
+ *
+ * Catches and handles runtime errors throughout the application, providing a user-friendly
+ * fallback UI with recovery options. Logs errors to monitoring services while maintaining
+ * HIPAA compliance.
+ *
+ * **Error Logging:**
+ * - Development: Console logging with full stack trace
+ * - Production: External monitoring services (Sentry, DataDog, etc.)
+ * - No PHI data included in logs
+ * - Error digest for production debugging
+ *
+ * **Fallback UI:**
+ * - Centered card layout with error icon
+ * - Contextual error message (dev vs production)
+ * - Multiple recovery action buttons
+ * - Development-only stack trace viewer
+ *
+ * **Accessibility:**
+ * - Semantic HTML structure
+ * - Keyboard-accessible buttons
+ * - Screen reader compatible
+ * - High-contrast error indicators
+ *
+ * @param {ErrorProps} props - Component properties
+ * @param {Error} props.error - The error that was caught
+ * @param {string} [props.error.message] - Error message
+ * @param {string} [props.error.stack] - Error stack trace (development)
+ * @param {string} [props.error.digest] - Next.js error digest (production)
+ * @param {() => void} props.reset - Function to reset error boundary and retry
+ *
+ * @returns {JSX.Element} Error fallback UI with recovery actions
+ *
+ * @example
+ * ```tsx
+ * // Automatic usage by Next.js:
+ * // When error occurs in a page or component:
+ * const data = await fetchData(); // Throws error
+ * // Next.js renders:
+ * <Error error={error} reset={resetFunction} />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // The rendered structure:
+ * <div className="error-container">
+ *   <div className="error-card">
+ *     <div className="error-icon">⚠️</div>
+ *     <h1>Something went wrong</h1>
+ *     <p>{error.message}</p>
+ *     <button onClick={reset}>Try again</button>
+ *     <Link href="/dashboard">Go to Dashboard</Link>
+ *     <Link href="/">Return to Home</Link>
+ *     {/* Dev only: stack trace */}
+ *   </div>
+ * </div>
+ * ```
+ *
+ * @remarks
+ * This is a Client Component (requires 'use client' directive) because it uses:
+ * - `useEffect` hook for error logging
+ * - `onClick` handlers for recovery actions
+ * - Browser-specific APIs for monitoring
+ *
+ * The component does NOT catch errors in:
+ * - The root layout.tsx (use global-error.tsx instead)
+ * - Event handlers (use try/catch)
+ * - Asynchronous code (use error boundaries at call site)
+ */
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
     // Log error to monitoring service in production

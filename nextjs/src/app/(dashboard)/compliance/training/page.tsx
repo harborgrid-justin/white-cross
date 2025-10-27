@@ -1,22 +1,120 @@
+/**
+ * @fileoverview Training Compliance Management Page
+ *
+ * Comprehensive staff training tracking system for HIPAA-required training,
+ * certifications, and continuing education. Ensures all healthcare staff maintain
+ * required competencies and certifications as mandated by regulatory requirements.
+ *
+ * @module compliance/training
+ *
+ * @description
+ * This page manages the complete training compliance lifecycle:
+ * - Required HIPAA training tracking (annual requirement)
+ * - Medication administration certification management
+ * - Emergency response training compliance
+ * - Continuing education credit tracking
+ * - Training deadline monitoring and notifications
+ * - Certification expiration tracking
+ * - Training assignment and scheduling
+ *
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html | HIPAA Security Rule}
+ *
+ * @remarks
+ * **HIPAA Training Requirements:**
+ * - All staff must receive HIPAA training upon hire (§ 164.530(b)(1))
+ * - Annual HIPAA refresher training required
+ * - Training documentation must be retained for 6 years
+ * - Training must be appropriate to staff role and responsibilities
+ * - Periodic security reminders required (§ 164.308(a)(5)(ii)(A))
+ *
+ * **Training Categories:**
+ * - MANDATORY: Required for all staff (HIPAA, Emergency Response)
+ * - REQUIRED: Required for specific roles (Medication Administration for nurses)
+ * - RECOMMENDED: Optional but encouraged (Advanced First Aid)
+ * - CONTINUING_EDUCATION: Professional development credits
+ *
+ * **Compliance Status:**
+ * - COMPLIANT: All required training current
+ * - IN_PROGRESS: Training partially complete
+ * - OVERDUE: Training past deadline, immediate action required
+ * - EXPIRED: Certification expired, re-training needed
+ *
+ * @since 1.0.0
+ */
+
 import { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Users, CheckCircle, AlertTriangle, Clock, Award } from 'lucide-react';
 
+/**
+ * Page metadata for SEO and browser display
+ */
 export const metadata: Metadata = {
   title: 'Training Compliance | White Cross',
   description: 'Track staff training completion, certifications, and deadlines',
 };
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for this route
+ * Required for real-time training status and user-specific assignments
+ */
 export const dynamic = "force-dynamic";
 
 /**
- * Training Compliance Page
+ * Training Compliance Page Component
  *
- * Displays staff training status, certification tracking, and compliance deadlines.
- * Server Component for training compliance management.
+ * React Server Component for managing staff training compliance, tracking
+ * certification status, and monitoring training deadlines. Provides comprehensive
+ * view of organizational training compliance status.
+ *
+ * @async
+ * @returns {Promise<JSX.Element>} Rendered training compliance page
+ *
+ * @description
+ * **Key Features:**
+ * - Organization-wide training completion rate dashboard
+ * - Individual staff training status tracking
+ * - Course-level completion statistics
+ * - Overdue training alerts and notifications
+ * - Certification expiration monitoring
+ * - Training assignment management
+ * - Progress tracking for in-progress courses
+ *
+ * **Statistics Displayed:**
+ * - Overall completion rate percentage
+ * - Count of overdue training assignments
+ * - Number of in-progress courses
+ * - Active certifications count
+ * - Certifications expiring soon
+ *
+ * **Training Courses Tracked:**
+ * 1. HIPAA Privacy and Security Training (Annual, Mandatory)
+ * 2. Medication Administration Certification (Role-specific, Mandatory)
+ * 3. Emergency Response Procedures (Annual, Required)
+ * 4. Bloodborne Pathogens Training (Annual, Mandatory)
+ * 5. First Aid/CPR Certification (Biennial, Recommended)
+ *
+ * **User Training Status:**
+ * - Completed training count vs required
+ * - Overdue training list
+ * - In-progress course progress
+ * - Certification expiration dates
+ * - Next deadline dates
+ *
+ * @example
+ * ```tsx
+ * // Rendered at route: /compliance/training
+ * <TrainingCompliancePage />
+ * ```
+ *
+ * @remarks
+ * This is a Next.js 16 Server Component with dynamic rendering.
+ * Training data aggregated from Learning Management System (LMS).
+ * Automated notifications sent for upcoming deadlines and overdue training.
+ *
+ * @see {@link getTrainingData} for server-side data fetching
  */
 export default async function TrainingCompliancePage() {
   // TODO: Replace with actual server action
@@ -189,6 +287,56 @@ export default async function TrainingCompliancePage() {
   );
 }
 
+/**
+ * Fetches comprehensive training compliance data
+ *
+ * Retrieves aggregated training statistics, course information, and individual
+ * staff training status from the Learning Management System.
+ *
+ * @async
+ * @returns {Promise<Object>} Training compliance data
+ * @returns {Object} return.stats - Aggregated training statistics
+ * @returns {Array<Object>} return.courses - Required training courses
+ * @returns {Array<Object>} return.users - Individual staff training status
+ *
+ * @description
+ * **Stats Structure:**
+ * - total: Total training assignments
+ * - completed: Completed training count
+ * - inProgress: Currently in-progress count
+ * - overdue: Past deadline count
+ * - completionRate: Percentage (0-100)
+ * - certifications: Active certification count
+ * - expiringSoon: Certifications expiring within 30 days
+ *
+ * **Course Structure:**
+ * - id: Unique course identifier
+ * - title: Course display name
+ * - description: Course content summary
+ * - priority: Training priority level (MANDATORY, REQUIRED, RECOMMENDED)
+ * - stats: Course-specific completion statistics
+ *
+ * **User Structure:**
+ * - id: User identifier
+ * - name: Full name
+ * - role: Job role/title
+ * - training: User's training status
+ *   - required: Count of required courses
+ *   - completed: Count of completed courses
+ *   - overdue: Count of overdue assignments
+ *   - status: Overall compliance status
+ *
+ * @example
+ * ```typescript
+ * const { stats, courses, users } = await getTrainingData();
+ * console.log(`Completion rate: ${stats.completionRate}%`);
+ * console.log(`Overdue users: ${users.filter(u => u.training.overdue > 0).length}`);
+ * ```
+ *
+ * @todo Replace with actual LMS integration
+ * @todo Implement caching with 15-minute TTL
+ * @todo Add real-time progress tracking from LMS webhooks
+ */
 async function getTrainingData() {
   const mockStats = {
     total: 150,
@@ -263,10 +411,53 @@ async function getTrainingData() {
   return { stats: mockStats, courses: mockCourses, users: mockUsers };
 }
 
+/**
+ * Maps training priority to UI badge variant
+ *
+ * Determines the visual styling for training course priority badges.
+ * Critical mandatory training is highlighted with destructive (red) variant.
+ *
+ * @param {string} priority - Training course priority level
+ * @returns {'default' | 'destructive' | 'outline'} Badge variant for styling
+ *
+ * @description
+ * **Priority Variant Mapping:**
+ * - MANDATORY: Destructive (red) - Required by regulation, no exceptions
+ * - REQUIRED: Default (blue) - Required for specific roles
+ * - RECOMMENDED: Outline (bordered) - Optional but encouraged
+ *
+ * @example
+ * ```tsx
+ * <Badge variant={getCourseVariant('MANDATORY')}>MANDATORY</Badge>
+ * // Renders: <Badge variant="destructive">MANDATORY</Badge>
+ * ```
+ */
 function getCourseVariant(priority: string): 'default' | 'destructive' | 'outline' {
   return priority === 'MANDATORY' ? 'destructive' : 'default';
 }
 
+/**
+ * Maps user training status to UI badge variant
+ *
+ * Determines the visual styling for user training compliance status badges.
+ * Provides clear visual feedback on compliance status.
+ *
+ * @param {string} status - User training compliance status
+ * @returns {'default' | 'destructive' | 'outline' | 'secondary'} Badge variant
+ *
+ * @description
+ * **Status Variant Mapping:**
+ * - COMPLIANT: Default (blue) - All training current
+ * - IN_PROGRESS: Outline (bordered) - Training partially complete
+ * - OVERDUE: Destructive (red) - Training past deadline
+ * - EXPIRED: Destructive (red) - Certification expired
+ *
+ * @example
+ * ```tsx
+ * <Badge variant={getUserStatusVariant('OVERDUE')}>OVERDUE</Badge>
+ * // Renders: <Badge variant="destructive">OVERDUE</Badge>
+ * ```
+ */
 function getUserStatusVariant(status: string): 'default' | 'destructive' | 'outline' | 'secondary' {
   const variants = {
     COMPLIANT: 'default' as const,

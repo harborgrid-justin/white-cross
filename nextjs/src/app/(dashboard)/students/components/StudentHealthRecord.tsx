@@ -7,10 +7,110 @@ import { Accordion } from '@/components/ui/display/Accordion';
 import { AlertTriangle, Pill, Shield, Stethoscope } from 'lucide-react';
 
 /**
- * WF-COMP-STUDENT-002 | StudentHealthRecord.tsx
- * Purpose: Display comprehensive student health information with HIPAA compliance
+ * @fileoverview Comprehensive student health record display component with HIPAA/FERPA compliance.
+ *
+ * Displays complete health information for a student including allergies, medications,
+ * immunizations, and medical conditions. Implements strict PHI protection controls and
+ * requires explicit permission verification before displaying sensitive health data.
+ *
+ * **Core Features:**
+ * - Organized accordion sections for each health category
+ * - Color-coded severity indicators for allergies
+ * - Detailed medication information with dosage and frequency
+ * - Immunization tracking with due dates
+ * - Medical condition status tracking
+ * - Emergency notes display
+ * - Blood type information
+ * - Last updated timestamp
+ *
+ * **Healthcare Compliance:**
+ * - **HIPAA PHI Protection:**
+ *   - Requires `canViewPHI` permission check before displaying
+ *   - All health information treated as Protected Health Information
+ *   - Access should be logged for audit trail
+ *   - No PHI in component logs or console output
+ *
+ * - **FERPA Educational Records:**
+ *   - Health records are part of educational records
+ *   - Access restricted to authorized personnel only
+ *   - Parent/guardian access rights enforced
+ *
+ * - **Consent Management:**
+ *   - Medical information release consent required
+ *   - Emergency contact notification consent
+ *   - Parent/guardian authorization for treatment
+ *
+ * **Data Categories:**
+ * 1. **Allergies**: Life-threatening to mild, with reactions
+ * 2. **Medications**: Active prescriptions with administration details
+ * 3. **Immunizations**: Vaccine records with due dates
+ * 4. **Conditions**: Medical conditions with status tracking
+ * 5. **Emergency Info**: Blood type and critical notes
+ *
+ * **Security Features:**
+ * - Permission-based access control
+ * - Restricted access warning when unauthorized
+ * - No data displayed without `canViewPHI` flag
+ * - Audit trail support through parent callbacks
+ *
+ * **Integration Points:**
+ * - Medication administration: Link to medication management
+ * - Allergy alerts: Integration with incident reporting
+ * - Immunization compliance: School health requirement tracking
+ * - Emergency contacts: Connection to emergency contact system
+ *
+ * **Accessibility:**
+ * - WCAG 2.1 AA compliant
+ * - Keyboard navigable accordion
+ * - Screen reader friendly structure
+ * - High contrast severity indicators
  *
  * @module app/(dashboard)/students/components/StudentHealthRecord
+ * @category Components
+ * @subcategory Students
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * import { StudentHealthRecord } from '@/app/(dashboard)/students/components/StudentHealthRecord';
+ *
+ * function StudentProfile() {
+ *   const { data: healthRecord } = useHealthRecord(studentId);
+ *   const currentUser = useCurrentUser();
+ *
+ *   // Check PHI access permission
+ *   const canViewPHI = currentUser.hasPermission('view_phi') &&
+ *                      (currentUser.role === 'nurse' || currentUser.id === student.assignedNurseId);
+ *
+ *   // Audit log PHI access
+ *   useEffect(() => {
+ *     if (canViewPHI && healthRecord) {
+ *       auditLog.record({
+ *         action: 'view_phi',
+ *         resourceType: 'health_record',
+ *         resourceId: healthRecord.studentId,
+ *         userId: currentUser.id
+ *       });
+ *     }
+ *   }, [canViewPHI, healthRecord]);
+ *
+ *   return (
+ *     <StudentHealthRecord
+ *       data={healthRecord}
+ *       canViewPHI={canViewPHI}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Restricted access for non-healthcare staff
+ * <StudentHealthRecord
+ *   data={healthRecord}
+ *   canViewPHI={false} // Will show access restriction warning
+ * />
+ * ```
  */
 
 /**

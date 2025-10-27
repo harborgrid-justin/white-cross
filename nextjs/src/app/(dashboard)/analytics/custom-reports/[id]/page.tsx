@@ -1,5 +1,53 @@
 /**
- * View Custom Report Page
+ * @fileoverview Custom Report Detail Page (Dynamic Route)
+ *
+ * Displays comprehensive details and controls for a specific custom analytics
+ * report. Enables report execution, data export, editing, and deletion through
+ * a dedicated management interface.
+ *
+ * @module app/(dashboard)/analytics/custom-reports/[id]/page
+ *
+ * @remarks
+ * This is a dynamic route that loads report data based on the `id` parameter
+ * from the URL path: `/analytics/custom-reports/{reportId}`
+ *
+ * Report detail sections:
+ * 1. Header: Name, public/private badge, action buttons
+ * 2. Info cards: Date range, report type, chart type
+ * 3. Configured Metrics: Display all metrics with aggregations
+ * 4. Report Results: Placeholder for executed report output
+ * 5. Metadata footer: Created and last run timestamps
+ *
+ * Actions available:
+ * - **Run Report**: Execute report with current configuration
+ * - **Export**: Download results in CSV, Excel, or PDF
+ * - **Edit**: Navigate to edit interface
+ * - **Delete**: Remove report with confirmation
+ *
+ * Features:
+ * - Loading state during report fetch
+ * - Not found state if report doesn't exist
+ * - Mock data fallback for demonstration
+ * - DataExporter integration for multiple formats
+ * - Toast notifications for user feedback
+ *
+ * Performance:
+ * - Client Component for interactive controls
+ * - Lazy loading of report results
+ * - Optimistic deletion with navigation
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/custom-reports/abc123
+ * // User workflow:
+ * // 1. Navigate from reports list
+ * // 2. View report configuration details
+ * // 3. Click "Run Report" to generate results
+ * // 4. Export results or edit configuration
+ * ```
+ *
+ * @see {@link /analytics/custom-reports} - Reports list
+ * @see {@link /analytics/custom-reports/new} - Create report
  */
 
 'use client';
@@ -12,10 +60,87 @@ import { ArrowLeft, Download, Edit, Trash2, Play, Calendar } from 'lucide-react'
 import Link from 'next/link';
 import { toast } from 'sonner';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for report-specific data
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Custom Report Detail Page Component
+ *
+ * Displays full details and controls for a custom report identified by URL parameter.
+ * Integrates with server actions for report execution and management.
+ *
+ * @returns {JSX.Element} Report detail page or loading/not found states
+ *
+ * @remarks
+ * Component structure:
+ * 1. Loading spinner during initial fetch
+ * 2. Not found message if report doesn't exist
+ * 3. Full report detail view with:
+ *    - Header with back button, title, badges, and action buttons
+ *    - Info grid showing date range, report type, chart type
+ *    - Configured metrics list with aggregation details
+ *    - Report results placeholder (populated after "Run Report")
+ *    - Metadata footer with timestamps
+ *
+ * State management:
+ * - `report`: Fetched report object or null
+ * - `isLoading`: Loading state during fetch
+ * - `showExporter`: Toggle for DataExporter visibility
+ *
+ * URL parameters:
+ * - `id`: Report ID from dynamic route segment
+ *
+ * Report structure:
+ * ```typescript
+ * {
+ *   id: string,
+ *   name: string,
+ *   description: string,
+ *   reportType: string,
+ *   filters: {
+ *     dateRange: { start: Date, end: Date }
+ *   },
+ *   metrics: Array<{
+ *     field: string,
+ *     aggregation: string,
+ *     label: string
+ *   }>,
+ *   chartType: string,
+ *   createdAt: Date,
+ *   lastRun: Date,
+ *   isPublic: boolean
+ * }
+ * ```
+ *
+ * Event handlers:
+ * - `handleDelete`: Confirms deletion, calls server action, redirects on success
+ * - `handleRun`: Executes report (implementation pending)
+ *
+ * Data fetching:
+ * - Calls `getCustomReportById(id)` on mount
+ * - Falls back to mock data if server action fails
+ * - Refetches after edits (if navigating back)
+ *
+ * Navigation:
+ * - Back button returns to reports list
+ * - Delete action redirects to reports list
+ * - Edit button navigates to edit page (future)
+ *
+ * @example
+ * ```tsx
+ * // User views "Monthly Medication Compliance" report:
+ * // 1. Report loaded with configuration details
+ * // 2. Shows date range: Last 30 days
+ * // 3. Metrics: administered (count), missed (count)
+ * // 4. User clicks "Run Report"
+ * // 5. Results appear in placeholder section
+ * // 6. User exports as PDF for distribution
+ * ```
+ */
 export default function CustomReportDetailPage() {
   const params = useParams();
   const router = useRouter();

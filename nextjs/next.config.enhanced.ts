@@ -1,20 +1,45 @@
 import type { NextConfig } from "next";
 
 /**
- * Next.js 15 Configuration - Production Optimized
+ * Next.js 15 Enhanced Configuration - White Cross Healthcare Platform
  *
- * Enterprise-grade configuration for the White Cross Healthcare Platform.
- * Optimized for performance, security, and HIPAA compliance.
+ * Alternative configuration variant with stricter type checking and linting enforcement.
+ * This configuration is more suitable for CI/CD pipelines and production validation where
+ * build failures on type errors are desired.
+ *
+ * Key Differences from Main Config:
+ * - TypeScript build errors cause build failure (ignoreBuildErrors: false)
+ * - ESLint errors cause build failure (ignoreDuringBuilds: false)
+ * - SWC minifier explicitly enabled (deprecated but kept for compatibility)
+ * - Simplified experimental features (typedRoutes only)
+ * - Simpler webpack optimization without detailed chunking strategy
+ *
+ * Use Cases:
+ * - Strict CI/CD pipelines requiring zero type errors
+ * - Pre-production validation environments
+ * - Development builds requiring type safety enforcement
+ * - Testing configuration changes without affecting main config
  *
  * Key Features:
- * - API proxying to backend (avoiding CORS issues)
- * - Security headers (HIPAA-compliant)
- * - Image optimization with healthcare use cases
- * - Bundle analysis and optimization
- * - TypeScript strict mode
- * - Standalone output for Docker deployment
+ * - HIPAA-compliant security headers (CSP, HSTS, X-Frame-Options)
+ * - Healthcare data security with strict content policies
+ * - Performance optimization with bundle splitting
+ * - Docker/Kubernetes standalone output format
+ * - Comprehensive image optimization for medical assets
+ * - API proxying to avoid CORS issues
  *
+ * Security Considerations:
+ * - All PHI (Protected Health Information) handling follows HIPAA guidelines
+ * - CSP headers prevent XSS attacks on sensitive patient data
+ * - No powered-by header to reduce information disclosure
+ * - Strict referrer policy for privacy protection
+ * - SVG disabled for security (XSS prevention)
+ *
+ * @module next.config.enhanced
  * @see https://nextjs.org/docs/app/api-reference/next-config-js
+ * @see https://nextjs.org/docs/advanced-features/security-headers
+ * @version 1.0.0
+ * @since 2025-10-26
  */
 
 const nextConfig: NextConfig = {
@@ -152,6 +177,16 @@ const nextConfig: NextConfig = {
   // ==========================================
   // API ROUTES & REWRITES
   // ==========================================
+  /**
+   * Configures URL rewrites to proxy API requests to the backend server.
+   *
+   * This function creates transparent proxying of API calls from the Next.js frontend
+   * to the Hapi.js backend, avoiding CORS issues and maintaining a unified origin
+   * for security purposes (important for HIPAA compliance).
+   *
+   * @returns {Promise<Array<{source: string, destination: string}>>} Array of rewrite rules
+   * @see https://nextjs.org/docs/api-reference/next.config.js/rewrites
+   */
   async rewrites() {
     return [
       {
@@ -172,6 +207,12 @@ const nextConfig: NextConfig = {
   // ==========================================
   // REDIRECTS
   // ==========================================
+  /**
+   * Configures URL redirects for the application.
+   *
+   * @returns {Promise<Array<{source: string, destination: string, permanent: boolean}>>} Array of redirect rules
+   * @see https://nextjs.org/docs/api-reference/next.config.js/redirects
+   */
   async redirects() {
     return [
       // Redirect old paths if needed
@@ -186,6 +227,16 @@ const nextConfig: NextConfig = {
   // ==========================================
   // SECURITY HEADERS (HIPAA-COMPLIANT)
   // ==========================================
+  /**
+   * Configures HTTP security headers for HIPAA compliance and healthcare data protection.
+   *
+   * Implements comprehensive security headers following OWASP and HIPAA best practices
+   * to protect Protected Health Information (PHI) and prevent common web vulnerabilities.
+   *
+   * @returns {Promise<Array<{source: string, headers: Array<{key: string, value: string}>}>>} Array of header configurations
+   * @see https://nextjs.org/docs/advanced-features/security-headers
+   * @see https://www.hhs.gov/hipaa/for-professionals/security/index.html
+   */
   async headers() {
     return [
       {
@@ -255,6 +306,19 @@ const nextConfig: NextConfig = {
   // ==========================================
   // WEBPACK CONFIGURATION
   // ==========================================
+  /**
+   * Customizes the webpack configuration for both client and server builds.
+   *
+   * Simplified webpack customization focusing on development experience and
+   * basic production optimizations. Less aggressive code splitting compared
+   * to main configuration.
+   *
+   * @param {object} config - Webpack configuration object
+   * @param {boolean} config.isServer - True if building server bundle
+   * @param {boolean} config.dev - True if development mode
+   * @returns {object} Modified webpack configuration
+   * @see https://nextjs.org/docs/api-reference/next.config.js/custom-webpack-config
+   */
   webpack: (config, { isServer, dev }) => {
     // Custom webpack config if needed
 

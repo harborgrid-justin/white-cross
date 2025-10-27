@@ -1,14 +1,91 @@
 /**
- * @fileoverview Incidents List - Main incident management page
- * @module app/(dashboard)/incidents
+ * @fileoverview Incidents List - Main incident management dashboard and primary entry point
+ * for comprehensive incident tracking and reporting system.
  *
- * Comprehensive incident tracking with:
- * - Advanced search and filtering
- * - Multi-dimensional filtering (type, severity, status, dates)
- * - Paginated list view with sortable columns
- * - Visual severity and status indicators
- * - Export capabilities for reporting
- * - Role-based access control
+ * @module app/(dashboard)/incidents/page
+ * @category Incidents - Core Pages
+ *
+ * ## Overview
+ * Provides centralized incident management interface with real-time statistics, multi-dimensional
+ * filtering, and quick access to incident creation and analytics. Serves as the primary navigation
+ * hub for all incident-related workflows.
+ *
+ * ## Features
+ * - **Real-time Statistics**: Displays aggregate counts for total, pending, investigating, and action-required incidents
+ * - **Advanced Filtering**: Multi-dimensional filtering by incident type, status, severity, and date range
+ * - **Quick Navigation**: Direct links to incident type categories and status-based views
+ * - **Role-Based Access Control**: Respects user permissions for viewing and managing incidents
+ * - **Responsive Design**: Optimized card-based layout for various screen sizes
+ * - **Performance Optimized**: Server-side rendering with pagination support
+ *
+ * ## Incident Management Workflow
+ * This page serves as the entry point for the complete incident lifecycle:
+ *
+ * 1. **Creation**: Quick access to create new incident reports via "Create Incident" button
+ * 2. **Monitoring**: Real-time dashboard showing incidents requiring attention
+ * 3. **Investigation**: Filter by status to view incidents under investigation
+ * 4. **Resolution**: Track and filter resolved incidents for compliance reporting
+ * 5. **Analytics**: Navigate to analytics dashboard for trend analysis and insights
+ *
+ * ## Incident Status State Machine
+ * ```
+ * DRAFT → PENDING_REVIEW → UNDER_INVESTIGATION → RESOLVED
+ *                       ↓
+ *                  REQUIRES_ACTION → [loops back to PENDING_REVIEW]
+ *                       ↓
+ *                  [any status] → ARCHIVED
+ * ```
+ *
+ * ### Status Transitions
+ * - **DRAFT**: Initial creation, not yet submitted for review
+ * - **PENDING_REVIEW**: Awaiting administrator review and validation
+ * - **UNDER_INVESTIGATION**: Actively being investigated, may involve witnesses and follow-ups
+ * - **REQUIRES_ACTION**: Needs additional information or corrective action
+ * - **RESOLVED**: Investigation complete, all required actions taken
+ * - **ARCHIVED**: Closed and archived per retention policy
+ *
+ * ## Incident Types
+ * - **INJURY**: Physical injuries requiring medical attention or documentation
+ * - **ILLNESS**: Illness symptoms, contagious disease exposure, medication reactions
+ * - **BEHAVIORAL**: Behavioral incidents, conflicts, disciplinary matters
+ * - **SAFETY**: Safety hazards, equipment issues, environmental concerns
+ * - **EMERGENCY**: Critical emergencies requiring immediate response (911, evacuation, lockdown)
+ *
+ * ## Compliance & Regulatory Requirements
+ * - **FERPA Compliance**: Student privacy maintained throughout incident documentation
+ * - **State Reporting**: Certain incident types trigger mandatory state reporting requirements
+ * - **Audit Logging**: All incident access and modifications are audit-logged
+ * - **Data Retention**: Incidents retained per district policy (typically 7 years minimum)
+ * - **Parent Notification**: Critical incidents trigger automatic parent notification workflows
+ *
+ * ## Integration Points
+ * - **Student Records**: Incidents linked to student health and behavioral records
+ * - **Emergency Contacts**: Automatic retrieval of parent/guardian contact information
+ * - **Notification System**: Email/SMS notifications for status changes and escalations
+ * - **Analytics Engine**: Real-time data feeding into incident analytics and trending
+ * - **Reporting System**: Data source for compliance and administrative reports
+ *
+ * ## Security & Access Control
+ * - Requires authentication (enforced by dynamic rendering)
+ * - Role-based filtering of visible incidents
+ * - Confidential incidents restricted to authorized personnel only
+ * - Audit trail for all incident list access
+ *
+ * ## Performance Considerations
+ * - Server-side rendering for initial page load optimization
+ * - Pagination limits to 50 incidents per page for performance
+ * - Default sort by incident date (descending) for recent-first display
+ * - Efficient querying with indexed database columns
+ *
+ * @see {@link IncidentCard} for individual incident display component
+ * @see {@link listIncidents} for server action fetching incident data
+ * @see {@link /incidents/new} for incident creation workflow
+ * @see {@link /incidents/analytics} for analytics dashboard
+ *
+ * @example
+ * // This page is rendered at route: /incidents
+ * // Displays paginated list of incidents with real-time statistics
+ * // Provides navigation to filtered views and creation form
  */
 
 import React from 'react';
@@ -25,15 +102,52 @@ export const metadata: Metadata = {
   description: 'Manage and track incident reports',
 };
 
-// Force dynamic rendering due to auth requirements
+// Force dynamic rendering due to auth requirements and real-time incident data
 export const dynamic = "force-dynamic";
 
+/**
+ * Incidents List Page Component
+ *
+ * Server component that renders the main incident management dashboard with real-time
+ * statistics, filtering options, and incident cards. Fetches incident data server-side
+ * for optimal performance and SEO.
+ *
+ * @component
+ * @async
+ *
+ * @returns {Promise<JSX.Element>} Rendered incidents dashboard with statistics, filters, and incident grid
+ *
+ * @description
+ * Displays comprehensive incident dashboard with:
+ * - Statistics cards showing incident counts by status
+ * - Quick filter badges for incident types and statuses
+ * - Grid layout of incident cards with severity and status indicators
+ * - Navigation to analytics, reports, and incident creation
+ *
+ * Data is fetched server-side with:
+ * - 50 incidents per page (pagination supported)
+ * - Sorted by incident date descending (most recent first)
+ * - Filtered by user permissions (handled in listIncidents action)
+ *
+ * @example
+ * ```tsx
+ * // Rendered automatically at route /incidents
+ * // No props required - server component fetches own data
+ * <IncidentsListPage />
+ * ```
+ */
 export default async function IncidentsListPage() {
+  // Fetch incidents with pagination and sorting
+  // listIncidents action handles authentication and authorization
   const result = await listIncidents({ limit: 50, sortBy: 'incidentDate', sortOrder: 'desc' });
   const incidents = result.data?.incidents || [];
+
+  // Calculate real-time statistics from current incident set
+  // These stats reflect only incidents visible to the current user based on their role
   const stats = result.data
     ? {
         total: result.data.total,
+        // Count incidents by status for dashboard cards
         pending: incidents.filter((i) => i.status === 'PENDING_REVIEW').length,
         investigating: incidents.filter((i) => i.status === 'UNDER_INVESTIGATION').length,
         requiresAction: incidents.filter((i) => i.status === 'REQUIRES_ACTION').length,

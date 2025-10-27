@@ -1,15 +1,36 @@
 /**
- * Admin Monitoring Layout
+ * @fileoverview Admin Monitoring Layout
  *
- * Layout wrapper for all monitoring pages with navigation tabs.
+ * Shared layout wrapper for all admin monitoring pages, providing consistent
+ * navigation tabs, header, and page structure. Includes tabs for system health,
+ * performance metrics, error logs, analytics, and active sessions.
  *
  * @module app/admin/monitoring/layout
+ * @requires next/link
+ * @requires lucide-react
+ *
+ * @security RBAC - Requires 'admin' or 'system_administrator' role
+ * @audit Monitoring section access logged for compliance
+ * @compliance HIPAA - System monitoring required for operational compliance
+ *
+ * @architecture Layout Component - Wraps all monitoring child pages
+ * @rendering Server Component with client-side navigation
+ *
  * @since 2025-10-26
  */
 
 import Link from 'next/link'
 import { Activity, TrendingUp, AlertTriangle, BarChart3, Users } from 'lucide-react'
 
+/**
+ * Configuration for monitoring navigation tabs.
+ *
+ * Each tab represents a major monitoring category with its own dedicated page.
+ * Icons are from lucide-react for consistent visual design.
+ *
+ * @constant
+ * @type {Array<{name: string, href: string, icon: React.ComponentType}>}
+ */
 const monitoringTabs = [
   {
     name: 'System Health',
@@ -38,6 +59,27 @@ const monitoringTabs = [
   },
 ]
 
+/**
+ * Admin monitoring layout component providing consistent navigation and structure.
+ *
+ * Wraps all monitoring child pages with a shared header and tab navigation,
+ * enabling easy switching between monitoring categories while maintaining
+ * visual consistency and user context.
+ *
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child page content to render
+ * @returns {JSX.Element} Monitoring layout with navigation and content area
+ *
+ * @security Admin-only section - RBAC enforced at route level
+ * @accessibility Navigation uses semantic HTML with aria-label for screen readers
+ *
+ * @example
+ * ```tsx
+ * // Automatically wraps child routes like:
+ * // /admin/monitoring/health -> renders SystemHealthPage within this layout
+ * // /admin/monitoring/performance -> renders PerformancePage within this layout
+ * ```
+ */
 export default function MonitoringLayout({
   children,
 }: {

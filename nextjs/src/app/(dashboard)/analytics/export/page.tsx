@@ -1,6 +1,60 @@
 /**
- * Data Export Page
- * Bulk export functionality for analytics data
+ * @fileoverview Analytics Data Export Page
+ *
+ * Comprehensive bulk export interface for exporting analytics datasets in multiple
+ * formats (CSV, Excel, PDF). Provides dataset selection, filtering options, and
+ * HIPAA-compliant data handling with de-identification capabilities.
+ *
+ * @module app/(dashboard)/analytics/export/page
+ *
+ * @remarks
+ * Available datasets for export:
+ * - Health Metrics: All health measurements and vital signs (2,847 records)
+ * - Medication Compliance: Medication administration records (913 records)
+ * - Appointments: Appointment history and analytics (1,245 records)
+ * - Incident Reports: All incident reports and follow-ups (342 records)
+ * - Inventory: Medication inventory and usage data (2,090 records)
+ *
+ * Export features:
+ * - Dataset selection with record count preview
+ * - Date range filtering for temporal scoping
+ * - Metadata inclusion option
+ * - PHI de-identification option (HIPAA compliance)
+ * - Multiple export formats: CSV, Excel, PDF
+ * - Export summary with data preview
+ *
+ * HIPAA compliance features:
+ * - **De-identification option**: Remove Protected Health Information
+ * - **Audit logging**: All exports logged for compliance tracking
+ * - **Access control**: Only authorized users can export data
+ * - **Encryption**: Exported files should be encrypted (implementation note)
+ * - **HIPAA notice**: Explicit warning about PHI handling requirements
+ *
+ * Performance:
+ * - Client Component for interactive selection and filtering
+ * - Mock data generation for demonstration (100 records shown)
+ * - In production: Server-side data aggregation and export
+ * - Progress indicators during large exports
+ *
+ * Security considerations:
+ * - Export activity logged with user ID and timestamp
+ * - Data scoped to user's authorized access level
+ * - PHI handling warnings and user acknowledgment
+ * - Secure download mechanisms (not direct file paths)
+ *
+ * @example
+ * ```tsx
+ * // Route: /analytics/export
+ * // Clinical administrator workflow:
+ * // 1. Select "Health Metrics" dataset
+ * // 2. Set date range: Last 90 days
+ * // 3. Enable "De-identify data" option
+ * // 4. Export as Excel for external analysis
+ * // 5. Acknowledge HIPAA compliance requirements
+ * ```
+ *
+ * @see {@link /analytics} - Main analytics dashboard
+ * @see {@link DataExporter} - Export component with format options
  */
 
 'use client';
@@ -9,10 +63,83 @@ import { useState } from 'react';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { Download, Calendar, Database, Filter } from 'lucide-react';
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Force dynamic rendering for user-specific export permissions
+ *
+ * @type {"force-dynamic"}
+ */
 export const dynamic = "force-dynamic";
 
-
+/**
+ * Analytics Export Page Component
+ *
+ * Interactive interface for bulk analytics data export with dataset selection,
+ * filtering, and HIPAA-compliant de-identification options.
+ *
+ * @returns {JSX.Element} Data export page with dataset selector and options
+ *
+ * @remarks
+ * Component structure:
+ * 1. Header with title and description
+ * 2. Dataset Selection: Grid of available datasets with record counts
+ * 3. Export Filters: Date range and options (metadata, de-identification)
+ * 4. Export Summary: Preview of selected data and date range
+ * 5. DataExporter: Component with format selection (CSV, Excel, PDF)
+ * 6. HIPAA Notice: Warning about PHI handling requirements
+ *
+ * State management:
+ * - `selectedDataset`: Currently selected dataset ID
+ * - `dateRange`: Selected date range for filtering {start, end}
+ *
+ * Dataset structure:
+ * ```typescript
+ * {
+ *   id: string,              // "health-metrics", "medication-compliance"
+ *   name: string,            // "Health Metrics"
+ *   description: string,     // "All health measurements and vital signs"
+ *   recordCount: number      // 2847
+ * }
+ * ```
+ *
+ * Export data transformation:
+ * - Health Metrics → {id, studentName, date, metricType, value}
+ * - Medication Compliance → {id, studentName, medication, date, status}
+ * - Additional datasets follow similar patterns
+ *
+ * Mock data generation:
+ * - `getMockData(datasetId)`: Generates 100 sample records per dataset
+ * - In production: Fetch from server with pagination and streaming
+ * - Large datasets should use chunked exports
+ *
+ * De-identification process:
+ * - Remove student names → Replace with anonymous IDs
+ * - Remove dates of birth → Use age ranges instead
+ * - Remove specific locations → Use facility/zone only
+ * - Aggregate small counts → Prevent re-identification
+ *
+ * Export formats:
+ * - **CSV**: Simple text format, universal compatibility
+ * - **Excel**: Formatted spreadsheet with multiple sheets
+ * - **PDF**: Formatted report with title, subtitle, and footer
+ *
+ * HIPAA notice content:
+ * - Warns about PHI in exports
+ * - Requires proper handling and transmission
+ * - Mentions audit logging
+ * - Recommends de-identification when possible
+ *
+ * @example
+ * ```tsx
+ * // User exports medication compliance data:
+ * // 1. Selects "Medication Compliance" (913 records)
+ * // 2. Sets date range: Jan 1 - Mar 31 (90 days)
+ * // 3. Enables "De-identify data" checkbox
+ * // 4. Reviews export summary
+ * // 5. Clicks "Export as Excel"
+ * // 6. Receives file: medication_compliance_export.xlsx
+ * // 7. Data shows anonymous student IDs instead of names
+ * ```
+ */
 export default function ExportPage() {
   const [selectedDataset, setSelectedDataset] = useState<string>('health-metrics');
   const [dateRange, setDateRange] = useState({

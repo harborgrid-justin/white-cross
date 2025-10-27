@@ -2,7 +2,70 @@
  * @fileoverview Recurring Appointments Management Page
  * @module app/appointments/recurring
  *
- * Manage recurring appointment series with create, edit, and delete capabilities.
+ * Specialized interface for managing recurring appointment series in healthcare settings.
+ * Enables school nurses to create, edit, and manage repeating appointment patterns for
+ * students requiring regular health interventions (medication administration, therapy
+ * sessions, wellness checks).
+ *
+ * **Recurring Appointment Patterns:**
+ * The system supports three recurrence types with flexible configuration:
+ *
+ * 1. **Daily Recurrence**
+ *    - Repeat every N days (1-7 days interval)
+ *    - Use Case: Daily medication administration, wound care
+ *    - Example: "Every 2 days for 2 weeks"
+ *
+ * 2. **Weekly Recurrence**
+ *    - Repeat on specific days of the week (M, T, W, Th, F)
+ *    - Multi-day selection supported (e.g., Mon/Wed/Fri)
+ *    - Use Case: Physical therapy, counseling sessions
+ *    - Example: "Every Monday and Friday for 8 weeks"
+ *
+ * 3. **Monthly Recurrence**
+ *    - Repeat on specific day of month (e.g., "15th of each month")
+ *    - OR repeat on day-of-week pattern (e.g., "2nd Tuesday of each month")
+ *    - Use Case: Monthly wellness checks, immunization follow-ups
+ *    - Example: "First Friday of every month for 6 months"
+ *
+ * **Series Management:**
+ * - **Edit Single Occurrence**: Modify one appointment without affecting series
+ * - **Edit Future Occurrences**: Update all appointments from a specific date forward
+ * - **Cancel Single**: Cancel one occurrence, mark as exception
+ * - **Cancel Series**: Cancel all future appointments in series
+ *
+ * **Healthcare Use Cases:**
+ * - Medication administration schedules (daily insulin, ADHD meds)
+ * - Physical therapy sessions (2-3x per week for multiple weeks)
+ * - Regular health monitoring (weekly blood pressure checks)
+ * - Counseling appointments (weekly mental health sessions)
+ * - Immunization series (multi-dose vaccines with specific intervals)
+ *
+ * **Conflict Detection:**
+ * - Validates against existing appointments to prevent scheduling conflicts
+ * - Checks nurse availability across all generated occurrences
+ * - Warns when recurrence pattern creates overlapping appointments
+ *
+ * **Performance Considerations:**
+ * - Recurrence patterns generate appointments on-demand, not all at once
+ * - Maximum series length: 52 weeks (1 year) to prevent database bloat
+ * - Background job handles series generation for minimal UI blocking
+ *
+ * @see {@link RecurringAppointmentManager} for the series management component
+ *
+ * @example
+ * ```tsx
+ * // Create daily recurrence:
+ * // Pattern: Every weekday (Mon-Fri) for 4 weeks
+ * // Generates: 20 appointments (5 days × 4 weeks)
+ *
+ * // Create weekly recurrence:
+ * // Pattern: Every Monday and Wednesday for 8 weeks
+ * // Generates: 16 appointments (2 days × 8 weeks)
+ *
+ * // Create monthly recurrence:
+ * // Pattern: First Friday of each month for 6 months
+ * // Generates: 6 appointments (1 per month × 6 months)
+ * ```
  */
 
 import { Suspense } from 'react';
@@ -13,16 +76,63 @@ import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { RecurringAppointmentManager } from '@/components/appointments/RecurringAppointmentManager';
 
+/**
+ * Next.js Metadata Configuration
+ *
+ * SEO and browser metadata for recurring appointments management page.
+ */
 export const metadata: Metadata = {
   title: 'Recurring Appointments | White Cross',
   description: 'Manage recurring appointment series',
 };
 
-// Force dynamic rendering due to auth requirements
+/**
+ * Next.js Rendering Mode Configuration
+ *
+ * Forces dynamic rendering for authentication and real-time series data.
+ *
+ * @constant {string} dynamic - Disables static generation
+ */
 export const dynamic = "force-dynamic";
 
+/**
+ * Recurring Appointments Page Component
+ *
+ * Server component that provides the interface for managing recurring appointment
+ * series. Handles authentication and delegates series management to the client-side
+ * RecurringAppointmentManager component.
+ *
+ * **Component Responsibilities:**
+ * - Authenticate user before displaying series management interface
+ * - Provide informational guidance on recurring appointment patterns
+ * - Display guidelines for appropriate use cases
+ * - Render the RecurringAppointmentManager with user context
+ *
+ * **Series Creation Flow:**
+ * 1. User clicks "Create Recurring Series" button
+ * 2. Modal opens with pattern configuration options
+ * 3. User selects recurrence type (daily/weekly/monthly)
+ * 4. User configures pattern details and end date
+ * 5. System validates pattern and checks for conflicts
+ * 6. Background job generates appointment occurrences
+ * 7. User sees series summary and can edit individual occurrences
+ *
+ * **Accessibility:**
+ * - Recurrence pattern controls are keyboard-navigable
+ * - Day-of-week selectors support arrow key navigation
+ * - Series preview is announced to screen readers
+ * - Error messages for invalid patterns are clearly communicated
+ *
+ * @returns {Promise<JSX.Element>} Rendered recurring appointments management page
+ *
+ * @example
+ * ```tsx
+ * // Server renders this page when user navigates to /appointments/recurring
+ * // Checks authentication, then displays series management interface
+ * ```
+ */
 export default async function RecurringPage() {
-  // Authentication check
+  // Authentication check - redirect unauthenticated users to login
   const session = await auth();
   if (!session?.user) {
     redirect('/login');
@@ -47,10 +157,12 @@ export default async function RecurringPage() {
         </Button>
       </div>
 
-      {/* Info Card */}
+      {/* Informational Card - Explains recurring appointments concept */}
+      {/* Provides context for nurses unfamiliar with series functionality */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex">
           <div className="flex-shrink-0">
+            {/* Information icon for visual context */}
             <svg
               className="h-5 w-5 text-blue-400"
               fill="currentColor"
@@ -78,15 +190,26 @@ export default async function RecurringPage() {
         </div>
       </div>
 
-      {/* Recurring Appointment Manager */}
+      {/* Recurring Appointment Manager Component */}
+      {/* Client-side component that handles series CRUD operations */}
+      {/* Provides pattern configuration, series preview, and conflict detection */}
       <div className="bg-white rounded-lg shadow p-6">
         <Suspense
           fallback={
             <div className="py-12 flex items-center justify-center">
+              {/* Loading state while manager component initializes */}
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           }
         >
+          {/*
+            RecurringAppointmentManager: Interactive series management interface
+            - Series creation wizard with pattern configuration
+            - Series list with edit/delete actions
+            - Individual occurrence override capabilities
+            - Conflict detection and validation
+            - Series preview showing all generated appointments
+          */}
           <RecurringAppointmentManager userId={session.user.id} />
         </Suspense>
       </div>

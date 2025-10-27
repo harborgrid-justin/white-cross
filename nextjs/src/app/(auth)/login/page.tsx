@@ -1,17 +1,64 @@
 'use client';
 
 /**
- * Login Page - User Authentication
+ * @fileoverview Login Page - Primary Authentication Interface
  *
- * Accessible login form with:
- * - Email and password authentication
- * - Remember me functionality
- * - Forgot password link
- * - OAuth login options (Google, Microsoft)
- * - Comprehensive error handling
- * - WCAG 2.1 AA compliant
+ * This page implements the main authentication interface for White Cross Healthcare Platform.
+ * It provides secure credential-based login with JWT token management, OAuth integration,
+ * and comprehensive error handling. The implementation follows HIPAA security requirements
+ * and WCAG 2.1 AA accessibility standards.
  *
- * @module app/login/page
+ * @module app/(auth)/login/page
+ * @category Authentication
+ * @subcategory Pages
+ *
+ * @route /login - Primary authentication endpoint
+ * @route /login?redirect=/path - Login with redirect after success
+ * @route /login?error=session_expired - Login with error context
+ *
+ * @requires react
+ * @requires next/navigation
+ * @requires @/contexts/AuthContext
+ *
+ * @security
+ * - JWT token-based authentication with secure HttpOnly cookies
+ * - Password visibility toggle for user convenience
+ * - CSRF protection through same-site cookie policy
+ * - Rate limiting on authentication attempts (server-side)
+ * - No password storage in client state or localStorage
+ * - OAuth 2.0 flows for Google and Microsoft authentication
+ *
+ * @compliance HIPAA
+ * - User authentication required before PHI access
+ * - Session timeout enforcement (15 minutes idle)
+ * - Audit logging of authentication events (server-side)
+ * - Complies with HIPAA Security Rule § 164.312(a)(2)(i) - Unique User Identification
+ * - Complies with HIPAA Security Rule § 164.312(d) - Person or Entity Authentication
+ *
+ * @accessibility WCAG 2.1 AA
+ * - Keyboard navigation support for all interactive elements
+ * - Screen reader compatible with proper ARIA labels
+ * - Error messages announced via aria-live regions
+ * - High contrast mode support
+ * - Focus management for form validation errors
+ *
+ * @example
+ * ```tsx
+ * // Basic navigation to login
+ * router.push('/login');
+ *
+ * // Login with redirect
+ * router.push('/login?redirect=/dashboard');
+ *
+ * // Login with error context
+ * router.push('/login?error=session_expired');
+ * ```
+ *
+ * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html | HIPAA Security Rule}
+ * @see {@link https://www.w3.org/WAI/WCAG21/quickref/ | WCAG 2.1 Guidelines}
+ * @see {@link useAuth} for authentication context and login method
+ *
+ * @since 1.0.0
  */
 
 import { useState, useEffect, FormEvent } from 'react';
@@ -19,6 +66,86 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
+/**
+ * Login Page Component
+ *
+ * Implements a comprehensive authentication interface with email/password credentials,
+ * OAuth integration, and sophisticated error handling. The component manages form state,
+ * validation, and authentication flow while maintaining security best practices.
+ *
+ * **Authentication Flow:**
+ * 1. User enters email and password
+ * 2. Form validation on submit
+ * 3. Credentials sent to backend API via AuthContext.login()
+ * 4. Backend validates credentials and generates JWT tokens
+ * 5. Access token stored in HttpOnly cookie
+ * 6. Refresh token stored securely for session extension
+ * 7. User redirected to original destination or dashboard
+ *
+ * **State Management:**
+ * - Email and password: Controlled form inputs
+ * - Remember me: Extends session duration when checked
+ * - Show password: Toggle for password visibility
+ * - Error: Displays authentication and validation errors
+ * - IsSubmitting: Prevents double submission and shows loading state
+ *
+ * **Error Handling:**
+ * - URL error parameters (session_expired, unauthorized, invalid_token)
+ * - AuthContext errors (invalid credentials, network failures)
+ * - Form validation errors (empty fields, invalid email format)
+ * - All errors displayed in accessible alert component
+ *
+ * **Security Features:**
+ * - Password never stored in component state longer than submission
+ * - Automatic redirect if already authenticated (prevent duplicate sessions)
+ * - Error messages don't expose system details
+ * - Form disabled during submission to prevent timing attacks
+ * - OAuth state parameter for CSRF protection (handled by auth provider)
+ *
+ * @returns {JSX.Element} The login page with form, error handling, and OAuth options
+ *
+ * @example
+ * ```tsx
+ * // This page is rendered at /login route
+ * <LoginPage />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Example authentication flow:
+ * // 1. User submits form
+ * await login(email, password, rememberMe);
+ * // 2. AuthContext calls backend API
+ * POST /api/auth/login { email, password, rememberMe }
+ * // 3. Backend returns JWT tokens
+ * { accessToken: "...", refreshToken: "...", user: {...} }
+ * // 4. Tokens stored in HttpOnly cookies
+ * Set-Cookie: accessToken=...; HttpOnly; Secure; SameSite=Strict
+ * // 5. User redirected to dashboard or original destination
+ * router.push(redirectTo);
+ * ```
+ *
+ * @remarks
+ * This is a Next.js Client Component ('use client') because it:
+ * - Manages interactive form state
+ * - Uses client-side routing hooks (useRouter, useSearchParams)
+ * - Accesses authentication context (useAuth)
+ * - Handles real-time form validation and error display
+ *
+ * **Remember Me Functionality:**
+ * When checked, extends the refresh token expiration from 24 hours to 30 days,
+ * allowing users to remain logged in across browser sessions. Access tokens
+ * still expire after 15 minutes for HIPAA compliance.
+ *
+ * **OAuth Integration:**
+ * Google and Microsoft OAuth buttons initiate standard OAuth 2.0 authorization
+ * code flow. The backend handles token exchange, user profile fetching, and
+ * account creation/linking.
+ *
+ * @see {@link useAuth} - Authentication context providing login method
+ * @see {@link useRouter} - Next.js router for navigation and redirects
+ * @see {@link useSearchParams} - Access to URL query parameters
+ */
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,18 +159,49 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get redirect URL from query params
+  /**
+   * Extract redirect destination and error context from URL query parameters
+   *
+   * redirectTo: Used for post-login navigation. Defaults to '/' (home) if not specified.
+   * Example: /login?redirect=/dashboard → after login, navigate to /dashboard
+   *
+   * errorParam: Provides context for why user was sent to login page.
+   * Used to display appropriate error messages (session expired, unauthorized, etc.)
+   */
   const redirectTo = searchParams.get('redirect') || '/';
   const errorParam = searchParams.get('error');
 
-  // Redirect if already authenticated
+  /**
+   * Automatic redirect for already-authenticated users
+   *
+   * This effect prevents authenticated users from seeing the login page by immediately
+   * redirecting them to their intended destination. This handles scenarios where:
+   * - User manually navigates to /login while logged in
+   * - User clicks a login link but session is still active
+   * - Browser back button returns to /login after successful authentication
+   *
+   * Security benefit: Prevents confusion and unnecessary re-authentication attempts
+   */
   useEffect(() => {
     if (isAuthenticated) {
       router.push(redirectTo);
     }
   }, [isAuthenticated, router, redirectTo]);
 
-  // Handle URL error parameters
+  /**
+   * Process URL error parameters into user-friendly error messages
+   *
+   * This effect handles error scenarios communicated via URL query parameters,
+   * typically set by middleware or server-side redirects. Common scenarios:
+   *
+   * - invalid_token: JWT token malformed or signature verification failed
+   * - session_expired: Idle timeout or token expiration (15 min)
+   * - unauthorized: Attempted to access protected route without authentication
+   * - Other: Catch-all for unexpected error conditions
+   *
+   * Error messages are intentionally generic to prevent information disclosure
+   * about the system's authentication mechanisms.
+   */
   useEffect(() => {
     if (errorParam) {
       switch (errorParam) {
@@ -62,9 +220,24 @@ export default function LoginPage() {
     }
   }, [errorParam]);
 
-  // Handle auth errors
-  // Note: clearError is stable (wrapped in useCallback), but we only want to
-  // run this effect when authError changes, not when clearError reference changes
+  /**
+   * Synchronize authentication context errors to component error state
+   *
+   * This effect listens for errors from the AuthContext (e.g., invalid credentials,
+   * network failures, server errors) and displays them in the login form's error alert.
+   * After capturing the error, clearError() is called to reset context state and
+   * prevent the same error from appearing on subsequent login attempts.
+   *
+   * Note: clearError is wrapped in useCallback in AuthContext, making it stable.
+   * We intentionally exclude it from dependencies to avoid unnecessary re-runs.
+   * The effect only needs to respond to new authError values.
+   *
+   * Common authError scenarios:
+   * - Invalid credentials: "Invalid email or password"
+   * - Network failure: "Unable to connect. Please check your connection."
+   * - Account locked: "Too many failed attempts. Try again in 15 minutes."
+   * - Server error: "An unexpected error occurred. Please try again."
+   */
   useEffect(() => {
     if (authError) {
       setError(authError);
@@ -73,18 +246,85 @@ export default function LoginPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authError]); // clearError is stable and doesn't need to be in deps
 
-  // Handle form submission
+  /**
+   * Handles login form submission with validation and error handling
+   *
+   * This async function manages the complete authentication flow when the user submits
+   * the login form. It prevents default form submission, validates inputs, calls the
+   * authentication API, and handles success/error states appropriately.
+   *
+   * **Execution Flow:**
+   * 1. Prevent default HTML form submission (avoid page reload)
+   * 2. Clear any previous error messages
+   * 3. Set submitting state (disable form, show loading spinner)
+   * 4. Call AuthContext.login() with credentials
+   * 5. If successful, useEffect handles redirect based on isAuthenticated
+   * 6. If error, display user-friendly error message
+   * 7. Always reset submitting state in finally block
+   *
+   * **JWT Token Management:**
+   * The login() method in AuthContext handles:
+   * - Sending credentials to POST /api/auth/login
+   * - Receiving JWT access token and refresh token
+   * - Storing tokens in HttpOnly cookies for security
+   * - Setting user profile in context state
+   * - Triggering isAuthenticated state change (causes redirect)
+   *
+   * **Security Considerations:**
+   * - Form disabled during submission prevents timing attacks
+   * - Error messages are generic to prevent username enumeration
+   * - Password cleared from memory after submission (handled by React)
+   * - No credentials logged to console or error tracking
+   *
+   * @param {FormEvent<HTMLFormElement>} e - Form submission event
+   * @returns {Promise<void>} Async function that completes on auth success/failure
+   *
+   * @throws {Error} Propagated from AuthContext.login() for network or auth failures
+   *
+   * @example
+   * ```tsx
+   * // User fills form and clicks "Sign in" button
+   * <form onSubmit={handleSubmit}>
+   *   <input type="email" value={email} onChange={...} />
+   *   <input type="password" value={password} onChange={...} />
+   *   <button type="submit">Sign in</button>
+   * </form>
+   *
+   * // When submitted:
+   * // 1. handleSubmit prevents page reload
+   * // 2. Calls login('user@example.com', 'password', false)
+   * // 3. Backend validates and returns JWT
+   * // 4. isAuthenticated becomes true
+   * // 5. useEffect redirects to redirectTo destination
+   * ```
+   *
+   * @remarks
+   * The redirect after successful login is handled by the useEffect hook that watches
+   * isAuthenticated state, not directly in this function. This separation ensures proper
+   * React lifecycle management and prevents race conditions.
+   *
+   * **Error Handling Strategy:**
+   * - Network errors: "Unable to connect. Please check your connection."
+   * - Invalid credentials: "Invalid email or password"
+   * - Account locked: "Account temporarily locked. Contact administrator."
+   * - Generic fallback: "Login failed. Please try again."
+   *
+   * @see {@link useAuth.login} - AuthContext method for authentication
+   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
+      // Call AuthContext login method which handles JWT token management
       await login(email, password, rememberMe);
-      // Redirect handled by useEffect above
+      // Successful login: redirect handled by useEffect that watches isAuthenticated
     } catch (err) {
+      // Display user-friendly error without exposing system details
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
+      // Always reset submitting state to re-enable form
       setIsSubmitting(false);
     }
   };

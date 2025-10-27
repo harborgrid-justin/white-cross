@@ -1,24 +1,162 @@
 /**
- * Global Error Boundary
+ * @fileoverview Global Error Boundary - Ultimate Fallback
  *
- * Catches errors in the root layout and provides fallback UI
- * This only catches errors in production - in development, the error overlay is shown
+ * The highest-level error boundary in the Next.js application that catches errors occurring
+ * in the root layout.tsx file. This is the last line of defense for error handling and only
+ * activates in production (development shows the error overlay). Provides a complete HTML
+ * document as fallback since it replaces the entire root layout.
  *
- * @see https://nextjs.org/docs/app/api-reference/file-conventions/error
+ * @module app/global-error
+ * @category Error Handling
+ * @subcategory Error Boundaries
+ *
+ * **Error Boundary Hierarchy:**
+ * ```
+ * global-error.tsx (this file - HIGHEST LEVEL, catches root layout errors)
+ * └── error.tsx (catches all other application errors)
+ *     └── [Feature error boundaries] (feature-specific error handling)
+ * ```
+ *
+ * **Key Differences from error.tsx:**
+ * - Must include `<html>` and `<body>` tags (replaces entire root layout)
+ * - Only activates in production (dev uses error overlay)
+ * - Catches errors in root layout.tsx
+ * - Cannot rely on any layout components or providers
+ * - Must be completely self-contained
+ *
+ * **Key Features:**
+ * - Complete HTML document with inline styles
+ * - HIPAA-compliant error logging (no PHI exposure)
+ * - Sentry integration for error tracking
+ * - Professional error UI with gradient background
+ * - Multiple recovery actions
+ * - Development error details
+ * - Support contact information
+ * - HIPAA compliance notice
+ *
+ * **Error Logging:**
+ * - Console logging with timestamp
+ * - Sentry exception capture (if available)
+ * - Error digest for production debugging
+ * - No PHI data included
+ *
+ * **When This Activates:**
+ * - Error in root layout.tsx
+ * - Error in app/providers.tsx during initialization
+ * - Critical rendering errors that error.tsx cannot catch
+ * - Unhandled promise rejections in root scope
+ *
+ * @requires Client Component - Uses React hooks and browser APIs
+ *
+ * @see {@link https://nextjs.org/docs/app/api-reference/file-conventions/error#global-error | Next.js Global Error}
+ * @see {@link https://nextjs.org/docs/app/building-your-application/routing/error-handling | Error Handling Guide}
+ *
+ * @example
+ * ```tsx
+ * // This global error boundary catches errors like:
+ * // app/layout.tsx
+ * export default function RootLayout({ children }) {
+ *   throw new Error('Critical layout error'); // Caught by global-error.tsx
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Provider initialization error:
+ * // app/providers.tsx
+ * export function Providers({ children }) {
+ *   throw new Error('Provider init failed'); // Caught by global-error.tsx
+ * }
+ * ```
+ *
+ * @since 1.0.0
  */
 
 'use client';
 
 import { useEffect } from 'react';
 
+/**
+ * Props interface for the Global Error Boundary component.
+ *
+ * @interface GlobalErrorProps
+ * @property {Error & { digest?: string }} error - Error object with optional Next.js digest
+ * @property {() => void} reset - Function to attempt error recovery by reloading
+ */
 interface GlobalErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
 /**
- * Global error handler for unrecoverable errors
- * Provides HIPAA-compliant error logging without exposing sensitive data
+ * Global Error Boundary Component
+ *
+ * Ultimate fallback error handler that catches errors in the root layout. Provides a
+ * complete HTML document as fallback UI since it replaces the entire application shell.
+ * This is the most critical error boundary and must be completely self-contained.
+ *
+ * **Error Logging Strategy:**
+ * 1. Console logging with structured data (timestamp, digest)
+ * 2. Sentry integration (if available in window object)
+ * 3. No PHI data included in logs (HIPAA compliance)
+ * 4. Error digest for production debugging
+ *
+ * **Fallback UI Features:**
+ * - Complete HTML document (<html>, <body>)
+ * - Self-contained styles (no external stylesheets)
+ * - Gradient background for visual appeal
+ * - Responsive card layout
+ * - Error icon with semantic meaning
+ * - Contextual messaging (dev vs production)
+ * - Multiple recovery options
+ * - Support contact information
+ * - HIPAA compliance notice
+ *
+ * **Recovery Actions:**
+ * 1. Try Again - Calls reset() to attempt re-render
+ * 2. Go to Dashboard - Forces navigation to /dashboard
+ *
+ * **Accessibility:**
+ * - Semantic HTML structure
+ * - High-contrast colors
+ * - Keyboard-accessible buttons
+ * - Screen reader compatible
+ * - Responsive design
+ *
+ * @param {GlobalErrorProps} props - Component properties
+ * @param {Error} props.error - The error that was caught
+ * @param {string} [props.error.message] - Error message
+ * @param {string} [props.error.digest] - Next.js error digest (production)
+ * @param {() => void} props.reset - Function to reset error boundary
+ *
+ * @returns {JSX.Element} Complete HTML document with error fallback UI
+ *
+ * @example
+ * ```tsx
+ * // Automatic usage by Next.js:
+ * // When a critical error occurs in root layout:
+ * <GlobalError error={layoutError} reset={resetFn} />
+ * ```
+ *
+ * @remarks
+ * **Critical Implementation Notes:**
+ * - MUST include `<html>` and `<body>` tags
+ * - Cannot import or use layout components
+ * - Cannot rely on global styles (must inline)
+ * - Only activates in production builds
+ * - Development uses Next.js error overlay instead
+ *
+ * **HIPAA Compliance:**
+ * - Error logs exclude all PHI data
+ * - Generic error messages in production
+ * - Secure error tracking integration
+ * - Compliance notice displayed to users
+ *
+ * **Monitoring Integration:**
+ * - Checks for Sentry in window object
+ * - Captures exception with tags
+ * - Includes error boundary identifier
+ * - Tracks error digest for correlation
  */
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
