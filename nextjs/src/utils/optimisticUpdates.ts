@@ -309,13 +309,13 @@ export class OptimisticUpdateManager {
     };
 
     // Store update
-    this.updates.set(updateId, update);
+    this.updates.set(updateId, update as OptimisticUpdate<unknown>);
 
     // Apply optimistic update
     this.applyUpdate(queryClient, update);
 
     // Notify listeners
-    this.notifyListeners(update);
+    this.notifyListeners(update as OptimisticUpdate<unknown>);
 
     return updateId;
   }
@@ -569,7 +569,7 @@ export class OptimisticUpdateManager {
   private applyUpdate<T>(queryClient: QueryClient, update: OptimisticUpdate<T>): void {
     queryClient.setQueryData(update.queryKey, update.optimisticData);
     update.status = UpdateStatus.APPLIED;
-    this.notifyListeners(update);
+    this.notifyListeners(update as OptimisticUpdate<unknown>);
   }
 
   private async applyRollbackStrategy<T>(
@@ -589,7 +589,7 @@ export class OptimisticUpdateManager {
 
       case RollbackStrategy.KEEP_STALE:
         // Mark as stale but keep optimistic data
-        queryClient.invalidateQueries({ queryKey: update.queryKey, refetchType: 'none' });
+        await queryClient.invalidateQueries({ queryKey: update.queryKey });
         break;
 
       case RollbackStrategy.CUSTOM:
@@ -626,8 +626,8 @@ export class OptimisticUpdateManager {
       detectedAt: Date.now(),
     };
 
-    this.conflicts.set(update.id, conflict);
-    this.notifyListeners(update);
+    this.conflicts.set(update.id, conflict as ConflictResolution<unknown>);
+    this.notifyListeners(update as OptimisticUpdate<unknown>);
 
     // Auto-resolve based on strategy
     if (update.conflictStrategy !== ConflictResolutionStrategy.MANUAL && queryClient) {

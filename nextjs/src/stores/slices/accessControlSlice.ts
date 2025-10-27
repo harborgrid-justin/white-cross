@@ -388,37 +388,37 @@ const accessControlSlice = createSlice({
   name: 'accessControl',
   initialState,
   reducers: {
-    setSelectedRole: (state, action: PayloadAction<any | null>) => {
+    setSelectedRole: (state: AccessControlState, action: PayloadAction<any | null>) => {
       state.selectedRole = action.payload;
     },
-    setSelectedPermission: (state, action: PayloadAction<any | null>) => {
+    setSelectedPermission: (state: AccessControlState, action: PayloadAction<any | null>) => {
       state.selectedPermission = action.payload;
     },
-    setSelectedIncident: (state, action: PayloadAction<any | null>) => {
+    setSelectedIncident: (state: AccessControlState, action: PayloadAction<any | null>) => {
       state.selectedIncident = action.payload;
     },
-    setIncidentFilters: (state, action: PayloadAction<Partial<AccessControlState['filters']['incidents']>>) => {
+    setIncidentFilters: (state: AccessControlState, action: PayloadAction<Partial<AccessControlState['filters']['incidents']>>) => {
       state.filters.incidents = { ...state.filters.incidents, ...action.payload };
     },
-    setSessionFilters: (state, action: PayloadAction<Partial<AccessControlState['filters']['sessions']>>) => {
+    setSessionFilters: (state: AccessControlState, action: PayloadAction<Partial<AccessControlState['filters']['sessions']>>) => {
       state.filters.sessions = { ...state.filters.sessions, ...action.payload };
     },
-    setRolesPagination: (state, action: PayloadAction<Partial<AccessControlState['pagination']['roles']>>) => {
+    setRolesPagination: (state: AccessControlState, action: PayloadAction<Partial<AccessControlState['pagination']['roles']>>) => {
       state.pagination.roles = { ...state.pagination.roles, ...action.payload };
     },
-    setPermissionsPagination: (state, action: PayloadAction<Partial<AccessControlState['pagination']['permissions']>>) => {
+    setPermissionsPagination: (state: AccessControlState, action: PayloadAction<Partial<AccessControlState['pagination']['permissions']>>) => {
       state.pagination.permissions = { ...state.pagination.permissions, ...action.payload };
     },
-    setIncidentsPagination: (state, action: PayloadAction<Partial<AccessControlState['pagination']['incidents']>>) => {
+    setIncidentsPagination: (state: AccessControlState, action: PayloadAction<Partial<AccessControlState['pagination']['incidents']>>) => {
       state.pagination.incidents = { ...state.pagination.incidents, ...action.payload };
     },
-    setSessionsPagination: (state, action: PayloadAction<Partial<AccessControlState['pagination']['sessions']>>) => {
+    setSessionsPagination: (state: AccessControlState, action: PayloadAction<Partial<AccessControlState['pagination']['sessions']>>) => {
       state.pagination.sessions = { ...state.pagination.sessions, ...action.payload };
     },
-    clearError: (state) => {
+    clearError: (state: AccessControlState) => {
       state.error = null;
     },
-    addNotification: (state, action: PayloadAction<Omit<AccessControlState['notifications'][0], 'id' | 'timestamp'>>) => {
+    addNotification: (state: AccessControlState, action: PayloadAction<Omit<AccessControlState['notifications'][0], 'id' | 'timestamp'>>) => {
       const notification = {
         ...action.payload,
         id: `notification_${Date.now()}_${Math.random()}`,
@@ -426,13 +426,13 @@ const accessControlSlice = createSlice({
       };
       state.notifications.push(notification);
     },
-    removeNotification: (state, action: PayloadAction<string>) => {
-      state.notifications = state.notifications.filter(n => n.id !== action.payload);
+    removeNotification: (state: AccessControlState, action: PayloadAction<string>) => {
+      state.notifications = state.notifications.filter((n: any) => n.id !== action.payload);
     },
-    clearNotifications: (state) => {
+    clearNotifications: (state: AccessControlState) => {
       state.notifications = [];
     },
-    clearFilters: (state) => {
+    clearFilters: (state: AccessControlState) => {
       state.filters = {
         incidents: {},
         sessions: {}
@@ -440,58 +440,58 @@ const accessControlSlice = createSlice({
     },
     resetState: () => initialState
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     // Roles
     builder
-      .addCase(fetchRoles.pending, (state) => {
+      .addCase(fetchRoles.pending, (state: AccessControlState) => {
         state.loading.roles = true;
         state.error = null;
       })
-      .addCase(fetchRoles.fulfilled, (state, action) => {
+      .addCase(fetchRoles.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.roles = false;
         state.roles = action.payload || [];
       })
-      .addCase(fetchRoles.rejected, (state, action) => {
+      .addCase(fetchRoles.rejected, (state: AccessControlState, action: any) => {
         state.loading.roles = false;
         state.error = action.error.message || 'Failed to fetch roles';
       });
 
     // Role by ID
     builder
-      .addCase(fetchRoleById.pending, (state) => {
+      .addCase(fetchRoleById.pending, (state: AccessControlState) => {
         state.loading.operations = true;
       })
-      .addCase(fetchRoleById.fulfilled, (state, action) => {
+      .addCase(fetchRoleById.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
         state.selectedRole = action.payload;
       })
-      .addCase(fetchRoleById.rejected, (state, action) => {
+      .addCase(fetchRoleById.rejected, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
         state.error = action.error.message || 'Failed to fetch role';
       });
 
     // Create role
     builder
-      .addCase(createRole.pending, (state) => {
+      .addCase(createRole.pending, (state: AccessControlState) => {
         state.loading.operations = true;
       })
-      .addCase(createRole.fulfilled, (state, action) => {
+      .addCase(createRole.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
         state.roles.push(action.payload);
       })
-      .addCase(createRole.rejected, (state, action) => {
+      .addCase(createRole.rejected, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
         state.error = action.error.message || 'Failed to create role';
       });
 
     // Update role
     builder
-      .addCase(updateRole.pending, (state) => {
+      .addCase(updateRole.pending, (state: AccessControlState) => {
         state.loading.operations = true;
       })
-      .addCase(updateRole.fulfilled, (state, action) => {
+      .addCase(updateRole.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
-        const index = state.roles.findIndex(r => r.id === action.payload.id);
+        const index = state.roles.findIndex((r: any) => r.id === action.payload.id);
         if (index !== -1) {
           state.roles[index] = action.payload;
         }
@@ -499,54 +499,54 @@ const accessControlSlice = createSlice({
           state.selectedRole = action.payload;
         }
       })
-      .addCase(updateRole.rejected, (state, action) => {
+      .addCase(updateRole.rejected, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
         state.error = action.error.message || 'Failed to update role';
       });
 
     // Delete role
     builder
-      .addCase(deleteRole.pending, (state) => {
+      .addCase(deleteRole.pending, (state: AccessControlState) => {
         state.loading.operations = true;
       })
-      .addCase(deleteRole.fulfilled, (state, action) => {
+      .addCase(deleteRole.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
-        state.roles = state.roles.filter(r => r.id !== action.payload);
+        state.roles = state.roles.filter((r: any) => r.id !== action.payload);
         if (state.selectedRole?.id === action.payload) {
           state.selectedRole = null;
         }
       })
-      .addCase(deleteRole.rejected, (state, action) => {
+      .addCase(deleteRole.rejected, (state: AccessControlState, action: any) => {
         state.loading.operations = false;
         state.error = action.error.message || 'Failed to delete role';
       });
 
     // Permissions
     builder
-      .addCase(fetchPermissions.pending, (state) => {
+      .addCase(fetchPermissions.pending, (state: AccessControlState) => {
         state.loading.permissions = true;
       })
-      .addCase(fetchPermissions.fulfilled, (state, action) => {
+      .addCase(fetchPermissions.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.permissions = false;
         state.permissions = action.payload || [];
       })
-      .addCase(fetchPermissions.rejected, (state, action) => {
+      .addCase(fetchPermissions.rejected, (state: AccessControlState, action: any) => {
         state.loading.permissions = false;
         state.error = action.error.message || 'Failed to fetch permissions';
       });
 
     // Create permission
     builder
-      .addCase(createPermission.fulfilled, (state, action) => {
+      .addCase(createPermission.fulfilled, (state: AccessControlState, action: any) => {
         state.permissions.push(action.payload);
       });
 
     // Security incidents
     builder
-      .addCase(fetchSecurityIncidents.pending, (state) => {
+      .addCase(fetchSecurityIncidents.pending, (state: AccessControlState) => {
         state.loading.incidents = true;
       })
-      .addCase(fetchSecurityIncidents.fulfilled, (state, action) => {
+      .addCase(fetchSecurityIncidents.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.incidents = false;
         // Handle both paginated response and array response
         if (Array.isArray(action.payload)) {
@@ -558,21 +558,21 @@ const accessControlSlice = createSlice({
           }
         }
       })
-      .addCase(fetchSecurityIncidents.rejected, (state, action) => {
+      .addCase(fetchSecurityIncidents.rejected, (state: AccessControlState, action: any) => {
         state.loading.incidents = false;
         state.error = action.error.message || 'Failed to fetch security incidents';
       });
 
     // Create security incident
     builder
-      .addCase(createSecurityIncident.fulfilled, (state, action) => {
+      .addCase(createSecurityIncident.fulfilled, (state: AccessControlState, action: any) => {
         state.securityIncidents.push(action.payload);
       });
 
     // Update security incident
     builder
-      .addCase(updateSecurityIncident.fulfilled, (state, action) => {
-        const index = state.securityIncidents.findIndex(i => i.id === action.payload.id);
+      .addCase(updateSecurityIncident.fulfilled, (state: AccessControlState, action: any) => {
+        const index = state.securityIncidents.findIndex((i: any) => i.id === action.payload.id);
         if (index !== -1) {
           state.securityIncidents[index] = action.payload;
         }
@@ -583,59 +583,59 @@ const accessControlSlice = createSlice({
 
     // Sessions
     builder
-      .addCase(fetchUserSessions.pending, (state) => {
+      .addCase(fetchUserSessions.pending, (state: AccessControlState) => {
         state.loading.sessions = true;
       })
-      .addCase(fetchUserSessions.fulfilled, (state, action) => {
+      .addCase(fetchUserSessions.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.sessions = false;
         state.sessions = action.payload || [];
       })
-      .addCase(fetchUserSessions.rejected, (state, action) => {
+      .addCase(fetchUserSessions.rejected, (state: AccessControlState, action: any) => {
         state.loading.sessions = false;
         state.error = action.error.message || 'Failed to fetch sessions';
       });
 
     // Delete session
     builder
-      .addCase(deleteSession.fulfilled, (state, action) => {
-        state.sessions = state.sessions.filter(s => s.token !== action.payload);
+      .addCase(deleteSession.fulfilled, (state: AccessControlState, action: any) => {
+        state.sessions = state.sessions.filter((s: any) => s.token !== action.payload);
       });
 
     // IP restrictions
     builder
-      .addCase(fetchIpRestrictions.fulfilled, (state, action) => {
+      .addCase(fetchIpRestrictions.fulfilled, (state: AccessControlState, action: any) => {
         state.ipRestrictions = action.payload || [];
       });
 
     // Add IP restriction
     builder
-      .addCase(addIpRestriction.fulfilled, (state, action) => {
+      .addCase(addIpRestriction.fulfilled, (state: AccessControlState, action: any) => {
         state.ipRestrictions.push(action.payload);
       });
 
     // Remove IP restriction
     builder
-      .addCase(removeIpRestriction.fulfilled, (state, action) => {
-        state.ipRestrictions = state.ipRestrictions.filter(r => r.id !== action.payload);
+      .addCase(removeIpRestriction.fulfilled, (state: AccessControlState, action: any) => {
+        state.ipRestrictions = state.ipRestrictions.filter((r: any) => r.id !== action.payload);
       });
 
     // Statistics
     builder
-      .addCase(fetchAccessControlStatistics.pending, (state) => {
+      .addCase(fetchAccessControlStatistics.pending, (state: AccessControlState) => {
         state.loading.statistics = true;
       })
-      .addCase(fetchAccessControlStatistics.fulfilled, (state, action) => {
+      .addCase(fetchAccessControlStatistics.fulfilled, (state: AccessControlState, action: any) => {
         state.loading.statistics = false;
         state.statistics = action.payload;
       })
-      .addCase(fetchAccessControlStatistics.rejected, (state, action) => {
+      .addCase(fetchAccessControlStatistics.rejected, (state: AccessControlState, action: any) => {
         state.loading.statistics = false;
         state.error = action.error.message || 'Failed to fetch statistics';
       });
 
     // Initialize default roles
     builder
-      .addCase(initializeDefaultRoles.fulfilled, (state, action) => {
+      .addCase(initializeDefaultRoles.fulfilled, (state: AccessControlState, action: any) => {
         state.roles = [...state.roles, ...action.payload];
       });
   }
@@ -682,37 +682,37 @@ export const selectError = (state: RootState) => state.accessControl.error;
 export const selectNotifications = (state: RootState) => state.accessControl.notifications;
 
 // Derived selectors
-export const selectActiveRoles = (state: RootState) => 
-  state.accessControl.roles.filter(role => role.isActive);
+export const selectActiveRoles = (state: RootState) =>
+  state.accessControl.roles.filter((role: any) => role.isActive);
 
 export const selectCriticalIncidents = (state: RootState) =>
-  state.accessControl.securityIncidents.filter(incident => 
+  state.accessControl.securityIncidents.filter((incident: any) =>
     incident.severity === 'CRITICAL' || incident.severity === 'HIGH'
   );
 
 export const selectActiveSessions = (state: RootState) =>
-  state.accessControl.sessions.filter(session => session.isActive);
+  state.accessControl.sessions.filter((session: any) => session.isActive);
 
 export const selectFilteredIncidents = (state: RootState) => {
   const { securityIncidents, filters } = state.accessControl;
   let filtered = securityIncidents;
 
   if (filters.incidents.severity) {
-    filtered = filtered.filter(incident => incident.severity === filters.incidents.severity);
+    filtered = filtered.filter((incident: any) => incident.severity === filters.incidents.severity);
   }
 
   if (filters.incidents.type) {
-    filtered = filtered.filter(incident => incident.type === filters.incidents.type);
+    filtered = filtered.filter((incident: any) => incident.type === filters.incidents.type);
   }
 
   if (filters.incidents.userId) {
-    filtered = filtered.filter(incident => incident.userId === filters.incidents.userId);
+    filtered = filtered.filter((incident: any) => incident.userId === filters.incidents.userId);
   }
 
   if (filters.incidents.startDate && filters.incidents.endDate) {
     const startDate = new Date(filters.incidents.startDate);
     const endDate = new Date(filters.incidents.endDate);
-    filtered = filtered.filter(incident => {
+    filtered = filtered.filter((incident: any) => {
       const incidentDate = new Date(incident.createdAt);
       return incidentDate >= startDate && incidentDate <= endDate;
     });
@@ -726,11 +726,11 @@ export const selectFilteredSessions = (state: RootState) => {
   let filtered = sessions;
 
   if (filters.sessions.userId) {
-    filtered = filtered.filter(session => session.userId === filters.sessions.userId);
+    filtered = filtered.filter((session: any) => session.userId === filters.sessions.userId);
   }
 
   if (filters.sessions.isActive !== undefined) {
-    filtered = filtered.filter(session => session.isActive === filters.sessions.isActive);
+    filtered = filtered.filter((session: any) => session.isActive === filters.sessions.isActive);
   }
 
   return filtered;
@@ -738,20 +738,20 @@ export const selectFilteredSessions = (state: RootState) => {
 
 export const selectSecurityMetrics = (state: RootState) => {
   const { roles, permissions, securityIncidents, sessions } = state.accessControl;
-  
+
   const totalRoles = roles.length;
-  const activeRoles = roles.filter(r => r.isActive).length;
+  const activeRoles = roles.filter((r: any) => r.isActive).length;
   const totalPermissions = permissions.length;
-  
-  const recentIncidents = securityIncidents.filter(incident => 
+
+  const recentIncidents = securityIncidents.filter((incident: any) =>
     new Date(incident.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000)
   ).length;
-  
-  const criticalIncidents = securityIncidents.filter(incident => 
+
+  const criticalIncidents = securityIncidents.filter((incident: any) =>
     incident.severity === 'CRITICAL'
   ).length;
 
-  const activeSessions = sessions.filter(s => s.isActive).length;
+  const activeSessions = sessions.filter((s: any) => s.isActive).length;
 
   return {
     totalRoles,

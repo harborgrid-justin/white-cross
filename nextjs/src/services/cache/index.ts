@@ -8,63 +8,110 @@
  */
 
 // Core Cache Manager
-export {
-  CacheManager,
-  getCacheManager,
-  resetCacheManager
+import {
+  CacheManager as CacheManagerClass,
+  getCacheManager as getCacheManagerFunc,
+  resetCacheManager as resetCacheManagerFunc
 } from './CacheManager';
+export {
+  CacheManagerClass as CacheManager,
+  getCacheManagerFunc as getCacheManager,
+  resetCacheManagerFunc as resetCacheManager
+};
 
 // Query Key Factory
-export {
-  QueryKeyFactory,
-  queryKeys,
-  studentKeys,
-  healthRecordKeys,
-  medicationKeys,
-  appointmentKeys,
-  incidentKeys,
-  emergencyContactKeys,
-  referenceKeys,
-  userKeys
+import {
+  QueryKeyFactory as QueryKeyFactoryClass,
+  queryKeys as queryKeysObj,
+  studentKeys as studentKeysObj,
+  healthRecordKeys as healthRecordKeysObj,
+  medicationKeys as medicationKeysObj,
+  appointmentKeys as appointmentKeysObj,
+  incidentKeys as incidentKeysObj,
+  emergencyContactKeys as emergencyContactKeysObj,
+  referenceKeys as referenceKeysObj,
+  userKeys as userKeysObj
 } from './QueryKeyFactory';
+export {
+  QueryKeyFactoryClass as QueryKeyFactory,
+  queryKeysObj as queryKeys,
+  studentKeysObj as studentKeys,
+  healthRecordKeysObj as healthRecordKeys,
+  medicationKeysObj as medicationKeys,
+  appointmentKeysObj as appointmentKeys,
+  incidentKeysObj as incidentKeys,
+  emergencyContactKeysObj as emergencyContactKeys,
+  referenceKeysObj as referenceKeys,
+  userKeysObj as userKeys
+};
 
 // Invalidation Strategy
-export {
-  InvalidationStrategy,
-  getInvalidationStrategy,
-  resetInvalidationStrategy,
-  createStudentUpdateOperation
+import {
+  InvalidationStrategy as InvalidationStrategyClass,
+  getInvalidationStrategy as getInvalidationStrategyFunc,
+  resetInvalidationStrategy as resetInvalidationStrategyFunc,
+  createStudentUpdateOperation as createStudentUpdateOperationFunc
 } from './InvalidationStrategy';
+export {
+  InvalidationStrategyClass as InvalidationStrategy,
+  getInvalidationStrategyFunc as getInvalidationStrategy,
+  resetInvalidationStrategyFunc as resetInvalidationStrategy,
+  createStudentUpdateOperationFunc as createStudentUpdateOperation
+};
 
 // Optimistic Update Manager
-export {
-  OptimisticUpdateManager,
-  getOptimisticUpdateManager,
-  resetOptimisticUpdateManager
+import {
+  OptimisticUpdateManager as OptimisticUpdateManagerClass,
+  getOptimisticUpdateManager as getOptimisticUpdateManagerFunc,
+  resetOptimisticUpdateManager as resetOptimisticUpdateManagerFunc
 } from './OptimisticUpdateManager';
+export {
+  OptimisticUpdateManagerClass as OptimisticUpdateManager,
+  getOptimisticUpdateManagerFunc as getOptimisticUpdateManager,
+  resetOptimisticUpdateManagerFunc as resetOptimisticUpdateManager
+};
 
 // Persistence Layer
-export {
-  PersistenceManager,
-  getPersistenceManager,
-  resetPersistenceManager
+import {
+  PersistenceManager as PersistenceManagerClass,
+  getPersistenceManager as getPersistenceManagerFunc,
+  resetPersistenceManager as resetPersistenceManagerFunc
 } from './persistence';
+export {
+  PersistenceManagerClass as PersistenceManager,
+  getPersistenceManagerFunc as getPersistenceManager,
+  resetPersistenceManagerFunc as resetPersistenceManager
+};
 
 // Cache Configuration
-export {
-  TTL_CONFIG,
-  REFETCH_STRATEGIES,
-  PERSISTENCE_RULES,
-  CACHE_CONFIG,
-  CACHE_WARMING_CONFIG,
-  ENTITY_TTL_MAP,
-  INDEXED_DB_CONFIG,
-  PERFORMANCE_CONFIG,
-  getTTLForEntity,
-  getRefetchStrategy,
-  canPersistEntity,
-  getPersistedTTL
+import {
+  TTL_CONFIG as TTL_CONFIG_OBJ,
+  REFETCH_STRATEGIES as REFETCH_STRATEGIES_OBJ,
+  PERSISTENCE_RULES as PERSISTENCE_RULES_OBJ,
+  CACHE_CONFIG as CACHE_CONFIG_OBJ,
+  CACHE_WARMING_CONFIG as CACHE_WARMING_CONFIG_OBJ,
+  ENTITY_TTL_MAP as ENTITY_TTL_MAP_OBJ,
+  INDEXED_DB_CONFIG as INDEXED_DB_CONFIG_OBJ,
+  PERFORMANCE_CONFIG as PERFORMANCE_CONFIG_OBJ,
+  getTTLForEntity as getTTLForEntityFunc,
+  getRefetchStrategy as getRefetchStrategyFunc,
+  canPersistEntity as canPersistEntityFunc,
+  getPersistedTTL as getPersistedTTLFunc
 } from './cacheConfig';
+export {
+  TTL_CONFIG_OBJ as TTL_CONFIG,
+  REFETCH_STRATEGIES_OBJ as REFETCH_STRATEGIES,
+  PERSISTENCE_RULES_OBJ as PERSISTENCE_RULES,
+  CACHE_CONFIG_OBJ as CACHE_CONFIG,
+  CACHE_WARMING_CONFIG_OBJ as CACHE_WARMING_CONFIG,
+  ENTITY_TTL_MAP_OBJ as ENTITY_TTL_MAP,
+  INDEXED_DB_CONFIG_OBJ as INDEXED_DB_CONFIG,
+  PERFORMANCE_CONFIG_OBJ as PERFORMANCE_CONFIG,
+  getTTLForEntityFunc as getTTLForEntity,
+  getRefetchStrategyFunc as getRefetchStrategy,
+  canPersistEntityFunc as canPersistEntity,
+  getPersistedTTLFunc as getPersistedTTL
+};
 
 // Type Exports
 export type {
@@ -114,7 +161,7 @@ export async function initializeCacheInfrastructure(
 
   try {
     // Initialize persistence manager (IndexedDB)
-    const persistenceManager = getPersistenceManager();
+    const persistenceManager = getPersistenceManagerFunc();
 
     // Clean up stale persisted data
     const cleanedCount = await persistenceManager.cleanupStaleData();
@@ -127,7 +174,7 @@ export async function initializeCacheInfrastructure(
     console.log('[CacheInfrastructure] Persistence stats:', stats);
 
     // Initialize cache manager
-    const cacheManager = getCacheManager();
+    const cacheManager = getCacheManagerFunc();
     console.log('[CacheInfrastructure] Cache manager initialized');
 
     // Get cache stats
@@ -152,12 +199,12 @@ export async function clearAllCaches(): Promise<void> {
 
   try {
     // Clear in-memory cache
-    const cacheManager = getCacheManager();
+    const cacheManager = getCacheManagerFunc();
     cacheManager.clear();
     console.log('[CacheInfrastructure] In-memory cache cleared');
 
     // Clear persisted cache (IndexedDB)
-    const persistenceManager = getPersistenceManager();
+    const persistenceManager = getPersistenceManagerFunc();
     await persistenceManager.clearAll();
     console.log('[CacheInfrastructure] Persisted cache cleared');
 
@@ -174,19 +221,19 @@ export async function clearAllCaches(): Promise<void> {
  * Returns comprehensive statistics about caching infrastructure
  */
 export async function getCacheInfrastructureStats(): Promise<{
-  inMemory: ReturnType<CacheManager['getStats']>;
-  persisted: Awaited<ReturnType<PersistenceManager['getStats']>>;
+  inMemory: ReturnType<CacheManagerClass['getStats']>;
+  persisted: Awaited<ReturnType<PersistenceManagerClass['getStats']>>;
   optimisticUpdates: {
     pendingCount: number;
     queuedMutationsCount: number;
   };
 }> {
-  const cacheManager = getCacheManager();
-  const persistenceManager = getPersistenceManager();
+  const cacheManager = getCacheManagerFunc();
+  const persistenceManager = getPersistenceManagerFunc();
 
   // Note: We need a queryClient instance for optimistic update manager
   // This is a placeholder - in real usage, pass the actual queryClient
-  const optimisticUpdateManager = getOptimisticUpdateManager(
+  const optimisticUpdateManager = getOptimisticUpdateManagerFunc(
     {} as any // Placeholder
   );
 
@@ -207,10 +254,10 @@ export async function getCacheInfrastructureStats(): Promise<{
  */
 export default {
   // Managers
-  getCacheManager,
-  getInvalidationStrategy,
-  getOptimisticUpdateManager,
-  getPersistenceManager,
+  getCacheManager: getCacheManagerFunc,
+  getInvalidationStrategy: getInvalidationStrategyFunc,
+  getOptimisticUpdateManager: getOptimisticUpdateManagerFunc,
+  getPersistenceManager: getPersistenceManagerFunc,
 
   // Utilities
   initializeCacheInfrastructure,
@@ -218,10 +265,10 @@ export default {
   getCacheInfrastructureStats,
 
   // Query Keys
-  queryKeys,
+  queryKeys: queryKeysObj,
 
   // Configuration
-  config: CACHE_CONFIG,
-  ttl: TTL_CONFIG,
-  refetchStrategies: REFETCH_STRATEGIES
+  config: CACHE_CONFIG_OBJ,
+  ttl: TTL_CONFIG_OBJ,
+  refetchStrategies: REFETCH_STRATEGIES_OBJ
 };

@@ -452,7 +452,7 @@ export abstract class BaseApiService<
     if (this.createSchema) {
       try {
         this.createSchema.parse(data);
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof z.ZodError) {
           const issues = error.issues || [];
           const firstError = issues[0];
@@ -472,7 +472,7 @@ export abstract class BaseApiService<
     if (this.updateSchema) {
       try {
         this.updateSchema.parse(data);
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof z.ZodError) {
           const issues = error.issues || [];
           const firstError = issues[0];
