@@ -1,0 +1,1 @@
+SELECT id, email, password, "firstName", "lastName", role, "isActive" FROM users WHERE email = 'nurse@test.com';

@@ -1,0 +1,2 @@
+INSERT INTO users (id, email, password, "firstName", "lastName", role, emailverified, twofactorenabled, failedloginattempts, mustchangepassword) 
+VALUES ('test-user-123', 'nurse@test.com', 'password123', 'Test', 'Nurse', 'NURSE', true, false, 0, false);

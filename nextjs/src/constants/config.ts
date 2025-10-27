@@ -12,9 +12,17 @@
 export const API_CONFIG = {
   /**
    * Base URL for API requests
-   * Defaults to localhost:3001/api/v1 in development, can be overridden via env var
+   * - Docker environment: Uses backend service name (http://backend:3001/api/v1)
+   * - Local development: Uses localhost (http://localhost:3001/api/v1)
+   * - Can be overridden via NEXT_PUBLIC_API_URL environment variable
    */
   BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+  
+  /**
+   * Internal API URL for server-side requests in Docker
+   * Used for API routes and server-side rendering
+   */
+  INTERNAL_API_URL: process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   
   /**
    * Request timeout in milliseconds

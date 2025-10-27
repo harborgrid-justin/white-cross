@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_CONFIG } from '@/constants/config';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
+// Use internal API URL for server-side requests in Docker
+const API_BASE_URL = API_CONFIG.INTERNAL_API_URL.replace('/api/v1', '');
 
 export async function GET(
   request: NextRequest,

@@ -31,7 +31,7 @@
  * Last Updated: 2025-10-26 | File Type: .tsx
  */
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 
 /**
  * User object representing an authenticated user.
@@ -121,9 +121,9 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * }
  * ```
  */
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true for initial auth check
 
   /**
    * Authenticates a user with email and password.
@@ -160,17 +160,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = useCallback(async (email: string, password: string, rememberMe?: boolean) => {
     setIsLoading(true);
     try {
-      // TODO: Implement actual login logic
-      console.warn('AuthContext: login() is a stub implementation', { rememberMe });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setUser({
-        id: '1',
-        email,
-        name: 'Test User',
-        role: 'admin',
-        permissions: ['all'],
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+      
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Network error - please check your connection' }));
+        throw new Error(errorData.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      // Store JWT token if provided
+      if (data.token) {
+        if (rememberMe) {
+          localStorage.setItem('authToken', data.token);
+        } else {
+          sessionStorage.setItem('authToken', data.token);
+        }
+      }
+
+      // Set user data from response
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        name: `${data.user.firstName} ${data.user.lastName}`.trim(),
+        role: data.user.role || 'staff',
+        permissions: data.user.permissions || ['read'],
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -206,9 +232,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      // TODO: Implement actual logout logic
-      console.warn('AuthContext: logout() is a stub implementation');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Clear stored tokens
+      localStorage.removeItem('authToken');
+      sessionStorage.removeItem('authToken');
+      
+      // Clear user state
+      setUser(null);
+      
+      // Optional: Call backend logout endpoint if needed
+      // const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+      // await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout API fails, clear local state
       setUser(null);
     } finally {
       setIsLoading(false);

@@ -586,6 +586,7 @@ User.init(
     schoolId: {
       type: DataTypes.STRING,
       allowNull: true,
+      field: 'schoolid', // Map to lowercase database column
       references: {
         model: 'schools',
         key: 'id'
@@ -604,6 +605,7 @@ User.init(
     districtId: {
       type: DataTypes.STRING,
       allowNull: true,
+      field: 'districtid', // Map to lowercase database column
       references: {
         model: 'districts',
         key: 'id'
@@ -623,65 +625,65 @@ User.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-      field: 'emailVerified',
+      field: 'emailverified', // Map to lowercase database column
     },
     emailVerificationToken: {
       type: DataTypes.STRING,
       allowNull: true,
-      field: 'emailVerificationToken',
+      field: 'emailverificationtoken', // Map to lowercase database column
     },
     emailVerificationExpires: {
       type: DataTypes.DATE,
       allowNull: true,
-      field: 'emailVerificationExpires',
+      field: 'emailverificationexpires', // Map to lowercase database column
     },
     passwordResetToken: {
       type: DataTypes.STRING,
       allowNull: true,
-      field: 'passwordResetToken',
+      field: 'passwordresettoken', // Map to lowercase database column
     },
     passwordResetExpires: {
       type: DataTypes.DATE,
       allowNull: true,
-      field: 'passwordResetExpires',
+      field: 'passwordresetexpires', // Map to lowercase database column
     },
     passwordChangedAt: {
       type: DataTypes.DATE,
       allowNull: true,
-      field: 'passwordChangedAt',
+      field: 'passwordchangedat', // Map to lowercase database column
     },
     twoFactorEnabled: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-      field: 'twoFactorEnabled',
+      field: 'twofactorenabled', // Map to lowercase database column
     },
     twoFactorSecret: {
       type: DataTypes.STRING,
       allowNull: true,
-      field: 'twoFactorSecret',
+      field: 'twofactorsecret', // Map to lowercase database column
     },
     failedLoginAttempts: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0,
-      field: 'failedLoginAttempts',
+      field: 'failedloginattempts', // Map to lowercase database column
     },
     lockoutUntil: {
       type: DataTypes.DATE,
       allowNull: true,
-      field: 'lockoutUntil',
+      field: 'lockoutuntil', // Map to lowercase database column
     },
     lastPasswordChange: {
       type: DataTypes.DATE,
       allowNull: true,
-      field: 'lastPasswordChange',
+      field: 'lastpasswordchange', // Map to lowercase database column
     },
     mustChangePassword: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-      field: 'mustChangePassword',
+      field: 'mustchangepassword', // Map to lowercase database column
     },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,

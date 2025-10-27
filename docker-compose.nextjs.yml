@@ -1,0 +1,213 @@
+# =============================================================================
+# White Cross Healthcare Platform - Next.js + Backend Docker Compose
+# Development setup with proper networking for communication debugging
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: white-cross-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-white_cross_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/database/migrations:/docker-entrypoint-initdb.d/migrations:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-white_cross_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      white-cross-network:
+        aliases:
+          - database
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: white-cross-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      white-cross-network:
+        aliases:
+          - cache
+
+  # ---------------------------------------------------------------------------
+  # Backend API (Hapi.js)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: white-cross-backend
+    restart: unless-stopped
+    environment:
+      # Application Settings
+      NODE_ENV: development
+      PORT: 3001
+      HOST: 0.0.0.0
+      
+      # Database Configuration  
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-white_cross_dev}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-white_cross_dev}
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      
+      # Security
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      SESSION_SECRET: ${SESSION_SECRET:-your-super-secret-session-key-change-in-production}
+      
+      # CORS Settings
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://nextjs:3000}
+      ALLOWED_ORIGINS: "http://localhost:3000,http://nextjs:3000"
+      
+      # Debugging
+      DEBUG: ${DEBUG:-*}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - backend_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      white-cross-network:
+        aliases:
+          - api
+          - backend-api
+
+  # ---------------------------------------------------------------------------
+  # Next.js Frontend
+  # ---------------------------------------------------------------------------
+  nextjs:
+    build:
+      context: ./nextjs
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: white-cross-nextjs
+    restart: unless-stopped
+    environment:
+      # Application Settings
+      NODE_ENV: development
+      PORT: 3000
+      
+      # API Configuration - Client-side (browser accessible)
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001/api/v1
+      
+      # Internal API URL (for server-side requests within Docker network)
+      INTERNAL_API_URL: http://backend:3001/api/v1
+      
+      # Development Settings
+      NEXT_TELEMETRY_DISABLED: 1
+      WATCHPACK_POLLING: true
+      
+      # Debug Settings
+      DEBUG: ${FRONTEND_DEBUG:-nextjs:*}
+      
+      # Environment
+      NEXT_PUBLIC_ENVIRONMENT: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nextjs:/app:cached
+      - /app/node_modules
+      - nextjs_cache:/app/.next
+      - nextjs_logs:/app/logs
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      white-cross-network:
+        aliases:
+          - frontend
+          - nextjs-app
+
+  # ---------------------------------------------------------------------------
+  # Network Debugging Utility
+  # ---------------------------------------------------------------------------
+  debug:
+    image: nicolaka/netshoot
+    container_name: white-cross-debug
+    command: tail -f /dev/null
+    networks:
+      - white-cross-network
+    profiles:
+      - debug
+
+# =============================================================================
+# Networks Configuration
+# =============================================================================
+networks:
+  white-cross-network:
+    name: white-cross-network
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: white-cross-br
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# Volumes Configuration  
+# =============================================================================
+volumes:
+  postgres_data:
+    name: white-cross-postgres-data
+  redis_data:
+    name: white-cross-redis-data
+  backend_logs:
+    name: white-cross-backend-logs
+  nextjs_logs:
+    name: white-cross-nextjs-logs
+  nextjs_cache:
+    name: white-cross-nextjs-cache

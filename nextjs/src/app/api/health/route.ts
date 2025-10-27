@@ -47,8 +47,14 @@ interface HealthStatus {
 async function checkBackend(): Promise<HealthCheck> {
   const start = Date.now();
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const response = await fetch(`${backendUrl}/health`, {
+    // Use internal API URL for server-side requests (Docker network)
+    // Fall back to public URL for development outside Docker
+    const internalUrl = process.env.INTERNAL_API_URL || 'http://backend:3001/api/v1';
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+    
+    // Remove /api/v1 suffix and use base URL for health endpoint
+    const baseUrl = internalUrl.replace('/api/v1', '') || publicUrl.replace('/api/v1', '') || 'http://localhost:3001';
+    const response = await fetch(`${baseUrl}/health`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(5000), // 5 second timeout
@@ -74,71 +80,7 @@ async function checkBackend(): Promise<HealthCheck> {
   }
 }
 
-/**
- * Check Redis health (via backend)
- */
-async function checkRedis(): Promise<HealthCheck> {
-  const start = Date.now();
-  try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const response = await fetch(`${backendUrl}/health/redis`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(3000), // 3 second timeout
-    });
 
-    const latency = Date.now() - start;
-
-    if (response.ok) {
-      return { status: 'ok', latency };
-    } else {
-      return {
-        status: 'error',
-        message: `Redis check failed with status ${response.status}`,
-        latency,
-      };
-    }
-  } catch (error) {
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Redis check failed',
-      latency: Date.now() - start,
-    };
-  }
-}
-
-/**
- * Check database health (via backend)
- */
-async function checkDatabase(): Promise<HealthCheck> {
-  const start = Date.now();
-  try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const response = await fetch(`${backendUrl}/health/database`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(3000), // 3 second timeout
-    });
-
-    const latency = Date.now() - start;
-
-    if (response.ok) {
-      return { status: 'ok', latency };
-    } else {
-      return {
-        status: 'error',
-        message: `Database check failed with status ${response.status}`,
-        latency,
-      };
-    }
-  } catch (error) {
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Database check failed',
-      latency: Date.now() - start,
-    };
-  }
-}
 
 /**
  * GET /api/health
@@ -219,17 +161,13 @@ export async function GET() {
   };
 
   // Check dependencies in parallel
-  const [backendCheck, redisCheck, databaseCheck] = await Promise.all([
+  const [backendCheck] = await Promise.all([
     checkBackend(),
-    checkRedis(),
-    checkDatabase(),
   ]);
 
   const checks = {
     server: serverCheck,
     backend: backendCheck,
-    redis: redisCheck,
-    database: databaseCheck,
   };
 
   // Determine overall health status
@@ -286,8 +224,13 @@ export async function GET() {
  */
 export async function HEAD() {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const response = await fetch(`${backendUrl}/health`, {
+    // Use internal API URL for server-side requests (Docker network)
+    const internalUrl = process.env.INTERNAL_API_URL || 'http://backend:3001/api/v1';
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+    
+    // Remove /api/v1 suffix and use base URL for health endpoint
+    const baseUrl = internalUrl.replace('/api/v1', '') || publicUrl.replace('/api/v1', '') || 'http://localhost:3001';
+    const response = await fetch(`${baseUrl}/health`, {
       method: 'HEAD',
       signal: AbortSignal.timeout(3000),
     });
