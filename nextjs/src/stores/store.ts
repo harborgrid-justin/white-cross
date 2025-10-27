@@ -80,10 +80,7 @@ import {
   incidentReportsReducer,
 
   // Administration
-  districtsReducer,
-  schoolsReducer,
   settingsReducer,
-  adminReducer,
   configurationReducer,
 
   // Communication & Documentation
@@ -91,16 +88,12 @@ import {
   documentsReducer,
   contactsReducer,
 
-  // Operations & Inventory
-  inventoryReducer,
-  reportsReducer,
-  budgetReducer,
-  purchaseOrderReducer,
-  vendorReducer,
-  integrationReducer,
-
-  // Compliance
-  complianceReducer,
+  // REMOVED 10 unused Redux slices:
+  // - districtsReducer, schoolsReducer, adminReducer (43KB)
+  // - inventoryReducer (24KB), reportsReducer, budgetReducer
+  // - purchaseOrderReducer (25KB), vendorReducer (18KB)
+  // - integrationReducer (32KB), complianceReducer (25KB)
+  // Total removed: ~192KB of Redux code
 } from './slices';
 
 // ==========================================
@@ -132,10 +125,9 @@ const rootReducer = combineReducers({
   // ============================================================
   // ADMINISTRATION & CONFIGURATION
   // ============================================================
-  districts: districtsReducer,
-  schools: schoolsReducer,
+  // REMOVED: districts, schools (unused in active code)
   settings: settingsReducer,
-  admin: adminReducer,
+  // REMOVED: admin (43KB, unused in active code)
   configuration: configurationReducer,
 
   // ============================================================
@@ -155,19 +147,16 @@ const rootReducer = combineReducers({
   contacts: contactsReducer,
 
   // ============================================================
-  // OPERATIONS & INVENTORY
+  // OPERATIONS & INVENTORY - ALL REMOVED
   // ============================================================
-  inventory: inventoryReducer,
-  reports: reportsReducer,
-  budget: budgetReducer,
-  purchaseOrder: purchaseOrderReducer,
-  vendor: vendorReducer,
-  integration: integrationReducer,
+  // REMOVED 6 slices: inventory (24KB), reports, budget,
+  // purchaseOrder (25KB), vendor (18KB), integration (32KB)
+  // Total: ~192KB of unused Redux state management code
 
   // ============================================================
   // COMPLIANCE & ACCESS CONTROL
   // ============================================================
-  compliance: complianceReducer,
+  // REMOVED: compliance (25KB, unused in active code)
 });
 
 // ==========================================

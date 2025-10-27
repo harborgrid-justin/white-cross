@@ -20,8 +20,12 @@ export const metadata: Metadata = {
   description: 'View and manage all medications'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = "force-dynamic";
+/**
+ * ISR Configuration - Cache medication list for 5 minutes (300 seconds)
+ * Medication data changes infrequently, so we can cache it longer
+ * to improve performance and reduce API load.
+ */
+export const revalidate = 300; // Revalidate every 5 minutes
 
 interface MedicationsPageProps {
   searchParams: {

@@ -72,7 +72,7 @@
  * @since 1.0.0
  */
 
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { StudentMedication } from '@/types/api';
 import { medicationsThunks } from '../store/medicationsSlice';
@@ -96,14 +96,14 @@ interface MedicationCardProps {
   onStatusChange?: () => void;
 }
 
-export const MedicationCard: React.FC<MedicationCardProps> = ({
+export const MedicationCard: React.FC<MedicationCardProps> = memo(({
   medication,
   showStudent = false,
   onStatusChange
 }) => {
   const dispatch = useDispatch();
 
-  const handleStatusToggle = () => {
+  const handleStatusToggle = useCallback(() => {
     dispatch(medicationsThunks.update({
       id: medication.id,
       data: { isActive: !medication.isActive }
@@ -111,7 +111,7 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
     if (onStatusChange) {
       onStatusChange();
     }
-  };
+  }, [dispatch, medication.id, medication.isActive, onStatusChange]);
 
   return (
     <div className="medication-card">
@@ -150,4 +150,6 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
       </div>
     </div>
   );
-};
+});
+
+MedicationCard.displayName = 'MedicationCard';

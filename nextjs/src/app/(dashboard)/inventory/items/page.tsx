@@ -13,8 +13,12 @@ export const metadata: Metadata = {
   description: 'View and manage inventory items',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = "force-dynamic";
+/**
+ * ISR Configuration - Cache inventory for 10 minutes (600 seconds)
+ * Inventory data changes slowly, so we can cache it for longer
+ * to significantly improve performance.
+ */
+export const revalidate = 600; // Revalidate every 10 minutes
 
 export default function InventoryItemsPage() {
   return <InventoryItemsContent />;

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2020",
     "lib": [
       "dom",
       "dom.iterable",
@@ -25,51 +25,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@/components/*": [
-        "./src/components/*"
-      ],
-      "@/pages/*": [
-        "./src/app/*"
-      ],
-      "@/hooks/*": [
-        "./src/hooks/*"
-      ],
-      "@/utils/*": [
-        "./src/utils/*"
-      ],
-      "@/services/*": [
-        "./src/services/*"
-      ],
-      "@/stores/*": [
-        "./src/stores/*"
-      ],
-      "@/types/*": [
-        "./src/types/*"
-      ],
-      "@/constants/*": [
-        "./src/constants/*"
-      ],
-      "@/config/*": [
-        "./src/config/*"
-      ],
-      "@/styles/*": [
-        "./src/styles/*"
-      ],
-      "@/contexts/*": [
-        "./src/contexts/*"
-      ],
-      "@/middleware/*": [
-        "./src/middleware/*"
-      ],
-      "@/guards/*": [
-        "./src/guards/*"
-      ],
-      "@/schemas/*": [
-        "./src/schemas/*"
-      ],
-      "@/validation/*": [
-        "./src/validation/*"
       ]
     }
   },

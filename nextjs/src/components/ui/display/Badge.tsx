@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Badge Component Module
  *
@@ -7,6 +5,11 @@
  * Supports multiple variants, sizes, shapes, and optional dot indicators.
  *
  * @module components/ui/display/Badge
+ *
+ * NOTE: Converted to Server Component (Phase 1 Quick Wins)
+ * - No client-side interactivity required
+ * - Pure presentational component
+ * - Reduces bundle size
  */
 
 import React from 'react';

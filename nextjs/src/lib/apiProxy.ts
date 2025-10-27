@@ -26,12 +26,14 @@ export interface ProxyConfig {
 
 /**
  * Proxy request to backend
+ *
+ * Returns standard Response type for maximum compatibility with route handlers
  */
 export async function proxyToBackend(
   request: NextRequest,
   path: string,
   config: ProxyConfig = {}
-): Promise<NextResponse> {
+): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url);
     const backendUrl = `${BACKEND_URL}${path}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
@@ -102,7 +104,7 @@ export async function proxyToBackend(
       }
     });
 
-    return new NextResponse(responseBody, {
+    return new Response(responseBody, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders
@@ -111,18 +113,24 @@ export async function proxyToBackend(
     console.error('Backend proxy error:', error);
 
     if (error instanceof Error && error.name === 'AbortError') {
-      return NextResponse.json(
-        { error: 'Request timeout' },
-        { status: 504 }
+      return new Response(
+        JSON.stringify({ error: 'Request timeout' }),
+        {
+          status: 504,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
-    return NextResponse.json(
-      {
+    return new Response(
+      JSON.stringify({
         error: 'Backend service unavailable',
         message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 503 }
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 }

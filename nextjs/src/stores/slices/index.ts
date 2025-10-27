@@ -45,10 +45,10 @@ export { default as incidentReportsReducer } from './incidentReportsSlice';
 // ============================================================
 // ADMINISTRATION
 // ============================================================
-export { districtsReducer } from './districtsSlice';
-export { schoolsReducer } from './schoolsSlice';
+// REMOVED: districtsReducer - Unused, legacy pages-old only
+// REMOVED: schoolsReducer - Unused, legacy pages-old only
 export { settingsReducer } from './settingsSlice';
-export { default as adminReducer } from './adminSlice';
+// REMOVED: adminReducer - Unused, 43KB removed
 export { default as configurationReducer } from './configurationSlice';
 
 // ============================================================
@@ -61,17 +61,17 @@ export { default as contactsReducer } from './contactsSlice';
 // ============================================================
 // OPERATIONS & INVENTORY
 // ============================================================
-export { default as inventoryReducer } from './inventorySlice';
-export { reportsReducer } from './reportsSlice';
-export { default as budgetReducer } from './budgetSlice';
-export { default as purchaseOrderReducer } from './purchaseOrderSlice';
-export { default as vendorReducer } from './vendorSlice';
-export { default as integrationReducer } from './integrationSlice';
+// REMOVED: inventoryReducer - Unused, legacy pages-old only (24KB)
+// REMOVED: reportsReducer - Unused, legacy pages-old only
+// REMOVED: budgetReducer - Unused, legacy pages-old only
+// REMOVED: purchaseOrderReducer - Unused, legacy pages-old only (25KB)
+// REMOVED: vendorReducer - Unused, legacy pages-old only (18KB)
+// REMOVED: integrationReducer - Unused, legacy pages-old only (32KB)
 
 // ============================================================
 // COMPLIANCE & ACCESS CONTROL
 // ============================================================
-export { default as complianceReducer } from './complianceSlice';
+// REMOVED: complianceReducer - Unused, legacy pages-old only (25KB)
 
 // ============================================================
 // UI PREFERENCES & NOTIFICATIONS (NEW)

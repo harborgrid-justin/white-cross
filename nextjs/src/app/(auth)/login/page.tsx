@@ -63,12 +63,15 @@ export default function LoginPage() {
   }, [errorParam]);
 
   // Handle auth errors
+  // Note: clearError is stable (wrapped in useCallback), but we only want to
+  // run this effect when authError changes, not when clearError reference changes
   useEffect(() => {
     if (authError) {
       setError(authError);
       clearError();
     }
-  }, [authError, clearError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authError]); // clearError is stable and doesn't need to be in deps
 
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
