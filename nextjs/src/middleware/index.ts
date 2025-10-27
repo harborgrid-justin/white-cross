@@ -26,6 +26,19 @@ export enum Permission {
   ADMIN = 'admin'
 }
 
+// Export authentication middleware
+export {
+  withAuth,
+  withOptionalAuth,
+  withRole,
+  withMinimumRole,
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  type AuthenticatedContext,
+  type AuthenticatedHandler,
+  type OptionalAuthHandler
+} from './withAuth';
+
 export default {
   UserRole,
   Permission

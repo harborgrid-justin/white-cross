@@ -5,9 +5,9 @@
  * Handles CRUD operations for users with role-based access control.
  */
 
-import { createEntitySlice, EntityApiService } from '../sliceFactory';
-import { User, CreateUserData, UpdateUserData, UserFilters } from '../../types/administration';
-import { administrationApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { User, CreateUserData, UpdateUserData, UserFilters } from '@/types/administration';
+import { administrationApi } from '@/services/api';
 
 // Create API service adapter for users
 const usersApiService: EntityApiService<User, CreateUserData, UpdateUserData> = {

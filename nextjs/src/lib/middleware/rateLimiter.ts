@@ -32,7 +32,8 @@ const memoryStore = new Map<string, RateLimitStore>();
  */
 setInterval(() => {
   const now = Date.now();
-  for (const [key, value] of memoryStore.entries()) {
+  const entries = Array.from(memoryStore.entries());
+  for (const [key, value] of entries) {
     if (value.resetTime < now) {
       memoryStore.delete(key);
     }

@@ -13,11 +13,11 @@
  * @module services/modules/health/screenings
  */
 
-import { API_ENDPOINTS } from '../../config/apiConfig';
+import { API_ENDPOINTS } from '@/services/config/apiConfig';
 import { z } from 'zod';
-import { BaseApiService } from '../../core/BaseApiService';
-import type { ApiClient } from '../../core/ApiClient';
-import type { ApiResponse, PaginatedResponse, PaginationParams } from '../../types';
+import { BaseApiService } from '@/services/core/BaseApiService';
+import type { ApiClient } from '@/services/core/ApiClient';
+import type { ApiResponse, PaginatedResponse, PaginationParams } from '@/services/types';
 
 // ==========================================
 // TYPE DEFINITIONS

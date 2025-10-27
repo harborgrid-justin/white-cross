@@ -127,8 +127,8 @@
  * ```
  */
 
-import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
-import { communicationApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { communicationApi } from '@/services/api';
 import type {
   Message,
   CreateMessageData,

@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { withAuth } from '../middleware/withAuth';
+import { withAuth } from '@/middleware/withAuth';
 import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 
 // Allowed file types (MIME types)

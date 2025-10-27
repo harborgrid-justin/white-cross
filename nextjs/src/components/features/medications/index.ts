@@ -11,7 +11,9 @@ export { default as MedicationsInventoryTab } from '../../medications/tabs/Medic
 export { default as MedicationsRemindersTab } from '../../medications/tabs/MedicationsRemindersTab'
 export { default as MedicationsAdverseReactionsTab } from '../../medications/tabs/MedicationsAdverseReactionsTab'
 
-// Components from pages/medications/components
-export { default as MedicationFormModal } from '../../../pages/medications/components/MedicationFormModal'
-export { default as MedicationDetailsModal } from '../../../pages/medications/components/MedicationDetailsModal'
-export { default as MedicationsTab } from '../../../pages/medications/components/MedicationsTab'
+// Modal Components from components/medications/modals
+export { default as MedicationFormModal } from '../../medications/modals/MedicationFormModal'
+export { default as MedicationDetailsModal } from '../../medications/modals/MedicationDetailsModal'
+
+// Tab Components from components/medications/tabs
+export { default as MedicationsTab } from '../../medications/tabs/MedicationsTab'

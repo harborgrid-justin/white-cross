@@ -4,7 +4,7 @@
  */
 
 import { createSlice, createAsyncThunk, createSelector, PayloadAction } from '@reduxjs/toolkit';
-import { configurationApi } from '../../services/configurationApi';
+import { configurationApi } from '@/services/configurationApi';
 import type {
   SystemConfiguration,
   ConfigurationHistory,

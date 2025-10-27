@@ -84,11 +84,11 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authApi, LoginCredentials, RegisterData } from '../../services/modules/authApi';
-import { User } from '../../types';
+import { authApi, LoginCredentials, RegisterData } from '@/services/modules/authApi';
+import { User } from '@/types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
-import { clearPersistedState } from '../reduxStore';
+import { clearPersistedState } from '@/stores/reduxStore';
 
 const log = debug('whitecross:auth-slice');
 

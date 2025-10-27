@@ -10,7 +10,7 @@
  */
 
 import React, { ReactNode, memo } from 'react'
-import { NavigationProvider } from '../../contexts/NavigationContext'
+import { NavigationProvider } from '@/contexts/NavigationContext'
 import Navigation from './Navigation'
 import Sidebar from './Sidebar'
 import Footer from './Footer'
@@ -170,7 +170,7 @@ const MobileSidebar = memo(() => {
 MobileSidebar.displayName = 'MobileSidebar'
 
 // Import useNavigation for mobile sidebar
-import { useNavigation } from '../../contexts/NavigationContext'
+import { useNavigation } from '@/contexts/NavigationContext'
 
 // ============================================================================
 // MAIN EXPORT WITH NAVIGATION PROVIDER

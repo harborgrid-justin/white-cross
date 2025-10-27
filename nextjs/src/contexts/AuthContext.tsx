@@ -7,9 +7,10 @@
  * - JWT token management via HTTP-only secure cookies
  * - Automatic token refresh before expiration
  * - Session timeout enforcement (15 min idle for HIPAA)
- * - Multi-tab synchronization via BroadcastChannel
+ * - Multi-tab synchronization via BroadcastChannel (when available)
  * - Audit logging for authentication events
  * - Secure storage practices (no PHI in localStorage)
+ * - Edge Runtime compatible (graceful fallback when BroadcastChannel unavailable)
  *
  * @module contexts/AuthContext
  */
@@ -88,7 +89,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Refs for intervals and broadcast channel
   const activityCheckInterval = useRef<NodeJS.Timeout>();
   const tokenRefreshInterval = useRef<NodeJS.Timeout>();
-  const broadcastChannel = useRef<BroadcastChannel>();
+  const broadcastChannel = useRef<BroadcastChannel | null>(null);
+  const isBroadcastChannelSupported = useRef<boolean>(false);
 
   // ==========================================
   // ACTIVITY TRACKING
@@ -98,12 +100,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const now = Date.now();
     setLastActivityAt(now);
 
-    // Broadcast activity to other tabs
-    if (broadcastChannel.current) {
-      broadcastChannel.current.postMessage({
-        type: 'activity_update',
-        timestamp: now,
-      });
+    // Broadcast activity to other tabs (only if supported)
+    if (isBroadcastChannelSupported.current && broadcastChannel.current) {
+      try {
+        broadcastChannel.current.postMessage({
+          type: 'activity_update',
+          timestamp: now,
+        });
+      } catch (error) {
+        console.warn('[Auth] Failed to broadcast activity:', error);
+      }
     }
   }, []);
 
@@ -210,49 +216,74 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // ==========================================
 
   useEffect(() => {
+    // Only initialize BroadcastChannel in browser environment where it's supported
     if (typeof window === 'undefined') return;
 
-    // Create broadcast channel for cross-tab communication
-    broadcastChannel.current = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+    // Check if BroadcastChannel is available via window (not available in Edge Runtime)
+    // Using window/globalThis reference prevents static analysis issues
+    const BroadcastChannelConstructor = (typeof window !== 'undefined' && 'BroadcastChannel' in window)
+      ? (window as any).BroadcastChannel
+      : undefined;
 
-    // Handle messages from other tabs
-    broadcastChannel.current.onmessage = (event) => {
-      const { type, timestamp } = event.data;
+    if (!BroadcastChannelConstructor) {
+      console.info('[Auth] BroadcastChannel not available - multi-tab sync disabled');
+      isBroadcastChannelSupported.current = false;
+      return;
+    }
 
-      switch (type) {
-        case 'logout':
-          // Sync logout across tabs
-          dispatch(logoutUser());
-          router.push('/login');
-          break;
+    try {
+      // Create broadcast channel for cross-tab communication using dynamic constructor
+      broadcastChannel.current = new BroadcastChannelConstructor(BROADCAST_CHANNEL_NAME);
+      isBroadcastChannelSupported.current = true;
 
-        case 'login':
-          // Sync login across tabs
-          if (event.data.user && event.data.token) {
-            dispatch(setUserFromSession({
-              user: event.data.user,
-              token: event.data.token,
-              refreshToken: event.data.refreshToken,
-              expiresIn: event.data.expiresIn,
-            }));
-          }
-          break;
+      // Handle messages from other tabs
+      broadcastChannel.current.onmessage = (event) => {
+        const { type, timestamp } = event.data;
 
-        case 'activity_update':
-          // Sync activity across tabs
-          if (timestamp > lastActivityAt) {
-            setLastActivityAt(timestamp);
-          }
-          break;
+        switch (type) {
+          case 'logout':
+            // Sync logout across tabs
+            dispatch(logoutUser());
+            router.push('/login');
+            break;
 
-        default:
-          break;
-      }
-    };
+          case 'login':
+            // Sync login across tabs
+            if (event.data.user && event.data.token) {
+              dispatch(setUserFromSession({
+                user: event.data.user,
+                token: event.data.token,
+                refreshToken: event.data.refreshToken,
+                expiresIn: event.data.expiresIn,
+              }));
+            }
+            break;
+
+          case 'activity_update':
+            // Sync activity across tabs
+            if (timestamp > lastActivityAt) {
+              setLastActivityAt(timestamp);
+            }
+            break;
+
+          default:
+            break;
+        }
+      };
+    } catch (error) {
+      console.warn('[Auth] Failed to initialize BroadcastChannel:', error);
+      isBroadcastChannelSupported.current = false;
+      broadcastChannel.current = null;
+    }
 
     return () => {
       if (broadcastChannel.current) {
-        broadcastChannel.current.close();
+        try {
+          broadcastChannel.current.close();
+        } catch (error) {
+          console.warn('[Auth] Error closing BroadcastChannel:', error);
+        }
+        broadcastChannel.current = null;
       }
     };
   }, [dispatch, router, lastActivityAt]);
@@ -282,15 +313,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       updateActivity();
 
-      // Broadcast login to other tabs
-      if (broadcastChannel.current) {
-        broadcastChannel.current.postMessage({
-          type: 'login',
-          user: result.user,
-          token: result.token,
-          refreshToken: result.refreshToken,
-          expiresIn: result.expiresIn,
-        });
+      // Broadcast login to other tabs (only if supported)
+      if (isBroadcastChannelSupported.current && broadcastChannel.current) {
+        try {
+          broadcastChannel.current.postMessage({
+            type: 'login',
+            user: result.user,
+            token: result.token,
+            refreshToken: result.refreshToken,
+            expiresIn: result.expiresIn,
+          });
+        } catch (error) {
+          console.warn('[Auth] Failed to broadcast login:', error);
+        }
       }
 
       // Audit log login event
@@ -305,9 +340,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await dispatch(logoutUser()).unwrap();
 
-      // Broadcast logout to other tabs
-      if (broadcastChannel.current) {
-        broadcastChannel.current.postMessage({ type: 'logout' });
+      // Broadcast logout to other tabs (only if supported)
+      if (isBroadcastChannelSupported.current && broadcastChannel.current) {
+        try {
+          broadcastChannel.current.postMessage({ type: 'logout' });
+        } catch (error) {
+          console.warn('[Auth] Failed to broadcast logout:', error);
+        }
       }
 
       // Audit log logout event

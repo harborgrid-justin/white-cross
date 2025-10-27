@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { withAuth, withMinimumRole } from '../../../middleware/withAuth';
+import { withAuth, withMinimumRole } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, createAuditContext } from '@/lib/audit';
 

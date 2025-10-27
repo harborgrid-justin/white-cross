@@ -19,7 +19,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { proxyToBackend } from '@/lib/apiProxy';
-import { withRateLimit } from '../../middleware/withRateLimit';
+import { withRateLimit } from '@/lib/middleware/withRateLimit';
 import { RATE_LIMITS } from '@/lib/rateLimit';
 import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 

@@ -58,8 +58,8 @@
  * @see {@link stores/sliceFactory} for EntityAdapter factory pattern
  */
 
-import { createEntitySlice, EntityApiService } from '../../stores/sliceFactory';
-import { appointmentsApi } from '../../services/api';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { appointmentsApi } from '@/services/api';
 import type {
   Appointment,
   AppointmentFilters,

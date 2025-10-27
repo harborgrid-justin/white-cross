@@ -104,12 +104,12 @@
  * @see {@link tokenUtils} for token storage utilities
  */
 
-import type { ApiClient } from '../core/ApiClient';
-import { API_ENDPOINTS, tokenUtils } from '../config/apiConfig';
-import { API_CONFIG } from '../../constants/config';
+import type { ApiClient } from '@/services/core/ApiClient';
+import { API_ENDPOINTS, tokenUtils } from '@/services/config/apiConfig';
+import { API_CONFIG } from '@/constants/config';
 import { z } from 'zod';
-import { User } from '../types';
-import { createApiError, createValidationError } from '../core/errors';
+import { User } from '@/services/types';
+import { createApiError, createValidationError } from '@/services/core/errors';
 
 export interface LoginCredentials {
   email: string;
@@ -616,5 +616,5 @@ export function createAuthApi(client: ApiClient): AuthApi {
 }
 
 // Create and export a default instance for backward compatibility
-import { apiClient } from '../core/ApiClient';
+import { apiClient } from '@/services/core/ApiClient';
 export const authApi = createAuthApi(apiClient);
