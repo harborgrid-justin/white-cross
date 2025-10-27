@@ -12,6 +12,7 @@ import {
   NotificationPriority,
   NotificationStatus,
 } from '@/features/notifications/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Notifications Page
@@ -19,8 +20,8 @@ import {
  * Comprehensive notification center with filtering and management
  */
 export default function NotificationsPage() {
-  // TODO: Get userId from auth context
-  const userId = 'current-user-id';
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
   const [filters, setFilters] = useState<NotificationFilters>({});
   const [view, setView] = useState<'all' | 'unread' | 'archived'>('all');

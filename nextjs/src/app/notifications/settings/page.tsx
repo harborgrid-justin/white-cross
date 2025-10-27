@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { NotificationSettings } from '@/features/notifications/components';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Notification Settings Page
@@ -9,8 +10,8 @@ import { NotificationSettings } from '@/features/notifications/components';
  * User notification preferences management
  */
 export default function NotificationSettingsPage() {
-  // TODO: Get userId from auth context
-  const userId = 'current-user-id';
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
   return (
     <div className="min-h-screen bg-gray-50">
