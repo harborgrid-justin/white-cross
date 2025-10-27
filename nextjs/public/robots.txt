@@ -1,0 +1,26 @@
+# White Cross Healthcare Platform - Robots.txt
+# HIPAA-compliant healthcare platform - not for public indexing
+
+# Disallow all robots from all paths
+# Healthcare data must not be indexed by search engines
+User-agent: *
+Disallow: /
+
+# Explicitly disallow critical healthcare paths
+Disallow: /api/
+Disallow: /students/
+Disallow: /medications/
+Disallow: /health-records/
+Disallow: /incidents/
+Disallow: /appointments/
+Disallow: /communications/
+Disallow: /documents/
+Disallow: /compliance/
+Disallow: /reports/
+Disallow: /admin/
+
+# Allow only health check endpoint
+Allow: /api/health
+
+# Sitemap location (for internal documentation only)
+Sitemap: https://whitecross.healthcare/sitemap.xml
