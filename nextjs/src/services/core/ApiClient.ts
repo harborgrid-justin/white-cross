@@ -353,7 +353,7 @@ export class ApiClient {
         config.headers['X-XSS-Protection'] = '1; mode=block';
 
         // Log request in development
-        if (this.enableLogging && import.meta.env.DEV) {
+        if (this.enableLogging && process.env.NODE_ENV === 'development') {
           logger.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, {
             headers: config.headers,
             data: config.data,
@@ -363,7 +363,7 @@ export class ApiClient {
         return config;
       },
       (error) => {
-        if (this.enableLogging && import.meta.env.DEV) {
+        if (this.enableLogging && process.env.NODE_ENV === 'development') {
           logger.error('API Request Error', error as Error);
         }
         return Promise.reject(this.normalizeError(error));
@@ -375,7 +375,7 @@ export class ApiClient {
     const authResponseId = this.instance.interceptors.response.use(
       (response) => {
         // Log response in development
-        if (this.enableLogging && import.meta.env.DEV) {
+        if (this.enableLogging && process.env.NODE_ENV === 'development') {
           logger.debug(`API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
             status: response.status,
             data: response.data,
@@ -413,7 +413,7 @@ export class ApiClient {
             const delay = this.retryDelay * Math.pow(2, retryCount);
             await this.sleep(delay);
 
-            if (this.enableLogging && import.meta.env.DEV) {
+            if (this.enableLogging && process.env.NODE_ENV === 'development') {
               logger.debug(`API Retry: Attempt ${retryCount + 1}/${this.maxRetries} for ${originalRequest.url}`);
             }
 
@@ -817,7 +817,7 @@ export function createCancellableRequest() {
 import { secureTokenManager } from '../security/SecureTokenManager';
 
 export const apiClient = new ApiClient({
-  enableLogging: import.meta.env.DEV,
+  enableLogging: process.env.NODE_ENV === 'development',
   enableRetry: true,
   tokenManager: secureTokenManager,
 });

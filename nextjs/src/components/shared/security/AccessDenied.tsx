@@ -14,7 +14,7 @@
 
 import React from 'react'
 import { AlertTriangle, ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 
 interface AccessDeniedProps {
   message?: string
@@ -25,10 +25,10 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
   message = "You do not have permission to view this student's records", 
   showBackButton = true 
 }) => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleGoBack = () => {
-    navigate(-1)
+    router.push(-1)
   }
 
   return (

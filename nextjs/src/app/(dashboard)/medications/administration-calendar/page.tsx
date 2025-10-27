@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: 'Calendar view of medication administrations and schedules'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = 'force-dynamic';
+
 interface CalendarPageProps {
   searchParams: {
     month?: string;

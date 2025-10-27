@@ -8,10 +8,11 @@
 export { HealthRecordsErrorBoundary } from './components/HealthRecordsErrorBoundary'
 
 // Health Records Specific Shared Components
-export { StatsCard as HealthRecordsStatsCard } from './components/shared/StatsCard'
-export { TabNavigation as HealthRecordsTabNavigation } from './components/shared/TabNavigation'
-export { SearchAndFilter as HealthRecordsSearchAndFilter } from './components/shared/SearchAndFilter'
-export { ActionButtons as HealthRecordsActionButtons } from './components/shared/ActionButtons'
+// TODO: Create these shared components when needed
+// export { StatsCard as HealthRecordsStatsCard } from './components/shared/StatsCard'
+// export { TabNavigation as HealthRecordsTabNavigation } from './components/shared/TabNavigation'
+// export { SearchAndFilter as HealthRecordsSearchAndFilter } from './components/shared/SearchAndFilter'
+// export { ActionButtons as HealthRecordsActionButtons } from './components/shared/ActionButtons'
 
 // Tab Components
 export { OverviewTab } from './components/tabs/OverviewTab'

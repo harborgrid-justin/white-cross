@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View low stock alerts',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function LowStockAlertsPage() {
   return <LowStockAlertsContent />;
 }

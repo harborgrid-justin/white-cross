@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: 'Multi-channel messaging and communication management',
 }
 
+// Force dynamic rendering due to client-side data requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Communication Hub Page
  *

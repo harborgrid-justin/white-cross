@@ -9,6 +9,10 @@ import { IncidentTrendChart } from '@/components/analytics/IncidentTrendChart';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { Download, Filter, RefreshCw } from 'lucide-react';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function IncidentTrendsPage() {
   const [view, setView] = useState<'total' | 'byType' | 'bySeverity'>('total');
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar'>('line');

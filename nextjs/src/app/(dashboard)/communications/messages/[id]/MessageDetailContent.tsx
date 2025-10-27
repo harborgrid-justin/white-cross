@@ -9,11 +9,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Reply, Archive, Trash2, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Separator } from '@/components/ui/Separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
 import { MessageComposer } from '@/components/communications/MessageComposer';
 import {
   getMessageById,
@@ -23,7 +23,7 @@ import {
 } from '@/lib/actions/communications.actions';
 import type { Message } from '@/lib/validations/message.schemas';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { format } from 'date-fns';
 
 interface MessageDetailContentProps {

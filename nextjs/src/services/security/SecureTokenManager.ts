@@ -153,6 +153,11 @@ export class SecureTokenManager implements ITokenManager {
    * @private
    */
   private initializeCleanup(): void {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     // Check for expired tokens every minute
     this.cleanupInterval = window.setInterval(() => {
       if (!this.isTokenValid()) {
@@ -192,6 +197,11 @@ export class SecureTokenManager implements ITokenManager {
    * Expired tokens are discarded without migration.
    */
   private migrateFromLocalStorage(): void {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     try {
       // Check if tokens exist in localStorage
       const legacyToken = localStorage.getItem(this.LEGACY_TOKEN_KEY);
@@ -838,6 +848,11 @@ export class SecureTokenManager implements ITokenManager {
    * ```
    */
   private getMetadata(): TokenMetadata | null {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+      return null;
+    }
+
     try {
       const metadataStr = sessionStorage.getItem(this.METADATA_KEY);
       if (!metadataStr) {

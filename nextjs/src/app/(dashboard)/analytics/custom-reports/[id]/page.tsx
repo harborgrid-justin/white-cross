@@ -12,6 +12,10 @@ import { ArrowLeft, Download, Edit, Trash2, Play, Calendar } from 'lucide-react'
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function CustomReportDetailPage() {
   const params = useParams();
   const router = useRouter();

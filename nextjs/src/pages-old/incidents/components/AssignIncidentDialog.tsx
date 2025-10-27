@@ -18,11 +18,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/buttons/Button';
-import { Select, SelectOption } from '@/components/ui/inputs/Select';
-import { Textarea } from '@/components/ui/inputs/Textarea';
-import { Input } from '@/components/ui/inputs/Input';
-import { Checkbox } from '@/components/ui/inputs/Checkbox';
+import { Button } from '@/components/ui/Button';
+import { Select, SelectOption } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
+import { Input } from '@/components/ui/Input';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { ActionPriority } from '@/types/incidents';
 import { useAppDispatch, useAppSelector } from '@/hooks/shared/store-hooks-index';
 import { updateIncidentReport } from '../store/incidentReportsSlice';

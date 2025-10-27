@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: 'View prescription details and refill history'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface PrescriptionDetailPageProps {
   params: {
     id: string;

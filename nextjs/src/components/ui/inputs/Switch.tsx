@@ -35,7 +35,7 @@
  *
  * @example Basic Toggle Switch
  * ```tsx
- * import { Switch } from '@/components/ui/inputs/Switch';
+ * import { Switch } from '@/components/ui/Inputs/Switch';
  *
  * function NotificationSettings() {
  *   const [emailNotifications, setEmailNotifications] = useState(true);

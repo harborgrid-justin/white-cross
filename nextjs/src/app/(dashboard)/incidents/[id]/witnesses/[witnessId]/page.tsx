@@ -6,12 +6,15 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Witness Details | White Cross',
   description: 'View witness details',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default function WitnessDetailsPage({
   params,

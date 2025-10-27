@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Manage reusable message templates',
 }
 
+// Force dynamic rendering due to client-side data requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Message Templates Page
  *

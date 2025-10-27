@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: 'View all upcoming scheduled appointments',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface GroupedAppointments {
   [date: string]: any[];
 }

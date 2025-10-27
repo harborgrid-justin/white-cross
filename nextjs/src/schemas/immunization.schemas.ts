@@ -7,7 +7,7 @@
  */
 
 import { z } from 'zod';
-import { VaccinationComplianceStatus } from '@/types/healthRecords';
+// import { VaccinationComplianceStatus } from '@/constants/healthRecords';
 
 /**
  * Immunization/Vaccination creation schema

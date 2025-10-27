@@ -15,7 +15,7 @@
 export * from './ui'
 
 // Layout Components
-export * from './layout'
+export * from './layouts'
 
 // Feature Components
 export * from './features'
@@ -33,7 +33,7 @@ export * from './providers'
 export * from './pages'
 
 // Legacy exports for backward compatibility (TODO: Remove after migration)
-export { Layout, AppLayout } from './layout'
+export { Layout, AppLayout } from './layouts'
 export { LoadingSpinner, EmptyState, AlertBanner } from './ui/feedback'
 export { BackButton } from './ui/buttons'
 export { default as ErrorBoundary } from './providers/ErrorBoundary'

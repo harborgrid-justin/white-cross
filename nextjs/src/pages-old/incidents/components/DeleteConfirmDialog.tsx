@@ -16,7 +16,7 @@ import {
   ModalFooter,
   ModalTitle,
 } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 
 export interface DeleteConfirmDialogProps {
   /** Whether the dialog is open */

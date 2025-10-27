@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: 'View all messages'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function MessagesPage() {
   // Redirect to main inbox
   redirect('/communications');

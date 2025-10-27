@@ -8,7 +8,7 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { PageHeader } from '@/components/layouts/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
 import MedicationList from '@/components/medications/core/MedicationList';
@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: 'Medications',
   description: 'View and manage all medications'
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 interface MedicationsPageProps {
   searchParams: {

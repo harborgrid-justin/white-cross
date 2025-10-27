@@ -15,7 +15,7 @@ import { getIncident } from '@/actions/incidents.actions';
 import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: 'Incident Details | White Cross',
   description: 'View incident report details',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 const severityColors = {
   MINOR: 'green',

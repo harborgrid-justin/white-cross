@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Manage all medication prescriptions and refills'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface PrescriptionsPageProps {
   searchParams: {
     status?: string;

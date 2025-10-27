@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Manage inventory locations',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function InventoryLocationsPage() {
   return <InventoryLocationsContent />;
 }

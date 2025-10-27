@@ -10,7 +10,7 @@
  */
 
 import React, { memo, useCallback, useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link' // Migrated from react-router-dom
 import {
   Menu, X, Search, Bell, User, LogOut, Settings as SettingsIcon,
   Moon, Sun, ChevronDown, Shield

@@ -7,18 +7,16 @@
  */
 
 import { z } from 'zod';
-import {
-  HealthRecordType
-} from '@/types/healthRecords';
+// import {
+//   HealthRecordType
+// } from '@/constants/healthRecords';
 
 /**
  * Health record creation schema
  */
 export const healthRecordCreateSchema = z.object({
   studentId: z.string().uuid('Invalid student ID'),
-  recordType: z.nativeEnum(HealthRecordType, {
-    errorMap: () => ({ message: 'Invalid record type' })
-  }),
+  recordType: z.string().min(1, 'Record type is required'),
   title: z.string()
     .min(1, 'Title is required')
     .max(255, 'Title must be less than 255 characters'),

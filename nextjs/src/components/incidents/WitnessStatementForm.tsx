@@ -15,9 +15,9 @@ import {
   type CreateStatementInput,
 } from '@/schemas/incidents/witness.schemas';
 import { submitWitnessStatement } from '@/actions/incidents.actions';
-import { Button } from '@/components/ui/buttons/Button';
-import { Textarea } from '@/components/ui/inputs/Textarea';
-import { Input } from '@/components/ui/inputs/Input';
+import { Button } from '@/components/ui/Button';
+import { Textarea } from '@/components/ui/Textarea';
+import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { Card } from '@/components/ui/layout/Card';
 

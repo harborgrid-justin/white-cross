@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View message details'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface MessageDetailPageProps {
   params: {
     id: string;

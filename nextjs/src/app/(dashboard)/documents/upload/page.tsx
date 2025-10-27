@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'Upload healthcare documents securely'
 }
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
 export default async function UploadDocumentPage() {
   return (
     <div className="container mx-auto px-4 py-6">

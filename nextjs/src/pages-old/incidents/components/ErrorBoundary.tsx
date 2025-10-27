@@ -109,7 +109,7 @@ class IncidentErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
     };
 
     // Log to console in development
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.group('🔴 Incident Module Error Boundary');
       console.error('Error:', error);
       console.error('Error Info:', errorInfo);
@@ -249,7 +249,7 @@ class IncidentErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
     context: Record<string, any>
   ): Promise<void> {
     // Only report in production
-    if (import.meta.env.DEV) return;
+    if (process.env.NODE_ENV === 'development') return;
 
     try {
       const endpoint = '/api/v1/errors/frontend';
@@ -388,7 +388,7 @@ class IncidentErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
 
     // Render default error UI
     const isRecoverable = this.isRecoverableError();
-    const isDevelopment = import.meta.env.DEV;
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">

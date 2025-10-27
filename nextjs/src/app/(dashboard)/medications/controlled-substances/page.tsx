@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Manage DEA-regulated controlled substances with enhanced security'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Fetch controlled substances
  */

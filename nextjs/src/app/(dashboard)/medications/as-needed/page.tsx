@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'As-needed medications with symptom-based triggers'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Fetch PRN medications
  */

@@ -6,11 +6,11 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/buttons/Button';
-import { Input } from '@/components/ui/inputs/Input';
-import { Select } from '@/components/ui/inputs/Select';
-import { Textarea } from '@/components/ui/inputs/Textarea';
-import { Checkbox } from '@/components/ui/inputs/Checkbox';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { useUpdateAllergy } from '@/hooks/domains/health-records/useHealthRecords';
 import { ALLERGY_TYPES, SEVERITY_LEVELS } from '@/constants/healthRecords';
 import type { Allergy, AllergyType, AllergySeverity } from '@/types/healthRecords';

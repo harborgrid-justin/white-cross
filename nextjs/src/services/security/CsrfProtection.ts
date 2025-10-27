@@ -445,6 +445,11 @@ export class CsrfProtection {
    */
   private getTokenFromMetaTag(): string | null {
     try {
+      // Check if we're in a browser environment
+      if (typeof document === 'undefined') {
+        return null;
+      }
+
       const metaTag = document.querySelector<HTMLMetaElement>(
         `meta[name="${this.META_TAG_NAME}"]`
       );
@@ -485,6 +490,11 @@ export class CsrfProtection {
    */
   private getTokenFromCookie(): string | null {
     try {
+      // Check if we're in a browser environment
+      if (typeof document === 'undefined') {
+        return null;
+      }
+
       const cookies = document.cookie.split(';');
 
       for (const cookieName of this.COOKIE_NAMES) {

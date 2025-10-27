@@ -17,10 +17,10 @@ import { ArrowLeft, Save, Calendar, Clock, User, FileText, AlertCircle } from 'l
 import { format, parseISO } from 'date-fns';
 import { appointmentsApi, studentsApi } from '@/services';
 import { PROTECTED_ROUTES } from '@/constants/routes';
-import { Button } from '@/components/ui/buttons/Button';
-import { Input } from '@/components/ui/inputs/Input';
-import { Select } from '@/components/ui/inputs/Select';
-import { Textarea } from '@/components/ui/inputs/Textarea';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { useToast } from '@/hooks/useToast';
 import type { Appointment, UpdateAppointmentData } from '@/types/appointments';

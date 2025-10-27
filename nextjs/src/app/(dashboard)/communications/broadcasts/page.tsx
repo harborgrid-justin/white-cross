@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View and manage broadcasts'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function BroadcastsPage() {
   return <BroadcastsContent />;
 }

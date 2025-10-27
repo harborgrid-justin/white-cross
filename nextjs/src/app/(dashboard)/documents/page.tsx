@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: 'Manage and view healthcare documents'
 }
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
 export default async function DocumentsPage() {
   return (
     <div className="container mx-auto px-4 py-6">

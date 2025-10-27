@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import {
   Shield,
   FileText,
@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: 'Compliance Dashboard | White Cross',
   description: 'HIPAA compliance monitoring, audit logs, and policy management',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 /**
  * Compliance Dashboard Page

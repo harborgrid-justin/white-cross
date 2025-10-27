@@ -9,6 +9,10 @@ import React from 'react';
 import { FollowUpForm } from '@/components/incidents/FollowUpForm';
 import { useRouter } from 'next/navigation';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function NewFollowUpPage({
   params,
 }: {

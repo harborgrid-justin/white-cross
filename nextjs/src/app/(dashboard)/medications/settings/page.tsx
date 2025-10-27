@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Configure medication module settings and preferences'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Fetch settings
  */

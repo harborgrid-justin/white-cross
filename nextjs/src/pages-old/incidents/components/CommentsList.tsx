@@ -21,9 +21,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { incidentsApi } from '@/services/modules/incidentsApi';
 import { useAppSelector } from '@/hooks/shared/store-hooks-index';
 import { Avatar } from '@/components/ui/display/Avatar';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
-import { Textarea } from '@/components/ui/inputs/Textarea';
+import { Textarea } from '@/components/ui/Textarea';
 import {
   MessageSquare,
   Edit2,

@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/layout/Card';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';

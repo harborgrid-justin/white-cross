@@ -16,7 +16,7 @@
 
 import React, { useState } from 'react';
 import { useWitnessStatements } from '@/hooks/domains/incidents';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/display/Badge';
 import { Eye, Trash2, CheckCircle, XCircle, User, Calendar } from 'lucide-react';
 import type { WitnessStatement, WitnessType } from '@/types/incidents';

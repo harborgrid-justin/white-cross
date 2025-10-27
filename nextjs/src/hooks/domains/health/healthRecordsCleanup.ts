@@ -355,7 +355,7 @@ export function logCleanupEvent(event: string, details?: any): void {
   }
 
   // In production, send to backend audit service
-  if (import.meta.env.PROD) {
+  if (process.env.NODE_ENV === 'production') {
     sendAuditLogToBackend(entry).catch((err) => {
       console.error('[Audit Log] Failed to send audit log:', err);
     });

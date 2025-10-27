@@ -35,7 +35,7 @@ import {
   CardDescription,
 } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/navigation/Tabs';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { Alert } from '@/components/ui/feedback/Alert';

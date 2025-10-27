@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: 'Medications nearing expiration requiring action'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface ExpiringPageProps {
   searchParams: {
     days?: string;

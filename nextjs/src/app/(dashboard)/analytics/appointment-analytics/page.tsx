@@ -10,6 +10,10 @@ import { DataExporter } from '@/components/analytics/DataExporter';
 import { CHART_COLORS, CHART_PALETTE, CHART_TOOLTIP_STYLE } from '@/lib/analytics/charts';
 import { Calendar, Download, RefreshCw, TrendingUp, Clock, XCircle, CheckCircle } from 'lucide-react';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function AppointmentAnalyticsPage() {
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),

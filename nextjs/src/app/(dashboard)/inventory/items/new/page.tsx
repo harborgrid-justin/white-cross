@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Add a new item to inventory',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function NewInventoryItemPage() {
   return <NewInventoryItemContent />;
 }

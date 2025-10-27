@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: 'Medication stock levels, usage rates, and inventory analytics'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = 'force-dynamic';
+
 /**
  * Fetch inventory report data
  */

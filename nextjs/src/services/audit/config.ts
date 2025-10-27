@@ -201,8 +201,8 @@ export const DEFAULT_AUDIT_CONFIG: AuditConfig = {
   enableCompression: false, // Not implemented yet
 
   // Development
-  enableDebug: import.meta.env.DEV || false,
-  enableConsoleLog: import.meta.env.DEV || false,
+  enableDebug: process.env.NODE_ENV === 'development' || false,
+  enableConsoleLog: process.env.NODE_ENV === 'development' || false,
 };
 
 /**

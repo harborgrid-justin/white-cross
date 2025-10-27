@@ -21,18 +21,18 @@ import {
   Save,
   RotateCcw
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Label } from '@/components/ui/Label';
+import { Switch } from '@/components/ui/Switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+} from '@/components/ui/Select';
+import { Separator } from '@/components/ui/Separator';
 import { cn } from '@/lib/utils';
 import type { NotificationPreferences, NotificationType } from '@/lib/validations/notification.schemas';
 import { updateNotificationPreferencesAction } from '@/lib/actions/communications.actions';

@@ -8,13 +8,16 @@ import { Metadata } from 'next';
 import { listFollowUpActions } from '@/actions/incidents.actions';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Follow-Up Actions | White Cross',
   description: 'View and manage follow-up actions',
 };
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
 
 export default async function FollowUpActionsPage({
   params,

@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: 'Add witness to incident',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function AddWitnessPage({ params }: { params: { id: string } }) {
   // Form component would go here
   return (

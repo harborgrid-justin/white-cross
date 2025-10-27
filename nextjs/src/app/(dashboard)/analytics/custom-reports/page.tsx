@@ -11,6 +11,10 @@ import { getCustomReports, deleteCustomReport } from '@/lib/actions/analytics.ac
 import { Plus, FileText, Edit, Trash2, Eye, Download, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function CustomReportsPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

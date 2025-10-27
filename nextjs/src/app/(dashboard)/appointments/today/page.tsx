@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "View and manage today's scheduled appointments",
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 /**
  * Today's Appointments Page
  *

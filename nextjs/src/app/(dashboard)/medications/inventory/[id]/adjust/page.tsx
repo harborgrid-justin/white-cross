@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: 'Adjust medication inventory quantity'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface StockAdjustmentPageProps {
   params: {
     id: string;

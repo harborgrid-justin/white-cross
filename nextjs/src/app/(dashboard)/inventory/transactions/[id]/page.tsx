@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View transaction details',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface TransactionDetailPageProps {
   params: {
     id: string;

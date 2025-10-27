@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { Select, SelectOption } from '@/components/ui/inputs/Select';
+import { Select, SelectOption } from '@/components/ui/Select';
 import { IncidentType, getIncidentTypeLabel } from '@/types/incidents';
 
 interface TypeFilterProps {

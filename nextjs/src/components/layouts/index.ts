@@ -46,7 +46,21 @@
  * ```
  */
 
+// Core Layout Components
 export { default as AppLayout } from './AppLayout'
+export { default as Navigation } from './Navigation'
+export { default as Sidebar } from './Sidebar'
+export { default as Footer } from './Footer'
+export { default as PageHeader } from './PageHeader'
+export { default as PageContainer } from './PageContainer'
+export { default as SearchBar } from './SearchBar'
+export { default as NotificationCenter } from './NotificationCenter'
+
+// New Layout Components
+export { default as Breadcrumbs } from './Breadcrumbs'
+export { default as Container } from './Container'
+export { default as Header } from './Header'
+export { default as MobileNav } from './MobileNav'
 
 // Legacy export for backward compatibility
 export { default as Layout } from './AppLayout'

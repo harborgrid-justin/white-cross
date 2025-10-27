@@ -16,7 +16,6 @@ export {
 export {
   Progress,
   CircularProgress,
-  Skeleton,
   type ProgressProps
 } from './Progress';
 

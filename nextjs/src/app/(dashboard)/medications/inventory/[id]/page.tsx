@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: 'Medication inventory item details and history'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 interface InventoryItemPageProps {
   params: {
     id: string;

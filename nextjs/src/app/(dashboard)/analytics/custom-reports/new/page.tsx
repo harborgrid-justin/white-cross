@@ -12,6 +12,10 @@ import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function NewCustomReportPage() {
   const router = useRouter();
 

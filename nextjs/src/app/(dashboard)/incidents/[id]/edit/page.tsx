@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   description: 'Edit incident report',
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default async function EditIncidentPage({
   params,
 }: {

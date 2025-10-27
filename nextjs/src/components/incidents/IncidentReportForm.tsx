@@ -31,10 +31,10 @@ import {
   MedicalResponse,
 } from '@/schemas/incidents/incident.schemas';
 import { createIncident, updateIncident } from '@/actions/incidents.actions';
-import { Button } from '@/components/ui/buttons/Button';
-import { Input } from '@/components/ui/inputs/Input';
-import { Textarea } from '@/components/ui/inputs/Textarea';
-import { Select } from '@/components/ui/inputs/Select';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Select } from '@/components/ui/Select';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { Card } from '@/components/ui/layout/Card';

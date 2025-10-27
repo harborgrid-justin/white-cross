@@ -68,8 +68,8 @@ export class ApiMonitoring {
   constructor(config: Partial<MonitoringConfig> = {}) {
     this.config = {
       enabled: config.enabled ?? true,
-      logRequests: config.logRequests ?? import.meta.env.DEV,
-      logResponses: config.logResponses ?? import.meta.env.DEV,
+      logRequests: config.logRequests ?? process.env.NODE_ENV === 'development',
+      logResponses: config.logResponses ?? process.env.NODE_ENV === 'development',
       logErrors: config.logErrors ?? true,
       trackPerformance: config.trackPerformance ?? true,
       slowRequestThreshold: config.slowRequestThreshold ?? 3000, // 3 seconds
@@ -451,8 +451,8 @@ export class ApiMonitoring {
 
 export const apiMonitoring = new ApiMonitoring({
   enabled: true,
-  logRequests: import.meta.env.DEV,
-  logResponses: import.meta.env.DEV,
+  logRequests: process.env.NODE_ENV === 'development',
+  logResponses: process.env.NODE_ENV === 'development',
   logErrors: true,
   trackPerformance: true,
   slowRequestThreshold: 3000,

@@ -9,6 +9,10 @@
  */
 
 import { Container } from '@/components/layouts/Container';
+
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 import {
   Users,
   Pill,

@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Create a new broadcast announcement'
 };
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
 export default function NewBroadcastPage() {
   return <NewBroadcastContent />;
 }

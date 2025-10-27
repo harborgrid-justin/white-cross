@@ -14,7 +14,7 @@ import {
   CardContent,
   CardFooter
 } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/feedback/Alert';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { Badge } from '@/components/ui/display/Badge';

@@ -24,7 +24,7 @@
  *
  * @example
  * ```tsx
- * import { Button, BackButton, RollbackButton } from '@/components/ui/buttons';
+ * import { Button, BackButton, RollbackButton } from '@/components/ui/Buttons';
  *
  * function MyPage() {
  *   return (

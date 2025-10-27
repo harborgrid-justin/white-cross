@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useWitnessStatements } from '@/hooks/domains/incidents';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
 import { Badge } from '@/components/ui/display/Badge';
 import WitnessStatementCard from './WitnessStatementCard';

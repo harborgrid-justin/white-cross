@@ -9,6 +9,10 @@ import React from 'react';
 import { WitnessStatementForm } from '@/components/incidents/WitnessStatementForm';
 import { useRouter } from 'next/navigation';
 
+// Force dynamic rendering due to auth requirements
+export const dynamic = "force-dynamic";
+
+
 export default function WitnessStatementPage({
   params,
 }: {
