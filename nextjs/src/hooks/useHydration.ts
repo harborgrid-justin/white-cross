@@ -146,7 +146,8 @@ export function useStorage(key: string, storage: 'local' | 'session' = 'local'):
  *
  *   return render(
  *     <div>
- *       <Map /> {/* Client-only component */}
+ *       {/* Client-only component *\/}
+ *       <Map />
  *     </div>
  *   );
  * }

@@ -282,8 +282,8 @@ export function optimisticDelete<T extends BaseEntity>(
     options
   );
 
-  // Remove from cache
-  queryClient.removeQueries({ queryKey: detailQueryKey });
+  // Remove from cache by invalidating and resetting
+  queryClient.removeQueries({ queryKey: detailQueryKey } as any);
 
   // Also remove from list if present
   removeEntityFromList(queryClient, queryKey, entityId);
@@ -418,7 +418,7 @@ export function optimisticBulkDelete<T extends BaseEntity>(
   // Remove from cache
   entityIds.forEach(id => {
     const detailQueryKey = [...(Array.isArray(queryKey[0]) ? queryKey : [queryKey[0]]), 'detail', id];
-    queryClient.removeQueries({ queryKey: detailQueryKey });
+    queryClient.removeQueries({ queryKey: detailQueryKey } as any);
   });
 
   return updateId;

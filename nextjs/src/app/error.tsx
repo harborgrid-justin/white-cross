@@ -125,7 +125,7 @@ interface ErrorProps {
  *     <button onClick={reset}>Try again</button>
  *     <Link href="/dashboard">Go to Dashboard</Link>
  *     <Link href="/">Return to Home</Link>
- *     {/* Dev only: stack trace */}
+ *     // Dev only: stack trace shown here
  *   </div>
  * </div>
  * ```

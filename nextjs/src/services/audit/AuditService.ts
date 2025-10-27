@@ -293,7 +293,7 @@ function generateBatchId(): string {
 export class AuditService implements IAuditService {
   private config: AuditConfig;
   private eventQueue: AuditEvent[] = [];
-  private batchTimer: NodeJS.Timeout | null = null;
+  private batchTimer: ReturnType<typeof setTimeout> | null = null;
   private isFlushing = false;
   private lastSyncAt: number | null = null;
   private lastError: string | null = null;
@@ -642,7 +642,7 @@ export class AuditService implements IAuditService {
       }
     } catch (error) {
       this.syncErrors++;
-      this.lastError = error.message;
+      this.lastError = error instanceof Error ? error.message : 'Unknown error';
 
       if (this.config.enableDebug) {
         console.error('[AuditService] Failed to send batch:', error);

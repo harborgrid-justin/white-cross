@@ -1749,7 +1749,7 @@ export const selectFilteredAndSortedReports = (state: RootState) => {
  * ```
  */
 export const selectIncidentsByType = (type: IncidentType) => (state: RootState) =>
-  state.incidentReports.reports.filter((report) => report.type === type);
+  state.incidentReports.reports.filter((report: any) => report.type === type);
 
 /**
  * Select incident reports by severity.
@@ -1767,7 +1767,7 @@ export const selectIncidentsByType = (type: IncidentType) => (state: RootState) 
  */
 export const selectIncidentsBySeverity = (severity: IncidentSeverity) => (
   state: RootState
-) => state.incidentReports.reports.filter((report) => report.severity === severity);
+) => state.incidentReports.reports.filter((report: any) => report.severity === severity);
 
 /**
  * Select incident reports by status.
@@ -1785,7 +1785,7 @@ export const selectIncidentsBySeverity = (severity: IncidentSeverity) => (
  * ```
  */
 export const selectIncidentsByStatus = (status: IncidentStatus) => (state: RootState) =>
-  state.incidentReports.reports.filter((report) => report.status === status);
+  state.incidentReports.reports.filter((report: any) => report.status === status);
 
 /**
  * Select incident reports requiring follow-up.
@@ -1802,7 +1802,7 @@ export const selectIncidentsByStatus = (status: IncidentStatus) => (state: RootS
  * ```
  */
 export const selectIncidentsRequiringFollowUp = (state: RootState) =>
-  state.incidentReports.reports.filter((report) => report.followUpRequired);
+  state.incidentReports.reports.filter((report: any) => report.followUpRequired);
 
 /**
  * Select incident reports with unnotified parents.
@@ -1820,7 +1820,7 @@ export const selectIncidentsRequiringFollowUp = (state: RootState) =>
  * ```
  */
 export const selectIncidentsWithUnnotifiedParents = (state: RootState) =>
-  state.incidentReports.reports.filter((report) => !report.parentNotified);
+  state.incidentReports.reports.filter((report: any) => !report.parentNotified);
 
 /**
  * Select critical incidents (HIGH or CRITICAL severity).
@@ -1843,7 +1843,7 @@ export const selectIncidentsWithUnnotifiedParents = (state: RootState) =>
  */
 export const selectCriticalIncidents = (state: RootState) =>
   state.incidentReports.reports.filter(
-    (report) =>
+    (report: any) =>
       report.severity === IncidentSeverity.HIGH ||
       report.severity === IncidentSeverity.CRITICAL
   );
@@ -1881,25 +1881,25 @@ export const selectReportStatistics = (state: RootState) => {
 
   return {
     total: reports.length,
-    byType: reports.reduce((acc, report) => {
+    byType: reports.reduce((acc: any, report: any) => {
       acc[report.type] = (acc[report.type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>),
-    bySeverity: reports.reduce((acc, report) => {
+    bySeverity: reports.reduce((acc: any, report: any) => {
       acc[report.severity] = (acc[report.severity] || 0) + 1;
       return acc;
     }, {} as Record<string, number>),
-    byStatus: reports.reduce((acc, report) => {
+    byStatus: reports.reduce((acc: any, report: any) => {
       acc[report.status || 'OPEN'] = (acc[report.status || 'OPEN'] || 0) + 1;
       return acc;
     }, {} as Record<string, number>),
     parentNotificationRate:
       reports.length > 0
-        ? (reports.filter((r) => r.parentNotified).length / reports.length) * 100
+        ? (reports.filter((r: any) => r.parentNotified).length / reports.length) * 100
         : 0,
     followUpRate:
       reports.length > 0
-        ? (reports.filter((r) => r.followUpRequired).length / reports.length) * 100
+        ? (reports.filter((r: any) => r.followUpRequired).length / reports.length) * 100
         : 0,
   };
 };

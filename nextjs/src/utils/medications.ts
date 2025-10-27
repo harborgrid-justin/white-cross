@@ -269,25 +269,34 @@ export const calculateTotalInventory = (medication: Medication): {
 
 /**
  * Get severity level color
+ *
+ * @param {Priority} severity - The severity level priority
+ * @returns {string} CSS classes for the severity color
  */
 export const getSeverityColor = (severity: Priority): string => {
-  const severityConfig = SEVERITY_LEVELS.find(level => level.value === severity)
+  const severityConfig = SEVERITY_LEVELS.find((level: { value: Priority; color: string }) => level.value === severity)
   return severityConfig?.color || 'text-gray-600 bg-gray-100'
 }
 
 /**
  * Get medication status color
+ *
+ * @param {string} status - The medication status value
+ * @returns {string} CSS classes for the status color
  */
 export const getMedicationStatusColor = (status: string): string => {
-  const statusConfig = MEDICATION_STATUSES.find(s => s.value === status)
+  const statusConfig = MEDICATION_STATUSES.find((s: { value: string; color: string }) => s.value === status)
   return statusConfig?.color || 'text-gray-600 bg-gray-100'
 }
 
 /**
  * Get inventory status color
+ *
+ * @param {string} status - The inventory status value
+ * @returns {string} CSS classes for the inventory status color
  */
 export const getInventoryStatusColor = (status: string): string => {
-  const statusConfig = INVENTORY_STATUSES.find(s => s.value === status)
+  const statusConfig = INVENTORY_STATUSES.find((s: { value: string; color: string }) => s.value === status)
   return statusConfig?.color || 'text-gray-600 bg-gray-100'
 }
 

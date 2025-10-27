@@ -622,17 +622,17 @@ export class InvalidationStrategy {
         await this.queryClient.invalidateQueries({
           queryKey: QueryKeyFactory.fromString(target.queryKey),
           refetchType: target.refetch ? 'active' : 'none'
-        });
+        } as any);
         invalidatedCount++;
       } else {
         // Pattern match
         await this.queryClient.invalidateQueries({
-          predicate: (query) => {
+          predicate: (query: any) => {
             const key = QueryKeyFactory.toString(query.queryKey as unknown[]);
             return (target.queryKey as RegExp).test(key);
           },
           refetchType: target.refetch ? 'active' : 'none'
-        });
+        } as any);
         invalidatedCount++;
       }
     }

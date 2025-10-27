@@ -147,7 +147,7 @@ export class ApiClientError extends Error {
     this.isValidationError = error.status === 400;
 
     // Maintain proper stack trace
-    if (Error.captureStackTrace) {
+    if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, ApiClientError);
     }
   }
@@ -287,8 +287,8 @@ export class ApiClient {
     this.resilienceHook = config.resilienceHook;
     this.enableLogging = config.enableLogging ?? true;
     this.enableRetry = config.enableRetry ?? true;
-    this.maxRetries = config.maxRetries ?? API_CONFIG.RETRY_ATTEMPTS;
-    this.retryDelay = config.retryDelay ?? API_CONFIG.RETRY_DELAY;
+    this.maxRetries = config.maxRetries ?? API_CONFIG.RETRY.MAX_RETRIES;
+    this.retryDelay = config.retryDelay ?? API_CONFIG.RETRY.RETRY_DELAY;
 
     // Create axios instance with security headers
     this.instance = axios.create({
