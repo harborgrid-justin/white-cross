@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { NewTemplateContent } from './NewTemplateContent';
+import { NewTemplateContent } from './_components/NewTemplateContent';
 
 export const metadata: Metadata = {
   title: 'New Template | Communications',

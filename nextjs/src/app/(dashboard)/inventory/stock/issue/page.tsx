@@ -42,7 +42,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { IssueStockContent } from './IssueStockContent';
+import { IssueStockContent } from './_components/IssueStockContent';
 
 export const metadata: Metadata = {
   title: 'Issue Stock | Inventory',

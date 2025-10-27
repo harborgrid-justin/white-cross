@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { BroadcastDetailContent } from './BroadcastDetailContent';
+import { BroadcastDetailContent } from './_components/BroadcastDetailContent';
 
 export const metadata: Metadata = {
   title: 'Broadcast Details | Communications',

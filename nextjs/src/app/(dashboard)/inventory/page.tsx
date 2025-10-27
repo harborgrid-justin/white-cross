@@ -32,7 +32,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { InventoryDashboardContent } from './InventoryDashboardContent';
+import { InventoryDashboardContent } from './_components/InventoryDashboardContent';
 
 /**
  * Metadata configuration for inventory dashboard page.

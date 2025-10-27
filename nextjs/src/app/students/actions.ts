@@ -284,12 +284,20 @@ export async function deactivateStudent(
  * @returns Action result with success status or error
  *
  * @remarks
- * **Warning:** This is a hard delete and should rarely be used.
- * Prefer deactivateStudent for HIPAA compliance.
+ * **⚠️ HIPAA COMPLIANCE WARNING:** This is a hard delete and violates HIPAA audit trail requirements.
+ * **DO NOT USE IN PRODUCTION.** Use deactivateStudent() instead to maintain audit compliance.
  *
- * @deprecated Use deactivateStudent instead for HIPAA compliance
+ * @deprecated Use deactivateStudent instead for HIPAA compliance (see lines 240-278)
+ * @security HIPAA-NON-COMPLIANT - Hard delete removes audit trail
  */
 export async function deleteStudent(id: string): Promise<ActionResult<void>> {
+  // Runtime warning for HIPAA compliance
+  console.warn(
+    '⚠️ HIPAA COMPLIANCE WARNING: deleteStudent() is deprecated and non-compliant. ' +
+    'Use deactivateStudent() instead to maintain audit trail. ' +
+    'This function will be removed in a future version.'
+  );
+
   try {
     await apiRequest<void>(`/api/v1/students/${id}`, {
       method: 'DELETE'

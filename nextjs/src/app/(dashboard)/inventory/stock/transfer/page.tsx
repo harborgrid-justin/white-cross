@@ -57,7 +57,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { TransferStockContent } from './TransferStockContent';
+import { TransferStockContent } from './_components/TransferStockContent';
 
 export const metadata: Metadata = {
   title: 'Transfer Stock | Inventory',

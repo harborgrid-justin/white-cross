@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { MessageDetailContent } from './MessageDetailContent';
+import { MessageDetailContent } from './_components/MessageDetailContent';
 
 export const metadata: Metadata = {
   title: 'Message | Communications',

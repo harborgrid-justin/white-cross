@@ -32,7 +32,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { StockLevelsContent } from './StockLevelsContent';
+import { StockLevelsContent } from './_components/StockLevelsContent';
 
 /**
  * Page metadata for stock levels view.

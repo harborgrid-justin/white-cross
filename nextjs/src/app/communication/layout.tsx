@@ -45,6 +45,8 @@
  * @version 1.0.0
  */
 
+import type { Metadata } from 'next';
+
 import React from 'react'
 
 /**
@@ -53,6 +55,14 @@ import React from 'react'
  * @interface CommunicationLayoutProps
  * @property {React.ReactNode} children - Communication page components to render
  */
+/**
+ * Metadata configuration for Communications layout
+ */
+export const metadata: Metadata = {
+  title: 'Communications | White Cross Healthcare',
+  description: 'Manage messages, notifications, and broadcasts to students and families.',
+};
+
 interface CommunicationLayoutProps {
   children: React.ReactNode
 }

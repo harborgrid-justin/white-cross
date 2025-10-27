@@ -77,7 +77,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { ExpiringItemsContent } from './ExpiringItemsContent';
+import { ExpiringItemsContent } from './_components/ExpiringItemsContent';
 
 export const metadata: Metadata = {
   title: 'Expiring Items | Inventory',

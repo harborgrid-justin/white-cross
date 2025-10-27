@@ -46,7 +46,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { ReceiveStockContent } from './ReceiveStockContent';
+import { ReceiveStockContent } from './_components/ReceiveStockContent';
 
 export const metadata: Metadata = {
   title: 'Receive Stock | Inventory',

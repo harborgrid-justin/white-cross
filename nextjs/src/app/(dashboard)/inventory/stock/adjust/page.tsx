@@ -38,7 +38,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { StockAdjustmentContent } from './StockAdjustmentContent';
+import { StockAdjustmentContent } from './_components/StockAdjustmentContent';
 
 export const metadata: Metadata = {
   title: 'Adjust Stock | Inventory',
