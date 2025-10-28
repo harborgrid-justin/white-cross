@@ -12,7 +12,8 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Request as ExpressRequest } from 'express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiParam, ApiBody } from '@nestjs/swagger';
 import { AccessControlService } from './access-control.service';
 import { PermissionCacheService } from './services/permission-cache.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -77,7 +78,7 @@ export class AccessControlController {
   @ApiResponse({ status: 201, description: 'Role created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - validation error or duplicate name' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async createRole(@Body() createRoleDto: CreateRoleDto, @Request() req) {
+  async createRole(@Body() createRoleDto: CreateRoleDto, @Request() req: ExpressRequest) {
     return this.accessControlService.createRole(createRoleDto, req.user?.id);
   }
 
@@ -90,7 +91,7 @@ export class AccessControlController {
   @ApiResponse({ status: 400, description: 'Bad request - cannot modify system roles' })
   @ApiResponse({ status: 404, description: 'Role not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async updateRole(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto, @Request() req) {
+  async updateRole(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto, @Request() req: ExpressRequest) {
     return this.accessControlService.updateRole(id, updateRoleDto, req.user?.id);
   }
 
@@ -103,7 +104,7 @@ export class AccessControlController {
   @ApiResponse({ status: 400, description: 'Cannot delete system role or role with users' })
   @ApiResponse({ status: 404, description: 'Role not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async deleteRole(@Param('id') id: string, @Request() req) {
+  async deleteRole(@Param('id') id: string, @Request() req: ExpressRequest) {
     return this.accessControlService.deleteRole(id, req.user?.id);
   }
 
@@ -142,9 +143,9 @@ export class AccessControlController {
   async assignPermissionToRole(
     @Param('roleId') roleId: string,
     @Body() dto: AssignPermissionToRoleDto,
-    @Request() req,
+    @Request() req: ExpressRequest,
   ) {
-    return this.accessControlService.assignPermissionToRole(roleId, dto.permissionId, req.user?.id);
+    return this.accessControlService.assignPermissionToRole(roleId, dto.permissionId, (req.user as any)?.id);
   }
 
   @Delete('roles/:roleId/permissions/:permissionId')
@@ -203,7 +204,7 @@ export class AccessControlController {
   @ApiResponse({ status: 200, description: 'User permissions retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async getUserPermissions(@Param('userId') userId: string, @Request() req) {
+  async getUserPermissions(@Param('userId') userId: string, @Request() req: ExpressRequest) {
     // Allow users to view their own permissions, or require permission to view others
     if (userId !== req.user?.id) {
       const hasPermission = await this.accessControlService.checkPermission(
@@ -224,7 +225,7 @@ export class AccessControlController {
   @ApiResponse({ status: 200, description: 'Permission check result' })
   @ApiResponse({ status: 400, description: 'Bad request - validation error' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async checkPermission(@Body() dto: CheckPermissionDto, @Request() req) {
+  async checkPermission(@Body() dto: CheckPermissionDto, @Request() req: ExpressRequest) {
     const hasPermission = await this.accessControlService.checkPermission(
       req.user?.id,
       dto.resource,
@@ -242,7 +243,7 @@ export class AccessControlController {
   @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Sessions retrieved successfully' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async getUserSessions(@Param('userId') userId: string, @Request() req) {
+  async getUserSessions(@Param('userId') userId: string, @Request() req: ExpressRequest) {
     // Allow users to view their own sessions, or require permission to view others
     if (userId !== req.user?.id) {
       const hasPermission = await this.accessControlService.checkPermission(
@@ -315,7 +316,7 @@ export class AccessControlController {
   @ApiResponse({ status: 201, description: 'Security incident created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - validation error' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async createSecurityIncident(@Body() dto: CreateSecurityIncidentDto, @Request() req) {
+  async createSecurityIncident(@Body() dto: CreateSecurityIncidentDto, @Request() req: ExpressRequest) {
     return this.accessControlService.createSecurityIncident({
       ...dto,
       detectedBy: dto.detectedBy || req.user?.id,
@@ -347,7 +348,7 @@ export class AccessControlController {
   @ApiResponse({ status: 201, description: 'IP restriction added successfully' })
   @ApiResponse({ status: 400, description: 'IP restriction already exists' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async addIpRestriction(@Body() dto: CreateIpRestrictionDto, @Request() req) {
+  async addIpRestriction(@Body() dto: CreateIpRestrictionDto, @Request() req: ExpressRequest) {
     return this.accessControlService.addIpRestriction({
       ...dto,
       createdBy: dto.createdBy || req.user?.id,

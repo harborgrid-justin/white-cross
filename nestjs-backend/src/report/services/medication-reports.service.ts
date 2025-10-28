@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import { Repository, DataSource, Between, IsNull, Not } from 'typeorm';
-import { MedicationLog } from '../../medication/entities/medication-log.entity';
-import { StudentMedication } from '../../medication/entities/student-medication.entity';
+import { MedicationLog, StudentMedication } from '../../medication/entities';
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 
@@ -34,8 +33,8 @@ export class MedicationReportsService {
       const whereClause: any = {};
 
       if (startDate || endDate) {
-        whereClause.timeGiven = {};
-        if (startDate) whereClause.timeGiven = Between(startDate, endDate || new Date());
+        whereClause.administeredAt = {};
+        if (startDate) whereClause.administeredAt = Between(startDate, endDate || new Date());
       }
 
       // Get medication administration logs with full details
@@ -45,11 +44,11 @@ export class MedicationReportsService {
         .leftJoinAndSelect('sm.medication', 'm')
         .leftJoinAndSelect('sm.student', 's')
         .leftJoinAndSelect('ml.nurse', 'n')
-        .orderBy('ml.timeGiven', 'DESC')
+        .orderBy('ml.administeredAt', 'DESC')
         .take(100);
 
-      if (whereClause.timeGiven) {
-        queryBuilder.andWhere('ml.timeGiven BETWEEN :start AND :end', {
+      if (whereClause.administeredAt) {
+        queryBuilder.andWhere('ml.administeredAt BETWEEN :start AND :end', {
           start: startDate,
           end: endDate || new Date(),
         });
@@ -103,7 +102,7 @@ export class MedicationReportsService {
       const adverseReactions = await this.medicationLogRepository.find({
         where: adverseReactionsWhere,
         relations: ['studentMedication', 'studentMedication.medication', 'studentMedication.student', 'nurse'],
-        order: { timeGiven: 'DESC' },
+        order: { administeredAt: 'DESC' },
       });
 
       this.logger.log(

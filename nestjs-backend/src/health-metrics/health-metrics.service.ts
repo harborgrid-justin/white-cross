@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateVitalsDto } from './dto/create-vitals.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 
-interface VitalSigns {
+export interface VitalSigns {
   heartRate?: number;
   bloodPressure?: {
     systolic: number;
@@ -15,7 +15,7 @@ interface VitalSigns {
   height?: number;
 }
 
-interface MetricsOverview {
+export interface MetricsOverview {
   totalPatients: number;
   activeAppointments: number;
   criticalAlerts: number;
@@ -40,7 +40,7 @@ interface MetricsOverview {
   timestamp: Date;
 }
 
-interface HealthAlert {
+export interface HealthAlert {
   id: number;
   patientId: number;
   patientName: string;

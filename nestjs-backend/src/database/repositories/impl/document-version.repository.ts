@@ -27,7 +27,7 @@ export interface UpdateDocumentVersionDTO {
 @Injectable()
 export class DocumentVersionRepository extends BaseRepository<any, DocumentVersionAttributes, CreateDocumentVersionDTO> {
   constructor(
-    @InjectModel('DocumentVersion') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

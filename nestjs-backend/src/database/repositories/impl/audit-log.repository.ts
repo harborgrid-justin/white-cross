@@ -9,6 +9,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { AuditLog } from '../../models/audit-log.model';
 
 export interface AuditLogAttributes {
   id: string;
@@ -27,7 +28,7 @@ export interface UpdateAuditLogDTO {
 @Injectable()
 export class AuditLogRepository extends BaseRepository<any, AuditLogAttributes, CreateAuditLogDTO> {
   constructor(
-    @InjectModel('AuditLog') model: any,
+    @InjectModel(AuditLog) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

@@ -2,7 +2,7 @@
  * Base service class providing common functionality for all services
  */
 
-import { logger } from '../../../utils/logger';
+import { logger } from '../logging/logger.service';
 import {
   PaginationParams,
   PaginatedResponse,
@@ -57,7 +57,7 @@ export abstract class BaseService {
    * Log service operation
    */
   protected logInfo(message: string, metadata?: ErrorMetadata): void {
-    logger.info(`[${this.serviceName}] ${message}`, metadata);
+    logger.log(`[${this.serviceName}] ${message}`, 'BaseService');
   }
 
   /**
@@ -68,14 +68,14 @@ export abstract class BaseService {
     error?: ApplicationError | Error | unknown,
     metadata?: ErrorMetadata
   ): void {
-    logger.error(`[${this.serviceName}] ${message}`, { error, ...metadata });
+    logger.error(`[${this.serviceName}] ${message}`, error, 'BaseService');
   }
 
   /**
    * Log service warning
    */
   protected logWarning(message: string, metadata?: ErrorMetadata): void {
-    logger.warn(`[${this.serviceName}] ${message}`, metadata);
+    logger.warn(`[${this.serviceName}] ${message}`, 'BaseService');
   }
 
   /**
@@ -201,15 +201,15 @@ export abstract class BaseService {
   protected validateFutureDate(date: Date, fieldName: string): ValidationResult {
     const errors = [];
     const now = new Date();
-    
+
     if (date <= now) {
       errors.push({
         field: fieldName,
         message: `${fieldName} must be in the future`,
-        code: 'INVALID_DATE'
+        code: ValidationErrorCode.INVALID_VALUE
       });
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,

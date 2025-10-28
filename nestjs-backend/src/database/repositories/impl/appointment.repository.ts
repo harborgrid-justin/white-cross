@@ -9,6 +9,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { Appointment } from '../../models/appointment.model';
 
 export interface AppointmentAttributes {
   id: string;
@@ -27,7 +28,7 @@ export interface UpdateAppointmentDTO {
 @Injectable()
 export class AppointmentRepository extends BaseRepository<any, AppointmentAttributes, CreateAppointmentDTO> {
   constructor(
-    @InjectModel('Appointment') model: any,
+    @InjectModel(Appointment) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

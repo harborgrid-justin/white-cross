@@ -143,9 +143,13 @@ export class HealthRecordService {
       relations: ['student'],
     });
 
+    if (!record) {
+      throw new Error('Failed to reload health record after creation');
+    }
+
     // PHI Creation Audit Log
     this.logger.log(
-      `PHI Created: Health record ${record.recordType} for student ${student.firstName} ${student.lastName}`,
+      `PHI Created: Health record ${record.recordType} for student ${record.student!.firstName} ${record.student!.lastName}`,
     );
 
     return record;
@@ -181,6 +185,10 @@ export class HealthRecordService {
       where: { id: updatedRecord.id },
       relations: ['student'],
     });
+
+    if (!record) {
+      throw new Error('Failed to reload health record after update');
+    }
 
     // PHI Modification Audit Log
     this.logger.log(
@@ -312,6 +320,10 @@ export class HealthRecordService {
       relations: ['student'],
     });
 
+    if (!allergyWithRelations) {
+      throw new Error('Failed to reload allergy after creation');
+    }
+
     // PHI Creation Audit Log - WARNING for critical allergies
     if (data.severity === 'life-threatening' || data.severity === 'severe') {
       this.logger.warn(
@@ -358,9 +370,13 @@ export class HealthRecordService {
       relations: ['student'],
     });
 
+    if (!allergyWithRelations) {
+      throw new Error('Failed to reload allergy after update');
+    }
+
     // PHI Modification Audit Log
     this.logger.log(
-      `Allergy updated: ${allergyWithRelations.allergen} for ${allergyWithRelations.student.firstName} ${allergyWithRelations.student.lastName}`,
+      `Allergy updated: ${allergyWithRelations.allergen} for ${allergyWithRelations.student!.firstName} ${allergyWithRelations.student!.lastName}`,
     );
 
     return allergyWithRelations;
@@ -409,7 +425,7 @@ export class HealthRecordService {
 
     // PHI Deletion Audit Log
     this.logger.warn(
-      `Allergy deleted: ${allergy.allergen} for ${allergy.student.firstName} ${allergy.student.lastName}`,
+      `Allergy deleted: ${allergy.allergen} for ${allergy.student?.firstName} ${allergy.student?.lastName}`,
     );
 
     return { success: true };
@@ -447,6 +463,10 @@ export class HealthRecordService {
         where: { id: savedCondition.id },
         relations: ['student'],
       });
+
+    if (!conditionWithRelations) {
+      throw new Error('Failed to reload chronic condition after creation');
+    }
 
     // PHI Creation Audit Log
     this.logger.log(
@@ -511,9 +531,13 @@ export class HealthRecordService {
         relations: ['student'],
       });
 
+    if (!conditionWithRelations) {
+      throw new Error('Failed to reload chronic condition after update');
+    }
+
     // PHI Modification Audit Log
     this.logger.log(
-      `PHI Modified: Chronic condition ${conditionWithRelations.condition} updated for student ${conditionWithRelations.student.firstName} ${conditionWithRelations.student.lastName}`,
+      `PHI Modified: Chronic condition ${conditionWithRelations.condition} updated for student ${conditionWithRelations.student?.firstName} ${conditionWithRelations.student?.lastName}`,
     );
 
     return conditionWithRelations;
@@ -539,7 +563,7 @@ export class HealthRecordService {
 
     // PHI Deletion Audit Log
     this.logger.warn(
-      `Chronic condition deleted: ${condition.condition} for ${condition.student.firstName} ${condition.student.lastName}`,
+      `Chronic condition deleted: ${condition.condition} for student ${condition.studentId}`,
     );
 
     return { success: true };
@@ -580,6 +604,10 @@ export class HealthRecordService {
       where: { id: savedVaccination.id },
       relations: ['student'],
     });
+
+    if (!vaccinationWithRelations) {
+      throw new Error('Failed to reload vaccination after creation');
+    }
 
     // PHI Creation Audit Log
     this.logger.log(
@@ -650,6 +678,10 @@ export class HealthRecordService {
       where: { id: updatedVaccination.id },
       relations: ['student'],
     });
+
+    if (!vaccinationWithRelations) {
+      throw new Error('Failed to reload vaccination after update');
+    }
 
     // PHI Modification Audit Log
     this.logger.log(
@@ -1099,6 +1131,61 @@ export class HealthRecordService {
       chronicConditions,
       vaccinationsDue,
       recentRecords,
+    };
+  }
+
+  /**
+   * Get health record for a specific student
+   * @param studentId - Student identifier
+   * @returns Health record or null if not found
+   */
+  async getHealthRecord(studentId: string): Promise<HealthRecord | null> {
+    return this.healthRecordRepository.findOne({
+      where: { studentId },
+      relations: ['student', 'allergies', 'vaccinations', 'chronicConditions'],
+    });
+  }
+
+  /**
+   * Delete a specific health record
+   * @param id - Health record identifier
+   */
+  async deleteHealthRecord(id: string): Promise<void> {
+    const result = await this.healthRecordRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Health record with ID ${id} not found`);
+    }
+  }
+
+  /**
+   * Get complete health profile for a student
+   * @param studentId - Student identifier
+   * @returns Complete health profile with all related data
+   */
+  async getCompleteHealthProfile(studentId: string): Promise<any> {
+    const healthRecord = await this.getHealthRecord(studentId);
+    if (!healthRecord) {
+      throw new NotFoundException(`Health record for student ${studentId} not found`);
+    }
+
+    // Get additional related data
+    const allergies = await this.allergyRepository.find({
+      where: { studentId },
+    });
+
+    const vaccinations = await this.vaccinationRepository.find({
+      where: { studentId },
+    });
+
+    const chronicConditions = await this.chronicConditionRepository.find({
+      where: { studentId },
+    });
+
+    return {
+      healthRecord,
+      allergies,
+      vaccinations,
+      chronicConditions,
     };
   }
 }

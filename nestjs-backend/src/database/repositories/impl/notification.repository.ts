@@ -27,7 +27,7 @@ export interface UpdateNotificationDTO {
 @Injectable()
 export class NotificationRepository extends BaseRepository<any, NotificationAttributes, CreateNotificationDTO> {
   constructor(
-    @InjectModel('Notification') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

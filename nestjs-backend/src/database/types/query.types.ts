@@ -29,6 +29,11 @@ export interface QueryOptions {
   take?: number;
 
   /**
+   * Number of records to return (alias for take, for compatibility)
+   */
+  limit?: number;
+
+  /**
    * Cursor-based pagination cursor
    */
   cursor?: string;

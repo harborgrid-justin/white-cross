@@ -9,6 +9,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { SystemConfig } from '../../models/system-config.model';
 
 export interface SystemConfigAttributes {
   id: string;
@@ -27,7 +28,7 @@ export interface UpdateSystemConfigDTO {
 @Injectable()
 export class SystemConfigRepository extends BaseRepository<any, SystemConfigAttributes, CreateSystemConfigDTO> {
   constructor(
-    @InjectModel('SystemConfig') model: any,
+    @InjectModel(SystemConfig) model: typeof SystemConfig,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

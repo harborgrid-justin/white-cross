@@ -41,6 +41,22 @@ export interface UpdateStudentDTO {
   isActive?: boolean;
 }
 
+export interface StudentFilters {
+  nurseId?: string;
+  grade?: string;
+  isActive?: boolean;
+  search?: string;
+  dateOfBirthFrom?: Date;
+  dateOfBirthTo?: Date;
+}
+
+export interface GradeStatistics {
+  grade: string;
+  count: number;
+  activeCount: number;
+  inactiveCount: number;
+}
+
 export interface IStudentRepository extends IRepository<StudentAttributes, CreateStudentDTO, UpdateStudentDTO> {
   findByStudentNumber(studentNumber: string): Promise<StudentAttributes | null>;
   findByMedicalRecordNumber(medicalRecordNum: string): Promise<StudentAttributes | null>;

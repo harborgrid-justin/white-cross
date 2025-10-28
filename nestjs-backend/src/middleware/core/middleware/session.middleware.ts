@@ -221,7 +221,7 @@ export class SessionMiddleware implements NestMiddleware {
       await this.store.update(oldestSession.sessionId, { isActive: false });
 
       if (this.config.auditSessions) {
-        this.logger.info('Deactivated session due to concurrent limit', {
+        this.logger.log('Deactivated session due to concurrent limit', {
           userId,
           deactivatedSessionId: oldestSession.sessionId
         });
@@ -248,7 +248,7 @@ export class SessionMiddleware implements NestMiddleware {
     await this.store.create(session);
 
     if (this.config.auditSessions) {
-      this.logger.info('Session created', {
+      this.logger.log('Session created', {
         sessionId,
         userId,
         email,
@@ -299,7 +299,7 @@ export class SessionMiddleware implements NestMiddleware {
         await this.store.update(sessionId, { isActive: false });
 
         if (this.config.auditSessions) {
-          this.logger.info('Session expired', {
+          this.logger.log('Session expired', {
             sessionId,
             userId: session.userId,
             timeSinceActivity
@@ -411,7 +411,7 @@ export class SessionMiddleware implements NestMiddleware {
         await this.store.update(sessionId, { isActive: false });
 
         if (this.config.auditSessions) {
-          this.logger.info('Session ended', {
+          this.logger.log('Session ended', {
             sessionId,
             userId: session.userId,
             duration: Date.now() - session.createdAt
@@ -442,7 +442,7 @@ export class SessionMiddleware implements NestMiddleware {
       }
 
       if (this.config.auditSessions) {
-        this.logger.info('All user sessions ended', {
+        this.logger.log('All user sessions ended', {
           userId,
           sessionCount: sessions.length
         });

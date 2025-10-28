@@ -27,7 +27,7 @@ export interface UpdateDocumentPermissionDTO {
 @Injectable()
 export class DocumentPermissionRepository extends BaseRepository<any, DocumentPermissionAttributes, CreateDocumentPermissionDTO> {
   constructor(
-    @InjectModel('DocumentPermission') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

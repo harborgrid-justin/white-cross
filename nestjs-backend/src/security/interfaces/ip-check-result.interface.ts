@@ -12,5 +12,5 @@ export interface IPCheckResult {
     country: string;
     city: string;
     region: string;
-  };
+  } | null;
 }

@@ -27,7 +27,7 @@ export interface UpdateDashboardConfigDTO {
 @Injectable()
 export class DashboardConfigRepository extends BaseRepository<any, DashboardConfigAttributes, CreateDashboardConfigDTO> {
   constructor(
-    @InjectModel('DashboardConfig') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

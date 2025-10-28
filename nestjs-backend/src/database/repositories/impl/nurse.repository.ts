@@ -27,7 +27,7 @@ export interface UpdateNurseDTO {
 @Injectable()
 export class NurseRepository extends BaseRepository<any, NurseAttributes, CreateNurseDTO> {
   constructor(
-    @InjectModel('Nurse') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

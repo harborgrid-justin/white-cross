@@ -30,7 +30,7 @@ export type PermissionsMode = 'all' | 'any';
  * async accessAdminPanel() {}
  */
 export const RequirePermissions = (permissions: Permission[], mode: PermissionsMode = 'all') => {
-  return (target: any, propertyKey?: string, descriptor?: PropertyDescriptor) => {
+  return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     SetMetadata(PERMISSIONS_KEY, permissions)(target, propertyKey, descriptor);
     SetMetadata(PERMISSIONS_MODE_KEY, mode)(target, propertyKey, descriptor);
   };

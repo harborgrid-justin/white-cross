@@ -27,7 +27,7 @@ export interface UpdateSecurityIncidentDTO {
 @Injectable()
 export class SecurityIncidentRepository extends BaseRepository<any, SecurityIncidentAttributes, CreateSecurityIncidentDTO> {
   constructor(
-    @InjectModel('SecurityIncident') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

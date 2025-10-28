@@ -27,7 +27,7 @@ export interface UpdateDeviceDTO {
 @Injectable()
 export class DeviceRepository extends BaseRepository<any, DeviceAttributes, CreateDeviceDTO> {
   constructor(
-    @InjectModel('Device') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

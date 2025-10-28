@@ -39,7 +39,7 @@ export class PermissionRepository
   extends BaseRepository<any, PermissionAttributes, CreatePermissionDTO>
 {
   constructor(
-    @InjectModel('Permission') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

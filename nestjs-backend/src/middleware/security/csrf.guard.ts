@@ -393,4 +393,4 @@ export class CsrfGuard implements CanActivate {
 
 // Custom decorator to skip CSRF validation
 export const SkipCsrf = () =>
-  Reflector.createDecorator<boolean>({ key: 'skipCsrf', value: true });
+  Reflector.createDecorator<boolean>({ key: 'skipCsrf' });

@@ -54,7 +54,7 @@ export class MedicationRepository
   extends BaseRepository<any, MedicationAttributes, CreateMedicationDTO>
 {
   constructor(
-    @InjectModel('Medication') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

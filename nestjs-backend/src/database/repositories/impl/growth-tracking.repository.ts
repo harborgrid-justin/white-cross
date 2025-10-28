@@ -10,6 +10,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
+import { GrowthTracking } from '../../models/growth-tracking.model';
 
 export interface GrowthTrackingAttributes {
   id: string;
@@ -60,7 +61,7 @@ export class GrowthTrackingRepository
   extends BaseRepository<any, GrowthTrackingAttributes, CreateGrowthTrackingDTO>
 {
   constructor(
-    @InjectModel('GrowthTracking') model: any,
+    @InjectModel(GrowthTracking) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

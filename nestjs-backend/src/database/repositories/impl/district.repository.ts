@@ -27,7 +27,7 @@ export interface UpdateDistrictDTO {
 @Injectable()
 export class DistrictRepository extends BaseRepository<any, DistrictAttributes, CreateDistrictDTO> {
   constructor(
-    @InjectModel('District') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

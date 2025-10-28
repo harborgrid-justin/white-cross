@@ -27,7 +27,7 @@ export interface UpdateIpRestrictionDTO {
 @Injectable()
 export class IpRestrictionRepository extends BaseRepository<any, IpRestrictionAttributes, CreateIpRestrictionDTO> {
   constructor(
-    @InjectModel('IpRestriction') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

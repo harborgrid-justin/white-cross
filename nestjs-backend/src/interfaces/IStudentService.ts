@@ -4,14 +4,14 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IStudentRepository } from '../../repositories/interfaces/IStudentRepository';
+import { IStudentRepository } from '../database/repositories/interfaces/student.repository.interface';
 import {
-  Student,
-  CreateStudentData,
-  UpdateStudentData,
+  StudentAttributes as Student,
+  CreateStudentDTO as CreateStudentData,
+  UpdateStudentDTO as UpdateStudentData,
   StudentFilters,
   GradeStatistics
-} from '../../repositories/interfaces/IStudentRepository';
+} from '../database/repositories/interfaces/student.repository.interface';
 
 /**
  * Student list result with pagination

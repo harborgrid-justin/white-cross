@@ -46,7 +46,7 @@ export class ChronicConditionRepository
   extends BaseRepository<any, ChronicConditionAttributes, CreateChronicConditionDTO>
 {
   constructor(
-    @InjectModel('ChronicCondition') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

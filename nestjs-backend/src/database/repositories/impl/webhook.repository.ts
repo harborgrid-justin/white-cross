@@ -9,6 +9,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { Webhook } from '../../models/webhook.model';
 
 export interface WebhookAttributes {
   id: string;
@@ -27,7 +28,7 @@ export interface UpdateWebhookDTO {
 @Injectable()
 export class WebhookRepository extends BaseRepository<any, WebhookAttributes, CreateWebhookDTO> {
   constructor(
-    @InjectModel('Webhook') model: any,
+    @InjectModel(Webhook) model: typeof Webhook,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

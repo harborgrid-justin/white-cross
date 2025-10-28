@@ -9,6 +9,7 @@ import {
   BelongsTo,
   Index,
 } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import { Message } from './message.model';
 import { MessageType } from './message-template.model';
 
@@ -46,12 +47,18 @@ export interface MessageDeliveryAttributes {
   updatedAt: Date;
 }
 
+export interface MessageDeliveryCreationAttributes
+  extends Optional<
+    MessageDeliveryAttributes,
+    'id' | 'contactInfo' | 'sentAt' | 'deliveredAt' | 'failureReason' | 'externalId' | 'createdAt' | 'updatedAt'
+  > {}
+
 @Table({
   tableName: 'message_deliveries',
   timestamps: true,
   underscored: true,
 })
-export class MessageDelivery extends Model<MessageDeliveryAttributes> {
+export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDeliveryCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)

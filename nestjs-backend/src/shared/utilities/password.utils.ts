@@ -15,7 +15,7 @@
  * DOWNSTREAM: Authentication services, user management
  */
 
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 /**
  * Password configuration constants

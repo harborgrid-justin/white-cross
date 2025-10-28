@@ -82,9 +82,9 @@ export class IncidentReportController {
 
   @Get('statistics')
   @ApiOperation({ summary: 'Get incident statistics' })
-  @ApiQuery({ name: 'dateFrom', required: false, type: 'string', format: 'date' })
-  @ApiQuery({ name: 'dateTo', required: false, type: 'string', format: 'date' })
-  @ApiQuery({ name: 'studentId', required: false, type: 'string', format: 'uuid' })
+  @ApiQuery({ name: 'dateFrom', required: false, type: 'string' })
+  @ApiQuery({ name: 'dateTo', required: false, type: 'string' })
+  @ApiQuery({ name: 'studentId', required: false, type: 'string' })
   @ApiResponse({ status: 200, description: 'Returns incident statistics' })
   async getStatistics(
     @Query('dateFrom') dateFrom?: string,
@@ -100,8 +100,8 @@ export class IncidentReportController {
 
   @Get('statistics/by-type')
   @ApiOperation({ summary: 'Get incidents grouped by type' })
-  @ApiQuery({ name: 'dateFrom', required: false, type: 'string', format: 'date' })
-  @ApiQuery({ name: 'dateTo', required: false, type: 'string', format: 'date' })
+  @ApiQuery({ name: 'dateFrom', required: false, type: 'string' })
+  @ApiQuery({ name: 'dateTo', required: false, type: 'string' })
   @ApiResponse({ status: 200, description: 'Returns incidents by type' })
   async getIncidentsByType(
     @Query('dateFrom') dateFrom?: string,
@@ -115,8 +115,8 @@ export class IncidentReportController {
 
   @Get('statistics/by-severity')
   @ApiOperation({ summary: 'Get incidents grouped by severity' })
-  @ApiQuery({ name: 'dateFrom', required: false, type: 'string', format: 'date' })
-  @ApiQuery({ name: 'dateTo', required: false, type: 'string', format: 'date' })
+  @ApiQuery({ name: 'dateFrom', required: false, type: 'string' })
+  @ApiQuery({ name: 'dateTo', required: false, type: 'string' })
   @ApiResponse({ status: 200, description: 'Returns incidents by severity' })
   async getIncidentsBySeverity(
     @Query('dateFrom') dateFrom?: string,
@@ -130,8 +130,8 @@ export class IncidentReportController {
 
   @Get('statistics/severity-trends')
   @ApiOperation({ summary: 'Get severity trends over time' })
-  @ApiQuery({ name: 'dateFrom', required: true, type: 'string', format: 'date' })
-  @ApiQuery({ name: 'dateTo', required: true, type: 'string', format: 'date' })
+  @ApiQuery({ name: 'dateFrom', required: true, type: 'string' })
+  @ApiQuery({ name: 'dateTo', required: true, type: 'string' })
   @ApiResponse({ status: 200, description: 'Returns severity trends' })
   async getSeverityTrends(
     @Query('dateFrom') dateFrom: string,
@@ -318,8 +318,8 @@ export class IncidentReportController {
 
   @Get('follow-up-actions/statistics')
   @ApiOperation({ summary: 'Get follow-up action statistics' })
-  @ApiQuery({ name: 'dateFrom', required: false, type: 'string', format: 'date' })
-  @ApiQuery({ name: 'dateTo', required: false, type: 'string', format: 'date' })
+  @ApiQuery({ name: 'dateFrom', required: false, type: 'string' })
+  @ApiQuery({ name: 'dateTo', required: false, type: 'string' })
   @ApiResponse({ status: 200, description: 'Returns follow-up statistics' })
   async getFollowUpStatistics(
     @Query('dateFrom') dateFrom?: string,

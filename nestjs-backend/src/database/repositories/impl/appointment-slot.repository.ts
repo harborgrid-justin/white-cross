@@ -27,7 +27,7 @@ export interface UpdateAppointmentslotDTO {
 @Injectable()
 export class AppointmentslotRepository extends BaseRepository<any, AppointmentslotAttributes, CreateAppointmentslotDTO> {
   constructor(
-    @InjectModel('Appointmentslot') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

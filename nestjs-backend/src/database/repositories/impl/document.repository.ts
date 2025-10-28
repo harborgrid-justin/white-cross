@@ -27,7 +27,7 @@ export interface UpdateDocumentDTO {
 @Injectable()
 export class DocumentRepository extends BaseRepository<any, DocumentAttributes, CreateDocumentDTO> {
   constructor(
-    @InjectModel('Document') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

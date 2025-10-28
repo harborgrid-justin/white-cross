@@ -27,7 +27,7 @@ export interface UpdateIntegrationConfigDTO {
 @Injectable()
 export class IntegrationConfigRepository extends BaseRepository<any, IntegrationConfigAttributes, CreateIntegrationConfigDTO> {
   constructor(
-    @InjectModel('IntegrationConfig') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

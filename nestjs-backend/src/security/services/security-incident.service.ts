@@ -212,7 +212,7 @@ export class SecurityIncidentService {
       const similarIncidents = await this.incidentRepo.count({
         where: {
           type: incident.type,
-          createdAt: Between(oneHourAgo, new Date()),
+          detectedAt: Between(oneHourAgo, new Date()),
         },
       });
 

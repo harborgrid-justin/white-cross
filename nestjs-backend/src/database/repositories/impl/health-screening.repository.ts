@@ -10,6 +10,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
+import { HealthScreening } from '../../models/health-screening.model';
 
 export interface HealthScreeningAttributes {
   id: string;
@@ -51,7 +52,7 @@ export class HealthScreeningRepository
   extends BaseRepository<any, HealthScreeningAttributes, CreateHealthScreeningDTO>
 {
   constructor(
-    @InjectModel('HealthScreening') model: any,
+    @InjectModel(HealthScreening) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

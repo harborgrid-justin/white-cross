@@ -50,7 +50,7 @@ export interface UpdatePrescriptionDTO {
 @Injectable()
 export class PrescriptionRepository extends BaseRepository<any, PrescriptionAttributes, CreatePrescriptionDTO> {
   constructor(
-    @InjectModel('Prescription') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

@@ -27,7 +27,7 @@ export interface UpdateIncidentReportDTO {
 @Injectable()
 export class IncidentReportRepository extends BaseRepository<any, IncidentReportAttributes, CreateIncidentReportDTO> {
   constructor(
-    @InjectModel('IncidentReport') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

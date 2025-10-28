@@ -44,7 +44,7 @@ export class InventoryTransaction {
   batchNumber: string;
 
   @Column({ type: 'timestamp', nullable: true, name: 'expiration_date' })
-  expirationDate: Date;
+  expirationDate: Date | null;
 
   @Column({ type: 'uuid', name: 'performed_by_id' })
   performedById: string;

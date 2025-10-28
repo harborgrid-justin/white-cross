@@ -16,7 +16,7 @@
  * @since 2025-10-23
  */
 
-import { logger } from '../../logging';
+import { logger } from '../../../shared';
 import { isServiceError } from '../../errors';
 
 /**
@@ -221,10 +221,7 @@ export async function retry<T>(
 
       // Success! Log if we had to retry
       if (attempt > 1) {
-        logger.info(`${operationName} succeeded after ${attempt} attempts`, {
-          operation: operationName,
-          attempts: attempt,
-        });
+        logger.log(`${operationName} succeeded after ${attempt} attempts`, 'RetryUtility');
       }
 
       return result;
@@ -238,19 +235,9 @@ export async function retry<T>(
       if (!willRetry) {
         // No more retries - log and throw
         if (attempt >= maxAttempts) {
-          logger.error(`${operationName} failed after ${maxAttempts} attempts`, {
-            operation: operationName,
-            attempts: maxAttempts,
-            error: error.message,
-            errorName: error.name,
-          });
+          logger.error(`${operationName} failed after ${maxAttempts} attempts`, error, 'RetryUtility');
         } else {
-          logger.error(`${operationName} failed (non-retryable error)`, {
-            operation: operationName,
-            attempt,
-            error: error.message,
-            errorName: error.name,
-          });
+          logger.error(`${operationName} failed (non-retryable error)`, error, 'RetryUtility');
         }
         throw error;
       }
@@ -266,21 +253,14 @@ export async function retry<T>(
       );
 
       // Log retry attempt
-      logger.warn(`${operationName} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`, {
-        operation: operationName,
-        attempt,
-        maxAttempts,
-        delayMs: delay,
-        error: error.message,
-        errorName: error.name,
-      });
+      logger.warn(`${operationName} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`, 'RetryUtility');
 
       // Call onRetry callback if provided
       if (onRetry) {
         try {
           onRetry(error, attempt, delay);
         } catch (callbackError) {
-          logger.error('Error in onRetry callback', { error: callbackError });
+          logger.error('Error in onRetry callback', callbackError, 'RetryUtility');
         }
       }
 

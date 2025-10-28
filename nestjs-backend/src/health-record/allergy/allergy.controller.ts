@@ -25,6 +25,7 @@ import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { UserRole } from '../../database/models/user.model';
 
 /**
  * Allergy Management Controller
@@ -46,7 +47,7 @@ export class AllergyController {
    * @returns Allergy details
    */
   @Get(':id')
-  @Roles('ADMIN', 'NURSE', 'COUNSELOR', 'VIEWER')
+  @Roles(UserRole.ADMIN, UserRole.NURSE, UserRole.COUNSELOR, UserRole.VIEWER)
   @ApiOperation({ summary: 'Get allergy record by ID' })
   @ApiParam({ name: 'id', description: 'Allergy UUID', type: 'string' })
   @ApiResponse({
@@ -56,7 +57,7 @@ export class AllergyController {
   @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async getAllergyById(@Param('id') id: string, @Request() req) {
+  async getAllergyById(@Param('id') id: string, @Request() req: any) {
     return this.allergyService.findOne(id, req.user);
   }
 
@@ -67,8 +68,8 @@ export class AllergyController {
    * @returns Array of student's allergy records
    */
   @Get('student/:studentId')
-  @Roles('ADMIN', 'NURSE', 'COUNSELOR', 'VIEWER')
-  @ApiOperation({ summary: 'Get all allergies for a specific student' })
+  @Roles(UserRole.ADMIN, UserRole.NURSE, UserRole.COUNSELOR, UserRole.VIEWER)
+  @ApiOperation({ summary: 'Get all allergies for a student' })
   @ApiParam({ name: 'studentId', description: 'Student UUID', type: 'string' })
   @ApiResponse({
     status: 200,
@@ -77,7 +78,7 @@ export class AllergyController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Must be assigned nurse or admin' })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async getStudentAllergies(@Param('studentId') studentId: string, @Request() req) {
+  async getStudentAllergies(@Param('studentId') studentId: string, @Request() req: any) {
     return this.allergyService.findByStudent(studentId, req.user);
   }
 
@@ -88,7 +89,7 @@ export class AllergyController {
    * @returns Created allergy with audit trail entry
    */
   @Post()
-  @Roles('ADMIN', 'NURSE')
+  @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Create new allergy record' })
   @ApiBody({ type: CreateAllergyDto })
   @ApiResponse({
@@ -102,7 +103,7 @@ export class AllergyController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE or ADMIN role' })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async createAllergy(@Body() createAllergyDto: CreateAllergyDto, @Request() req) {
+  async createAllergy(@Body() createAllergyDto: CreateAllergyDto, @Request() req: any) {
     return this.allergyService.create(createAllergyDto, req.user);
   }
 
@@ -114,7 +115,7 @@ export class AllergyController {
    * @returns Updated allergy with audit trail entry
    */
   @Put(':id')
-  @Roles('ADMIN', 'NURSE')
+  @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Update allergy record' })
   @ApiParam({ name: 'id', description: 'Allergy UUID', type: 'string' })
   @ApiBody({ type: UpdateAllergyDto })
@@ -129,7 +130,7 @@ export class AllergyController {
   async updateAllergy(
     @Param('id') id: string,
     @Body() updateAllergyDto: UpdateAllergyDto,
-    @Request() req,
+    @Request() req: any,
   ) {
     return this.allergyService.update(id, updateAllergyDto, req.user);
   }
@@ -141,7 +142,7 @@ export class AllergyController {
    * @returns No content on success
    */
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete allergy record (Admin only)' })
   @ApiParam({ name: 'id', description: 'Allergy UUID', type: 'string' })
@@ -152,7 +153,7 @@ export class AllergyController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
-  async deleteAllergy(@Param('id') id: string, @Request() req) {
+  async deleteAllergy(@Param('id') id: string, @Request() req: any) {
     return this.allergyService.remove(id, req.user);
   }
 }

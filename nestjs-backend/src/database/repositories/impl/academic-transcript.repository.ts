@@ -3,8 +3,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
@@ -27,11 +25,11 @@ export interface UpdateAcademicTranscriptDTO {
 @Injectable()
 export class AcademicTranscriptRepository extends BaseRepository<any, AcademicTranscriptAttributes, CreateAcademicTranscriptDTO> {
   constructor(
-    @InjectModel('AcademicTranscript') model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {
-    super(model, auditLogger, cacheManager, 'AcademicTranscript');
+    // TODO: Inject proper AcademicTranscript model when implemented
+    super(null as any, auditLogger, cacheManager, 'AcademicTranscript');
   }
 
   protected async validateCreate(data: CreateAcademicTranscriptDTO): Promise<void> {}

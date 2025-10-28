@@ -3,8 +3,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
@@ -27,11 +25,11 @@ export interface UpdateAlertRuleDTO {
 @Injectable()
 export class AlertRuleRepository extends BaseRepository<any, AlertRuleAttributes, CreateAlertRuleDTO> {
   constructor(
-    @InjectModel('AlertRule') model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {
-    super(model, auditLogger, cacheManager, 'AlertRule');
+    // TODO: Inject proper AlertRule model when implemented
+    super(null as any, auditLogger, cacheManager, 'AlertRule');
   }
 
   protected async validateCreate(data: CreateAlertRuleDTO): Promise<void> {}

@@ -12,6 +12,16 @@ import {
 } from 'typeorm';
 
 /**
+ * Student gender enumeration
+ */
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY',
+}
+
+/**
  * Student Entity
  *
  * Represents a student within the White Cross Healthcare Platform.

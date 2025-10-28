@@ -119,7 +119,7 @@ export class StockManagementService {
     try {
       const offset = (page - 1) * limit;
 
-      const [transactions, total] = await this.transactionRepository.findAndCountAll({
+      const [transactions, total] = await this.transactionRepository.findAndCount({
         where: { inventoryItemId },
         order: { createdAt: 'DESC' },
         skip: offset,

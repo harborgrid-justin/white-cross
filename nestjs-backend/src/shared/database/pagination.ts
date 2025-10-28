@@ -11,7 +11,7 @@ import {
   PaginationConstraints
 } from '../types/pagination';
 import { ValidationResult, ValidationError } from '../types/common';
-import { ValidationErrorCode } from '../../../types/validation';
+import { ValidationErrorCode } from '../types/common';
 
 /**
  * Calculate pagination offset from page and limit

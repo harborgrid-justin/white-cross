@@ -27,7 +27,7 @@ export interface UpdateBroadcastDTO {
 @Injectable()
 export class BroadcastRepository extends BaseRepository<any, BroadcastAttributes, CreateBroadcastDTO> {
   constructor(
-    @InjectModel('Broadcast') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

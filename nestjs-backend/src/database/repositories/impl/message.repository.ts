@@ -27,7 +27,7 @@ export interface UpdateMessageDTO {
 @Injectable()
 export class MessageRepository extends BaseRepository<any, MessageAttributes, CreateMessageDTO> {
   constructor(
-    @InjectModel('Message') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

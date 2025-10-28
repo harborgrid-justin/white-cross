@@ -27,7 +27,7 @@ export interface UpdateHealthMetricDTO {
 @Injectable()
 export class HealthMetricRepository extends BaseRepository<any, HealthMetricAttributes, CreateHealthMetricDTO> {
   constructor(
-    @InjectModel('HealthMetric') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

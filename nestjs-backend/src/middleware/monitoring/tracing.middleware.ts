@@ -403,7 +403,7 @@ export class TracingMiddleware implements NestMiddleware {
       ? HealthcareTraceUtils.extractHealthcareContext(req, user)
       : {};
 
-    const tags = {
+    const tags: Record<string, any> = {
       ...this.config.defaultTags,
       'http.method': req.method,
       'http.url': req.url,

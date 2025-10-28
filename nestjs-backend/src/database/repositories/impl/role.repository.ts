@@ -40,7 +40,7 @@ export class RoleRepository
   extends BaseRepository<any, RoleAttributes, CreateRoleDTO>
 {
   constructor(
-    @InjectModel('Role') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

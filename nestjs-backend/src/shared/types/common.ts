@@ -2,7 +2,36 @@
  * Common TypeScript types and interfaces used across multiple services
  */
 
-import type { FieldChange, ValidationError as ValidationErrorType } from '../../../types/validation';
+// Validation error codes enum
+export enum ValidationErrorCode {
+  REQUIRED_FIELD = 'REQUIRED_FIELD',
+  INVALID_TYPE = 'INVALID_TYPE',
+  INVALID_VALUE = 'INVALID_VALUE',
+  TOO_SHORT = 'TOO_SHORT',
+  TOO_LONG = 'TOO_LONG',
+  TOO_SMALL = 'TOO_SMALL',
+  TOO_LARGE = 'TOO_LARGE',
+  INVALID_FORMAT = 'INVALID_FORMAT',
+  DUPLICATE_VALUE = 'DUPLICATE_VALUE',
+  INVALID_REFERENCE = 'INVALID_REFERENCE',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
+  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION'
+}
+
+// Validation error interface
+export interface ValidationError {
+  field: string;
+  message: string;
+  code: ValidationErrorCode;
+  value?: any;
+}
+
+// Field change for audit
+export interface FieldChange {
+  field: string;
+  oldValue?: any;
+  newValue?: any;
+}
 
 // Common ID type
 export type ID = string;
@@ -148,14 +177,11 @@ export interface BaseFilter {
   search?: string;
 }
 
-// Re-export ValidationError from centralized types
-export type { ValidationError } from '../../../types/validation';
-
 // Validation result
 export interface ValidationResult {
   isValid: boolean;
-  errors: ValidationErrorType[];
-  warnings: ValidationErrorType[];
+  errors: ValidationError[];
+  warnings: ValidationError[];
 }
 
 // Export/import operation result

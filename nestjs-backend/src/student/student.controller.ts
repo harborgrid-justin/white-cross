@@ -25,7 +25,8 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { StudentService } from './student.service';
+import { StudentService, PaginatedResponse, StudentStatistics, StudentDataExport } from './student.service';
+import { Student } from './entities/student.entity';
 import {
   CreateStudentDto,
   UpdateStudentDto,
@@ -128,7 +129,7 @@ export class StudentController {
     status: 500,
     description: 'Internal server error',
   })
-  async findAll(@Query() filterDto: StudentFilterDto) {
+  async findAll(@Query() filterDto: StudentFilterDto): Promise<PaginatedResponse<Student>> {
     return this.studentService.findAll(filterDto);
   }
 
@@ -395,7 +396,10 @@ export class StudentController {
   @ApiResponse({
     status: 200,
     description: 'Search results',
-    type: ['Student'],
+    schema: {
+      type: 'array',
+      items: { $ref: '#/components/schemas/Student' },
+    },
   })
   async search(@Query('q') query: string, @Query('limit') limit?: number) {
     return this.studentService.search(query, limit);
@@ -439,7 +443,10 @@ export class StudentController {
   @ApiResponse({
     status: 200,
     description: 'Students retrieved successfully',
-    type: ['Student'],
+    schema: {
+      type: 'array',
+      items: { $ref: '#/components/schemas/Student' },
+    },
   })
   async findByGrade(@Param('grade') grade: string) {
     return this.studentService.findByGrade(grade);
@@ -462,7 +469,10 @@ export class StudentController {
   @ApiResponse({
     status: 200,
     description: 'Assigned students retrieved successfully',
-    type: ['Student'],
+    schema: {
+      type: 'array',
+      items: { $ref: '#/components/schemas/Student' },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -506,7 +516,7 @@ export class StudentController {
     status: 404,
     description: 'Student not found',
   })
-  async getStatistics(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getStatistics(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<StudentStatistics> {
     return this.studentService.getStatistics(id);
   }
 
@@ -549,7 +559,7 @@ export class StudentController {
     status: 404,
     description: 'Student not found',
   })
-  async exportData(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async exportData(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<StudentDataExport> {
     return this.studentService.exportData(id);
   }
 

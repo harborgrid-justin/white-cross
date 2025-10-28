@@ -12,9 +12,9 @@ import { AuthPayload } from './auth-payload.interface';
 /**
  * Extended Socket interface with user authentication data
  */
-export interface AuthenticatedSocket extends Socket {
+export type AuthenticatedSocket = Socket & {
   /**
    * Authenticated user data from JWT token
    */
   user?: AuthPayload;
-}
+};

@@ -33,20 +33,15 @@ export * from './security/validation.service';
 
 // Array utilities
 export * from './utilities/array.utils';
-export * from './utilities/array';
 
 // Object utilities
 export * from './utilities/object.utils';
-export * from './utilities/object';
 
 // String utilities
 export * from './utilities/string.utils';
-export * from './utilities/string';
 
 // Date utilities
 export * from './utilities/date.utils';
-export * from './utilities/date';
-export * from './utilities/dateHelpers';
 
 // Password utilities
 export * from './utilities/password.utils';
@@ -57,8 +52,8 @@ export * from './utilities/validation.utils';
 // Response helpers
 export * from './utilities/responseHelpers';
 
-// Pagination utilities
-export * from './utilities/pagination';
+// Pagination utilities (commented out to avoid conflict with database/pagination)
+// export * from './utilities/pagination';
 
 // Payload helpers
 export * from './utilities/payloadHelpers';
@@ -74,17 +69,47 @@ export * from './security';
 // ==========================================
 // PERMISSIONS
 // ==========================================
-export * from './permissions';
+// Explicitly re-export to avoid conflicts with security module
+export {
+  Permission,
+  requirePermission,
+  checkPermission,
+  hasAnyRole,
+  hasAllRoles,
+  requireRole,
+  getAllowedActions,
+  getAllowedResources,
+  isRole,
+  isResource,
+  isAction,
+} from './permissions';
 
 // ==========================================
 // TYPES
 // ==========================================
-export * from './types';
+// Export validation types from validation service to avoid conflicts
+export {
+  ValidationResult,
+  ValidationError
+} from './security/validation.service';
 
-// ==========================================
-// DATABASE UTILITIES
-// ==========================================
-export * from './database';
+// Export type guards and utilities
+export {
+  isValidDate,
+  isEmail,
+  isPhoneNumber,
+  isUUID,
+  isString,
+  isNumber,
+  isBoolean,
+  PaginatedResponse,
+  ApiError,
+  StudentId,
+  MedicationId,
+  UserId,
+  ContactId,
+  HealthRecordId
+} from './types';
 
 // ==========================================
 // CONFIGURATION UTILITIES
@@ -122,11 +147,6 @@ export * from './healthcare';
 export * from './errors';
 
 // ==========================================
-// CONSTANTS
-// ==========================================
-export * from './constants';
-
-// ==========================================
 // BASE CLASSES
 // ==========================================
 export { BaseService } from './base/BaseService';
@@ -135,7 +155,6 @@ export type { BaseServiceConfig } from './base/BaseService';
 // ==========================================
 // VALIDATION (Existing)
 // ==========================================
-export * from './validation/commonValidators';
 
 // Re-export commonly used utilities with aliases for convenience
 export {

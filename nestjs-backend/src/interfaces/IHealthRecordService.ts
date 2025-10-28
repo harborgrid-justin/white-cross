@@ -4,14 +4,14 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IHealthRecordRepository } from '../../repositories/interfaces/IHealthRecordRepository';
+import { IHealthRecordRepository } from '../database/repositories/interfaces/health-record.repository.interface';
 import {
   HealthRecord,
   CreateHealthRecordData,
   UpdateHealthRecordData,
   HealthSummary,
   HealthRecordFilters
-} from '../../repositories/interfaces/IHealthRecordRepository';
+} from '../database/repositories/interfaces/health-record.repository.interface';
 
 /**
  * Health record list result with pagination

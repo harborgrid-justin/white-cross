@@ -147,7 +147,7 @@ export class PushNotification {
   maxRetries: number;
 
   @Column({ nullable: true })
-  nextRetryAt: Date;
+  nextRetryAt: Date | null;
 
   // Metadata
   @Column()

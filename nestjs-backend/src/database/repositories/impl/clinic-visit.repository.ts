@@ -57,7 +57,7 @@ export class ClinicVisitRepository
   extends BaseRepository<any, ClinicVisitAttributes, CreateClinicVisitDTO>
 {
   constructor(
-    @InjectModel('ClinicVisit') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

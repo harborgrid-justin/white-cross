@@ -17,6 +17,7 @@ import {
 import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { MedicalHistory } from '../../../database/models/medical-history.model';
 
 @Injectable()
 export class MedicalHistoryRepository
@@ -24,7 +25,7 @@ export class MedicalHistoryRepository
   implements IMedicalHistoryRepository
 {
   constructor(
-    @InjectModel('MedicalHistory') model: any,
+    @InjectModel(MedicalHistory) model: typeof MedicalHistory,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

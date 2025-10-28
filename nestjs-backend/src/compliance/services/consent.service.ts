@@ -10,9 +10,10 @@ import { ConsentForm } from '../entities/consent-form.entity';
 import { ConsentSignature } from '../entities/consent-signature.entity';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
 import { ComplianceUtils, COMPLIANCE_ERRORS } from '../utils';
+import { ConsentType } from '../enums';
 
 export interface CreateConsentFormData {
-  type: string;
+  type: ConsentType;
   title: string;
   description: string;
   content: string;
@@ -110,8 +111,11 @@ export class ConsentService {
 
       const savedForm = await this.consentFormRepository.save(form);
 
-      this.logger.log(`Created consent form: ${savedForm.id} - ${savedForm.title}`);
-      return savedForm;
+      // Handle case where save might return an array
+      const formEntity = Array.isArray(savedForm) ? savedForm[0] : savedForm;
+
+      this.logger.log(`Created consent form: ${formEntity.id} - ${formEntity.title}`);
+      return formEntity;
     } catch (error) {
       this.logger.error('Error creating consent form:', error);
       throw error;

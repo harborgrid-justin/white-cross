@@ -788,10 +788,16 @@ export class NotificationService implements OnModuleInit {
         title: notification.title,
         body: notification.body,
       };
-      apnsNotification.badge = token.allowBadge ? notification.badge : undefined;
-      apnsNotification.sound = token.allowSound ? (notification.sound || 'default') : undefined;
+      if (token.allowBadge && notification.badge !== undefined) {
+        apnsNotification.badge = notification.badge;
+      }
+      if (token.allowSound) {
+        apnsNotification.sound = notification.sound || 'default';
+      }
       apnsNotification.payload = notification.data;
-      apnsNotification.contentAvailable = notification.silent ? 1 : undefined;
+      if (notification.silent) {
+        apnsNotification.contentAvailable = true;
+      }
       apnsNotification.priority = this.mapPriorityToAPNs(notification.priority);
 
       if (notification.ttl) {

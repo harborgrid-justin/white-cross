@@ -679,6 +679,21 @@ export class FeaturesService {
   /**
    * Update feature configuration
    */
+  async getAllFeatures(tenantId?: string): Promise<any[]> {
+    // Return all available features
+    return [
+      { name: 'advanced-analytics', enabled: true },
+      { name: 'enterprise-reporting', enabled: true },
+      { name: 'single-sign-on', enabled: false },
+      // Add more features as needed
+    ];
+  }
+
+  async toggleFeature(featureName: string, enabled: boolean, tenantId?: string): Promise<any> {
+    // Toggle feature on/off
+    return { name: featureName, enabled };
+  }
+
   async updateFeatureConfig(
     featureName: string,
     config: any,

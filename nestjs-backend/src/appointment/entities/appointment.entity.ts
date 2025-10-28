@@ -1,3 +1,15 @@
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm';
+import { Student } from '../../student/entities/student.entity';
+import { User } from '../../user/entities/user.entity';
 import { AppointmentType } from '../dto/create-appointment.dto';
 import { AppointmentStatus } from '../dto/update-appointment.dto';
 
@@ -14,22 +26,60 @@ import { AppointmentStatus } from '../dto/update-appointment.dto';
  * - scheduledDate (for date range queries)
  * - status (for filtering active appointments)
  */
-export interface AppointmentEntity {
+@Entity('appointments')
+@Index(['nurseId', 'scheduledDate'])
+@Index(['studentId', 'scheduledDate'])
+@Index(['status', 'scheduledDate'])
+export class Appointment {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ name: 'student_id', type: 'uuid' })
   studentId: string;
+
+  @Column({ name: 'nurse_id', type: 'uuid' })
   nurseId: string;
+
+  @Column({
+    name: 'appointment_type',
+    type: 'enum',
+    enum: AppointmentType
+  })
   appointmentType: AppointmentType;
+
+  @Column({ name: 'scheduled_date', type: 'timestamp' })
   scheduledDate: Date;
+
+  @Column({ type: 'int' })
   duration: number; // minutes
+
+  @Column({ type: 'text', nullable: true })
   reason?: string;
+
+  @Column({ type: 'text', nullable: true })
   notes?: string;
+
+  @Column({
+    type: 'enum',
+    enum: AppointmentStatus,
+    default: AppointmentStatus.SCHEDULED
+  })
   status: AppointmentStatus;
+
+  @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  // Relations (populated when needed)
-  student?: any; // Student entity
-  nurse?: any; // User entity
+  // Relations
+  @ManyToOne(() => Student)
+  @JoinColumn({ name: 'student_id' })
+  student?: Student;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'nurse_id' })
+  nurse?: User;
 }
 
 /**

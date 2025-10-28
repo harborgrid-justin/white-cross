@@ -16,6 +16,7 @@ import {
 } from '../interfaces/vital-signs.repository.interface';
 import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { VitalSigns } from '../../../database/models/vital-signs.model';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class VitalSignsRepository
   implements IVitalSignsRepository
 {
   constructor(
-    @InjectModel('VitalSigns') model: any,
+    @InjectModel(VitalSigns) model: typeof VitalSigns,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {
@@ -240,7 +241,7 @@ export class VitalSignsRepository
     try {
       transaction = await this.model.sequelize!.transaction();
 
-      const results = await this.model.bulkCreate(records, {
+      const results = await this.model.bulkCreate(records as any, {
         transaction,
         validate: true,
         returning: true

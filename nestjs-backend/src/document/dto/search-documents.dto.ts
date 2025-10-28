@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, MinLength, IsUUID } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { DocumentStatus } from './update-document.dto';
+import { DocumentStatus } from '../enums';
 
 /**
  * DTO for document search with filters

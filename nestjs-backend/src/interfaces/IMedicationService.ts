@@ -4,8 +4,8 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IMedicationRepository } from '../../repositories/interfaces/IMedicationRepository';
-import { Medication, CreateMedicationData, UpdateMedicationData } from '../../repositories/interfaces/IMedicationRepository';
+import { IMedicationRepository } from '../database/repositories/interfaces/medication.repository.interface';
+import { Medication, CreateMedicationData, UpdateMedicationData } from '../database/repositories/interfaces/medication.repository.interface';
 
 /**
  * Medication list result with pagination

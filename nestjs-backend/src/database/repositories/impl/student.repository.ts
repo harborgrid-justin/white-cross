@@ -11,6 +11,7 @@ import { IStudentRepository, StudentAttributes, CreateStudentDTO, UpdateStudentD
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
+import { Student } from '../../models/student.model';
 
 // Note: This assumes a Student model exists
 // You'll need to create the actual Sequelize model
@@ -20,7 +21,7 @@ export class StudentRepository
   implements IStudentRepository
 {
   constructor(
-    @InjectModel('Student') model: any, // Replace with actual Student model
+    @InjectModel(Student) model: typeof Student,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

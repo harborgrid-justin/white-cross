@@ -96,19 +96,41 @@ export interface ValidationRule {
 }
 
 /**
+ * @enum ValidationErrorCode
+ * @description Standard error codes for validation failures
+ */
+export enum ValidationErrorCode {
+  REQUIRED = 'REQUIRED',
+  INVALID_TYPE = 'INVALID_TYPE',
+  INVALID_FORMAT = 'INVALID_FORMAT',
+  TOO_SHORT = 'TOO_SHORT',
+  TOO_LONG = 'TOO_LONG',
+  TOO_SMALL = 'TOO_SMALL',
+  TOO_LARGE = 'TOO_LARGE',
+  NOT_INTEGER = 'NOT_INTEGER',
+  INVALID_VALUE = 'INVALID_VALUE',
+  DUPLICATE_ITEMS = 'DUPLICATE_ITEMS',
+  UNUSUAL_FORMAT = 'UNUSUAL_FORMAT',
+  CUSTOM_VALIDATION_FAILED = 'CUSTOM_VALIDATION_FAILED',
+  SECURITY_XSS_DETECTED = 'SECURITY_XSS_DETECTED',
+  SECURITY_SQL_INJECTION = 'SECURITY_SQL_INJECTION',
+  HIPAA_VIOLATION_SSN = 'HIPAA_VIOLATION_SSN'
+}
+
+/**
  * @interface ValidationError
  * @description Represents a validation error for a specific field
  *
  * @property {string} field - The field that failed validation
  * @property {string} message - Human-readable error message
  * @property {any} [value] - The invalid value (may be redacted)
- * @property {string} [code] - Error code for programmatic handling
+ * @property {ValidationErrorCode} [code] - Error code for programmatic handling
  */
 export interface ValidationError {
   field: string;
   message: string;
   value?: any;
-  code?: string;
+  code?: ValidationErrorCode;
 }
 
 /**
@@ -117,11 +139,13 @@ export interface ValidationError {
  *
  * @property {boolean} isValid - Whether validation passed
  * @property {ValidationError[]} errors - Array of validation errors (empty if valid)
+ * @property {ValidationError[]} [warnings] - Array of validation warnings (non-blocking)
  * @property {any} [sanitizedData] - Sanitized data (only present if valid)
  */
 export interface ValidationResult {
   isValid: boolean;
   errors: ValidationError[];
+  warnings?: ValidationError[];
   sanitizedData?: any;
 }
 
@@ -376,7 +400,7 @@ export class ValidationService {
         errors.push({
           field: fieldName,
           message: `${fieldName} is required`,
-          code: 'REQUIRED_FIELD_MISSING'
+          code: ValidationErrorCode.REQUIRED
         });
       }
       return errors;
@@ -486,7 +510,7 @@ export class ValidationService {
       field: fieldName,
       message: `${fieldName} must be of type ${expectedType}`,
       value,
-      code: 'INVALID_TYPE'
+      code: ValidationErrorCode.INVALID_TYPE
     };
   }
 
@@ -501,7 +525,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} must be at least ${minLength} characters long`,
         value,
-        code: 'MIN_LENGTH_VIOLATION'
+        code: ValidationErrorCode.TOO_SHORT
       };
     }
 
@@ -510,7 +534,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} cannot exceed ${maxLength} characters`,
         value,
-        code: 'MAX_LENGTH_VIOLATION'
+        code: ValidationErrorCode.TOO_LONG
       };
     }
 
@@ -528,7 +552,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} must be a valid number`,
         value,
-        code: 'INVALID_NUMBER'
+        code: ValidationErrorCode.INVALID_TYPE
       };
     }
 
@@ -537,7 +561,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} must be at least ${min}`,
         value,
-        code: 'MIN_VALUE_VIOLATION'
+        code: ValidationErrorCode.TOO_SMALL
       };
     }
 
@@ -546,7 +570,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} cannot exceed ${max}`,
         value,
-        code: 'MAX_VALUE_VIOLATION'
+        code: ValidationErrorCode.TOO_LARGE
       };
     }
 
@@ -562,7 +586,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} format is invalid`,
         value,
-        code: 'PATTERN_MISMATCH'
+        code: ValidationErrorCode.INVALID_FORMAT
       };
     }
 
@@ -578,7 +602,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} must be one of: ${allowedValues.join(', ')}`,
         value,
-        code: 'INVALID_ENUM_VALUE'
+        code: ValidationErrorCode.INVALID_VALUE
       };
     }
 
@@ -594,7 +618,7 @@ export class ValidationService {
         field: fieldName,
         message: `${fieldName} failed custom validation`,
         value,
-        code: 'CUSTOM_VALIDATION_FAILED'
+        code: ValidationErrorCode.CUSTOM_VALIDATION_FAILED
       };
     }
 
@@ -612,7 +636,7 @@ export class ValidationService {
       return {
         field: fieldName,
         message: `${fieldName} appears to contain unmasked SSN`,
-        code: 'HIPAA_VIOLATION_SSN'
+        code: ValidationErrorCode.HIPAA_VIOLATION_SSN
       };
     }
 
@@ -630,7 +654,7 @@ export class ValidationService {
       return {
         field: fieldName,
         message: `${fieldName} contains potentially dangerous content`,
-        code: 'SECURITY_XSS_DETECTED'
+        code: ValidationErrorCode.SECURITY_XSS_DETECTED
       };
     }
 
@@ -639,7 +663,7 @@ export class ValidationService {
       return {
         field: fieldName,
         message: `${fieldName} contains potentially dangerous SQL content`,
-        code: 'SECURITY_SQL_INJECTION'
+        code: ValidationErrorCode.SECURITY_SQL_INJECTION
       };
     }
 

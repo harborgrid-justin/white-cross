@@ -98,7 +98,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
    */
   getQueue(jobType: JobType): Queue {
     if (this.queues.has(jobType)) {
-      return this.queues.get(jobType);
+      return this.queues.get(jobType)!;
     }
 
     const redisConfig = {

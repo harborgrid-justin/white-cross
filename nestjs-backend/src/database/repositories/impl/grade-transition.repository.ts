@@ -27,7 +27,7 @@ export interface UpdateGradeTransitionDTO {
 @Injectable()
 export class GradeTransitionRepository extends BaseRepository<any, GradeTransitionAttributes, CreateGradeTransitionDTO> {
   constructor(
-    @InjectModel('GradeTransition') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

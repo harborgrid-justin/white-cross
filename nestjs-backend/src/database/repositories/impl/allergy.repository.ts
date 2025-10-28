@@ -50,7 +50,7 @@ export class AllergyRepository
   extends BaseRepository<any, AllergyAttributes, CreateAllergyDTO>
 {
   constructor(
-    @InjectModel('Allergy') model: any,
+    @InjectModel(('Allergy' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

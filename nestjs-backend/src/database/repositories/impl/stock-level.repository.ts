@@ -27,7 +27,7 @@ export interface UpdateStocklevelDTO {
 @Injectable()
 export class StocklevelRepository extends BaseRepository<any, StocklevelAttributes, CreateStocklevelDTO> {
   constructor(
-    @InjectModel('Stocklevel') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

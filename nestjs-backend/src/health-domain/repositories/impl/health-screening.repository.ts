@@ -17,6 +17,7 @@ import {
 import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { HealthScreening } from '../../../database/models/health-screening.model';
 
 @Injectable()
 export class HealthScreeningRepository
@@ -24,7 +25,7 @@ export class HealthScreeningRepository
   implements IHealthScreeningRepository
 {
   constructor(
-    @InjectModel('HealthScreening') model: any,
+    @InjectModel(HealthScreening) model: typeof HealthScreening,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

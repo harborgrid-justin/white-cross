@@ -27,7 +27,7 @@ export interface UpdateApiKeyDTO {
 @Injectable()
 export class ApiKeyRepository extends BaseRepository<any, ApiKeyAttributes, CreateApiKeyDTO> {
   constructor(
-    @InjectModel('ApiKey') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

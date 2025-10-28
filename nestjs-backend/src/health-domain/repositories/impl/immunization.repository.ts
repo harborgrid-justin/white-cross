@@ -17,6 +17,7 @@ import {
 import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { Immunization } from '../../../database/models/immunization.model';
 
 @Injectable()
 export class ImmunizationRepository
@@ -24,7 +25,7 @@ export class ImmunizationRepository
   implements IImmunizationRepository
 {
   constructor(
-    @InjectModel('Immunization') model: any,
+    @InjectModel(Immunization) model: typeof Immunization,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

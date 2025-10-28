@@ -27,7 +27,7 @@ export interface UpdateContactDTO {
 @Injectable()
 export class ContactRepository extends BaseRepository<any, ContactAttributes, CreateContactDTO> {
   constructor(
-    @InjectModel('Contact') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

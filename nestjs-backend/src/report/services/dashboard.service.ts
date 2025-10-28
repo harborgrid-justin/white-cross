@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Student } from '../../student/entities/student.entity';
 import { Appointment } from '../../appointment/entities/appointment.entity';
-import { StudentMedication } from '../../medication/entities/student-medication.entity';
+import { StudentMedication } from '../../medication/entities';
 import { IncidentReport } from '../../incident-report/entities/incident-report.entity';
 import { Allergy } from '../../allergy/entities/allergy.entity';
 import { ChronicCondition } from '../../chronic-condition/entities/chronic-condition.entity';
+import { ConditionStatus } from '../../chronic-condition/enums';
 import { DashboardMetrics } from '../interfaces/report-types.interface';
 
 /**
@@ -56,7 +57,7 @@ export class DashboardService {
         this.studentRepository.count({ where: { isActive: true } }),
         this.appointmentRepository.count({
           where: {
-            scheduledAt: Between(today, tomorrow),
+            scheduledDate: Between(today, tomorrow),
             status: 'SCHEDULED' as any,
           },
         }),
@@ -67,7 +68,7 @@ export class DashboardService {
           },
         }),
         this.allergyRepository.count({ where: { verified: true } }),
-        this.chronicConditionRepository.count({ where: { status: 'ACTIVE' } }),
+        this.chronicConditionRepository.count({ where: { status: ConditionStatus.ACTIVE } }),
       ]);
 
       this.logger.log('Dashboard metrics retrieved successfully');

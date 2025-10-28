@@ -8,6 +8,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { TreatmentPlan } from '../../models/treatment-plan.model';
 
 export interface TreatmentPlanAttributes {
   id: string;
@@ -49,7 +50,7 @@ export interface UpdateTreatmentPlanDTO {
 @Injectable()
 export class TreatmentPlanRepository extends BaseRepository<any, TreatmentPlanAttributes, CreateTreatmentPlanDTO> {
   constructor(
-    @InjectModel('TreatmentPlan') model: any,
+    @InjectModel(TreatmentPlan) model: typeof TreatmentPlan,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

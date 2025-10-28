@@ -9,6 +9,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { Supplier } from '../../models/supplier.model';
 
 export interface SupplierAttributes {
   id: string;
@@ -27,7 +28,7 @@ export interface UpdateSupplierDTO {
 @Injectable()
 export class SupplierRepository extends BaseRepository<any, SupplierAttributes, CreateSupplierDTO> {
   constructor(
-    @InjectModel('Supplier') model: any,
+    @InjectModel(Supplier) model: typeof Supplier,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

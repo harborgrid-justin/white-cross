@@ -27,7 +27,7 @@ export interface UpdatePdfTemplateDTO {
 @Injectable()
 export class PdfTemplateRepository extends BaseRepository<any, PdfTemplateAttributes, CreatePdfTemplateDTO> {
   constructor(
-    @InjectModel('PdfTemplate') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

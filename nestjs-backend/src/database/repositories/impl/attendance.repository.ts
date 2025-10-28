@@ -27,7 +27,7 @@ export interface UpdateAttendanceDTO {
 @Injectable()
 export class AttendanceRepository extends BaseRepository<any, AttendanceAttributes, CreateAttendanceDTO> {
   constructor(
-    @InjectModel('Attendance') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

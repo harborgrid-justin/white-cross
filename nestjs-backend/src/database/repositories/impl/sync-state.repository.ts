@@ -9,6 +9,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { SyncState } from '../../models/sync-state.model';
 
 export interface SyncStateAttributes {
   id: string;
@@ -27,7 +28,7 @@ export interface UpdateSyncStateDTO {
 @Injectable()
 export class SyncStateRepository extends BaseRepository<any, SyncStateAttributes, CreateSyncStateDTO> {
   constructor(
-    @InjectModel('SyncState') model: any,
+    @InjectModel(SyncState) model: typeof SyncState,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

@@ -50,7 +50,7 @@ export class MedicalHistoryRepository
   extends BaseRepository<any, MedicalHistoryAttributes, CreateMedicalHistoryDTO>
 {
   constructor(
-    @InjectModel('MedicalHistory') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

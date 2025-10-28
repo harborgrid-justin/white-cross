@@ -90,7 +90,7 @@ export class WebSocketService {
 
       server.to(room).emit('emergency:alert', message);
 
-      this.logger.info(`Emergency alert broadcasted to organization ${organizationId}`, {
+      this.logger.log(`Emergency alert broadcasted to organization ${organizationId}`, {
         alertId: alert.id,
         severity: alert.severity,
       });
@@ -121,7 +121,7 @@ export class WebSocketService {
 
       server.to(room).emit('health:notification', message);
 
-      this.logger.info(`Notification sent to user ${userId}`, {
+      this.logger.log(`Notification sent to user ${userId}`, {
         notificationId: notification.id,
         type: notification.type,
       });
@@ -152,7 +152,7 @@ export class WebSocketService {
 
       server.to(room).emit('medication:reminder', message);
 
-      this.logger.info(`Medication reminder broadcasted to organization ${organizationId}`, {
+      this.logger.log(`Medication reminder broadcasted to organization ${organizationId}`, {
         medicationId: reminder.medicationId,
         studentId: reminder.studentId,
       });
@@ -183,7 +183,7 @@ export class WebSocketService {
 
       server.to(room).emit('student:health:alert', message);
 
-      this.logger.info(`Student health alert broadcasted to organization ${organizationId}`, {
+      this.logger.log(`Student health alert broadcasted to organization ${organizationId}`, {
         studentId: alert.studentId,
         alertType: alert.type,
       });

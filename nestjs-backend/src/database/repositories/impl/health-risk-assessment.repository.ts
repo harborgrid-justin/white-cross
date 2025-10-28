@@ -27,7 +27,7 @@ export interface UpdateHealthRiskAssessmentDTO {
 @Injectable()
 export class HealthRiskAssessmentRepository extends BaseRepository<any, HealthRiskAssessmentAttributes, CreateHealthRiskAssessmentDTO> {
   constructor(
-    @InjectModel('HealthRiskAssessment') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

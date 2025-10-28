@@ -54,7 +54,7 @@ export class HealthAssessmentRepository
   extends BaseRepository<any, HealthAssessmentAttributes, CreateHealthAssessmentDTO>
 {
   constructor(
-    @InjectModel('HealthAssessment') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

@@ -24,6 +24,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { HealthRecordService } from './health-record.service';
 import { CreateHealthRecordDto } from './dto/create-health-record.dto';
@@ -74,10 +75,7 @@ export class HealthRecordController {
     description: 'Internal server error',
   })
   async create(@Body() createDto: CreateHealthRecordDto) {
-    return this.healthRecordService.createHealthRecord(
-      createDto.studentId,
-      createDto,
-    );
+    return this.healthRecordService.createHealthRecord(createDto);
   }
 
   /**

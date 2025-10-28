@@ -20,16 +20,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Student } from '../../student/entities/student.entity';
-
-/**
- * Clinical allergy severity levels aligned with medical standards
- */
-export enum AllergySeverity {
-  MILD = 'MILD',
-  MODERATE = 'MODERATE',
-  SEVERE = 'SEVERE',
-  LIFE_THREATENING = 'LIFE_THREATENING',
-}
+import { AllergySeverity } from '../../common/enums';
 
 /**
  * Allergen type categories for classification

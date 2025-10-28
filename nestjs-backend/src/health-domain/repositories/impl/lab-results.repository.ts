@@ -18,6 +18,7 @@ import {
 import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { LabResults } from '../../../database/models/lab-results.model';
 
 @Injectable()
 export class LabResultsRepository
@@ -25,7 +26,7 @@ export class LabResultsRepository
   implements ILabResultsRepository
 {
   constructor(
-    @InjectModel('LabResults') model: any,
+    @InjectModel(LabResults) model: typeof LabResults,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

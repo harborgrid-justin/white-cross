@@ -21,8 +21,8 @@ export class RateLimiterService {
   private readonly limitStore: Map<string, number[]> = new Map();
 
   // Default rate limits
-  private readonly DEFAULT_PER_PHONE_LIMIT = 10; // messages per hour per phone
-  private readonly DEFAULT_PER_ACCOUNT_LIMIT = 1000; // messages per hour per account
+  private DEFAULT_PER_PHONE_LIMIT: number = 10; // messages per hour per phone
+  private DEFAULT_PER_ACCOUNT_LIMIT: number = 1000; // messages per hour per account
   private readonly DEFAULT_WINDOW_SECONDS = 3600; // 1 hour
 
   constructor(private readonly configService: ConfigService) {

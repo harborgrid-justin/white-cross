@@ -592,3 +592,6 @@ export abstract class BaseRepository<
    */
   protected abstract sanitizeForAudit(data: any): any;
 }
+
+// Export RepositoryError for use by concrete repositories
+export { RepositoryError } from '../interfaces/repository.interface';

@@ -27,7 +27,7 @@ export interface UpdateInventoryitemDTO {
 @Injectable()
 export class InventoryitemRepository extends BaseRepository<any, InventoryitemAttributes, CreateInventoryitemDTO> {
   constructor(
-    @InjectModel('Inventoryitem') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

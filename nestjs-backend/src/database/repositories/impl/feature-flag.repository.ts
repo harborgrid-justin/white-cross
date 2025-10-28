@@ -27,7 +27,7 @@ export interface UpdateFeatureFlagDTO {
 @Injectable()
 export class FeatureFlagRepository extends BaseRepository<any, FeatureFlagAttributes, CreateFeatureFlagDTO> {
   constructor(
-    @InjectModel('FeatureFlag') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

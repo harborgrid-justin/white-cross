@@ -45,7 +45,7 @@ export class DrugInteractionRepository
   extends BaseRepository<any, DrugInteractionAttributes, CreateDrugInteractionDTO>
 {
   constructor(
-    @InjectModel('DrugInteraction') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

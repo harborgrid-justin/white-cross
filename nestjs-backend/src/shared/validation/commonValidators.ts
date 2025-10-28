@@ -2,8 +2,7 @@
  * Common validation utilities used across multiple services
  */
 
-import { ValidationResult, ValidationError } from '../types/common';
-import { ValidationErrorCode } from '../../../types/validation';
+import { ValidationResult, ValidationError, ValidationErrorCode } from '../security/validation.service';
 
 /**
  * Validate UUID format

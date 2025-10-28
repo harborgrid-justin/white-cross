@@ -6,26 +6,30 @@
  * HIPAA Compliance: Captures user, IP, and timestamp for audit trail
  */
 
+import { UserRole } from '../models/user.model';
+
+export type ExecutionUserRole = UserRole | 'SYSTEM';
+
 export interface ExecutionContext {
   /**
    * User ID of the person performing the operation
    */
-  userId: string;
+  userId?: string | null;
 
   /**
    * User role for authorization checks
    */
-  userRole: UserRole;
+  userRole: ExecutionUserRole;
 
   /**
    * IP address of the request origin (HIPAA compliance)
    */
-  ipAddress?: string;
+  ipAddress?: string | null;
 
   /**
    * User agent string from request headers (HIPAA compliance)
    */
-  userAgent?: string;
+  userAgent?: string | null;
 
   /**
    * Transaction ID for distributed transaction tracking
@@ -43,19 +47,25 @@ export interface ExecutionContext {
   timestamp: Date;
 
   /**
+   * User name for display purposes
+   */
+  userName?: string;
+
+  /**
+   * Request ID for tracking
+   */
+  requestId?: string;
+
+  /**
+   * Session ID for tracking
+   */
+  sessionId?: string;
+
+  /**
    * Additional metadata for the operation
    */
   metadata?: Record<string, any>;
 }
-
-export type UserRole =
-  | 'ADMIN'
-  | 'NURSE'
-  | 'SCHOOL_ADMIN'
-  | 'DISTRICT_ADMIN'
-  | 'VIEWER'
-  | 'COUNSELOR'
-  | 'SYSTEM';
 
 /**
  * Factory function to create execution context from HTTP request

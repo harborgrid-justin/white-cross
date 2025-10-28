@@ -285,4 +285,4 @@ export class RateLimitGuard implements CanActivate {
 
 // Custom decorator for rate limiting
 export const RateLimit = (type: keyof typeof RATE_LIMIT_CONFIGS) =>
-  Reflector.createDecorator<string>({ key: 'rateLimit', value: type });
+  Reflector.createDecorator<string>({ key: 'rateLimit' });

@@ -17,7 +17,7 @@
  */
 
 import { TimeoutError } from '../../errors';
-import { logger } from '../../logging';
+import { logger } from '../../../shared';
 
 /**
  * Timeout configuration options
@@ -98,11 +98,7 @@ export async function withTimeout<T>(
       const message = errorMessage || `Operation '${operationName}' timed out after ${timeoutMs}ms`;
 
       if (logTimeout) {
-        logger.warn('Operation timeout', {
-          operation: operationName,
-          timeoutMs,
-          context,
-        });
+        logger.warn(`Operation timeout: ${operationName} (${timeoutMs}ms)`, 'TimeoutUtility');
       }
 
       reject(new TimeoutError(operationName, timeoutMs, context));

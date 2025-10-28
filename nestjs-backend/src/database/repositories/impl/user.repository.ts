@@ -10,6 +10,7 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
+import { User } from '../../models/user.model';
 
 export interface UserAttributes {
   id: string;
@@ -56,7 +57,7 @@ export class UserRepository
   extends BaseRepository<any, UserAttributes, CreateUserDTO>
 {
   constructor(
-    @InjectModel('User') model: any,
+    @InjectModel(User) model: typeof User,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

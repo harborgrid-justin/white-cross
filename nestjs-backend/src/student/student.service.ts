@@ -40,7 +40,7 @@ import {
 /**
  * Paginated Response Interface
  */
-interface PaginatedResponse<T> {
+export interface PaginatedResponse<T> {
   data: T[];
   meta: {
     page: number;
@@ -53,7 +53,7 @@ interface PaginatedResponse<T> {
 /**
  * Student Statistics Interface
  */
-interface StudentStatistics {
+export interface StudentStatistics {
   healthRecords: number;
   allergies: number;
   medications: number;
@@ -64,7 +64,7 @@ interface StudentStatistics {
 /**
  * Student Data Export Interface
  */
-interface StudentDataExport {
+export interface StudentDataExport {
   exportDate: string;
   student: Student;
   statistics: StudentStatistics;

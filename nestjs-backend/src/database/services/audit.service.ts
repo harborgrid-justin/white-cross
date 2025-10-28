@@ -286,7 +286,7 @@ export class AuditService implements IAuditLogger {
 
     if (isPHICache) {
       try {
-        await this.auditLogModel.create({
+        await (this.auditLogModel as any).create({
           action,
           entityType: 'Cache',
           entityId: null,
@@ -306,7 +306,6 @@ export class AuditService implements IAuditLogger {
           errorMessage: null,
           metadata: { cacheKey, ...metadata },
           tags: ['cache', 'system'],
-          createdAt: new Date(),
         });
       } catch (error) {
         this.logger.warn(`Failed to log cache access: ${error.message}`);
@@ -331,7 +330,7 @@ export class AuditService implements IAuditLogger {
     errorMessage?: string,
   ): Promise<void> {
     await this.createAuditEntry({
-      action: AuditAction[action] || AuditAction.UPDATE,
+      action: AuditAction.UPDATE,
       entityType: 'User',
       entityId: userId,
       context,
@@ -569,7 +568,7 @@ export class AuditService implements IAuditLogger {
         where,
         attributes: [
           'action',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['action'],
         raw: true,
@@ -585,7 +584,7 @@ export class AuditService implements IAuditLogger {
         where,
         attributes: [
           'entityType',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['entityType'],
         raw: true,
@@ -602,7 +601,7 @@ export class AuditService implements IAuditLogger {
         where: { ...where, userId: { [Op.ne]: null } },
         attributes: [
           'userId',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['userId'],
         raw: true,
@@ -619,7 +618,7 @@ export class AuditService implements IAuditLogger {
         where,
         attributes: [
           'severity',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['severity'],
         raw: true,
@@ -635,7 +634,7 @@ export class AuditService implements IAuditLogger {
         where,
         attributes: [
           'complianceType',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['complianceType'],
         raw: true,
@@ -695,7 +694,7 @@ export class AuditService implements IAuditLogger {
       // Get unique users
       const uniqueUsersResult = await this.auditLogModel.findAll({
         where: { ...where, userId: { [Op.ne]: null } },
-        attributes: [[this.auditLogModel.sequelize.fn('COUNT', this.auditLogModel.sequelize.fn('DISTINCT', this.auditLogModel.sequelize.col('userId'))), 'count']],
+        attributes: [[this.auditLogModel.sequelize!.fn('COUNT', this.auditLogModel.sequelize!.fn('DISTINCT', this.auditLogModel.sequelize!.col('userId'))), 'count']],
         raw: true,
       });
       const uniqueUsers = parseInt((uniqueUsersResult[0] as any).count, 10);
@@ -705,10 +704,10 @@ export class AuditService implements IAuditLogger {
         where,
         attributes: [
           'entityType',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['entityType'],
-        order: [[this.auditLogModel.sequelize.literal('count'), 'DESC']],
+        order: [[this.auditLogModel.sequelize!.literal('count'), 'DESC']],
         limit: 10,
         raw: true,
       });
@@ -724,10 +723,10 @@ export class AuditService implements IAuditLogger {
         attributes: [
           'userId',
           'userName',
-          [this.auditLogModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.auditLogModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['userId', 'userName'],
-        order: [[this.auditLogModel.sequelize.literal('count'), 'DESC']],
+        order: [[this.auditLogModel.sequelize!.literal('count'), 'DESC']],
         limit: 20,
         raw: true,
       });
@@ -1037,19 +1036,19 @@ export class AuditService implements IAuditLogger {
       const sanitizedNewValues = newValues ? this.sanitizeSensitiveData(newValues) : null;
 
       // Create audit log entry
-      await this.auditLogModel.create({
+      await (this.auditLogModel as any).create({
         action,
         entityType,
         entityId,
         userId: context.userId || null,
-        userName: context.userName || null,
+        userName: context.userId || null,
         changes: sanitizedChanges,
         previousValues: sanitizedPreviousValues,
         newValues: sanitizedNewValues,
         ipAddress: context.ipAddress || null,
         userAgent: context.userAgent || null,
-        requestId: context.requestId || null,
-        sessionId: context.sessionId || null,
+        requestId: context.transactionId || context.correlationId || null,
+        sessionId: context.correlationId || null,
         isPHI,
         complianceType,
         severity: auditSeverity,
@@ -1057,7 +1056,6 @@ export class AuditService implements IAuditLogger {
         errorMessage,
         metadata,
         tags: [...tags, entityType.toLowerCase(), action.toLowerCase()],
-        createdAt: new Date(),
       });
 
       this.logger.debug(

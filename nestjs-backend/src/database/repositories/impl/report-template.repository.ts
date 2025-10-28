@@ -27,7 +27,7 @@ export interface UpdateReportTemplateDTO {
 @Injectable()
 export class ReportTemplateRepository extends BaseRepository<any, ReportTemplateAttributes, CreateReportTemplateDTO> {
   constructor(
-    @InjectModel('ReportTemplate') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

@@ -27,7 +27,7 @@ export interface UpdateClinicDTO {
 @Injectable()
 export class ClinicRepository extends BaseRepository<any, ClinicAttributes, CreateClinicDTO> {
   constructor(
-    @InjectModel('Clinic') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

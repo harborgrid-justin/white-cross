@@ -101,7 +101,7 @@ export class PurchaseOrderService {
         orderNumber: data.orderNumber,
         vendorId: data.vendorId,
         orderDate: new Date(data.orderDate),
-        expectedDate: data.expectedDate ? new Date(data.expectedDate) : null,
+        expectedDate: data.expectedDate ? new Date(data.expectedDate) : undefined,
         notes: data.notes,
         subtotal,
         tax: 0,
@@ -110,7 +110,7 @@ export class PurchaseOrderService {
         status: PurchaseOrderStatus.PENDING,
       });
 
-      const savedOrder = await queryRunner.manager.save(purchaseOrder);
+      const savedOrder = await queryRunner.manager.save(purchaseOrder) as PurchaseOrder;
 
       // Create purchase order items
       for (const item of orderItems) {
@@ -128,6 +128,10 @@ export class PurchaseOrderService {
         where: { id: savedOrder.id },
         relations: ['vendor', 'items', 'items.inventoryItem'],
       });
+
+      if (!completeOrder) {
+        throw new Error('Failed to reload purchase order after creation');
+      }
 
       this.logger.log(
         `Purchase order created: ${completeOrder.orderNumber} (${orderItems.length} items, $${subtotal.toFixed(2)})`,

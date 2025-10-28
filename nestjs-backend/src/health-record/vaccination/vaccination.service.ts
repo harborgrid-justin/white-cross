@@ -135,8 +135,12 @@ export class VaccinationService {
     // Log critical adverse events
     if (data.adverseEvents || data.reactions) {
       this.logger.warn(
-        `Adverse event reported for vaccination ${vaccinationWithRelations.id}: ${data.reactions || JSON.stringify(data.adverseEvents)}`,
+        `Adverse event reported for vaccination ${vaccinationWithRelations?.id}: ${data.reactions || JSON.stringify(data.adverseEvents)}`,
       );
+    }
+
+    if (!vaccinationWithRelations) {
+      throw new Error('Failed to reload vaccination after creation');
     }
 
     return vaccinationWithRelations;
@@ -372,6 +376,10 @@ export class VaccinationService {
       where: { id: updatedVaccination.id },
       relations: ['student'],
     });
+
+    if (!vaccinationWithRelations) {
+      throw new Error('Failed to reload vaccination after update');
+    }
 
     // PHI Modification Audit Log
     this.logger.log(

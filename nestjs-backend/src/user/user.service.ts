@@ -326,7 +326,7 @@ export class UserService {
       const byRoleResults = await this.userModel.findAll({
         attributes: [
           'role',
-          [this.userModel.sequelize.fn('COUNT', '*'), 'count'],
+          [this.userModel.sequelize!.fn('COUNT', '*'), 'count'],
         ],
         group: ['role'],
         raw: true,

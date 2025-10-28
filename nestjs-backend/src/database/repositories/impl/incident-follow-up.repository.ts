@@ -27,7 +27,7 @@ export interface UpdateIncidentFollowUpDTO {
 @Injectable()
 export class IncidentFollowUpRepository extends BaseRepository<any, IncidentFollowUpAttributes, CreateIncidentFollowUpDTO> {
   constructor(
-    @InjectModel('IncidentFollowUp') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

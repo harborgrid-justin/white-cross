@@ -27,7 +27,7 @@ export interface UpdateRegulatorySubmissionDTO {
 @Injectable()
 export class RegulatorySubmissionRepository extends BaseRepository<any, RegulatorySubmissionAttributes, CreateRegulatorySubmissionDTO> {
   constructor(
-    @InjectModel('RegulatorySubmission') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

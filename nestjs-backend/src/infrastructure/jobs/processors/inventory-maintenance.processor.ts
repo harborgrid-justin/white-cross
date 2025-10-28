@@ -1138,7 +1138,13 @@ export class InventoryMaintenanceProcessor {
       summary,
       alerts,
       reorderSuggestions,
-      expiringItems,
+      expiringItems: expiringItems.map(item => ({
+        medicationName: item.medication_name,
+        batchNumber: item.batch_number,
+        quantity: item.quantity,
+        expirationDate: item.expiration_date,
+        daysUntilExpiry: item.days_until_expiry,
+      })),
     };
   }
 

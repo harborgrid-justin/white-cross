@@ -27,7 +27,7 @@ export interface UpdateSchoolDTO {
 @Injectable()
 export class SchoolRepository extends BaseRepository<any, SchoolAttributes, CreateSchoolDTO> {
   constructor(
-    @InjectModel('School') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

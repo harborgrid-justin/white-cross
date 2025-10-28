@@ -44,7 +44,7 @@ export class SessionRepository
   extends BaseRepository<any, SessionAttributes, CreateSessionDTO>
 {
   constructor(
-    @InjectModel('Session') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

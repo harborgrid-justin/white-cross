@@ -27,7 +27,7 @@ export interface UpdateParentGuardianDTO {
 @Injectable()
 export class ParentGuardianRepository extends BaseRepository<any, ParentGuardianAttributes, CreateParentGuardianDTO> {
   constructor(
-    @InjectModel('ParentGuardian') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

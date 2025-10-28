@@ -73,7 +73,7 @@ export class AppointmentService {
     const limit = filters.limit || 20;
     const offset = (page - 1) * limit;
 
-    this.logger.log(\`Fetching appointments: page \${page}, limit \${limit}\`);
+    this.logger.log(`Fetching appointments: page ${page}, limit ${limit}`);
 
     // Build where clause from filters
     const whereClause: any = {};
@@ -134,7 +134,7 @@ export class AppointmentService {
         },
       };
     } catch (error) {
-      this.logger.error(\`Error fetching appointments: \${error.message}\`, error.stack);
+      this.logger.error(`Error fetching appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointments');
     }
   }
@@ -143,7 +143,7 @@ export class AppointmentService {
    * Get a single appointment by ID with relations
    */
   async getAppointmentById(id: string): Promise<AppointmentEntity> {
-    this.logger.log(\`Fetching appointment: \${id}\`);
+    this.logger.log(`Fetching appointment: \${id}`);
 
     try {
       const appointment = await this.appointmentModel.findByPk(id, {
@@ -157,7 +157,7 @@ export class AppointmentService {
       });
 
       if (!appointment) {
-        throw new NotFoundException(\`Appointment with ID \${id} not found\`);
+        throw new NotFoundException(`Appointment with ID \${id} not found`);
       }
 
       return this.mapToEntity(appointment);
@@ -165,7 +165,7 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(\`Error fetching appointment \${id}: \${error.message}\`, error.stack);
+      this.logger.error(`Error fetching appointment \${id}: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointment');
     }
   }
@@ -186,7 +186,7 @@ export class AppointmentService {
   async createAppointment(
     createDto: CreateAppointmentDto,
   ): Promise<AppointmentEntity> {
-    this.logger.log(\`Creating appointment for student \${createDto.studentId}\`);
+    this.logger.log(`Creating appointment for student \${createDto.studentId}`);
 
     // Apply defaults
     const duration = createDto.duration || AppointmentValidation.DEFAULT_DURATION_MINUTES;
@@ -200,7 +200,7 @@ export class AppointmentService {
     // Verify nurse exists
     const nurse = await this.userModel.findByPk(createDto.nurseId);
     if (!nurse) {
-      throw new BadRequestException(\`Nurse with ID \${createDto.nurseId} not found\`);
+      throw new BadRequestException(`Nurse with ID \${createDto.nurseId} not found`);
     }
 
     // Check for conflicts
@@ -212,7 +212,7 @@ export class AppointmentService {
 
     if (conflicts.length > 0) {
       throw new BadRequestException(
-        \`Nurse has conflicting appointments at this time: \${conflicts.map((c) => c.id).join(', ')}\`,
+        `Nurse has conflicting appointments at this time: \${conflicts.map((c) => c.id).join(', ')}`,
       );
     }
 
@@ -261,7 +261,7 @@ export class AppointmentService {
       // Fetch complete appointment with relations
       return await this.getAppointmentById(result.id);
     } catch (error) {
-      this.logger.error(\`Error creating appointment: \${error.message}\`, error.stack);
+      this.logger.error(`Error creating appointment: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to create appointment');
     }
   }
@@ -279,12 +279,12 @@ export class AppointmentService {
     id: string,
     updateDto: UpdateAppointmentDto,
   ): Promise<AppointmentEntity> {
-    this.logger.log(\`Updating appointment: \${id}\`);
+    this.logger.log(`Updating appointment: \${id}`);
 
     // Fetch existing appointment
     const existingAppointment = await this.appointmentModel.findByPk(id);
     if (!existingAppointment) {
-      throw new NotFoundException(\`Appointment with ID \${id} not found\`);
+      throw new NotFoundException(`Appointment with ID \${id} not found`);
     }
 
     // Validate not in final state
@@ -315,7 +315,7 @@ export class AppointmentService {
 
       if (conflicts.length > 0) {
         throw new BadRequestException(
-          \`Nurse has conflicting appointments at the new time\`,
+          `Nurse has conflicting appointments at the new time`,
         );
       }
     }
@@ -353,7 +353,7 @@ export class AppointmentService {
 
       return await this.getAppointmentById(id);
     } catch (error) {
-      this.logger.error(\`Error updating appointment \${id}: \${error.message}\`, error.stack);
+      this.logger.error(`Error updating appointment \${id}: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to update appointment');
     }
   }
@@ -367,11 +367,11 @@ export class AppointmentService {
    * - Attempts to fill slot from waitlist
    */
   async cancelAppointment(id: string, reason?: string): Promise<AppointmentEntity> {
-    this.logger.log(\`Cancelling appointment: \${id}\`);
+    this.logger.log(`Cancelling appointment: \${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {
-      throw new NotFoundException(\`Appointment with ID \${id} not found\`);
+      throw new NotFoundException(`Appointment with ID \${id} not found`);
     }
 
     // Validate can be cancelled
@@ -385,7 +385,7 @@ export class AppointmentService {
           {
             status: ModelAppointmentStatus.CANCELLED,
             notes: reason
-              ? \`\${appointment.notes || ''}\nCancellation reason: \${reason}\`
+              ? `\${appointment.notes || ''}\nCancellation reason: \${reason}`
               : appointment.notes,
             updatedAt: new Date(),
           },
@@ -415,7 +415,7 @@ export class AppointmentService {
 
       return await this.getAppointmentById(id);
     } catch (error) {
-      this.logger.error(\`Error cancelling appointment \${id}: \${error.message}\`, error.stack);
+      this.logger.error(`Error cancelling appointment \${id}: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to cancel appointment');
     }
   }
@@ -424,11 +424,11 @@ export class AppointmentService {
    * Start an appointment (transition to IN_PROGRESS)
    */
   async startAppointment(id: string): Promise<AppointmentEntity> {
-    this.logger.log(\`Starting appointment: \${id}\`);
+    this.logger.log(`Starting appointment: \${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {
-      throw new NotFoundException(\`Appointment with ID \${id} not found\`);
+      throw new NotFoundException(`Appointment with ID \${id} not found`);
     }
 
     // Validate can be started
@@ -457,11 +457,11 @@ export class AppointmentService {
       followUpDate?: Date;
     },
   ): Promise<AppointmentEntity> {
-    this.logger.log(\`Completing appointment: \${id}\`);
+    this.logger.log(`Completing appointment: \${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {
-      throw new NotFoundException(\`Appointment with ID \${id} not found\`);
+      throw new NotFoundException(`Appointment with ID \${id} not found`);
     }
 
     // Validate can be completed
@@ -469,13 +469,13 @@ export class AppointmentService {
 
     let notes = appointment.notes || '';
     if (completionData?.notes) {
-      notes = \`\${notes}\nCompletion: \${completionData.notes}\`;
+      notes = `\${notes}\nCompletion: \${completionData.notes}`;
     }
     if (completionData?.outcomes) {
-      notes = \`\${notes}\nOutcomes: \${completionData.outcomes}\`;
+      notes = `\${notes}\nOutcomes: \${completionData.outcomes}`;
     }
     if (completionData?.followUpRequired) {
-      notes = \`\${notes}\nFollow-up required: \${completionData.followUpDate ? completionData.followUpDate.toISOString() : 'Yes'}\`;
+      notes = `\${notes}\nFollow-up required: \${completionData.followUpDate ? completionData.followUpDate.toISOString() : 'Yes'}`;
     }
 
     await appointment.update({
@@ -491,11 +491,11 @@ export class AppointmentService {
    * Mark appointment as no-show
    */
   async markNoShow(id: string): Promise<AppointmentEntity> {
-    this.logger.log(\`Marking appointment as no-show: \${id}\`);
+    this.logger.log(`Marking appointment as no-show: \${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {
-      throw new NotFoundException(\`Appointment with ID \${id} not found\`);
+      throw new NotFoundException(`Appointment with ID \${id} not found`);
     }
 
     // Validate can be marked no-show
@@ -527,7 +527,7 @@ export class AppointmentService {
     nurseId: string,
     limit: number = 10,
   ): Promise<AppointmentEntity[]> {
-    this.logger.log(\`Fetching upcoming appointments for nurse: \${nurseId}\`);
+    this.logger.log(`Fetching upcoming appointments for nurse: \${nurseId}`);
 
     try {
       const appointments = await this.appointmentModel.findAll({
@@ -553,7 +553,7 @@ export class AppointmentService {
 
       return appointments.map(apt => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(\`Error fetching upcoming appointments: \${error.message}\`, error.stack);
+      this.logger.error(`Error fetching upcoming appointments: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch upcoming appointments');
     }
   }
@@ -572,7 +572,7 @@ export class AppointmentService {
     duration: number,
     excludeAppointmentId?: string,
   ): Promise<AppointmentEntity[]> {
-    this.logger.log(\`Checking availability for nurse: \${nurseId}\`);
+    this.logger.log(`Checking availability for nurse: \${nurseId}`);
 
     // Calculate time range including buffer
     const bufferMinutes = AppointmentValidation.BUFFER_TIME_MINUTES;
@@ -599,8 +599,8 @@ export class AppointmentService {
           // Appointment ends within the requested slot
           {
             [Op.and]: [
-              Sequelize.literal(\`DATE_ADD(scheduled_at, INTERVAL duration MINUTE) > '\${slotStart.toISOString()}'\`),
-              Sequelize.literal(\`scheduled_at < '\${slotEnd.toISOString()}'\`),
+              Sequelize.literal(`DATE_ADD(scheduled_at, INTERVAL duration MINUTE) > '\${slotStart.toISOString()}'`),
+              Sequelize.literal(`scheduled_at < '\${slotEnd.toISOString()}'`),
             ],
           },
         ],
@@ -624,7 +624,7 @@ export class AppointmentService {
 
       return conflicts.map(apt => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(\`Error checking availability: \${error.message}\`, error.stack);
+      this.logger.error(`Error checking availability: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to check availability');
     }
   }
@@ -640,7 +640,7 @@ export class AppointmentService {
     date: Date,
     slotDuration: number = 30,
   ): Promise<AvailabilitySlot[]> {
-    this.logger.log(\`Getting available slots for nurse: \${nurseId} on \${date}\`);
+    this.logger.log(`Getting available slots for nurse: \${nurseId} on \${date}`);
 
     const businessHours = AppointmentValidation.getBusinessHours();
     const slots: AvailabilitySlot[] = [];
@@ -707,7 +707,7 @@ export class AppointmentService {
     reason: string;
     notes?: string;
   }): Promise<any> {
-    this.logger.log(\`Adding student \${data.studentId} to waitlist\`);
+    this.logger.log(`Adding student \${data.studentId} to waitlist`);
 
     try {
       // Set expiration to 48 hours from now
@@ -732,7 +732,7 @@ export class AppointmentService {
 
       return waitlistEntry;
     } catch (error) {
-      this.logger.error(\`Error adding to waitlist: \${error.message}\`, error.stack);
+      this.logger.error(`Error adding to waitlist: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to add to waitlist');
     }
   }
@@ -744,7 +744,7 @@ export class AppointmentService {
     studentId: string,
     limit: number = 50,
   ): Promise<AppointmentEntity[]> {
-    this.logger.log(\`Fetching appointment history for student: \${studentId}\`);
+    this.logger.log(`Fetching appointment history for student: \${studentId}`);
 
     try {
       const appointments = await this.appointmentModel.findAll({
@@ -762,7 +762,7 @@ export class AppointmentService {
 
       return appointments.map(apt => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(\`Error fetching appointment history: \${error.message}\`, error.stack);
+      this.logger.error(`Error fetching appointment history: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointment history');
     }
   }
@@ -781,7 +781,7 @@ export class AppointmentService {
     reason: string;
     notes?: string;
   }): Promise<AppointmentEntity[]> {
-    this.logger.log(\`Creating recurring appointments for student \${data.studentId}\`);
+    this.logger.log(`Creating recurring appointments for student \${data.studentId}`);
 
     const recurringGroupId = uuidv4();
     const duration = data.duration || 30;
@@ -850,7 +850,7 @@ export class AppointmentService {
 
       return appointments;
     } catch (error) {
-      this.logger.error(\`Error creating recurring appointments: \${error.message}\`, error.stack);
+      this.logger.error(`Error creating recurring appointments: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to create recurring appointments');
     }
   }
@@ -930,7 +930,7 @@ export class AppointmentService {
     duration: number,
     transaction: Transaction,
   ): Promise<void> {
-    this.logger.log(\`Processing waitlist for cancelled slot\`);
+    this.logger.log(`Processing waitlist for cancelled slot`);
 
     try {
       // Find highest priority waitlist entry
@@ -961,10 +961,10 @@ export class AppointmentService {
           { transaction },
         );
 
-        this.logger.log(\`Notified waitlist entry \${entry.id} about available slot\`);
+        this.logger.log(`Notified waitlist entry \${entry.id} about available slot`);
       }
     } catch (error) {
-      this.logger.error(\`Error processing waitlist: \${error.message}\`, error.stack);
+      this.logger.error(`Error processing waitlist: \${error.message}`, error.stack);
       // Don't throw - this is a best-effort operation
     }
   }
@@ -1023,7 +1023,7 @@ export class AppointmentService {
         firstName: appointment.nurse.firstName,
         lastName: appointment.nurse.lastName,
         email: appointment.nurse.email,
-        fullName: \`\${appointment.nurse.firstName} \${appointment.nurse.lastName}\`,
+        fullName: `\${appointment.nurse.firstName} \${appointment.nurse.lastName}`,
       } : undefined,
     };
   }

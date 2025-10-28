@@ -27,7 +27,7 @@ export interface UpdateComplianceReportDTO {
 @Injectable()
 export class ComplianceReportRepository extends BaseRepository<any, ComplianceReportAttributes, CreateComplianceReportDTO> {
   constructor(
-    @InjectModel('ComplianceReport') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

@@ -116,7 +116,7 @@ export class LoggerService implements NestLoggerService {
    * @param trace - Stack trace or error details
    * @param context - Optional context override
    */
-  error(message: any, trace?: string, context?: string): void {
+  error(message: any, trace?: string | Error, context?: string): void {
     const logContext = context || this.context || 'Application';
 
     if (trace instanceof Error) {
@@ -195,6 +195,11 @@ export function createLogger(context: string): LoggerService {
   logger.setContext(context);
   return logger;
 }
+
+/**
+ * Singleton logger instance for convenience
+ */
+export const logger = new LoggerService();
 
 /**
  * Default export for convenience

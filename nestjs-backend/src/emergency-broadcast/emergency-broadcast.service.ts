@@ -123,10 +123,11 @@ export class EmergencyBroadcastService {
       // Create execution context for audit logging
       const context: ExecutionContext = {
         userId: createDto.sentBy,
+        userRole: 'ADMIN' as any,
         ipAddress: 'system',
         userAgent: 'emergency-broadcast-service',
         timestamp: new Date(),
-        requestId: uuidv4(),
+        transactionId: uuidv4(),
       };
 
       const emergencyBroadcast = {
@@ -152,7 +153,7 @@ export class EmergencyBroadcastService {
         audience: createDto.audience,
       });
 
-      return this.mapToResponseDto(savedBroadcast as EmergencyBroadcast);
+      return this.mapToResponseDto(savedBroadcast as any);
     } catch (error) {
       this.logger.error('Failed to create emergency broadcast', error);
       throw error;
@@ -177,10 +178,11 @@ export class EmergencyBroadcastService {
       // Create execution context
       const context: ExecutionContext = {
         userId,
+        userRole: 'ADMIN' as any,
         ipAddress: 'system',
         userAgent: 'emergency-broadcast-service',
         timestamp: new Date(),
-        requestId: uuidv4(),
+        transactionId: uuidv4(),
       };
 
       // Update broadcast with transaction
@@ -192,7 +194,7 @@ export class EmergencyBroadcastService {
 
       this.logger.log('Emergency broadcast updated', { id });
 
-      return this.mapToResponseDto(updatedBroadcast as EmergencyBroadcast);
+      return this.mapToResponseDto(updatedBroadcast as any);
     } catch (error) {
       this.logger.error('Failed to update emergency broadcast', error);
       throw error;
@@ -215,10 +217,11 @@ export class EmergencyBroadcastService {
       // Create execution context
       const context: ExecutionContext = {
         userId,
+        userRole: 'ADMIN' as any,
         ipAddress: 'system',
         userAgent: 'emergency-broadcast-service',
         timestamp: new Date(),
-        requestId: uuidv4(),
+        transactionId: uuidv4(),
       };
 
       // 1. Get recipients based on audience and filters
@@ -412,7 +415,7 @@ export class EmergencyBroadcastService {
       const recentDeliveries: RecipientDeliveryStatusDto[] = [];
 
       return {
-        broadcast: this.mapToResponseDto(broadcast as EmergencyBroadcast),
+        broadcast: this.mapToResponseDto(broadcast as any),
         deliveryStats,
         recentDeliveries,
       };
@@ -436,10 +439,11 @@ export class EmergencyBroadcastService {
       // Create execution context
       const context: ExecutionContext = {
         userId,
+        userRole: 'ADMIN' as any,
         ipAddress: 'system',
         userAgent: 'emergency-broadcast-service',
         timestamp: new Date(),
-        requestId: uuidv4(),
+        transactionId: uuidv4(),
       };
 
       // Update broadcast status to CANCELLED
@@ -477,6 +481,7 @@ export class EmergencyBroadcastService {
       // and increment acknowledgedCount on broadcast
       const context: ExecutionContext = {
         userId: recipientId,
+        userRole: 'STUDENT' as any,
         ipAddress: 'system',
         userAgent: 'emergency-broadcast-service',
         timestamp: new Date(),

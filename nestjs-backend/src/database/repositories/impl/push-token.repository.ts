@@ -27,7 +27,7 @@ export interface UpdatePushTokenDTO {
 @Injectable()
 export class PushTokenRepository extends BaseRepository<any, PushTokenAttributes, CreatePushTokenDTO> {
   constructor(
-    @InjectModel('PushToken') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

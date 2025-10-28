@@ -8,7 +8,7 @@ import {
   PrimaryKey,
   Default,
 } from 'sequelize-typescript';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -260,7 +260,7 @@ export class User extends Model<UserAttributes> {
 
   async resetFailedLoginAttempts(): Promise<void> {
     this.failedLoginAttempts = 0;
-    this.lockoutUntil = null;
+    this.lockoutUntil = undefined;
     this.lastLogin = new Date();
     await this.save();
   }

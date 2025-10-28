@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { User, UserRole } from '../database/models/user.model';
 import { RegisterDto, LoginDto, ChangePasswordDto, AuthResponseDto } from './dto';

@@ -6,7 +6,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Process, Processor } from '@nestjs/bull';
-import { Job } from 'bull';
+import { Job } from 'bullmq';
 import { TwilioProvider } from '../providers/twilio.provider';
 import { SmsQueueJobDto, SmsDeliveryResultDto, SmsDeliveryStatus } from '../dto/sms-queue-job.dto';
 
@@ -102,7 +102,7 @@ export class SmsQueueProcessor {
       }
 
       // Update job progress
-      await job.progress(100);
+      await (job as any).progress(100);
 
       return result;
     } catch (error) {
@@ -110,7 +110,7 @@ export class SmsQueueProcessor {
 
       // Update job progress
       const progressPercent = Math.floor((attemptNumber / maxRetries) * 100);
-      await job.progress(progressPercent);
+      await (job as any).progress(progressPercent);
 
       // Re-throw to trigger retry mechanism
       throw error;
@@ -143,7 +143,7 @@ export class SmsQueueProcessor {
 
         // Update progress
         const progress = Math.floor(((i + 1) / recipients.length) * 100);
-        await job.progress(progress);
+        await (job as any).progress(progress);
       } catch (error) {
         this.logger.error(`Bulk SMS failed for ${to}: ${error.message}`);
 
@@ -199,7 +199,7 @@ export class SmsQueueProcessor {
    * @param job - Completed job
    * @param result - Job result
    */
-  async onCompleted(job: Job, result: any): void {
+  async onCompleted(job: Job, result: any): Promise<void> {
     this.logger.log(`SMS job ${job.id} completed successfully`);
   }
 
@@ -209,7 +209,7 @@ export class SmsQueueProcessor {
    * @param job - Failed job
    * @param error - Error that caused failure
    */
-  async onFailed(job: Job, error: Error): void {
+  async onFailed(job: Job, error: Error): Promise<void> {
     this.logger.error(`SMS job ${job.id} failed permanently: ${error.message}`);
 
     // In production, you might want to:
@@ -223,7 +223,7 @@ export class SmsQueueProcessor {
    *
    * @param job - Stalled job
    */
-  async onStalled(job: Job): void {
+  async onStalled(job: Job): Promise<void> {
     this.logger.warn(`SMS job ${job.id} has stalled and will be retried`);
   }
 

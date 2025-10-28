@@ -27,7 +27,7 @@ export interface UpdateBudgetDTO {
 @Injectable()
 export class BudgetRepository extends BaseRepository<any, BudgetAttributes, CreateBudgetDTO> {
   constructor(
-    @InjectModel('Budget') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

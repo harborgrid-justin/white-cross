@@ -19,6 +19,7 @@ import {
 import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { GrowthTracking } from '../../../database/models/growth-tracking.model';
 
 @Injectable()
 export class GrowthTrackingRepository
@@ -26,7 +27,7 @@ export class GrowthTrackingRepository
   implements IGrowthTrackingRepository
 {
   constructor(
-    @InjectModel('GrowthTracking') model: any,
+    @InjectModel(GrowthTracking) model: typeof GrowthTracking,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

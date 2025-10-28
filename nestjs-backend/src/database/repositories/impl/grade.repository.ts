@@ -27,7 +27,7 @@ export interface UpdateGradeDTO {
 @Injectable()
 export class GradeRepository extends BaseRepository<any, GradeAttributes, CreateGradeDTO> {
   constructor(
-    @InjectModel('Grade') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

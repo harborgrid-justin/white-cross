@@ -27,7 +27,7 @@ export interface UpdateEmergencyContactDTO {
 @Injectable()
 export class EmergencyContactRepository extends BaseRepository<any, EmergencyContactAttributes, CreateEmergencyContactDTO> {
   constructor(
-    @InjectModel('EmergencyContact') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

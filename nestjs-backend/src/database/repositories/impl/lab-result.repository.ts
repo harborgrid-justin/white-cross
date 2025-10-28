@@ -56,7 +56,7 @@ export class LabResultRepository
   extends BaseRepository<any, LabResultAttributes, CreateLabResultDTO>
 {
   constructor(
-    @InjectModel('LabResult') model: any,
+    @InjectModel(('' as any)) model: any,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

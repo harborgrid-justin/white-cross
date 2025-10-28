@@ -67,7 +67,7 @@ export class SisApiClient extends BaseApiClient {
    * @param configService - NestJS ConfigService for accessing environment variables
    */
   constructor(
-    private readonly httpService: HttpService,
+    protected readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
     const baseURL =
