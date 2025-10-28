@@ -47,9 +47,12 @@ import { EmailModule } from './infrastructure/email/email.module';
 import { SmsModule } from './infrastructure/sms/sms.module';
 import { MonitoringModule } from './infrastructure/monitoring/monitoring.module';
 import { JobsModule } from './infrastructure/jobs/jobs.module';
+import { WebSocketModule } from './infrastructure/websocket/websocket.module';
+import { GraphQLModule } from './infrastructure/graphql/graphql.module';
 import { CoreMiddlewareModule } from './middleware/core/core-middleware.module';
 import { WorkersModule } from './workers/workers.module';
 import { RoutesModule } from './routes/routes.module';
+import { MedicationModule } from './medication/medication.module';
 
 @Module({
   imports: [
@@ -79,6 +82,8 @@ import { RoutesModule } from './routes/routes.module';
     EmailModule,
     SmsModule,
     JobsModule,
+    WebSocketModule,
+    GraphQLModule,
     WorkersModule,
 
     // Core modules
@@ -158,8 +163,8 @@ import { RoutesModule } from './routes/routes.module';
 
     EmergencyContactModule,
 
-    // Feature modules will be added here
-    // MedicationModule will be imported here
+    // Feature modules
+    MedicationModule,
   ],
   controllers: [],
   providers: [],

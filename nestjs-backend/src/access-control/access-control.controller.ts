@@ -58,8 +58,10 @@ export class AccessControlController {
   @Get('roles/:id')
   @Permissions('roles', 'read')
   @ApiOperation({ summary: 'Get role by ID' })
+  @ApiParam({ name: 'id', description: 'Role UUID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Role retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getRoleById(@Param('id') id: string) {
     return this.accessControlService.getRoleById(id);
   }
@@ -67,8 +69,10 @@ export class AccessControlController {
   @Post('roles')
   @Permissions('roles', 'create')
   @ApiOperation({ summary: 'Create a new role' })
+  @ApiBody({ type: CreateRoleDto })
   @ApiResponse({ status: 201, description: 'Role created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - validation error or duplicate name' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createRole(@Body() createRoleDto: CreateRoleDto, @Request() req) {
     return this.accessControlService.createRole(createRoleDto, req.user?.id);
   }
@@ -76,9 +80,12 @@ export class AccessControlController {
   @Patch('roles/:id')
   @Permissions('roles', 'update')
   @ApiOperation({ summary: 'Update an existing role' })
+  @ApiParam({ name: 'id', description: 'Role UUID', type: 'string' })
+  @ApiBody({ type: UpdateRoleDto })
   @ApiResponse({ status: 200, description: 'Role updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - cannot modify system roles' })
   @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async updateRole(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto, @Request() req) {
     return this.accessControlService.updateRole(id, updateRoleDto, req.user?.id);
   }
@@ -87,9 +94,11 @@ export class AccessControlController {
   @Permissions('roles', 'delete')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a role' })
+  @ApiParam({ name: 'id', description: 'Role UUID', type: 'string' })
   @ApiResponse({ status: 204, description: 'Role deleted successfully' })
   @ApiResponse({ status: 400, description: 'Cannot delete system role or role with users' })
   @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async deleteRole(@Param('id') id: string, @Request() req) {
     return this.accessControlService.deleteRole(id, req.user?.id);
   }
@@ -109,7 +118,10 @@ export class AccessControlController {
   @Post('permissions')
   @Permissions('permissions', 'create')
   @ApiOperation({ summary: 'Create a new permission' })
+  @ApiBody({ type: CreatePermissionDto })
   @ApiResponse({ status: 201, description: 'Permission created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - validation error' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createPermission(@Body() createPermissionDto: CreatePermissionDto) {
     return this.accessControlService.createPermission(createPermissionDto);
   }
@@ -117,9 +129,12 @@ export class AccessControlController {
   @Post('roles/:roleId/permissions')
   @Permissions('roles', 'update')
   @ApiOperation({ summary: 'Assign permission to role' })
+  @ApiParam({ name: 'roleId', description: 'Role UUID', type: 'string' })
+  @ApiBody({ type: AssignPermissionToRoleDto })
   @ApiResponse({ status: 201, description: 'Permission assigned successfully' })
   @ApiResponse({ status: 400, description: 'Cannot modify system role or permission already assigned' })
   @ApiResponse({ status: 404, description: 'Role or permission not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async assignPermissionToRole(
     @Param('roleId') roleId: string,
     @Body() dto: AssignPermissionToRoleDto,
@@ -132,8 +147,11 @@ export class AccessControlController {
   @Permissions('roles', 'update')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove permission from role' })
+  @ApiParam({ name: 'roleId', description: 'Role UUID', type: 'string' })
+  @ApiParam({ name: 'permissionId', description: 'Permission UUID', type: 'string' })
   @ApiResponse({ status: 204, description: 'Permission removed successfully' })
   @ApiResponse({ status: 404, description: 'Permission assignment not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async removePermissionFromRole(@Param('roleId') roleId: string, @Param('permissionId') permissionId: string) {
     return this.accessControlService.removePermissionFromRole(roleId, permissionId);
   }
@@ -145,12 +163,15 @@ export class AccessControlController {
   @Post('users/:userId/roles')
   @Permissions('users', 'manage')
   @ApiOperation({ summary: 'Assign role to user' })
+  @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
+  @ApiBody({ type: AssignRoleToUserDto })
   @ApiResponse({ status: 201, description: 'Role assigned successfully' })
   @ApiResponse({
     status: 400,
     description: 'Bad request - role already assigned or insufficient privileges',
   })
   @ApiResponse({ status: 404, description: 'User or role not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async assignRoleToUser(
     @Param('userId') userId: string,
     @Body() dto: AssignRoleToUserDto,
@@ -163,16 +184,21 @@ export class AccessControlController {
   @Permissions('users', 'manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove role from user' })
+  @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
+  @ApiParam({ name: 'roleId', description: 'Role UUID', type: 'string' })
   @ApiResponse({ status: 204, description: 'Role removed successfully' })
   @ApiResponse({ status: 404, description: 'Role assignment not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async removeRoleFromUser(@Param('userId') userId: string, @Param('roleId') roleId: string) {
     return this.accessControlService.removeRoleFromUser(userId, roleId);
   }
 
   @Get('users/:userId/permissions')
   @ApiOperation({ summary: 'Get user permissions' })
+  @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
   @ApiResponse({ status: 200, description: 'User permissions retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getUserPermissions(@Param('userId') userId: string, @Request() req) {
     // Allow users to view their own permissions, or require permission to view others
     if (userId !== req.user?.id) {
@@ -190,7 +216,10 @@ export class AccessControlController {
 
   @Post('check-permission')
   @ApiOperation({ summary: 'Check if current user has a specific permission' })
+  @ApiBody({ type: CheckPermissionDto })
   @ApiResponse({ status: 200, description: 'Permission check result' })
+  @ApiResponse({ status: 400, description: 'Bad request - validation error' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async checkPermission(@Body() dto: CheckPermissionDto, @Request() req) {
     const hasPermission = await this.accessControlService.checkPermission(
       req.user?.id,
@@ -206,7 +235,9 @@ export class AccessControlController {
 
   @Get('sessions/user/:userId')
   @ApiOperation({ summary: 'Get active sessions for a user' })
+  @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Sessions retrieved successfully' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getUserSessions(@Param('userId') userId: string, @Request() req) {
     // Allow users to view their own sessions, or require permission to view others
     if (userId !== req.user?.id) {
@@ -225,8 +256,10 @@ export class AccessControlController {
   @Delete('sessions/:token')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a specific session' })
+  @ApiParam({ name: 'token', description: 'Session token', type: 'string' })
   @ApiResponse({ status: 204, description: 'Session deleted successfully' })
   @ApiResponse({ status: 404, description: 'Session not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async deleteSession(@Param('token') token: string) {
     return this.accessControlService.deleteSession(token);
   }
@@ -235,7 +268,9 @@ export class AccessControlController {
   @Permissions('sessions', 'manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete all sessions for a user' })
+  @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
   @ApiResponse({ status: 204, description: 'All sessions deleted successfully' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async deleteAllUserSessions(@Param('userId') userId: string) {
     return this.accessControlService.deleteAllUserSessions(userId);
   }
@@ -253,6 +288,7 @@ export class AccessControlController {
   @ApiQuery({ name: 'severity', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiResponse({ status: 200, description: 'Security incidents retrieved successfully' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getSecurityIncidents(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
@@ -271,7 +307,10 @@ export class AccessControlController {
   @Post('security/incidents')
   @Permissions('security', 'manage')
   @ApiOperation({ summary: 'Create a security incident' })
+  @ApiBody({ type: CreateSecurityIncidentDto })
   @ApiResponse({ status: 201, description: 'Security incident created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - validation error' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createSecurityIncident(@Body() dto: CreateSecurityIncidentDto, @Request() req) {
     return this.accessControlService.createSecurityIncident({
       ...dto,
@@ -283,6 +322,7 @@ export class AccessControlController {
   @Permissions('security', 'read')
   @ApiOperation({ summary: 'Get security statistics' })
   @ApiResponse({ status: 200, description: 'Security statistics retrieved successfully' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getSecurityStatistics() {
     return this.accessControlService.getSecurityStatistics();
   }
@@ -291,6 +331,7 @@ export class AccessControlController {
   @Permissions('security', 'manage')
   @ApiOperation({ summary: 'Get all IP restrictions' })
   @ApiResponse({ status: 200, description: 'IP restrictions retrieved successfully' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getIpRestrictions() {
     return this.accessControlService.getIpRestrictions();
   }
@@ -298,8 +339,10 @@ export class AccessControlController {
   @Post('security/ip-restrictions')
   @Permissions('security', 'manage')
   @ApiOperation({ summary: 'Add an IP restriction' })
+  @ApiBody({ type: CreateIpRestrictionDto })
   @ApiResponse({ status: 201, description: 'IP restriction added successfully' })
   @ApiResponse({ status: 400, description: 'IP restriction already exists' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async addIpRestriction(@Body() dto: CreateIpRestrictionDto, @Request() req) {
     return this.accessControlService.addIpRestriction({
       ...dto,
@@ -311,8 +354,10 @@ export class AccessControlController {
   @Permissions('security', 'manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove an IP restriction' })
+  @ApiParam({ name: 'id', description: 'IP Restriction UUID', type: 'string' })
   @ApiResponse({ status: 204, description: 'IP restriction removed successfully' })
   @ApiResponse({ status: 404, description: 'IP restriction not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async removeIpRestriction(@Param('id') id: string) {
     return this.accessControlService.removeIpRestriction(id);
   }
@@ -326,6 +371,7 @@ export class AccessControlController {
   @ApiOperation({ summary: 'Initialize default roles and permissions' })
   @ApiResponse({ status: 201, description: 'Default roles and permissions initialized' })
   @ApiResponse({ status: 200, description: 'Roles already initialized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async initializeDefaultRoles() {
     await this.accessControlService.initializeDefaultRoles();
     return { message: 'Default roles and permissions initialized successfully' };

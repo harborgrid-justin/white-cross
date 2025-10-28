@@ -1,82 +1,58 @@
-/**
- * Medication Management Module
- * 
- * Comprehensive medication management with HIPAA compliance, DEA controlled
- * substance tracking, FDA MedWatch adverse event reporting, and Five Rights
- * of Medication Administration.
- * 
- * @module MedicationModule
- * @compliance HIPAA, DEA Schedule II-V, FDA MedWatch
- */
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MedicationController } from './medication.controller';
+import { MedicationService } from './services/medication.service';
+import { MedicationRepository } from './medication.repository';
 
-// Entities
-import { Medication } from './entities/medication.entity';
-import { StudentMedication } from './entities/student-medication.entity';
-import { MedicationLog } from './entities/medication-log.entity';
-import { MedicationInventory } from './entities/medication-inventory.entity';
-import { ControlledSubstanceLog } from './entities/controlled-substance-log.entity';
-import { SideEffectReport } from './entities/side-effect-report.entity';
-
-// Services
-import { MedicationCrudService } from './services/medication-crud.service';
-import { AdministrationService } from './services/administration.service';
-import { InventoryService } from './services/inventory.service';
-import { AdverseReactionService } from './services/adverse-reaction.service';
-import { ControlledSubstanceService } from './services/controlled-substance.service';
-import { SideEffectMonitorService } from './services/side-effect-monitor.service';
-import { ScheduleService } from './services/schedule.service';
-import { StudentMedicationService } from './services/student-medication.service';
-import { AnalyticsService } from './services/analytics.service';
-import { DrugInteractionService } from './services/drug-interaction.service';
-
-// Controllers
-import { MedicationController } from './controllers/medication.controller';
-import { AdministrationController } from './controllers/administration.controller';
-import { InventoryController } from './controllers/inventory.controller';
-import { AdverseReactionController } from './controllers/adverse-reaction.controller';
-import { ControlledSubstanceController } from './controllers/controlled-substance.controller';
-
+/**
+ * Medication Module
+ *
+ * Provides comprehensive medication management functionality including:
+ * - CRUD operations for medications
+ * - Student medication tracking
+ * - Medication activation/deactivation with audit trail
+ * - Search and filtering capabilities
+ * - Pagination support
+ *
+ * Current Implementation:
+ * - Core CRUD operations for medications
+ * - Validation and business rules
+ * - Soft deletion with audit trail
+ * - Student-medication relationships
+ * - REST API endpoints with full Swagger documentation
+ *
+ * Architecture:
+ * - Controller: Handles HTTP requests and responses
+ * - Service: Implements business logic and validation
+ * - Repository: Provides data access layer using Sequelize
+ *
+ * Security:
+ * - All endpoints require JWT authentication (configured at app level)
+ * - RBAC for create/update/delete operations (NURSE or ADMIN)
+ * - PHI data protection and audit logging
+ *
+ * HIPAA Compliance:
+ * - All medication data is Protected Health Information (PHI)
+ * - Soft deletion preserves medical history
+ * - Access logging for audit trail (implemented at controller level)
+ *
+ * Database:
+ * - Uses Sequelize ORM with existing backend models
+ * - Table: medications
+ * - Supports legacy schema compatibility
+ *
+ * Future Enhancements:
+ * - Medication administration logging
+ * - Inventory management
+ * - Adverse reaction tracking
+ * - Medication reminders and scheduling
+ * - Drug interaction checking
+ * - Controlled substance tracking (DEA compliance)
+ * - Medication history exports
+ * - Integration with pharmacy systems
+ */
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Medication,
-      StudentMedication,
-      MedicationLog,
-      MedicationInventory,
-      ControlledSubstanceLog,
-      SideEffectReport,
-    ]),
-  ],
-  controllers: [
-    MedicationController,
-    AdministrationController,
-    InventoryController,
-    AdverseReactionController,
-    ControlledSubstanceController,
-  ],
-  providers: [
-    // Core Services
-    MedicationCrudService,
-    AdministrationService,
-    InventoryService,
-    AdverseReactionService,
-    ControlledSubstanceService,
-    SideEffectMonitorService,
-    ScheduleService,
-    StudentMedicationService,
-    AnalyticsService,
-    
-    // Safety Services
-    DrugInteractionService,
-  ],
-  exports: [
-    // Export services for use in other modules
-    MedicationCrudService,
-    AdministrationService,
-    InventoryService,
-    DrugInteractionService,
-  ],
+  controllers: [MedicationController],
+  providers: [MedicationService, MedicationRepository],
+  exports: [MedicationService],
 })
 export class MedicationModule {}

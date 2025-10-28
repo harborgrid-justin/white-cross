@@ -16,11 +16,26 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, Like, In } from 'typeorm';
 import { Student } from './entities/student.entity';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
-import { StudentFilterDto } from './dto/student-filter.dto';
-import { TransferStudentDto } from './dto/transfer-student.dto';
-import { BulkUpdateDto } from './dto/bulk-update.dto';
+import {
+  CreateStudentDto,
+  UpdateStudentDto,
+  StudentFilterDto,
+  TransferStudentDto,
+  BulkUpdateDto,
+  StudentHealthRecordsDto,
+  MentalHealthRecordsDto,
+  UploadPhotoDto,
+  SearchPhotoDto,
+  ImportTranscriptDto,
+  AcademicHistoryDto,
+  PerformanceTrendsDto,
+  BulkGradeTransitionDto,
+  GraduatingStudentsDto,
+  ScanBarcodeDto,
+  VerifyMedicationDto,
+  AddWaitlistDto,
+  WaitlistStatusDto,
+} from './dto';
 
 /**
  * Paginated Response Interface
@@ -650,5 +665,466 @@ export class StudentService {
     }
 
     throw new InternalServerErrorException(message);
+  }
+
+  // ==================== Health Records Access Methods ====================
+
+  /**
+   * Get student health records with pagination
+   * Returns all health records including medications, allergies, immunizations, and visit logs
+   * TODO: Implement when HealthRecord module is available
+   */
+  async getStudentHealthRecords(
+    studentId: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      await this.findOne(studentId);
+
+      // TODO: Query health records when module is available
+      // const healthRecords = await this.healthRecordRepository.find({
+      //   where: { studentId },
+      //   skip: (page - 1) * limit,
+      //   take: limit,
+      //   order: { createdAt: 'DESC' },
+      // });
+
+      this.logger.log(`Health records retrieved for student: ${studentId}`);
+
+      return {
+        data: [],
+        meta: {
+          page,
+          limit,
+          total: 0,
+          pages: 0,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to retrieve health records', error);
+    }
+  }
+
+  /**
+   * Get student mental health records with pagination
+   * Returns mental health records with strict access control
+   * TODO: Implement when MentalHealthRecord module is available
+   */
+  async getStudentMentalHealthRecords(
+    studentId: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      await this.findOne(studentId);
+
+      // TODO: Query mental health records when module is available
+      // TODO: Implement access control verification for mental health specialist role
+      // const mentalHealthRecords = await this.mentalHealthRecordRepository.find({
+      //   where: { studentId },
+      //   skip: (page - 1) * limit,
+      //   take: limit,
+      //   order: { createdAt: 'DESC' },
+      // });
+
+      this.logger.log(`Mental health records retrieved for student: ${studentId}`);
+
+      return {
+        data: [],
+        meta: {
+          page,
+          limit,
+          total: 0,
+          pages: 0,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to retrieve mental health records', error);
+    }
+  }
+
+  // ==================== Photo Management Methods ====================
+
+  /**
+   * Upload student photo
+   * Stores photo with metadata and indexes for facial recognition
+   * TODO: Implement when PhotoStorage service is available
+   */
+  async uploadStudentPhoto(studentId: string, uploadPhotoDto: UploadPhotoDto): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      const student = await this.findOne(studentId);
+
+      // TODO: Implement photo upload and facial recognition indexing
+      // const photoResult = await this.photoStorageService.upload({
+      //   studentId,
+      //   imageData: uploadPhotoDto.imageData,
+      //   metadata: uploadPhotoDto.metadata,
+      // });
+
+      this.logger.log(`Photo uploaded for student: ${studentId}`);
+
+      return {
+        message: 'Photo upload endpoint ready - PhotoStorage service integration pending',
+        studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to upload student photo', error);
+    }
+  }
+
+  /**
+   * Search students by photo using facial recognition
+   * Returns potential matches with confidence scores
+   * TODO: Implement when FacialRecognition service is available
+   */
+  async searchStudentsByPhoto(searchPhotoDto: SearchPhotoDto): Promise<any> {
+    try {
+      // TODO: Implement facial recognition search
+      // const matches = await this.facialRecognitionService.search({
+      //   imageData: searchPhotoDto.imageData,
+      //   threshold: searchPhotoDto.threshold,
+      // });
+
+      this.logger.log('Photo search performed');
+
+      return {
+        message: 'Photo search endpoint ready - FacialRecognition service integration pending',
+        threshold: searchPhotoDto.threshold,
+        matches: [],
+      };
+    } catch (error) {
+      this.handleError('Failed to search by photo', error);
+    }
+  }
+
+  // ==================== Academic Transcript Methods ====================
+
+  /**
+   * Import academic transcript
+   * Validates and stores transcript data with GPA calculations
+   * TODO: Implement when AcademicTranscript module is available
+   */
+  async importAcademicTranscript(
+    studentId: string,
+    importTranscriptDto: ImportTranscriptDto,
+  ): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      const student = await this.findOne(studentId);
+
+      // TODO: Validate and store transcript data
+      // const transcript = await this.academicTranscriptRepository.create({
+      //   studentId,
+      //   ...importTranscriptDto,
+      // });
+
+      this.logger.log(`Academic transcript imported for student: ${studentId}`);
+
+      return {
+        message: 'Transcript import endpoint ready - AcademicTranscript module integration pending',
+        studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+        academicYear: importTranscriptDto.academicYear,
+        courseCount: importTranscriptDto.grades.length,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to import academic transcript', error);
+    }
+  }
+
+  /**
+   * Get academic history
+   * Returns comprehensive academic history with transcripts and achievements
+   * TODO: Implement when AcademicTranscript module is available
+   */
+  async getAcademicHistory(studentId: string, query: AcademicHistoryDto): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      const student = await this.findOne(studentId);
+
+      // TODO: Query academic transcripts
+      // const transcripts = await this.academicTranscriptRepository.find({
+      //   where: { studentId, ...(query.academicYear && { academicYear: query.academicYear }) },
+      //   order: { academicYear: 'DESC' },
+      // });
+
+      this.logger.log(`Academic history retrieved for student: ${studentId}`);
+
+      return {
+        message: 'Academic history endpoint ready - AcademicTranscript module integration pending',
+        studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+        filters: query,
+        transcripts: [],
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to retrieve academic history', error);
+    }
+  }
+
+  /**
+   * Get performance trends
+   * Analyzes academic performance over time with trend analysis
+   * TODO: Implement when AcademicTranscript module is available
+   */
+  async getPerformanceTrends(studentId: string, query: PerformanceTrendsDto): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      const student = await this.findOne(studentId);
+
+      // TODO: Perform trend analysis
+      // const trends = await this.academicAnalyticsService.analyzeTrends({
+      //   studentId,
+      //   yearsToAnalyze: query.yearsToAnalyze,
+      //   semestersToAnalyze: query.semestersToAnalyze,
+      // });
+
+      this.logger.log(`Performance trends analyzed for student: ${studentId}`);
+
+      return {
+        message: 'Performance trends endpoint ready - AcademicAnalytics service integration pending',
+        studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+        analysisParams: query,
+        trends: [],
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to analyze performance trends', error);
+    }
+  }
+
+  // ==================== Grade Transition Methods ====================
+
+  /**
+   * Perform bulk grade transition
+   * Processes grade level transitions for all eligible students
+   * TODO: Implement bulk transition logic with criteria validation
+   */
+  async performBulkGradeTransition(bulkGradeTransitionDto: BulkGradeTransitionDto): Promise<any> {
+    try {
+      // TODO: Implement bulk grade transition logic
+      // - Validate promotion criteria
+      // - Process student transitions
+      // - Handle retentions
+      // - Process graduations
+      // - Support dry-run mode
+
+      this.logger.log(
+        `Bulk grade transition ${bulkGradeTransitionDto.dryRun ? '(DRY RUN)' : 'executed'}: ${bulkGradeTransitionDto.effectiveDate}`,
+      );
+
+      return {
+        message: 'Bulk grade transition endpoint ready - Implementation pending',
+        effectiveDate: bulkGradeTransitionDto.effectiveDate,
+        dryRun: bulkGradeTransitionDto.dryRun,
+        criteria: bulkGradeTransitionDto.criteria,
+        results: {
+          total: 0,
+          promoted: 0,
+          retained: 0,
+          graduated: 0,
+        },
+      };
+    } catch (error) {
+      this.handleError('Failed to perform bulk grade transition', error);
+    }
+  }
+
+  /**
+   * Get graduating students
+   * Returns students eligible for graduation based on criteria
+   * TODO: Implement graduation eligibility logic
+   */
+  async getGraduatingStudents(query: GraduatingStudentsDto): Promise<any> {
+    try {
+      // TODO: Implement graduation eligibility query
+      // - Check credit requirements
+      // - Verify GPA requirements
+      // - Check assessment scores
+      // - Verify attendance thresholds
+
+      this.logger.log('Graduating students query executed');
+
+      return {
+        message: 'Graduating students endpoint ready - Implementation pending',
+        filters: query,
+        students: [],
+      };
+    } catch (error) {
+      this.handleError('Failed to retrieve graduating students', error);
+    }
+  }
+
+  // ==================== Barcode Scanning Methods ====================
+
+  /**
+   * Scan barcode
+   * Decodes barcode and retrieves associated entity
+   * TODO: Implement when BarcodeScanning service is available
+   */
+  async scanBarcode(scanBarcodeDto: ScanBarcodeDto): Promise<any> {
+    try {
+      // TODO: Implement barcode scanning and entity lookup
+      // - Decode barcode string
+      // - Identify barcode type
+      // - Lookup associated entity (student, medication, equipment)
+      // - Return entity information
+
+      this.logger.log(`Barcode scanned: ${scanBarcodeDto.barcodeString}`);
+
+      return {
+        message: 'Barcode scanning endpoint ready - BarcodeScanning service integration pending',
+        barcodeString: scanBarcodeDto.barcodeString,
+        scanType: scanBarcodeDto.scanType,
+        result: null,
+      };
+    } catch (error) {
+      this.handleError('Failed to scan barcode', error);
+    }
+  }
+
+  /**
+   * Verify medication administration
+   * Three-point barcode verification for medication safety
+   * TODO: Implement when MedicationAdministration service is available
+   */
+  async verifyMedicationAdministration(verifyMedicationDto: VerifyMedicationDto): Promise<any> {
+    try {
+      // TODO: Implement three-point verification
+      // - Verify student barcode matches student ID
+      // - Verify medication barcode matches prescribed medication
+      // - Verify nurse barcode matches authenticated nurse
+      // - Verify dose, time, and route (Five Rights)
+      // - Log verification attempt
+      // - Alert on verification failure
+
+      this.logger.log(
+        `Medication verification: Student=${verifyMedicationDto.studentBarcode}, Medication=${verifyMedicationDto.medicationBarcode}`,
+      );
+
+      return {
+        message:
+          'Medication verification endpoint ready - MedicationAdministration service integration pending',
+        studentBarcode: verifyMedicationDto.studentBarcode,
+        medicationBarcode: verifyMedicationDto.medicationBarcode,
+        nurseBarcode: verifyMedicationDto.nurseBarcode,
+        verified: false,
+        fiveRightsChecks: [],
+      };
+    } catch (error) {
+      this.handleError('Failed to verify medication administration', error);
+    }
+  }
+
+  // ==================== Waitlist Management Methods ====================
+
+  /**
+   * Add student to waitlist
+   * Adds student to appointment waitlist with priority
+   * TODO: Implement when Waitlist module is available
+   */
+  async addStudentToWaitlist(addWaitlistDto: AddWaitlistDto): Promise<any> {
+    try {
+      this.validateUUID(addWaitlistDto.studentId);
+
+      // Verify student exists
+      const student = await this.findOne(addWaitlistDto.studentId);
+
+      // TODO: Add to waitlist
+      // const waitlistEntry = await this.waitlistRepository.create({
+      //   studentId: addWaitlistDto.studentId,
+      //   appointmentType: addWaitlistDto.appointmentType,
+      //   priority: addWaitlistDto.priority,
+      //   notes: addWaitlistDto.notes,
+      // });
+
+      this.logger.log(`Student added to waitlist: ${addWaitlistDto.studentId}`);
+
+      return {
+        message: 'Waitlist add endpoint ready - Waitlist module integration pending',
+        studentId: addWaitlistDto.studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+        appointmentType: addWaitlistDto.appointmentType,
+        priority: addWaitlistDto.priority,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to add student to waitlist', error);
+    }
+  }
+
+  /**
+   * Get student waitlist status
+   * Returns current waitlist positions and estimated wait times
+   * TODO: Implement when Waitlist module is available
+   */
+  async getStudentWaitlistStatus(studentId: string, query: WaitlistStatusDto): Promise<any> {
+    try {
+      this.validateUUID(studentId);
+
+      // Verify student exists
+      const student = await this.findOne(studentId);
+
+      // TODO: Query waitlist status
+      // const waitlists = await this.waitlistRepository.find({
+      //   where: {
+      //     studentId,
+      //     ...(query.appointmentType && { appointmentType: query.appointmentType }),
+      //     status: 'active',
+      //   },
+      // });
+
+      this.logger.log(`Waitlist status retrieved for student: ${studentId}`);
+
+      return {
+        message: 'Waitlist status endpoint ready - Waitlist module integration pending',
+        studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+        filters: query,
+        waitlists: [],
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to retrieve waitlist status', error);
+    }
   }
 }

@@ -1,16 +1,12 @@
-/**
- * Compliance Module Entities
- * TypeORM entities for HIPAA-compliant data management
- */
-
-export { AuditLog } from './audit-log.entity';
-export { ConsentForm } from './consent-form.entity';
-export { ConsentSignature } from './consent-signature.entity';
-export { PhiDisclosure } from './phi-disclosure.entity';
-export { PhiDisclosureAudit } from './phi-disclosure-audit.entity';
-
-// Additional entities to be created:
-// - ComplianceReport
-// - ComplianceChecklistItem
-// - PolicyDocument
-// - PolicyAcknowledgment
+export * from './audit-log.entity';
+export * from './consent-form.entity';
+export * from './consent-signature.entity';
+export * from './phi-disclosure.entity';
+export * from './phi-disclosure-audit.entity';
+export * from './compliance-report.entity';
+export * from './compliance-checklist-item.entity';
+export * from './policy-document.entity';
+export * from './policy-acknowledgment.entity';
+export * from './data-retention-policy.entity';
+export * from './compliance-violation.entity';
+export * from './remediation-action.entity';

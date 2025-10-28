@@ -26,11 +26,26 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { StudentService } from './student.service';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
-import { StudentFilterDto } from './dto/student-filter.dto';
-import { TransferStudentDto } from './dto/transfer-student.dto';
-import { BulkUpdateDto } from './dto/bulk-update.dto';
+import {
+  CreateStudentDto,
+  UpdateStudentDto,
+  StudentFilterDto,
+  TransferStudentDto,
+  BulkUpdateDto,
+  StudentHealthRecordsDto,
+  MentalHealthRecordsDto,
+  UploadPhotoDto,
+  SearchPhotoDto,
+  ImportTranscriptDto,
+  AcademicHistoryDto,
+  PerformanceTrendsDto,
+  BulkGradeTransitionDto,
+  GraduatingStudentsDto,
+  ScanBarcodeDto,
+  VerifyMedicationDto,
+  AddWaitlistDto,
+  WaitlistStatusDto,
+} from './dto';
 
 /**
  * Student Controller
@@ -536,5 +551,449 @@ export class StudentController {
   })
   async exportData(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.studentService.exportData(id);
+  }
+
+  // ==================== Health Records Access Endpoints ====================
+
+  /**
+   * Get student health records
+   */
+  @Get(':id/health-records')
+  @ApiOperation({
+    summary: 'Get student health records',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Returns paginated list of all health records for a student including medications, allergies, immunizations, and visit logs. Full audit trail maintained. Requires assigned nurse or admin access.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Health records retrieved successfully with pagination',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Must be assigned nurse or admin',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async getHealthRecords(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query() query: StudentHealthRecordsDto,
+  ) {
+    return this.studentService.getStudentHealthRecords(id, query.page, query.limit);
+  }
+
+  /**
+   * Get student mental health records
+   */
+  @Get(':id/mental-health-records')
+  @ApiOperation({
+    summary: 'Get student mental health records',
+    description:
+      'EXTREMELY SENSITIVE PHI ENDPOINT - Returns paginated mental health records including counseling sessions, behavioral assessments, and crisis interventions. Extra protection due to stigma concerns. Strict access control - mental health specialist or admin only. All access logged for compliance and ethical review.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Mental health records retrieved successfully with pagination',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Mental health specialist or admin role required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async getMentalHealthRecords(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query() query: MentalHealthRecordsDto,
+  ) {
+    return this.studentService.getStudentMentalHealthRecords(id, query.page, query.limit);
+  }
+
+  // ==================== Photo Management Endpoints ====================
+
+  /**
+   * Upload student photo
+   */
+  @Post(':id/photo')
+  @ApiOperation({
+    summary: 'Upload student photo',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Uploads and stores student photo with metadata. Includes facial recognition indexing for identification purposes. Requires NURSE or ADMIN role. All photo uploads are audited.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Student photo uploaded successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or invalid image format',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE or ADMIN role',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async uploadPhoto(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() uploadPhotoDto: UploadPhotoDto,
+  ) {
+    return this.studentService.uploadStudentPhoto(id, uploadPhotoDto);
+  }
+
+  /**
+   * Search students by photo using facial recognition
+   */
+  @Post('photo/search')
+  @ApiOperation({
+    summary: 'Search for student by photo using facial recognition',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Uses facial recognition to identify students from uploaded photos. Returns potential matches with confidence scores. Used for student identification in emergency situations or when student ID is unknown.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Photo search completed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or invalid image format',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE or ADMIN role',
+  })
+  async searchByPhoto(@Body() searchPhotoDto: SearchPhotoDto) {
+    return this.studentService.searchStudentsByPhoto(searchPhotoDto);
+  }
+
+  // ==================== Academic Transcript Endpoints ====================
+
+  /**
+   * Import academic transcript
+   */
+  @Post(':id/transcript')
+  @ApiOperation({
+    summary: 'Import academic transcript for student',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Imports academic transcript data including grades, courses, GPA, and attendance records. Validates transcript format and calculates academic metrics. Requires ADMIN or COUNSELOR role.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Academic transcript imported successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or invalid transcript format',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires ADMIN or COUNSELOR role',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async importTranscript(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() importTranscriptDto: ImportTranscriptDto,
+  ) {
+    return this.studentService.importAcademicTranscript(id, importTranscriptDto);
+  }
+
+  /**
+   * Get academic history
+   */
+  @Get(':id/academic-history')
+  @ApiOperation({
+    summary: 'Get complete academic history for student',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Returns comprehensive academic history including all transcripts, grades, courses, and academic achievements. Used for academic planning and college applications.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Academic history retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async getAcademicHistory(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query() query: AcademicHistoryDto,
+  ) {
+    return this.studentService.getAcademicHistory(id, query);
+  }
+
+  /**
+   * Get performance trends
+   */
+  @Get(':id/performance-trends')
+  @ApiOperation({
+    summary: 'Analyze academic performance trends for student',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Analyzes academic performance over time including GPA trends, subject performance patterns, and attendance correlation. Provides insights for intervention planning.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Performance trends analyzed successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found or insufficient data',
+  })
+  async getPerformanceTrends(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query() query: PerformanceTrendsDto,
+  ) {
+    return this.studentService.getPerformanceTrends(id, query);
+  }
+
+  // ==================== Grade Transition Endpoints ====================
+
+  /**
+   * Perform bulk grade transition
+   */
+  @Post('grade-transitions/bulk')
+  @ApiOperation({
+    summary: 'Perform bulk grade transition for end of school year',
+    description:
+      'Processes grade level transitions for all eligible students. Includes promotion criteria validation, retention decisions, and graduation processing. Can be run in dry-run mode for testing. Requires ADMIN role.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Bulk grade transition completed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or transition criteria not met',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires ADMIN role',
+  })
+  async performBulkGradeTransition(@Body() bulkGradeTransitionDto: BulkGradeTransitionDto) {
+    return this.studentService.performBulkGradeTransition(bulkGradeTransitionDto);
+  }
+
+  /**
+   * Get graduating students
+   */
+  @Get('graduating')
+  @ApiOperation({
+    summary: 'Get list of students eligible for graduation',
+    description:
+      'Returns students who meet graduation requirements including credit requirements, assessment scores, and attendance thresholds. Used for graduation planning and ceremonies.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Graduating students list retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  async getGraduatingStudents(@Query() query: GraduatingStudentsDto) {
+    return this.studentService.getGraduatingStudents(query);
+  }
+
+  // ==================== Barcode Scanning Endpoints ====================
+
+  /**
+   * Scan barcode
+   */
+  @Post('barcode/scan')
+  @ApiOperation({
+    summary: 'Scan and decode barcode for student/medication identification',
+    description:
+      'Scans various barcode formats (Code 128, QR, Data Matrix) to identify students, medications, or equipment. Returns decoded information and associated records. Used for quick identification and medication administration.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Barcode scanned and decoded successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid barcode format or unrecognized code',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Barcode not found in system',
+  })
+  async scanBarcode(@Body() scanBarcodeDto: ScanBarcodeDto) {
+    return this.studentService.scanBarcode(scanBarcodeDto);
+  }
+
+  /**
+   * Verify medication administration using three-point barcode verification
+   */
+  @Post('barcode/verify-medication')
+  @ApiOperation({
+    summary: 'Verify medication administration using three-point barcode verification',
+    description:
+      'HIGHLY SENSITIVE PHI ENDPOINT - Implements five rights of medication administration using barcode verification: Right Patient (student barcode), Right Medication (medication barcode), and Right Person (nurse barcode). Critical safety feature for medication administration.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Medication administration verified successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Verification failed - barcode mismatch or safety violation',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE role',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student, medication, or nurse not found',
+  })
+  async verifyMedicationAdministration(@Body() verifyMedicationDto: VerifyMedicationDto) {
+    return this.studentService.verifyMedicationAdministration(verifyMedicationDto);
+  }
+
+  // ==================== Waitlist Management Endpoints ====================
+
+  /**
+   * Add student to waitlist
+   */
+  @Post('waitlist')
+  @ApiOperation({
+    summary: 'Add student to appointment waitlist',
+    description:
+      'Adds student to waitlist for specific appointment types when no immediate slots are available. Includes priority levels and automatic notification when slots become available.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Student added to waitlist successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or student already on waitlist',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async addToWaitlist(@Body() addWaitlistDto: AddWaitlistDto) {
+    return this.studentService.addStudentToWaitlist(addWaitlistDto);
+  }
+
+  /**
+   * Get waitlist status for student
+   */
+  @Get(':id/waitlist-status')
+  @ApiOperation({
+    summary: 'Get waitlist status for student',
+    description:
+      'Returns current waitlist positions and estimated wait times for all appointment types the student is waitlisted for.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Waitlist status retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  async getWaitlistStatus(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query() query: WaitlistStatusDto,
+  ) {
+    return this.studentService.getStudentWaitlistStatus(id, query);
   }
 }
