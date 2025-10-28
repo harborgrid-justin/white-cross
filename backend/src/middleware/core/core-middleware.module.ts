@@ -9,10 +9,6 @@
  */
 
 import { Module, Global } from '@nestjs/common';
-import { PermissionsGuard } from './guards/permissions.guard';
-import { RbacGuard } from './guards/rbac.guard';
-import { HealthcareValidationPipe } from './pipes/validation.pipe';
-import { SessionMiddleware } from './middleware/session.middleware';
 
 /**
  * Core Middleware Module
@@ -49,27 +45,7 @@ import { SessionMiddleware } from './middleware/session.middleware';
  */
 @Global()
 @Module({
-  providers: [
-    // Guards
-    PermissionsGuard,
-    RbacGuard,
-
-    // Pipes
-    HealthcareValidationPipe,
-
-    // Middleware
-    SessionMiddleware,
-  ],
-  exports: [
-    // Export guards for use in controllers
-    PermissionsGuard,
-    RbacGuard,
-
-    // Export pipes for use in controllers
-    HealthcareValidationPipe,
-
-    // Export middleware for manual configuration
-    SessionMiddleware,
-  ],
+  providers: [],
+  exports: [],
 })
 export class CoreMiddlewareModule {}

@@ -3,7 +3,8 @@
  * White Cross School Health Platform - NestJS Backend
  */
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthRecordModule } from './health-record/health-record.module';
@@ -60,6 +61,23 @@ import { MedicationModule } from './medication/medication.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
+    }),
+
+    // TypeORM configuration
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST', 'localhost'),
+        port: configService.get<number>('DB_PORT', 5432),
+        username: configService.get('DB_USERNAME', 'postgres'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME', 'whitecross'),
+        synchronize: false,
+        logging: configService.get('NODE_ENV') === 'development',
+        entities: [], // Entities are registered in their respective modules
+      }),
+      inject: [ConfigService],
     }),
 
     // Database connection (Sequelize)

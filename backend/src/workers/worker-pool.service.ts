@@ -12,7 +12,7 @@
  * - Graceful shutdown with task cleanup
  */
 
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
@@ -23,7 +23,6 @@ import type {
   WorkerPoolStats,
 } from './worker-pool.interfaces';
 
-@Injectable()
 export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WorkerPoolService.name);
   private workers: WorkerInfo[] = [];

@@ -114,20 +114,19 @@ export class CacheService implements OnModuleDestroy {
 
   /**
    * Creates a new CacheService instance
-   * @param config - Optional configuration options
    */
-  constructor(config: CacheConfig = {}) {
+  constructor() {
     this.cache = new Map();
     this.tagIndex = new Map();
     this.stats = { hits: 0, misses: 0, evictions: 0 };
 
     // Apply default configuration
     this.config = {
-      maxSize: config.maxSize ?? parseInt(process.env.CACHE_MAX_SIZE || '1000', 10),
-      defaultTTL: config.defaultTTL ?? parseInt(process.env.CACHE_DEFAULT_TTL || '300000', 10),
-      autoCleanup: config.autoCleanup ?? true,
-      cleanupInterval: config.cleanupInterval ?? 60000,
-      enableLogging: config.enableLogging ?? process.env.CACHE_LOGGING === 'true',
+      maxSize: parseInt(process.env.CACHE_MAX_SIZE || '1000', 10),
+      defaultTTL: parseInt(process.env.CACHE_DEFAULT_TTL || '300000', 10),
+      autoCleanup: true,
+      cleanupInterval: 60000,
+      enableLogging: process.env.CACHE_LOGGING === 'true',
     };
 
     // Start automatic cleanup if enabled

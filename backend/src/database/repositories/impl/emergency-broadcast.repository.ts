@@ -2,7 +2,7 @@
  * Emergency Broadcast Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -10,6 +10,7 @@ import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logg
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { EmergencyBroadcast } from '../../models/emergency-broadcast.model';
 
 export interface EmergencyBroadcastAttributes {
   id: string;
@@ -26,11 +27,11 @@ export interface UpdateEmergencyBroadcastDTO {
 }
 
 @Injectable()
-export class EmergencyBroadcastRepository extends BaseRepository<any, EmergencyBroadcastAttributes, CreateEmergencyBroadcastDTO> {
+export class EmergencyBroadcastRepository extends BaseRepository<EmergencyBroadcast, EmergencyBroadcastAttributes, CreateEmergencyBroadcastDTO> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @InjectModel(EmergencyBroadcast) model: typeof EmergencyBroadcast,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager
   ) {
     super(model, auditLogger, cacheManager, 'EmergencyBroadcast');
   }

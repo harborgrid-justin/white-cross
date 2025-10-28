@@ -22,6 +22,8 @@ import { SequelizeUnitOfWorkService } from './uow/sequelize-unit-of-work.service
 
 // Models
 import { AuditLog } from './models/audit-log.model';
+import { EmergencyBroadcast } from './models/emergency-broadcast.model';
+import { Student } from './models/student.model';
 
 // Sample Repositories (add more as they are migrated)
 import { StudentRepository } from './repositories/impl/student.repository';
@@ -52,8 +54,9 @@ import { StudentRepository } from './repositories/impl/student.repository';
     SequelizeModule.forFeature([
       // Register Sequelize models here as they are migrated
       AuditLog,
+      EmergencyBroadcast,
+      Student,
       // Example:
-      // Student,
       // HealthRecord,
       // Allergy,
       // Medication,

@@ -3,7 +3,7 @@
  * Injectable NestJS repository for student data access
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -23,8 +23,8 @@ export class StudentRepository
 {
   constructor(
     @InjectModel(Student) model: typeof Student,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager
   ) {
     super(model, auditLogger, cacheManager, 'Student');
   }
