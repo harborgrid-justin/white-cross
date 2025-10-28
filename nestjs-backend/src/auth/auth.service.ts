@@ -143,6 +143,31 @@ export class AuthService {
   }
 
   /**
+   * Verify JWT access token and return user
+   */
+  async verifyToken(token: string): Promise<any> {
+    try {
+      const payload = this.jwtService.verify<JwtPayload>(token, {
+        secret: this.configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
+      });
+
+      if (payload.type !== 'access') {
+        throw new UnauthorizedException('Invalid token type');
+      }
+
+      const user = await this.verifyUser(payload.sub);
+
+      if (!user.isActive) {
+        throw new UnauthorizedException('User account is inactive');
+      }
+
+      return user.toSafeObject();
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+  }
+
+  /**
    * Refresh access token using refresh token
    */
   async refreshToken(refreshToken: string): Promise<AuthResponseDto> {

@@ -21,6 +21,7 @@ import { ComplianceModule } from './compliance/compliance.module';
 import { ClinicalModule } from './clinical/clinical.module';
 import { IncidentReportModule } from './incident-report/incident-report.module';
 import { IntegrationModule } from './integration/integration.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 import { SecurityModule } from './security/security.module';
 import { ReportModule } from './report/report.module';
 import { MobileModule } from './mobile/mobile.module';
@@ -42,6 +43,13 @@ import { HealthMetricsModule } from './health-metrics/health-metrics.module';
 import { MedicationInteractionModule } from './medication-interaction/medication-interaction.module';
 import { HealthRiskAssessmentModule } from './health-risk-assessment/health-risk-assessment.module';
 import { EmergencyContactModule } from './emergency-contact/emergency-contact.module';
+import { EmailModule } from './infrastructure/email/email.module';
+import { SmsModule } from './infrastructure/sms/sms.module';
+import { MonitoringModule } from './infrastructure/monitoring/monitoring.module';
+import { JobsModule } from './infrastructure/jobs/jobs.module';
+import { CoreMiddlewareModule } from './middleware/core/core-middleware.module';
+import { WorkersModule } from './workers/workers.module';
+import { RoutesModule } from './routes/routes.module';
 
 @Module({
   imports: [
@@ -54,11 +62,24 @@ import { EmergencyContactModule } from './emergency-contact/emergency-contact.mo
     // Database connection (Sequelize)
     DatabaseModule,
 
+    // Core middleware (RBAC, validation, session management)
+    CoreMiddlewareModule,
+
+    // API Routes (v1, v2, etc.)
+    RoutesModule,
+
     // Authentication module
     AuthModule,
 
     // Security module (IP restrictions, threat detection, incidents)
     SecurityModule,
+
+    // Infrastructure modules
+    MonitoringModule,
+    EmailModule,
+    SmsModule,
+    JobsModule,
+    WorkersModule,
 
     // Core modules
     UserModule,
@@ -95,6 +116,9 @@ import { EmergencyContactModule } from './emergency-contact/emergency-contact.mo
     IncidentReportModule,
 
     IntegrationModule,
+
+    // Integration clients module (external API integrations with circuit breaker and rate limiting)
+    IntegrationsModule,
 
     ReportModule,
 
