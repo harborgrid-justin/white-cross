@@ -27,6 +27,7 @@ import { Student } from './models/student.model';
 
 // Sample Repositories (add more as they are migrated)
 import { StudentRepository } from './repositories/impl/student.repository';
+import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broadcast.repository';
 
 /**
  * Database Module
@@ -80,7 +81,8 @@ import { StudentRepository } from './repositories/impl/student.repository';
 
     // Repository Implementations
     // Add repositories as they are migrated following this pattern:
-    // StudentRepository,
+    StudentRepository,
+    EmergencyBroadcastRepository,
     // HealthRecordRepository,
     // AllergyRepository,
     // MedicationRepository,
@@ -93,7 +95,8 @@ import { StudentRepository } from './repositories/impl/student.repository';
     'IUnitOfWork',
 
     // Export repositories as they are added
-    // StudentRepository,
+    StudentRepository,
+    EmergencyBroadcastRepository,
     // HealthRecordRepository,
     // etc.
   ]
