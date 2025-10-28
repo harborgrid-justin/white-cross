@@ -1,33 +1,21 @@
 /**
- * LOC: C74F05CAF0
- * WC-GEN-301 | passwordUtils.ts - General utility functions and operations
+ * @fileoverview Password Utilities
+ * @module shared/utilities/password.utils
+ * @description Shared password hashing and verification functions for healthcare applications
  *
- * UPSTREAM (imports from):
- *   - logger.ts (shared/logging/logger.ts)
+ * Features:
+ * - Bcrypt password hashing with configurable salt rounds
+ * - Secure password comparison
+ * - Password complexity validation
+ * - Secure random password generation
+ * - HIPAA-compliant password requirements (12+ characters)
  *
- * DOWNSTREAM (imported by):
- *   - None (not imported)
+ * LOC: PASSWORD_UTILS_NESTJS
+ * UPSTREAM: bcryptjs
+ * DOWNSTREAM: Authentication services, user management
  */
 
-/**
- * WC-GEN-301 | passwordUtils.ts - General utility functions and operations
- * Purpose: general utility functions and operations
- * Upstream: ../logging/logger | Dependencies: bcryptjs, ../logging/logger
- * Downstream: Routes, services, other modules | Called by: Application components
- * Related: Similar modules, tests, documentation
- * Exports: constants, default export | Key Services: Core functionality
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Module loading → Function execution → Response handling
- * LLM Context: general utility functions and operations, part of backend architecture
- */
-
-/**
- * Password Utilities
- * Shared password hashing and verification functions
- */
-
-import * as bcrypt from 'bcryptjs';
-import { logger } from '../logging/logger';
+import * as bcrypt from 'bcrypt';
 
 /**
  * Password configuration constants
@@ -45,7 +33,7 @@ export const PASSWORD_CONFIG = {
  * @returns Promise resolving to hashed password
  */
 export const hashPassword = async (
-  password: string, 
+  password: string,
   saltRounds: number = PASSWORD_CONFIG.SALT_ROUNDS
 ): Promise<string> => {
   try {
@@ -64,7 +52,7 @@ export const hashPassword = async (
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     return hashedPassword;
   } catch (error) {
-    logger.error('Error hashing password:', error);
+    console.error('Error hashing password:', error);
     throw error;
   }
 };
@@ -76,7 +64,7 @@ export const hashPassword = async (
  * @returns Promise resolving to boolean indicating if passwords match
  */
 export const comparePassword = async (
-  candidatePassword: string, 
+  candidatePassword: string,
   hashedPassword: string
 ): Promise<boolean> => {
   try {
@@ -91,7 +79,7 @@ export const comparePassword = async (
     const isMatch = await bcrypt.compare(candidatePassword, hashedPassword);
     return isMatch;
   } catch (error) {
-    logger.error('Error comparing password:', error);
+    console.error('Error comparing password:', error);
     throw error;
   }
 };

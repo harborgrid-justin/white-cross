@@ -1,0 +1,28 @@
+WHITE CROSS HEALTHCARE ALERT
+================================================================================
+
+SEVERITY: {{uppercase severity}}
+CATEGORY: {{category}}
+ALERT ID: {{alertId}}
+{{#if timestamp}}
+TIME: {{formatDate timestamp}}
+{{/if}}
+
+{{title}}
+--------------------------------------------------------------------------------
+
+{{message}}
+
+{{#if additionalInfo}}
+
+ADDITIONAL INFORMATION:
+{{#each additionalInfo}}
+- {{@key}}: {{this}}
+{{/each}}
+{{/if}}
+
+================================================================================
+This is an automated message from White Cross Healthcare Platform.
+Do not reply to this email.
+
+(c) 2025 White Cross Healthcare. All rights reserved.

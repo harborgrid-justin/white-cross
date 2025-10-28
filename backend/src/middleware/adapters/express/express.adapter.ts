@@ -31,11 +31,12 @@
  * @since 2025-10-21
  */
 
+import { Injectable } from '@nestjs/common';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { 
-  IMiddleware, 
-  IRequest, 
-  IResponse, 
+import {
+  IMiddleware,
+  IRequest,
+  IResponse,
   INextFunction,
   MiddlewareContext,
   HealthcareRequest,
@@ -68,7 +69,7 @@ export class ExpressRequestWrapper implements IRequest {
     this.query = expressRequest.query;
     this.params = expressRequest.params;
     this.body = expressRequest.body;
-    this.ip = expressRequest.ip || expressRequest.connection.remoteAddress || 'unknown';
+    this.ip = expressRequest.ip || expressRequest.connection?.remoteAddress || 'unknown';
     this.userAgent = expressRequest.get('User-Agent');
     this.correlationId = expressRequest.get('X-Correlation-ID');
     this.sessionId = (expressRequest as any).sessionID;
@@ -184,18 +185,21 @@ export class ExpressNextWrapper implements INextFunction {
  * Express Middleware Adapter - Converts framework-agnostic middleware to Express components
  *
  * @class ExpressMiddlewareAdapter
- * @description Static utility class that adapts framework-agnostic middleware to Express.js
+ * @description Injectable service that adapts framework-agnostic middleware to Express.js
  * middleware functions (RequestHandler), error handlers, and provides healthcare-specific
  * request/response enhancements.
  *
  * @example
+ * // Inject the adapter in your NestJS service or controller
+ * constructor(private expressAdapter: ExpressMiddlewareAdapter) {}
+ *
  * // Convert middleware to Express RequestHandler
- * const expressMiddleware = ExpressMiddlewareAdapter.adapt(authenticationMiddleware);
+ * const expressMiddleware = this.expressAdapter.adapt(authenticationMiddleware);
  * app.use(expressMiddleware);
  *
  * @example
  * // Chain multiple middleware
- * const middlewares = ExpressMiddlewareAdapter.chain(
+ * const middlewares = this.expressAdapter.chain(
  *   corsMiddleware,
  *   authMiddleware,
  *   rbacMiddleware
@@ -204,19 +208,18 @@ export class ExpressNextWrapper implements INextFunction {
  *
  * @example
  * // Create error handler
- * const errorHandler = ExpressMiddlewareAdapter.createErrorHandler(
+ * const errorHandler = this.expressAdapter.createErrorHandler(
  *   (error, req, res, context) => {
  *     res.setStatus(500).json({ error: error.message });
  *   }
  * );
  * app.use(errorHandler);
  */
+@Injectable()
 export class ExpressMiddlewareAdapter {
   /**
    * Adapts framework-agnostic middleware to Express RequestHandler
    *
-   * @static
-   * @function adapt
    * @param {IMiddleware} middleware - Framework-agnostic middleware to adapt
    * @returns {RequestHandler} Express middleware function
    *
@@ -226,24 +229,24 @@ export class ExpressMiddlewareAdapter {
    *
    * @example
    * // Use with authentication middleware
-   * const authMiddleware = ExpressMiddlewareAdapter.adapt(jwtAuthMiddleware);
+   * const authMiddleware = this.expressAdapter.adapt(jwtAuthMiddleware);
    * app.use('/api', authMiddleware);
    *
    * @example
    * // Use with logging middleware
-   * const logger = ExpressMiddlewareAdapter.adapt(loggingMiddleware);
+   * const logger = this.expressAdapter.adapt(loggingMiddleware);
    * app.use(logger);
    *
    * @example
    * // Apply to specific routes
    * app.get('/protected',
-   *   ExpressMiddlewareAdapter.adapt(authMiddleware),
+   *   this.expressAdapter.adapt(authMiddleware),
    *   (req, res) => {
    *     res.json({ message: 'Protected resource' });
    *   }
    * );
    */
-  static adapt(middleware: IMiddleware): RequestHandler {
+  adapt(middleware: IMiddleware): RequestHandler {
     return (req: Request, res: Response, next: NextFunction): void => {
       const wrappedRequest = new ExpressRequestWrapper(req);
       const wrappedResponse = new ExpressResponseWrapper(res);
@@ -266,25 +269,25 @@ export class ExpressMiddlewareAdapter {
   /**
    * Creates Express middleware from healthcare-specific middleware configuration
    */
-  static createHealthcareMiddleware(
+  createHealthcareMiddleware(
     middlewareFactory: (config: any) => IMiddleware,
     config: any = {}
   ): RequestHandler {
     const middleware = middlewareFactory(config);
-    return ExpressMiddlewareAdapter.adapt(middleware);
+    return this.adapt(middleware);
   }
 
   /**
    * Chains multiple middleware adapters together
    */
-  static chain(...middlewares: IMiddleware[]): RequestHandler[] {
-    return middlewares.map(middleware => ExpressMiddlewareAdapter.adapt(middleware));
+  chain(...middlewares: IMiddleware[]): RequestHandler[] {
+    return middlewares.map(middleware => this.adapt(middleware));
   }
 
   /**
    * Creates error handling middleware for Express
    */
-  static createErrorHandler(
+  createErrorHandler(
     errorHandler: (error: Error, request: IRequest, response: IResponse, context: MiddlewareContext) => void
   ): (err: Error, req: Request, res: Response, next: NextFunction) => void {
     return (err: Error, req: Request, res: Response, next: NextFunction): void => {
@@ -311,11 +314,11 @@ export class ExpressMiddlewareAdapter {
   /**
    * Creates healthcare-specific request enhancement middleware
    */
-  static createHealthcareEnhancer(): RequestHandler {
+  createHealthcareEnhancer(): RequestHandler {
     return (req: Request, res: Response, next: NextFunction): void => {
       // Add healthcare-specific properties to request
       const healthcareReq = req as HealthcareRequest;
-      
+
       // Initialize healthcare context
       healthcareReq.healthcareContext = {
         patientId: req.params.patientId || req.body?.patientId,
@@ -329,31 +332,31 @@ export class ExpressMiddlewareAdapter {
 
       // Add healthcare-specific response methods
       const healthcareRes = res as HealthcareResponse;
-      
-      healthcareRes.sendHipaaCompliant = function(data: any, options: { 
-        logAccess?: boolean; 
-        patientId?: string; 
-        dataType?: string 
+
+      healthcareRes.sendHipaaCompliant = function(data: any, options: {
+        logAccess?: boolean;
+        patientId?: string;
+        dataType?: string
       } = {}) {
         if (options.logAccess && options.patientId) {
           // Log PHI access for HIPAA compliance
           healthcareReq.healthcareContext.phiAccess = true;
         }
-        
+
         // Remove sensitive fields in non-development environments
         if (process.env.NODE_ENV !== 'development') {
           data = this.sanitizeResponse(data);
         }
-        
+
         return this.json(data);
       };
 
       healthcareRes.sanitizeResponse = function(data: any): any {
         if (!data) return data;
-        
+
         // Remove common sensitive fields
         const sensitiveFields = ['ssn', 'socialSecurityNumber', 'password', 'token'];
-        
+
         if (typeof data === 'object') {
           const sanitized = { ...data };
           sensitiveFields.forEach(field => {
@@ -363,7 +366,7 @@ export class ExpressMiddlewareAdapter {
           });
           return sanitized;
         }
-        
+
         return data;
       };
 
@@ -374,16 +377,18 @@ export class ExpressMiddlewareAdapter {
 
 /**
  * Express-specific middleware utilities
+ * Injectable service for Express utility functions
  */
-export const ExpressMiddlewareUtils = {
+@Injectable()
+export class ExpressMiddlewareUtils {
   /**
    * Extracts correlation ID from Express request
    */
   getCorrelationId(req: Request): string {
-    return req.get('X-Correlation-ID') || 
-           req.get('X-Request-ID') || 
+    return req.get('X-Correlation-ID') ||
+           req.get('X-Request-ID') ||
            `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  },
+  }
 
   /**
    * Sets HIPAA-compliant security headers for Express responses
@@ -395,7 +400,7 @@ export const ExpressMiddlewareUtils = {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-  },
+  }
 
   /**
    * Extracts user context from Express request
@@ -410,6 +415,4 @@ export const ExpressMiddlewareUtils = {
       sessionId: (req as any).sessionID
     };
   }
-};
-
-export default ExpressMiddlewareAdapter;
+}

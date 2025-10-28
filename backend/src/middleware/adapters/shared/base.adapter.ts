@@ -1,16 +1,17 @@
 /**
  * Shared Base Adapter for Healthcare Middleware System
  * Common utilities and base classes for framework adapters
- * 
+ *
  * @fileoverview Shared adapter utilities for healthcare middleware with HIPAA compliance
  * @version 1.0.0
  * @author Healthcare Platform Team
  */
 
-import { 
-  IMiddleware, 
-  IRequest, 
-  IResponse, 
+import { Injectable } from '@nestjs/common';
+import {
+  IMiddleware,
+  IRequest,
+  IResponse,
   INextFunction,
   MiddlewareContext,
   HealthcareUser,
@@ -23,7 +24,9 @@ import {
 
 /**
  * Abstract base adapter class for framework-agnostic middleware
+ * Provides common functionality for all framework adapters in NestJS context
  */
+@Injectable()
 export abstract class BaseFrameworkAdapter implements IFrameworkAdapter {
   protected frameworkName: string;
 
@@ -65,12 +68,14 @@ export abstract class BaseFrameworkAdapter implements IFrameworkAdapter {
 
 /**
  * Common healthcare middleware utilities
+ * Injectable service for healthcare-specific middleware operations
  */
+@Injectable()
 export class HealthcareMiddlewareUtils {
   /**
    * Validates healthcare user context
    */
-  static validateHealthcareUser(user: any): user is HealthcareUser {
+  validateHealthcareUser(user: any): user is HealthcareUser {
     return !!(
       user &&
       typeof user.userId === 'string' &&
@@ -82,7 +87,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Checks if user has required permission
    */
-  static hasPermission(user: HealthcareUser, requiredPermission: Permission): boolean {
+  hasPermission(user: HealthcareUser, requiredPermission: Permission): boolean {
     if (!user.permissions) {
       return false;
     }
@@ -92,7 +97,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Checks if user has any of the required permissions
    */
-  static hasAnyPermission(user: HealthcareUser, requiredPermissions: Permission[]): boolean {
+  hasAnyPermission(user: HealthcareUser, requiredPermissions: Permission[]): boolean {
     if (!user.permissions) {
       return false;
     }
@@ -102,7 +107,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Gets role hierarchy level (higher number = more privileged)
    */
-  static getRoleLevel(role: UserRole): number {
+  getRoleLevel(role: UserRole): number {
     const levels = {
       [UserRole.STUDENT]: 1,
       [UserRole.SCHOOL_NURSE]: 2,
@@ -115,14 +120,14 @@ export class HealthcareMiddlewareUtils {
   /**
    * Checks if user role has sufficient privilege level
    */
-  static hasRoleLevel(user: HealthcareUser, minimumRole: UserRole): boolean {
+  hasRoleLevel(user: HealthcareUser, minimumRole: UserRole): boolean {
     return this.getRoleLevel(user.role) >= this.getRoleLevel(minimumRole);
   }
 
   /**
    * Sanitizes healthcare context for logging
    */
-  static sanitizeHealthcareContext(context: HealthcareContext): Partial<HealthcareContext> {
+  sanitizeHealthcareContext(context: HealthcareContext): Partial<HealthcareContext> {
     return {
       facilityId: context.facilityId,
       accessType: context.accessType,
@@ -136,7 +141,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Detects if request contains PHI (Protected Health Information)
    */
-  static detectPHI(data: any): boolean {
+  detectPHI(data: any): boolean {
     if (!data || typeof data !== 'object') {
       return false;
     }
@@ -149,9 +154,9 @@ export class HealthcareMiddlewareUtils {
     ];
 
     const dataString = JSON.stringify(data).toLowerCase();
-    
+
     // Check for PHI field names
-    const hasPHIFields = phiFields.some(field => 
+    const hasPHIFields = phiFields.some(field =>
       dataString.includes(field.toLowerCase())
     );
 
@@ -160,8 +165,8 @@ export class HealthcareMiddlewareUtils {
     const mrnPattern = /mrn[:\s]*[a-z0-9]+/i;
     const dobPattern = /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/;
 
-    const hasPatterns = ssnPattern.test(dataString) || 
-                      mrnPattern.test(dataString) || 
+    const hasPatterns = ssnPattern.test(dataString) ||
+                      mrnPattern.test(dataString) ||
                       dobPattern.test(dataString);
 
     return hasPHIFields || hasPatterns;
@@ -170,8 +175,8 @@ export class HealthcareMiddlewareUtils {
   /**
    * Creates emergency access context
    */
-  static createEmergencyContext(
-    providerId: string, 
+  createEmergencyContext(
+    providerId: string,
     reason: string,
     patientId?: string
   ): Partial<HealthcareContext> {
@@ -188,7 +193,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Creates break glass access context
    */
-  static createBreakGlassContext(
+  createBreakGlassContext(
     providerId: string,
     justification: string,
     patientId: string,
@@ -213,7 +218,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Validates facility access for user
    */
-  static canAccessFacility(user: HealthcareUser, facilityId: string): boolean {
+  canAccessFacility(user: HealthcareUser, facilityId: string): boolean {
     // System admins can access any facility
     if (user.role === UserRole.SYSTEM_ADMIN) {
       return true;
@@ -226,7 +231,7 @@ export class HealthcareMiddlewareUtils {
   /**
    * Gets allowed actions for user role
    */
-  static getAllowedActions(role: UserRole): Permission[] {
+  getAllowedActions(role: UserRole): Permission[] {
     // Base permissions for each role
     const studentPermissions = [
       Permission.VIEW_OWN_HEALTH_RECORDS,
@@ -271,12 +276,14 @@ export class HealthcareMiddlewareUtils {
 
 /**
  * Common response utilities for all frameworks
+ * Injectable service for response formatting and sanitization
  */
+@Injectable()
 export class ResponseUtils {
   /**
    * Creates standardized error response
    */
-  static createErrorResponse(
+  createErrorResponse(
     error: Error,
     statusCode: number = 500,
     includeStack: boolean = false
@@ -298,7 +305,7 @@ export class ResponseUtils {
   /**
    * Creates standardized success response
    */
-  static createSuccessResponse(
+  createSuccessResponse(
     data: any,
     message: string = 'Success',
     statusCode: number = 200
@@ -315,7 +322,7 @@ export class ResponseUtils {
   /**
    * Sanitizes response data for HIPAA compliance
    */
-  static sanitizeForHIPAA(data: any): any {
+  sanitizeForHIPAA(data: any): any {
     if (!data || typeof data !== 'object') {
       return data;
     }
@@ -330,7 +337,7 @@ export class ResponseUtils {
     }
 
     const sanitized = { ...data };
-    
+
     sensitiveFields.forEach(field => {
       if (sanitized[field]) {
         delete sanitized[field];
@@ -350,7 +357,7 @@ export class ResponseUtils {
   /**
    * Adds correlation ID to response
    */
-  static addCorrelationId(response: any, correlationId: string): any {
+  addCorrelationId(response: any, correlationId: string): any {
     if (typeof response === 'object' && response !== null) {
       response.correlationId = correlationId;
     }
@@ -360,17 +367,19 @@ export class ResponseUtils {
 
 /**
  * Request validation utilities
+ * Injectable service for request validation
  */
+@Injectable()
 export class RequestValidationUtils {
   /**
    * Validates request headers for required healthcare headers
    */
-  static validateHealthcareHeaders(headers: Record<string, any>): {
+  validateHealthcareHeaders(headers: Record<string, any>): {
     valid: boolean;
     missing: string[];
   } {
     const requiredHeaders = ['x-facility-id'];
-    const missing = requiredHeaders.filter(header => 
+    const missing = requiredHeaders.filter(header =>
       !headers[header] && !headers[header.toLowerCase()]
     );
 
@@ -383,12 +392,12 @@ export class RequestValidationUtils {
   /**
    * Validates request size for security
    */
-  static validateRequestSize(
-    body: any, 
+  validateRequestSize(
+    body: any,
     maxSize: number = 10 * 1024 * 1024 // 10MB default
   ): boolean {
     if (!body) return true;
-    
+
     const size = JSON.stringify(body).length;
     return size <= maxSize;
   }
@@ -396,7 +405,7 @@ export class RequestValidationUtils {
   /**
    * Validates file upload for healthcare compliance
    */
-  static validateFileUpload(
+  validateFileUpload(
     file: any,
     allowedTypes: string[] = ['pdf', 'jpg', 'png', 'doc', 'docx'],
     maxSize: number = 5 * 1024 * 1024 // 5MB default
@@ -417,10 +426,3 @@ export class RequestValidationUtils {
     return { valid: true };
   }
 }
-
-export default {
-  BaseFrameworkAdapter,
-  HealthcareMiddlewareUtils,
-  ResponseUtils,
-  RequestValidationUtils
-};

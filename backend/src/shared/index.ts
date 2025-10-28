@@ -1,138 +1,170 @@
 /**
- * LOC: 55D129475C
- * WC-IDX-SHR-068 | index.ts - Shared Utilities Barrel Export
+ * @fileoverview Shared Module - Central Export Point
+ * @module shared
+ * @description Central export point for all shared utilities, services, and types
  *
- * UPSTREAM (imports from):
- *   - None (leaf node)
- *
- * DOWNSTREAM (imported by):
- *   - User.ts (database/models/core/User.ts)
- *   - 03-users-and-assignments.ts (database/seeders/03-users-and-assignments.ts)
- *   - UserService.ts (database/services/UserService.ts)
- *   - administration.ts (routes/administration.ts)
- *   - audit.ts (routes/audit.ts)
- *   - ... and 4 more
- */
-
-/**
- * WC-IDX-SHR-068 | index.ts - Shared Utilities Barrel Export
- * Purpose: Central export point for all shared utilities, security, auth, validation, healthcare functions
- * Upstream: ./utils, ./security, ./auth, ./validation, ./database, ./healthcare | Dependencies: shared module exports
- * Downstream: ../routes/*.ts, ../services/*.ts, ../middleware/*.ts | Called by: application components
- * Related: ../types/index.ts, ../config/*.ts, ../validators/*.ts
- * Exports: Utility functions, security helpers, auth utilities, validation schemas, healthcare utilities | Key Services: Shared functionality aggregation
- * Last Updated: 2025-10-18 | File Type: .ts | Pattern: Barrel Export
- * Critical Path: Import request → Shared utility selection → Function execution → Code reusability
- * LLM Context: Healthcare platform shared utilities with security, authentication, validation, database helpers, medical functions, communication tools
- */
-
-/**
- * Shared utilities and functions for White Cross backend
- * 
- * This module exports all shared functionality that can be used
- * across different parts of the application to reduce code duplication
- * and improve maintainability.
- * 
- * REORGANIZED FOR ENTERPRISE SOA COMPLIANCE:
- * - Consolidated utilities with proper naming conventions
- * - Removed duplicates between shared and middleware
- * - Applied enterprise best practices
- * - Separated business logic from infrastructure concerns
+ * This module provides access to:
+ * - NestJS modules (LoggingModule, CacheModule, SharedModule)
+ * - Services (LoggerService, CacheService, AuthenticationService, ValidationService)
+ * - Pure utility functions (array, object, string, date, password, validation)
+ * - Security utilities (authentication, permissions, rate limiting, SQL sanitization)
+ * - Type utilities and guards
+ * - Domain-specific utilities (healthcare, communication, files, time, monitoring)
  */
 
 // ==========================================
-// ENTERPRISE UTILITIES (REORGANIZED)
+// MODULES
+// ==========================================
+export { SharedModule } from './shared.module';
+export { LoggingModule } from './logging/logging.module';
+export { CacheModule } from './cache/cache.module';
+
+// ==========================================
+// SERVICES
+// ==========================================
+export * from './logging/logger.service';
+export * from './cache/cache.service';
+export * from './security/authentication.service';
+export * from './security/validation.service';
+
+// ==========================================
+// UTILITIES (Pure Functions)
 // ==========================================
 
-// Consolidated utility functions with proper naming
-export {
-  UTILITY_CONSTANTS,
-  type UtilityResult,
-  type PaginationOptions as UtilityPaginationOptions,
-  hashPassword,
-  comparePassword,
-  validatePasswordComplexity,
-  generateSecurePassword,
-  PASSWORD_CONFIG
-} from './utilities';
+// Array utilities
+export * from './utilities/array.utils';
 
-// Enterprise security services (consolidated from auth + security)
-export {
-  AuthenticationService,
-  createAuthenticationService,
-  type UserProfile,
-  type TokenPayload,
-  type AuthenticationConfig,
-  type AuthenticationResult
-} from './security/authentication.service';
+// Object utilities
+export * from './utilities/object.utils';
 
+// String utilities
+export * from './utilities/string.utils';
+
+// Date utilities
+export * from './utilities/date.utils';
+
+// Password utilities
+export * from './utilities/password.utils';
+
+// Validation utilities
+export * from './utilities/validation.utils';
+
+// Response helpers
+export * from './utilities/responseHelpers';
+
+// Pagination utilities (commented out to avoid conflict with database/pagination)
+// export * from './utilities/pagination';
+
+// Payload helpers
+export * from './utilities/payloadHelpers';
+
+// Resilience utilities (retry, timeout)
+export * from './utilities/resilience';
+
+// ==========================================
+// SECURITY UTILITIES
+// ==========================================
+export * from './security';
+
+// ==========================================
+// PERMISSIONS
+// ==========================================
+// Explicitly re-export to avoid conflicts with security module
 export {
-  ValidationService,
-  createValidationService,
-  createHealthcareValidation,
-  createAdminValidation,
-  HEALTHCARE_PATTERNS,
-  VALIDATION_CONFIGS,
-  HEALTHCARE_VALIDATION_RULES,
-  type ValidationRule,
-  type ValidationError,
-  type ValidationResult as SecurityValidationResult,
-  type ValidationConfig
+  Permission,
+  requirePermission,
+  checkPermission,
+  hasAnyRole,
+  hasAllRoles,
+  requireRole,
+  getAllowedActions,
+  getAllowedResources,
+  isRole,
+  isResource,
+  isAction,
+} from './permissions';
+
+// ==========================================
+// TYPES
+// ==========================================
+// Export validation types from validation service to avoid conflicts
+export {
+  ValidationResult,
+  ValidationError
 } from './security/validation.service';
 
-// Other security utilities
-export * from './security/rate-limiting.service';
-export * from './security/permission.utils';
-export * from './security/headers';
-
-// SQL Sanitizer - selective export to avoid PaginationParams conflict
+// Export type guards and utilities
 export {
-  ALLOWED_SORT_FIELDS,
-  ALLOWED_SORT_ORDERS,
-  type SortOrder,
-  SqlInjectionError,
-  validateSortField,
-  validateSortOrder,
-  type PaginationParams as SqlSanitizerPaginationParams,
-  validatePagination,
-  buildSafeLikePattern
-} from './security/sql-sanitizer.service';
+  isValidDate,
+  isEmail,
+  isPhoneNumber,
+  isUUID,
+  isString,
+  isNumber,
+  isBoolean,
+  PaginatedResponse,
+  ApiError,
+  StudentId,
+  MedicationId,
+  UserId,
+  ContactId,
+  HealthRecordId
+} from './types';
 
 // ==========================================
-// BUSINESS DOMAIN SERVICES
+// CONFIGURATION UTILITIES
 // ==========================================
-
-// Database utilities
-export * from './database';
-
-// Logging utilities  
-export * from './logging';
-
-// Healthcare utilities
-export * from './healthcare';
-
-// Communication utilities
-export * from './communication';
-
-// File utilities
-export * from './files';
-
-// Time and scheduling utilities
-export * from './time';
-
-// Performance monitoring utilities
-export * from './monitoring';
-
-// Configuration utilities
 export * from './config';
 
 // ==========================================
-// LEGACY COMPATIBILITY (REMOVED)
+// MONITORING UTILITIES
 // ==========================================
-// The following legacy exports have been removed and consolidated:
-// - './auth' -> Use './security/authentication.service' instead
-// - './validation' -> Use './security/validation.service' instead
-// - './utils/validation' -> Use './security/validation.service' instead
+export * from './monitoring';
 
-// Legacy utilities still available (but prefer utilities/* for new code)
-export * from './utils';
+// ==========================================
+// TIME UTILITIES
+// ==========================================
+export * from './time';
+
+// ==========================================
+// COMMUNICATION UTILITIES
+// ==========================================
+export * from './communication';
+
+// ==========================================
+// FILE UTILITIES
+// ==========================================
+export * from './files';
+
+// ==========================================
+// HEALTHCARE UTILITIES
+// ==========================================
+export * from './healthcare';
+
+// ==========================================
+// ERROR UTILITIES
+// ==========================================
+export * from './errors';
+
+// ==========================================
+// BASE CLASSES
+// ==========================================
+export { BaseService } from './base/BaseService';
+export type { BaseServiceConfig } from './base/BaseService';
+
+// ==========================================
+// VALIDATION (Existing)
+// ==========================================
+
+// Re-export commonly used utilities with aliases for convenience
+export {
+  validateUUID as validateId,
+  validateRequiredFields as validateRequired,
+  combineValidationResults as combineValidations
+} from './validation/commonValidators';
+
+export {
+  buildPaginationQuery as buildPagination,
+  createPaginatedResponse as paginate,
+  extractPaginationFromQuery as extractPagination
+} from './database/pagination';

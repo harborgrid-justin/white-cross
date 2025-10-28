@@ -1,7 +1,7 @@
 /**
  * Healthcare Middleware System - Type Definitions
  * Framework-agnostic middleware interfaces and types for healthcare applications
- * 
+ *
  * @fileoverview Core type definitions for healthcare middleware system with HIPAA compliance
  * @version 1.0.0
  * @author Healthcare Platform Team
@@ -105,7 +105,7 @@ export interface HealthcareUser {
  */
 export enum UserRole {
   STUDENT = 'student',
-  SCHOOL_NURSE = 'school_nurse', 
+  SCHOOL_NURSE = 'school_nurse',
   ADMINISTRATOR = 'administrator',
   SYSTEM_ADMIN = 'system_admin'
 }
@@ -117,7 +117,7 @@ export enum Permission {
   // Student permissions
   VIEW_OWN_HEALTH_RECORDS = 'view_own_health_records',
   UPDATE_OWN_EMERGENCY_CONTACTS = 'update_own_emergency_contacts',
-  
+
   // School Nurse permissions
   VIEW_STUDENT_HEALTH_RECORDS = 'view_student_health_records',
   CREATE_HEALTH_RECORDS = 'create_health_records',
@@ -125,13 +125,13 @@ export enum Permission {
   ADMINISTER_MEDICATION = 'administer_medication',
   VIEW_IMMUNIZATION_RECORDS = 'view_immunization_records',
   CREATE_INCIDENT_REPORTS = 'create_incident_reports',
-  
+
   // Administrator permissions
   MANAGE_USERS = 'manage_users',
   VIEW_REPORTS = 'view_reports',
   EXPORT_DATA = 'export_data',
   MANAGE_FACILITY_SETTINGS = 'manage_facility_settings',
-  
+
   // System Admin permissions
   SYSTEM_ADMINISTRATION = 'system_administration',
   AUDIT_LOGS = 'audit_logs',

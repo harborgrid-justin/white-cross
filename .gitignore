@@ -6,7 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-nestjs-backend/node_modules
+backend.old/node_modules/
+nestjs-backend/node_modules/
 nextjs/node_modules/
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

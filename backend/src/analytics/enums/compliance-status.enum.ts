@@ -1,0 +1,9 @@
+/**
+ * Compliance Status
+ */
+export enum ComplianceStatus {
+  COMPLIANT = 'COMPLIANT',
+  NON_COMPLIANT = 'NON_COMPLIANT',
+  PARTIALLY_COMPLIANT = 'PARTIALLY_COMPLIANT',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+}

@@ -30,11 +30,12 @@
  * @since 2025-10-21
  */
 
+import { Injectable } from '@nestjs/common';
 import { Request, ResponseToolkit, ServerRoute, Plugin } from '@hapi/hapi';
-import { 
-  IMiddleware, 
-  IRequest, 
-  IResponse, 
+import {
+  IMiddleware,
+  IRequest,
+  IResponse,
   INextFunction,
   MiddlewareContext,
   HealthcareRequest,
@@ -127,7 +128,7 @@ export class HapiResponseWrapper implements IResponse {
       .response(data)
       .code(this.statusCode)
       .type('application/json');
-    
+
     // Apply headers
     Object.entries(this.headers).forEach(([name, value]) => {
       this._responseData.header(name, value);
@@ -139,7 +140,7 @@ export class HapiResponseWrapper implements IResponse {
     this._responseData = this.hapiToolkit
       .response(data)
       .code(this.statusCode);
-    
+
     // Apply headers
     Object.entries(this.headers).forEach(([name, value]) => {
       this._responseData.header(name, value);
@@ -154,7 +155,7 @@ export class HapiResponseWrapper implements IResponse {
       this._responseData = this.hapiToolkit
         .response()
         .code(this.statusCode);
-      
+
       // Apply headers
       Object.entries(this.headers).forEach(([name, value]) => {
         this._responseData.header(name, value);
@@ -208,13 +209,16 @@ export class HapiNextWrapper implements INextFunction {
  * Hapi Middleware Adapter - Converts framework-agnostic middleware to Hapi components
  *
  * @class HapiMiddlewareAdapter
- * @description Static utility class that adapts framework-agnostic middleware to Hapi.js
+ * @description Injectable service that adapts framework-agnostic middleware to Hapi.js
  * lifecycle extensions, plugins, and route configurations. Handles request/response wrapping
  * and provides healthcare-specific enhancements.
  *
  * @example
+ * // Inject the adapter in your NestJS service
+ * constructor(private hapiAdapter: HapiMiddlewareAdapter) {}
+ *
  * // Convert middleware to Hapi extension
- * const extension = HapiMiddlewareAdapter.adaptAsExtension(
+ * const extension = this.hapiAdapter.adaptAsExtension(
  *   authenticationMiddleware,
  *   'onPreHandler'
  * );
@@ -222,18 +226,17 @@ export class HapiNextWrapper implements INextFunction {
  *
  * @example
  * // Convert middleware to Hapi plugin
- * const plugin = HapiMiddlewareAdapter.adaptAsPlugin(
+ * const plugin = this.hapiAdapter.adaptAsPlugin(
  *   loggingMiddleware,
  *   { name: 'logging', extensionPoint: 'onRequest' }
  * );
  * await server.register(plugin);
  */
+@Injectable()
 export class HapiMiddlewareAdapter {
   /**
    * Adapts framework-agnostic middleware to Hapi lifecycle extension
    *
-   * @static
-   * @function adaptAsExtension
    * @param {IMiddleware} middleware - Framework-agnostic middleware to adapt
    * @param {'onRequest'|'onPreAuth'|'onCredentials'|'onPostAuth'|'onPreHandler'|'onPostHandler'|'onPreResponse'} [point='onPreHandler'] - Hapi lifecycle extension point
    * @returns {Object} Hapi extension configuration object
@@ -246,7 +249,7 @@ export class HapiMiddlewareAdapter {
    *
    * @example
    * // Add authentication middleware at onPreHandler
-   * const authExtension = HapiMiddlewareAdapter.adaptAsExtension(
+   * const authExtension = this.hapiAdapter.adaptAsExtension(
    *   authMiddleware,
    *   'onPreHandler'
    * );
@@ -254,7 +257,7 @@ export class HapiMiddlewareAdapter {
    *
    * @example
    * // Add logging middleware at onRequest
-   * const logExtension = HapiMiddlewareAdapter.adaptAsExtension(
+   * const logExtension = this.hapiAdapter.adaptAsExtension(
    *   loggingMiddleware,
    *   'onRequest'
    * );
@@ -262,19 +265,19 @@ export class HapiMiddlewareAdapter {
    *
    * @example
    * // Response transformation at onPreResponse
-   * const transformExtension = HapiMiddlewareAdapter.adaptAsExtension(
+   * const transformExtension = this.hapiAdapter.adaptAsExtension(
    *   responseTransformer,
    *   'onPreResponse'
    * );
    * server.ext(transformExtension);
    */
-  static adaptAsExtension(middleware: IMiddleware, point: 'onRequest' | 'onPreAuth' | 'onCredentials' | 'onPostAuth' | 'onPreHandler' | 'onPostHandler' | 'onPreResponse' = 'onPreHandler') {
+  adaptAsExtension(middleware: IMiddleware, point: 'onRequest' | 'onPreAuth' | 'onCredentials' | 'onPostAuth' | 'onPreHandler' | 'onPostHandler' | 'onPreResponse' = 'onPreHandler') {
     return {
       type: point,
       method: async (request: Request, h: ResponseToolkit) => {
         const wrappedRequest = new HapiRequestWrapper(request);
         const wrappedResponse = new HapiResponseWrapper(h);
-        
+
         let nextCalled = false;
         const wrappedNext = new HapiNextWrapper(() => {
           nextCalled = true;
@@ -310,9 +313,9 @@ export class HapiMiddlewareAdapter {
   /**
    * Adapts middleware as a Hapi plugin
    */
-  static adaptAsPlugin(middleware: IMiddleware, options: { 
-    name: string; 
-    version?: string; 
+  adaptAsPlugin(middleware: IMiddleware, options: {
+    name: string;
+    version?: string;
     extensionPoint?: 'onRequest' | 'onPreAuth' | 'onCredentials' | 'onPostAuth' | 'onPreHandler' | 'onPostHandler' | 'onPreResponse';
   }): Plugin<any> {
     const { name, version = '1.0.0', extensionPoint = 'onPreHandler' } = options;
@@ -321,7 +324,7 @@ export class HapiMiddlewareAdapter {
       name,
       version,
       register: async (server) => {
-        const extension = HapiMiddlewareAdapter.adaptAsExtension(middleware, extensionPoint);
+        const extension = this.adaptAsExtension(middleware, extensionPoint);
         server.ext(extension);
       }
     };
@@ -330,7 +333,7 @@ export class HapiMiddlewareAdapter {
   /**
    * Creates healthcare-specific request enhancement plugin
    */
-  static createHealthcareEnhancerPlugin(): Plugin<any> {
+  createHealthcareEnhancerPlugin(): Plugin<any> {
     return {
       name: 'healthcare-enhancer',
       version: '1.0.0',
@@ -340,7 +343,7 @@ export class HapiMiddlewareAdapter {
           method: (request: Request, h: ResponseToolkit) => {
             // Add healthcare-specific properties to request
             const healthcareReq = request as any as HealthcareRequest;
-            
+
             // Initialize healthcare context
             healthcareReq.healthcareContext = {
               patientId: request.params.patientId || (request.payload as any)?.patientId,
@@ -357,23 +360,23 @@ export class HapiMiddlewareAdapter {
         });
 
         // Add healthcare response methods via server decoration
-        server.decorate('toolkit', 'sendHipaaCompliant', function(data: any, options: { 
-          logAccess?: boolean; 
-          patientId?: string; 
-          dataType?: string 
+        server.decorate('toolkit', 'sendHipaaCompliant', function(data: any, options: {
+          logAccess?: boolean;
+          patientId?: string;
+          dataType?: string
         } = {}) {
           const h = this as ResponseToolkit;
-          
+
           if (options.logAccess && options.patientId) {
             // Log PHI access for HIPAA compliance
             // This would be handled by audit middleware
           }
-          
+
           // Remove sensitive fields in non-development environments
           if (process.env.NODE_ENV !== 'development') {
             data = HapiMiddlewareAdapter.sanitizeResponse(data);
           }
-          
+
           return h.response(data).type('application/json');
         });
       }
@@ -385,10 +388,10 @@ export class HapiMiddlewareAdapter {
    */
   static sanitizeResponse(data: any): any {
     if (!data) return data;
-    
+
     // Remove common sensitive fields
     const sensitiveFields = ['ssn', 'socialSecurityNumber', 'password', 'token'];
-    
+
     if (typeof data === 'object') {
       const sanitized = { ...data };
       sensitiveFields.forEach(field => {
@@ -398,14 +401,14 @@ export class HapiMiddlewareAdapter {
       });
       return sanitized;
     }
-    
+
     return data;
   }
 
   /**
    * Creates Hapi route with middleware integration
    */
-  static createRouteWithMiddleware(
+  createRouteWithMiddleware(
     routeConfig: Omit<ServerRoute, 'handler'>,
     middlewares: IMiddleware[],
     handler: (request: Request, h: ResponseToolkit) => any
@@ -417,7 +420,7 @@ export class HapiMiddlewareAdapter {
         for (const middleware of middlewares) {
           const wrappedRequest = new HapiRequestWrapper(request);
           const wrappedResponse = new HapiResponseWrapper(h);
-          
+
           let nextCalled = false;
           const wrappedNext = new HapiNextWrapper(() => {
             nextCalled = true;
@@ -452,16 +455,18 @@ export class HapiMiddlewareAdapter {
 
 /**
  * Hapi-specific middleware utilities
+ * Injectable service for Hapi utility functions
  */
-export const HapiMiddlewareUtils = {
+@Injectable()
+export class HapiMiddlewareUtils {
   /**
    * Extracts correlation ID from Hapi request
    */
   getCorrelationId(request: Request): string {
-    return (request.headers['x-correlation-id'] as string) || 
-           (request.headers['x-request-id'] as string) || 
+    return (request.headers['x-correlation-id'] as string) ||
+           (request.headers['x-request-id'] as string) ||
            `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  },
+  }
 
   /**
    * Sets HIPAA-compliant security headers for Hapi responses
@@ -474,7 +479,7 @@ export const HapiMiddlewareUtils = {
       .header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
       .header('Referrer-Policy', 'strict-origin-when-cross-origin')
       .header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-  },
+  }
 
   /**
    * Extracts user context from Hapi request
@@ -488,13 +493,13 @@ export const HapiMiddlewareUtils = {
       facilityId: credentials?.facilityId || request.headers['x-facility-id'],
       sessionId: (request as any).yar?.id
     };
-  },
+  }
 
   /**
    * Creates error response with HIPAA compliance
    */
   createErrorResponse(h: ResponseToolkit, error: Error, statusCode: number = 500): any {
-    const sanitizedError = process.env.NODE_ENV === 'development' 
+    const sanitizedError = process.env.NODE_ENV === 'development'
       ? { message: error.message, stack: error.stack }
       : { message: 'Internal Server Error' };
 
@@ -502,7 +507,7 @@ export const HapiMiddlewareUtils = {
       .response(sanitizedError)
       .code(statusCode)
       .type('application/json');
-  },
+  }
 
   /**
    * Validates healthcare context in request
@@ -515,6 +520,4 @@ export const HapiMiddlewareUtils = {
       healthcareReq.healthcareContext.auditRequired !== undefined
     );
   }
-};
-
-export default HapiMiddlewareAdapter;
+}
