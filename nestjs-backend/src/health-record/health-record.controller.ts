@@ -56,6 +56,7 @@ export class HealthRecordController {
     description:
       'Creates a new health record entry for a student. Can include visit notes, diagnoses, treatments, and medications.',
   })
+  @ApiBody({ type: CreateHealthRecordDto })
   @ApiResponse({
     status: 201,
     description: 'Health record created successfully',
@@ -67,6 +68,10 @@ export class HealthRecordController {
   @ApiResponse({
     status: 404,
     description: 'Student not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async create(@Body() createDto: CreateHealthRecordDto) {
     return this.healthRecordService.createHealthRecord(
@@ -92,6 +97,14 @@ export class HealthRecordController {
   @ApiResponse({
     status: 200,
     description: 'Health records retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async findByStudent(
     @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
@@ -121,6 +134,10 @@ export class HealthRecordController {
     status: 404,
     description: 'Health record not found',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async findOne(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
@@ -141,9 +158,22 @@ export class HealthRecordController {
     description: 'Health record UUID',
     format: 'uuid',
   })
+  @ApiBody({ type: UpdateHealthRecordDto })
   @ApiResponse({
     status: 200,
     description: 'Health record updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data (validation errors)',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Health record not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -170,6 +200,14 @@ export class HealthRecordController {
     status: 204,
     description: 'Health record deleted successfully',
   })
+  @ApiResponse({
+    status: 404,
+    description: 'Health record not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async remove(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
@@ -193,6 +231,14 @@ export class HealthRecordController {
   @ApiResponse({
     status: 200,
     description: 'Health summary retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async getHealthSummary(
     @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,

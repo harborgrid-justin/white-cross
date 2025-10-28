@@ -1,17 +1,41 @@
 import { Module } from '@nestjs/common';
-import { CommunicationService } from './services/communication.service';
-import { ChannelService } from './services/channel.service';
-import { CommunicationController } from './controllers/communication.controller';
-import { CommunicationGateway } from './gateways/communication.gateway';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { Message } from '../database/models/message.model';
+import { MessageTemplate } from '../database/models/message-template.model';
+import { MessageDelivery } from '../database/models/message-delivery.model';
+
+// Controllers
+import { MessageController } from './controllers/message.controller';
+import { BroadcastController } from './controllers/broadcast.controller';
+import { TemplateController } from './controllers/template.controller';
+
+// Services
+import { MessageService } from './services/message.service';
+import { BroadcastService } from './services/broadcast.service';
+import { TemplateService } from './services/template.service';
 
 @Module({
-  imports: [],
-  controllers: [CommunicationController],
-  providers: [
-    CommunicationService,
-    ChannelService,
-    CommunicationGateway,
+  imports: [
+    SequelizeModule.forFeature([
+      Message,
+      MessageTemplate,
+      MessageDelivery,
+    ]),
   ],
-  exports: [CommunicationService, ChannelService],
+  controllers: [
+    MessageController,
+    BroadcastController,
+    TemplateController,
+  ],
+  providers: [
+    MessageService,
+    BroadcastService,
+    TemplateService,
+  ],
+  exports: [
+    MessageService,
+    BroadcastService,
+    TemplateService,
+  ],
 })
 export class CommunicationModule {}

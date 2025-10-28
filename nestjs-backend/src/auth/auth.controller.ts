@@ -27,6 +27,7 @@ export class AuthController {
     summary: 'Register a new user',
     description: 'Create a new user account with email, password, and user details',
   })
+  @ApiBody({ type: RegisterDto })
   @ApiResponse({
     status: 201,
     description: 'User registered successfully',
@@ -39,6 +40,10 @@ export class AuthController {
   @ApiResponse({
     status: 409,
     description: 'Conflict - User with this email already exists',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async register(
     @Body(new ValidationPipe({ transform: true, whitelist: true })) registerDto: RegisterDto,
@@ -53,6 +58,7 @@ export class AuthController {
     summary: 'User login',
     description: 'Authenticate user with email and password, returns access and refresh tokens',
   })
+  @ApiBody({ type: LoginDto })
   @ApiResponse({
     status: 200,
     description: 'Login successful',
@@ -61,6 +67,10 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Unauthorized - Invalid credentials or account locked',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async login(
     @Body(new ValidationPipe({ transform: true, whitelist: true })) loginDto: LoginDto,
@@ -85,6 +95,10 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized - Invalid or expired refresh token',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async refresh(
     @Body(new ValidationPipe({ transform: true, whitelist: true })) refreshTokenDto: RefreshTokenDto,
   ): Promise<AuthResponseDto> {
@@ -106,6 +120,10 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized - Authentication required',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async getProfile(@CurrentUser() user: any) {
     return {
       success: true,
@@ -121,6 +139,7 @@ export class AuthController {
     summary: 'Change user password',
     description: 'Change the authenticated user\'s password',
   })
+  @ApiBody({ type: ChangePasswordDto })
   @ApiResponse({
     status: 200,
     description: 'Password changed successfully',
@@ -132,6 +151,10 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Unauthorized - Current password is incorrect or authentication required',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async changePassword(
     @CurrentUser('id') userId: string,
@@ -155,6 +178,10 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async logout() {
     // In a production system, you would:
