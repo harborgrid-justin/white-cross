@@ -47,7 +47,7 @@ export class ContactService {
     }
 
     // Handle search across multiple fields
-    let searchWhere = undefined;
+    let searchWhere: any[] | undefined = undefined;
     if (query.search) {
       searchWhere = [
         { ...where, firstName: ILike(`%${query.search}%`) },

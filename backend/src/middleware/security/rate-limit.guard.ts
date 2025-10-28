@@ -29,7 +29,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 export interface RateLimitConfig {
   windowMs: number;

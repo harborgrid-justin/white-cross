@@ -70,7 +70,7 @@ export class User extends Model<UserAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.STRING)
-  id: string;
+  declare id: string;
 
   @Index({ unique: true })
   @Column({

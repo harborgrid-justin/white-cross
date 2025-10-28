@@ -9,7 +9,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { IUnitOfWork, TransactionOptions } from './unit-of-work.interface';
 import { ExecutionContext } from '../types';
 import { TransactionIsolationLevel } from '../types/database.enums';
-import { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
 
 @Injectable()
 export class SequelizeUnitOfWorkService implements IUnitOfWork {

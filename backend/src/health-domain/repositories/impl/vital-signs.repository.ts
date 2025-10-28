@@ -14,8 +14,9 @@ import {
   CreateVitalSignsDTO,
   UpdateVitalSignsDTO
 } from '../interfaces/vital-signs.repository.interface';
-import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { VitalSigns } from '../../../database/models/vital-signs.model';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
 

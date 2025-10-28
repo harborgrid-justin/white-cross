@@ -315,7 +315,7 @@ export class AuthService {
    */
   private async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
     const payload: JwtPayload = {
-      sub: user.id,
+      sub: user.id!,
       email: user.email,
       role: user.role,
       type: 'access',
@@ -327,7 +327,7 @@ export class AuthService {
     });
 
     const refreshPayload: JwtPayload = {
-      sub: user.id,
+      sub: user.id!,
       email: user.email,
       role: user.role,
       type: 'refresh',

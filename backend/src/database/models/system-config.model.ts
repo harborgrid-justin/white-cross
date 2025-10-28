@@ -9,14 +9,14 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface SystemConfigAttributes {
-  id: string;
+  id?: string;
   key: string;
   value: any;
   description?: string;
   isPublic: boolean;
   updatedBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -33,7 +33,7 @@ export class SystemConfig extends Model<SystemConfigAttributes> implements Syste
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(255),
@@ -59,8 +59,8 @@ export class SystemConfig extends Model<SystemConfigAttributes> implements Syste
   updatedBy?: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

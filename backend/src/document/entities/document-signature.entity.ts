@@ -41,7 +41,7 @@ export class DocumentSignature extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @ForeignKey(() => Document)
   @Column({

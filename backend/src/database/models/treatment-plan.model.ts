@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface TreatmentPlanAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   diagnosis: string;
   planDetails: any;
@@ -17,8 +17,8 @@ export interface TreatmentPlanAttributes {
   endDate?: Date;
   status: string;
   prescribedBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -37,7 +37,7 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.UUID,
@@ -79,8 +79,8 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   prescribedBy: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

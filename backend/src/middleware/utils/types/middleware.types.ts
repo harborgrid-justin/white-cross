@@ -7,7 +7,7 @@
  * @author Healthcare Platform Team
  */
 
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 /**
  * Framework-agnostic request interface

@@ -14,8 +14,9 @@ import {
   CreateHealthScreeningDTO,
   UpdateHealthScreeningDTO
 } from '../interfaces/health-screening.repository.interface';
-import { IAuditLogger, sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../../database/types';
 import { HealthScreening } from '../../../database/models/health-screening.model';
 

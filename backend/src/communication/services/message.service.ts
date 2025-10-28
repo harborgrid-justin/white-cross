@@ -30,7 +30,7 @@ export class MessageService {
     } as any);
 
     // Create delivery records
-    const deliveryStatuses = [];
+    const deliveryStatuses: any[] = [];
     const channels = data.channels || ['EMAIL'];
 
     for (const recipient of data.recipients) {
@@ -68,6 +68,9 @@ export class MessageService {
     if (filters.senderId) where.senderId = filters.senderId;
     if (filters.category) where.category = filters.category;
     if (filters.priority) where.priority = filters.priority;
+
+    // Initialize searchWhere as an object, not undefined
+    let searchWhere: any = {};
 
     const { rows: messages, count: total } = await this.messageModel.findAndCountAll({
       where,

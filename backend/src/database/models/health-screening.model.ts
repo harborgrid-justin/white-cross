@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface HealthScreeningAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   screeningType: string;
   screeningDate: Date;
@@ -17,8 +17,8 @@ export interface HealthScreeningAttributes {
   passed: boolean;
   notes?: string;
   conductedBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -40,7 +40,7 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.UUID,
@@ -82,8 +82,8 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
   conductedBy: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

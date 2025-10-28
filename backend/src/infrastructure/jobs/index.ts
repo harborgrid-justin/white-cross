@@ -5,8 +5,9 @@
  */
 export { JobsModule } from './jobs.module';
 export { JobType } from './enums/job-type.enum';
-export { QueueManagerService, JobOptions, QueueStats } from './services/queue-manager.service';
-export {
+export { QueueManagerService } from './services/queue-manager.service';
+export type { JobOptions, QueueStats } from './services/queue-manager.service';
+export type {
   MedicationReminderData,
   InventoryMaintenanceData,
   ImmunizationAlertData,
@@ -16,5 +17,5 @@ export {
   NotificationBatchData,
   CleanupTaskData
 } from './interfaces/job-data.interface';
-export { JobProcessor } from './interfaces/job-processor.interface';
+export type { JobProcessor } from './interfaces/job-processor.interface';
 export { MedicationReminderProcessor, InventoryMaintenanceProcessor } from './processors';

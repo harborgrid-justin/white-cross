@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface GrowthTrackingAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   measurementDate: Date;
   height?: number;
@@ -22,8 +22,8 @@ export interface GrowthTrackingAttributes {
   percentileBmi?: number;
   notes?: string;
   measuredBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -42,7 +42,7 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.UUID,
@@ -92,8 +92,8 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
   measuredBy: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

@@ -20,7 +20,7 @@ export enum MessageType {
 }
 
 export interface MessageTemplateAttributes {
-  id: string;
+  id?: string;
   name: string;
   subject?: string;
   content: string;
@@ -29,8 +29,8 @@ export interface MessageTemplateAttributes {
   variables: string[];
   isActive: boolean;
   createdById: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -42,7 +42,7 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(100),
@@ -107,12 +107,12 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
     allowNull: false,
     defaultValue: DataType.NOW,
   })
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
   })
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

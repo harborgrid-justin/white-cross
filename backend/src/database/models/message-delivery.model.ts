@@ -32,7 +32,7 @@ export enum DeliveryStatus {
 }
 
 export interface MessageDeliveryAttributes {
-  id: string;
+  id?: string;
   recipientType: RecipientType;
   recipientId: string;
   channel: MessageType;
@@ -43,8 +43,8 @@ export interface MessageDeliveryAttributes {
   failureReason?: string;
   externalId?: string;
   messageId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface MessageDeliveryCreationAttributes
@@ -62,7 +62,7 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Index
   @Column({
@@ -139,12 +139,12 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
     allowNull: false,
     defaultValue: DataType.NOW,
   })
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
   })
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

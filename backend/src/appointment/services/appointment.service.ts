@@ -225,7 +225,6 @@ export class AppointmentService {
         // Create appointment
         const appointment = await this.appointmentModel.create(
           {
-            id: uuidv4(),
             studentId: createDto.studentId,
             nurseId: createDto.nurseId,
             type: createDto.appointmentType as unknown as ModelAppointmentType,
@@ -234,14 +233,12 @@ export class AppointmentService {
             reason: createDto.reason || 'Scheduled appointment',
             notes: createDto.notes,
             status: ModelAppointmentStatus.SCHEDULED,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           },
           { transaction },
         );
 
         // Schedule reminders
-        await this.scheduleReminders(appointment.id, createDto.scheduledDate, transaction);
+        await this.scheduleReminders(appointment.id!, createDto.scheduledDate, transaction);
 
         // Remove from waitlist if student was waiting
         await this.waitlistModel.update(
@@ -259,7 +256,7 @@ export class AppointmentService {
       });
 
       // Fetch complete appointment with relations
-      return await this.getAppointmentById(result.id);
+      return await this.getAppointmentById(result.id!);
     } catch (error) {
       this.logger.error(`Error creating appointment: \${error.message}`, error.stack);
       throw new BadRequestException('Failed to create appointment');
@@ -328,7 +325,6 @@ export class AppointmentService {
         ...(updateDto.reason && { reason: updateDto.reason }),
         ...(updateDto.notes && { notes: updateDto.notes }),
         ...(updateDto.status && { status: updateDto.status as unknown as ModelAppointmentStatus }),
-        updatedAt: new Date(),
       });
 
       // If rescheduled, update reminders
@@ -387,7 +383,6 @@ export class AppointmentService {
             notes: reason
               ? `\${appointment.notes || ''}\nCancellation reason: \${reason}`
               : appointment.notes,
-            updatedAt: new Date(),
           },
           { transaction },
         );
@@ -437,7 +432,6 @@ export class AppointmentService {
 
     await appointment.update({
       status: ModelAppointmentStatus.IN_PROGRESS,
-      updatedAt: new Date(),
     });
 
     return await this.getAppointmentById(id);
@@ -481,7 +475,6 @@ export class AppointmentService {
     await appointment.update({
       status: ModelAppointmentStatus.COMPLETED,
       notes,
-      updatedAt: new Date(),
     });
 
     return await this.getAppointmentById(id);
@@ -504,7 +497,6 @@ export class AppointmentService {
 
     await appointment.update({
       status: ModelAppointmentStatus.NO_SHOW,
-      updatedAt: new Date(),
     });
 
     // Try to fill slot from waitlist
@@ -807,7 +799,6 @@ export class AppointmentService {
             if (conflicts.length === 0) {
               const appointment = await this.appointmentModel.create(
                 {
-                  id: uuidv4(),
                   studentId: data.studentId,
                   nurseId: data.nurseId,
                   type: data.type,
@@ -819,16 +810,14 @@ export class AppointmentService {
                   recurringGroupId,
                   recurringFrequency: data.frequency,
                   recurringEndDate: data.endDate,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
                 },
                 { transaction },
               );
 
               // Schedule reminders
-              await this.scheduleReminders(appointment.id, currentDate, transaction);
+              await this.scheduleReminders(appointment.id!, currentDate, transaction);
 
-              const entity = await this.getAppointmentById(appointment.id);
+              const entity = await this.getAppointmentById(appointment.id!);
               appointments.push(entity);
             }
           }
@@ -1004,7 +993,7 @@ export class AppointmentService {
    */
   private mapToEntity(appointment: Appointment): AppointmentEntity {
     return {
-      id: appointment.id,
+      id: appointment.id!,
       studentId: appointment.studentId,
       nurseId: appointment.nurseId,
       appointmentType: appointment.type as any,
@@ -1013,10 +1002,10 @@ export class AppointmentService {
       reason: appointment.reason,
       notes: appointment.notes,
       status: appointment.status as any,
-      createdAt: appointment.createdAt,
-      updatedAt: appointment.updatedAt,
+      createdAt: appointment.createdAt!,
+      updatedAt: appointment.updatedAt!,
       nurse: appointment.nurse ? {
-        id: appointment.nurse.id,
+        id: appointment.nurse.id!,
         firstName: appointment.nurse.firstName,
         lastName: appointment.nurse.lastName,
         email: appointment.nurse.email,

@@ -33,7 +33,6 @@ export enum AppointmentStatus {
 }
 
 export interface AppointmentAttributes {
-  id: string;
   studentId: string;
   nurseId: string;
   type: AppointmentType;
@@ -45,8 +44,6 @@ export interface AppointmentAttributes {
   recurringGroupId?: string;
   recurringFrequency?: string;
   recurringEndDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 @Table({
@@ -58,7 +55,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Index
   @Column({
@@ -162,14 +159,14 @@ export class Appointment extends Model<AppointmentAttributes> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt?: Date;
 
   // Computed property for student relation (will be populated via raw queries)
   student?: any;

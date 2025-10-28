@@ -32,7 +32,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import {
   IMiddleware,
   IRequest,

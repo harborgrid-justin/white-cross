@@ -62,7 +62,7 @@ export class Document extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.STRING(255),
@@ -229,7 +229,7 @@ export class Document extends Model {
       },
     },
   })
-  version: number;
+  declare version: number;
 
   @Column({
     type: DataType.STRING(50),
@@ -311,10 +311,10 @@ export class Document extends Model {
   isActive: boolean;
 
   @CreatedAt
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @DeletedAt
   @Column({
@@ -322,7 +322,7 @@ export class Document extends Model {
     allowNull: true,
     comment: 'Soft delete timestamp',
   })
-  deletedAt?: Date;
+  declare deletedAt?: Date;
 
   @Column({
     type: DataType.STRING(255),

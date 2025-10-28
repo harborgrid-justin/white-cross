@@ -1,3 +1,3 @@
-export { IAuditLogEntry } from './audit-log-entry.interface';
-export { IPHIAccessLog } from './phi-access-log.interface';
-export { IPaginatedResult } from './paginated-result.interface';
+export type { IAuditLogEntry } from './audit-log-entry.interface';
+export type { IPHIAccessLog } from './phi-access-log.interface';
+export type { IPaginatedResult } from './paginated-result.interface';

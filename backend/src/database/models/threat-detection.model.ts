@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ThreatDetectionAttributes {
-  id: string;
+  id?: string;
   threatType: string;
   severity: string;
   source: string;
@@ -17,8 +17,8 @@ export interface ThreatDetectionAttributes {
   isResolved: boolean;
   resolvedAt?: Date;
   resolvedBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -40,7 +40,7 @@ export class ThreatDetection extends Model<ThreatDetectionAttributes> implements
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(100),
@@ -77,8 +77,8 @@ export class ThreatDetection extends Model<ThreatDetectionAttributes> implements
   resolvedBy?: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

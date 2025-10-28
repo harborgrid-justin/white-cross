@@ -20,7 +20,6 @@ export enum UserRole {
 }
 
 export interface UserAttributes {
-  id: string;
   email: string;
   password: string;
   firstName: string;
@@ -43,8 +42,6 @@ export interface UserAttributes {
   lockoutUntil?: Date;
   lastPasswordChange?: Date;
   mustChangePassword: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 @Table({
@@ -56,7 +53,7 @@ export class User extends Model<UserAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING,
@@ -233,7 +230,10 @@ export class User extends Model<UserAttributes> {
       twoFactorSecret,
       ...safeData
     } = this.get({ plain: true });
-    return safeData;
+    return {
+      ...safeData,
+      id: this.id!, // Ensure id is always included
+    };
   }
 
   isAccountLocked(): boolean {

@@ -30,7 +30,7 @@ export enum MessageCategory {
 }
 
 export interface MessageAttributes {
-  id: string;
+  id?: string;
   subject?: string;
   content: string;
   priority: MessagePriority;
@@ -40,8 +40,8 @@ export interface MessageAttributes {
   attachments: string[];
   senderId: string;
   templateId?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -53,7 +53,7 @@ export class Message extends Model<MessageAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(255),
@@ -123,12 +123,12 @@ export class Message extends Model<MessageAttributes> {
     allowNull: false,
     defaultValue: DataType.NOW,
   })
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
   })
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

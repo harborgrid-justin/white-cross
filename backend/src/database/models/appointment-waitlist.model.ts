@@ -28,7 +28,7 @@ export enum WaitlistStatus {
 }
 
 export interface AppointmentWaitlistAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   nurseId?: string;
   type: AppointmentType;
@@ -40,8 +40,8 @@ export interface AppointmentWaitlistAttributes {
   status: WaitlistStatus;
   notifiedAt?: Date;
   expiresAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -53,7 +53,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Index
   @Column({
@@ -139,14 +139,14 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt?: Date;
 
   // Computed property for student relation (will be populated via raw queries)
   student?: any;

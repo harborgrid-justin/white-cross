@@ -11,7 +11,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface LabResultsAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   testType: string; // blood_test, urinalysis, culture, etc.
   testName: string;
@@ -33,8 +33,8 @@ export interface LabResultsAttributes {
   reviewedDate?: Date;
   labName?: string;
   notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -65,7 +65,7 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.UUID,
@@ -148,10 +148,10 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
   notes?: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 
   @BeforeCreate
   @BeforeUpdate

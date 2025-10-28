@@ -19,7 +19,7 @@ import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { ContactResolver } from './resolvers/contact.resolver';
 import { StudentResolver } from './resolvers/student.resolver';
 import { ContactModule } from '../../contact/contact.module';

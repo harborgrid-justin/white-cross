@@ -9,15 +9,15 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface SupplierAttributes {
-  id: string;
+  id?: string;
   name: string;
   contactName?: string;
   email?: string;
   phone?: string;
   address?: string;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -28,7 +28,7 @@ export class Supplier extends Model<SupplierAttributes> implements SupplierAttri
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(255),
@@ -53,8 +53,8 @@ export class Supplier extends Model<SupplierAttributes> implements SupplierAttri
   isActive: boolean;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

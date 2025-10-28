@@ -9,15 +9,15 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface WebhookAttributes {
-  id: string;
+  id?: string;
   url: string;
   events: string[];
   isActive: boolean;
   secret?: string;
   headers?: any;
   createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -28,7 +28,7 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(500),
@@ -59,8 +59,8 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
   createdBy: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

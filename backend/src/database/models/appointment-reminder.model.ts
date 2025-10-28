@@ -25,7 +25,7 @@ export enum ReminderStatus {
 }
 
 export interface AppointmentReminderAttributes {
-  id: string;
+  id?: string;
   appointmentId: string;
   type: MessageType;
   scheduledFor: Date;
@@ -33,8 +33,8 @@ export interface AppointmentReminderAttributes {
   sentAt?: Date;
   failureReason?: string;
   message: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -46,7 +46,7 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Index
   @ForeignKey(() => Appointment)
@@ -103,12 +103,12 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

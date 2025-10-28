@@ -72,7 +72,6 @@ export class NotificationResultDto {
 
   @ApiProperty({
     description: 'Results per notification channel',
-    type: 'object',
     example: {
       sms: { success: true, messageId: 'sms_1234567890' },
       email: { success: true, messageId: 'email_0987654321' },

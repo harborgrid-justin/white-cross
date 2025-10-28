@@ -5,11 +5,9 @@ import { Op } from 'sequelize';
 // Note: This is a temporary bridge solution until models are migrated to TypeORM
 import {
   Student,
-  Allergy,
-  ChronicCondition,
-  StudentMedication,
-  IncidentReport,
-} from '../../../backend/src/database/models';
+  // Allergy,
+  // ChronicCondition,
+} from '../database/models/student.model';
 
 import {
   HealthRiskScoreDto,
@@ -42,10 +40,10 @@ export class HealthRiskAssessmentService {
       // Type assertion for Sequelize model methods
       const student = await (Student as any).findByPk(studentId, {
         include: [
-          { model: Allergy, as: 'allergies' },
-          { model: ChronicCondition, as: 'chronicConditions' },
-          { model: StudentMedication, as: 'medications' },
-          { model: IncidentReport, as: 'incidentReports' },
+          // { model: Allergy, as: 'allergies' },
+          // { model: ChronicCondition, as: 'chronicConditions' },
+          // { model: StudentMedication, as: 'medications' },
+          // { model: IncidentReport, as: 'incidentReports' },
         ],
       });
 

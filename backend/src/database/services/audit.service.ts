@@ -822,7 +822,7 @@ export class AuditService implements IAuditLogger {
         const row = includeFullDetails
           ? [
               log.id,
-              log.createdAt.toISOString(),
+              log.createdAt!.toISOString(),
               log.action,
               log.entityType,
               log.entityId || '',
@@ -838,7 +838,7 @@ export class AuditService implements IAuditLogger {
             ]
           : [
               log.id,
-              log.createdAt.toISOString(),
+              log.createdAt!.toISOString(),
               log.action,
               log.entityType,
               log.entityId || '',

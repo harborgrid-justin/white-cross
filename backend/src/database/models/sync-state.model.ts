@@ -9,14 +9,14 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface SyncStateAttributes {
-  id: string;
+  id?: string;
   entityType: string;
   entityId: string;
   lastSyncAt: Date;
   syncStatus: string;
   errorMessage?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -33,7 +33,7 @@ export class SyncState extends Model<SyncStateAttributes> implements SyncStateAt
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(100),
@@ -63,8 +63,8 @@ export class SyncState extends Model<SyncStateAttributes> implements SyncStateAt
   errorMessage?: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }

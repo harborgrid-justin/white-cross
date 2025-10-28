@@ -12,7 +12,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { ErrorResponse, ErrorSeverity, ErrorCategory } from '../types/error-response.types';
 import { SystemErrorCodes } from '../constants/error-codes';

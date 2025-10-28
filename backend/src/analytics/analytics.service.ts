@@ -113,7 +113,7 @@ export class AnalyticsService {
       const metrics = await this.healthTrendService.getHealthMetrics(schoolId, period);
 
       // Calculate comparison data if requested
-      let comparisonData = null;
+      let comparisonData: { periodLabel: string; startDate: Date; endDate: Date } | null = null;
       if (query.compareWithPrevious) {
         const previousStart = new Date(start);
         previousStart.setDate(previousStart.getDate() - daysDiff);

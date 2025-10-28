@@ -26,7 +26,7 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 // Services
 import { AuditService } from './services/audit.service';

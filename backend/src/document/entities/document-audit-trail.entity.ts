@@ -43,7 +43,7 @@ export class DocumentAuditTrail extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @ForeignKey(() => Document)
   @Column({
@@ -105,7 +105,7 @@ export class DocumentAuditTrail extends Model {
     comment: 'Timestamp when action was performed (immutable)',
   })
   @Index
-  createdAt: Date;
+  declare createdAt: Date;
 
   // Associations
 

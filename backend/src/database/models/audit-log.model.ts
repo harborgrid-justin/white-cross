@@ -41,7 +41,7 @@ export enum AuditSeverity {
  * AuditLog attributes interface
  */
 export interface AuditLogAttributes {
-  id: string;
+  id?: string;
   action: AuditAction;
   entityType: string;
   entityId: string | null;
@@ -61,7 +61,7 @@ export interface AuditLogAttributes {
   errorMessage: string | null;
   metadata: any;
   tags: string[];
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 /**
@@ -114,7 +114,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(AuditAction)),
@@ -271,7 +271,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     comment: 'Timestamp when the action was performed',
   })
   @Index
-  createdAt: Date;
+  declare createdAt?: Date;
 
   /**
    * Hook to prevent updates to audit logs (immutability)
@@ -322,7 +322,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
                           this.complianceType === ComplianceType.FERPA ? 5 :
                           this.isPHI ? 7 : 3;
 
-    const expirationDate = new Date(this.createdAt);
+    const expirationDate = new Date(this.createdAt!);
     expirationDate.setFullYear(expirationDate.getFullYear() + retentionYears);
 
     return expirationDate > retentionDate;

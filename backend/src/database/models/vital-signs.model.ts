@@ -13,7 +13,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface VitalSignsAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   measurementDate: Date;
   temperature?: number;
@@ -33,8 +33,8 @@ export interface VitalSignsAttributes {
   abnormalFlags?: string[]; // Array of abnormal vital types
   measuredBy?: string;
   notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Table({
@@ -56,7 +56,7 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.UUID,
@@ -132,10 +132,10 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   notes?: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 
   @BeforeCreate
   static async calculateBMI(instance: VitalSigns) {

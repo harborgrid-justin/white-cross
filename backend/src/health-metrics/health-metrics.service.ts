@@ -119,7 +119,7 @@ export class HealthMetricsService {
   ) {
     try {
       // Simulate live vital signs data
-      const vitals = [];
+      const vitals: any[] = [];
       const numRecords = Math.min(limit, 20);
 
       for (let i = 0; i < numRecords; i++) {
@@ -168,7 +168,7 @@ export class HealthMetricsService {
   ) {
     try {
       // Simulate patient trend data
-      const trends = [];
+      const trends: any[] = [];
       const numPoints = granularity === 'hour' ? 24 : granularity === 'day' ? 7 : 4;
 
       for (let i = 0; i < numPoints; i++) {
@@ -316,7 +316,7 @@ export class HealthMetricsService {
 
   private async checkForCriticalVitals(vitalRecord: any) {
     try {
-      const alerts = [];
+      const alerts: any[] = [];
 
       // Heart rate alerts
       if (vitalRecord.heart_rate) {

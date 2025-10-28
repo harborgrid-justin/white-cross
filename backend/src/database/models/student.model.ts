@@ -10,7 +10,6 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 export interface StudentAttributes {
-  id: string;
   studentNumber: string;
   firstName: string;
   lastName: string;
@@ -26,8 +25,6 @@ export interface StudentAttributes {
   districtId?: string;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 @Table({
@@ -60,7 +57,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.STRING(50),
@@ -132,8 +129,8 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   updatedBy?: string;
 
   @Column(DataType.DATE)
-  createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  updatedAt: Date;
+  declare updatedAt?: Date;
 }
