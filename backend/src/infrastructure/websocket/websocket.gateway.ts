@@ -32,7 +32,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger, UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { AuthenticatedSocket } from './interfaces';
+import type { AuthenticatedSocket } from './interfaces';
 import { ConnectionConfirmedDto } from './dto';
 import { WsJwtAuthGuard } from './guards';
 

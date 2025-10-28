@@ -311,7 +311,7 @@ export class ThreatDetectionService {
     threats: Array<{ type: string; detected: boolean; details?: any }>;
     safe: boolean;
   }> {
-    const threats = [];
+    const threats: Array<{ type: string; detected: boolean; details?: any }> = [];
 
     // SQL Injection
     const sqlResult = await this.detectSQLInjection(input, context);

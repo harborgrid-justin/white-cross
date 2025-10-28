@@ -8,12 +8,13 @@
 export {
   ErrorCode,
   AppError,
-  WithCode,
   isAppError,
   hasErrorCode,
   getErrorCodes,
   ErrorFactory,
 } from './ErrorCode';
+
+export type { WithCode } from './ErrorCode';
 
 export { default as ErrorCodeModule } from './ErrorCode';
 

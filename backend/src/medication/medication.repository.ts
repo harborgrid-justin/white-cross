@@ -25,12 +25,8 @@ import { ListMedicationsQueryDto } from './dto';
 export class MedicationRepository {
   private readonly logger = new Logger(MedicationRepository.name);
 
-  /**
-   * Get Sequelize Medication model
-   * Imports dynamically to avoid circular dependencies
-   */
   private async getMedicationModel() {
-    const { Medication } = await import('../../../backend/src/database/models');
+    const { Medication } = await import('../../medication/entities/medication.entity.js');
     return Medication;
   }
 
@@ -38,7 +34,7 @@ export class MedicationRepository {
    * Get Sequelize Student model for joins
    */
   private async getStudentModel() {
-    const { Student } = await import('../../../backend/src/database/models');
+    const { Student } = await import('../../student/entities/student.entity.js');
     return Student;
   }
 

@@ -8,10 +8,6 @@ export {
   Role,
   Resource,
   Action,
-  Permission,
-  PermissionCondition,
-  PermissionContext,
-  PermissionResult,
   PERMISSION_MATRIX,
   PermissionChecker,
   permissionChecker,
@@ -24,8 +20,14 @@ export {
   isAction,
 } from './Permission';
 
+export type {
+  Permission,
+  PermissionCondition,
+  PermissionContext,
+  PermissionResult,
+} from './Permission';
+
 export {
-  RequirePermissionOptions,
   requirePermission,
   checkUserPermission,
   assertUserPermission,
@@ -35,6 +37,8 @@ export {
   hasAllRoles,
   requireRole,
 } from './middleware';
+
+export type { RequirePermissionOptions } from './middleware';
 
 export { default as PermissionModule } from './Permission';
 export { default as PermissionMiddleware } from './middleware';

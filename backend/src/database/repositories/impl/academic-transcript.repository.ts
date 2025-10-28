@@ -4,8 +4,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
 
 export interface AcademicTranscriptAttributes {

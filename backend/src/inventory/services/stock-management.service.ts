@@ -13,7 +13,7 @@ export interface StockAdjustmentResult {
 }
 
 export interface StockHistoryResponse {
-  history: any[];
+  history: (InventoryTransaction & { stockAfterTransaction: number })[];
   pagination: {
     page: number;
     limit: number;
@@ -127,7 +127,7 @@ export class StockManagementService {
       });
 
       // Calculate running stock totals
-      const history = [];
+      const history: (InventoryTransaction & { stockAfterTransaction: number })[] = [];
 
       // Get all transactions in chronological order to calculate running totals
       const allTransactions = await this.transactionRepository.find({

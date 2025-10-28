@@ -42,6 +42,6 @@ export {
   parseDate,
   toISOString,
   getVaccinationPeriods,
-  AgeInfo,
-  DateFormat
 } from './dateHelpers';
+
+export type { AgeInfo, DateFormat } from './dateHelpers';

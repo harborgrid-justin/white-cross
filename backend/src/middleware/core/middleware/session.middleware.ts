@@ -16,13 +16,13 @@ import {
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as crypto from 'crypto';
-import {
+import type {
   SessionConfig,
   SessionData,
   SessionResult,
   SessionStore,
-  SESSION_CONFIGS
 } from '../types/session.types';
+import { SESSION_CONFIGS } from '../types/session.types';
 
 /**
  * In-memory session store implementation

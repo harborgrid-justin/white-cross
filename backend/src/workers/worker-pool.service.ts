@@ -16,7 +16,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/commo
 import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
-import {
+import type {
   WorkerTask,
   WorkerInfo,
   WorkerPoolOptions,

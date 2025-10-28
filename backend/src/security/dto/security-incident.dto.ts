@@ -77,7 +77,11 @@ export class CreateSecurityIncidentDto {
   @IsString()
   impact?: string;
 
-  @ApiPropertyOptional({ description: 'Additional metadata', type: 'object' })
+  @ApiPropertyOptional({ 
+    description: 'Additional metadata', 
+    type: 'object',
+    additionalProperties: true
+  })
   @IsOptional()
   @IsObject()
   metadata?: Record<string, any>;

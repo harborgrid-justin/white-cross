@@ -6,7 +6,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
 import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-summary.dto';

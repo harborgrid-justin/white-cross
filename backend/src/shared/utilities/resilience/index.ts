@@ -18,8 +18,9 @@ export {
   retry,
   retryOnError,
   retryOnErrorType,
-  RetryOptions,
 } from './retry';
+
+export type { RetryOptions } from './retry';
 
 // Timeout utilities
 export {
@@ -28,5 +29,6 @@ export {
   createTimeoutWrapper,
   timedOperation,
   TimeoutPresets,
-  TimeoutOptions,
 } from './timeout';
+
+export type { TimeoutOptions } from './timeout';

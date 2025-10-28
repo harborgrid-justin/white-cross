@@ -42,7 +42,7 @@
  * @module WebSocketModule
  */
 import { Module, Global } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
@@ -58,10 +58,10 @@ import { WsJwtAuthGuard } from './guards';
     // JWT Module for authentication
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService): Promise<JwtModuleOptions> => ({
         secret: configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION') || '24h',
+          expiresIn: 86400, // 24 hours in seconds
         },
       }),
       inject: [ConfigService],

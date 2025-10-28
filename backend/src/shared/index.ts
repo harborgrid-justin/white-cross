@@ -71,7 +71,6 @@ export * from './security';
 // ==========================================
 // Explicitly re-export to avoid conflicts with security module
 export {
-  Permission,
   requirePermission,
   checkPermission,
   hasAnyRole,
@@ -84,11 +83,13 @@ export {
   isAction,
 } from './permissions';
 
+export type { Permission } from './permissions';
+
 // ==========================================
 // TYPES
 // ==========================================
 // Export validation types from validation service to avoid conflicts
-export {
+export type {
   ValidationResult,
   ValidationError
 } from './security/validation.service';
@@ -102,6 +103,9 @@ export {
   isString,
   isNumber,
   isBoolean,
+} from './types';
+
+export type {
   PaginatedResponse,
   ApiError,
   StudentId,

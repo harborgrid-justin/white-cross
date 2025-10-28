@@ -226,7 +226,7 @@ export abstract class BaseService {
    * Validate date is in the future
    */
   protected validateFutureDate(date: Date, fieldName: string): ValidationResult {
-    const errors = [];
+    const errors: Array<{ field: string; message: string; code: ValidationErrorCode }> = [];
     const now = new Date();
 
     if (date <= now) {
@@ -248,20 +248,20 @@ export abstract class BaseService {
    * Validate date is in the past
    */
   protected validatePastDate(date: Date, fieldName: string): ValidationResult {
-    const errors = [];
+    const errors: Array<{ field: string; message: string; code: ValidationErrorCode }> = [];
     const now = new Date();
     
     if (date >= now) {
       errors.push({
         field: fieldName,
         message: `${fieldName} must be in the past`,
-        code: 'INVALID_DATE'
+        code: ValidationErrorCode.INVALID_VALUE
       });
     }
     
     return {
       isValid: errors.length === 0,
-      errors: errors as any,
+      errors,
       warnings: []
     };
   }

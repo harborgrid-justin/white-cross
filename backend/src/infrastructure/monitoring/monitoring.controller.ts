@@ -8,7 +8,7 @@
 import { Controller, Get, Post, Param, Query, Body, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
-import {
+import type {
   MetricsSnapshot,
   DashboardData,
   Alert,
