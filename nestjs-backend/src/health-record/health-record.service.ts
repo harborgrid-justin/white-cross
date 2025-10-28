@@ -139,7 +139,7 @@ export class HealthRecordService {
 
     // Reload with associations
     const record = await this.healthRecordRepository.findOne({
-      where: { id: savedRecord.id },
+      where: { id: (savedRecord as any).id },
       relations: ['student'],
     });
 
@@ -316,7 +316,7 @@ export class HealthRecordService {
 
     // Reload with associations
     const allergyWithRelations = await this.allergyRepository.findOne({
-      where: { id: savedAllergy.id },
+      where: { id: (savedAllergy as any).id },
       relations: ['student'],
     });
 
@@ -460,7 +460,7 @@ export class HealthRecordService {
     // Reload with associations
     const conditionWithRelations =
       await this.chronicConditionRepository.findOne({
-        where: { id: savedCondition.id },
+        where: { id: (savedCondition as any).id },
         relations: ['student'],
       });
 
@@ -537,7 +537,7 @@ export class HealthRecordService {
 
     // PHI Modification Audit Log
     this.logger.log(
-      `PHI Modified: Chronic condition ${conditionWithRelations.condition} updated for student ${conditionWithRelations.student?.firstName} ${conditionWithRelations.student?.lastName}`,
+      `PHI Modified: Chronic condition ${conditionWithRelations.condition} updated for student ${conditionWithRelations.studentId}`,
     );
 
     return conditionWithRelations;
@@ -601,7 +601,7 @@ export class HealthRecordService {
 
     // Reload with associations
     const vaccinationWithRelations = await this.vaccinationRepository.findOne({
-      where: { id: savedVaccination.id },
+      where: { id: (savedVaccination as any).id },
       relations: ['student'],
     });
 

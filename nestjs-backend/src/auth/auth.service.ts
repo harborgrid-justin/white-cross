@@ -60,7 +60,7 @@ export class AuthService {
         firstName,
         lastName,
         role: role || UserRole.NURSE,
-      });
+      } as any);
 
       this.logger.log(`User registered successfully: ${email}`);
 
@@ -278,7 +278,7 @@ export class AuthService {
         firstName: 'Test',
         lastName: role.charAt(0) + role.slice(1).toLowerCase(),
         role,
-      });
+      } as any);
 
       this.logger.log(`Test user created: ${testEmail}`);
     }

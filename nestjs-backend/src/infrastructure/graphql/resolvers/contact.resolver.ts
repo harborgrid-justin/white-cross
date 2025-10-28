@@ -15,9 +15,11 @@ import {
   ContactUpdateInputDto,
   ContactFilterInputDto,
   ContactStatsDto,
-  DeleteResponseDto
+  DeleteResponseDto,
+  ContactType
 } from '../dto';
 import { ContactService } from '../../../contact/services/contact.service';
+import { ContactType as DomainContactType } from '../../../contact/enums/contact-type.enum';
 
 /**
  * Contact Resolver
@@ -26,6 +28,46 @@ import { ContactService } from '../../../contact/services/contact.service';
 @Resolver(() => ContactDto)
 export class ContactResolver {
   constructor(private readonly contactService: ContactService) {}
+
+  /**
+   * Transform domain ContactType to GraphQL ContactType
+   */
+  private transformContactType(domainType: DomainContactType): ContactType {
+    switch (domainType) {
+      case DomainContactType.Guardian:
+        return ContactType.Guardian;
+      case DomainContactType.Staff:
+        return ContactType.Staff;
+      case DomainContactType.Vendor:
+        return ContactType.Vendor;
+      case DomainContactType.Provider:
+        return ContactType.Provider;
+      case DomainContactType.Other:
+        return ContactType.Other;
+      default:
+        return ContactType.Other;
+    }
+  }
+
+  /**
+   * Transform GraphQL ContactType to domain ContactType
+   */
+  private transformGraphQLContactType(graphqlType: ContactType): DomainContactType {
+    switch (graphqlType) {
+      case ContactType.Guardian:
+        return DomainContactType.Guardian;
+      case ContactType.Staff:
+        return DomainContactType.Staff;
+      case ContactType.Vendor:
+        return DomainContactType.Vendor;
+      case ContactType.Provider:
+        return DomainContactType.Provider;
+      case ContactType.Other:
+        return DomainContactType.Other;
+      default:
+        return DomainContactType.Other;
+    }
+  }
 
   /**
    * Query: Get paginated list of contacts with optional filtering
@@ -50,7 +92,7 @@ export class ContactResolver {
       if (filters.search) serviceFilters.search = filters.search;
     }
 
-    const result = await this.contactService.findAll({
+    const result = await this.contactService.getContacts({
       ...serviceFilters,
       page,
       limit,
@@ -61,6 +103,7 @@ export class ContactResolver {
     return {
       contacts: result.contacts.map(contact => ({
         ...contact,
+        type: this.transformContactType(contact.type),
         fullName: `${contact.firstName} ${contact.lastName}`,
         displayName: contact.organization
           ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
@@ -79,13 +122,14 @@ export class ContactResolver {
     @Args('id', { type: () => ID }) id: string,
     @Context() context?: any
   ): Promise<ContactDto | null> {
-    const contact = await this.contactService.findOne(id);
+    const contact = await this.contactService.getContactById(id);
     if (!contact) {
       return null;
     }
 
     return {
       ...contact,
+      type: this.transformContactType(contact.type),
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
@@ -103,7 +147,7 @@ export class ContactResolver {
     @Args('type', { type: () => String, nullable: true }) type?: string,
     @Context() context?: any
   ): Promise<ContactDto[]> {
-    const contacts = await this.contactService.findByRelation(relationTo, type);
+    const contacts = await this.contactService.getContactsByRelation(relationTo, type as any);
     return contacts.map(contact => ({
       ...contact,
       fullName: `${contact.firstName} ${contact.lastName}`,
@@ -123,9 +167,10 @@ export class ContactResolver {
     @Args('limit', { type: () => Number, defaultValue: 10 }) limit: number,
     @Context() context?: any
   ): Promise<ContactDto[]> {
-    const contacts = await this.contactService.search(query, limit);
+    const contacts = await this.contactService.searchContacts(query, limit);
     return contacts.map(contact => ({
       ...contact,
+      type: this.transformContactType(contact.type),
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
@@ -139,7 +184,7 @@ export class ContactResolver {
   @Query(() => ContactStatsDto, { name: 'contactStats' })
   @UseGuards(GqlAuthGuard)
   async getContactStats(@Context() context?: any): Promise<ContactStatsDto> {
-    return await this.contactService.getStats();
+    return await this.contactService.getContactStats();
   }
 
   /**
@@ -152,10 +197,15 @@ export class ContactResolver {
     @Context() context: any
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
-    const contact = await this.contactService.create(input, userId);
+    const transformedInput = {
+      ...input,
+      type: this.transformGraphQLContactType(input.type)
+    };
+    const contact = await this.contactService.createContact(transformedInput);
 
     return {
       ...contact,
+      type: this.transformContactType(contact.type),
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
@@ -174,10 +224,15 @@ export class ContactResolver {
     @Context() context: any
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
-    const contact = await this.contactService.update(id, input, userId);
+    const transformedInput = {
+      ...input,
+      type: input.type ? this.transformGraphQLContactType(input.type) : undefined
+    };
+    const contact = await this.contactService.updateContact(id, transformedInput);
 
     return {
       ...contact,
+      type: this.transformContactType(contact.type),
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
@@ -194,7 +249,7 @@ export class ContactResolver {
     @Args('id', { type: () => ID }) id: string,
     @Context() context?: any
   ): Promise<DeleteResponseDto> {
-    await this.contactService.remove(id);
+    await this.contactService.deleteContact(id);
     return {
       success: true,
       message: 'Contact deleted successfully'
@@ -211,10 +266,11 @@ export class ContactResolver {
     @Context() context: any
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
-    const contact = await this.contactService.update(id, { isActive: false }, userId);
+    const contact = await this.contactService.deactivateContact(id, userId);
 
     return {
       ...contact,
+      type: this.transformContactType(contact.type),
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
@@ -232,10 +288,11 @@ export class ContactResolver {
     @Context() context: any
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
-    const contact = await this.contactService.update(id, { isActive: true }, userId);
+    const contact = await this.contactService.reactivateContact(id, userId);
 
     return {
       ...contact,
+      type: this.transformContactType(contact.type),
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`

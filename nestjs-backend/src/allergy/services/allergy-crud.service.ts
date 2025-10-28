@@ -77,7 +77,7 @@ export class AllergyCrudService {
 
     // Create allergy record
     const allergy = this.allergyRepository.create(allergyData);
-    const savedAllergy = await this.allergyRepository.save(allergy);
+    const savedAllergy = await this.allergyRepository.save(allergy) as unknown as Allergy;
 
     // PHI Audit Log
     this.logger.log(
@@ -85,10 +85,10 @@ export class AllergyCrudService {
     );
 
     // Reload with relations
-    return this.allergyRepository.findOne({
+    return (await this.allergyRepository.findOne({
       where: { id: savedAllergy.id },
       relations: ['student'],
-    });
+    })) as unknown as Allergy;
   }
 
   /**
@@ -159,10 +159,14 @@ export class AllergyCrudService {
     );
 
     // Reload with relations
-    return this.allergyRepository.findOne({
+    const result = await this.allergyRepository.findOne({
       where: { id: updatedAllergy.id },
       relations: ['student'],
     });
+    if (!result) {
+      throw new NotFoundException(`Allergy with ID ${updatedAllergy.id} not found after update`);
+    }
+    return result;
   }
 
   /**

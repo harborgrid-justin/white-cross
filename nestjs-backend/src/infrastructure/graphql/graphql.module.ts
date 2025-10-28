@@ -19,6 +19,7 @@ import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { Request, Response } from 'express';
 import { ContactResolver } from './resolvers/contact.resolver';
 import { StudentResolver } from './resolvers/student.resolver';
 import { ContactModule } from '../../contact/contact.module';
@@ -55,7 +56,7 @@ import { GraphQLJSON } from 'graphql-scalars';
         },
 
         // Context builder - extracts request for authentication
-        context: ({ req, res }) => ({ req, res }),
+        context: ({ req, res }: { req: Request; res: Response }) => ({ req, res }),
 
         // Custom scalars
         resolvers: {

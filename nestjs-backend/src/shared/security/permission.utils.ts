@@ -54,7 +54,7 @@
 
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import * as Boom from '@hapi/boom';
-import { UserRole } from '../../database/types/enums';
+import { UserRole } from '../../common/enums';
 
 /**
  * Permission interface representing resource-action based access control

@@ -12,11 +12,11 @@ import { PaginationDto } from './pagination.dto';
  * Contact Type Enum for GraphQL
  */
 export enum ContactType {
-  GUARDIAN = 'guardian',
-  STAFF = 'staff',
-  VENDOR = 'vendor',
-  PROVIDER = 'provider',
-  OTHER = 'other'
+  Guardian = 'guardian',
+  Staff = 'staff',
+  Vendor = 'vendor',
+  Provider = 'provider',
+  Other = 'other'
 }
 
 // Register enum with GraphQL

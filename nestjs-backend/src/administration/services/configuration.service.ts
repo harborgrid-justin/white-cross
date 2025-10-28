@@ -93,9 +93,13 @@ export class ConfigurationService {
           { key: data.key },
           { ...data },
         );
-        config = await queryRunner.manager.findOne(SystemConfiguration, {
+        const foundConfig = await queryRunner.manager.findOne(SystemConfiguration, {
           where: { key: data.key },
         });
+        if (!foundConfig) {
+          throw new Error(`Configuration with key '${data.key}' not found after update`);
+        }
+        config = foundConfig;
       } else {
         config = queryRunner.manager.create(SystemConfiguration, data);
         config = await queryRunner.manager.save(config);

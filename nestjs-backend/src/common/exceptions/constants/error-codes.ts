@@ -118,6 +118,9 @@ export const HealthcareErrorCodes = {
   // Incident reporting
   INCIDENT_REQUIRES_REVIEW: 'HEALTH_501',
   INCIDENT_NOTIFICATION_REQUIRED: 'HEALTH_502',
+
+  // General operations
+  OPERATION_NOT_ALLOWED: 'HEALTH_601',
 } as const;
 
 /**

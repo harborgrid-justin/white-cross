@@ -13,7 +13,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Allergy, AllergySeverity } from '../entities/allergy.entity';
+import { Allergy } from '../entities/allergy.entity';
+import { AllergySeverity } from '../../common/enums';
 import { AllergyCrudService } from './allergy-crud.service';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 
@@ -45,7 +46,6 @@ export class AllergySafetyService {
     const updatedAllergy = await this.allergyCrudService.updateAllergy(id, {
       verified: true,
       verifiedBy,
-      verifiedAt: new Date(),
     });
 
     this.logger.log(

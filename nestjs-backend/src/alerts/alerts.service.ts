@@ -19,11 +19,13 @@
 
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CreateAlertDto } from './dto/create-alert.dto';
 
 export enum AlertSeverity {
   INFO = 'INFO',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR',
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
   EMERGENCY = 'EMERGENCY',
 }
@@ -50,21 +52,6 @@ export enum DeliveryChannel {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
   PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
-}
-
-export interface CreateAlertDto {
-  definitionId?: string;
-  severity: AlertSeverity;
-  category: AlertCategory;
-  title: string;
-  message: string;
-  studentId?: string;
-  userId?: string;
-  schoolId?: string;
-  metadata?: Record<string, any>;
-  expiresAt?: Date;
-  autoEscalateAfter?: number; // minutes
-  requiresAcknowledgment: boolean;
 }
 
 export interface Alert {
@@ -467,22 +454,63 @@ export class AlertsService {
   }
 
   /**
-   * Get active alerts for a user
+   * Get user alerts with filtering
    */
-  async getActiveAlerts(userId: string): Promise<Alert[]> {
+  async getUserAlerts(userId: string, filterDto: any): Promise<{ data: Alert[]; total: number; page: number; limit: number }> {
+    const { page = 1, limit = 20, unreadOnly = false } = filterDto;
     const alerts: Alert[] = [];
 
     for (const alert of this.alerts.values()) {
-      if (
-        alert.status === AlertStatus.ACTIVE &&
-        (alert.userId === userId || alert.schoolId) // User-specific or school-wide
-      ) {
+      if (alert.userId === userId || alert.schoolId) {
+        if (unreadOnly && alert.status !== AlertStatus.ACTIVE) {
+          continue;
+        }
         alerts.push(alert);
       }
     }
 
-    return alerts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const sorted = alerts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedData = sorted.slice(startIndex, endIndex);
+
+    return {
+      data: paginatedData,
+      total: alerts.length,
+      page,
+      limit,
+    };
   }
+
+  /**
+   * Delete an alert
+   */
+  async deleteAlert(alertId: string): Promise<void> {
+    const alert = this.alerts.get(alertId);
+
+    if (!alert) {
+      throw new AlertNotFoundException(alertId);
+    }
+
+    this.alerts.delete(alertId);
+    this.logger.log(`Alert ${alertId} deleted`);
+  }
+
+  /**
+   * Get user preferences
+   */
+  async getPreferences(userId: string): Promise<AlertPreferences> {
+    return this.getUserAlertPreferences(userId);
+  }
+
+  /**
+   * Update user preferences
+   */
+  async updatePreferences(userId: string, updateDto: any): Promise<AlertPreferences> {
+    return this.updateUserAlertPreferences(userId, updateDto);
+  }
+
+
 
   /**
    * Get alert statistics
@@ -761,8 +789,9 @@ export class AlertsService {
   private getSeverityIcon(severity: AlertSeverity): string {
     const icons: Record<AlertSeverity, string> = {
       [AlertSeverity.INFO]: 'info_icon',
-      [AlertSeverity.WARNING]: 'warning_icon',
-      [AlertSeverity.ERROR]: 'error_icon',
+      [AlertSeverity.LOW]: 'low_icon',
+      [AlertSeverity.MEDIUM]: 'medium_icon',
+      [AlertSeverity.HIGH]: 'high_icon',
       [AlertSeverity.CRITICAL]: 'critical_icon',
       [AlertSeverity.EMERGENCY]: 'emergency_icon',
     };

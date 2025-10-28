@@ -50,3 +50,16 @@ export enum AllergySeverity {
   SEVERE = 'SEVERE',
   LIFE_THREATENING = 'LIFE_THREATENING',
 }
+
+/**
+ * User Roles
+ * Healthcare user roles for access control
+ */
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  NURSE = 'NURSE',
+  SCHOOL_ADMIN = 'SCHOOL_ADMIN',
+  DISTRICT_ADMIN = 'DISTRICT_ADMIN',
+  COUNSELOR = 'COUNSELOR',
+  VIEWER = 'VIEWER'
+}

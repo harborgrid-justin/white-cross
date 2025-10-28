@@ -145,7 +145,7 @@ export class IncidentValidationService {
       return true;
     } catch {
       // If it's not a full URL, check if it's a valid file path
-      return url && url.length > 0 && !url.includes('..') && !url.startsWith('/');
+      return Boolean(url && url.length > 0 && !url.includes('..') && !url.startsWith('/'));
     }
   }
 }

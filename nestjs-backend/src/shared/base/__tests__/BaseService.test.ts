@@ -12,8 +12,17 @@
  */
 
 import { BaseService, BaseServiceConfig } from '../BaseService';
-import { logger } from '../../../utils/logger';
-import { createMockStudent, generateMockUUID } from '../../../../__tests__/setup';
+import { logger } from '../../logging/logger.service';
+
+// Mock implementations for testing
+const createMockStudent = () => ({
+  id: 'test-student-id',
+  firstName: 'Test',
+  lastName: 'Student',
+  studentNumber: '12345'
+});
+
+const generateMockUUID = () => 'mock-uuid-12345';
 
 // ============================================================================
 // TEST SERVICE IMPLEMENTATION

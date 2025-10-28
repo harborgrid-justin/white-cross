@@ -351,12 +351,14 @@ export function validateArray(
         });
       });
 
-      itemResult.warnings.forEach(warning => {
-        warnings.push({
-          ...warning,
-          field: `${fieldName}[${index}].${warning.field}`
+      if (itemResult.warnings && itemResult.warnings.length > 0) {
+        itemResult.warnings.forEach(warning => {
+          warnings.push({
+            ...warning,
+            field: `${fieldName}[${index}].${warning.field}`
+          });
         });
-      });
+      }
     });
   }
 
@@ -376,7 +378,9 @@ export function combineValidationResults(...results: ValidationResult[]): Valida
 
   for (const result of results) {
     allErrors.push(...result.errors);
-    allWarnings.push(...result.warnings);
+    if (result.warnings && result.warnings.length > 0) {
+      allWarnings.push(...result.warnings);
+    }
   }
 
   return {

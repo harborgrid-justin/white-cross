@@ -123,7 +123,7 @@ export class VaccinationService {
 
     // Reload with associations
     const vaccinationWithRelations = await this.vaccinationRepository.findOne({
-      where: { id: savedVaccination.id },
+      where: { id: (savedVaccination as any).id },
       relations: ['student'],
     });
 

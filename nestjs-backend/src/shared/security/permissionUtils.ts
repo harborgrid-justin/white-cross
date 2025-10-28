@@ -23,7 +23,7 @@
 
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import * as Boom from '@hapi/boom';
-import { UserRole } from '../../database/types/enums';
+import { UserRole } from '../../common/enums';
 
 export interface Permission {
   resource: string;

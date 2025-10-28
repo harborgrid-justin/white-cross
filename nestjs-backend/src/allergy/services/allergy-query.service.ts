@@ -13,7 +13,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, ILike } from 'typeorm';
-import { Allergy, AllergySeverity } from '../entities/allergy.entity';
+import { Allergy } from '../entities/allergy.entity';
+import { AllergySeverity } from '../../common/enums';
 import { AllergyFiltersDto } from '../dto/allergy-filters.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 

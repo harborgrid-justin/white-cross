@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In, MoreThan, LessThan } from 'typeorm';
+import { Repository, Between, In, MoreThan, LessThan, IsNull } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import {
@@ -74,7 +74,7 @@ export class HealthTrendAnalyticsService {
         where: {
           schoolId,
           isActive: true,
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -83,7 +83,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(start, end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
         relations: ['student'],
       });
@@ -99,7 +99,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -125,7 +125,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -161,7 +161,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordType: 'CHRONIC_CONDITION_REVIEW',
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -171,7 +171,7 @@ export class HealthTrendAnalyticsService {
           student: { schoolId },
           recordDate: Between(start, end),
           recordType: In(['ILLNESS', 'INJURY', 'DIAGNOSIS']),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -206,9 +206,7 @@ export class HealthTrendAnalyticsService {
       // Query incidents
       const incidents = await this.incidentRepository.find({
         where: {
-          schoolId,
-          incidentDate: Between(start, end),
-          deletedAt: null,
+          occurredAt: Between(start, end),
         },
       });
 
@@ -219,9 +217,7 @@ export class HealthTrendAnalyticsService {
 
       const previousIncidents = await this.incidentRepository.count({
         where: {
-          schoolId,
-          incidentDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: null,
+          occurredAt: Between(previousPeriod.start, previousPeriod.end),
         },
       });
 
@@ -300,7 +296,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(start, end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
         order: { recordDate: 'ASC' },
       });
@@ -404,11 +400,9 @@ export class HealthTrendAnalyticsService {
 
       const incidents = await this.incidentRepository.find({
         where: {
-          schoolId,
-          incidentDate: Between(start, end),
-          deletedAt: null,
+          occurredAt: Between(start, end),
         },
-        order: { incidentDate: 'ASC' },
+        order: { occurredAt: 'ASC' },
       });
 
       // Analyze by type
@@ -418,7 +412,7 @@ export class HealthTrendAnalyticsService {
 
       for (const incident of incidents) {
         // By type
-        const type = incident.incidentType || 'Unknown';
+        const type = incident.type || 'Unknown';
         typeMap.set(type, (typeMap.get(type) || 0) + 1);
 
         // By location
@@ -426,7 +420,7 @@ export class HealthTrendAnalyticsService {
         locationMap.set(location, (locationMap.get(location) || 0) + 1);
 
         // By time of day
-        const hour = new Date(incident.incidentDate).getHours();
+        const hour = new Date(incident.occurredAt).getHours();
         hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
       }
 
@@ -588,7 +582,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(dateRange.start, dateRange.end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -670,7 +664,7 @@ export class HealthTrendAnalyticsService {
           const healthVisits = await this.healthRecordRepository.count({
             where: {
               studentId: In(studentIds),
-              deletedAt: null,
+              deletedAt: IsNull(),
             },
           });
 
@@ -714,7 +708,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(dateRange.start, dateRange.end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -722,7 +716,7 @@ export class HealthTrendAnalyticsService {
         where: {
           student: { schoolId },
           recordDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -824,6 +818,17 @@ export class HealthTrendAnalyticsService {
     if (normalized.includes('adhd') || normalized.includes('attention')) return 'ADHD';
 
     return diagnosis;
+  }
+
+  /**
+   * Get common locations for incident type
+   */
+  private getCommonLocationsForType(incidents: IncidentReport[], type: string): string[] {
+    return incidents
+      .filter(i => i.type === type)
+      .map(i => i.location || 'Unknown')
+      .filter((loc, idx, arr) => arr.indexOf(loc) === idx)
+      .slice(0, 3);
   }
 
   /**
@@ -1001,26 +1006,15 @@ export class HealthTrendAnalyticsService {
   }
 
   /**
-   * Get common locations for incident type
-   */
-  private getCommonLocationsForType(incidents: IncidentReport[], type: string): string[] {
-    return incidents
-      .filter(i => i.incidentType === type)
-      .map(i => i.location || 'Unknown')
-      .filter((loc, idx, arr) => arr.indexOf(loc) === idx)
-      .slice(0, 3);
-  }
-
-  /**
    * Get time of day distribution for incident type
    */
   private getTimeDistribution(incidents: IncidentReport[], type: string): { hour: number; count: number }[] {
     const hourMap = new Map<number, number>();
 
     incidents
-      .filter(i => i.incidentType === type)
+      .filter(i => i.type === type)
       .forEach(i => {
-        const hour = new Date(i.incidentDate).getHours();
+        const hour = new Date(i.occurredAt).getHours();
         hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
       });
 

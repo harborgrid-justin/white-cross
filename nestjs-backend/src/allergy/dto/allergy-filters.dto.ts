@@ -11,7 +11,8 @@ import {
   IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AllergySeverity, AllergenType } from '../entities/allergy.entity';
+import { AllergySeverity } from '../../common/enums';
+import { AllergenType } from '../entities/allergy.entity';
 
 export class AllergyFiltersDto {
   /**

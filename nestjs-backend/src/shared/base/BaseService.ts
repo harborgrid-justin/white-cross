@@ -19,12 +19,39 @@ import {
   ServiceResponse
 } from '../types/common';
 import { validateUUID } from '../validation/commonValidators';
-import {
-  ErrorMetadata,
-  ApplicationError,
-  SequelizeValidationErrorItem,
-  ValidationErrorCode
-} from '../../../types/validation';
+
+// Placeholder types for missing validation types
+interface ErrorMetadata {
+  [key: string]: any;
+}
+
+interface ApplicationError extends Error {
+  code?: string;
+  statusCode?: number;
+}
+
+interface SequelizeValidationErrorItem {
+  message: string;
+  type: string;
+  path: string;
+  value: any;
+}
+
+enum ValidationErrorCode {
+  REQUIRED_FIELD = 'REQUIRED_FIELD',
+  INVALID_TYPE = 'INVALID_TYPE',
+  INVALID_VALUE = 'INVALID_VALUE',
+  TOO_SHORT = 'TOO_SHORT',
+  TOO_LONG = 'TOO_LONG',
+  TOO_SMALL = 'TOO_SMALL',
+  TOO_LARGE = 'TOO_LARGE',
+  INVALID_FORMAT = 'INVALID_FORMAT',
+  DUPLICATE_VALUE = 'DUPLICATE_VALUE',
+  INVALID_REFERENCE = 'INVALID_REFERENCE',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
+  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION'
+}
+
 import { Model, ModelStatic, Transaction, Op, Sequelize } from 'sequelize';
 
 /**

@@ -171,7 +171,7 @@ export class EmailTemplateService implements OnModuleInit {
       let templateEntry: TemplateCacheEntry;
 
       if (this.cacheEnabled && this.templateCache.has(template)) {
-        templateEntry = this.templateCache.get(template);
+        templateEntry = this.templateCache.get(template) as TemplateCacheEntry;
       } else {
         templateEntry = await this.loadTemplate(template);
       }

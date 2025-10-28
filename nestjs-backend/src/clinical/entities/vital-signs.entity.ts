@@ -115,8 +115,8 @@ export class VitalSigns {
    * Calculate BMI from height and weight
    * Formula: (weight in pounds / (height in inches)^2) * 703
    */
-  calculateBMI(): number | null {
-    if (!this.height || !this.weight || this.height === 0) return null;
+  calculateBMI(): number | undefined {
+    if (!this.height || !this.weight || this.height === 0) return undefined;
     return parseFloat(((this.weight / (this.height * this.height)) * 703).toFixed(1));
   }
 

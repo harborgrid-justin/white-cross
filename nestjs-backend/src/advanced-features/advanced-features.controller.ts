@@ -66,7 +66,6 @@ export class AdvancedFeaturesController {
   @ApiParam({
     name: 'studentId',
     description: 'Student UUID',
-    format: 'uuid',
   })
   @ApiResponse({
     status: 200,
@@ -110,7 +109,6 @@ export class AdvancedFeaturesController {
   @ApiParam({
     name: 'studentId',
     description: 'Student UUID',
-    format: 'uuid',
   })
   @ApiResponse({
     status: 200,
@@ -136,7 +134,6 @@ export class AdvancedFeaturesController {
   @ApiParam({
     name: 'studentId',
     description: 'Student UUID',
-    format: 'uuid',
   })
   @ApiResponse({
     status: 200,
@@ -185,7 +182,7 @@ export class AdvancedFeaturesController {
     name: 'studentId',
     required: false,
     description: 'Filter by student UUID',
-    format: 'uuid',
+    schema: { format: 'uuid' },
   })
   @ApiQuery({
     name: 'limit',

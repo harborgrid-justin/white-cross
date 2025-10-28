@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, IsNull } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import * as jsPDF from 'jspdf';
@@ -77,7 +77,7 @@ export class ComplianceReportGeneratorService {
         where: {
           schoolId: params.schoolId,
           isActive: true,
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -89,7 +89,7 @@ export class ComplianceReportGeneratorService {
           student: { schoolId: params.schoolId },
           recordType: 'IMMUNIZATION',
           recordDate: Between(params.periodStart, params.periodEnd),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -247,7 +247,7 @@ export class ComplianceReportGeneratorService {
           student: { schoolId: params.schoolId },
           recordType: 'MEDICATION_REVIEW',
           recordDate: Between(params.periodStart, params.periodEnd),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -418,7 +418,7 @@ export class ComplianceReportGeneratorService {
       this.logger.log(`Generating health screening report for school ${params.schoolId}`);
 
       const students = await this.studentRepository.count({
-        where: { schoolId: params.schoolId, isActive: true, deletedAt: null },
+        where: { schoolId: params.schoolId, isActive: true, deletedAt: IsNull() },
       });
 
       const screeningRecords = await this.healthRecordRepository.find({
@@ -426,7 +426,7 @@ export class ComplianceReportGeneratorService {
           student: { schoolId: params.schoolId },
           recordType: 'SCREENING',
           recordDate: Between(params.periodStart, params.periodEnd),
-          deletedAt: null,
+          deletedAt: IsNull(),
         },
       });
 
@@ -691,13 +691,13 @@ export class ComplianceReportGeneratorService {
 
       // Title
       doc.setFontSize(18);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text(report.title, pageWidth / 2, yPos, { align: 'center' });
       yPos += 10;
 
       // Report metadata
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(`Report ID: ${report.id}`, 15, yPos);
       yPos += 5;
       doc.text(`Generated: ${report.generatedDate.toLocaleDateString()}`, 15, yPos);
@@ -707,12 +707,12 @@ export class ComplianceReportGeneratorService {
 
       // Executive Summary
       doc.setFontSize(14);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Executive Summary', 15, yPos);
       yPos += 7;
 
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
 
       autoTable(doc, {
         startY: yPos,
@@ -738,7 +738,7 @@ export class ComplianceReportGeneratorService {
         }
 
         doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text('Findings', 15, yPos);
         yPos += 7;
 
@@ -766,12 +766,12 @@ export class ComplianceReportGeneratorService {
         }
 
         doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text('Recommendations', 15, yPos);
         yPos += 7;
 
         doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
+        doc.setFont('helvetica', 'normal');
 
         report.recommendations.forEach((rec, index) => {
           if (yPos > 280) {

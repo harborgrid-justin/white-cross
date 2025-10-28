@@ -179,7 +179,7 @@ export class InventoryMaintenanceProcessor {
 
       return {
         alertsIdentified: alerts.length,
-        reorderSuggestions: reorderSuggestions.length,
+        reorderSuggestionsCount: reorderSuggestions.length,
         duration,
         alerts,
         reorderSuggestions,

@@ -18,7 +18,7 @@ import { SchoolService } from './services/school.service';
 import { LicenseService } from './services/license.service';
 import { ConfigurationService } from './services/configuration.service';
 import { AuditService } from './services/audit.service';
-import { BackupService } from './services/backup.service';
+import { BackupService, BackupLog } from './services/backup.service';
 
 // Import DTOs
 import {

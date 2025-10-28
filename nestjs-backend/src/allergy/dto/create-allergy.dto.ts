@@ -14,7 +14,8 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AllergySeverity, AllergenType } from '../entities/allergy.entity';
+import { AllergySeverity } from '../../common/enums';
+import { AllergenType } from '../entities/allergy.entity';
 
 export class CreateAllergyDto {
   /**

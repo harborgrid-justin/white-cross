@@ -79,7 +79,7 @@ export class AccessControlController {
   @ApiResponse({ status: 400, description: 'Bad request - validation error or duplicate name' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async createRole(@Body() createRoleDto: CreateRoleDto, @Request() req: ExpressRequest) {
-    return this.accessControlService.createRole(createRoleDto, req.user?.id);
+    return this.accessControlService.createRole(createRoleDto, (req.user as any)?.id);
   }
 
   @Patch('roles/:id')
@@ -92,7 +92,7 @@ export class AccessControlController {
   @ApiResponse({ status: 404, description: 'Role not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async updateRole(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto, @Request() req: ExpressRequest) {
-    return this.accessControlService.updateRole(id, updateRoleDto, req.user?.id);
+    return this.accessControlService.updateRole(id, updateRoleDto, (req.user as any)?.id);
   }
 
   @Delete('roles/:id')
@@ -105,7 +105,7 @@ export class AccessControlController {
   @ApiResponse({ status: 404, description: 'Role not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async deleteRole(@Param('id') id: string, @Request() req: ExpressRequest) {
-    return this.accessControlService.deleteRole(id, req.user?.id);
+    return this.accessControlService.deleteRole(id, (req.user as any)?.id);
   }
 
   // ============================================================================
@@ -180,9 +180,9 @@ export class AccessControlController {
   async assignRoleToUser(
     @Param('userId') userId: string,
     @Body() dto: AssignRoleToUserDto,
-    @Request() req,
+    @Request() req: ExpressRequest,
   ) {
-    return this.accessControlService.assignRoleToUser(userId, dto.roleId, req.user?.id);
+    return this.accessControlService.assignRoleToUser(userId, dto.roleId, (req.user as any)?.id);
   }
 
   @Delete('users/:userId/roles/:roleId')
@@ -206,9 +206,9 @@ export class AccessControlController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getUserPermissions(@Param('userId') userId: string, @Request() req: ExpressRequest) {
     // Allow users to view their own permissions, or require permission to view others
-    if (userId !== req.user?.id) {
+    if (userId !== (req.user as any)?.id) {
       const hasPermission = await this.accessControlService.checkPermission(
-        req.user?.id,
+        (req.user as any)?.id,
         'users',
         'manage',
       );
@@ -227,7 +227,7 @@ export class AccessControlController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async checkPermission(@Body() dto: CheckPermissionDto, @Request() req: ExpressRequest) {
     const hasPermission = await this.accessControlService.checkPermission(
-      req.user?.id,
+      (req.user as any)?.id,
       dto.resource,
       dto.action,
     );
@@ -245,9 +245,9 @@ export class AccessControlController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getUserSessions(@Param('userId') userId: string, @Request() req: ExpressRequest) {
     // Allow users to view their own sessions, or require permission to view others
-    if (userId !== req.user?.id) {
+    if (userId !== (req.user as any)?.id) {
       const hasPermission = await this.accessControlService.checkPermission(
-        req.user?.id,
+        (req.user as any)?.id,
         'sessions',
         'manage',
       );
@@ -319,7 +319,7 @@ export class AccessControlController {
   async createSecurityIncident(@Body() dto: CreateSecurityIncidentDto, @Request() req: ExpressRequest) {
     return this.accessControlService.createSecurityIncident({
       ...dto,
-      detectedBy: dto.detectedBy || req.user?.id,
+      detectedBy: dto.detectedBy || (req.user as any)?.id,
     });
   }
 
@@ -351,7 +351,7 @@ export class AccessControlController {
   async addIpRestriction(@Body() dto: CreateIpRestrictionDto, @Request() req: ExpressRequest) {
     return this.accessControlService.addIpRestriction({
       ...dto,
-      createdBy: dto.createdBy || req.user?.id,
+      createdBy: dto.createdBy || (req.user as any)?.id,
     });
   }
 

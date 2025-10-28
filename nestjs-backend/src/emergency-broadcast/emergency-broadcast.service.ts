@@ -481,7 +481,7 @@ export class EmergencyBroadcastService {
       // and increment acknowledgedCount on broadcast
       const context: ExecutionContext = {
         userId: recipientId,
-        userRole: 'STUDENT' as any,
+        userRole: 'SYSTEM' as any,
         ipAddress: 'system',
         userAgent: 'emergency-broadcast-service',
         timestamp: new Date(),

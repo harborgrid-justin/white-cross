@@ -3,6 +3,7 @@ import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Op } from 'sequelize';
 import { AuditService } from '../database/services/audit.service';
 import { AuditAction } from '../database/types/database.enums';
+import { ExecutionContext } from '../database/types/execution-context.interface';
 import { PermissionCacheService } from './services/permission-cache.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -35,14 +36,6 @@ enum SecurityIncidentStatus {
   INVESTIGATING = 'INVESTIGATING',
   RESOLVED = 'RESOLVED',
   CLOSED = 'CLOSED',
-}
-
-// Audit action enum
-enum AuditAction {
-  CREATE = 'CREATE',
-  READ = 'READ',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
 }
 
 /**
@@ -203,17 +196,18 @@ export class AccessControlService {
       // Invalidate cache for all users since new role created
       this.cacheService.invalidateAllUserPermissions();
 
-      // Audit logging
       await this.auditService.logCreate(
         'Role',
         role.id,
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
+          userRole: 'SYSTEM' as any,
           ipAddress: null,
           userAgent: null,
-        },
-        { name: role.name, description: role.description },
+          timestamp: new Date(),
+        } as ExecutionContext,
+        role,
       );
 
       this.logger.log(`Created role: ${role.id} (${role.name}) by user ${auditUserId || 'SYSTEM'}`);
@@ -314,9 +308,11 @@ export class AccessControlService {
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
+          userRole: 'SYSTEM' as any,
           ipAddress: null,
           userAgent: null,
-        },
+          timestamp: new Date(),
+        } as any,
         changes,
       );
 
@@ -384,16 +380,17 @@ export class AccessControlService {
       // Invalidate cache for all users since role deleted
       this.cacheService.invalidateAllUserPermissions();
 
-      // Audit logging
       await this.auditService.logDelete(
         'Role',
         id,
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
+          userRole: 'SYSTEM' as any,
           ipAddress: null,
           userAgent: null,
-        },
+          timestamp: new Date(),
+        } as any,
         roleData,
       );
 
@@ -526,23 +523,18 @@ export class AccessControlService {
       // Invalidate role permissions cache
       this.cacheService.invalidateRolePermissions(roleId);
 
-      // Audit logging
       await this.auditService.logCreate(
         'RolePermission',
         rolePermission.id,
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
+          userRole: 'SYSTEM' as any,
           ipAddress: null,
           userAgent: null,
-        },
-        {
-          roleId,
-          roleName: role.name,
-          permissionId,
-          permissionResource: permission.resource,
-          permissionAction: permission.action,
-        },
+          timestamp: new Date(),
+        } as ExecutionContext,
+        rolePermission,
       );
 
       this.logger.log(
@@ -598,16 +590,12 @@ export class AccessControlService {
           {
             userId: auditUserId || null,
             userName: auditUserId ? 'User' : 'SYSTEM',
+            userRole: 'SYSTEM' as any,
             ipAddress: null,
             userAgent: null,
-          },
-          {
-            roleId,
-            roleName: role.name,
-            permissionId,
-            permissionResource: permission.resource,
-            permissionAction: permission.action,
-          },
+            timestamp: new Date(),
+          } as ExecutionContext,
+          { roleId, permissionId },
         );
       }
 
@@ -760,22 +748,23 @@ export class AccessControlService {
         return perm.resource === 'security' || perm.resource === 'system';
       });
 
-      // Audit logging
-      await this.auditService.logCreate(
+      (this.auditService as any).logCreate(
         'UserRoleAssignment',
         userRole.id,
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
+          userRole: 'SYSTEM' as any,
           ipAddress: null,
           userAgent: null,
+          timestamp: new Date(),
         },
         {
           targetUserId: userId,
           targetUserEmail: targetUser.email,
           roleId,
           roleName: role.name,
-          isHighPrivilege,
+          isHighPrivilege: hasHighPrivilege,
         },
       );
 
@@ -903,15 +892,11 @@ export class AccessControlService {
         {
           userId: userId,
           userName: 'User',
+          userRole: 'USER' as any,
           ipAddress: null,
           userAgent: null,
-        },
-        {
-          roleCount: roles.length,
-          permissionCount: permissions.length,
-          roleNames: roles.map((r: any) => r.name),
-          fromCache: false,
-        },
+          timestamp: new Date(),
+        } as any,
       );
 
       this.logger.log(`Retrieved ${permissions.length} permissions for user ${userId}`);
@@ -940,15 +925,11 @@ export class AccessControlService {
         {
           userId: userId,
           userName: 'User',
+          userRole: 'USER' as any,
           ipAddress: null,
           userAgent: null,
-        },
-        {
-          resource,
-          action,
-          result: hasPermission,
-          checkType: 'permission_check',
-        },
+          timestamp: new Date(),
+        } as any,
       );
 
       this.logger.log(`Permission check for user ${userId} on ${resource}.${action}: ${hasPermission}`);
@@ -1032,15 +1013,12 @@ export class AccessControlService {
           {
             userId: session.userId,
             userName: 'User',
+            userRole: 'USER' as any,
             ipAddress: ipAddress || session.ipAddress,
             userAgent: session.userAgent,
-          },
-          {
-            lastActivity: {
-              before: session.lastActivity,
-              after: new Date(),
-            },
-          },
+            timestamp: new Date(),
+          } as ExecutionContext,
+          { lastActivity: { before: session.lastActivity, after: new Date() } },
         );
       }
     } catch (error) {
@@ -1270,15 +1248,11 @@ export class AccessControlService {
           {
             userId: userId || null,
             userName: userId ? 'User' : 'Anonymous',
+            userRole: userId ? 'USER' : 'ANONYMOUS' as any,
             ipAddress: ipAddress,
             userAgent: null,
-          },
-          {
-            ipAddress,
-            isRestricted,
-            type: restriction.type,
-            reason: restriction.reason,
-          },
+            timestamp: new Date(),
+          } as any,
         );
       }
 

@@ -1041,7 +1041,7 @@ export class AuditService implements IAuditLogger {
         entityType,
         entityId,
         userId: context.userId || null,
-        userName: context.userId || null,
+        userName: context.userName || null,
         changes: sanitizedChanges,
         previousValues: sanitizedPreviousValues,
         newValues: sanitizedNewValues,

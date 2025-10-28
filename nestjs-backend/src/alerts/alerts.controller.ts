@@ -64,7 +64,8 @@ export class AlertsController {
     description: 'Alert created successfully',
   })
   async create(@Body() createDto: CreateAlertDto) {
-    return this.alertsService.createAlert(createDto);
+    // TODO: Get userId from JWT token
+    return this.alertsService.createAlert(createDto, 'system-user');
   }
 
   @Patch(':id/read')
@@ -80,7 +81,7 @@ export class AlertsController {
   async markAsRead(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
-    return this.alertsService.markAsRead(id);
+    return this.alertsService.markAsRead(id, 'user-id');
   }
 
   @Delete(':id')

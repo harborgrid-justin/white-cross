@@ -8,7 +8,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthRecordModule } from './health-record/health-record.module';
 import { UserModule } from './user/user.module';
-import { InventoryModule } from './inventory/inventory.module';
+
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ChronicConditionModule } from './chronic-condition/chronic-condition.module';
 import { AllergyModule } from './allergy/allergy.module';
@@ -89,9 +89,6 @@ import { MedicationModule } from './medication/medication.module';
     // Core modules
     UserModule,
     HealthRecordModule,
-
-    // Inventory management module
-    InventoryModule,
 
     // Analytics module
     AnalyticsModule,

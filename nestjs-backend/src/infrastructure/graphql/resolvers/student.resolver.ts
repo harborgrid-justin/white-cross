@@ -11,7 +11,8 @@ import { GqlAuthGuard } from '../guards/gql-auth.guard';
 import {
   StudentDto,
   StudentListResponseDto,
-  StudentFilterInputDto
+  StudentFilterInputDto,
+  Gender
 } from '../dto';
 import { StudentService } from '../../../student/student.service';
 
@@ -54,8 +55,8 @@ export class StudentResolver {
     });
 
     // Handle different response formats from StudentService
-    const students = result.students || result.data || [];
-    const paginationData = result.pagination || result.meta || {};
+    const students = result.data || [];
+    const paginationData = result.meta || {};
 
     return {
       students: students.map((student: any) => ({
@@ -66,7 +67,7 @@ export class StudentResolver {
         page: paginationData.page || page,
         limit: paginationData.limit || limit,
         total: paginationData.total || 0,
-        totalPages: paginationData.pages || paginationData.totalPages || 0
+        totalPages: paginationData.pages || 0
       }
     };
   }
@@ -87,6 +88,10 @@ export class StudentResolver {
 
     return {
       ...student,
+      gender: student.gender as Gender,
+      photo: student.photo || undefined,
+      medicalRecordNum: student.medicalRecordNum || undefined,
+      nurseId: student.nurseId || undefined,
       fullName: `${student.firstName} ${student.lastName}`
     };
   }

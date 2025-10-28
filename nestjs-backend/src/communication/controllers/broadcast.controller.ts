@@ -7,7 +7,7 @@ import {
   Query,
   UseGuards,
   Req,
-} from '@nestjs/swagger';
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,

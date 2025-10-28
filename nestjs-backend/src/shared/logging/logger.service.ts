@@ -111,6 +111,15 @@ export class LoggerService implements NestLoggerService {
   }
 
   /**
+   * Log an informational message (alias for log)
+   * @param message - Log message
+   * @param context - Optional context override
+   */
+  info(message: any, context?: string): void {
+    this.log(message, context);
+  }
+
+  /**
    * Log an error message with optional trace
    * @param message - Error message
    * @param trace - Stack trace or error details

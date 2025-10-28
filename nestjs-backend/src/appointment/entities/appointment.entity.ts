@@ -97,6 +97,30 @@ export interface AvailabilitySlot {
 }
 
 /**
+ * Appointment entity representation for API responses
+ */
+export interface AppointmentEntity {
+  id: string;
+  studentId: string;
+  nurseId: string;
+  appointmentType: AppointmentType;
+  scheduledDate: Date;
+  duration: number;
+  reason?: string;
+  notes?: string;
+  status: AppointmentStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  nurse?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    fullName: string;
+  };
+}
+
+/**
  * Paginated response wrapper
  */
 export interface PaginatedResponse<T> {

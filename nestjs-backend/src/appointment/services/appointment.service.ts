@@ -347,7 +347,7 @@ export class AppointmentService {
           );
 
           // Schedule new reminders
-          await this.scheduleReminders(id, updateDto.scheduledDate, transaction);
+          await this.scheduleReminders(id, updateDto.scheduledDate!, transaction);
         });
       }
 
@@ -935,13 +935,10 @@ export class AppointmentService {
     try {
       // Find highest priority waitlist entry
       const waitlistEntries = await this.waitlistModel.findAll({
-        where: {
-          status: WaitlistStatus.WAITING,
-          [Op.or]: [
-            { nurseId },
-            { nurseId: null }, // Any nurse
-          ],
-        },
+        where: Sequelize.or(
+          { status: WaitlistStatus.WAITING, nurseId },
+          { status: WaitlistStatus.WAITING, nurseId: null }
+        ),
         order: [
           ['priority', 'DESC'],
           ['createdAt', 'ASC'],

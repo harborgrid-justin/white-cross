@@ -11,7 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Req,
-} from '@nestjs/swagger';
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,

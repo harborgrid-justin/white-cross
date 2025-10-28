@@ -16,7 +16,7 @@ import { UpdateBudgetTransactionDto } from './dto/update-budget-transaction.dto'
 import { BudgetTransactionFiltersDto } from './dto/budget-transaction-filters.dto';
 import { BudgetSummaryDto } from './dto/budget-summary.dto';
 import { SpendingTrendDto } from './dto/spending-trend.dto';
-import { BudgetRecommendationDto } from './dto/budget-recommendation.dto';
+import { BudgetRecommendationDto, BudgetRecommendationType } from './dto/budget-recommendation.dto';
 
 /**
  * Budget Service
@@ -233,10 +233,16 @@ export class BudgetService {
         );
 
         // Reload with category relation
-        return await transactionalEntityManager.findOne(BudgetTransaction, {
+        const result = await transactionalEntityManager.findOne(BudgetTransaction, {
           where: { id: savedTransaction.id },
           relations: ['category'],
         });
+
+        if (!result) {
+          throw new Error('Failed to reload transaction after creation');
+        }
+
+        return result;
       },
     );
   }
@@ -286,10 +292,16 @@ export class BudgetService {
 
         this.logger.log(`Budget transaction updated: ${updated.id}`);
 
-        return await transactionalEntityManager.findOne(BudgetTransaction, {
+        const result = await transactionalEntityManager.findOne(BudgetTransaction, {
           where: { id: updated.id },
           relations: ['category'],
         });
+
+        if (!result) {
+          throw new Error('Failed to reload transaction after update');
+        }
+
+        return result;
       },
     );
   }
@@ -551,7 +563,7 @@ export class BudgetService {
         const currentUtilization =
           currentAllocated > 0 ? (currentSpent / currentAllocated) * 100 : 0;
 
-        let recommendation: 'INCREASE' | 'DECREASE' | 'MAINTAIN' = 'MAINTAIN';
+        let recommendation: BudgetRecommendationType = BudgetRecommendationType.MAINTAIN;
         let suggestedAmount = currentAllocated;
         let reason = 'Current allocation is appropriate';
 
@@ -563,19 +575,19 @@ export class BudgetService {
 
           // Over 90% utilization suggests need for increase
           if (currentUtilization > 90) {
-            recommendation = 'INCREASE';
+            recommendation = BudgetRecommendationType.INCREASE;
             suggestedAmount = Math.ceil(currentSpent * 1.1); // 10% buffer
             reason = `High utilization (${Math.round(currentUtilization)}%) indicates budget pressure`;
           }
           // Under 60% utilization suggests potential decrease
           else if (currentUtilization < 60 && previousUtilization < 60) {
-            recommendation = 'DECREASE';
+            recommendation = BudgetRecommendationType.DECREASE;
             suggestedAmount = Math.ceil(((currentSpent + previousSpent) / 2) * 1.05);
             reason = `Consistent low utilization (${Math.round(currentUtilization)}%) across years`;
           }
           // Trending upward spending
           else if (currentSpent > previousSpent * 1.2) {
-            recommendation = 'INCREASE';
+            recommendation = BudgetRecommendationType.INCREASE;
             suggestedAmount = Math.ceil(currentSpent * 1.15);
             reason = 'Spending trending upward compared to previous year';
           }

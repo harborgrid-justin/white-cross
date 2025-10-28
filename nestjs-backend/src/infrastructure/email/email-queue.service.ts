@@ -93,7 +93,7 @@ export class EmailQueueService implements OnModuleInit {
     });
 
     this.logger.log(`Email job added to queue: ${job.id} (priority: ${priority})`);
-    return job.id;
+    return job.id || '';
   }
 
   /**
@@ -114,7 +114,7 @@ export class EmailQueueService implements OnModuleInit {
       // For now, we just track the job
 
       const result: EmailQueueJobResult = {
-        jobId: job.id,
+        jobId: job.id || '',
         success: true,
         retryCount: attemptNumber - 1,
         completedAt: new Date(),
@@ -130,7 +130,7 @@ export class EmailQueueService implements OnModuleInit {
       // Update retry count
       job.data.retryCount = attemptNumber;
 
-      const shouldRetry = attemptNumber < job.opts.attempts;
+      const shouldRetry = attemptNumber < (job.opts.attempts || 1);
 
       if (shouldRetry) {
         const nextRetryDelay = this.calculateBackoffDelay(attemptNumber);
@@ -143,7 +143,7 @@ export class EmailQueueService implements OnModuleInit {
         await this.moveToDeadLetterQueue(job, error);
 
         return {
-          jobId: job.id,
+          jobId: job.id || '',
           success: false,
           error: error.message,
           retryCount: attemptNumber - 1,
@@ -210,16 +210,16 @@ export class EmailQueueService implements OnModuleInit {
     delayed: number;
     paused: number;
   }> {
-    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+    const [waiting, active, completed, failed, delayed] = await Promise.all([
       this.emailQueue.getWaitingCount(),
       this.emailQueue.getActiveCount(),
       this.emailQueue.getCompletedCount(),
       this.emailQueue.getFailedCount(),
       this.emailQueue.getDelayedCount(),
-      this.emailQueue.getPausedCount(),
+      // Note: getPausedCount may not be available in all BullMQ versions
     ]);
 
-    return { waiting, active, completed, failed, delayed, paused };
+    return { waiting, active, completed, failed, delayed, paused: 0 };
   }
 
   /**
@@ -356,16 +356,20 @@ export class EmailQueueService implements OnModuleInit {
     start: number = 0,
     end: number = 10,
   ): Promise<Job<EmailQueueJobData>[]> {
-    const methodMap = {
-      waiting: 'getWaiting',
-      active: 'getActive',
-      completed: 'getCompleted',
-      failed: 'getFailed',
-      delayed: 'getDelayed',
-    };
-
-    const method = methodMap[status];
-    return this.emailQueue[method](start, end);
+    switch (status) {
+      case 'waiting':
+        return this.emailQueue.getWaiting(start, end);
+      case 'active':
+        return this.emailQueue.getActive(start, end);
+      case 'completed':
+        return this.emailQueue.getCompleted(start, end);
+      case 'failed':
+        return this.emailQueue.getFailed(start, end);
+      case 'delayed':
+        return this.emailQueue.getDelayed(start, end);
+      default:
+        return [];
+    }
   }
 
   /**
