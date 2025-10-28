@@ -95,7 +95,7 @@ export abstract class BaseService {
     error?: ApplicationError | Error | unknown,
     metadata?: ErrorMetadata
   ): void {
-    logger.error(`[${this.serviceName}] ${message}`, error, 'BaseService');
+    logger.error(`[${this.serviceName}] ${message}`, error as Error, 'BaseService');
   }
 
   /**
@@ -140,7 +140,7 @@ export abstract class BaseService {
    * Validate UUID and return validation result
    */
   protected validateId(id: string, fieldName: string = 'ID'): ValidationResult {
-    return validateUUID(id, fieldName);
+    return validateUUID(id, fieldName) as unknown as ValidationResult;
   }
 
   /**
@@ -261,7 +261,7 @@ export abstract class BaseService {
     
     return {
       isValid: errors.length === 0,
-      errors,
+      errors: errors as any,
       warnings: []
     };
   }
@@ -612,7 +612,7 @@ export abstract class BaseService {
     transaction?: Transaction
   ): Promise<T> {
     await entity.reload({
-      include: associations,
+      include: associations as any,
       transaction,
     });
 
