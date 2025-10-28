@@ -1,0 +1,16 @@
+/**
+ * PHI Data Category Enum
+ * HIPAA compliance: Categorizes the type of Protected Health Information accessed
+ */
+export enum PHIDataCategory {
+  HEALTH_RECORD = 'HEALTH_RECORD',
+  MEDICATION = 'MEDICATION',
+  ALLERGY = 'ALLERGY',
+  VACCINATION = 'VACCINATION',
+  DIAGNOSIS = 'DIAGNOSIS',
+  TREATMENT = 'TREATMENT',
+  CHRONIC_CONDITION = 'CHRONIC_CONDITION',
+  SCREENING = 'SCREENING',
+  VITAL_SIGNS = 'VITAL_SIGNS',
+  GROWTH_MEASUREMENT = 'GROWTH_MEASUREMENT',
+}

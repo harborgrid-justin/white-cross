@@ -1,0 +1,8 @@
+export enum InsuranceClaimStatus {
+  PENDING = 'PENDING',
+  SUBMITTED = 'SUBMITTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+  CLOSED = 'CLOSED',
+}

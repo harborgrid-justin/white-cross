@@ -1,0 +1,12 @@
+/**
+ * Time Period for Analytics
+ */
+export enum TimePeriod {
+  LAST_7_DAYS = 'LAST_7_DAYS',
+  LAST_30_DAYS = 'LAST_30_DAYS',
+  LAST_90_DAYS = 'LAST_90_DAYS',
+  LAST_6_MONTHS = 'LAST_6_MONTHS',
+  LAST_YEAR = 'LAST_YEAR',
+  CURRENT_SCHOOL_YEAR = 'CURRENT_SCHOOL_YEAR',
+  CUSTOM = 'CUSTOM',
+}
