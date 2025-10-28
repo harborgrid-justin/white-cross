@@ -25,6 +25,13 @@ import { SecurityModule } from './security/security.module';
 import { ReportModule } from './report/report.module';
 import { MobileModule } from './mobile/mobile.module';
 import { PdfModule } from './pdf/pdf.module';
+import { AcademicTranscriptModule } from './academic-transcript/academic-transcript.module';
+import { AiSearchModule } from './ai-search/ai-search.module';
+import { AlertsModule } from './alerts/alerts.module';
+import { FeaturesModule } from './features/features.module';
+import { HealthDomainModule } from './health-domain/health-domain.module';
+import { InterfacesModule } from './interfaces/interfaces.module';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -81,6 +88,20 @@ import { PdfModule } from './pdf/pdf.module';
     MobileModule,
 
     PdfModule,
+
+    AcademicTranscriptModule,
+
+    AiSearchModule,
+
+    AlertsModule,
+
+    FeaturesModule,
+
+    HealthDomainModule,
+
+    InterfacesModule,
+
+    SharedModule,
 
     // Feature modules will be added here
     // MedicationModule will be imported here
