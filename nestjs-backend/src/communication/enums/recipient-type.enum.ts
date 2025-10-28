@@ -1,0 +1,8 @@
+export enum RecipientType {
+  NURSE = 'NURSE',
+  PARENT = 'PARENT',
+  STUDENT = 'STUDENT',
+  EMERGENCY_CONTACT = 'EMERGENCY_CONTACT',
+  ADMIN = 'ADMIN',
+  TEACHER = 'TEACHER',
+}
