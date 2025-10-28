@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AccessControlService } from './access-control.service';
 import { AccessControlController } from './access-control.controller';
+import { PermissionCacheService } from './services/permission-cache.service';
 import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { IpRestrictionGuard } from './guards/ip-restriction.guard';
@@ -32,6 +33,7 @@ import { IpRestrictionGuard } from './guards/ip-restriction.guard';
   ],
   providers: [
     AccessControlService,
+    PermissionCacheService,
     RolesGuard,
     PermissionsGuard,
     IpRestrictionGuard,
@@ -39,6 +41,7 @@ import { IpRestrictionGuard } from './guards/ip-restriction.guard';
   controllers: [AccessControlController],
   exports: [
     AccessControlService,
+    PermissionCacheService,
     RolesGuard,
     PermissionsGuard,
     IpRestrictionGuard,

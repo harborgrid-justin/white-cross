@@ -1,6 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger, Inject } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Op } from 'sequelize';
+import { AuditService } from '../database/services/audit.service';
+import { AuditAction } from '../database/types/database.enums';
+import { PermissionCacheService } from './services/permission-cache.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';
@@ -60,6 +63,8 @@ export class AccessControlService {
 
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
+    @Inject('IAuditLogger') private readonly auditService: AuditService,
+    private readonly cacheService: PermissionCacheService,
   ) {}
 
   /**
@@ -195,8 +200,21 @@ export class AccessControlService {
 
       await transaction.commit();
 
-      // TODO: Audit logging
-      // await this.auditLog(auditUserId, AuditAction.CREATE, 'Role', role.id, { name: role.name });
+      // Invalidate cache for all users since new role created
+      this.cacheService.invalidateAllUserPermissions();
+
+      // Audit logging
+      await this.auditService.logCreate(
+        'Role',
+        role.id,
+        {
+          userId: auditUserId || null,
+          userName: auditUserId ? 'User' : 'SYSTEM',
+          ipAddress: null,
+          userAgent: null,
+        },
+        { name: role.name, description: role.description },
+      );
 
       this.logger.log(`Created role: ${role.id} (${role.name}) by user ${auditUserId || 'SYSTEM'}`);
       return role;
@@ -278,7 +296,29 @@ export class AccessControlService {
 
       await transaction.commit();
 
-      // TODO: Audit logging
+      // Invalidate cache for all users since role changed
+      this.cacheService.invalidateAllUserPermissions();
+
+      // Audit logging
+      const changes: Record<string, { before: unknown; after: unknown }> = {};
+      if (data.name && data.name !== originalValues.name) {
+        changes.name = { before: originalValues.name, after: data.name };
+      }
+      if (data.description !== undefined && data.description !== originalValues.description) {
+        changes.description = { before: originalValues.description, after: data.description };
+      }
+
+      await this.auditService.logUpdate(
+        'Role',
+        id,
+        {
+          userId: auditUserId || null,
+          userName: auditUserId ? 'User' : 'SYSTEM',
+          ipAddress: null,
+          userAgent: null,
+        },
+        changes,
+      );
 
       this.logger.log(`Updated role: ${id} by user ${auditUserId || 'SYSTEM'}`);
       return role;
@@ -341,7 +381,21 @@ export class AccessControlService {
       await role.destroy({ transaction });
       await transaction.commit();
 
-      // TODO: Audit logging
+      // Invalidate cache for all users since role deleted
+      this.cacheService.invalidateAllUserPermissions();
+
+      // Audit logging
+      await this.auditService.logDelete(
+        'Role',
+        id,
+        {
+          userId: auditUserId || null,
+          userName: auditUserId ? 'User' : 'SYSTEM',
+          ipAddress: null,
+          userAgent: null,
+        },
+        roleData,
+      );
 
       this.logger.log(`Deleted role: ${id} (${roleData.name}) by user ${auditUserId || 'SYSTEM'}`);
       return { success: true };
@@ -469,7 +523,27 @@ export class AccessControlService {
 
       await transaction.commit();
 
-      // TODO: Audit logging
+      // Invalidate role permissions cache
+      this.cacheService.invalidateRolePermissions(roleId);
+
+      // Audit logging
+      await this.auditService.logCreate(
+        'RolePermission',
+        rolePermission.id,
+        {
+          userId: auditUserId || null,
+          userName: auditUserId ? 'User' : 'SYSTEM',
+          ipAddress: null,
+          userAgent: null,
+        },
+        {
+          roleId,
+          roleName: role.name,
+          permissionId,
+          permissionResource: permission.resource,
+          permissionAction: permission.action,
+        },
+      );
 
       this.logger.log(
         `Assigned permission ${permissionId} (${permission.resource}.${permission.action}) to role ${roleId} (${role.name}) by user ${auditUserId || 'SYSTEM'}`,
@@ -483,25 +557,64 @@ export class AccessControlService {
   }
 
   /**
-   * Remove permission from role
+   * Remove permission from role with audit logging
    */
-  async removePermissionFromRole(roleId: string, permissionId: string): Promise<{ success: boolean }> {
+  async removePermissionFromRole(roleId: string, permissionId: string, auditUserId?: string): Promise<{ success: boolean }> {
+    const transaction = await this.sequelize.transaction();
+
     try {
+      const Role = this.getModel('Role');
+      const Permission = this.getModel('Permission');
       const RolePermission = this.getModel('RolePermission');
+
+      // Get role and permission details for audit logging
+      const [role, permission] = await Promise.all([
+        Role.findByPk(roleId, { transaction }),
+        Permission.findByPk(permissionId, { transaction }),
+      ]);
+
       const deletedCount = await RolePermission.destroy({
         where: {
           roleId,
           permissionId,
         },
+        transaction,
       });
 
       if (deletedCount === 0) {
         throw new NotFoundException('Permission assignment not found');
       }
 
-      this.logger.log(`Removed permission ${permissionId} from role ${roleId}`);
+      await transaction.commit();
+
+      // Invalidate role permissions cache
+      this.cacheService.invalidateRolePermissions(roleId);
+
+      // Audit logging
+      if (role && permission) {
+        await this.auditService.logDelete(
+          'RolePermission',
+          `${roleId}:${permissionId}`,
+          {
+            userId: auditUserId || null,
+            userName: auditUserId ? 'User' : 'SYSTEM',
+            ipAddress: null,
+            userAgent: null,
+          },
+          {
+            roleId,
+            roleName: role.name,
+            permissionId,
+            permissionResource: permission.resource,
+            permissionAction: permission.action,
+          },
+        );
+      }
+
+      this.logger.log(`Removed permission ${permissionId} from role ${roleId} by user ${auditUserId || 'SYSTEM'}`);
       return { success: true };
     } catch (error) {
+      await transaction.rollback();
       this.logger.error('Error removing permission from role:', error);
       throw error;
     }
@@ -637,14 +750,36 @@ export class AccessControlService {
 
       await transaction.commit();
 
-      // TODO: Audit logging
+      // Invalidate user permissions cache
+      this.cacheService.invalidateUserPermissions(userId);
 
-      // Log security incident if assigning high-privilege role
+      // Check if this is a high-privilege role
       const rolePermissions = role.permissions || [];
       const hasHighPrivilege = rolePermissions.some((rp: any) => {
         const perm = rp.permission;
         return perm.resource === 'security' || perm.resource === 'system';
       });
+
+      // Audit logging
+      await this.auditService.logCreate(
+        'UserRoleAssignment',
+        userRole.id,
+        {
+          userId: auditUserId || null,
+          userName: auditUserId ? 'User' : 'SYSTEM',
+          ipAddress: null,
+          userAgent: null,
+        },
+        {
+          targetUserId: userId,
+          targetUserEmail: targetUser.email,
+          roleId,
+          roleName: role.name,
+          isHighPrivilege,
+        },
+      );
+
+      // Log security incident if assigning high-privilege role
 
       if (hasHighPrivilege) {
         await SecurityIncident.create({
@@ -670,7 +805,7 @@ export class AccessControlService {
   }
 
   /**
-   * Remove role from user
+   * Remove role from user with cache invalidation
    */
   async removeRoleFromUser(userId: string, roleId: string): Promise<{ success: boolean }> {
     try {
@@ -686,6 +821,9 @@ export class AccessControlService {
         throw new NotFoundException('Role assignment not found');
       }
 
+      // Invalidate user permissions cache
+      this.cacheService.invalidateUserPermissions(userId);
+
       this.logger.log(`Removed role ${roleId} from user ${userId}`);
       return { success: true };
     } catch (error) {
@@ -695,10 +833,19 @@ export class AccessControlService {
   }
 
   /**
-   * Get user roles and permissions
+   * Get user roles and permissions with caching and audit logging
    */
-  async getUserPermissions(userId: string): Promise<UserPermissionsResult> {
+  async getUserPermissions(userId: string, bypassCache: boolean = false): Promise<UserPermissionsResult> {
     try {
+      // Check cache first
+      if (!bypassCache) {
+        const cached = this.cacheService.getUserPermissions(userId);
+        if (cached) {
+          this.logger.debug(`Using cached permissions for user ${userId}`);
+          return cached;
+        }
+      }
+
       const UserRoleAssignment = this.getModel('UserRoleAssignment');
       const userRoles = await UserRoleAssignment.findAll({
         where: { userId },
@@ -741,11 +888,34 @@ export class AccessControlService {
 
       const permissions = Array.from(permissionsMap.values());
 
-      this.logger.log(`Retrieved ${permissions.length} permissions for user ${userId}`);
-      return {
+      const result: UserPermissionsResult = {
         roles,
         permissions,
       };
+
+      // Cache the result
+      this.cacheService.setUserPermissions(userId, result);
+
+      // Audit logging for permission retrieval
+      await this.auditService.logRead(
+        'UserPermissions',
+        userId,
+        {
+          userId: userId,
+          userName: 'User',
+          ipAddress: null,
+          userAgent: null,
+        },
+        {
+          roleCount: roles.length,
+          permissionCount: permissions.length,
+          roleNames: roles.map((r: any) => r.name),
+          fromCache: false,
+        },
+      );
+
+      this.logger.log(`Retrieved ${permissions.length} permissions for user ${userId}`);
+      return result;
     } catch (error) {
       this.logger.error(`Error getting user permissions for ${userId}:`, error);
       throw error;
@@ -753,7 +923,7 @@ export class AccessControlService {
   }
 
   /**
-   * Check if user has a specific permission
+   * Check if user has a specific permission with audit logging
    */
   async checkPermission(userId: string, resource: string, action: string): Promise<boolean> {
     try {
@@ -761,6 +931,24 @@ export class AccessControlService {
 
       const hasPermission = userPermissions.permissions.some(
         (p: any) => p.resource === resource && p.action === action,
+      );
+
+      // Audit logging for permission checks
+      await this.auditService.logRead(
+        'Permission',
+        `${resource}:${action}`,
+        {
+          userId: userId,
+          userName: 'User',
+          ipAddress: null,
+          userAgent: null,
+        },
+        {
+          resource,
+          action,
+          result: hasPermission,
+          checkType: 'permission_check',
+        },
       );
 
       this.logger.log(`Permission check for user ${userId} on ${resource}.${action}: ${hasPermission}`);
@@ -823,9 +1011,9 @@ export class AccessControlService {
   }
 
   /**
-   * Update session activity timestamp
+   * Update session activity timestamp with audit logging
    */
-  async updateSessionActivity(token: string): Promise<void> {
+  async updateSessionActivity(token: string, ipAddress?: string): Promise<void> {
     try {
       const Session = this.getModel('Session');
       const session = await Session.findOne({
@@ -836,6 +1024,24 @@ export class AccessControlService {
         await session.update({
           lastActivity: new Date(),
         });
+
+        // Audit logging for session activity
+        await this.auditService.logUpdate(
+          'Session',
+          session.id,
+          {
+            userId: session.userId,
+            userName: 'User',
+            ipAddress: ipAddress || session.ipAddress,
+            userAgent: session.userAgent,
+          },
+          {
+            lastActivity: {
+              before: session.lastActivity,
+              after: new Date(),
+            },
+          },
+        );
       }
     } catch (error) {
       this.logger.error('Error updating session activity:', error);
@@ -1042,9 +1248,9 @@ export class AccessControlService {
   }
 
   /**
-   * Check if IP is restricted
+   * Check if IP is restricted with audit logging
    */
-  async checkIpRestriction(ipAddress: string): Promise<IpRestrictionCheckResult> {
+  async checkIpRestriction(ipAddress: string, userId?: string): Promise<IpRestrictionCheckResult> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
       const restriction = await IpRestriction.findOne({
@@ -1054,11 +1260,31 @@ export class AccessControlService {
         },
       });
 
+      const isRestricted = restriction ? restriction.type === IpRestrictionType.BLACKLIST : false;
+
+      // Audit logging for IP restriction checks
+      if (restriction) {
+        await this.auditService.logRead(
+          'IpRestriction',
+          restriction.id,
+          {
+            userId: userId || null,
+            userName: userId ? 'User' : 'Anonymous',
+            ipAddress: ipAddress,
+            userAgent: null,
+          },
+          {
+            ipAddress,
+            isRestricted,
+            type: restriction.type,
+            reason: restriction.reason,
+          },
+        );
+      }
+
       if (!restriction) {
         return { isRestricted: false };
       }
-
-      const isRestricted = restriction.type === IpRestrictionType.BLACKLIST;
 
       return {
         isRestricted,

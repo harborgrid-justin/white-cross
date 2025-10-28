@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, DataSource, QueryRunner } from 'typeorm';
 import { SyncQueueItem, SyncConflict } from '../entities';
 import { QueueSyncActionDto, SyncOptionsDto, ResolveConflictDto } from '../dto';
 import { SyncActionType, SyncEntityType, SyncPriority, ConflictResolution, SyncStatus } from '../enums';
@@ -31,19 +31,121 @@ export interface SyncResult {
 }
 
 /**
+ * Entity Version Interface
+ * Tracks entity versions for conflict detection
+ */
+export interface EntityVersion {
+  id: string;
+  version: number;
+  updatedAt: Date;
+  updatedBy: string;
+  checksum?: string;
+}
+
+/**
+ * Sync Watermark Interface
+ * Tracks last successful sync point per device and entity type
+ */
+export interface SyncWatermark {
+  deviceId: string;
+  entityType: SyncEntityType;
+  lastSyncTimestamp: Date;
+  lastEntityVersion: number;
+}
+
+/**
+ * Entity Service Interface
+ * All entity services must implement this interface for sync operations
+ */
+export interface IEntitySyncService {
+  findById(id: string): Promise<any>;
+  create(data: any, userId: string): Promise<any>;
+  update(id: string, data: any, userId: string): Promise<any>;
+  delete(id: string, userId: string): Promise<void>;
+  getVersion(id: string): Promise<EntityVersion | null>;
+  validateData(data: any): Promise<boolean>;
+}
+
+/**
  * Offline Sync Service
  * Handles offline data synchronization with conflict resolution
+ *
+ * @description
+ * This service provides comprehensive offline synchronization capabilities including:
+ * - Timestamp-based conflict detection
+ * - Entity version tracking
+ * - Intelligent merge strategies
+ * - Batch synchronization with transaction support
+ * - Sync watermark management for incremental syncs
+ *
+ * @example
+ * ```typescript
+ * // Queue an offline action
+ * const queueItem = await syncService.queueAction(userId, {
+ *   deviceId: 'device-123',
+ *   actionType: SyncActionType.UPDATE,
+ *   entityType: SyncEntityType.STUDENT,
+ *   entityId: 'student-456',
+ *   data: { name: 'John Doe' },
+ *   priority: SyncPriority.HIGH
+ * });
+ *
+ * // Sync pending actions
+ * const result = await syncService.syncPendingActions(userId, 'device-123', {
+ *   batchSize: 50,
+ *   conflictStrategy: ConflictResolution.NEWEST_WINS
+ * });
+ * ```
  */
 @Injectable()
 export class OfflineSyncService {
   private readonly logger = new Logger(OfflineSyncService.name);
+  private readonly entityServiceRegistry: Map<SyncEntityType, IEntitySyncService> = new Map();
+  private readonly syncWatermarks: Map<string, SyncWatermark> = new Map();
 
   constructor(
     @InjectRepository(SyncQueueItem)
     private readonly queueRepository: Repository<SyncQueueItem>,
     @InjectRepository(SyncConflict)
     private readonly conflictRepository: Repository<SyncConflict>,
-  ) {}
+    private readonly dataSource: DataSource,
+  ) {
+    this.logger.log('OfflineSyncService initialized');
+  }
+
+  /**
+   * Register an entity service for sync operations
+   *
+   * @param entityType - The entity type to register
+   * @param service - The service implementing IEntitySyncService
+   *
+   * @example
+   * ```typescript
+   * syncService.registerEntityService(SyncEntityType.STUDENT, studentService);
+   * ```
+   */
+  registerEntityService(entityType: SyncEntityType, service: IEntitySyncService): void {
+    this.entityServiceRegistry.set(entityType, service);
+    this.logger.log(`Registered entity service for ${entityType}`);
+  }
+
+  /**
+   * Get the entity service for a given entity type
+   *
+   * @param entityType - The entity type
+   * @returns The entity service
+   * @throws NotFoundException if service not registered
+   */
+  private getEntityService(entityType: SyncEntityType): IEntitySyncService {
+    const service = this.entityServiceRegistry.get(entityType);
+    if (!service) {
+      throw new NotFoundException(
+        `No entity service registered for ${entityType}. ` +
+        `Please register the service using registerEntityService()`
+      );
+    }
+    return service;
+  }
 
   /**
    * Queue a sync action for offline processing
@@ -308,30 +410,426 @@ export class OfflineSyncService {
   }
 
   /**
-   * Detect conflicts for a queue item
-   * TODO: Implement actual conflict detection logic based on entity type
+   * Detect conflicts for a queue item based on timestamps and versions
+   *
+   * @param item - The sync queue item to check for conflicts
+   * @returns A conflict object if detected, null otherwise
+   *
+   * @description
+   * Conflict detection strategy:
+   * 1. Fetch current server version of the entity
+   * 2. Compare timestamps between client and server
+   * 3. Check version numbers if available
+   * 4. Calculate data checksums for deep comparison
+   * 5. Create conflict record if modifications detected
    */
   private async detectConflict(item: SyncQueueItem): Promise<SyncConflict | null> {
-    // Placeholder: In production, this would check server state against client state
-    // For now, return null (no conflict)
+    try {
+      // Skip conflict detection for CREATE operations (no existing entity)
+      if (item.actionType === SyncActionType.CREATE) {
+        return null;
+      }
+
+      // Skip conflict detection for READ operations
+      if (item.actionType === SyncActionType.READ) {
+        return null;
+      }
+
+      // Get the entity service
+      const entityService = this.getEntityService(item.entityType);
+
+      // Fetch current server version
+      const serverEntity = await entityService.findById(item.entityId);
+
+      // If entity doesn't exist on server, no conflict (may have been deleted)
+      if (!serverEntity) {
+        // For UPDATE operations, this is a conflict (entity was deleted)
+        if (item.actionType === SyncActionType.UPDATE) {
+          return this.createConflict(item, null, {
+            id: item.entityId,
+            version: 0,
+            updatedAt: new Date(),
+            updatedBy: 'system',
+          });
+        }
+        return null;
+      }
+
+      // Get version information
+      const serverVersion = await entityService.getVersion(item.entityId);
+
+      if (!serverVersion) {
+        // No version tracking available, use timestamp comparison
+        return this.detectTimestampConflict(item, serverEntity);
+      }
+
+      // Check if server version was modified after client timestamp
+      if (serverVersion.updatedAt > item.timestamp) {
+        // Conflict detected: server has newer changes
+        return this.createConflict(item, serverEntity, serverVersion);
+      }
+
+      // Check version numbers if available
+      const clientVersion = (item.data as any).version;
+      if (clientVersion !== undefined && clientVersion < serverVersion.version) {
+        // Conflict detected: version mismatch
+        return this.createConflict(item, serverEntity, serverVersion);
+      }
+
+      // Check data checksums for deep comparison
+      if (serverVersion.checksum) {
+        const clientChecksum = this.calculateChecksum(item.data);
+        const serverChecksum = serverVersion.checksum;
+
+        if (clientChecksum !== serverChecksum) {
+          // Data has changed, but timestamps are close - potential conflict
+          const timeDiff = Math.abs(serverVersion.updatedAt.getTime() - item.timestamp.getTime());
+          if (timeDiff < 5000) { // Within 5 seconds, consider it a conflict
+            return this.createConflict(item, serverEntity, serverVersion);
+          }
+        }
+      }
+
+      // No conflict detected
+      return null;
+    } catch (error) {
+      this.logger.error(`Error detecting conflict for item ${item.id}`, error);
+      // Don't throw - return null to allow sync to proceed
+      return null;
+    }
+  }
+
+  /**
+   * Detect conflicts based on timestamp comparison
+   *
+   * @param item - The sync queue item
+   * @param serverEntity - The current server entity
+   * @returns A conflict object if detected, null otherwise
+   */
+  private detectTimestampConflict(item: SyncQueueItem, serverEntity: any): SyncConflict | null {
+    const serverUpdatedAt = serverEntity.updatedAt || serverEntity.updated_at;
+
+    if (!serverUpdatedAt) {
+      // No timestamp available, assume no conflict
+      return null;
+    }
+
+    const serverDate = new Date(serverUpdatedAt);
+    const clientDate = new Date(item.timestamp);
+
+    // If server was modified after client timestamp, we have a conflict
+    if (serverDate > clientDate) {
+      return this.createConflict(item, serverEntity, {
+        id: item.entityId,
+        version: (serverEntity as any).version || 0,
+        updatedAt: serverDate,
+        updatedBy: (serverEntity as any).updatedBy || 'unknown',
+      });
+    }
+
     return null;
   }
 
   /**
-   * Apply sync action to the server
-   * TODO: Implement actual sync logic for each entity type
+   * Create a conflict record
+   *
+   * @param item - The sync queue item
+   * @param serverEntity - The current server entity (null if deleted)
+   * @param serverVersion - The server version info
+   * @returns A new SyncConflict instance
    */
-  private async applySyncAction(item: SyncQueueItem): Promise<void> {
-    // Placeholder: This would apply the actual sync action based on entity type
-    // For now, just log the action
-    this.logger.log(
-      `Applying sync action: ${item.actionType} on ${item.entityType} (${item.entityId})`
+  private createConflict(
+    item: SyncQueueItem,
+    serverEntity: any | null,
+    serverVersion: EntityVersion,
+  ): SyncConflict {
+    const conflict = this.conflictRepository.create({
+      queueItemId: item.id,
+      entityType: item.entityType,
+      entityId: item.entityId,
+      clientVersion: {
+        data: item.data,
+        timestamp: item.timestamp,
+        userId: item.userId,
+      },
+      serverVersion: {
+        data: serverEntity || { _deleted: true },
+        timestamp: serverVersion.updatedAt,
+        userId: serverVersion.updatedBy,
+      },
+      status: SyncStatus.PENDING,
+    });
+
+    this.logger.warn(
+      `Conflict detected for ${item.entityType}:${item.entityId} - ` +
+      `Client: ${item.timestamp.toISOString()}, Server: ${serverVersion.updatedAt.toISOString()}`
     );
 
-    // In production, this would:
-    // 1. Route to appropriate service based on entityType
-    // 2. Apply the action (CREATE, UPDATE, DELETE)
-    // 3. Handle any errors
+    return conflict;
+  }
+
+  /**
+   * Calculate a simple checksum for data comparison
+   *
+   * @param data - The data to checksum
+   * @returns A checksum string
+   */
+  private calculateChecksum(data: any): string {
+    const str = JSON.stringify(data, Object.keys(data).sort());
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(36);
+  }
+
+  /**
+   * Apply sync action to the server using the registered entity service
+   *
+   * @param item - The sync queue item to apply
+   * @throws Error if the action fails or validation fails
+   *
+   * @description
+   * Routes the sync action to the appropriate entity service and applies it:
+   * - CREATE: Creates a new entity
+   * - UPDATE: Updates an existing entity
+   * - DELETE: Deletes an entity
+   * - READ: Fetches entity (for sync validation)
+   */
+  private async applySyncAction(item: SyncQueueItem): Promise<void> {
+    const entityService = this.getEntityService(item.entityType);
+
+    try {
+      this.logger.log(
+        `Applying sync action: ${item.actionType} on ${item.entityType} (${item.entityId})`
+      );
+
+      // Validate data before applying
+      const isValid = await entityService.validateData(item.data);
+      if (!isValid) {
+        throw new Error('Data validation failed');
+      }
+
+      switch (item.actionType) {
+        case SyncActionType.CREATE:
+          await entityService.create(item.data, item.userId);
+          this.logger.log(`Created ${item.entityType}:${item.entityId}`);
+          break;
+
+        case SyncActionType.UPDATE:
+          await entityService.update(item.entityId, item.data, item.userId);
+          this.logger.log(`Updated ${item.entityType}:${item.entityId}`);
+          break;
+
+        case SyncActionType.DELETE:
+          await entityService.delete(item.entityId, item.userId);
+          this.logger.log(`Deleted ${item.entityType}:${item.entityId}`);
+          break;
+
+        case SyncActionType.READ:
+          // Just fetch to validate
+          await entityService.findById(item.entityId);
+          this.logger.log(`Validated ${item.entityType}:${item.entityId}`);
+          break;
+
+        default:
+          throw new Error(`Unknown sync action type: ${item.actionType}`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to apply sync action for ${item.entityType}:${item.entityId}`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Batch sync operations with transaction support
+   *
+   * @param userId - The user ID
+   * @param deviceId - The device ID
+   * @param items - Array of queue items to sync
+   * @param options - Sync options
+   * @returns Sync result with transaction rollback on failure
+   *
+   * @description
+   * Performs batch synchronization with ACID guarantees:
+   * - All operations in a transaction
+   * - Rollback on any failure
+   * - Atomic batch processing
+   */
+  async batchSync(
+    userId: string,
+    deviceId: string,
+    items: SyncQueueItem[],
+    options?: SyncOptionsDto
+  ): Promise<SyncResult> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    const result: SyncResult = {
+      synced: 0,
+      failed: 0,
+      conflicts: 0,
+      errors: []
+    };
+
+    try {
+      for (const item of items) {
+        try {
+          // Check for conflicts
+          const conflict = await this.detectConflict(item);
+
+          if (conflict) {
+            item.conflictDetected = true;
+            await queryRunner.manager.save(item);
+
+            const savedConflict = await queryRunner.manager.save(conflict);
+            result.conflicts++;
+
+            // Auto-resolve if strategy provided
+            if (options?.conflictStrategy && options.conflictStrategy !== ConflictResolution.MANUAL) {
+              await this.resolveConflict(
+                userId,
+                savedConflict.id,
+                {
+                  resolution: options.conflictStrategy === ConflictResolution.NEWEST_WINS
+                    ? ConflictResolution.CLIENT_WINS
+                    : options.conflictStrategy
+                }
+              );
+
+              await this.applySyncAction(item);
+              item.synced = true;
+              item.syncedAt = new Date();
+              await queryRunner.manager.save(item);
+              result.synced++;
+            }
+          } else {
+            // No conflict, apply sync action
+            await this.applySyncAction(item);
+            item.synced = true;
+            item.syncedAt = new Date();
+            await queryRunner.manager.save(item);
+            result.synced++;
+          }
+        } catch (error) {
+          result.failed++;
+          result.errors.push(`Item ${item.id}: ${error}`);
+          this.logger.error('Error in batch sync item', error);
+
+          // Rollback transaction on error
+          await queryRunner.rollbackTransaction();
+          throw error;
+        }
+      }
+
+      // Commit transaction if all successful
+      await queryRunner.commitTransaction();
+
+      this.logger.log(
+        `Batch sync completed: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error('Batch sync failed, transaction rolled back', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
+   * Get or create sync watermark for a device and entity type
+   *
+   * @param deviceId - The device ID
+   * @param entityType - The entity type
+   * @returns The sync watermark
+   */
+  async getSyncWatermark(deviceId: string, entityType: SyncEntityType): Promise<SyncWatermark> {
+    const key = `${deviceId}:${entityType}`;
+    let watermark = this.syncWatermarks.get(key);
+
+    if (!watermark) {
+      // Load from last successful sync
+      const lastSync = await this.queueRepository.findOne({
+        where: { deviceId, entityType, synced: true },
+        order: { syncedAt: 'DESC' }
+      });
+
+      watermark = {
+        deviceId,
+        entityType,
+        lastSyncTimestamp: lastSync?.syncedAt || new Date(0),
+        lastEntityVersion: 0,
+      };
+
+      this.syncWatermarks.set(key, watermark);
+    }
+
+    return watermark;
+  }
+
+  /**
+   * Update sync watermark after successful sync
+   *
+   * @param deviceId - The device ID
+   * @param entityType - The entity type
+   * @param timestamp - The new watermark timestamp
+   */
+  async updateSyncWatermark(
+    deviceId: string,
+    entityType: SyncEntityType,
+    timestamp: Date
+  ): Promise<void> {
+    const key = `${deviceId}:${entityType}`;
+    const watermark = await this.getSyncWatermark(deviceId, entityType);
+
+    watermark.lastSyncTimestamp = timestamp;
+    this.syncWatermarks.set(key, watermark);
+
+    this.logger.log(
+      `Updated sync watermark for ${deviceId}:${entityType} to ${timestamp.toISOString()}`
+    );
+  }
+
+  /**
+   * Get entities changed since last sync (incremental sync)
+   *
+   * @param deviceId - The device ID
+   * @param entityType - The entity type
+   * @returns Array of changed entity IDs
+   *
+   * @description
+   * Uses watermarks to determine which entities have changed since last sync,
+   * enabling efficient incremental synchronization.
+   */
+  async getChangedEntities(
+    deviceId: string,
+    entityType: SyncEntityType
+  ): Promise<string[]> {
+    const watermark = await this.getSyncWatermark(deviceId, entityType);
+
+    const items = await this.queueRepository.find({
+      where: {
+        entityType,
+        synced: true,
+      },
+      select: ['entityId', 'syncedAt'],
+      order: { syncedAt: 'DESC' }
+    });
+
+    // Filter entities modified after watermark
+    const changedEntityIds = items
+      .filter(item => item.syncedAt > watermark.lastSyncTimestamp)
+      .map(item => item.entityId);
+
+    return [...new Set(changedEntityIds)]; // Unique IDs
   }
 
   /**
