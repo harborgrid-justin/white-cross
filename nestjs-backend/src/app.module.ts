@@ -32,6 +32,16 @@ import { FeaturesModule } from './features/features.module';
 import { HealthDomainModule } from './health-domain/health-domain.module';
 import { InterfacesModule } from './interfaces/interfaces.module';
 import { SharedModule } from './shared/shared.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { AdvancedFeaturesModule } from './advanced-features/advanced-features.module';
+import { ConfigurationModule } from './configuration/configuration.module';
+import { EmergencyBroadcastModule } from './emergency-broadcast/emergency-broadcast.module';
+import { GradeTransitionModule } from './grade-transition/grade-transition.module';
+import { EnterpriseFeaturesModule } from './enterprise-features/enterprise-features.module';
+import { HealthMetricsModule } from './health-metrics/health-metrics.module';
+import { MedicationInteractionModule } from './medication-interaction/medication-interaction.module';
+import { HealthRiskAssessmentModule } from './health-risk-assessment/health-risk-assessment.module';
+import { EmergencyContactModule } from './emergency-contact/emergency-contact.module';
 
 @Module({
   imports: [
@@ -68,6 +78,9 @@ import { SharedModule } from './shared/shared.module';
 
     AdministrationModule,
 
+    // Configuration module (comprehensive configuration management)
+    ConfigurationModule,
+
     AuditModule,
 
     AccessControlModule,
@@ -102,6 +115,24 @@ import { SharedModule } from './shared/shared.module';
     InterfacesModule,
 
     SharedModule,
+
+    DashboardModule,
+
+    AdvancedFeaturesModule,
+
+    EmergencyBroadcastModule,
+
+    GradeTransitionModule,
+
+    EnterpriseFeaturesModule,
+
+    HealthMetricsModule,
+
+    MedicationInteractionModule,
+
+    HealthRiskAssessmentModule,
+
+    EmergencyContactModule,
 
     // Feature modules will be added here
     // MedicationModule will be imported here

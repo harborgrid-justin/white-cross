@@ -11,6 +11,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -19,11 +20,18 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AiSearchService } from './ai-search.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { IndexContentDto } from './dto/index-content.dto';
+import { SemanticSearchDto } from './dto/semantic-search.dto';
+import { AdvancedSearchCriteriaDto } from './dto/advanced-search.dto';
+import { SimilarCasesDto } from './dto/similar-cases.dto';
+import { MedicationSearchDto } from './dto/medication-search.dto';
+import { SearchSuggestionsDto } from './dto/search-suggestions.dto';
+import { SearchAnalyticsDto, AnalyticsPeriod } from './dto/search-analytics.dto';
 
 @ApiTags('ai-search')
 @Controller('ai-search')
@@ -192,5 +200,111 @@ export class AiSearchController {
       lastIndexed: new Date().toISOString(),
       contentTypes: {},
     };
+  }
+
+  @Post('semantic')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Perform semantic search',
+    description: 'Execute AI-powered semantic search with vector similarity matching',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Semantic search results retrieved successfully',
+  })
+  async semanticSearch(@Body() dto: SemanticSearchDto) {
+    return this.aiSearchService.semanticSearch(dto);
+  }
+
+  @Get('suggestions')
+  @ApiOperation({
+    summary: 'Get search suggestions',
+    description: 'Get intelligent search suggestions based on partial input and user history',
+  })
+  @ApiQuery({ name: 'partial', description: 'Partial search text', example: 'asth' })
+  @ApiQuery({ name: 'userId', description: 'User ID for personalized suggestions', example: 'uuid-123' })
+  @ApiResponse({
+    status: 200,
+    description: 'Search suggestions retrieved successfully',
+    schema: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+  })
+  async getSuggestions(
+    @Query('partial') partial: string,
+    @Query('userId') userId: string,
+  ) {
+    return this.aiSearchService.getSearchSuggestions(partial, userId);
+  }
+
+  @Post('advanced')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Advanced patient search',
+    description: 'Search patients using multiple criteria including demographics, medical, and behavioral filters',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Advanced search results retrieved successfully',
+  })
+  async advancedSearch(@Body() dto: AdvancedSearchCriteriaDto) {
+    return this.aiSearchService.advancedPatientSearch(dto, dto.userId);
+  }
+
+  @Post('similar-cases')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Find similar medical cases',
+    description: 'Find similar medical cases using vector similarity on symptoms, conditions, and treatments',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Similar cases retrieved successfully',
+  })
+  async findSimilarCases(@Body() dto: SimilarCasesDto) {
+    return this.aiSearchService.findSimilarCases(dto);
+  }
+
+  @Post('medication')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Medication search',
+    description: 'Search for medication interactions, alternatives, side effects, or contraindications',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Medication search results retrieved successfully',
+  })
+  async medicationSearch(@Body() dto: MedicationSearchDto) {
+    return this.aiSearchService.medicationSearch(dto);
+  }
+
+  @Get('analytics')
+  @ApiOperation({
+    summary: 'Get search analytics',
+    description: 'Get search analytics including top queries, trends, and performance metrics',
+  })
+  @ApiQuery({
+    name: 'period',
+    description: 'Time period for analytics',
+    enum: AnalyticsPeriod,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Maximum number of top queries',
+    type: Number,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Search analytics retrieved successfully',
+  })
+  async getAnalytics(
+    @Query('period') period?: AnalyticsPeriod,
+    @Query('limit') limit?: number,
+  ) {
+    return this.aiSearchService.getSearchAnalytics(period || AnalyticsPeriod.WEEK, limit || 10);
   }
 }
