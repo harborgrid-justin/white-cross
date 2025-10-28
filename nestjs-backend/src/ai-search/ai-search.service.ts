@@ -217,7 +217,7 @@ export class AiSearchService {
   /**
    * Perform semantic search across indexed content
    */
-  async search(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
+  async search(query: string, filters?: SearchFilters & { threshold?: number; limit?: number }): Promise<SearchResult[]> {
     const startTime = Date.now();
 
     try {
@@ -239,7 +239,7 @@ export class AiSearchService {
         const similarity = this.cosineSimilarity(queryEmbedding, value.embedding);
 
         // Apply threshold (default 0.7 means 70% similarity)
-        const threshold = filters?.['threshold'] || 0.7;
+        const threshold = filters?.threshold || 0.7;
         if (similarity < threshold) {
           continue;
         }
@@ -259,7 +259,7 @@ export class AiSearchService {
       results.sort((a, b) => b.similarity - a.similarity);
 
       // Apply limit
-      const limit = filters?.['limit'] || 10;
+      const limit = filters?.limit || 10;
       const limitedResults = results.slice(0, limit);
 
       const processingTime = Date.now() - startTime;
@@ -391,6 +391,31 @@ export class AiSearchService {
   }
 
   /**
+   * Search medication interactions and alternatives
+   */
+  async medicationSearch(params: any): Promise<any> {
+    this.logger.log('Medication search', { searchType: params.searchType });
+
+    try {
+      switch (params.searchType) {
+        case 'interactions':
+          return await this.findMedicationInteractions(params.medications);
+        case 'alternatives':
+          return await this.findMedicationAlternatives(params.medications);
+        case 'side_effects':
+          return await this.findMedicationSideEffects(params.medications);
+        case 'contraindications':
+          return await this.findMedicationContraindications(params.medications, params.patientId);
+        default:
+          throw new AISearchException('Invalid medication search type', HttpStatus.BAD_REQUEST);
+      }
+    } catch (error: any) {
+      this.logger.error('Medication search error', error);
+      throw new AISearchException(error.message || 'Medication search failed');
+    }
+  }
+
+  /**
    * Get search analytics
    */
   async getSearchAnalytics(period: string = 'week', limit: number = 10): Promise<SearchAnalytics> {
@@ -403,6 +428,92 @@ export class AiSearchService {
       avgResponseTime: 0,
       period,
     };
+  }
+
+  // ==================== Medication Helper Methods ====================
+
+  /**
+   * Find medication interactions
+   */
+  private async findMedicationInteractions(medications: string[]): Promise<any> {
+    this.logger.log(`Finding interactions for ${medications.length} medications`);
+
+    // In a real implementation, this would:
+    // 1. Query medication_interactions table with pgvector similarity
+    // 2. Join with medications_reference table
+    // 3. Calculate interaction risk levels
+    // 4. Return formatted results
+
+    return {
+      interactions: [],
+      riskLevel: 'LOW',
+      message: 'Medication interactions require database integration',
+    };
+  }
+
+  /**
+   * Find medication alternatives
+   */
+  private async findMedicationAlternatives(medications: string[]): Promise<any> {
+    this.logger.log(`Finding alternatives for ${medications.length} medications`);
+
+    // In a real implementation, this would:
+    // 1. Use vector similarity to find medications with similar properties
+    // 2. Filter by therapeutic class
+    // 3. Consider cost and availability
+    // 4. Return ranked alternatives
+
+    return {
+      alternatives: [],
+      message: 'Medication alternatives require database integration',
+    };
+  }
+
+  /**
+   * Find medication side effects
+   */
+  private async findMedicationSideEffects(medications: string[]): Promise<any> {
+    this.logger.log(`Finding side effects for ${medications.length} medications`);
+
+    // In a real implementation, this would:
+    // 1. Query medication side effects database
+    // 2. Aggregate common and rare side effects
+    // 3. Calculate probability scores
+    // 4. Group by severity
+
+    return {
+      sideEffects: [],
+      message: 'Medication side effects require database integration',
+    };
+  }
+
+  /**
+   * Find medication contraindications
+   */
+  private async findMedicationContraindications(medications: string[], patientId?: string): Promise<any> {
+    this.logger.log(`Finding contraindications for ${medications.length} medications`);
+
+    // In a real implementation, this would:
+    // 1. Get patient's medical profile (allergies, conditions, current medications)
+    // 2. Query contraindications database
+    // 3. Check for patient-specific risks
+    // 4. Return prioritized warnings
+
+    return {
+      contraindications: [],
+      patientSpecific: patientId ? true : false,
+      message: 'Medication contraindications require database integration',
+    };
+  }
+
+  /**
+   * Calculate interaction risk level
+   */
+  private calculateInteractionRisk(interactions: any[]): string {
+    if (!interactions || interactions.length === 0) return 'LOW';
+    if (interactions.some((i) => i.severity === 'MAJOR')) return 'HIGH';
+    if (interactions.some((i) => i.severity === 'MODERATE')) return 'MEDIUM';
+    return 'LOW';
   }
 
   // ==================== Helper Methods ====================

@@ -53,6 +53,18 @@ export class SystemConfiguration {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'text', nullable: true })
+  defaultValue: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  validValues: string[];
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  minValue: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  maxValue: number;
+
   @Column({ default: false })
   isPublic: boolean;
 
