@@ -415,103 +415,690 @@ export class HealthRecordService {
     return { success: true };
   }
 
-  // Placeholder methods for other operations (to be fully implemented)
+  // ==================== Chronic Condition Operations ====================
 
-  async addChronicCondition(data: any): Promise<any> {
-    this.logger.log('addChronicCondition - to be implemented');
-    return data;
+  /**
+   * Add chronic condition to student with validation and audit logging
+   * @param data - Chronic condition creation data
+   * @returns Created chronic condition record
+   */
+  async addChronicCondition(data: any): Promise<ChronicCondition> {
+    // Verify student exists
+    const student = await this.studentRepository.findOne({
+      where: { id: data.studentId },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Create chronic condition
+    const chronicCondition = this.chronicConditionRepository.create({
+      ...data,
+      isActive: true,
+    });
+    const savedCondition = await this.chronicConditionRepository.save(
+      chronicCondition,
+    );
+
+    // Reload with associations
+    const conditionWithRelations =
+      await this.chronicConditionRepository.findOne({
+        where: { id: savedCondition.id },
+        relations: ['student'],
+      });
+
+    // PHI Creation Audit Log
+    this.logger.log(
+      `PHI Created: Chronic condition ${data.condition} for student ${student.firstName} ${student.lastName}`,
+    );
+
+    return conditionWithRelations;
   }
 
+  /**
+   * Get student chronic conditions with filtering
+   * @param studentId - Student UUID
+   * @returns Array of chronic conditions ordered by severity
+   */
   async getStudentChronicConditions(studentId: string): Promise<any[]> {
-    this.logger.log('getStudentChronicConditions - to be implemented');
-    return [];
+    const conditions = await this.chronicConditionRepository.find({
+      where: { studentId, isActive: true },
+      relations: ['student'],
+      order: {
+        status: 'ASC',
+        diagnosedDate: 'DESC',
+      },
+    });
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Chronic conditions retrieved for student ${studentId}, count: ${conditions.length}`,
+    );
+
+    return conditions;
   }
 
-  async updateChronicCondition(id: string, data: any): Promise<any> {
-    this.logger.log('updateChronicCondition - to be implemented');
-    return data;
+  /**
+   * Update chronic condition information
+   * @param id - Chronic condition UUID
+   * @param data - Updated chronic condition data
+   * @returns Updated chronic condition record
+   */
+  async updateChronicCondition(
+    id: string,
+    data: Partial<any>,
+  ): Promise<ChronicCondition> {
+    const existingCondition = await this.chronicConditionRepository.findOne({
+      where: { id },
+      relations: ['student'],
+    });
+
+    if (!existingCondition) {
+      throw new NotFoundException('Chronic condition not found');
+    }
+
+    // Update chronic condition
+    Object.assign(existingCondition, data);
+    const updatedCondition = await this.chronicConditionRepository.save(
+      existingCondition,
+    );
+
+    // Reload with associations
+    const conditionWithRelations =
+      await this.chronicConditionRepository.findOne({
+        where: { id: updatedCondition.id },
+        relations: ['student'],
+      });
+
+    // PHI Modification Audit Log
+    this.logger.log(
+      `PHI Modified: Chronic condition ${conditionWithRelations.condition} updated for student ${conditionWithRelations.student.firstName} ${conditionWithRelations.student.lastName}`,
+    );
+
+    return conditionWithRelations;
   }
 
+  /**
+   * Delete chronic condition (soft delete for HIPAA compliance)
+   * @param id - Chronic condition UUID
+   * @returns Success status
+   */
   async deleteChronicCondition(id: string): Promise<{ success: boolean }> {
-    this.logger.log('deleteChronicCondition - to be implemented');
+    const condition = await this.chronicConditionRepository.findOne({
+      where: { id },
+      relations: ['student'],
+    });
+
+    if (!condition) {
+      throw new NotFoundException('Chronic condition not found');
+    }
+
+    // Soft delete
+    await this.chronicConditionRepository.softDelete(id);
+
+    // PHI Deletion Audit Log
+    this.logger.warn(
+      `Chronic condition deleted: ${condition.condition} for ${condition.student.firstName} ${condition.student.lastName}`,
+    );
+
     return { success: true };
   }
 
-  async addVaccination(data: any): Promise<any> {
-    this.logger.log('addVaccination - to be implemented');
-    return data;
+  // ==================== Vaccination Operations ====================
+
+  /**
+   * Add vaccination to student with validation and audit logging
+   * @param data - Vaccination creation data
+   * @returns Created vaccination record
+   */
+  async addVaccination(data: any): Promise<Vaccination> {
+    // Verify student exists
+    const student = await this.studentRepository.findOne({
+      where: { id: data.studentId },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Calculate series completion
+    const seriesComplete =
+      data.doseNumber && data.totalDoses
+        ? data.doseNumber >= data.totalDoses
+        : false;
+
+    // Create vaccination
+    const vaccination = this.vaccinationRepository.create({
+      ...data,
+      seriesComplete,
+    });
+    const savedVaccination = await this.vaccinationRepository.save(vaccination);
+
+    // Reload with associations
+    const vaccinationWithRelations = await this.vaccinationRepository.findOne({
+      where: { id: savedVaccination.id },
+      relations: ['student'],
+    });
+
+    // PHI Creation Audit Log
+    this.logger.log(
+      `PHI Created: Vaccination ${data.vaccineName} for student ${student.firstName} ${student.lastName}`,
+    );
+
+    return vaccinationWithRelations;
   }
 
-  async getStudentVaccinations(studentId: string): Promise<any[]> {
-    this.logger.log('getStudentVaccinations - to be implemented');
-    return [];
+  /**
+   * Get student vaccinations
+   * @param studentId - Student UUID
+   * @returns Array of vaccinations ordered by administration date
+   */
+  async getStudentVaccinations(studentId: string): Promise<Vaccination[]> {
+    const vaccinations = await this.vaccinationRepository.find({
+      where: { studentId },
+      relations: ['student'],
+      order: {
+        administrationDate: 'DESC',
+      },
+    });
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Vaccinations retrieved for student ${studentId}, count: ${vaccinations.length}`,
+    );
+
+    return vaccinations;
   }
 
-  async updateVaccination(id: string, data: any): Promise<any> {
-    this.logger.log('updateVaccination - to be implemented');
-    return data;
+  /**
+   * Update vaccination information
+   * @param id - Vaccination UUID
+   * @param data - Updated vaccination data
+   * @returns Updated vaccination record
+   */
+  async updateVaccination(
+    id: string,
+    data: Partial<any>,
+  ): Promise<Vaccination> {
+    const existingVaccination = await this.vaccinationRepository.findOne({
+      where: { id },
+      relations: ['student'],
+    });
+
+    if (!existingVaccination) {
+      throw new NotFoundException('Vaccination not found');
+    }
+
+    // Recalculate series completion if dose information updated
+    if (data.doseNumber || data.totalDoses) {
+      const doseNumber = data.doseNumber || existingVaccination.doseNumber;
+      const totalDoses = data.totalDoses || existingVaccination.totalDoses;
+      if (doseNumber && totalDoses) {
+        data.seriesComplete = doseNumber >= totalDoses;
+      }
+    }
+
+    // Update vaccination
+    Object.assign(existingVaccination, data);
+    const updatedVaccination = await this.vaccinationRepository.save(
+      existingVaccination,
+    );
+
+    // Reload with associations
+    const vaccinationWithRelations = await this.vaccinationRepository.findOne({
+      where: { id: updatedVaccination.id },
+      relations: ['student'],
+    });
+
+    // PHI Modification Audit Log
+    this.logger.log(
+      `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student.firstName} ${vaccinationWithRelations.student.lastName}`,
+    );
+
+    return vaccinationWithRelations;
   }
 
+  /**
+   * Delete vaccination (soft delete for HIPAA compliance)
+   * @param id - Vaccination UUID
+   * @returns Success status
+   */
   async deleteVaccination(id: string): Promise<{ success: boolean }> {
-    this.logger.log('deleteVaccination - to be implemented');
+    const vaccination = await this.vaccinationRepository.findOne({
+      where: { id },
+      relations: ['student'],
+    });
+
+    if (!vaccination) {
+      throw new NotFoundException('Vaccination not found');
+    }
+
+    // Soft delete
+    await this.vaccinationRepository.softDelete(id);
+
+    // PHI Deletion Audit Log
+    this.logger.warn(
+      `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student.firstName} ${vaccination.student.lastName}`,
+    );
+
     return { success: true };
   }
 
+  // ==================== Growth and Vital Signs Operations ====================
+
+  /**
+   * Get growth chart data for student (height/weight over time)
+   * @param studentId - Student UUID
+   * @returns Array of growth data points
+   */
   async getGrowthChartData(studentId: string): Promise<GrowthDataPoint[]> {
-    this.logger.log('getGrowthChartData - to be implemented');
-    return [];
+    // Query health records with vital signs metadata
+    const records = await this.healthRecordRepository
+      .createQueryBuilder('hr')
+      .where('hr.studentId = :studentId', { studentId })
+      .andWhere("hr.metadata->>'height' IS NOT NULL OR hr.metadata->>'weight' IS NOT NULL")
+      .orderBy('hr.recordDate', 'ASC')
+      .getMany();
+
+    // Extract growth data points
+    const growthData: GrowthDataPoint[] = records
+      .map((record) => {
+        const height = record.metadata?.height
+          ? parseFloat(record.metadata.height)
+          : undefined;
+        const weight = record.metadata?.weight
+          ? parseFloat(record.metadata.weight)
+          : undefined;
+
+        // Calculate BMI if both height and weight available
+        let bmi: number | undefined;
+        if (height && weight) {
+          // BMI = weight (kg) / (height (m))^2
+          const heightInMeters = height / 100;
+          bmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
+        }
+
+        return {
+          date: record.recordDate,
+          height,
+          weight,
+          bmi,
+          recordType: record.recordType,
+        };
+      })
+      .filter((point) => point.height !== undefined || point.weight !== undefined);
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Growth chart data retrieved for student ${studentId}, data points: ${growthData.length}`,
+    );
+
+    return growthData;
   }
 
-  async getRecentVitals(studentId: string, limit: number = 10): Promise<any[]> {
-    this.logger.log('getRecentVitals - to be implemented');
-    return [];
+  /**
+   * Get recent vital signs for student
+   * @param studentId - Student UUID
+   * @param limit - Number of records to retrieve
+   * @returns Array of recent vital signs
+   */
+  async getRecentVitals(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
+    const records = await this.healthRecordRepository.find({
+      where: {
+        studentId,
+        recordType: In(['VITAL_SIGNS_CHECK', 'CHECKUP', 'PHYSICAL_EXAM']),
+      },
+      order: {
+        recordDate: 'DESC',
+      },
+      take: limit,
+    });
+
+    // Extract vital signs from metadata
+    const vitals: VitalSigns[] = records
+      .map((record) => ({
+        temperature: record.metadata?.temperature,
+        bloodPressureSystolic: record.metadata?.bloodPressureSystolic,
+        bloodPressureDiastolic: record.metadata?.bloodPressureDiastolic,
+        heartRate: record.metadata?.heartRate,
+        respiratoryRate: record.metadata?.respiratoryRate,
+        oxygenSaturation: record.metadata?.oxygenSaturation,
+        height: record.metadata?.height,
+        weight: record.metadata?.weight,
+        bmi: record.metadata?.bmi,
+      }))
+      .filter((vital) => Object.values(vital).some((v) => v !== undefined));
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Recent vitals retrieved for student ${studentId}, count: ${vitals.length}`,
+    );
+
+    return vitals;
   }
 
+  // ==================== Summary and Analytics Operations ====================
+
+  /**
+   * Get comprehensive health summary for student
+   * @param studentId - Student UUID
+   * @returns Health summary with aggregated data
+   */
   async getHealthSummary(studentId: string): Promise<HealthSummary> {
-    this.logger.log('getHealthSummary - to be implemented');
+    // Get student information
+    const student = await this.studentRepository.findOne({
+      where: { id: studentId },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Get allergies
+    const allergies = await this.allergyRepository.find({
+      where: { studentId },
+      order: { severity: 'DESC' },
+    });
+
+    // Get recent vitals
+    const recentVitals = await this.getRecentVitals(studentId, 5);
+
+    // Get recent vaccinations
+    const recentVaccinations = await this.vaccinationRepository.find({
+      where: { studentId },
+      order: { administrationDate: 'DESC' },
+      take: 5,
+    });
+
+    // Count records by type
+    const recordCounts: Record<string, number> = {};
+    const countsByType = await this.healthRecordRepository
+      .createQueryBuilder('hr')
+      .select('hr.recordType', 'type')
+      .addSelect('COUNT(*)', 'count')
+      .where('hr.studentId = :studentId', { studentId })
+      .groupBy('hr.recordType')
+      .getRawMany();
+
+    countsByType.forEach((row) => {
+      recordCounts[row.type] = parseInt(row.count, 10);
+    });
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Health summary retrieved for student ${studentId}`,
+    );
+
     return {
-      student: null,
-      allergies: [],
-      recentVitals: [],
-      recentVaccinations: [],
-      recordCounts: {},
+      student,
+      allergies,
+      recentVitals,
+      recentVaccinations,
+      recordCounts,
     };
   }
 
+  /**
+   * Search health records by keyword
+   * @param query - Search query string
+   * @param type - Optional record type filter
+   * @param page - Page number
+   * @param limit - Records per page
+   * @returns Paginated search results
+   */
   async searchHealthRecords(
     query: string,
     type?: string,
     page: number = 1,
     limit: number = 20,
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
-    this.logger.log('searchHealthRecords - to be implemented');
+    const offset = (page - 1) * limit;
+
+    const queryBuilder = this.healthRecordRepository
+      .createQueryBuilder('hr')
+      .leftJoinAndSelect('hr.student', 'student')
+      .where(
+        'hr.title ILIKE :query OR hr.description ILIKE :query OR hr.diagnosis ILIKE :query OR hr.treatment ILIKE :query',
+        { query: `%${query}%` },
+      );
+
+    // Apply type filter if provided
+    if (type) {
+      queryBuilder.andWhere('hr.recordType = :type', { type });
+    }
+
+    // Execute query with pagination
+    const [records, total] = await queryBuilder
+      .orderBy('hr.recordDate', 'DESC')
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Health records search performed, query: "${query}", results: ${records.length}`,
+    );
+
     return {
-      records: [],
-      pagination: { page, limit, total: 0, pages: 0 },
+      records,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
+  /**
+   * Export complete health history for student
+   * @param studentId - Student UUID
+   * @returns Complete health data export
+   */
   async exportHealthHistory(studentId: string): Promise<any> {
-    this.logger.log('exportHealthHistory - to be implemented');
-    return {};
+    // Get student
+    const student = await this.studentRepository.findOne({
+      where: { id: studentId },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Get all health data
+    const healthRecords = await this.healthRecordRepository.find({
+      where: { studentId },
+      order: { recordDate: 'DESC' },
+    });
+
+    const allergies = await this.allergyRepository.find({
+      where: { studentId },
+      order: { severity: 'DESC' },
+    });
+
+    const vaccinations = await this.vaccinationRepository.find({
+      where: { studentId },
+      order: { administrationDate: 'DESC' },
+    });
+
+    const chronicConditions = await this.chronicConditionRepository.find({
+      where: { studentId },
+      order: { diagnosedDate: 'DESC' },
+    });
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Export: Complete health history exported for student ${studentId}`,
+    );
+
+    return {
+      exportDate: new Date(),
+      student: {
+        id: student.id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        dateOfBirth: student.dateOfBirth,
+      },
+      healthRecords,
+      allergies,
+      vaccinations,
+      chronicConditions,
+      summary: {
+        totalRecords: healthRecords.length,
+        totalAllergies: allergies.length,
+        totalVaccinations: vaccinations.length,
+        totalChronicConditions: chronicConditions.length,
+      },
+    };
   }
 
+  /**
+   * Import health records from external source
+   * @param studentId - Student UUID
+   * @param importData - Import data structure
+   * @returns Import operation results
+   */
   async importHealthRecords(
     studentId: string,
     importData: any,
   ): Promise<ImportResults> {
-    this.logger.log('importHealthRecords - to be implemented');
-    return { imported: 0, skipped: 0, errors: [] };
+    const results: ImportResults = {
+      imported: 0,
+      skipped: 0,
+      errors: [],
+    };
+
+    // Verify student exists
+    const student = await this.studentRepository.findOne({
+      where: { id: studentId },
+    });
+
+    if (!student) {
+      results.errors.push('Student not found');
+      return results;
+    }
+
+    // Import health records
+    if (importData.healthRecords && Array.isArray(importData.healthRecords)) {
+      for (const recordData of importData.healthRecords) {
+        try {
+          const record = this.healthRecordRepository.create({
+            ...recordData,
+            studentId,
+          });
+          await this.healthRecordRepository.save(record);
+          results.imported++;
+        } catch (error) {
+          results.errors.push(
+            `Failed to import health record: ${error.message}`,
+          );
+          results.skipped++;
+        }
+      }
+    }
+
+    // Import allergies
+    if (importData.allergies && Array.isArray(importData.allergies)) {
+      for (const allergyData of importData.allergies) {
+        try {
+          // Check for duplicate
+          const existing = await this.allergyRepository.findOne({
+            where: {
+              studentId,
+              allergen: allergyData.allergen,
+            },
+          });
+
+          if (existing) {
+            results.skipped++;
+            continue;
+          }
+
+          const allergy = this.allergyRepository.create({
+            ...allergyData,
+            studentId,
+          });
+          await this.allergyRepository.save(allergy);
+          results.imported++;
+        } catch (error) {
+          results.errors.push(`Failed to import allergy: ${error.message}`);
+          results.skipped++;
+        }
+      }
+    }
+
+    // Import vaccinations
+    if (importData.vaccinations && Array.isArray(importData.vaccinations)) {
+      for (const vaccinationData of importData.vaccinations) {
+        try {
+          const vaccination = this.vaccinationRepository.create({
+            ...vaccinationData,
+            studentId,
+          });
+          await this.vaccinationRepository.save(vaccination);
+          results.imported++;
+        } catch (error) {
+          results.errors.push(
+            `Failed to import vaccination: ${error.message}`,
+          );
+          results.skipped++;
+        }
+      }
+    }
+
+    // PHI Creation Audit Log
+    this.logger.log(
+      `PHI Import: Health data imported for student ${studentId}, imported: ${results.imported}, skipped: ${results.skipped}`,
+    );
+
+    return results;
   }
 
+  /**
+   * Get health record statistics
+   * @returns System-wide health record statistics
+   */
   async getHealthRecordStatistics(): Promise<HealthRecordStatistics> {
-    this.logger.log('getHealthRecordStatistics - to be implemented');
+    // Count total health records
+    const totalRecords = await this.healthRecordRepository.count();
+
+    // Count active allergies
+    const activeAllergies = await this.allergyRepository.count({
+      where: { isActive: true },
+    });
+
+    // Count chronic conditions
+    const chronicConditions = await this.chronicConditionRepository.count({
+      where: { isActive: true },
+    });
+
+    // Count vaccinations due (next due date in past and series not complete)
+    const today = new Date();
+    const vaccinationsDue = await this.vaccinationRepository
+      .createQueryBuilder('v')
+      .where('v.nextDueDate < :today', { today })
+      .andWhere('v.seriesComplete = :complete', { complete: false })
+      .getCount();
+
+    // Count recent records (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentRecords = await this.healthRecordRepository.count({
+      where: {
+        createdAt: Between(thirtyDaysAgo, new Date()),
+      },
+    });
+
+    // PHI Access Audit Log
+    this.logger.log('System statistics retrieved for health records');
+
     return {
-      totalRecords: 0,
-      activeAllergies: 0,
-      chronicConditions: 0,
-      vaccinationsDue: 0,
-      recentRecords: 0,
+      totalRecords,
+      activeAllergies,
+      chronicConditions,
+      vaccinationsDue,
+      recentRecords,
     };
   }
 }

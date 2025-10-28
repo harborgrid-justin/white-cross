@@ -20,6 +20,9 @@ import { CacheService } from './services/cache.service';
 import { AuditService } from './services/audit.service';
 import { SequelizeUnitOfWorkService } from './uow/sequelize-unit-of-work.service';
 
+// Models
+import { AuditLog } from './models/audit-log.model';
+
 // Sample Repositories (add more as they are migrated)
 import { StudentRepository } from './repositories/impl/student.repository';
 
@@ -48,6 +51,7 @@ import { StudentRepository } from './repositories/impl/student.repository';
     }),
     SequelizeModule.forFeature([
       // Register Sequelize models here as they are migrated
+      AuditLog,
       // Example:
       // Student,
       // HealthRecord,

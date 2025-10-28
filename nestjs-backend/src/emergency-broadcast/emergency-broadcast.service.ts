@@ -6,7 +6,8 @@
  * Critical: Time-sensitive emergency communications for school safety
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import {
   EmergencyType,
   EmergencyPriority,
@@ -25,10 +26,20 @@ import {
   EmergencyTemplateDto,
   DeliveryStatsDto,
 } from './dto';
+import { EmergencyBroadcastRepository } from '../database/repositories/impl/emergency-broadcast.repository';
+import { StudentRepository } from '../database/repositories/impl/student.repository';
+import { ExecutionContext } from '../database/types';
 
 @Injectable()
 export class EmergencyBroadcastService {
   private readonly logger = new Logger(EmergencyBroadcastService.name);
+
+  constructor(
+    @Inject(EmergencyBroadcastRepository)
+    private readonly broadcastRepository: EmergencyBroadcastRepository,
+    @Inject(StudentRepository)
+    private readonly studentRepository: StudentRepository,
+  ) {}
 
   /**
    * Determine priority from emergency type
@@ -109,9 +120,18 @@ export class EmergencyBroadcastService {
         expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
       }
 
-      const emergencyBroadcast: EmergencyBroadcast = {
-        ...createDto,
+      // Create execution context for audit logging
+      const context: ExecutionContext = {
+        userId: createDto.sentBy,
+        ipAddress: 'system',
+        userAgent: 'emergency-broadcast-service',
+        timestamp: new Date(),
+        requestId: uuidv4(),
+      };
+
+      const emergencyBroadcast = {
         id: `EMG-${Date.now()}`,
+        ...createDto,
         priority,
         channels,
         expiresAt,
@@ -119,17 +139,20 @@ export class EmergencyBroadcastService {
         status: BroadcastStatus.DRAFT,
       };
 
-      // TODO: Save to database
-      // await this.emergencyBroadcastRepository.save(emergencyBroadcast);
+      // Save to database with transaction and audit trail
+      const savedBroadcast = await this.broadcastRepository.create(
+        emergencyBroadcast as any,
+        context,
+      );
 
       this.logger.log('Emergency broadcast created', {
-        id: emergencyBroadcast.id,
-        type: emergencyBroadcast.type,
-        priority: emergencyBroadcast.priority,
-        audience: emergencyBroadcast.audience,
+        id: savedBroadcast.id,
+        type: createDto.type,
+        priority,
+        audience: createDto.audience,
       });
 
-      return this.mapToResponseDto(emergencyBroadcast);
+      return this.mapToResponseDto(savedBroadcast as EmergencyBroadcast);
     } catch (error) {
       this.logger.error('Failed to create emergency broadcast', error);
       throw error;
@@ -142,19 +165,34 @@ export class EmergencyBroadcastService {
   async updateBroadcast(
     id: string,
     updateDto: UpdateEmergencyBroadcastDto,
+    userId: string = 'system',
   ): Promise<EmergencyBroadcastResponseDto> {
     try {
-      // TODO: Retrieve and update broadcast from database
-      // const broadcast = await this.emergencyBroadcastRepository.findOne(id);
-      // if (!broadcast) {
-      //   throw new NotFoundException(`Broadcast with ID ${id} not found`);
-      // }
-      // await this.emergencyBroadcastRepository.update(id, updateDto);
+      // Retrieve existing broadcast
+      const broadcast = await this.broadcastRepository.findById(id);
+      if (!broadcast) {
+        throw new NotFoundException(`Broadcast with ID ${id} not found`);
+      }
+
+      // Create execution context
+      const context: ExecutionContext = {
+        userId,
+        ipAddress: 'system',
+        userAgent: 'emergency-broadcast-service',
+        timestamp: new Date(),
+        requestId: uuidv4(),
+      };
+
+      // Update broadcast with transaction
+      const updatedBroadcast = await this.broadcastRepository.update(
+        id,
+        updateDto as any,
+        context,
+      );
 
       this.logger.log('Emergency broadcast updated', { id });
 
-      // Mock response
-      return {} as EmergencyBroadcastResponseDto;
+      return this.mapToResponseDto(updatedBroadcast as EmergencyBroadcast);
     } catch (error) {
       this.logger.error('Failed to update emergency broadcast', error);
       throw error;
@@ -164,24 +202,37 @@ export class EmergencyBroadcastService {
   /**
    * Send emergency broadcast
    */
-  async sendBroadcast(broadcastId: string): Promise<SendBroadcastResponseDto> {
+  async sendBroadcast(broadcastId: string, userId: string = 'system'): Promise<SendBroadcastResponseDto> {
     try {
-      // TODO: Retrieve broadcast from database
-      // const broadcast = await this.emergencyBroadcastRepository.findOne(broadcastId);
-      // if (!broadcast) {
-      //   throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
-      // }
+      // Retrieve broadcast from database
+      const broadcast = await this.broadcastRepository.findById(broadcastId);
+      if (!broadcast) {
+        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+      }
 
       this.logger.log('Sending emergency broadcast', { broadcastId });
+
+      // Create execution context
+      const context: ExecutionContext = {
+        userId,
+        ipAddress: 'system',
+        userAgent: 'emergency-broadcast-service',
+        timestamp: new Date(),
+        requestId: uuidv4(),
+      };
 
       // 1. Get recipients based on audience and filters
       const recipients = await this.getRecipients(broadcastId);
 
-      // 2. Update broadcast status
-      // await this.emergencyBroadcastRepository.update(broadcastId, {
-      //   status: BroadcastStatus.SENDING,
-      //   totalRecipients: recipients.length,
-      // });
+      // 2. Update broadcast status to SENDING
+      await this.broadcastRepository.update(
+        broadcastId,
+        {
+          status: BroadcastStatus.SENDING,
+          totalRecipients: recipients.length,
+        } as any,
+        context,
+      );
 
       // 3. Send to all recipients via specified channels
       const deliveryResults = await this.deliverToRecipients(
@@ -191,15 +242,19 @@ export class EmergencyBroadcastService {
 
       // 4. Update final status
       const sent = deliveryResults.filter(
-        (r) => r.status === 'DELIVERED',
+        (r) => r.status === DeliveryStatus.DELIVERED,
       ).length;
-      const failed = deliveryResults.filter((r) => r.status === 'FAILED').length;
+      const failed = deliveryResults.filter((r) => r.status === DeliveryStatus.FAILED).length;
 
-      // await this.emergencyBroadcastRepository.update(broadcastId, {
-      //   status: BroadcastStatus.SENT,
-      //   deliveredCount: sent,
-      //   failedCount: failed,
-      // });
+      await this.broadcastRepository.update(
+        broadcastId,
+        {
+          status: BroadcastStatus.SENT,
+          deliveredCount: sent,
+          failedCount: failed,
+        } as any,
+        context,
+      );
 
       this.logger.log('Emergency broadcast sent', {
         broadcastId,
@@ -224,25 +279,52 @@ export class EmergencyBroadcastService {
    * Get recipients for broadcast
    */
   private async getRecipients(broadcastId: string): Promise<any[]> {
-    // TODO: Query database for recipients based on audience criteria
-    // This would involve:
-    // - Querying Student, Parent, Staff models
-    // - Filtering by school, grade, class, group
-    // - Collecting contact information (phone, email, device tokens)
-    // - Respecting communication preferences and opt-outs
+    try {
+      this.logger.log('Retrieving recipients for broadcast', { broadcastId });
 
-    this.logger.log('Retrieving recipients for broadcast', { broadcastId });
+      // Get broadcast details to determine audience
+      const broadcast = await this.broadcastRepository.findById(broadcastId);
+      if (!broadcast) {
+        throw new NotFoundException(`Broadcast ${broadcastId} not found`);
+      }
 
-    // Mock implementation
-    return [
-      {
-        id: '1',
-        type: 'PARENT',
-        name: 'John Doe',
-        phone: '+15551234567',
-        email: 'john@example.com',
-      },
-    ];
+      // Query database for recipients based on audience criteria
+      const whereClause: any = {};
+
+      // Filter by school if specified
+      if ((broadcast as any).schoolId) {
+        whereClause.schoolId = (broadcast as any).schoolId;
+      }
+
+      // Filter by grade if specified
+      if ((broadcast as any).gradeLevel) {
+        whereClause.gradeLevel = (broadcast as any).gradeLevel;
+      }
+
+      // Filter by class if specified
+      if ((broadcast as any).classId) {
+        whereClause.classId = (broadcast as any).classId;
+      }
+
+      // Query students matching criteria
+      const students = await this.studentRepository.findMany({
+        where: whereClause,
+        pagination: { page: 1, limit: 10000 }, // Large limit for emergency broadcasts
+      });
+
+      // Map to recipient format with contact information
+      // In real implementation, would also query parent/guardian contacts
+      return students.data.map((student: any) => ({
+        id: student.id,
+        type: 'STUDENT',
+        name: `${student.firstName} ${student.lastName}`,
+        phone: student.phone,
+        email: student.email,
+      }));
+    } catch (error) {
+      this.logger.error('Error retrieving recipients:', error);
+      return [];
+    }
   }
 
   /**
@@ -309,22 +391,28 @@ export class EmergencyBroadcastService {
     broadcastId: string,
   ): Promise<BroadcastStatusResponseDto> {
     try {
-      // TODO: Query database for broadcast and delivery statuses
       this.logger.log('Retrieving broadcast status', { broadcastId });
 
-      // Mock implementation
-      const broadcast = {} as EmergencyBroadcastResponseDto;
+      // Query database for broadcast
+      const broadcast = await this.broadcastRepository.findById(broadcastId);
+      if (!broadcast) {
+        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+      }
+
+      // Get delivery statistics
       const deliveryStats: DeliveryStatsDto = {
-        total: 0,
-        delivered: 0,
-        failed: 0,
-        pending: 0,
-        acknowledged: 0,
+        total: (broadcast as any).totalRecipients || 0,
+        delivered: (broadcast as any).deliveredCount || 0,
+        failed: (broadcast as any).failedCount || 0,
+        pending: ((broadcast as any).totalRecipients || 0) - ((broadcast as any).deliveredCount || 0) - ((broadcast as any).failedCount || 0),
+        acknowledged: (broadcast as any).acknowledgedCount || 0,
       };
+
+      // In real implementation, would query delivery tracking table
       const recentDeliveries: RecipientDeliveryStatusDto[] = [];
 
       return {
-        broadcast,
+        broadcast: this.mapToResponseDto(broadcast as EmergencyBroadcast),
         deliveryStats,
         recentDeliveries,
       };
@@ -337,13 +425,31 @@ export class EmergencyBroadcastService {
   /**
    * Cancel pending broadcast
    */
-  async cancelBroadcast(broadcastId: string, reason: string): Promise<void> {
+  async cancelBroadcast(broadcastId: string, reason: string, userId: string = 'system'): Promise<void> {
     try {
-      // TODO: Update broadcast status in database
-      // Stop any pending deliveries
-      // await this.emergencyBroadcastRepository.update(broadcastId, {
-      //   status: BroadcastStatus.CANCELLED,
-      // });
+      // Verify broadcast exists
+      const broadcast = await this.broadcastRepository.findById(broadcastId);
+      if (!broadcast) {
+        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+      }
+
+      // Create execution context
+      const context: ExecutionContext = {
+        userId,
+        ipAddress: 'system',
+        userAgent: 'emergency-broadcast-service',
+        timestamp: new Date(),
+        requestId: uuidv4(),
+      };
+
+      // Update broadcast status to CANCELLED
+      await this.broadcastRepository.update(
+        broadcastId,
+        {
+          status: BroadcastStatus.CANCELLED,
+        } as any,
+        context,
+      );
 
       this.logger.log('Emergency broadcast cancelled', { broadcastId, reason });
     } catch (error) {
@@ -361,7 +467,32 @@ export class EmergencyBroadcastService {
     acknowledgedAt: Date = new Date(),
   ): Promise<void> {
     try {
-      // TODO: Update delivery status in database
+      // Verify broadcast exists
+      const broadcast = await this.broadcastRepository.findById(broadcastId);
+      if (!broadcast) {
+        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+      }
+
+      // In real implementation, would update delivery tracking table
+      // and increment acknowledgedCount on broadcast
+      const context: ExecutionContext = {
+        userId: recipientId,
+        ipAddress: 'system',
+        userAgent: 'emergency-broadcast-service',
+        timestamp: new Date(),
+        requestId: uuidv4(),
+      };
+
+      // Increment acknowledged count
+      const currentCount = (broadcast as any).acknowledgedCount || 0;
+      await this.broadcastRepository.update(
+        broadcastId,
+        {
+          acknowledgedCount: currentCount + 1,
+        } as any,
+        context,
+      );
+
       this.logger.log('Broadcast acknowledged', { broadcastId, recipientId });
     } catch (error) {
       this.logger.error('Failed to record acknowledgment', error);

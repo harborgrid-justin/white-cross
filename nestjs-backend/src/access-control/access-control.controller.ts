@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AccessControlService } from './access-control.service';
+import { PermissionCacheService } from './services/permission-cache.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';
@@ -41,7 +42,10 @@ import { Permissions } from './decorators/permissions.decorator';
 @ApiBearerAuth()
 @UseGuards(PermissionsGuard, RolesGuard)
 export class AccessControlController {
-  constructor(private readonly accessControlService: AccessControlService) {}
+  constructor(
+    private readonly accessControlService: AccessControlService,
+    private readonly cacheService: PermissionCacheService,
+  ) {}
 
   // ============================================================================
   // ROLE MANAGEMENT
@@ -375,5 +379,38 @@ export class AccessControlController {
   async initializeDefaultRoles() {
     await this.accessControlService.initializeDefaultRoles();
     return { message: 'Default roles and permissions initialized successfully' };
+  }
+
+  // ============================================================================
+  // CACHE MANAGEMENT
+  // ============================================================================
+
+  @Get('cache/statistics')
+  @Permissions('system', 'configure')
+  @ApiOperation({ summary: 'Get permission cache statistics' })
+  @ApiResponse({ status: 200, description: 'Cache statistics retrieved successfully' })
+  async getCacheStatistics() {
+    return this.cacheService.getStatistics();
+  }
+
+  @Delete('cache/clear')
+  @Permissions('system', 'configure')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Clear all permission caches' })
+  @ApiResponse({ status: 204, description: 'Caches cleared successfully' })
+  async clearCache() {
+    this.cacheService.clearAll();
+    return { message: 'All caches cleared' };
+  }
+
+  @Delete('cache/users/:userId')
+  @Permissions('users', 'manage')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Clear cache for specific user' })
+  @ApiParam({ name: 'userId', description: 'User UUID', type: 'string' })
+  @ApiResponse({ status: 204, description: 'User cache cleared successfully' })
+  async clearUserCache(@Param('userId') userId: string) {
+    this.cacheService.invalidateUserPermissions(userId);
+    return { message: 'User cache cleared' };
   }
 }
