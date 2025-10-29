@@ -10,7 +10,17 @@
       "Bash(node fix-inject.js:*)",
       "Bash(node fix-all-repos.js:*)",
       "Bash(npm run start:*)",
-      "Bash(node add-inject-import.js:*)"
+      "Bash(node add-inject-import.js:*)",
+      "Bash(npm --version:*)",
+      "Bash(node --version:*)",
+      "Bash(cat:*)",
+      "Bash(if [ -d \"node_modules\" ])",
+      "Bash(then echo \"node_modules exists\")",
+      "Bash(else echo \"node_modules does not exist\")",
+      "Bash(fi)",
+      "Bash(timeout 120 npm run start:dev)",
+      "Bash(tee:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

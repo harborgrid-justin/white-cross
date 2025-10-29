@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { DatabaseModule } from '../database/database.module';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
 import { HealthTrendAnalyticsService } from './services/health-trend-analytics.service';
@@ -12,6 +13,10 @@ import { HealthRecord } from '../database/models/health-record.model';
 import { Appointment } from '../database/models/appointment.model';
 import { MedicationLog } from '../database/models/medication-log.model';
 import { IncidentReport } from '../database/models/incident-report.model';
+import { AppointmentRepository } from '../database/repositories/impl/appointment.repository';
+import { HealthRecordRepository } from '../database/repositories/impl/health-record.repository';
+import { MedicationLogRepository } from '../database/repositories/impl/medication-log.repository';
+import { IncidentReportRepository } from '../database/repositories/impl/incident-report.repository';
 
 /**
  * Analytics Module
@@ -36,6 +41,9 @@ import { IncidentReport } from '../database/models/incident-report.model';
       isGlobal: false,
     }),
 
+    // Import DatabaseModule for repository access
+    DatabaseModule,
+
     // Sequelize models for analytics data persistence and queries
     SequelizeModule.forFeature([
       // Analytics models
@@ -54,11 +62,21 @@ import { IncidentReport } from '../database/models/incident-report.model';
     AnalyticsService, // Main orchestration service
     HealthTrendAnalyticsService, // Health trend analysis and population health
     ComplianceReportGeneratorService, // Report generation service with export capabilities
+    // Repository providers
+    AppointmentRepository,
+    HealthRecordRepository,
+    MedicationLogRepository,
+    IncidentReportRepository,
   ],
   exports: [
     AnalyticsService,
     HealthTrendAnalyticsService,
     ComplianceReportGeneratorService,
+    // Export repositories for dependent modules
+    AppointmentRepository,
+    HealthRecordRepository,
+    MedicationLogRepository,
+    IncidentReportRepository,
   ],
 })
 export class AnalyticsModule {}

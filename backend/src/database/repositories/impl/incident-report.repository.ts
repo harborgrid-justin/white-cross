@@ -1,5 +1,6 @@
 /**
  * Incident Report Repository Implementation
+ * Tracks safety incidents, injuries, and emergency events at school
  */
 
 import { Injectable, Inject } from '@nestjs/common';
@@ -9,30 +10,137 @@ import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
+import { ExecutionContext, QueryOptions } from '../../types';
+import { IncidentReport } from '../../models/incident-report.model';
 
 export interface IncidentReportAttributes {
   id: string;
+  studentId: string;
+  incidentDate: Date;
+  type: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  location?: string;
+  description: string;
+  reportedBy?: string;
+  witnesses?: string[];
+  injuries?: string;
+  actions?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateIncidentReportDTO {
-  id?: string;
+  studentId: string;
+  incidentDate: Date;
+  type: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  location?: string;
+  description: string;
+  reportedBy?: string;
+  witnesses?: string[];
+  injuries?: string;
+  actions?: string;
 }
 
 export interface UpdateIncidentReportDTO {
-  id?: string;
+  incidentDate?: Date;
+  type?: string;
+  severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  location?: string;
+  description?: string;
+  witnesses?: string[];
+  injuries?: string;
+  actions?: string;
 }
 
 @Injectable()
 export class IncidentReportRepository extends BaseRepository<any, IncidentReportAttributes, CreateIncidentReportDTO> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel(IncidentReport) model: typeof IncidentReport,
     @Inject('IAuditLogger') auditLogger,
     @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'IncidentReport');
+  }
+
+  /**
+   * Find incidents by student
+   */
+  async findByStudent(
+    studentId: string,
+    options?: QueryOptions
+  ): Promise<IncidentReportAttributes[]> {
+    try {
+      const incidents = await this.model.findAll({
+        where: { studentId },
+        order: [['incidentDate', 'DESC']],
+        ...options,
+      });
+      return incidents.map((incident: any) => this.mapToEntity(incident));
+    } catch (error) {
+      this.logger.error('Error finding incidents by student:', error);
+      throw new RepositoryError(
+        'Failed to find incidents by student',
+        'FIND_BY_STUDENT_ERROR',
+        500,
+        { studentId, error: (error as Error).message }
+      );
+    }
+  }
+
+  /**
+   * Find incidents by severity level
+   */
+  async findBySeverity(
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+    options?: QueryOptions
+  ): Promise<IncidentReportAttributes[]> {
+    try {
+      const incidents = await this.model.findAll({
+        where: { severity },
+        order: [['incidentDate', 'DESC']],
+        ...options,
+      });
+      return incidents.map((incident: any) => this.mapToEntity(incident));
+    } catch (error) {
+      this.logger.error('Error finding incidents by severity:', error);
+      throw new RepositoryError(
+        'Failed to find incidents by severity',
+        'FIND_BY_SEVERITY_ERROR',
+        500,
+        { severity, error: (error as Error).message }
+      );
+    }
+  }
+
+  /**
+   * Find incidents within date range
+   */
+  async findByDateRange(
+    startDate: Date,
+    endDate: Date,
+    options?: QueryOptions
+  ): Promise<IncidentReportAttributes[]> {
+    try {
+      const incidents = await this.model.findAll({
+        where: {
+          incidentDate: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        order: [['incidentDate', 'DESC']],
+        ...options,
+      });
+      return incidents.map((incident: any) => this.mapToEntity(incident));
+    } catch (error) {
+      this.logger.error('Error finding incidents by date range:', error);
+      throw new RepositoryError(
+        'Failed to find incidents by date range',
+        'FIND_BY_DATE_RANGE_ERROR',
+        500,
+        { startDate, endDate, error: (error as Error).message }
+      );
+    }
   }
 
   protected async validateCreate(data: CreateIncidentReportDTO): Promise<void> {}
@@ -52,5 +160,3 @@ export class IncidentReportRepository extends BaseRepository<any, IncidentReport
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

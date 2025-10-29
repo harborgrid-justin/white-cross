@@ -150,6 +150,10 @@ import { DataRetentionPolicyRepository } from './repositories/impl/data-retentio
 import { ComplianceViolationRepository } from './repositories/impl/compliance-violation.repository';
 import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broadcast.repository';
 import { ComplianceReportRepository } from './repositories/impl/compliance-report.repository';
+import { AppointmentRepository } from './repositories/impl/appointment.repository';
+import { HealthRecordRepository } from './repositories/impl/health-record.repository';
+import { MedicationLogRepository } from './repositories/impl/medication-log.repository';
+import { IncidentReportRepository } from './repositories/impl/incident-report.repository';
 
 /**
  * Database Module
@@ -398,7 +402,10 @@ import { ComplianceReportRepository } from './repositories/impl/compliance-repor
     DataRetentionPolicyRepository,
     ComplianceViolationRepository,
     EmergencyBroadcastRepository,
-    // HealthRecordRepository,
+    AppointmentRepository,
+    HealthRecordRepository,
+    MedicationLogRepository,
+    IncidentReportRepository,
     // AllergyRepository,
     // MedicationRepository,
     // etc.
@@ -421,7 +428,10 @@ import { ComplianceReportRepository } from './repositories/impl/compliance-repor
     DataRetentionPolicyRepository,
     ComplianceViolationRepository,
     EmergencyBroadcastRepository,
-    // HealthRecordRepository,
+    AppointmentRepository,
+    HealthRecordRepository,
+    MedicationLogRepository,
+    IncidentReportRepository,
     // etc.
   ]
 })
