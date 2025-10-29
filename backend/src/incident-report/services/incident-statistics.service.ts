@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
-import { IncidentReport } from '../entities/incident-report.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { IncidentReport } from '../../database/models/incident-report.model';
 import { IncidentType, IncidentSeverity } from '../enums';
 
 @Injectable()
@@ -9,8 +9,8 @@ export class IncidentStatisticsService {
   private readonly logger = new Logger(IncidentStatisticsService.name);
 
   constructor(
-    @InjectRepository(IncidentReport)
-    private incidentReportRepository: Repository<IncidentReport>,
+    @InjectModel(IncidentReport)
+    private incidentReportModel: typeof IncidentReport,
   ) {}
 
   /**
@@ -29,16 +29,22 @@ export class IncidentStatisticsService {
       }
 
       if (dateFrom && dateTo) {
-        where.occurredAt = Between(dateFrom, dateTo);
+        where.occurredAt = {
+          [Op.between]: [dateFrom, dateTo],
+        };
       } else if (dateFrom) {
-        where.occurredAt = MoreThanOrEqual(dateFrom);
+        where.occurredAt = {
+          [Op.gte]: dateFrom,
+        };
       } else if (dateTo) {
-        where.occurredAt = LessThanOrEqual(dateTo);
+        where.occurredAt = {
+          [Op.lte]: dateTo,
+        };
       }
 
-      const reports = await this.incidentReportRepository.find({
+      const reports = await this.incidentReportModel.findAll({
         where,
-        select: [
+        attributes: [
           'id',
           'type',
           'severity',
@@ -117,16 +123,22 @@ export class IncidentStatisticsService {
       const where: any = {};
 
       if (dateFrom && dateTo) {
-        where.occurredAt = Between(dateFrom, dateTo);
+        where.occurredAt = {
+          [Op.between]: [dateFrom, dateTo],
+        };
       } else if (dateFrom) {
-        where.occurredAt = MoreThanOrEqual(dateFrom);
+        where.occurredAt = {
+          [Op.gte]: dateFrom,
+        };
       } else if (dateTo) {
-        where.occurredAt = LessThanOrEqual(dateTo);
+        where.occurredAt = {
+          [Op.lte]: dateTo,
+        };
       }
 
-      const reports = await this.incidentReportRepository.find({
+      const reports = await this.incidentReportModel.findAll({
         where,
-        select: ['id', 'type'],
+        attributes: ['id', 'type'],
       });
 
       const byType: Record<string, number> = {};
@@ -153,16 +165,22 @@ export class IncidentStatisticsService {
       const where: any = {};
 
       if (dateFrom && dateTo) {
-        where.occurredAt = Between(dateFrom, dateTo);
+        where.occurredAt = {
+          [Op.between]: [dateFrom, dateTo],
+        };
       } else if (dateFrom) {
-        where.occurredAt = MoreThanOrEqual(dateFrom);
+        where.occurredAt = {
+          [Op.gte]: dateFrom,
+        };
       } else if (dateTo) {
-        where.occurredAt = LessThanOrEqual(dateTo);
+        where.occurredAt = {
+          [Op.lte]: dateTo,
+        };
       }
 
-      const reports = await this.incidentReportRepository.find({
+      const reports = await this.incidentReportModel.findAll({
         where,
-        select: ['id', 'severity'],
+        attributes: ['id', 'severity'],
       });
 
       const bySeverity: Record<string, number> = {};
@@ -186,12 +204,14 @@ export class IncidentStatisticsService {
    */
   async getSeverityTrends(dateFrom: Date, dateTo: Date) {
     try {
-      const reports = await this.incidentReportRepository.find({
+      const reports = await this.incidentReportModel.findAll({
         where: {
-          occurredAt: Between(dateFrom, dateTo),
+          occurredAt: {
+            [Op.between]: [dateFrom, dateTo],
+          },
         },
-        select: ['id', 'severity', 'occurredAt'],
-        order: { occurredAt: 'ASC' },
+        attributes: ['id', 'severity', 'occurredAt'],
+        order: [['occurredAt', 'ASC']],
       });
 
       // Group by month and severity

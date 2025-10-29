@@ -9,10 +9,10 @@
  */
 
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
-import { Vaccination } from './entities/vaccination.entity';
-import { Student } from '../../student/entities/student.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model, Op } from 'sequelize';
+import { Vaccination } from '../../database/models/vaccination.model';
+import { Student } from '../../database/models/student.model';
 
 /**
  * CDC CVX Vaccine Codes (subset of commonly used codes)
@@ -58,10 +58,10 @@ export class VaccinationService {
   private readonly logger = new Logger(VaccinationService.name);
 
   constructor(
-    @InjectRepository(Vaccination)
-    private readonly vaccinationRepository: Repository<Vaccination>,
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    @InjectModel(Vaccination)
+    private readonly vaccinationModel: typeof Vaccination,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
   ) {}
 
   /**
@@ -73,9 +73,7 @@ export class VaccinationService {
     this.logger.log(`Adding vaccination for student ${data.studentId}`);
 
     // Verify student exists
-    const student = await this.studentRepository.findOne({
-      where: { id: data.studentId },
-    });
+    const student = await this.studentModel.findByPk(data.studentId);
 
     if (!student) {
       throw new NotFoundException('Student not found');
@@ -112,20 +110,20 @@ export class VaccinationService {
     );
 
     // Create vaccination record
-    const vaccination = this.vaccinationRepository.create({
+    const vaccination = this.vaccinationModel.build({
       ...data,
       seriesComplete,
       nextDueDate,
       complianceStatus,
     });
 
-    const savedVaccination = await this.vaccinationRepository.save(vaccination);
+    const savedVaccination = await vaccination.save();
 
     // Reload with associations
-    const vaccinationWithRelations = await this.vaccinationRepository.findOne({
-      where: { id: (savedVaccination as any).id },
-      relations: ['student'],
-    });
+    const vaccinationWithRelations = await this.vaccinationModel.findByPk(
+      (savedVaccination as any).id,
+      { include: ['student'] },
+    );
 
     // PHI Creation Audit Log
     this.logger.log(
@@ -153,20 +151,16 @@ export class VaccinationService {
    */
   async getVaccinationHistory(studentId: string): Promise<Vaccination[]> {
     // Verify student exists
-    const student = await this.studentRepository.findOne({
-      where: { id: studentId },
-    });
+    const student = await this.studentModel.findByPk(studentId);
 
     if (!student) {
       throw new NotFoundException('Student not found');
     }
 
-    const vaccinations = await this.vaccinationRepository.find({
+    const vaccinations = await this.vaccinationModel.findAll({
       where: { studentId },
-      relations: ['student'],
-      order: {
-        administrationDate: 'DESC',
-      },
+      include: ['student'],
+      order: [['administrationDate', 'DESC']],
     });
 
     // PHI Access Audit Log
@@ -184,18 +178,16 @@ export class VaccinationService {
    */
   async checkComplianceStatus(studentId: string): Promise<any> {
     // Verify student exists
-    const student = await this.studentRepository.findOne({
-      where: { id: studentId },
-    });
+    const student = await this.studentModel.findByPk(studentId);
 
     if (!student) {
       throw new NotFoundException('Student not found');
     }
 
     // Get all vaccinations for student
-    const vaccinations = await this.vaccinationRepository.find({
+    const vaccinations = await this.vaccinationModel.findAll({
       where: { studentId },
-      order: { administrationDate: 'DESC' },
+      order: [['administrationDate', 'DESC']],
     });
 
     // Calculate student age in months
@@ -315,9 +307,8 @@ export class VaccinationService {
    * @returns Updated vaccination record
    */
   async updateVaccination(id: string, data: Partial<any>): Promise<Vaccination> {
-    const existingVaccination = await this.vaccinationRepository.findOne({
-      where: { id },
-      relations: ['student'],
+    const existingVaccination = await this.vaccinationModel.findByPk(id, {
+      include: ['student'],
     });
 
     if (!existingVaccination) {
@@ -367,14 +358,11 @@ export class VaccinationService {
 
     // Update vaccination
     Object.assign(existingVaccination, data);
-    const updatedVaccination = await this.vaccinationRepository.save(
-      existingVaccination,
-    );
+    const updatedVaccination = await existingVaccination.save();
 
     // Reload with associations
-    const vaccinationWithRelations = await this.vaccinationRepository.findOne({
-      where: { id: updatedVaccination.id },
-      relations: ['student'],
+    const vaccinationWithRelations = await this.vaccinationModel.findByPk(updatedVaccination.id, {
+      include: ['student'],
     });
 
     if (!vaccinationWithRelations) {
@@ -395,9 +383,8 @@ export class VaccinationService {
    * @returns Success status
    */
   async deleteVaccination(id: string): Promise<{ success: boolean }> {
-    const vaccination = await this.vaccinationRepository.findOne({
-      where: { id },
-      relations: ['student'],
+    const vaccination = await this.vaccinationModel.findByPk(id, {
+      include: ['student'],
     });
 
     if (!vaccination) {
@@ -405,7 +392,7 @@ export class VaccinationService {
     }
 
     // Soft delete
-    await this.vaccinationRepository.softDelete(id);
+    await vaccination.destroy();
 
     // PHI Deletion Audit Log
     this.logger.warn(
@@ -423,16 +410,14 @@ export class VaccinationService {
   async getOverdueVaccinations(limit: number = 100): Promise<Vaccination[]> {
     const today = new Date();
 
-    const overdueVaccinations = await this.vaccinationRepository.find({
+    const overdueVaccinations = await this.vaccinationModel.findAll({
       where: {
-        nextDueDate: LessThan(today),
+        nextDueDate: { [Op.lt]: today },
         seriesComplete: false,
       },
-      relations: ['student'],
-      order: {
-        nextDueDate: 'ASC',
-      },
-      take: limit,
+      include: ['student'],
+      order: [['nextDueDate', 'ASC']],
+      limit,
     });
 
     // PHI Access Audit Log

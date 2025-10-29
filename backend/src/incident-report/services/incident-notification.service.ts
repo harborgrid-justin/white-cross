@@ -1,15 +1,14 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { IncidentReport } from '../entities/incident-report.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { IncidentReport } from '../../database/models/incident-report.model';
 
 @Injectable()
 export class IncidentNotificationService {
   private readonly logger = new Logger(IncidentNotificationService.name);
 
   constructor(
-    @InjectRepository(IncidentReport)
-    private incidentReportRepository: Repository<IncidentReport>,
+    @InjectModel(IncidentReport)
+    private incidentReportModel: typeof IncidentReport,
   ) {}
 
   /**
@@ -18,9 +17,7 @@ export class IncidentNotificationService {
    */
   async notifyEmergencyContacts(incidentId: string): Promise<boolean> {
     try {
-      const report = await this.incidentReportRepository.findOne({
-        where: { id: incidentId },
-      });
+      const report = await this.incidentReportModel.findByPk(incidentId);
 
       if (!report) {
         throw new NotFoundException('Incident report not found');
@@ -61,9 +58,7 @@ export class IncidentNotificationService {
     notifiedBy: string,
   ): Promise<IncidentReport> {
     try {
-      const report = await this.incidentReportRepository.findOne({
-        where: { id: incidentReportId },
-      });
+      const report = await this.incidentReportModel.findByPk(incidentReportId);
 
       if (!report) {
         throw new NotFoundException('Incident report not found');
@@ -98,9 +93,7 @@ export class IncidentNotificationService {
     notifiedBy?: string,
   ): Promise<IncidentReport> {
     try {
-      const report = await this.incidentReportRepository.findOne({
-        where: { id },
-      });
+      const report = await this.incidentReportModel.findByPk(id);
 
       if (!report) {
         throw new NotFoundException('Incident report not found');
@@ -118,7 +111,7 @@ export class IncidentNotificationService {
         ? `${report.followUpNotes}\n${methodNote}`
         : methodNote;
 
-      const updatedReport = await this.incidentReportRepository.save(report);
+      const updatedReport = await report.save();
 
       this.logger.log(`Parent notification marked for incident ${id}`);
       return updatedReport;

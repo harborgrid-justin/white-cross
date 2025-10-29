@@ -3,11 +3,11 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { WitnessStatement } from '../entities/witness-statement.entity';
-import { IncidentReport } from '../entities/incident-report.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { WitnessStatement } from '../../database/models/witness-statement.model';
+import { IncidentReport } from '../../database/models/incident-report.model';
 import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
+import { UpdateWitnessStatementDto } from '../dto/update-witness-statement.dto';
 import { IncidentValidationService } from './incident-validation.service';
 
 @Injectable()
@@ -15,10 +15,10 @@ export class IncidentWitnessService {
   private readonly logger = new Logger(IncidentWitnessService.name);
 
   constructor(
-    @InjectRepository(WitnessStatement)
-    private witnessStatementRepository: Repository<WitnessStatement>,
-    @InjectRepository(IncidentReport)
-    private incidentReportRepository: Repository<IncidentReport>,
+    @InjectModel(WitnessStatement)
+    private witnessStatementModel: typeof WitnessStatement,
+    @InjectModel(IncidentReport)
+    private incidentReportModel: typeof IncidentReport,
     private validationService: IncidentValidationService,
   ) {}
 
@@ -30,9 +30,7 @@ export class IncidentWitnessService {
     dto: CreateWitnessStatementDto,
   ): Promise<WitnessStatement> {
     try {
-      const report = await this.incidentReportRepository.findOne({
-        where: { id: incidentReportId },
-      });
+      const report = await this.incidentReportModel.findByPk(incidentReportId);
 
       if (!report) {
         throw new NotFoundException('Incident report not found');
@@ -41,13 +39,11 @@ export class IncidentWitnessService {
       // Validate witness statement data
       this.validationService.validateWitnessStatementData(dto);
 
-      const witnessStatement = this.witnessStatementRepository.create({
+      const savedStatement = await this.witnessStatementModel.create({
         incidentReportId,
         ...dto,
         verified: false,
-      });
-
-      const savedStatement = await this.witnessStatementRepository.save(witnessStatement);
+      } as any);
 
       this.logger.log(`Witness statement added to incident ${incidentReportId}`);
       return savedStatement;
@@ -65,9 +61,7 @@ export class IncidentWitnessService {
     verifiedBy: string,
   ): Promise<WitnessStatement> {
     try {
-      const statement = await this.witnessStatementRepository.findOne({
-        where: { id: statementId },
-      });
+      const statement = await this.witnessStatementModel.findByPk(statementId);
 
       if (!statement) {
         throw new NotFoundException('Witness statement not found');
@@ -77,7 +71,7 @@ export class IncidentWitnessService {
       statement.verifiedBy = verifiedBy;
       statement.verifiedAt = new Date();
 
-      const updatedStatement = await this.witnessStatementRepository.save(statement);
+      const updatedStatement = await statement.save();
 
       this.logger.log(`Witness statement ${statementId} verified by ${verifiedBy}`);
       return updatedStatement;
@@ -92,9 +86,9 @@ export class IncidentWitnessService {
    */
   async getWitnessStatements(incidentReportId: string): Promise<WitnessStatement[]> {
     try {
-      const statements = await this.witnessStatementRepository.find({
+      const statements = await this.witnessStatementModel.findAll({
         where: { incidentReportId },
-        order: { createdAt: 'ASC' },
+        order: [['createdAt', 'ASC']],
       });
 
       return statements;
@@ -109,12 +103,10 @@ export class IncidentWitnessService {
    */
   async updateWitnessStatement(
     statementId: string,
-    data: Partial<CreateWitnessStatementDto>,
+    data: UpdateWitnessStatementDto,
   ): Promise<WitnessStatement> {
     try {
-      const statement = await this.witnessStatementRepository.findOne({
-        where: { id: statementId },
-      });
+      const statement = await this.witnessStatementModel.findByPk(statementId);
 
       if (!statement) {
         throw new NotFoundException('Witness statement not found');
@@ -132,7 +124,7 @@ export class IncidentWitnessService {
 
       Object.assign(statement, data);
 
-      const updatedStatement = await this.witnessStatementRepository.save(statement);
+      const updatedStatement = await statement.save();
 
       this.logger.log(`Witness statement ${statementId} updated`);
       return updatedStatement;
@@ -147,15 +139,13 @@ export class IncidentWitnessService {
    */
   async deleteWitnessStatement(statementId: string): Promise<boolean> {
     try {
-      const statement = await this.witnessStatementRepository.findOne({
-        where: { id: statementId },
-      });
+      const statement = await this.witnessStatementModel.findByPk(statementId);
 
       if (!statement) {
         throw new NotFoundException('Witness statement not found');
       }
 
-      await this.witnessStatementRepository.remove(statement);
+      await statement.destroy();
 
       this.logger.log(`Witness statement ${statementId} deleted`);
       return true;
@@ -170,9 +160,9 @@ export class IncidentWitnessService {
    */
   async getUnverifiedStatements(): Promise<WitnessStatement[]> {
     try {
-      const statements = await this.witnessStatementRepository.find({
+      const statements = await this.witnessStatementModel.findAll({
         where: { verified: false },
-        order: { createdAt: 'ASC' },
+        order: [['createdAt', 'ASC']],
       });
 
       return statements;

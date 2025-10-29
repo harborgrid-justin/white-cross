@@ -7,10 +7,13 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
+  HasMany,
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Student } from './student.model';
+import { FollowUpAction } from './follow-up-action.model';
+import { WitnessStatement } from './witness-statement.model';
 
 export enum IncidentType {
   INJURY = 'INJURY',
@@ -70,6 +73,8 @@ export interface IncidentReportAttributes {
   occurredAt: Date;
   createdBy?: string;
   updatedBy?: string;
+  followUpActions?: FollowUpAction[];
+  witnessStatements?: WitnessStatement[];
 }
 
 @Table({
@@ -222,4 +227,10 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
 
   @BelongsTo(() => Student)
   student?: Student;
+
+  @HasMany(() => FollowUpAction)
+  followUpActions?: FollowUpAction[];
+
+  @HasMany(() => WitnessStatement)
+  witnessStatements?: WitnessStatement[];
 }

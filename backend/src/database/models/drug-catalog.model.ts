@@ -5,10 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  AllowNull,
   Index,
-  BeforeCreate,
-  CreatedAt,
-  UpdatedAt,
   HasMany,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,6 +26,11 @@ export interface DrugCatalogAttributes {
   contraindications?: string[];
   warnings?: string[];
   isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  interactionsAsDrug1?: DrugInteraction[];
+  interactionsAsDrug2?: DrugInteraction[];
+  allergies?: StudentDrugAllergy[];
 }
 
 @Table({
@@ -35,21 +38,31 @@ export interface DrugCatalogAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['rxnormId'],
+      fields: ['rxnorm_id'],
       unique: true,
+      where: {
+        rxnorm_id: {
+          [require('sequelize').Op.ne]: null,
+        },
+      },
     },
     {
-      fields: ['rxnormCode'],
+      fields: ['rxnorm_code'],
       unique: true,
+      where: {
+        rxnorm_code: {
+          [require('sequelize').Op.ne]: null,
+        },
+      },
     },
     {
-      fields: ['genericName'],
+      fields: ['generic_name'],
     },
     {
-      fields: ['drugClass'],
+      fields: ['drug_class'],
     },
     {
-      fields: ['isActive'],
+      fields: ['is_active'],
     },
   ],
 })
@@ -59,89 +72,103 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @Column(DataType.UUID)
   declare id: string;
 
+  @AllowNull
   @Column({
     type: DataType.STRING(50),
     unique: true,
+    field: 'rxnorm_id',
   })
+  @Index
   rxnormId?: string;
 
+  @AllowNull
   @Column({
     type: DataType.STRING(50),
     unique: true,
+    field: 'rxnorm_code',
   })
+  @Index
   rxnormCode?: string;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
+    field: 'generic_name',
   })
+  @Index
   genericName: string;
 
+  @AllowNull
   @Column({
-    type: DataType.JSONB,
-    defaultValue: [],
+    type: DataType.JSON,
+    field: 'brand_names',
   })
   brandNames?: string[];
 
-  @Column(DataType.STRING(100))
+  @AllowNull
+  @Column({
+    type: DataType.STRING(100),
+    field: 'drug_class',
+  })
+  @Index
   drugClass?: string;
 
-  @Default(true)
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
+    defaultValue: true,
+    field: 'fda_approved',
   })
   fdaApproved: boolean;
 
-  @Column(DataType.JSONB)
-  commonDoses?: Record<string, any>;
-
+  @AllowNull
   @Column({
     type: DataType.JSONB,
-    defaultValue: [],
+    field: 'common_doses',
+  })
+  commonDoses?: Record<string, any>;
+
+  @AllowNull
+  @Column({
+    type: DataType.JSON,
+    field: 'side_effects',
   })
   sideEffects?: string[];
 
+  @AllowNull
   @Column({
-    type: DataType.JSONB,
-    defaultValue: [],
+    type: DataType.JSON,
   })
   contraindications?: string[];
 
+  @AllowNull
   @Column({
-    type: DataType.JSONB,
-    defaultValue: [],
+    type: DataType.JSON,
   })
   warnings?: string[];
 
-  @Default(true)
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
+    defaultValue: true,
+    field: 'is_active',
   })
+  @Index
   isActive: boolean;
 
-  @CreatedAt
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  declare createdAt: Date;
+  @Column(DataType.DATE)
+  declare createdAt?: Date;
 
-  @UpdatedAt
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  declare updatedAt: Date;
+  @Column(DataType.DATE)
+  declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => DrugInteraction, 'drug1Id')
+  @HasMany(() => DrugInteraction, { foreignKey: 'drug1Id', as: 'interactionsAsDrug1' })
   interactionsAsDrug1?: DrugInteraction[];
 
-  @HasMany(() => DrugInteraction, 'drug2Id')
+  @HasMany(() => DrugInteraction, { foreignKey: 'drug2Id', as: 'interactionsAsDrug2' })
   interactionsAsDrug2?: DrugInteraction[];
 
-  @HasMany(() => StudentDrugAllergy)
+  @HasMany(() => StudentDrugAllergy, { foreignKey: 'drugId', as: 'allergies' })
   allergies?: StudentDrugAllergy[];
 }

@@ -5,21 +5,32 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  AllowNull,
   Index,
-  BeforeCreate,
-  CreatedAt,
-  UpdatedAt,
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { DrugCatalog } from './drug-catalog.model';
 
+/**
+ * Drug Interaction Severity Levels
+ * Used for categorizing the severity of drug-drug interactions
+ */
 export enum InteractionSeverity {
+  /** Minor interaction with minimal clinical significance */
   MINOR = 'MINOR',
+
+  /** Moderate interaction requiring monitoring */
   MODERATE = 'MODERATE',
+
+  /** Major interaction requiring intervention or alternative therapy */
   MAJOR = 'MAJOR',
+
+  /** Severe interaction with serious adverse effects */
   SEVERE = 'SEVERE',
+
+  /** Contraindicated - drugs should not be used together */
   CONTRAINDICATED = 'CONTRAINDICATED',
 }
 
@@ -33,6 +44,10 @@ export interface DrugInteractionAttributes {
   management?: string;
   references?: string[];
   evidenceLevel?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  drug1?: DrugCatalog;
+  drug2?: DrugCatalog;
 }
 
 @Table({
@@ -40,14 +55,8 @@ export interface DrugInteractionAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['drug1Id', 'drug2Id'],
+      fields: ['drug1_id', 'drug2_id'],
       unique: true,
-    },
-    {
-      fields: ['drug1Id'],
-    },
-    {
-      fields: ['drug2Id'],
     },
     {
       fields: ['severity'],
@@ -64,20 +73,25 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'drug1_id',
   })
+  @Index
   drug1Id: string;
 
   @ForeignKey(() => DrugCatalog)
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'drug2_id',
   })
+  @Index
   drug2Id: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(InteractionSeverity)),
     allowNull: false,
   })
+  @Index
   severity: InteractionSeverity;
 
   @Column({
@@ -86,39 +100,42 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   })
   description: string;
 
-  @Column(DataType.TEXT)
+  @AllowNull
+  @Column({
+    type: DataType.TEXT,
+    field: 'clinical_effects',
+  })
   clinicalEffects?: string;
 
-  @Column(DataType.TEXT)
+  @AllowNull
+  @Column({
+    type: DataType.TEXT,
+  })
   management?: string;
 
+  @AllowNull
   @Column({
-    type: DataType.JSONB,
-    defaultValue: [],
+    type: DataType.JSON,
   })
   references?: string[];
 
-  @Column(DataType.STRING(50))
+  @AllowNull
+  @Column({
+    type: DataType.STRING(50),
+    field: 'evidence_level',
+  })
   evidenceLevel?: string;
 
-  @CreatedAt
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  declare createdAt: Date;
+  @Column(DataType.DATE)
+  declare createdAt?: Date;
 
-  @UpdatedAt
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  declare updatedAt: Date;
+  @Column(DataType.DATE)
+  declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => DrugCatalog, 'drug1Id')
+  @BelongsTo(() => DrugCatalog, { foreignKey: 'drug1Id', as: 'drug1' })
   drug1?: DrugCatalog;
 
-  @BelongsTo(() => DrugCatalog, 'drug2Id')
+  @BelongsTo(() => DrugCatalog, { foreignKey: 'drug2Id', as: 'drug2' })
   drug2?: DrugCatalog;
 }

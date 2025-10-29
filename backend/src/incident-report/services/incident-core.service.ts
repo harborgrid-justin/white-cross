@@ -4,9 +4,9 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import { IncidentReport } from '../entities/incident-report.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { IncidentReport } from '../../database/models/incident-report.model';
 import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
 import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
 import { IncidentFiltersDto } from '../dto/incident-filters.dto';
@@ -19,8 +19,8 @@ export class IncidentCoreService {
   private readonly logger = new Logger(IncidentCoreService.name);
 
   constructor(
-    @InjectRepository(IncidentReport)
-    private incidentReportRepository: Repository<IncidentReport>,
+    @InjectModel(IncidentReport)
+    private incidentReportModel: typeof IncidentReport,
     private validationService: IncidentValidationService,
     private notificationService: IncidentNotificationService,
   ) {}
@@ -30,9 +30,9 @@ export class IncidentCoreService {
    */
   async getIncidentReports(filters: IncidentFiltersDto) {
     const { page = 1, limit = 20, ...filterParams } = filters;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    const where: FindOptionsWhere<IncidentReport> = {};
+    const where: any = {};
 
     if (filterParams.studentId) {
       where.studentId = filterParams.studentId;
@@ -51,11 +51,17 @@ export class IncidentCoreService {
     }
 
     if (filterParams.dateFrom && filterParams.dateTo) {
-      where.occurredAt = Between(new Date(filterParams.dateFrom), new Date(filterParams.dateTo));
+      where.occurredAt = {
+        [Op.between]: [new Date(filterParams.dateFrom), new Date(filterParams.dateTo)],
+      };
     } else if (filterParams.dateFrom) {
-      where.occurredAt = MoreThanOrEqual(new Date(filterParams.dateFrom));
+      where.occurredAt = {
+        [Op.gte]: new Date(filterParams.dateFrom),
+      };
     } else if (filterParams.dateTo) {
-      where.occurredAt = LessThanOrEqual(new Date(filterParams.dateTo));
+      where.occurredAt = {
+        [Op.lte]: new Date(filterParams.dateTo),
+      };
     }
 
     if (filterParams.parentNotified !== undefined) {
@@ -66,11 +72,11 @@ export class IncidentCoreService {
       where.followUpRequired = filterParams.followUpRequired;
     }
 
-    const [reports, total] = await this.incidentReportRepository.findAndCount({
+    const { rows: reports, count: total } = await this.incidentReportModel.findAndCountAll({
       where,
-      skip,
-      take: limit,
-      order: { occurredAt: 'DESC' },
+      offset,
+      limit,
+      order: [['occurredAt', 'DESC']],
     });
 
     return {
@@ -88,9 +94,7 @@ export class IncidentCoreService {
    * Get incident report by ID
    */
   async getIncidentReportById(id: string): Promise<IncidentReport> {
-    const report = await this.incidentReportRepository.findOne({
-      where: { id },
-    });
+    const report = await this.incidentReportModel.findByPk(id);
 
     if (!report) {
       throw new NotFoundException('Incident report not found');
@@ -108,8 +112,7 @@ export class IncidentCoreService {
       await this.validationService.validateIncidentReportData(dto);
 
       // Create the report
-      const report = this.incidentReportRepository.create(dto);
-      const savedReport = await this.incidentReportRepository.save(report);
+      const savedReport = await this.incidentReportModel.create(dto as any);
 
       this.logger.log(
         `Incident report created: ${dto.type} (${dto.severity}) for student ${dto.studentId} by ${dto.reportedById}`,
@@ -147,7 +150,7 @@ export class IncidentCoreService {
       // Merge the updates
       Object.assign(existingReport, dto);
 
-      const updatedReport = await this.incidentReportRepository.save(existingReport);
+      const updatedReport = await existingReport.save();
 
       this.logger.log(`Incident report updated: ${id}`);
       return updatedReport;
@@ -162,9 +165,9 @@ export class IncidentCoreService {
    */
   async getIncidentsRequiringFollowUp(): Promise<IncidentReport[]> {
     try {
-      const reports = await this.incidentReportRepository.find({
+      const reports = await this.incidentReportModel.findAll({
         where: { followUpRequired: true },
-        order: { occurredAt: 'DESC' },
+        order: [['occurredAt', 'DESC']],
       });
 
       return reports;
@@ -182,10 +185,10 @@ export class IncidentCoreService {
     limit: number = 5,
   ): Promise<IncidentReport[]> {
     try {
-      const reports = await this.incidentReportRepository.find({
+      const reports = await this.incidentReportModel.findAll({
         where: { studentId },
-        order: { occurredAt: 'DESC' },
-        take: limit,
+        order: [['occurredAt', 'DESC']],
+        limit,
       });
 
       return reports;
@@ -209,7 +212,7 @@ export class IncidentCoreService {
       report.followUpNotes = notes;
       report.followUpRequired = false; // Mark as completed
 
-      const updatedReport = await this.incidentReportRepository.save(report);
+      const updatedReport = await report.save();
 
       this.logger.log(`Follow-up notes added for incident ${id} by ${completedBy}`);
       return updatedReport;
@@ -244,7 +247,7 @@ export class IncidentCoreService {
           : methodNote;
       }
 
-      const updatedReport = await this.incidentReportRepository.save(report);
+      const updatedReport = await report.save();
 
       this.logger.log(`Parent notification marked for incident ${id}`);
       return updatedReport;
@@ -277,7 +280,7 @@ export class IncidentCoreService {
         report.attachments = [...(report.attachments || []), ...evidenceUrls];
       }
 
-      const updatedReport = await this.incidentReportRepository.save(report);
+      const updatedReport = await report.save();
 
       this.logger.log(
         `${evidenceType} evidence added to incident ${id}: ${evidenceUrls.length} files`,
@@ -303,7 +306,7 @@ export class IncidentCoreService {
       report.insuranceClaimNumber = claimNumber;
       report.insuranceClaimStatus = status as any;
 
-      const updatedReport = await this.incidentReportRepository.save(report);
+      const updatedReport = await report.save();
 
       this.logger.log(`Insurance claim updated for incident ${id}: ${claimNumber}`);
       return updatedReport;
@@ -325,7 +328,7 @@ export class IncidentCoreService {
 
       report.legalComplianceStatus = status as any;
 
-      const updatedReport = await this.incidentReportRepository.save(report);
+      const updatedReport = await report.save();
 
       this.logger.log(`Compliance status updated for incident ${id}: ${status}`);
       return updatedReport;

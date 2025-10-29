@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { VaccinationService } from './vaccination.service';
 import { VaccinationController } from './vaccination.controller';
-import { Vaccination } from './entities/vaccination.entity';
-import { Student } from '../../student/entities/student.entity';
+import { Vaccination } from '../../database/models/vaccination.model';
+import { Student } from '../../database/models/student.model';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Vaccination, Student]),
+    SequelizeModule.forFeature([Vaccination, Student]),
   ],
   controllers: [VaccinationController],
   providers: [VaccinationService],

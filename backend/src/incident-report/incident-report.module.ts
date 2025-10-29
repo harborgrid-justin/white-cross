@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { IncidentReportController } from './incident-report.controller';
 import {
   IncidentCoreService,
@@ -13,11 +13,11 @@ import {
   IncidentReport,
   FollowUpAction,
   WitnessStatement,
-} from './entities';
+} from '../../database/models';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       IncidentReport,
       FollowUpAction,
       WitnessStatement,

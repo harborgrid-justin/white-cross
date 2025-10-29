@@ -5,24 +5,29 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  AllowNull,
+  Index,
   ForeignKey,
   BelongsTo,
-  BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Student } from './student.model';
+import { HealthRecord } from './health-record.model';
 
-export enum ConditionSeverity {
-  MILD = 'MILD',
-  MODERATE = 'MODERATE',
-  SEVERE = 'SEVERE',
-}
-
+/**
+ * Chronic condition status indicating management phase and clinical state.
+ *
+ * Status drives care workflows, review scheduling, and reporting:
+ * - ACTIVE: Requires ongoing management and monitoring
+ * - MANAGED: Under control but still requires periodic review
+ * - RESOLVED: Successfully treated or outgrown, minimal monitoring
+ * - MONITORING: Under observation, not yet confirmed or actively managed
+ */
 export enum ConditionStatus {
   ACTIVE = 'ACTIVE',
-  CONTROLLED = 'CONTROLLED',
-  IN_REMISSION = 'IN_REMISSION',
+  MANAGED = 'MANAGED',
   RESOLVED = 'RESOLVED',
+  MONITORING = 'MONITORING',
 }
 
 export interface ChronicConditionAttributes {
@@ -31,26 +36,26 @@ export interface ChronicConditionAttributes {
   healthRecordId?: string;
   condition: string;
   icdCode?: string;
-  diagnosisDate: Date;
+  diagnosedDate: Date;
   diagnosedBy?: string;
-  severity: ConditionSeverity;
   status: ConditionStatus;
-  medications?: any;
-  treatments?: string;
-  accommodationsRequired: boolean;
-  accommodationDetails?: string;
-  emergencyProtocol?: string;
-  actionPlan?: string;
-  nextReviewDate?: Date;
-  reviewFrequency?: string;
-  restrictions?: any;
-  precautions?: any;
-  triggers: string[];
+  severity?: string;
   notes?: string;
   carePlan?: string;
+  medications: string[];
+  restrictions: string[];
+  triggers: string[];
+  accommodations: string[];
+  emergencyProtocol?: string;
   lastReviewDate?: Date;
-  createdBy?: string;
-  updatedBy?: string;
+  nextReviewDate?: Date;
+  requiresIEP: boolean;
+  requires504: boolean;
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  student?: Student;
+  healthRecord?: HealthRecord;
 }
 
 @Table({
@@ -58,13 +63,19 @@ export interface ChronicConditionAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['studentId', 'status'],
+      fields: ['student_id', 'is_active'],
     },
     {
-      fields: ['severity', 'status'],
+      fields: ['status', 'is_active'],
     },
     {
-      fields: ['nextReviewDate'],
+      fields: ['next_review_date'],
+    },
+    {
+      fields: ['requires_iep'],
+    },
+    {
+      fields: ['requires_504'],
     },
   ],
 })
@@ -78,103 +89,160 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'student_id',
   })
+  @Index
   studentId: string;
 
-  @Column(DataType.UUID)
+  @AllowNull
+  @ForeignKey(() => HealthRecord)
+  @Column({
+    type: DataType.UUID,
+    field: 'health_record_id',
+  })
   healthRecordId?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(200),
     allowNull: false,
   })
   condition: string;
 
-  @Column(DataType.STRING)
+  @AllowNull
+  @Column({
+    type: DataType.STRING(20),
+    field: 'icd_code',
+  })
   icdCode?: string;
 
   @Column({
-    type: DataType.DATE,
+    type: DataType.DATEONLY,
     allowNull: false,
+    field: 'diagnosed_date',
   })
-  diagnosisDate: Date;
+  diagnosedDate: Date;
 
-  @Column(DataType.STRING)
+  @AllowNull
+  @Column({
+    type: DataType.STRING(200),
+    field: 'diagnosed_by',
+  })
   diagnosedBy?: string;
 
-  @Default(ConditionSeverity.MODERATE)
-  @Column({
-    type: DataType.ENUM(...Object.values(ConditionSeverity)),
-    allowNull: false,
-  })
-  severity: ConditionSeverity;
-
-  @Default(ConditionStatus.ACTIVE)
   @Column({
     type: DataType.ENUM(...Object.values(ConditionStatus)),
     allowNull: false,
+    defaultValue: ConditionStatus.ACTIVE,
   })
+  @Index
   status: ConditionStatus;
 
-  @Column(DataType.JSONB)
-  medications?: any;
-
-  @Column(DataType.TEXT)
-  treatments?: string;
-
-  @Default(false)
-  @Column(DataType.BOOLEAN)
-  accommodationsRequired: boolean;
-
-  @Column(DataType.TEXT)
-  accommodationDetails?: string;
-
-  @Column(DataType.TEXT)
-  emergencyProtocol?: string;
-
-  @Column(DataType.TEXT)
-  actionPlan?: string;
-
-  @Column(DataType.DATE)
-  nextReviewDate?: Date;
-
-  @Column(DataType.STRING)
-  reviewFrequency?: string;
-
-  @Column(DataType.JSONB)
-  restrictions?: any;
-
-  @Column(DataType.JSONB)
-  precautions?: any;
-
-  @Default([])
+  @AllowNull
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.STRING(50),
+  })
+  severity?: string;
+
+  @AllowNull
+  @Column({
+    type: DataType.TEXT,
+  })
+  notes?: string;
+
+  @AllowNull
+  @Column({
+    type: DataType.TEXT,
+    field: 'care_plan',
+  })
+  carePlan?: string;
+
+  @Column({
+    type: DataType.JSON,
     allowNull: false,
+    defaultValue: [],
+  })
+  medications: string[];
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    defaultValue: [],
+  })
+  restrictions: string[];
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    defaultValue: [],
   })
   triggers: string[];
 
-  @Column(DataType.TEXT)
-  notes?: string;
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    defaultValue: [],
+  })
+  accommodations: string[];
 
-  @Column(DataType.TEXT)
-  carePlan?: string;
+  @AllowNull
+  @Column({
+    type: DataType.TEXT,
+    field: 'emergency_protocol',
+  })
+  emergencyProtocol?: string;
 
-  @Column(DataType.DATE)
+  @AllowNull
+  @Column({
+    type: DataType.DATEONLY,
+    field: 'last_review_date',
+  })
   lastReviewDate?: Date;
 
-  @Column(DataType.UUID)
-  createdBy?: string;
+  @AllowNull
+  @Column({
+    type: DataType.DATEONLY,
+    field: 'next_review_date',
+  })
+  @Index
+  nextReviewDate?: Date;
 
-  @Column(DataType.UUID)
-  updatedBy?: string;
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'requires_iep',
+  })
+  @Index
+  requiresIEP: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'requires_504',
+  })
+  @Index
+  requires504: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'is_active',
+  })
+  @Index
+  isActive: boolean;
 
   @Column(DataType.DATE)
-  declare createdAt: Date;
+  declare createdAt?: Date;
 
   @Column(DataType.DATE)
-  declare updatedAt: Date;
+  declare updatedAt?: Date;
 
-  @BelongsTo(() => Student)
+  // Relationships
+  @BelongsTo(() => Student, { foreignKey: 'studentId', as: 'student' })
   student?: Student;
+
+  @BelongsTo(() => HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
+  healthRecord?: HealthRecord;
 }
