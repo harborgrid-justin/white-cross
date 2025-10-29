@@ -145,15 +145,41 @@ export class EmailService {
   /**
    * Verify transporter configuration
    * @private
+   *
+   * @description Verifies SMTP connection and configuration. In production,
+   * logs detailed error information to help with troubleshooting.
    */
   private async verifyTransporter(): Promise<void> {
     try {
       await this.transporter.verify();
-      this.logger.log('Email transporter verified successfully');
+      this.logger.log('Email transporter verified successfully', {
+        transport: this.configService.get<string>('EMAIL_TRANSPORT', 'smtp'),
+        host: this.configService.get<string>('EMAIL_SMTP_HOST', 'localhost'),
+        port: this.configService.get<number>('EMAIL_SMTP_PORT', 587),
+        secure: this.configService.get<boolean>('EMAIL_SMTP_SECURE', false),
+      });
     } catch (error) {
-      this.logger.error(`Email transporter verification failed: ${error.message}`);
+      const transportConfig = {
+        transport: this.configService.get<string>('EMAIL_TRANSPORT', 'smtp'),
+        host: this.configService.get<string>('EMAIL_SMTP_HOST', 'localhost'),
+        port: this.configService.get<number>('EMAIL_SMTP_PORT', 587),
+        secure: this.configService.get<boolean>('EMAIL_SMTP_SECURE', false),
+        user: this.configService.get<string>('EMAIL_SMTP_USER', '') ? 'configured' : 'not configured',
+        password: this.configService.get<string>('EMAIL_SMTP_PASS', '') ? 'configured' : 'not configured',
+      };
+
+      this.logger.error(`Email transporter verification failed: ${error.message}`, {
+        error: error.message,
+        config: transportConfig,
+        isProduction: this.isProduction,
+        recommendation: 'Verify SMTP credentials and ensure mail server is accessible',
+      });
+
       if (this.isProduction) {
-        this.logger.error('Email functionality may not work correctly in production');
+        this.logger.error('CRITICAL: Email functionality may not work correctly in production', {
+          impact: 'Alert notifications and system emails will fail',
+          action: 'Check SMTP configuration and credentials immediately',
+        });
       }
     }
   }

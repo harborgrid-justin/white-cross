@@ -1,7 +1,13 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { HealthTrendAnalyticsService } from './services/health-trend-analytics.service';
 import { ComplianceReportGeneratorService } from './services/compliance-report-generator.service';
 import { TimePeriod } from './enums';
+import { HealthRecord } from '../database/models/health-record.model';
+import { Appointment } from '../database/models/appointment.model';
+import { MedicationLog } from '../database/models/medication-log.model';
+import { IncidentReport } from '../database/models/incident-report.model';
+import { Op } from 'sequelize';
 import {
   GetHealthMetricsQueryDto,
   GetHealthTrendsQueryDto,
@@ -32,6 +38,14 @@ export class AnalyticsService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
     private readonly reportGeneratorService: ComplianceReportGeneratorService,
+    @InjectModel(HealthRecord)
+    private readonly healthRecordModel: typeof HealthRecord,
+    @InjectModel(Appointment)
+    private readonly appointmentModel: typeof Appointment,
+    @InjectModel(MedicationLog)
+    private readonly medicationLogModel: typeof MedicationLog,
+    @InjectModel(IncidentReport)
+    private readonly incidentReportModel: typeof IncidentReport,
   ) {}
 
   /**
@@ -192,21 +206,98 @@ export class AnalyticsService {
 
   /**
    * Get student-specific health trends
+   * Integrates with health records, medication logs, and appointments for comprehensive metrics
    */
   async getStudentHealthMetrics(studentId: string, query: GetStudentHealthMetricsQueryDto) {
     try {
-      // TODO: Integrate with health metrics service for real patient trends
-      // This is a placeholder implementation
-      const trends = {
-        vitalSigns: [
-          { date: new Date(), heartRate: 72, bloodPressure: '120/80', temperature: 98.6 },
-        ],
-        healthVisits: [],
-        medicationAdherence: { rate: 95, missedDoses: 2 },
-      };
-
       const startDate = query.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const endDate = query.endDate || new Date();
+
+      // Query health records for the student
+      const healthRecords = await this.healthRecordModel.findAll({
+        where: {
+          studentId,
+          recordDate: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        order: [['recordDate', 'DESC']],
+        limit: 100,
+      });
+
+      // Query medication logs
+      const medicationLogs = await this.medicationLogModel.findAll({
+        where: {
+          studentId,
+          administeredAt: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        order: [['administeredAt', 'DESC']],
+        limit: 100,
+      });
+
+      // Query appointments
+      const appointments = await this.appointmentModel.findAll({
+        where: {
+          studentId,
+          appointmentDate: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        order: [['appointmentDate', 'DESC']],
+        limit: 50,
+      });
+
+      // Calculate medication adherence
+      const scheduledMedications = medicationLogs.length;
+      const administeredMedications = medicationLogs.filter((log: any) => log.status === 'ADMINISTERED').length;
+      const adherenceRate = scheduledMedications > 0
+        ? Math.round((administeredMedications / scheduledMedications) * 100)
+        : 100;
+
+      // Extract vital signs from health records
+      const vitalSignsRecords = healthRecords
+        .filter(record => record.recordType === 'VITAL_SIGNS_CHECK' && record.metadata?.vitalSigns)
+        .map(record => ({
+          date: record.recordDate,
+          ...record.metadata.vitalSigns,
+        }));
+
+      // Group health visits by type
+      const healthVisitsByType = healthRecords.reduce((acc: any, record) => {
+        const type = record.recordType;
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+
+      const trends = {
+        vitalSigns: vitalSignsRecords,
+        healthVisits: healthRecords.map(record => ({
+          id: record.id,
+          type: record.recordType,
+          title: record.title,
+          date: record.recordDate,
+          provider: record.provider,
+        })),
+        healthVisitsByType,
+        medicationAdherence: {
+          rate: adherenceRate,
+          scheduled: scheduledMedications,
+          administered: administeredMedications,
+          missedDoses: scheduledMedications - administeredMedications,
+        },
+        appointments: {
+          total: appointments.length,
+          completed: appointments.filter((apt: any) => apt.status === 'COMPLETED').length,
+          upcoming: appointments.filter((apt: any) => apt.status === 'SCHEDULED').length,
+          cancelled: appointments.filter((apt: any) => apt.status === 'CANCELLED').length,
+        },
+      };
+
+      this.logger.log(
+        `Student health metrics retrieved: ${studentId} (${healthRecords.length} health records, ${medicationLogs.length} medication logs, ${appointments.length} appointments)`,
+      );
 
       return {
         studentId,
@@ -487,51 +578,121 @@ export class AnalyticsService {
 
   /**
    * Get nurse dashboard data
+   * Integrates with real-time health data sources for operational metrics
    */
   async getNurseDashboard(query: GetNurseDashboardQueryDto) {
     try {
       const schoolId = query.schoolId || 'default-school';
       const timeRange = query.timeRange || 'TODAY';
 
-      // TODO: Integrate with health metrics service for real-time data
+      // Calculate time range for queries
+      let startDate: Date;
+      const endDate = new Date();
+
+      switch (timeRange) {
+        case 'TODAY':
+          startDate = new Date();
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'WEEK':
+          startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'MONTH':
+          startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date();
+          startDate.setHours(0, 0, 0, 0);
+      }
+
+      // Query today's health records
+      const todayHealthRecords = await this.healthRecordModel.count({
+        where: {
+          recordDate: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+      });
+
+      // Query active appointments for today
+      const todayAppointments = await this.appointmentModel.findAll({
+        where: {
+          appointmentDate: {
+            [Op.between]: [startDate, endDate],
+          },
+          status: {
+            [Op.in]: ['SCHEDULED', 'IN_PROGRESS'],
+          },
+        },
+      });
+
+      // Query critical incidents
+      const criticalIncidents = await this.incidentReportModel.findAll({
+        where: {
+          occurredAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          severity: {
+            [Op.in]: ['CRITICAL', 'HIGH'],
+          },
+        },
+        limit: 10,
+        order: [['occurredAt', 'DESC']],
+      });
+
+      // Query pending medication administrations
+      const upcomingMedications = await this.medicationLogModel.findAll({
+        where: {
+          scheduledAt: {
+            [Op.between]: [new Date(), new Date(Date.now() + 4 * 60 * 60 * 1000)], // Next 4 hours
+          },
+          status: 'PENDING',
+        },
+        order: [['scheduledAt', 'ASC']],
+        limit: 20,
+      });
+
       const metricsOverview = {
-        totalPatients: 24,
-        activeAppointments: 8,
-        criticalAlerts: 2,
-        bedOccupancy: 3,
-        averageHeartRate: 78,
-        status: 'OPERATIONAL',
+        totalPatients: todayHealthRecords,
+        activeAppointments: todayAppointments.length,
+        criticalAlerts: criticalIncidents.length,
+        pendingMedications: upcomingMedications.length,
+        status: criticalIncidents.length > 5 ? 'ATTENTION_REQUIRED' : 'OPERATIONAL',
       };
 
       const alerts = query.includeAlerts
-        ? [
-            {
-              id: '1',
-              type: 'Tachycardia',
-              severity: 'HIGH',
-              student: 'Student A',
-              time: new Date(),
-            },
-            { id: '2', type: 'Fever', severity: 'MEDIUM', student: 'Student B', time: new Date() },
-          ]
+        ? criticalIncidents.map(incident => ({
+            id: incident.id,
+            type: incident.type,
+            severity: incident.severity,
+            studentId: incident.studentId,
+            description: incident.description,
+            time: incident.occurredAt,
+          }))
         : [];
 
       const upcomingTasks = query.includeUpcoming
         ? [
-            {
+            ...upcomingMedications.map((med: any) => ({
               type: 'Medication Administration',
-              student: 'John Doe',
-              time: new Date(Date.now() + 30 * 60000),
+              studentId: med.studentId,
+              medicationId: med.medicationId,
+              time: med.scheduledAt,
               priority: 'HIGH',
-            },
-            {
-              type: 'Health Screening',
-              student: 'Jane Smith',
-              time: new Date(Date.now() + 60 * 60000),
+            })),
+            ...todayAppointments.slice(0, 10).map(apt => ({
+              type: 'Appointment',
+              studentId: apt.studentId,
+              appointmentType: apt.appointmentType,
+              time: apt.appointmentDate,
               priority: 'MEDIUM',
-            },
+            })),
           ]
         : [];
+
+      this.logger.log(
+        `Nurse dashboard loaded: ${metricsOverview.totalPatients} patients, ${metricsOverview.activeAppointments} appointments, ${metricsOverview.criticalAlerts} critical alerts, ${metricsOverview.pendingMedications} pending medications`,
+      );
 
       return {
         overview: metricsOverview,

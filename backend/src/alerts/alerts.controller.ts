@@ -16,6 +16,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,6 +26,8 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AlertsService } from './alerts.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { AlertFilterDto } from './dto/alert-filter.dto';
@@ -32,7 +35,8 @@ import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 
 @ApiTags('alerts')
 @Controller('alerts')
-// @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
@@ -48,9 +52,11 @@ export class AlertsController {
     status: 200,
     description: 'Alerts retrieved successfully',
   })
-  async getUserAlerts(@Query() filterDto: AlertFilterDto) {
-    // TODO: Get userId from JWT token
-    return this.alertsService.getUserAlerts('user-id', filterDto);
+  async getUserAlerts(
+    @CurrentUser('id') userId: string,
+    @Query() filterDto: AlertFilterDto,
+  ) {
+    return this.alertsService.getUserAlerts(userId, filterDto);
   }
 
   @Post()
@@ -63,9 +69,11 @@ export class AlertsController {
     status: 201,
     description: 'Alert created successfully',
   })
-  async create(@Body() createDto: CreateAlertDto) {
-    // TODO: Get userId from JWT token
-    return this.alertsService.createAlert(createDto, 'system-user');
+  async create(
+    @CurrentUser('id') userId: string,
+    @Body() createDto: CreateAlertDto,
+  ) {
+    return this.alertsService.createAlert(createDto, userId);
   }
 
   @Patch(':id/read')
@@ -79,9 +87,10 @@ export class AlertsController {
     description: 'Alert marked as read',
   })
   async markAsRead(
+    @CurrentUser('id') userId: string,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
-    return this.alertsService.markAsRead(id, 'user-id');
+    return this.alertsService.markAsRead(id, userId);
   }
 
   @Delete(':id')
@@ -110,9 +119,8 @@ export class AlertsController {
     status: 200,
     description: 'Preferences retrieved successfully',
   })
-  async getPreferences() {
-    // TODO: Get userId from JWT token
-    return this.alertsService.getPreferences('user-id');
+  async getPreferences(@CurrentUser('id') userId: string) {
+    return this.alertsService.getPreferences(userId);
   }
 
   @Patch('preferences')
@@ -124,8 +132,10 @@ export class AlertsController {
     status: 200,
     description: 'Preferences updated successfully',
   })
-  async updatePreferences(@Body() updateDto: UpdatePreferencesDto) {
-    // TODO: Get userId from JWT token
-    return this.alertsService.updatePreferences('user-id', updateDto);
+  async updatePreferences(
+    @CurrentUser('id') userId: string,
+    @Body() updateDto: UpdatePreferencesDto,
+  ) {
+    return this.alertsService.updatePreferences(userId, updateDto);
   }
 }

@@ -248,6 +248,9 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * @param key - Cache key
    * @param value - Value to cache
    * @param options - Cache options
+   *
+   * @description Attempts to set value in both L2 (Redis) and L1 (memory) cache.
+   * If Redis is unavailable, gracefully degrades to L1 cache only and logs warning.
    */
   async set<T = any>(
     key: string,
@@ -258,10 +261,30 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     const fullKey = this.cacheConfig.buildKey(key, options.namespace);
 
     try {
-      // Set in L2 (Redis) cache
-      await this.setToL2(fullKey, value, options);
+      // Attempt to set in L2 (Redis) cache
+      try {
+        await this.setToL2(fullKey, value, options);
+      } catch (redisError) {
+        // Graceful degradation: log warning but continue with L1 cache
+        if (!this.redis) {
+          this.logger.warn(`Redis unavailable, using L1 cache only for key: ${fullKey}`, {
+            key: fullKey,
+            cacheMode: 'L1-only',
+            redisStatus: 'disconnected',
+          });
+          this.isHealthy = false;
+        } else {
+          // Redis exists but operation failed - log error
+          this.logger.error(`Redis operation failed for key ${fullKey}:`, {
+            error: redisError.message,
+            key: fullKey,
+          });
+          this.stats.errors++;
+          throw redisError;
+        }
+      }
 
-      // Set in L1 cache
+      // Set in L1 cache (always attempt this as fallback)
       if (this.cacheConfig.isL1CacheEnabled() && !options.skipL1) {
         this.setToL1(fullKey, value, options);
       }
@@ -275,7 +298,12 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       this.stats.setTotalLatency += Date.now() - startTime;
       this.emitEvent(CacheEvent.SET, fullKey, { tags: options.tags });
     } catch (error) {
-      this.logger.error(`Cache set error for key ${fullKey}:`, error);
+      this.logger.error(`Cache set error for key ${fullKey}:`, {
+        error: error.message,
+        key: fullKey,
+        redisConnected: !!this.redis,
+        l1Enabled: this.cacheConfig.isL1CacheEnabled(),
+      });
       this.stats.errors++;
       this.lastError = error as Error;
       this.emitEvent(CacheEvent.ERROR, fullKey, { error });
@@ -287,6 +315,9 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * Delete value from cache
    * @param key - Cache key
    * @param options - Cache options
+   *
+   * @description Deletes value from both L1 and L2 cache. If Redis is unavailable,
+   * still deletes from L1 cache and returns true.
    */
   async delete(key: string, options: CacheOptions = {}): Promise<boolean> {
     const fullKey = this.cacheConfig.buildKey(key, options.namespace);
@@ -295,9 +326,19 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       // Delete from L1 cache
       this.l1Cache.delete(fullKey);
 
-      // Delete from L2 cache
+      // Delete from L2 cache (Redis)
       if (this.redis) {
-        await this.redis.del(fullKey);
+        try {
+          await this.redis.del(fullKey);
+        } catch (redisError) {
+          this.logger.warn(`Redis delete failed for key ${fullKey}, L1 cache cleared`, {
+            error: redisError.message,
+            key: fullKey,
+            l1Deleted: true,
+          });
+        }
+      } else {
+        this.logger.debug(`Redis unavailable, deleted from L1 cache only: ${fullKey}`);
       }
 
       // Remove from tag index
@@ -307,7 +348,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       this.emitEvent(CacheEvent.DELETE, fullKey);
       return true;
     } catch (error) {
-      this.logger.error(`Cache delete error for key ${fullKey}:`, error);
+      this.logger.error(`Cache delete error for key ${fullKey}:`, {
+        error: error.message,
+        key: fullKey,
+        redisConnected: !!this.redis,
+      });
       this.stats.errors++;
       this.lastError = error as Error;
       this.emitEvent(CacheEvent.ERROR, fullKey, { error });
@@ -540,6 +585,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * @param key - Cache key
    * @param amount - Amount to increment (default: 1)
    * @param options - Cache options
+   * @throws Error if Redis is not connected and operation cannot be performed
    */
   async increment(
     key: string,
@@ -550,7 +596,16 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
     try {
       if (!this.redis) {
-        throw new Error('Redis not connected');
+        const error = new Error(`Redis not connected - cannot increment key: ${fullKey}`);
+        this.logger.warn(error.message, {
+          key: fullKey,
+          amount,
+          redisStatus: 'disconnected',
+          recommendation: 'Check Redis connection configuration and ensure Redis server is running',
+        });
+        this.stats.errors++;
+        this.lastError = error;
+        throw error;
       }
 
       const result = await this.redis.incrby(fullKey, amount);
@@ -562,8 +617,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
       return result;
     } catch (error) {
-      this.logger.error(`Cache increment error for key ${fullKey}:`, error);
+      this.logger.error(`Cache increment error for key ${fullKey}:`, {
+        error: error.message,
+        key: fullKey,
+        amount,
+        redisConnected: !!this.redis,
+      });
       this.stats.errors++;
+      this.lastError = error as Error;
       throw error;
     }
   }
@@ -573,6 +634,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * @param key - Cache key
    * @param amount - Amount to decrement (default: 1)
    * @param options - Cache options
+   * @throws Error if Redis is not connected and operation cannot be performed
    */
   async decrement(
     key: string,
@@ -583,7 +645,16 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
     try {
       if (!this.redis) {
-        throw new Error('Redis not connected');
+        const error = new Error(`Redis not connected - cannot decrement key: ${fullKey}`);
+        this.logger.warn(error.message, {
+          key: fullKey,
+          amount,
+          redisStatus: 'disconnected',
+          recommendation: 'Check Redis connection configuration and ensure Redis server is running',
+        });
+        this.stats.errors++;
+        this.lastError = error;
+        throw error;
       }
 
       const result = await this.redis.decrby(fullKey, amount);
@@ -595,8 +666,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
       return result;
     } catch (error) {
-      this.logger.error(`Cache decrement error for key ${fullKey}:`, error);
+      this.logger.error(`Cache decrement error for key ${fullKey}:`, {
+        error: error.message,
+        key: fullKey,
+        amount,
+        redisConnected: !!this.redis,
+      });
       this.stats.errors++;
+      this.lastError = error as Error;
       throw error;
     }
   }
@@ -785,6 +862,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   /**
    * Set value in L2 (Redis) cache
    * @private
+   * @throws Error if Redis is not connected
    */
   private async setToL2<T>(
     key: string,
@@ -792,7 +870,16 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     options: CacheOptions,
   ): Promise<void> {
     if (!this.redis) {
-      throw new Error('Redis not connected');
+      const error = new Error(`Redis not connected - cannot set key in L2 cache: ${key}`);
+      this.logger.warn(error.message, {
+        key,
+        redisStatus: 'disconnected',
+        fallback: 'L1 cache only',
+        recommendation: 'Check Redis connection configuration and ensure Redis server is running',
+      });
+      this.stats.errors++;
+      this.lastError = error;
+      throw error;
     }
 
     const ttl = options.ttl || this.cacheConfig.getDefaultTTL();

@@ -263,10 +263,17 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @BelongsTo(() => require('./district.model').District, { foreignKey: 'districtId', as: 'district' })
   district?: any;
 
-  // One-to-many relationships (commented out until related models are available)
-  // @HasMany(() => HealthRecord, { foreignKey: 'studentId', as: 'healthRecords' })
-  // healthRecords?: HealthRecord[];
+  // One-to-many relationships
+  @HasMany(() => require('./health-record.model').HealthRecord, { foreignKey: 'studentId', as: 'healthRecords' })
+  healthRecords?: any[];
 
+  @HasMany(() => require('./academic-transcript.model').AcademicTranscript, { foreignKey: 'studentId', as: 'academicTranscripts' })
+  academicTranscripts?: any[];
+
+  @HasMany(() => require('./mental-health-record.model').MentalHealthRecord, { foreignKey: 'studentId', as: 'mentalHealthRecords' })
+  mentalHealthRecords?: any[];
+
+  // Additional relationships (commented out until related models are available)
   // @HasMany(() => Vaccination, { foreignKey: 'studentId', as: 'vaccinations' })
   // vaccinations?: Vaccination[];
 

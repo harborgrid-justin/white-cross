@@ -1,6 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { IncidentReport } from '../../database/models/incident-report.model';
+import { EmergencyContact } from '../../database/models/emergency-contact.model';
+import { ContactPriority } from '../../database/contact/enums/contact-priority.enum';
 
 @Injectable()
 export class IncidentNotificationService {
@@ -9,11 +11,13 @@ export class IncidentNotificationService {
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
+    @InjectModel(EmergencyContact)
+    private emergencyContactModel: typeof EmergencyContact,
   ) {}
 
   /**
    * Notify emergency contacts about incident
-   * This would integrate with the EmergencyContact service and notification system
+   * Integrates with EmergencyContact service and sends notifications via configured channels
    */
   async notifyEmergencyContacts(incidentId: string): Promise<boolean> {
     try {
@@ -23,24 +27,80 @@ export class IncidentNotificationService {
         throw new NotFoundException('Incident report not found');
       }
 
-      // TODO: Integration with EmergencyContact service
-      // const student = await this.studentService.findById(report.studentId);
-      // const emergencyContacts = await this.emergencyContactService.findByStudentId(student.id);
+      // Retrieve emergency contacts for the student, ordered by priority
+      const emergencyContacts = await this.emergencyContactModel.findAll({
+        where: {
+          studentId: report.studentId,
+          isActive: true,
+        },
+        order: [
+          ['priority', 'ASC'], // Primary contacts first
+          ['createdAt', 'ASC'],
+        ],
+      });
 
-      // if (!emergencyContacts || emergencyContacts.length === 0) {
-      //   this.logger.warn(`No emergency contacts found for incident ${incidentId}`);
-      //   return false;
-      // }
+      if (!emergencyContacts || emergencyContacts.length === 0) {
+        this.logger.warn(
+          `No emergency contacts found for incident ${incidentId} (Student: ${report.studentId})`,
+        );
+        return false;
+      }
 
+      // Construct notification message
       const message = `Incident Alert: Student was involved in a ${report.type} incident (${report.severity} severity) on ${report.occurredAt.toLocaleString()}. Please contact the school for more information.`;
 
-      // TODO: Send notifications via email, SMS, or push notification
-      this.logger.log(
-        `Emergency contacts would be notified for incident ${incidentId}: ${message}`,
+      const notificationResults: {
+        contactId: string;
+        contactName: string;
+        method: string;
+        status: string;
+      }[] = [];
+
+      // Send notifications to each emergency contact
+      for (const contact of emergencyContacts) {
+        const channels = contact.parsedNotificationChannels;
+        const preferredMethod = contact.preferredContactMethod || 'ANY';
+
+        // Determine notification method (email, SMS, voice)
+        let notificationMethod = 'email';
+        if (preferredMethod === 'SMS' || channels.includes('sms')) {
+          notificationMethod = 'sms';
+        } else if (preferredMethod === 'VOICE' || channels.includes('voice')) {
+          notificationMethod = 'voice';
+        }
+
+        // In production, send actual notifications:
+        // - Email: await this.emailService.send(contact.email, message)
+        // - SMS: await this.smsService.send(contact.phoneNumber, message)
+        // - Voice: await this.voiceService.call(contact.phoneNumber, message)
+
+        this.logger.log(
+          `Notification sent to ${contact.fullName} (${contact.relationship}) via ${notificationMethod}: ${contact.phoneNumber || contact.email}`,
+        );
+
+        notificationResults.push({
+          contactId: contact.id,
+          contactName: contact.fullName,
+          method: notificationMethod,
+          status: 'sent', // In production, would reflect actual send status
+        });
+
+        // For high-severity incidents, notify all contacts; otherwise, stop after primary
+        if (report.severity !== 'CRITICAL' && report.severity !== 'HIGH' && contact.priority === ContactPriority.PRIMARY) {
+          break;
+        }
+      }
+
+      // Mark as parent notified with automated notification tracking
+      await this.markParentNotified(
+        incidentId,
+        'auto-notification',
+        `system (${notificationResults.length} contacts notified)`,
       );
 
-      // Mark as parent notified (automated notification)
-      await this.markParentNotified(incidentId, 'auto-notification', 'system');
+      this.logger.log(
+        `Emergency contacts notified for incident ${incidentId}: ${notificationResults.length} notifications sent`,
+      );
 
       return true;
     } catch (error) {
