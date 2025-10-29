@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import { School } from '../entities/school.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';
@@ -13,18 +12,16 @@ export class SchoolService {
   private readonly logger = new Logger(SchoolService.name);
 
   constructor(
-    @InjectRepository(School)
-    private schoolRepository: Repository<School>,
-    @InjectRepository(District)
-    private districtRepository: Repository<District>,
+    @InjectModel(School)
+    private schoolModel: typeof School,
+    @InjectModel(District)
+    private districtModel: typeof District,
     private auditService: AuditService,
   ) {}
 
   async createSchool(data: CreateSchoolDto): Promise<School> {
     try {
-      const district = await this.districtRepository.findOne({ 
-        where: { id: data.districtId } 
-      });
+      const district = await this.districtModel.findByPk(data.districtId);
 
       if (!district) {
         throw new NotFoundException('District not found');
@@ -35,27 +32,26 @@ export class SchoolService {
       }
 
       const normalizedCode = data.code.toUpperCase().trim();
-      const existing = await this.schoolRepository.findOne({ 
-        where: { code: normalizedCode } 
+      const existing = await this.schoolModel.findOne({
+        where: { code: normalizedCode }
       });
 
       if (existing) {
         throw new BadRequestException(`School with code '${normalizedCode}' already exists`);
       }
 
-      const school = this.schoolRepository.create({ ...data, code: normalizedCode });
-      const saved = await this.schoolRepository.save(school);
+      const school = await this.schoolModel.create({ ...data, code: normalizedCode } as any);
 
       await this.auditService.createAuditLog(
         AuditAction.CREATE,
         'School',
-        saved.id,
+        school.id,
         undefined,
-        { name: saved.name, code: saved.code, districtId: saved.districtId },
+        { name: school.name, code: school.code, districtId: school.districtId },
       );
 
-      this.logger.log(`School created: ${saved.name} (${saved.code})`);
-      return saved;
+      this.logger.log(`School created: ${school.name} (${school.code})`);
+      return school;
     } catch (error) {
       this.logger.error('Error creating school:', error);
       throw error;
@@ -72,12 +68,12 @@ export class SchoolService {
         whereClause.districtId = districtId;
       }
 
-      const [schools, total] = await this.schoolRepository.findAndCount({
+      const { rows: schools, count: total } = await this.schoolModel.findAndCountAll({
         where: whereClause,
-        skip: offset,
-        take: limit,
-        relations: ['district'],
-        order: { name: 'ASC' },
+        offset,
+        limit,
+        include: ['district'],
+        order: [['name', 'ASC']],
       });
 
       const pagination: PaginationResult = {
@@ -96,9 +92,8 @@ export class SchoolService {
 
   async getSchoolById(id: string): Promise<School> {
     try {
-      const school = await this.schoolRepository.findOne({
-        where: { id },
-        relations: ['district'],
+      const school = await this.schoolModel.findByPk(id, {
+        include: ['district'],
       });
 
       if (!school) {
@@ -116,7 +111,7 @@ export class SchoolService {
     try {
       const school = await this.getSchoolById(id);
       Object.assign(school, data);
-      const updated = await this.schoolRepository.save(school);
+      await school.save();
 
       await this.auditService.createAuditLog(
         AuditAction.UPDATE,
@@ -127,7 +122,7 @@ export class SchoolService {
       );
 
       this.logger.log(`School updated: ${id}`);
-      return updated;
+      return school;
     } catch (error) {
       this.logger.error('Error updating school:', error);
       throw error;
@@ -138,7 +133,7 @@ export class SchoolService {
     try {
       const school = await this.getSchoolById(id);
       school.isActive = false;
-      await this.schoolRepository.save(school);
+      await school.save();
 
       await this.auditService.createAuditLog(
         AuditAction.DELETE,

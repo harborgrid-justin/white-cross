@@ -117,5 +117,4 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\data-retention-policy.model.ts
+}

@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { MedicationController } from './medication.controller';
 import { MedicationService } from './services/medication.service';
 import { MedicationRepository } from './medication.repository';
+import { StudentMedication } from '../database/models/student-medication.model';
+import { Medication } from '../database/models/medication.model';
 
 /**
  * Medication Module
@@ -51,6 +54,12 @@ import { MedicationRepository } from './medication.repository';
  * - Integration with pharmacy systems
  */
 @Module({
+  imports: [
+    SequelizeModule.forFeature([
+      StudentMedication,
+      Medication,
+    ]),
+  ],
   controllers: [MedicationController],
   providers: [MedicationService, MedicationRepository],
   exports: [MedicationService],

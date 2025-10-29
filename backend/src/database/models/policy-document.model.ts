@@ -91,7 +91,7 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
     allowNull: false,
     defaultValue: '1.0',
   })
-  version: string;
+  declare version: string;
 
   @Column({
     type: DataType.DATE,
@@ -124,5 +124,4 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\policy-document.model.ts
+}

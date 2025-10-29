@@ -12,35 +12,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { ClinicVisit } from './clinic-visit.model';
-
-export enum NoteType {
-  /** General clinical note */
-  GENERAL = 'general',
-
-  /** SOAP note (Subjective, Objective, Assessment, Plan) */
-  SOAP = 'soap',
-
-  /** Progress note during treatment */
-  PROGRESS = 'progress',
-
-  /** Discharge summary */
-  DISCHARGE = 'discharge',
-
-  /** Follow-up note */
-  FOLLOW_UP = 'follow_up',
-
-  /** Telephone consultation note */
-  TELEPHONE = 'telephone',
-
-  /** Nurse's note */
-  NURSING = 'nursing',
-
-  /** Medication note */
-  MEDICATION = 'medication',
-
-  /** Incident report */
-  INCIDENT = 'incident',
-}
+import { NoteType } from '../../clinical/enums/note-type.enum';
 
 export interface ClinicalNoteAttributes {
   id: string;

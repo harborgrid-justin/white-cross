@@ -5,8 +5,13 @@
 
 // Re-export the Sequelize model and interfaces
 export {
-  Medication
+  Medication,
+  Medication as MedicationEntity
 } from '../../database/models/medication.model';
+
+export {
+  StudentMedication
+} from '../../database/models/student-medication.model';
 
 export type {
   MedicationAttributes
@@ -14,6 +19,7 @@ export type {
 
 // Import for local interface definitions
 import type { MedicationAttributes as MedicationAttrs } from '../../database/models/medication.model';
+import type { StudentMedication } from '../../database/models/student-medication.model';
 
 /**
  * Medication list item with student context
@@ -35,7 +41,7 @@ export interface MedicationWithStudentContext extends MedicationAttrs {
  * Paginated medication response
  */
 export interface PaginatedMedicationResponse {
-  medications: MedicationAttrs[];
+  medications: StudentMedication[];
   pagination: {
     page: number;
     limit: number;

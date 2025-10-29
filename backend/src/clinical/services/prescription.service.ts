@@ -4,8 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, literal } from 'sequelize';
 import { Prescription } from '../entities/prescription.entity';
 import { PrescriptionStatus } from '../enums/prescription-status.enum';
 import { CreatePrescriptionDto } from '../dto/prescription/create-prescription.dto';
@@ -22,8 +22,8 @@ export class PrescriptionService {
   private readonly logger = new Logger(PrescriptionService.name);
 
   constructor(
-    @InjectRepository(Prescription)
-    private prescriptionRepository: Repository<Prescription>,
+    @InjectModel(Prescription)
+    private prescriptionModel: typeof Prescription,
   ) {}
 
   /**
@@ -32,17 +32,15 @@ export class PrescriptionService {
   async create(createDto: CreatePrescriptionDto): Promise<Prescription> {
     this.logger.log(`Creating prescription for student ${createDto.studentId}: ${createDto.drugName}`);
 
-    const prescription = this.prescriptionRepository.create(createDto);
-    return this.prescriptionRepository.save(prescription);
+    return this.prescriptionModel.create(createDto as any);
   }
 
   /**
    * Find prescription by ID
    */
   async findOne(id: string): Promise<Prescription> {
-    const prescription = await this.prescriptionRepository.findOne({
-      where: { id },
-      relations: ['visit', 'treatmentPlan'],
+    const prescription = await this.prescriptionModel.findByPk(id, {
+      include: ['visit', 'treatmentPlan'],
     });
 
     if (!prescription) {
@@ -59,59 +57,44 @@ export class PrescriptionService {
     prescriptions: Prescription[];
     total: number;
   }> {
-    const queryBuilder = this.prescriptionRepository.createQueryBuilder('prescription');
+    const whereClause: any = {};
 
     if (filters.studentId) {
-      queryBuilder.andWhere('prescription.studentId = :studentId', {
-        studentId: filters.studentId,
-      });
+      whereClause.studentId = filters.studentId;
     }
 
     if (filters.visitId) {
-      queryBuilder.andWhere('prescription.visitId = :visitId', {
-        visitId: filters.visitId,
-      });
+      whereClause.visitId = filters.visitId;
     }
 
     if (filters.treatmentPlanId) {
-      queryBuilder.andWhere('prescription.treatmentPlanId = :treatmentPlanId', {
-        treatmentPlanId: filters.treatmentPlanId,
-      });
+      whereClause.treatmentPlanId = filters.treatmentPlanId;
     }
 
     if (filters.prescribedBy) {
-      queryBuilder.andWhere('prescription.prescribedBy = :prescribedBy', {
-        prescribedBy: filters.prescribedBy,
-      });
+      whereClause.prescribedBy = filters.prescribedBy;
     }
 
     if (filters.status) {
-      queryBuilder.andWhere('prescription.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
 
     if (filters.drugName) {
-      queryBuilder.andWhere('prescription.drugName ILIKE :drugName', {
-        drugName: `%${filters.drugName}%`,
-      });
+      whereClause.drugName = { [Op.iLike]: `%${filters.drugName}%` };
     }
 
     if (filters.activeOnly) {
-      queryBuilder.andWhere(
-        'prescription.status IN (:...activeStatuses)',
-        {
-          activeStatuses: [
-            PrescriptionStatus.FILLED,
-            PrescriptionStatus.PICKED_UP,
-          ],
-        }
-      );
+      whereClause.status = {
+        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+      };
     }
 
-    const [prescriptions, total] = await queryBuilder
-      .skip(filters.offset || 0)
-      .take(filters.limit || 20)
-      .orderBy('prescription.createdAt', 'DESC')
-      .getManyAndCount();
+    const { rows: prescriptions, count: total } = await this.prescriptionModel.findAndCountAll({
+      where: whereClause,
+      offset: filters.offset || 0,
+      limit: filters.limit || 20,
+      order: [['createdAt', 'DESC']],
+    });
 
     return { prescriptions, total };
   }
@@ -120,10 +103,10 @@ export class PrescriptionService {
    * Get prescriptions by student ID
    */
   async findByStudent(studentId: string, limit: number = 10): Promise<Prescription[]> {
-    return this.prescriptionRepository.find({
+    return this.prescriptionModel.findAll({
       where: { studentId },
-      order: { createdAt: 'DESC' },
-      take: limit,
+      order: [['createdAt', 'DESC']],
+      limit,
     });
   }
 
@@ -131,17 +114,15 @@ export class PrescriptionService {
    * Get active prescriptions for a student
    */
   async findActiveByStudent(studentId: string): Promise<Prescription[]> {
-    return this.prescriptionRepository
-      .createQueryBuilder('prescription')
-      .where('prescription.studentId = :studentId', { studentId })
-      .andWhere('prescription.status IN (:...activeStatuses)', {
-        activeStatuses: [
-          PrescriptionStatus.FILLED,
-          PrescriptionStatus.PICKED_UP,
-        ],
-      })
-      .orderBy('prescription.startDate', 'DESC')
-      .getMany();
+    return this.prescriptionModel.findAll({
+      where: {
+        studentId,
+        status: {
+          [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+        }
+      },
+      order: [['startDate', 'DESC']],
+    });
   }
 
   /**
@@ -151,7 +132,8 @@ export class PrescriptionService {
     const prescription = await this.findOne(id);
 
     Object.assign(prescription, updateDto);
-    return this.prescriptionRepository.save(prescription);
+    await prescription.save();
+    return prescription;
   }
 
   /**
@@ -193,7 +175,8 @@ export class PrescriptionService {
     }
 
     this.logger.log(`Filled prescription ${id} at ${fillDto.pharmacyName}`);
-    return this.prescriptionRepository.save(prescription);
+    await prescription.save();
+    return prescription;
   }
 
   /**
@@ -209,7 +192,8 @@ export class PrescriptionService {
     prescription.status = PrescriptionStatus.PICKED_UP;
     prescription.pickedUpDate = new Date();
 
-    return this.prescriptionRepository.save(prescription);
+    await prescription.save();
+    return prescription;
   }
 
   /**
@@ -226,16 +210,19 @@ export class PrescriptionService {
     }
 
     prescription.status = PrescriptionStatus.CANCELLED;
-    return this.prescriptionRepository.save(prescription);
+    await prescription.save();
+    return prescription;
   }
 
   /**
    * Delete prescription
    */
   async remove(id: string): Promise<void> {
-    const result = await this.prescriptionRepository.delete(id);
+    const deletedCount = await this.prescriptionModel.destroy({
+      where: { id }
+    });
 
-    if (result.affected === 0) {
+    if (deletedCount === 0) {
       throw new NotFoundException(`Prescription ${id} not found`);
     }
 
@@ -246,14 +233,17 @@ export class PrescriptionService {
    * Get prescriptions needing refills (low refills remaining)
    */
   async findNeedingRefills(): Promise<Prescription[]> {
-    return this.prescriptionRepository
-      .createQueryBuilder('prescription')
-      .where('prescription.status IN (:...activeStatuses)', {
-        activeStatuses: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP],
-      })
-      .andWhere('prescription.refillsAuthorized > prescription.refillsUsed')
-      .andWhere('(prescription.refillsAuthorized - prescription.refillsUsed) <= 1')
-      .orderBy('prescription.endDate', 'ASC')
-      .getMany();
+    return this.prescriptionModel.findAll({
+      where: {
+        status: {
+          [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+        },
+        [Op.and]: [
+          { refillsAuthorized: { [Op.gt]: { [Op.col]: 'refillsUsed' } } },
+          literal('refillsAuthorized - refillsUsed <= 1')
+        ]
+      },
+      order: [['endDate', 'ASC']],
+    });
   }
 }

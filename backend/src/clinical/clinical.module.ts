@@ -7,6 +7,11 @@ import { DrugInteraction } from '../database/models/drug-interaction.model';
 import { StudentDrugAllergy } from '../database/models/student-drug-allergy.model';
 import { TreatmentPlan } from '../database/models/treatment-plan.model';
 import { VitalSigns } from '../database/models/vital-signs.model';
+import { ClinicVisit } from '../database/models/clinic-visit.model';
+import { Prescription } from '../database/models/prescription.model';
+import { ClinicalProtocol } from '../database/models/clinical-protocol.model';
+import { ClinicalNote } from '../database/models/clinical-note.model';
+import { FollowUpAppointment } from '../database/models/follow-up-appointment.model';
 
 // Services
 import { DrugInteractionService } from './services/drug-interaction.service';
@@ -92,6 +97,11 @@ import { FollowUpController } from './controllers/follow-up.controller';
       StudentDrugAllergy,
       TreatmentPlan,
       VitalSigns,
+      ClinicVisit,
+      Prescription,
+      ClinicalProtocol,
+      ClinicalNote,
+      FollowUpAppointment,
     ]),
   ],
   controllers: [

@@ -9,20 +9,7 @@ import {
   Index,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-
-export enum VisitDisposition {
-  /** Student returned to class after treatment */
-  RETURN_TO_CLASS = 'RETURN_TO_CLASS',
-
-  /** Student was sent home */
-  SENT_HOME = 'SENT_HOME',
-
-  /** Student required emergency transport to hospital */
-  EMERGENCY_TRANSPORT = 'EMERGENCY_TRANSPORT',
-
-  /** Other disposition not covered by standard categories */
-  OTHER = 'OTHER',
-}
+import { VisitDisposition } from '../../clinical/enums/visit-disposition.enum';
 
 export interface ClinicVisitAttributes {
   id: string;

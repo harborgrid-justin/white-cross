@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
-import { AuditLog } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, fn, col, literal } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
 
 /**
  * AuditStatisticsService - Statistical analysis for audit data
@@ -15,8 +15,8 @@ export class AuditStatisticsService {
   private readonly logger = new Logger(AuditStatisticsService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -28,36 +28,58 @@ export class AuditStatisticsService {
    */
   async getAuditStatistics(startDate: Date, endDate: Date): Promise<any> {
     try {
-      const totalLogs = await this.auditLogRepository.count({
+      const totalLogs = await this.auditLogModel.count({
         where: {
-          createdAt: Between(startDate, endDate),
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
         },
       });
 
-      const uniqueUsers = await this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .select('COUNT(DISTINCT audit_log.userId)', 'count')
-        .where('audit_log.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .andWhere('audit_log.userId IS NOT NULL')
-        .getRawOne();
+      const uniqueUsersResult = await this.auditLogModel.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          userId: {
+            [Op.ne]: null,
+          },
+        },
+        attributes: [
+          [fn('COUNT', fn('DISTINCT', col('userId'))), 'count']
+        ],
+        raw: true,
+      });
 
       // Get action distribution
-      const actionDistribution = await this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .select('audit_log.action', 'action')
-        .addSelect('COUNT(*)', 'count')
-        .where('audit_log.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .groupBy('audit_log.action')
-        .getRawMany();
+      const actionDistribution = await this.auditLogModel.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        attributes: [
+          'action',
+          [fn('COUNT', col('*')), 'count']
+        ],
+        group: ['action'],
+        raw: true,
+      });
 
       // Get entity type distribution
-      const entityTypeDistribution = await this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .select('audit_log.entityType', 'entityType')
-        .addSelect('COUNT(*)', 'count')
-        .where('audit_log.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .groupBy('audit_log.entityType')
-        .getRawMany();
+      const entityTypeDistribution = await this.auditLogModel.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        attributes: [
+          'entityType',
+          [fn('COUNT', col('*')), 'count']
+        ],
+        group: ['entityType'],
+        raw: true,
+      });
 
       return {
         period: {
@@ -65,12 +87,12 @@ export class AuditStatisticsService {
           end: endDate,
         },
         totalLogs,
-        uniqueUsers: parseInt(uniqueUsers?.count || '0', 10),
-        actionDistribution: actionDistribution.map((item) => ({
+        uniqueUsers: parseInt((uniqueUsersResult[0] as any)?.count || '0', 10),
+        actionDistribution: actionDistribution.map((item: any) => ({
           action: item.action,
           count: parseInt(item.count, 10),
         })),
-        entityTypeDistribution: entityTypeDistribution.map((item) => ({
+        entityTypeDistribution: entityTypeDistribution.map((item: any) => ({
           entityType: item.entityType,
           count: parseInt(item.count, 10),
         })),

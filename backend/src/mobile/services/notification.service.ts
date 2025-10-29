@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger, OnModuleInit } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { ConfigService } from '@nestjs/config';
 import { DeviceToken, PushNotification } from '../entities';
 import { RegisterDeviceDto, SendNotificationDto, UpdatePreferencesDto } from '../dto';
@@ -132,10 +132,10 @@ export class NotificationService implements OnModuleInit {
   private apnsProvider: any = null;
 
   constructor(
-    @InjectRepository(DeviceToken)
-    private readonly deviceTokenRepository: Repository<DeviceToken>,
-    @InjectRepository(PushNotification)
-    private readonly notificationRepository: Repository<PushNotification>,
+    @InjectModel(DeviceToken)
+    private readonly deviceTokenModel: typeof DeviceToken,
+    @InjectModel(PushNotification)
+    private readonly notificationModel: typeof PushNotification,
     private readonly configService: ConfigService,
   ) {}
 
@@ -327,18 +327,30 @@ export class NotificationService implements OnModuleInit {
   }
 
   /**
-   * Register a device token for push notifications
+   * Get active tokens for users
    */
-  async registerDeviceToken(userId: string, dto: RegisterDeviceDto): Promise<DeviceToken> {
-    try {
-      // Deactivate any existing tokens for this device
-      await this.deviceTokenRepository.update(
-        { deviceId: dto.deviceId, userId },
-        { isActive: false }
+  private async getActiveTokensForUsers(userIds: string[]): Promise<DeviceToken[]> {
+    const tokens: DeviceToken[] = [];
+
+    for (const userId of userIds) {
+      const userTokens = await this.deviceTokenRepository.findAll({
+        where: {
+          userId,
+          isActive: true,
+          isValid: true,
+          allowNotifications: true
+        }
+      });
+      tokens.push(...userTokens);
+    }
+
+    return tokens;
+  }
+        }
       );
 
       // Create new device token
-      const deviceToken = this.deviceTokenRepository.create({
+      const deviceToken = await this.deviceTokenModel.create({
         userId,
         deviceId: dto.deviceId,
         platform: dto.platform,
@@ -354,11 +366,9 @@ export class NotificationService implements OnModuleInit {
         allowBadge: true,
       });
 
-      const saved = await this.deviceTokenRepository.save(deviceToken);
+      this.logger.log(`Device token registered: ${deviceToken.id} for user ${userId}`);
 
-      this.logger.log(`Device token registered: ${saved.id} for user ${userId}`);
-
-      return saved;
+      return deviceToken;
     } catch (error) {
       this.logger.error('Error registering device token', error);
       throw error;
@@ -377,7 +387,10 @@ export class NotificationService implements OnModuleInit {
       throw new NotFoundException('Device token not found');
     }
 
-    await this.deviceTokenRepository.update(tokenId, { isActive: false });
+    await this.deviceTokenRepository.update(
+      { isActive: false },
+      { where: { id: tokenId } }
+    );
 
     this.logger.log(`Device token unregistered: ${tokenId}`);
   }
@@ -386,8 +399,12 @@ export class NotificationService implements OnModuleInit {
    * Get user's registered devices
    */
   async getUserDevices(userId: string): Promise<DeviceToken[]> {
-    return this.deviceTokenRepository.find({
-      where: { userId, isActive: true, isValid: true }
+    return this.deviceTokenRepository.findAll({
+      where: {
+        userId,
+        isActive: true,
+        isValid: true
+      }
     });
   }
 
@@ -407,8 +424,7 @@ export class NotificationService implements OnModuleInit {
       throw new NotFoundException('Device token not found');
     }
 
-    Object.assign(token, dto);
-    const updated = await this.deviceTokenRepository.save(token);
+    const updated = await token.update(dto);
 
     this.logger.log(`Preferences updated for token: ${tokenId}`);
 
@@ -424,7 +440,7 @@ export class NotificationService implements OnModuleInit {
       const deviceTokens = await this.getActiveTokensForUsers(dto.userIds);
 
       // Create notification record
-      const notification = this.notificationRepository.create({
+      const notification = await this.notificationModel.create({
         userIds: dto.userIds,
         deviceTokens: deviceTokens.map(t => t.token),
         title: dto.title,
@@ -443,18 +459,22 @@ export class NotificationService implements OnModuleInit {
         failedDeliveries: 0,
         deliveryResults: [],
         createdBy: userId,
+        silent: false,
+        requireInteraction: false,
+        clickedCount: 0,
+        dismissedCount: 0,
+        retryCount: 0,
+        maxRetries: 3,
       });
-
-      const saved = await this.notificationRepository.save(notification);
 
       // Send immediately if not scheduled
       if (!dto.scheduledFor) {
-        await this.deliverNotification(saved.id);
+        await this.deliverNotification(notification.id);
       }
 
-      this.logger.log(`Notification created: ${saved.id} for ${deviceTokens.length} recipients`);
+      this.logger.log(`Notification created: ${notification.id} for ${deviceTokens.length} recipients`);
 
-      return saved;
+      return notification;
     } catch (error) {
       this.logger.error('Error sending notification', error);
       throw error;
@@ -466,7 +486,7 @@ export class NotificationService implements OnModuleInit {
    */
   private async deliverNotification(notificationId: string): Promise<void> {
     try {
-      const notification = await this.notificationRepository.findOne({
+      const notification = await this.notificationModel.findOne({
         where: { id: notificationId }
       });
 
@@ -476,11 +496,15 @@ export class NotificationService implements OnModuleInit {
 
       notification.status = NotificationStatus.SENDING;
       notification.sentAt = new Date();
-      await this.notificationRepository.save(notification);
+      await notification.save();
 
       // Get device tokens
-      const tokens = await this.deviceTokenRepository.find({
-        where: notification.deviceTokens.map(token => ({ token, isActive: true, isValid: true }))
+      const tokens = await this.deviceTokenRepository.findAll({
+        where: {
+          token: notification.deviceTokens,
+          isActive: true,
+          isValid: true
+        }
       });
 
       // Group by platform
@@ -512,7 +536,7 @@ export class NotificationService implements OnModuleInit {
             if (result.success) {
               notification.successfulDeliveries++;
               token.lastUsedAt = new Date();
-              await this.deviceTokenRepository.save(token);
+              await token.save();
             } else {
               notification.failedDeliveries++;
 
@@ -520,7 +544,7 @@ export class NotificationService implements OnModuleInit {
               if (result.invalidToken) {
                 token.isValid = false;
                 token.invalidReason = result.error || 'Unknown error';
-                await this.deviceTokenRepository.save(token);
+                await token.save();
               }
             }
           } catch (error) {
@@ -549,7 +573,7 @@ export class NotificationService implements OnModuleInit {
         }
       }
 
-      await this.notificationRepository.save(notification);
+      await notification.save();
 
       this.logger.log(
         `Notification delivered: ${notificationId} - ${notification.successfulDeliveries} success, ${notification.failedDeliveries} failed`
@@ -957,7 +981,7 @@ export class NotificationService implements OnModuleInit {
     notificationId: string,
     action: 'CLICKED' | 'DISMISSED'
   ): Promise<void> {
-    const notification = await this.notificationRepository.findOne({
+    const notification = await this.notificationModel.findOne({
       where: { id: notificationId }
     });
 
@@ -971,7 +995,7 @@ export class NotificationService implements OnModuleInit {
       notification.dismissedCount++;
     }
 
-    await this.notificationRepository.save(notification);
+    await notification.save();
 
     this.logger.log(`Interaction tracked: ${notificationId} - ${action}`);
   }
@@ -980,11 +1004,14 @@ export class NotificationService implements OnModuleInit {
    * Get notification analytics
    */
   async getAnalytics(period: { start: Date; end: Date }): Promise<any> {
-    const notifications = await this.notificationRepository
-      .createQueryBuilder('notification')
-      .where('notification.createdAt >= :start', { start: period.start })
-      .where('notification.createdAt <= :end', { end: period.end })
-      .getMany();
+    const notifications = await this.notificationModel.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: period.start,
+          [Op.lte]: period.end
+        }
+      }
+    });
 
     const totalSent = notifications.length;
     const totalDelivered = notifications.filter(n => n.status === NotificationStatus.DELIVERED).length;
@@ -1027,15 +1054,15 @@ export class NotificationService implements OnModuleInit {
       const now = new Date();
 
       // Find scheduled notifications that are due for delivery
-      const scheduledNotifications = await this.notificationRepository.find({
+      const scheduledNotifications = await this.notificationModel.findAll({
         where: {
           status: NotificationStatus.SCHEDULED,
-          scheduledFor: LessThan(now),
+          scheduledFor: {
+            [Op.lt]: now,
+          }
         },
-        order: {
-          scheduledFor: 'ASC',
-        },
-        take: 100, // Process in batches
+        order: [['scheduledFor', 'ASC']],
+        limit: 100, // Process in batches
       });
 
       this.logger.log(`Processing ${scheduledNotifications.length} scheduled notifications`);
@@ -1045,7 +1072,7 @@ export class NotificationService implements OnModuleInit {
           // Check if notification has expired
           if (notification.expiresAt && notification.expiresAt < now) {
             notification.status = NotificationStatus.EXPIRED;
-            await this.notificationRepository.save(notification);
+            await notification.save();
             this.logger.warn(`Notification ${notification.id} expired`);
             continue;
           }
@@ -1078,23 +1105,28 @@ export class NotificationService implements OnModuleInit {
       const now = new Date();
 
       // Find failed notifications eligible for retry
-      const failedNotifications = await this.notificationRepository
-        .createQueryBuilder('notification')
-        .where('notification.status = :status', { status: NotificationStatus.FAILED })
-        .andWhere('notification.retryCount < notification.maxRetries')
-        .andWhere('notification.nextRetryAt <= :now', { now })
-        .orderBy('notification.nextRetryAt', 'ASC')
-        .take(50) // Process in batches
-        .getMany();
+      const failedNotifications = await this.notificationModel.findAll({
+        where: {
+          status: NotificationStatus.FAILED
+        },
+        order: [['nextRetryAt', 'ASC']],
+        limit: 50, // Process in batches
+      });
 
-      this.logger.log(`Retrying ${failedNotifications.length} failed notifications`);
+      // Filter notifications that haven't exceeded max retries and are due for retry
+      const eligibleNotifications = failedNotifications.filter(n =>
+        n.retryCount < n.maxRetries &&
+        (!n.nextRetryAt || n.nextRetryAt <= now)
+      );
 
-      for (const notification of failedNotifications) {
+      this.logger.log(`Retrying ${eligibleNotifications.length} failed notifications`);
+
+      for (const notification of eligibleNotifications) {
         try {
           notification.retryCount++;
           notification.status = NotificationStatus.PENDING;
-          notification.nextRetryAt = null;
-          await this.notificationRepository.save(notification);
+          notification.nextRetryAt = undefined;
+          await notification.save();
 
           await this.deliverNotification(notification.id);
         } catch (error) {
@@ -1102,7 +1134,7 @@ export class NotificationService implements OnModuleInit {
         }
       }
 
-      return failedNotifications.length;
+      return eligibleNotifications.length;
     } catch (error) {
       this.logger.error('Error retrying failed notifications', error);
       return 0;
@@ -1124,16 +1156,16 @@ export class NotificationService implements OnModuleInit {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
-      const result = await this.notificationRepository
-        .createQueryBuilder()
-        .delete()
-        .where('createdAt < :cutoffDate', { cutoffDate })
-        .andWhere('status IN (:...statuses)', {
-          statuses: [NotificationStatus.DELIVERED, NotificationStatus.EXPIRED],
-        })
-        .execute();
-
-      const deletedCount = result.affected || 0;
+      const deletedCount = await this.notificationModel.destroy({
+        where: {
+          createdAt: {
+            [Op.lt]: cutoffDate
+          },
+          status: {
+            [Op.in]: [NotificationStatus.DELIVERED, NotificationStatus.EXPIRED]
+          }
+        }
+      });
 
       this.logger.log(`Cleaned up ${deletedCount} old notifications (older than ${retentionDays} days)`);
 
@@ -1160,28 +1192,26 @@ export class NotificationService implements OnModuleInit {
       category?: NotificationCategory;
     }
   ): Promise<PushNotification[]> {
-    const queryBuilder = this.notificationRepository
-      .createQueryBuilder('notification')
-      .where(':userId = ANY(notification.userIds)', { userId })
-      .orderBy('notification.createdAt', 'DESC');
+    const where: any = {
+      userIds: {
+        [Op.contains]: [userId]
+      }
+    };
 
     if (options?.status) {
-      queryBuilder.andWhere('notification.status = :status', { status: options.status });
+      where.status = options.status;
     }
 
     if (options?.category) {
-      queryBuilder.andWhere('notification.category = :category', { category: options.category });
+      where.category = options.category;
     }
 
-    if (options?.limit) {
-      queryBuilder.take(options.limit);
-    }
-
-    if (options?.offset) {
-      queryBuilder.skip(options.offset);
-    }
-
-    return queryBuilder.getMany();
+    return this.notificationModel.findAll({
+      where,
+      order: [['createdAt', 'DESC']],
+      limit: options?.limit,
+      offset: options?.offset,
+    });
   }
 
   /**
@@ -1201,17 +1231,22 @@ export class NotificationService implements OnModuleInit {
     dismissed: number;
     byCategory: Record<string, number>;
   }> {
-    const queryBuilder = this.notificationRepository
-      .createQueryBuilder('notification')
-      .where(':userId = ANY(notification.userIds)', { userId });
+    const where: any = {
+      userIds: {
+        [Op.contains]: [userId]
+      }
+    };
 
     if (period) {
-      queryBuilder
-        .andWhere('notification.createdAt >= :start', { start: period.start })
-        .andWhere('notification.createdAt <= :end', { end: period.end });
+      where.createdAt = {
+        [Op.gte]: period.start,
+        [Op.lte]: period.end
+      };
     }
 
-    const notifications = await queryBuilder.getMany();
+    const notifications = await this.notificationModel.findAll({
+      where
+    });
 
     const total = notifications.length;
     const delivered = notifications.filter(n => n.status === NotificationStatus.DELIVERED).length;
@@ -1236,13 +1271,17 @@ export class NotificationService implements OnModuleInit {
    * Get active tokens for users
    */
   private async getActiveTokensForUsers(userIds: string[]): Promise<DeviceToken[]> {
-    return this.deviceTokenRepository.find({
-      where: userIds.map(userId => ({
-        userId,
+    // For multiple users, we need to find tokens where userId is in the array
+    // and the token is active, valid, and allows notifications
+    return this.deviceTokenModel.findAll({
+      where: {
+        userId: {
+          [Op.in]: userIds
+        },
         isActive: true,
         isValid: true,
         allowNotifications: true
-      }))
+      }
     });
   }
 

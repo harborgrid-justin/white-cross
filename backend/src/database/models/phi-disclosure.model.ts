@@ -241,5 +241,4 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\phi-disclosure.model.ts
+}

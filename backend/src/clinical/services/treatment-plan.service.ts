@@ -4,8 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { TreatmentPlan } from '../entities/treatment-plan.entity';
 import { TreatmentStatus } from '../enums/treatment-status.enum';
 import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.dto';
@@ -21,8 +21,8 @@ export class TreatmentPlanService {
   private readonly logger = new Logger(TreatmentPlanService.name);
 
   constructor(
-    @InjectRepository(TreatmentPlan)
-    private treatmentPlanRepository: Repository<TreatmentPlan>,
+    @InjectModel(TreatmentPlan)
+    private treatmentPlanModel: typeof TreatmentPlan,
   ) {}
 
   /**
@@ -31,18 +31,14 @@ export class TreatmentPlanService {
   async create(createDto: CreateTreatmentPlanDto): Promise<TreatmentPlan> {
     this.logger.log(`Creating treatment plan for student ${createDto.studentId}`);
 
-    const plan = this.treatmentPlanRepository.create(createDto);
-    return this.treatmentPlanRepository.save(plan);
+    return this.treatmentPlanModel.create(createDto as any);
   }
 
   /**
    * Find treatment plan by ID
    */
   async findOne(id: string): Promise<TreatmentPlan> {
-    const plan = await this.treatmentPlanRepository.findOne({
-      where: { id },
-      relations: ['visit', 'prescriptions'],
-    });
+    const plan = await this.treatmentPlanModel.findByPk(id);
 
     if (!plan) {
       throw new NotFoundException(`Treatment plan ${id} not found`);
@@ -58,33 +54,28 @@ export class TreatmentPlanService {
     plans: TreatmentPlan[];
     total: number;
   }> {
-    const queryBuilder = this.treatmentPlanRepository.createQueryBuilder('plan');
+    const whereClause: any = {};
 
     if (filters.studentId) {
-      queryBuilder.andWhere('plan.studentId = :studentId', {
-        studentId: filters.studentId,
-      });
+      whereClause.studentId = filters.studentId;
     }
 
-    if (filters.visitId) {
-      queryBuilder.andWhere('plan.visitId = :visitId', { visitId: filters.visitId });
-    }
+    // visitId filter removed - not in model
 
     if (filters.status) {
-      queryBuilder.andWhere('plan.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
 
     if (filters.createdBy) {
-      queryBuilder.andWhere('plan.createdBy = :createdBy', {
-        createdBy: filters.createdBy,
-      });
+      whereClause.createdBy = filters.createdBy;
     }
 
-    const [plans, total] = await queryBuilder
-      .skip(filters.offset || 0)
-      .take(filters.limit || 20)
-      .orderBy('plan.createdAt', 'DESC')
-      .getManyAndCount();
+    const { rows: plans, count: total } = await this.treatmentPlanModel.findAndCountAll({
+      where: whereClause,
+      offset: filters.offset || 0,
+      limit: filters.limit || 20,
+      order: [['createdAt', 'DESC']],
+    });
 
     return { plans, total };
   }
@@ -93,11 +84,10 @@ export class TreatmentPlanService {
    * Get treatment plans by student ID
    */
   async findByStudent(studentId: string, limit: number = 10): Promise<TreatmentPlan[]> {
-    return this.treatmentPlanRepository.find({
+    return this.treatmentPlanModel.findAll({
       where: { studentId },
-      order: { createdAt: 'DESC' },
-      take: limit,
-      relations: ['prescriptions'],
+      order: [['createdAt', 'DESC']],
+      limit,
     });
   }
 
@@ -105,25 +95,16 @@ export class TreatmentPlanService {
    * Get active treatment plans for a student
    */
   async findActiveByStudent(studentId: string): Promise<TreatmentPlan[]> {
-    return this.treatmentPlanRepository.find({
+    return this.treatmentPlanModel.findAll({
       where: {
         studentId,
         status: TreatmentStatus.ACTIVE,
       },
-      order: { startDate: 'DESC' },
-      relations: ['prescriptions'],
+      order: [['startDate', 'DESC']],
     });
   }
 
-  /**
-   * Get treatment plans by visit ID
-   */
-  async findByVisit(visitId: string): Promise<TreatmentPlan[]> {
-    return this.treatmentPlanRepository.find({
-      where: { visitId },
-      order: { createdAt: 'DESC' },
-    });
-  }
+
 
   /**
    * Update treatment plan
@@ -132,7 +113,8 @@ export class TreatmentPlanService {
     const plan = await this.findOne(id);
 
     Object.assign(plan, updateDto);
-    return this.treatmentPlanRepository.save(plan);
+    await plan.save();
+    return plan;
   }
 
   /**
@@ -146,7 +128,8 @@ export class TreatmentPlanService {
     }
 
     plan.status = TreatmentStatus.ACTIVE;
-    return this.treatmentPlanRepository.save(plan);
+    await plan.save();
+    return plan;
   }
 
   /**
@@ -161,7 +144,8 @@ export class TreatmentPlanService {
 
     plan.status = TreatmentStatus.COMPLETED;
     plan.endDate = new Date();
-    return this.treatmentPlanRepository.save(plan);
+    await plan.save();
+    return plan;
   }
 
   /**
@@ -175,34 +159,22 @@ export class TreatmentPlanService {
     }
 
     plan.status = TreatmentStatus.CANCELLED;
-    return this.treatmentPlanRepository.save(plan);
+    await plan.save();
+    return plan;
   }
 
   /**
    * Delete treatment plan
    */
   async remove(id: string): Promise<void> {
-    const result = await this.treatmentPlanRepository.delete(id);
+    const result = await this.treatmentPlanModel.destroy({ where: { id } });
 
-    if (result.affected === 0) {
+    if (result === 0) {
       throw new NotFoundException(`Treatment plan ${id} not found`);
     }
 
     this.logger.log(`Deleted treatment plan ${id}`);
   }
 
-  /**
-   * Get plans needing review
-   */
-  async findPlansNeedingReview(): Promise<TreatmentPlan[]> {
-    const now = new Date();
 
-    return this.treatmentPlanRepository
-      .createQueryBuilder('plan')
-      .where('plan.status = :status', { status: TreatmentStatus.ACTIVE })
-      .andWhere('plan.reviewDate IS NOT NULL')
-      .andWhere('plan.reviewDate <= :now', { now })
-      .orderBy('plan.reviewDate', 'ASC')
-      .getMany();
-  }
 }

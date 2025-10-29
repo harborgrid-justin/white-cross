@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
-import { AuditLog } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, literal } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
 
 /**
  * SecurityAnalysisService - Security monitoring and threat detection
@@ -15,8 +15,8 @@ export class SecurityAnalysisService {
   private readonly logger = new Logger(SecurityAnalysisService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -28,14 +28,19 @@ export class SecurityAnalysisService {
    */
   async detectSuspiciousLogins(startDate: Date, endDate: Date): Promise<any> {
     try {
-      const failedLogins = await this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .where('audit_log.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .andWhere('audit_log.action = :action', { action: 'LOGIN' })
-        .andWhere("audit_log.changes->>'success' = :success", { success: 'false' })
-        .andWhere('audit_log.ipAddress IS NOT NULL')
-        .orderBy('audit_log.createdAt', 'DESC')
-        .getMany();
+      const failedLogins = await this.auditLogModel.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          action: 'LOGIN',
+          [Op.and]: [
+            literal(`changes->>'success' = 'false'`),
+            { ipAddress: { [Op.ne]: null } }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+      });
 
       // Group by IP address
       const ipFailureMap: Record<string, number> = {};

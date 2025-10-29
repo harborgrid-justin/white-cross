@@ -65,13 +65,7 @@ export class TreatmentPlanController {
     return this.treatmentPlanService.findActiveByStudent(studentId);
   }
 
-  @Get('visit/:visitId')
-  @ApiOperation({ summary: 'Get treatment plans for a clinic visit' })
-  @ApiParam({ name: 'visitId', description: 'Clinic visit ID' })
-  @ApiResponse({ status: 200, description: 'Visit treatment plans retrieved' })
-  async findByVisit(@Param('visitId') visitId: string) {
-    return this.treatmentPlanService.findByVisit(visitId);
-  }
+
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update treatment plan' })

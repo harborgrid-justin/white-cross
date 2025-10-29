@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
-import { AuditLog } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, literal } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
 
 /**
  * ComplianceReportingService - HIPAA compliance reporting
@@ -15,8 +15,8 @@ export class ComplianceReportingService {
   private readonly logger = new Logger(ComplianceReportingService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -28,11 +28,16 @@ export class ComplianceReportingService {
    */
   async getComplianceReport(startDate: Date, endDate: Date): Promise<any> {
     try {
-      const phiLogs = await this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .where('audit_log.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .andWhere("audit_log.changes->>'isPHIAccess' = :isPHIAccess", { isPHIAccess: 'true' })
-        .getMany();
+      const phiLogs = await this.auditLogModel.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          [Op.and]: [
+            literal(`changes->>'isPHIAccess' = 'true'`)
+          ]
+        }
+      });
 
       const totalAccess = phiLogs.length;
       const failedAccess = phiLogs.filter((log) => log.changes?.['success'] === false).length;
@@ -79,11 +84,16 @@ export class ComplianceReportingService {
    */
   async getPHIAccessSummary(startDate: Date, endDate: Date): Promise<any> {
     try {
-      const phiLogs = await this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .where('audit_log.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .andWhere("audit_log.changes->>'isPHIAccess' = :isPHIAccess", { isPHIAccess: 'true' })
-        .getMany();
+      const phiLogs = await this.auditLogModel.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          [Op.and]: [
+            literal(`changes->>'isPHIAccess' = 'true'`)
+          ]
+        }
+      });
 
       const totalAccess = phiLogs.length;
       const successfulAccess = phiLogs.filter((log) => log.changes?.['success'] !== false).length;

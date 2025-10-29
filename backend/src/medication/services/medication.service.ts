@@ -11,7 +11,7 @@ import {
   DeactivateMedicationDto,
   ListMedicationsQueryDto,
 } from '../dto';
-import { MedicationEntity, PaginatedMedicationResponse } from '../entities';
+import { StudentMedication, PaginatedMedicationResponse } from '../entities';
 
 /**
  * Medication Service
@@ -89,7 +89,7 @@ export class MedicationService {
    * @returns Created medication record
    * @throws BadRequestException if validation fails
    */
-  async createMedication(createDto: CreateMedicationDto): Promise<any> {
+  async createMedication(createDto: CreateMedicationDto): Promise<StudentMedication> {
     this.logger.log(
       `Creating medication: ${createDto.medicationName} for student ${createDto.studentId}`,
     );

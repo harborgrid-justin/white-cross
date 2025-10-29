@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { StockManagementService } from './stock-management.service';
 
@@ -28,8 +27,8 @@ export class ReorderAutomationService {
   private readonly DEFAULT_LEAD_TIME_DAYS = 7;
 
   constructor(
-    @InjectRepository(InventoryItem)
-    private readonly inventoryItemRepository: Repository<InventoryItem>,
+    @InjectModel(InventoryItem)
+    private readonly inventoryItemModel: typeof InventoryItem,
     private readonly stockManagementService: StockManagementService,
   ) {}
 
@@ -39,7 +38,7 @@ export class ReorderAutomationService {
   async analyzeInventory(): Promise<ReorderRecommendation[]> {
     try {
       const recommendations: ReorderRecommendation[] = [];
-      const items = await this.inventoryItemRepository.find({ where: { isActive: true } });
+      const items = await this.inventoryItemModel.findAll({ where: { isActive: true } });
 
       for (const item of items) {
         const currentStock = await this.stockManagementService.getCurrentStock(item.id);

@@ -1,69 +1,75 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ComplianceViolation } from '../entities/compliance-violation.entity';
-import { RemediationAction } from '../entities/remediation-action.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { ComplianceViolation, ComplianceViolationAttributes } from '../../database/models/compliance-violation.model';
+import { RemediationAction, RemediationActionAttributes } from '../../database/models/remediation-action.model';
 
 @Injectable()
 export class ViolationRepository {
   constructor(
-    @InjectRepository(ComplianceViolation)
-    private readonly violationRepo: Repository<ComplianceViolation>,
-    @InjectRepository(RemediationAction)
-    private readonly remediationRepo: Repository<RemediationAction>,
+    @InjectModel(ComplianceViolation)
+    private readonly violationModel: typeof ComplianceViolation,
+    @InjectModel(RemediationAction)
+    private readonly remediationModel: typeof RemediationAction,
   ) {}
 
   async findAllViolations(filters: any = {}, page: number = 1, limit: number = 20) {
-    const queryBuilder = this.violationRepo.createQueryBuilder('violation');
+    const whereClause: any = {};
 
     if (filters.violationType) {
-      queryBuilder.andWhere('violation.violationType = :violationType', { violationType: filters.violationType });
+      whereClause.violationType = filters.violationType;
     }
     if (filters.severity) {
-      queryBuilder.andWhere('violation.severity = :severity', { severity: filters.severity });
+      whereClause.severity = filters.severity;
     }
     if (filters.status) {
-      queryBuilder.andWhere('violation.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
 
-    const [data, total] = await queryBuilder
-      .orderBy('violation.discoveredAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
+    const { rows: data, count: total } = await this.violationModel.findAndCountAll({
+      where: whereClause,
+      order: [['discoveredAt', 'DESC']],
+      limit,
+      offset: (page - 1) * limit,
+    });
 
     return { data, total };
   }
 
   async findViolationById(id: string) {
-    return this.violationRepo.findOne({ where: { id } });
+    return this.violationModel.findByPk(id);
   }
 
-  async createViolation(data: Partial<ComplianceViolation>) {
-    const violation = this.violationRepo.create(data);
-    return this.violationRepo.save(violation);
+  async createViolation(data: Omit<ComplianceViolationAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+    return this.violationModel.create(data);
   }
 
-  async updateViolation(id: string, data: Partial<ComplianceViolation>) {
-    await this.violationRepo.update(id, data);
-    return this.findViolationById(id);
+  async updateViolation(id: string, data: Partial<ComplianceViolationAttributes>) {
+    const [affectedCount] = await this.violationModel.update(data, { where: { id } });
+    if (affectedCount > 0) {
+      return this.findViolationById(id);
+    }
+    return null;
   }
 
-  async createRemediation(data: Partial<RemediationAction>) {
-    const remediation = this.remediationRepo.create(data);
-    return this.remediationRepo.save(remediation);
+  async createRemediation(data: Omit<RemediationActionAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+    return this.remediationModel.create(data);
   }
 
   async findRemediationById(id: string) {
-    return this.remediationRepo.findOne({ where: { id } });
+    return this.remediationModel.findByPk(id);
   }
 
-  async updateRemediation(id: string, data: Partial<RemediationAction>) {
-    await this.remediationRepo.update(id, data);
-    return this.findRemediationById(id);
+  async updateRemediation(id: string, data: Partial<RemediationActionAttributes>) {
+    const [affectedCount] = await this.remediationModel.update(data, { where: { id } });
+    if (affectedCount > 0) {
+      return this.findRemediationById(id);
+    }
+    return null;
   }
 
   async findRemediationsByViolation(violationId: string) {
-    return this.remediationRepo.find({ where: { violationId } });
+    return this.remediationModel.findAll({
+      where: { violationId },
+    });
   }
 }

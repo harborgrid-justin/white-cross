@@ -7,6 +7,7 @@ import {
   Default,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { TreatmentStatus } from '../../clinical/enums/treatment-status.enum';
 
 export interface TreatmentPlanAttributes {
   id?: string;
@@ -15,7 +16,7 @@ export interface TreatmentPlanAttributes {
   planDetails: any;
   startDate: Date;
   endDate?: Date;
-  status: string;
+  status: TreatmentStatus;
   prescribedBy: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -67,10 +68,10 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   endDate?: Date;
 
   @Column({
-    type: DataType.STRING(50),
+    type: DataType.ENUM(...Object.values(TreatmentStatus)),
     allowNull: false,
   })
-  status: string;
+  status: TreatmentStatus;
 
   @Column({
     type: DataType.UUID,

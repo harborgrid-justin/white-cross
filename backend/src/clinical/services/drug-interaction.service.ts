@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Or } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, fn, col, literal } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
@@ -25,12 +25,12 @@ export class DrugInteractionService {
   private readonly logger = new Logger(DrugInteractionService.name);
 
   constructor(
-    @InjectRepository(DrugCatalog)
-    private drugCatalogRepository: Repository<DrugCatalog>,
-    @InjectRepository(DrugInteraction)
-    private drugInteractionRepository: Repository<DrugInteraction>,
-    @InjectRepository(StudentDrugAllergy)
-    private studentDrugAllergyRepository: Repository<StudentDrugAllergy>,
+    @InjectModel(DrugCatalog)
+    private drugCatalogModel: typeof DrugCatalog,
+    @InjectModel(DrugInteraction)
+    private drugInteractionModel: typeof DrugInteraction,
+    @InjectModel(StudentDrugAllergy)
+    private studentDrugAllergyModel: typeof StudentDrugAllergy,
   ) {}
 
   /**
@@ -39,15 +39,16 @@ export class DrugInteractionService {
   async searchDrugs(query: string, limit: number = 20): Promise<DrugCatalog[]> {
     this.logger.log(`Searching drugs with query: ${query}`);
 
-    return this.drugCatalogRepository
-      .createQueryBuilder('drug')
-      .where('drug.isActive = :isActive', { isActive: true })
-      .andWhere(
-        '(LOWER(drug.genericName) LIKE LOWER(:query) OR :query = ANY(drug.brandNames))',
-        { query: `%${query}%` },
-      )
-      .limit(limit)
-      .getMany();
+    return this.drugCatalogModel.findAll({
+      where: {
+        isActive: true,
+        [Op.or]: [
+          { genericName: { [Op.iLike]: `%${query}%` } },
+          literal(`'${query}' = ANY(brand_names)`)
+        ]
+      },
+      limit,
+    });
   }
 
   /**
@@ -55,7 +56,7 @@ export class DrugInteractionService {
    */
   async searchByRxNorm(rxnormCode: string): Promise<DrugCatalog | null> {
     this.logger.log(`Searching drug by RxNorm code: ${rxnormCode}`);
-    return this.drugCatalogRepository.findOne({
+    return this.drugCatalogModel.findOne({
       where: { rxnormCode },
     });
   }
@@ -64,9 +65,7 @@ export class DrugInteractionService {
    * Get drug by ID
    */
   async getDrugById(id: string): Promise<DrugCatalog> {
-    const drug = await this.drugCatalogRepository.findOne({
-      where: { id },
-    });
+    const drug = await this.drugCatalogModel.findByPk(id);
 
     if (!drug) {
       throw new NotFoundException(`Drug with ID ${id} not found`);
@@ -89,9 +88,9 @@ export class DrugInteractionService {
     };
 
     // Get all drugs
-    const drugs = await this.drugCatalogRepository.find({
+    const drugs = await this.drugCatalogModel.findAll({
       where: {
-        id: In(data.drugIds),
+        id: { [Op.in]: data.drugIds },
       },
     });
 
@@ -106,12 +105,17 @@ export class DrugInteractionService {
         const drug2 = drugs[j];
 
         // Check both directions (drug1-drug2 and drug2-drug1)
-        const interaction = await this.drugInteractionRepository.findOne({
-          where: [
-            { drug1Id: drug1.id, drug2Id: drug2.id },
-            { drug1Id: drug2.id, drug2Id: drug1.id },
+        const interaction = await this.drugInteractionModel.findOne({
+          where: {
+            [Op.or]: [
+              { drug1Id: drug1.id, drug2Id: drug2.id },
+              { drug1Id: drug2.id, drug2Id: drug1.id },
+            ]
+          },
+          include: [
+            { model: DrugCatalog, as: 'drug1' },
+            { model: DrugCatalog, as: 'drug2' }
           ],
-          relations: ['drug1', 'drug2'],
         });
 
         if (interaction) {
@@ -139,12 +143,12 @@ export class DrugInteractionService {
 
     // Check student allergies if studentId provided
     if (data.studentId) {
-      const allergies = await this.studentDrugAllergyRepository.find({
+      const allergies = await this.studentDrugAllergyModel.findAll({
         where: {
           studentId: data.studentId,
-          drugId: In(data.drugIds),
+          drugId: { [Op.in]: data.drugIds },
         },
-        relations: ['drug'],
+        include: [{ model: DrugCatalog, as: 'drug' }],
       });
 
       if (allergies.length > 0) {
@@ -219,12 +223,7 @@ export class DrugInteractionService {
   async addDrug(data: AddDrugDto): Promise<DrugCatalog> {
     this.logger.log(`Adding new drug: ${data.genericName}`);
 
-    const drug = this.drugCatalogRepository.create({
-      ...data,
-      isActive: true,
-    });
-
-    return this.drugCatalogRepository.save(drug);
+    return this.drugCatalogModel.create({ ...data, isActive: true } as any);
   }
 
   /**
@@ -234,7 +233,8 @@ export class DrugInteractionService {
     const drug = await this.getDrugById(id);
 
     Object.assign(drug, updates);
-    return this.drugCatalogRepository.save(drug);
+    await drug.save();
+    return drug;
   }
 
   /**
@@ -252,44 +252,46 @@ export class DrugInteractionService {
     }
 
     // Check if interaction already exists
-    const existing = await this.drugInteractionRepository.findOne({
-      where: [
-        { drug1Id: data.drug1Id, drug2Id: data.drug2Id },
-        { drug1Id: data.drug2Id, drug2Id: data.drug1Id },
-      ],
+    const existing = await this.drugInteractionModel.findOne({
+      where: {
+        [Op.or]: [
+          { drug1Id: data.drug1Id, drug2Id: data.drug2Id },
+          { drug1Id: data.drug2Id, drug2Id: data.drug1Id },
+        ]
+      },
     });
 
     if (existing) {
       throw new ConflictException('Interaction already exists');
     }
 
-    const interaction = this.drugInteractionRepository.create(data);
-    return this.drugInteractionRepository.save(interaction);
+    return this.drugInteractionModel.create(data as any);
   }
 
   /**
    * Update drug interaction
    */
   async updateInteraction(id: string, updates: UpdateInteractionDto): Promise<DrugInteraction> {
-    const interaction = await this.drugInteractionRepository.findOne({
-      where: { id },
-    });
+    const interaction = await this.drugInteractionModel.findByPk(id);
 
     if (!interaction) {
       throw new NotFoundException('Interaction not found');
     }
 
     Object.assign(interaction, updates);
-    return this.drugInteractionRepository.save(interaction);
+    await interaction.save();
+    return interaction;
   }
 
   /**
    * Delete drug interaction
    */
   async deleteInteraction(id: string): Promise<void> {
-    const result = await this.drugInteractionRepository.delete(id);
+    const deletedCount = await this.drugInteractionModel.destroy({
+      where: { id },
+    });
 
-    if (result.affected === 0) {
+    if (deletedCount === 0) {
       throw new NotFoundException('Interaction not found');
     }
 
@@ -306,7 +308,7 @@ export class DrugInteractionService {
     await this.getDrugById(data.drugId);
 
     // Check if allergy already exists
-    const existing = await this.studentDrugAllergyRepository.findOne({
+    const existing = await this.studentDrugAllergyModel.findOne({
       where: {
         studentId: data.studentId,
         drugId: data.drugId,
@@ -317,33 +319,33 @@ export class DrugInteractionService {
       throw new ConflictException('Allergy already recorded for this student and drug');
     }
 
-    const allergy = this.studentDrugAllergyRepository.create(data);
-    return this.studentDrugAllergyRepository.save(allergy);
+    return this.studentDrugAllergyModel.create(data as any);
   }
 
   /**
    * Update student drug allergy
    */
   async updateAllergy(id: string, updates: UpdateAllergyDto): Promise<StudentDrugAllergy> {
-    const allergy = await this.studentDrugAllergyRepository.findOne({
-      where: { id },
-    });
+    const allergy = await this.studentDrugAllergyModel.findByPk(id);
 
     if (!allergy) {
       throw new NotFoundException('Allergy not found');
     }
 
     Object.assign(allergy, updates);
-    return this.studentDrugAllergyRepository.save(allergy);
+    await allergy.save();
+    return allergy;
   }
 
   /**
    * Delete student drug allergy
    */
   async deleteAllergy(id: string): Promise<void> {
-    const result = await this.studentDrugAllergyRepository.delete(id);
+    const deletedCount = await this.studentDrugAllergyModel.destroy({
+      where: { id },
+    });
 
-    if (result.affected === 0) {
+    if (deletedCount === 0) {
       throw new NotFoundException('Allergy not found');
     }
 
@@ -354,10 +356,10 @@ export class DrugInteractionService {
    * Get all allergies for a student
    */
   async getStudentAllergies(studentId: string): Promise<StudentDrugAllergy[]> {
-    return this.studentDrugAllergyRepository.find({
+    return this.studentDrugAllergyModel.findAll({
       where: { studentId },
-      relations: ['drug'],
-      order: { diagnosedDate: 'DESC' },
+      include: [{ model: DrugCatalog, as: 'drug' }],
+      order: [['diagnosedDate', 'DESC']],
     });
   }
 
@@ -367,9 +369,14 @@ export class DrugInteractionService {
   async getDrugInteractions(drugId: string): Promise<any[]> {
     await this.getDrugById(drugId); // Validate drug exists
 
-    const interactions = await this.drugInteractionRepository.find({
-      where: [{ drug1Id: drugId }, { drug2Id: drugId }],
-      relations: ['drug1', 'drug2'],
+    const interactions = await this.drugInteractionModel.findAll({
+      where: {
+        [Op.or]: [{ drug1Id: drugId }, { drug2Id: drugId }],
+      },
+      include: [
+        { model: DrugCatalog, as: 'drug1' },
+        { model: DrugCatalog, as: 'drug2' }
+      ],
     });
 
     return interactions.map((interaction) => {
@@ -389,33 +396,39 @@ export class DrugInteractionService {
    * Get drugs by class
    */
   async getDrugsByClass(drugClass: string): Promise<DrugCatalog[]> {
-    return this.drugCatalogRepository
-      .createQueryBuilder('drug')
-      .where('LOWER(drug.drugClass) LIKE LOWER(:drugClass)', {
-        drugClass: `%${drugClass}%`,
-      })
-      .andWhere('drug.isActive = :isActive', { isActive: true })
-      .orderBy('drug.genericName', 'ASC')
-      .getMany();
+    return this.drugCatalogModel.findAll({
+      where: {
+        drugClass: {
+          [Op.iLike]: `%${drugClass}%`,
+        },
+        isActive: true,
+      },
+      order: [['genericName', 'ASC']],
+    });
   }
 
   /**
    * Get controlled substances
    */
   async getControlledSubstances(schedule?: string): Promise<DrugCatalog[]> {
-    const query = this.drugCatalogRepository
-      .createQueryBuilder('drug')
-      .where('drug.controlledSubstanceSchedule IS NOT NULL')
-      .andWhere('drug.isActive = :isActive', { isActive: true });
+    const where: any = {
+      controlledSubstanceSchedule: {
+        [Op.ne]: null,
+      },
+      isActive: true,
+    };
 
     if (schedule) {
-      query.andWhere('drug.controlledSubstanceSchedule = :schedule', { schedule });
+      where.controlledSubstanceSchedule = schedule;
     }
 
-    return query
-      .orderBy('drug.controlledSubstanceSchedule', 'ASC')
-      .addOrderBy('drug.genericName', 'ASC')
-      .getMany();
+    return this.drugCatalogModel.findAll({
+      where,
+      order: [
+        ['controlledSubstanceSchedule', 'ASC'],
+        ['genericName', 'ASC'],
+      ],
+    });
   }
 
   /**
@@ -436,7 +449,7 @@ export class DrugInteractionService {
       try {
         // Check if drug already exists by RxNorm code
         if (drug.rxnormCode) {
-          const existing = await this.drugCatalogRepository.findOne({
+          const existing = await this.drugCatalogModel.findOne({
             where: { rxnormCode: drug.rxnormCode },
           });
           if (existing) {
@@ -467,9 +480,12 @@ export class DrugInteractionService {
     bySeverity: Record<string, number>;
     topInteractingDrugs: Array<{ drug: DrugCatalog; interactionCount: number }>;
   }> {
-    const totalDrugs = await this.drugCatalogRepository.count({ where: { isActive: true } });
-    const interactions = await this.drugInteractionRepository.find({
-      relations: ['drug1', 'drug2'],
+    const totalDrugs = await this.drugCatalogModel.count({ where: { isActive: true } });
+    const interactions = await this.drugInteractionModel.findAll({
+      include: [
+        { model: DrugCatalog, as: 'drug1' },
+        { model: DrugCatalog, as: 'drug2' }
+      ],
     });
 
     const bySeverity: Record<string, number> = {};
@@ -481,11 +497,13 @@ export class DrugInteractionService {
 
       // Count interactions per drug
       for (const drug of [interaction.drug1, interaction.drug2]) {
-        const existing = drugInteractionCounts.get(drug.id);
-        if (existing) {
-          existing.count++;
-        } else {
-          drugInteractionCounts.set(drug.id, { drug, count: 1 });
+        if (drug) {
+          const existing = drugInteractionCounts.get(drug.id);
+          if (existing) {
+            existing.count++;
+          } else {
+            drugInteractionCounts.set(drug.id, { drug, count: 1 });
+          }
         }
       }
     }

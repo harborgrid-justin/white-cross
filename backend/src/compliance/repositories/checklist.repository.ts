@@ -1,52 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ComplianceChecklistItem } from '../entities/compliance-checklist-item.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { ComplianceChecklistItem, ComplianceChecklistItemAttributes } from '../../database/models/compliance-checklist-item.model';
 
 @Injectable()
 export class ChecklistRepository {
   constructor(
-    @InjectRepository(ComplianceChecklistItem)
-    private readonly repository: Repository<ComplianceChecklistItem>,
+    @InjectModel(ComplianceChecklistItem)
+    private readonly checklistItemModel: typeof ComplianceChecklistItem,
   ) {}
 
   async findAll(filters: any = {}, page: number = 1, limit: number = 20) {
-    const queryBuilder = this.repository.createQueryBuilder('item');
+    const whereClause: any = {};
 
     if (filters.reportId) {
-      queryBuilder.andWhere('item.reportId = :reportId', { reportId: filters.reportId });
+      whereClause.reportId = filters.reportId;
     }
     if (filters.category) {
-      queryBuilder.andWhere('item.category = :category', { category: filters.category });
+      whereClause.category = filters.category;
     }
     if (filters.status) {
-      queryBuilder.andWhere('item.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
 
-    const [data, total] = await queryBuilder
-      .orderBy('item.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
+    const { rows: data, count: total } = await this.checklistItemModel.findAndCountAll({
+      where: whereClause,
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset: (page - 1) * limit,
+    });
 
     return { data, total };
   }
 
   async findById(id: string) {
-    return this.repository.findOne({ where: { id } });
+    return this.checklistItemModel.findByPk(id);
   }
 
-  async create(data: Partial<ComplianceChecklistItem>) {
-    const item = this.repository.create(data);
-    return this.repository.save(item);
+  async create(data: Omit<ComplianceChecklistItemAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+    return this.checklistItemModel.create(data);
   }
 
-  async update(id: string, data: Partial<ComplianceChecklistItem>) {
-    await this.repository.update(id, data);
-    return this.findById(id);
+  async update(id: string, data: Partial<ComplianceChecklistItemAttributes>) {
+    const [affectedCount] = await this.checklistItemModel.update(data, { where: { id } });
+    if (affectedCount > 0) {
+      return this.findById(id);
+    }
+    return null;
   }
 
   async delete(id: string) {
-    return this.repository.delete(id);
+    return this.checklistItemModel.destroy({ where: { id } });
   }
 }

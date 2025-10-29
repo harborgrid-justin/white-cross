@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, literal } from 'sequelize';
 import { ClinicalProtocol } from '../entities/clinical-protocol.entity';
 import { ProtocolStatus } from '../enums/protocol-status.enum';
 import { CreateProtocolDto } from '../dto/protocol/create-protocol.dto';
@@ -13,50 +13,51 @@ export class ClinicalProtocolService {
   private readonly logger = new Logger(ClinicalProtocolService.name);
 
   constructor(
-    @InjectRepository(ClinicalProtocol)
-    private protocolRepository: Repository<ClinicalProtocol>,
+    @InjectModel(ClinicalProtocol)
+    private protocolModel: typeof ClinicalProtocol,
   ) {}
 
   async create(createDto: CreateProtocolDto): Promise<ClinicalProtocol> {
-    const protocol = this.protocolRepository.create(createDto);
-    return this.protocolRepository.save(protocol);
+    return this.protocolModel.create(createDto as any);
   }
 
   async findOne(id: string): Promise<ClinicalProtocol> {
-    const protocol = await this.protocolRepository.findOne({ where: { id } });
+    const protocol = await this.protocolModel.findByPk(id);
     if (!protocol) throw new NotFoundException(`Protocol ${id} not found`);
     return protocol;
   }
 
   async findAll(filters: ProtocolFiltersDto): Promise<{ protocols: ClinicalProtocol[]; total: number }> {
-    const queryBuilder = this.protocolRepository.createQueryBuilder('protocol');
+    const whereClause: any = {};
 
-    if (filters.status) queryBuilder.andWhere('protocol.status = :status', { status: filters.status });
-    if (filters.category) queryBuilder.andWhere('protocol.category = :category', { category: filters.category });
-    if (filters.name) queryBuilder.andWhere('protocol.name ILIKE :name', { name: `%${filters.name}%` });
-    if (filters.tag) queryBuilder.andWhere(':tag = ANY(protocol.tags)', { tag: filters.tag });
-    if (filters.activeOnly) queryBuilder.andWhere('protocol.status = :active', { active: ProtocolStatus.ACTIVE });
+    if (filters.status) whereClause.status = filters.status;
+    if (filters.category) whereClause.category = filters.category;
+    if (filters.name) whereClause.name = { [Op.iLike]: `%${filters.name}%` };
+    if (filters.tag) whereClause.tags = { [Op.contains]: [filters.tag] };
+    if (filters.activeOnly) whereClause.status = ProtocolStatus.ACTIVE;
 
-    const [protocols, total] = await queryBuilder
-      .skip(filters.offset || 0)
-      .take(filters.limit || 20)
-      .orderBy('protocol.name', 'ASC')
-      .getManyAndCount();
+    const { rows: protocols, count: total } = await this.protocolModel.findAndCountAll({
+      where: whereClause,
+      offset: filters.offset || 0,
+      limit: filters.limit || 20,
+      order: [['name', 'ASC']],
+    });
 
     return { protocols, total };
   }
 
   async getActiveProtocols(): Promise<ClinicalProtocol[]> {
-    return this.protocolRepository.find({
+    return this.protocolModel.findAll({
       where: { status: ProtocolStatus.ACTIVE },
-      order: { name: 'ASC' },
+      order: [['name', 'ASC']],
     });
   }
 
   async update(id: string, updateDto: UpdateProtocolDto): Promise<ClinicalProtocol> {
     const protocol = await this.findOne(id);
     Object.assign(protocol, updateDto);
-    return this.protocolRepository.save(protocol);
+    await protocol.save();
+    return protocol;
   }
 
   async activate(id: string, activateDto: ActivateProtocolDto): Promise<ClinicalProtocol> {
@@ -70,18 +71,20 @@ export class ClinicalProtocolService {
     protocol.approvedDate = activateDto.approvedDate;
     protocol.effectiveDate = activateDto.effectiveDate || activateDto.approvedDate;
 
-    return this.protocolRepository.save(protocol);
+    await protocol.save();
+    return protocol;
   }
 
   async deactivate(id: string): Promise<ClinicalProtocol> {
     const protocol = await this.findOne(id);
     protocol.status = ProtocolStatus.INACTIVE;
-    return this.protocolRepository.save(protocol);
+    await protocol.save();
+    return protocol;
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.protocolRepository.delete(id);
-    if (result.affected === 0) throw new NotFoundException(`Protocol ${id} not found`);
+    const result = await this.protocolModel.destroy({ where: { id } });
+    if (result === 0) throw new NotFoundException(`Protocol ${id} not found`);
     this.logger.log(`Deleted protocol ${id}`);
   }
 }

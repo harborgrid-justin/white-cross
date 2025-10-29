@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';
@@ -27,11 +27,11 @@ export class StockManagementService {
   private readonly logger = new Logger(StockManagementService.name);
 
   constructor(
-    @InjectRepository(InventoryItem)
-    private readonly inventoryItemRepository: Repository<InventoryItem>,
-    @InjectRepository(InventoryTransaction)
-    private readonly transactionRepository: Repository<InventoryTransaction>,
-    private readonly dataSource: DataSource,
+    @InjectModel(InventoryItem)
+    private readonly inventoryItemModel: typeof InventoryItem,
+    @InjectModel(InventoryTransaction)
+    private readonly transactionModel: typeof InventoryTransaction,
+    private readonly sequelize: Sequelize,
   ) {}
 
   /**
@@ -40,13 +40,11 @@ export class StockManagementService {
    */
   async getCurrentStock(inventoryItemId: string): Promise<number> {
     try {
-      const result = await this.transactionRepository
-        .createQueryBuilder('transaction')
-        .select('SUM(transaction.quantity)', 'totalQuantity')
-        .where('transaction.inventoryItemId = :inventoryItemId', { inventoryItemId })
-        .getRawOne();
+      const result = await this.transactionModel.sum('quantity', {
+        where: { inventoryItemId }
+      });
 
-      return Number(result?.totalQuantity) || 0;
+      return Number(result) || 0;
     } catch (error) {
       this.logger.error('Error getting current stock:', error);
       throw error;
@@ -60,12 +58,10 @@ export class StockManagementService {
     id: string,
     adjustmentData: StockAdjustmentDto,
   ): Promise<StockAdjustmentResult> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const sequelizeTransaction = await this.sequelize.transaction();
 
     try {
-      const item = await this.inventoryItemRepository.findOne({ where: { id } });
+      const item = await this.inventoryItemModel.findByPk(id);
 
       if (!item) {
         throw new NotFoundException('Inventory item not found');
@@ -75,17 +71,16 @@ export class StockManagementService {
       const currentStock = await this.getCurrentStock(id);
 
       // Create adjustment transaction
-      const transaction = this.transactionRepository.create({
+      const transaction = await this.transactionModel.create({
         inventoryItemId: id,
         type: InventoryTransactionType.ADJUSTMENT,
         quantity: adjustmentData.quantity,
         reason: adjustmentData.reason,
         notes: `Stock adjusted from ${currentStock} to ${currentStock + adjustmentData.quantity}. Reason: ${adjustmentData.reason}`,
         performedById: adjustmentData.performedById,
-      });
+      } as any, { transaction: sequelizeTransaction });
 
-      const savedTransaction = await queryRunner.manager.save(transaction);
-      await queryRunner.commitTransaction();
+      await sequelizeTransaction.commit();
 
       const newStock = currentStock + adjustmentData.quantity;
 
@@ -94,17 +89,15 @@ export class StockManagementService {
       );
 
       return {
-        transaction: savedTransaction,
+        transaction,
         previousStock: currentStock,
         newStock,
         adjustment: adjustmentData.quantity,
       };
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await sequelizeTransaction.rollback();
       this.logger.error('Error adjusting stock:', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -119,21 +112,21 @@ export class StockManagementService {
     try {
       const offset = (page - 1) * limit;
 
-      const [transactions, total] = await this.transactionRepository.findAndCount({
+      const { rows: transactions, count: total } = await this.transactionModel.findAndCountAll({
         where: { inventoryItemId },
-        order: { createdAt: 'DESC' },
-        skip: offset,
-        take: limit,
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
       });
 
       // Calculate running stock totals
       const history: (InventoryTransaction & { stockAfterTransaction: number })[] = [];
 
       // Get all transactions in chronological order to calculate running totals
-      const allTransactions = await this.transactionRepository.find({
+      const allTransactions = await this.transactionModel.findAll({
         where: { inventoryItemId },
-        order: { createdAt: 'ASC' },
-        select: ['id', 'quantity'],
+        order: [['createdAt', 'ASC']],
+        attributes: ['id', 'quantity'],
       });
 
       // Build running total map
@@ -148,9 +141,9 @@ export class StockManagementService {
       // Add running totals to paginated results
       for (const txn of transactions) {
         history.push({
-          ...txn,
+          ...txn.get({ plain: true }),
           stockAfterTransaction: runningTotals.get(txn.id) || 0,
-        });
+        } as any);
       }
 
       return {
@@ -173,7 +166,7 @@ export class StockManagementService {
    */
   async isLowStock(inventoryItemId: string): Promise<boolean> {
     try {
-      const item = await this.inventoryItemRepository.findOne({ where: { id: inventoryItemId } });
+      const item = await this.inventoryItemModel.findByPk(inventoryItemId);
 
       if (!item) {
         throw new NotFoundException('Inventory item not found');
@@ -223,8 +216,8 @@ export class StockManagementService {
         ORDER BY COALESCE(stock.total_quantity, 0) ASC
       `;
 
-      const lowStockItems = await this.dataSource.query(query);
-      return lowStockItems;
+      const [lowStockItems] = await this.sequelize.query(query);
+      return lowStockItems as any[];
     } catch (error) {
       this.logger.error('Error getting low stock items:', error);
       throw error;
@@ -253,8 +246,8 @@ export class StockManagementService {
         ORDER BY i.name ASC
       `;
 
-      const outOfStockItems = await this.dataSource.query(query);
-      return outOfStockItems;
+      const [outOfStockItems] = await this.sequelize.query(query);
+      return outOfStockItems as any[];
     } catch (error) {
       this.logger.error('Error getting out of stock items:', error);
       throw error;

@@ -1,55 +1,62 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { PolicyDocument } from '../entities/policy-document.entity';
-import { PolicyAcknowledgment } from '../entities/policy-acknowledgment.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { PolicyDocument, PolicyDocumentAttributes } from '../../database/models/policy-document.model';
+import { PolicyAcknowledgment, PolicyAcknowledgmentAttributes } from '../../database/models/policy-acknowledgment.model';
 
 @Injectable()
 export class PolicyRepository {
   constructor(
-    @InjectRepository(PolicyDocument)
-    private readonly policyRepo: Repository<PolicyDocument>,
-    @InjectRepository(PolicyAcknowledgment)
-    private readonly ackRepo: Repository<PolicyAcknowledgment>,
+    @InjectModel(PolicyDocument)
+    private readonly policyModel: typeof PolicyDocument,
+    @InjectModel(PolicyAcknowledgment)
+    private readonly acknowledgmentModel: typeof PolicyAcknowledgment,
   ) {}
 
   async findAllPolicies(filters: any = {}) {
-    const queryBuilder = this.policyRepo.createQueryBuilder('policy');
+    const whereClause: any = {};
 
     if (filters.category) {
-      queryBuilder.andWhere('policy.category = :category', { category: filters.category });
+      whereClause.category = filters.category;
     }
     if (filters.status) {
-      queryBuilder.andWhere('policy.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
 
-    return queryBuilder.orderBy('policy.createdAt', 'DESC').getMany();
+    return this.policyModel.findAll({
+      where: whereClause,
+      order: [['createdAt', 'DESC']],
+    });
   }
 
   async findPolicyById(id: string) {
-    return this.policyRepo.findOne({ where: { id }, relations: ['acknowledgments'] });
+    return this.policyModel.findByPk(id, {
+      include: [{ model: PolicyAcknowledgment, as: 'acknowledgments' }],
+    });
   }
 
-  async createPolicy(data: Partial<PolicyDocument>) {
-    const policy = this.policyRepo.create(data);
-    return this.policyRepo.save(policy);
+  async createPolicy(data: Omit<PolicyDocumentAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+    return this.policyModel.create(data);
   }
 
-  async updatePolicy(id: string, data: Partial<PolicyDocument>) {
-    await this.policyRepo.update(id, data);
-    return this.findPolicyById(id);
+  async updatePolicy(id: string, data: Partial<PolicyDocumentAttributes>) {
+    const [affectedCount] = await this.policyModel.update(data, { where: { id } });
+    if (affectedCount > 0) {
+      return this.findPolicyById(id);
+    }
+    return null;
   }
 
   async deletePolicy(id: string) {
-    return this.policyRepo.delete(id);
+    return this.policyModel.destroy({ where: { id } });
   }
 
-  async createAcknowledgment(data: Partial<PolicyAcknowledgment>) {
-    const ack = this.ackRepo.create(data);
-    return this.ackRepo.save(ack);
+  async createAcknowledgment(data: Omit<PolicyAcknowledgmentAttributes, 'id'>) {
+    return this.acknowledgmentModel.create(data);
   }
 
   async findAcknowledgment(policyId: string, userId: string) {
-    return this.ackRepo.findOne({ where: { policyId, userId } });
+    return this.acknowledgmentModel.findOne({
+      where: { policyId, userId },
+    });
   }
 }

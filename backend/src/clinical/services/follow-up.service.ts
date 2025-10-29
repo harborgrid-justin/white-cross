@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { FollowUpAppointment } from '../entities/follow-up-appointment.entity';
 import { FollowUpStatus } from '../enums/follow-up-status.enum';
 import { ScheduleFollowUpDto } from '../dto/follow-up/schedule-follow-up.dto';
@@ -13,109 +13,111 @@ export class FollowUpService {
   private readonly logger = new Logger(FollowUpService.name);
 
   constructor(
-    @InjectRepository(FollowUpAppointment)
-    private followUpRepository: Repository<FollowUpAppointment>,
+    @InjectModel(FollowUpAppointment)
+    private followUpModel: typeof FollowUpAppointment,
   ) {}
 
   async schedule(scheduleDto: ScheduleFollowUpDto): Promise<FollowUpAppointment> {
-    const appointment = this.followUpRepository.create(scheduleDto);
-    return this.followUpRepository.save(appointment);
+    return this.followUpModel.create(scheduleDto as any);
   }
 
   async findOne(id: string): Promise<FollowUpAppointment> {
-    const appointment = await this.followUpRepository.findOne({
-      where: { id },
-      relations: ['originalVisit', 'completedVisit'],
+    const appointment = await this.followUpModel.findByPk(id, {
+      include: ['originalVisit', 'completedVisit'],
     });
     if (!appointment) throw new NotFoundException(`Follow-up ${id} not found`);
     return appointment;
   }
 
   async findAll(filters: FollowUpFiltersDto): Promise<{ appointments: FollowUpAppointment[]; total: number }> {
-    const queryBuilder = this.followUpRepository.createQueryBuilder('followUp');
+    const whereClause: any = {};
 
-    if (filters.studentId) queryBuilder.andWhere('followUp.studentId = :studentId', { studentId: filters.studentId });
-    if (filters.originalVisitId) queryBuilder.andWhere('followUp.originalVisitId = :originalVisitId', { originalVisitId: filters.originalVisitId });
-    if (filters.status) queryBuilder.andWhere('followUp.status = :status', { status: filters.status });
-    if (filters.assignedTo) queryBuilder.andWhere('followUp.assignedTo = :assignedTo', { assignedTo: filters.assignedTo });
+    if (filters.studentId) whereClause.studentId = filters.studentId;
+    if (filters.originalVisitId) whereClause.originalVisitId = filters.originalVisitId;
+    if (filters.status) whereClause.status = filters.status;
+    if (filters.assignedTo) whereClause.assignedTo = filters.assignedTo;
 
     if (filters.pendingOnly) {
-      queryBuilder.andWhere('followUp.status IN (:...pendingStatuses)', {
-        pendingStatuses: [FollowUpStatus.SCHEDULED, FollowUpStatus.REMINDED, FollowUpStatus.CONFIRMED],
-      });
+      whereClause.status = {
+        [Op.in]: [FollowUpStatus.SCHEDULED, FollowUpStatus.REMINDED, FollowUpStatus.CONFIRMED]
+      };
     }
 
     if (filters.upcomingOnly) {
-      queryBuilder.andWhere('followUp.scheduledDate > :now', { now: new Date() });
+      whereClause.scheduledDate = { [Op.gt]: new Date() };
     }
 
     if (filters.dateFrom || filters.dateTo) {
       if (filters.dateFrom && filters.dateTo) {
-        queryBuilder.andWhere('followUp.scheduledDate BETWEEN :dateFrom AND :dateTo', {
-          dateFrom: filters.dateFrom,
-          dateTo: filters.dateTo,
-        });
+        whereClause.scheduledDate = {
+          [Op.between]: [filters.dateFrom, filters.dateTo]
+        };
       } else if (filters.dateFrom) {
-        queryBuilder.andWhere('followUp.scheduledDate >= :dateFrom', { dateFrom: filters.dateFrom });
+        whereClause.scheduledDate = { [Op.gte]: filters.dateFrom };
       } else if (filters.dateTo) {
-        queryBuilder.andWhere('followUp.scheduledDate <= :dateTo', { dateTo: filters.dateTo });
+        whereClause.scheduledDate = { [Op.lte]: filters.dateTo };
       }
     }
 
-    const [appointments, total] = await queryBuilder
-      .skip(filters.offset || 0)
-      .take(filters.limit || 20)
-      .orderBy('followUp.scheduledDate', 'ASC')
-      .getManyAndCount();
+    const { rows: appointments, count: total } = await this.followUpModel.findAndCountAll({
+      where: whereClause,
+      offset: filters.offset || 0,
+      limit: filters.limit || 20,
+      order: [['scheduledDate', 'ASC']],
+    });
 
     return { appointments, total };
   }
 
   async findByStudent(studentId: string, limit: number = 10): Promise<FollowUpAppointment[]> {
-    return this.followUpRepository.find({
+    return this.followUpModel.findAll({
       where: { studentId },
-      order: { scheduledDate: 'DESC' },
-      take: limit,
+      order: [['scheduledDate', 'DESC']],
+      limit,
     });
   }
 
   async findPending(): Promise<FollowUpAppointment[]> {
-    return this.followUpRepository.find({
+    return this.followUpModel.findAll({
       where: {
         status: FollowUpStatus.SCHEDULED,
       },
-      order: { scheduledDate: 'ASC' },
+      order: [['scheduledDate', 'ASC']],
     });
   }
 
   async update(id: string, updateDto: UpdateFollowUpDto): Promise<FollowUpAppointment> {
     const appointment = await this.findOne(id);
     Object.assign(appointment, updateDto);
-    return this.followUpRepository.save(appointment);
+    await appointment.save();
+    return appointment;
   }
 
   async confirm(id: string): Promise<FollowUpAppointment> {
     const appointment = await this.findOne(id);
     appointment.confirm();
-    return this.followUpRepository.save(appointment);
+    await appointment.save();
+    return appointment;
   }
 
   async complete(id: string, completeDto: CompleteFollowUpDto): Promise<FollowUpAppointment> {
     const appointment = await this.findOne(id);
     appointment.complete(completeDto.completedVisitId);
     if (completeDto.notes) appointment.notes = completeDto.notes;
-    return this.followUpRepository.save(appointment);
+    await appointment.save();
+    return appointment;
   }
 
   async cancel(id: string, reason: string): Promise<FollowUpAppointment> {
     const appointment = await this.findOne(id);
     appointment.cancel(reason);
-    return this.followUpRepository.save(appointment);
+    await appointment.save();
+    return appointment;
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.followUpRepository.delete(id);
-    if (result.affected === 0) throw new NotFoundException(`Follow-up ${id} not found`);
+    const result = await this.followUpModel.destroy({ where: { id } });
+    if (result === 0) throw new NotFoundException(`Follow-up ${id} not found`);
     this.logger.log(`Deleted follow-up ${id}`);
   }
 
@@ -123,13 +125,13 @@ export class FollowUpService {
     const reminderDate = new Date();
     reminderDate.setHours(reminderDate.getHours() + reminderHours);
 
-    return this.followUpRepository.find({
+    return this.followUpModel.findAll({
       where: {
         status: FollowUpStatus.SCHEDULED,
         reminderSent: false,
-        scheduledDate: LessThan(reminderDate),
+        scheduledDate: { [Op.lt]: reminderDate },
       },
-      order: { scheduledDate: 'ASC' },
+      order: [['scheduledDate', 'ASC']],
     });
   }
 }

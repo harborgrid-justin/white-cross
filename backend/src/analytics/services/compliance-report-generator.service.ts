@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, IsNull } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import * as jsPDF from 'jspdf';
@@ -40,12 +40,12 @@ export class ComplianceReportGeneratorService {
   private scheduledConfigs: ScheduledReportConfig[] = [];
 
   constructor(
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
-    @InjectRepository(HealthRecord)
-    private readonly healthRecordRepository: Repository<HealthRecord>,
-    @InjectRepository(AnalyticsReport)
-    private readonly reportRepository: Repository<AnalyticsReport>,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
+    @InjectModel(HealthRecord)
+    private readonly healthRecordModel: typeof HealthRecord,
+    @InjectModel(AnalyticsReport)
+    private readonly analyticsReportModel: typeof AnalyticsReport,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -73,24 +73,28 @@ export class ComplianceReportGeneratorService {
       }
 
       // Query student data for compliance analysis
-      const students = await this.studentRepository.find({
+      const students = await this.studentModel.findAll({
         where: {
           schoolId: params.schoolId,
           isActive: true,
-          deletedAt: IsNull(),
         },
       });
 
       const totalStudents = students.length;
 
       // Query vaccination records (placeholder - would integrate with vaccination module)
-      const immunizationRecords = await this.healthRecordRepository.find({
+      const immunizationRecords = await this.healthRecordModel.findAll({
         where: {
-          student: { schoolId: params.schoolId },
           recordType: 'IMMUNIZATION',
-          recordDate: Between(params.periodStart, params.periodEnd),
-          deletedAt: IsNull(),
+          recordDate: {
+            [Op.between]: [params.periodStart, params.periodEnd],
+          },
         },
+        include: [{
+          model: Student,
+          where: { schoolId: params.schoolId },
+          required: true,
+        }],
       });
 
       // Calculate compliance metrics
@@ -242,13 +246,18 @@ export class ComplianceReportGeneratorService {
       this.logger.log(`Generating controlled substance report for school ${params.schoolId}`);
 
       // Query medication administration records for controlled substances
-      const medicationRecords = await this.healthRecordRepository.find({
+      const medicationRecords = await this.healthRecordModel.findAll({
         where: {
-          student: { schoolId: params.schoolId },
           recordType: 'MEDICATION_REVIEW',
-          recordDate: Between(params.periodStart, params.periodEnd),
-          deletedAt: IsNull(),
+          recordDate: {
+            [Op.between]: [params.periodStart, params.periodEnd],
+          },
         },
+        include: [{
+          model: Student,
+          where: { schoolId: params.schoolId },
+          required: true,
+        }],
       });
 
       const totalRecords = Math.max(287, medicationRecords.length);
@@ -417,17 +426,22 @@ export class ComplianceReportGeneratorService {
     try {
       this.logger.log(`Generating health screening report for school ${params.schoolId}`);
 
-      const students = await this.studentRepository.count({
-        where: { schoolId: params.schoolId, isActive: true, deletedAt: IsNull() },
+      const students = await this.studentModel.count({
+        where: { schoolId: params.schoolId, isActive: true },
       });
 
-      const screeningRecords = await this.healthRecordRepository.find({
+      const screeningRecords = await this.healthRecordModel.findAll({
         where: {
-          student: { schoolId: params.schoolId },
           recordType: 'SCREENING',
-          recordDate: Between(params.periodStart, params.periodEnd),
-          deletedAt: IsNull(),
+          recordDate: {
+            [Op.between]: [params.periodStart, params.periodEnd],
+          },
         },
+        include: [{
+          model: Student,
+          where: { schoolId: params.schoolId },
+          required: true,
+        }],
       });
 
       const totalStudents = students;
@@ -494,7 +508,7 @@ export class ComplianceReportGeneratorService {
         return cached;
       }
 
-      const dbReport = await this.reportRepository.findOne({
+      const dbReport = await this.analyticsReportModel.findOne({
         where: { id: reportId },
       });
 
@@ -524,27 +538,31 @@ export class ComplianceReportGeneratorService {
     status?: ReportStatus;
   }): Promise<ComplianceReport[]> {
     try {
-      const queryBuilder = this.reportRepository.createQueryBuilder('report');
+      const where: any = {};
 
       if (filters?.reportType) {
-        queryBuilder.andWhere('report.reportType = :reportType', { reportType: filters.reportType });
+        where.reportType = filters.reportType;
       }
       if (filters?.schoolId) {
-        queryBuilder.andWhere('report.schoolId = :schoolId', { schoolId: filters.schoolId });
+        where.schoolId = filters.schoolId;
       }
-      if (filters?.startDate) {
-        queryBuilder.andWhere('report.generatedDate >= :startDate', { startDate: filters.startDate });
-      }
-      if (filters?.endDate) {
-        queryBuilder.andWhere('report.generatedDate <= :endDate', { endDate: filters.endDate });
+      if (filters?.startDate || filters?.endDate) {
+        where.generatedDate = {};
+        if (filters.startDate) {
+          where.generatedDate[Op.gte] = filters.startDate;
+        }
+        if (filters.endDate) {
+          where.generatedDate[Op.lte] = filters.endDate;
+        }
       }
       if (filters?.status) {
-        queryBuilder.andWhere('report.status = :status', { status: filters.status });
+        where.status = filters.status;
       }
 
-      const dbReports = await queryBuilder
-        .orderBy('report.generatedDate', 'DESC')
-        .getMany();
+      const dbReports = await this.analyticsReportModel.findAll({
+        where,
+        order: [['generatedDate', 'DESC']],
+      });
 
       return dbReports.map(r => this.mapDbReportToCompliance(r));
     } catch (error) {
@@ -922,12 +940,15 @@ export class ComplianceReportGeneratorService {
    */
   private async saveReportToDatabase(report: ComplianceReport): Promise<AnalyticsReport> {
     try {
-      const dbReport = this.reportRepository.create({
+      const dbReport = await this.analyticsReportModel.create({
         id: report.id,
-        reportType: report.reportType,
+        reportType: report.reportType as any,
         title: report.title,
         description: report.description,
-        summary: report.summary,
+        summary: {
+          ...report.summary,
+          status: report.summary.status as any,
+        },
         sections: report.sections,
         findings: report.findings,
         recommendations: report.recommendations,
@@ -935,12 +956,12 @@ export class ComplianceReportGeneratorService {
         periodStart: report.periodStart,
         periodEnd: report.periodEnd,
         generatedDate: report.generatedDate,
-        status: report.status,
+        status: report.status as any,
         format: report.format,
         generatedBy: report.generatedBy,
       });
 
-      return await this.reportRepository.save(dbReport);
+      return dbReport;
     } catch (error) {
       this.logger.error('Error saving report to database', error.stack);
       throw error;
@@ -953,18 +974,21 @@ export class ComplianceReportGeneratorService {
   private mapDbReportToCompliance(dbReport: AnalyticsReport): ComplianceReport {
     return {
       id: dbReport.id,
-      reportType: dbReport.reportType as ReportType,
+      reportType: dbReport.reportType as any as ReportType,
       title: dbReport.title,
       description: dbReport.description || '',
       periodStart: dbReport.periodStart,
       periodEnd: dbReport.periodEnd,
       generatedDate: dbReport.generatedDate,
       schoolId: dbReport.schoolId || '',
-      summary: dbReport.summary,
+      summary: {
+        ...dbReport.summary,
+        status: dbReport.summary.status as any as ComplianceStatus,
+      },
       sections: dbReport.sections,
       findings: dbReport.findings,
       recommendations: dbReport.recommendations,
-      status: dbReport.status as ReportStatus,
+      status: dbReport.status as any as ReportStatus,
       format: dbReport.format,
       generatedBy: dbReport.generatedBy || 'system',
       createdAt: dbReport.createdAt,

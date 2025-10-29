@@ -13,29 +13,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { ClinicVisit } from './clinic-visit.model';
 import { TreatmentPlan } from './treatment-plan.model';
-
-export enum PrescriptionStatus {
-  /** Prescription written but not yet sent to pharmacy */
-  PENDING = 'pending',
-
-  /** Prescription sent to pharmacy */
-  SENT = 'sent',
-
-  /** Prescription filled at pharmacy */
-  FILLED = 'filled',
-
-  /** Prescription partially filled */
-  PARTIALLY_FILLED = 'partially_filled',
-
-  /** Prescription picked up by patient */
-  PICKED_UP = 'picked_up',
-
-  /** Prescription cancelled before filling */
-  CANCELLED = 'cancelled',
-
-  /** Prescription expired */
-  EXPIRED = 'expired',
-}
+import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 
 export interface PrescriptionAttributes {
   id: string;

@@ -11,11 +11,11 @@
  * @module EmergencyContactModule
  */
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 
-// Entities
-import { EmergencyContact } from '../contact/entities/emergency-contact.entity';
-import { Student } from '../student/entities/student.entity';
+// Models
+import { EmergencyContact } from '../database/models/emergency-contact.model';
+import { Student } from '../database/models/student.model';
 
 // Services
 import { EmergencyContactService } from './emergency-contact.service';
@@ -25,7 +25,7 @@ import { EmergencyContactController } from './emergency-contact.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       EmergencyContact,
       Student, // Required for student validation
     ]),

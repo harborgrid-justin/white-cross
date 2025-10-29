@@ -101,7 +101,7 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   isActive: boolean;
 
   @Column(DataType.DATE)
-  deletedAt?: Date;
+  declare deletedAt?: Date;
 
   @Column(DataType.UUID)
   deletedBy?: string;
@@ -111,5 +111,4 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column(DataType.DATE)
   declare updatedAt: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\medication.model.ts
+}

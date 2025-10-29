@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AuditLog } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, literal } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
 import { IPHIAccessLog, IPaginatedResult } from '../interfaces';
 
 /**
@@ -16,8 +16,8 @@ export class PHIAccessService {
   private readonly logger = new Logger(PHIAccessService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -29,7 +29,7 @@ export class PHIAccessService {
    */
   async logPHIAccess(entry: IPHIAccessLog): Promise<void> {
     try {
-      await this.auditLogRepository.save({
+      await this.auditLogModel.create({
         userId: entry.userId || null,
         action: entry.action as any,
         entityType: entry.entityType,
@@ -45,7 +45,7 @@ export class PHIAccessService {
         },
         ipAddress: entry.ipAddress || null,
         userAgent: entry.userAgent || null,
-      });
+      } as any);
 
       this.logger.log(
         `PHI Access: ${entry.accessType} ${entry.dataCategory} for student ${entry.studentId} by user ${entry.userId || 'SYSTEM'}`,
@@ -76,39 +76,42 @@ export class PHIAccessService {
       const { userId, studentId, accessType, dataCategory, startDate, endDate, page = 1, limit = 50 } = filters;
       const skip = (page - 1) * limit;
 
-      const queryBuilder = this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .where("audit_log.changes->>'isPHIAccess' = :isPHIAccess", { isPHIAccess: 'true' });
+      const whereClause: any = {
+        [Op.and]: [
+          literal(`changes->>'isPHIAccess' = 'true'`)
+        ]
+      };
 
       if (userId) {
-        queryBuilder.andWhere('audit_log.userId = :userId', { userId });
+        whereClause.userId = userId;
       }
 
       if (studentId) {
-        queryBuilder.andWhere("audit_log.changes->>'studentId' = :studentId", { studentId });
+        whereClause[Op.and].push(literal(`changes->>'studentId' = '${studentId}'`));
       }
 
       if (accessType) {
-        queryBuilder.andWhere("audit_log.changes->>'accessType' = :accessType", { accessType });
+        whereClause[Op.and].push(literal(`changes->>'accessType' = '${accessType}'`));
       }
 
       if (dataCategory) {
-        queryBuilder.andWhere("audit_log.changes->>'dataCategory' = :dataCategory", { dataCategory });
+        whereClause[Op.and].push(literal(`changes->>'dataCategory' = '${dataCategory}'`));
       }
 
       if (startDate) {
-        queryBuilder.andWhere('audit_log.createdAt >= :startDate', { startDate });
+        whereClause.createdAt = { [Op.gte]: startDate };
       }
 
       if (endDate) {
-        queryBuilder.andWhere('audit_log.createdAt <= :endDate', { endDate });
+        whereClause.createdAt = { ...whereClause.createdAt, [Op.lte]: endDate };
       }
 
-      const [data, total] = await queryBuilder
-        .orderBy('audit_log.createdAt', 'DESC')
-        .skip(skip)
-        .take(limit)
-        .getManyAndCount();
+      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+        offset: skip,
+        limit,
+      });
 
       return {
         data,

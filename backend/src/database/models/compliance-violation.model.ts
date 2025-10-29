@@ -158,5 +158,4 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\compliance-violation.model.ts
+}

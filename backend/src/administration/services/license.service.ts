@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import { License } from '../entities/license.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';
@@ -13,27 +12,25 @@ export class LicenseService {
   private readonly logger = new Logger(LicenseService.name);
 
   constructor(
-    @InjectRepository(License)
-    private licenseRepository: Repository<License>,
-    @InjectRepository(District)
-    private districtRepository: Repository<District>,
+    @InjectModel(License)
+    private licenseModel: typeof License,
+    @InjectModel(District)
+    private districtModel: typeof District,
     private auditService: AuditService,
   ) {}
 
   async createLicense(data: CreateLicenseDto): Promise<License> {
     try {
       if (data.districtId) {
-        const district = await this.districtRepository.findOne({ 
-          where: { id: data.districtId } 
-        });
+        const district = await this.districtModel.findByPk(data.districtId);
         if (!district || !district.isActive) {
           throw new BadRequestException('District not found or inactive');
         }
       }
 
       const normalizedKey = data.licenseKey.toUpperCase().trim();
-      const existing = await this.licenseRepository.findOne({ 
-        where: { licenseKey: normalizedKey } 
+      const existing = await this.licenseModel.findOne({
+        where: { licenseKey: normalizedKey }
       });
 
       if (existing) {
@@ -42,26 +39,24 @@ export class LicenseService {
 
       this.validateLicenseType(data);
 
-      const license = this.licenseRepository.create({
+      const license = await this.licenseModel.create({
         ...data,
         licenseKey: normalizedKey,
         status: LicenseStatus.ACTIVE,
         issuedAt: new Date(),
         activatedAt: new Date(),
-      });
-
-      const saved = await this.licenseRepository.save(license);
+      } as any);
 
       await this.auditService.createAuditLog(
         AuditAction.CREATE,
         'License',
-        saved.id,
+        license.id,
         undefined,
-        { licenseKey: saved.licenseKey, type: saved.type },
+        { licenseKey: license.licenseKey, type: license.type },
       );
 
       this.logger.log('License created');
-      return saved;
+      return license;
     } catch (error) {
       this.logger.error('Error creating license:', error);
       throw error;
@@ -92,12 +87,12 @@ export class LicenseService {
         whereClause.status = status;
       }
 
-      const [licenses, total] = await this.licenseRepository.findAndCount({
+      const { rows: licenses, count: total } = await this.licenseModel.findAndCountAll({
         where: whereClause,
-        skip: offset,
-        take: limit,
-        relations: ['district'],
-        order: { createdAt: 'DESC' },
+        offset,
+        limit,
+        include: ['district'],
+        order: [['createdAt', 'DESC']],
       });
 
       const pagination: PaginationResult = {
@@ -116,9 +111,8 @@ export class LicenseService {
 
   async getLicenseById(id: string): Promise<License> {
     try {
-      const license = await this.licenseRepository.findOne({
-        where: { id },
-        relations: ['district'],
+      const license = await this.licenseModel.findByPk(id, {
+        include: ['district'],
       });
 
       if (!license) {
@@ -136,7 +130,7 @@ export class LicenseService {
     try {
       const license = await this.getLicenseById(id);
       Object.assign(license, data);
-      const updated = await this.licenseRepository.save(license);
+      await license.save();
 
       await this.auditService.createAuditLog(
         AuditAction.UPDATE,
@@ -147,7 +141,7 @@ export class LicenseService {
       );
 
       this.logger.log('License updated');
-      return updated;
+      return license;
     } catch (error) {
       this.logger.error('Error updating license:', error);
       throw error;
@@ -159,7 +153,7 @@ export class LicenseService {
       const license = await this.getLicenseById(id);
       license.status = LicenseStatus.SUSPENDED;
       license.deactivatedAt = new Date();
-      const updated = await this.licenseRepository.save(license);
+      await license.save();
 
       await this.auditService.createAuditLog(
         AuditAction.UPDATE,
@@ -170,7 +164,7 @@ export class LicenseService {
       );
 
       this.logger.log('License deactivated');
-      return updated;
+      return license;
     } catch (error) {
       this.logger.error('Error deactivating license:', error);
       throw error;

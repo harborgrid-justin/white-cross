@@ -1,43 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { DataRetentionPolicy } from '../entities/data-retention-policy.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { DataRetentionPolicy, DataRetentionPolicyAttributes } from '../../database/models/data-retention-policy.model';
 
 @Injectable()
 export class DataRetentionRepository {
   constructor(
-    @InjectRepository(DataRetentionPolicy)
-    private readonly repository: Repository<DataRetentionPolicy>,
+    @InjectModel(DataRetentionPolicy)
+    private readonly dataRetentionModel: typeof DataRetentionPolicy,
   ) {}
 
   async findAll(filters: any = {}) {
-    const queryBuilder = this.repository.createQueryBuilder('policy');
+    const whereClause: any = {};
 
     if (filters.category) {
-      queryBuilder.andWhere('policy.category = :category', { category: filters.category });
+      whereClause.category = filters.category;
     }
     if (filters.status) {
-      queryBuilder.andWhere('policy.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
 
-    return queryBuilder.orderBy('policy.createdAt', 'DESC').getMany();
+    return this.dataRetentionModel.findAll({
+      where: whereClause,
+      order: [['createdAt', 'DESC']],
+    });
   }
 
   async findById(id: string) {
-    return this.repository.findOne({ where: { id } });
+    return this.dataRetentionModel.findByPk(id);
   }
 
-  async create(data: Partial<DataRetentionPolicy>) {
-    const policy = this.repository.create(data);
-    return this.repository.save(policy);
+  async create(data: Omit<DataRetentionPolicyAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+    return this.dataRetentionModel.create(data);
   }
 
-  async update(id: string, data: Partial<DataRetentionPolicy>) {
-    await this.repository.update(id, data);
-    return this.findById(id);
+  async update(id: string, data: Partial<DataRetentionPolicyAttributes>) {
+    const [affectedCount] = await this.dataRetentionModel.update(data, { where: { id } });
+    if (affectedCount > 0) {
+      return this.findById(id);
+    }
+    return null;
   }
 
   async delete(id: string) {
-    return this.repository.delete(id);
+    return this.dataRetentionModel.destroy({ where: { id } });
   }
 }

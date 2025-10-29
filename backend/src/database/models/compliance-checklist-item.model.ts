@@ -129,5 +129,4 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\compliance-checklist-item.model.ts
+}

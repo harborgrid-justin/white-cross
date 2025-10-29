@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { AuditLog } from '../entities/audit-log.entity';
 import { AuditAction } from '../enums/administration.enums';
 import { AuditQueryDto } from '../dto/audit.dto';
@@ -16,8 +16,8 @@ export class AuditService {
   private readonly logger = new Logger(AuditService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -33,7 +33,7 @@ export class AuditService {
     userAgent?: string,
   ): Promise<AuditLog> {
     try {
-      const audit = this.auditLogRepository.create({
+      const audit = await this.auditLogModel.create({
         action,
         entityType,
         entityId,
@@ -41,13 +41,12 @@ export class AuditService {
         changes,
         ipAddress,
         userAgent,
-      });
+      } as any);
 
-      const savedAudit = await this.auditLogRepository.save(audit);
       this.logger.log(
         `Audit log created: ${action} on ${entityType} ${entityId || ''}`,
       );
-      return savedAudit;
+      return audit;
     } catch (error) {
       this.logger.error('Error creating audit log:', error);
       throw error;
@@ -80,17 +79,16 @@ export class AuditService {
       }
 
       if (filters.startDate || filters.endDate) {
-        whereClause.createdAt = Between(
-          filters.startDate || new Date(0),
-          filters.endDate || new Date(),
-        );
+        whereClause.createdAt = {
+          [Op.between]: [filters.startDate || new Date(0), filters.endDate || new Date()]
+        };
       }
 
-      const [logs, total] = await this.auditLogRepository.findAndCount({
+      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
         where: whereClause,
-        skip: offset,
-        take: limit,
-        order: { createdAt: 'DESC' },
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
       });
 
       const pagination: PaginationResult = {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, ILike } from 'typeorm';
-import { AuditLog } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, literal } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
 import { IPaginatedResult } from '../interfaces';
 import { AuditAction } from '../enums';
 
@@ -16,8 +16,8 @@ export class AuditQueryService {
   private readonly logger = new Logger(AuditQueryService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -54,17 +54,16 @@ export class AuditQueryService {
       }
 
       if (startDate || endDate) {
-        where.createdAt = Between(
-          startDate || new Date(0),
-          endDate || new Date(),
-        );
+        where.createdAt = {
+          [Op.between]: [startDate || new Date(0), endDate || new Date()]
+        };
       }
 
-      const [data, total] = await this.auditLogRepository.findAndCount({
+      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
         where,
-        order: { createdAt: 'DESC' },
-        skip,
-        take: limit,
+        order: [['createdAt', 'DESC']],
+        offset: skip,
+        limit,
       });
 
       return {
@@ -100,14 +99,14 @@ export class AuditQueryService {
     try {
       const skip = (page - 1) * limit;
 
-      const [data, total] = await this.auditLogRepository.findAndCount({
+      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
         where: {
           entityType,
           entityId,
         },
-        order: { createdAt: 'DESC' },
-        skip,
-        take: limit,
+        order: [['createdAt', 'DESC']],
+        offset: skip,
+        limit,
       });
 
       return {
@@ -141,11 +140,11 @@ export class AuditQueryService {
     try {
       const skip = (page - 1) * limit;
 
-      const [data, total] = await this.auditLogRepository.findAndCount({
+      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
         where: { userId },
-        order: { createdAt: 'DESC' },
-        skip,
-        take: limit,
+        order: [['createdAt', 'DESC']],
+        offset: skip,
+        limit,
       });
 
       return {
@@ -179,17 +178,20 @@ export class AuditQueryService {
       const skip = (page - 1) * limit;
 
       // Search in entityType and entityId using ILIKE
-      const queryBuilder = this.auditLogRepository
-        .createQueryBuilder('audit_log')
-        .where('audit_log.entityType ILIKE :keyword', { keyword: `%${keyword}%` })
-        .orWhere('audit_log.entityId ILIKE :keyword', { keyword: `%${keyword}%` })
-        .orWhere("CAST(audit_log.changes AS TEXT) ILIKE :keyword", { keyword: `%${keyword}%` });
+      const whereClause = {
+        [Op.or]: [
+          { entityType: { [Op.iLike]: `%${keyword}%` } },
+          { entityId: { [Op.iLike]: `%${keyword}%` } },
+          literal(`CAST(changes AS TEXT) ILIKE '${keyword.replace(/'/g, "''")}'`)
+        ]
+      };
 
-      const [data, total] = await queryBuilder
-        .orderBy('audit_log.createdAt', 'DESC')
-        .skip(skip)
-        .take(limit)
-        .getManyAndCount();
+      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+        offset: skip,
+        limit,
+      });
 
       return {
         data,

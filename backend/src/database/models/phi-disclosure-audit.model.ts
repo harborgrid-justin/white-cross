@@ -76,5 +76,4 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
 
   @Column(DataType.DATE)
   declare createdAt?: Date;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\phi-disclosure-audit.model.ts
+}

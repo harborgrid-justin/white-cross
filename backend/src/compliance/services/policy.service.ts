@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PolicyRepository } from '../repositories/policy.repository';
 import { CreatePolicyDto, UpdatePolicyDto, QueryPolicyDto } from '../dto/policy.dto';
-import { PolicyStatus } from '../entities/policy-document.entity';
+import { PolicyStatus } from '../../database/models/policy-document.model';
 
 @Injectable()
 export class PolicyService {

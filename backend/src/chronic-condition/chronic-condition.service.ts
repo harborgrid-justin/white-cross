@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual, In } from 'typeorm';
-import { ChronicCondition } from './entities/chronic-condition.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { ChronicCondition } from '../database/models/chronic-condition.model';
 import {
   CreateChronicConditionDto,
   UpdateChronicConditionDto,
   ChronicConditionFiltersDto,
   PaginationDto,
 } from './dto';
-import { ConditionStatus, AccommodationType } from './enums';
+import { ConditionStatus, AccommodationType } from '../database/models/chronic-condition.model';
 import {
   ChronicConditionStatistics,
   ChronicConditionSearchResult,
@@ -30,8 +30,8 @@ export class ChronicConditionService {
   private readonly logger = new Logger(ChronicConditionService.name);
 
   constructor(
-    @InjectRepository(ChronicCondition)
-    private readonly chronicConditionRepository: Repository<ChronicCondition>,
+    @InjectModel(ChronicCondition)
+    private readonly chronicConditionModel: typeof ChronicCondition,
   ) {}
 
   // ==================== CRUD Operations ====================
@@ -57,11 +57,10 @@ export class ChronicConditionService {
         restrictions: dto.restrictions || [],
         triggers: dto.triggers || [],
         accommodations: dto.accommodations || [],
+        isActive: true, // Default to active
       };
 
-      const condition = this.chronicConditionRepository.create(conditionData);
-      const savedCondition =
-        await this.chronicConditionRepository.save(condition);
+      const savedCondition = await this.chronicConditionModel.create(conditionData as any);
 
       // PHI Audit Log
       this.logger.log({
@@ -90,7 +89,7 @@ export class ChronicConditionService {
    * Retrieves a single chronic condition by ID.
    */
   async getChronicConditionById(id: string): Promise<ChronicCondition> {
-    const condition = await this.chronicConditionRepository.findOne({
+    const condition = await this.chronicConditionModel.findOne({
       where: { id },
     });
 
@@ -123,12 +122,12 @@ export class ChronicConditionService {
       whereClause.isActive = true;
     }
 
-    const conditions = await this.chronicConditionRepository.find({
+    const conditions = await this.chronicConditionModel.findAll({
       where: whereClause,
-      order: {
-        status: 'ASC',
-        diagnosedDate: 'DESC',
-      },
+      order: [
+        ['status', 'ASC'],
+        ['diagnosedDate', 'DESC'],
+      ],
     });
 
     // PHI Audit Log
@@ -175,9 +174,8 @@ export class ChronicConditionService {
       updateData.nextReviewDate = new Date(dto.nextReviewDate);
     }
 
-    Object.assign(condition, updateData);
-    const updatedCondition =
-      await this.chronicConditionRepository.save(condition);
+    await condition.update(updateData);
+    const updatedCondition = await condition.reload();
 
     // PHI Audit Log
     this.logger.log({
@@ -209,9 +207,10 @@ export class ChronicConditionService {
   async deactivateChronicCondition(id: string): Promise<{ success: boolean }> {
     const condition = await this.getChronicConditionById(id);
 
-    condition.status = ConditionStatus.RESOLVED;
-    condition.isActive = false;
-    await this.chronicConditionRepository.save(condition);
+    await condition.update({
+      status: ConditionStatus.RESOLVED,
+      isActive: false,
+    });
 
     // PHI Audit Log
     this.logger.log({
@@ -242,7 +241,7 @@ export class ChronicConditionService {
       studentId: condition.studentId,
     };
 
-    await this.chronicConditionRepository.remove(condition);
+    await condition.destroy();
 
     // PHI Audit Log
     this.logger.warn({
@@ -270,69 +269,59 @@ export class ChronicConditionService {
     pagination: PaginationDto,
   ): Promise<ChronicConditionSearchResult> {
     const { page = 1, limit = 20 } = pagination;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    const queryBuilder = this.chronicConditionRepository.createQueryBuilder('cc');
+    const where: any = {};
 
     // Apply filters
     if (filters.studentId) {
-      queryBuilder.andWhere('cc.studentId = :studentId', {
-        studentId: filters.studentId,
-      });
+      where.studentId = filters.studentId;
     }
 
     if (filters.status) {
-      queryBuilder.andWhere('cc.status = :status', { status: filters.status });
+      where.status = filters.status;
     }
 
     if (filters.requiresIEP !== undefined) {
-      queryBuilder.andWhere('cc.requiresIEP = :requiresIEP', {
-        requiresIEP: filters.requiresIEP,
-      });
+      where.requiresIEP = filters.requiresIEP;
     }
 
     if (filters.requires504 !== undefined) {
-      queryBuilder.andWhere('cc.requires504 = :requires504', {
-        requires504: filters.requires504,
-      });
+      where.requires504 = filters.requires504;
     }
 
     if (filters.isActive !== undefined) {
-      queryBuilder.andWhere('cc.isActive = :isActive', {
-        isActive: filters.isActive,
-      });
+      where.isActive = filters.isActive;
     }
 
     if (filters.reviewDueSoon) {
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-      queryBuilder.andWhere(
-        'cc.nextReviewDate BETWEEN :now AND :futureDate',
-        {
-          now: new Date(),
-          futureDate: thirtyDaysFromNow,
-        },
-      );
+      where.nextReviewDate = {
+        [Op.between]: [new Date(), thirtyDaysFromNow],
+      };
     }
 
     if (filters.searchTerm) {
-      queryBuilder.andWhere(
-        '(cc.condition ILIKE :searchTerm OR cc.icdCode ILIKE :searchTerm OR cc.notes ILIKE :searchTerm OR cc.carePlan ILIKE :searchTerm)',
-        { searchTerm: `%${filters.searchTerm}%` },
-      );
+      where[Op.or] = [
+        { condition: { [Op.iLike]: `%${filters.searchTerm}%` } },
+        { icdCode: { [Op.iLike]: `%${filters.searchTerm}%` } },
+        { notes: { [Op.iLike]: `%${filters.searchTerm}%` } },
+        { carePlan: { [Op.iLike]: `%${filters.searchTerm}%` } },
+      ];
     }
 
-    // Get total count
-    const total = await queryBuilder.getCount();
-
-    // Apply pagination and ordering
-    const conditions = await queryBuilder
-      .orderBy('cc.status', 'ASC')
-      .addOrderBy('cc.nextReviewDate', 'ASC')
-      .addOrderBy('cc.diagnosedDate', 'DESC')
-      .skip(skip)
-      .take(limit)
-      .getMany();
+    // Get total count and results
+    const { count: total, rows: conditions } = await this.chronicConditionModel.findAndCountAll({
+      where,
+      order: [
+        ['status', 'ASC'],
+        ['nextReviewDate', 'ASC'],
+        ['diagnosedDate', 'DESC'],
+      ],
+      offset,
+      limit,
+    });
 
     // PHI Audit Log
     this.logger.log({
@@ -361,14 +350,14 @@ export class ChronicConditionService {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + daysAhead);
 
-    const conditions = await this.chronicConditionRepository.find({
+    const conditions = await this.chronicConditionModel.findAll({
       where: {
         isActive: true,
-        nextReviewDate: Between(new Date(), futureDate),
+        nextReviewDate: {
+          [Op.between]: [new Date(), futureDate],
+        },
       },
-      order: {
-        nextReviewDate: 'ASC',
-      },
+      order: [['nextReviewDate', 'ASC']],
     });
 
     this.logger.log(
@@ -383,29 +372,23 @@ export class ChronicConditionService {
   async getConditionsRequiringAccommodations(
     type: AccommodationType = AccommodationType.BOTH,
   ): Promise<ChronicCondition[]> {
-    const queryBuilder =
-      this.chronicConditionRepository.createQueryBuilder('cc');
-
-    queryBuilder.where('cc.isActive = :isActive', { isActive: true });
+    const where: any = { isActive: true };
 
     if (type === AccommodationType.IEP) {
-      queryBuilder.andWhere('cc.requiresIEP = :requiresIEP', {
-        requiresIEP: true,
-      });
+      where.requiresIEP = true;
     } else if (type === AccommodationType.PLAN_504) {
-      queryBuilder.andWhere('cc.requires504 = :requires504', {
-        requires504: true,
-      });
+      where.requires504 = true;
     } else {
-      queryBuilder.andWhere(
-        '(cc.requiresIEP = :requiresIEP OR cc.requires504 = :requires504)',
-        { requiresIEP: true, requires504: true },
-      );
+      where[Op.or] = [
+        { requiresIEP: true },
+        { requires504: true },
+      ];
     }
 
-    const conditions = await queryBuilder
-      .orderBy('cc.condition', 'ASC')
-      .getMany();
+    const conditions = await this.chronicConditionModel.findAll({
+      where,
+      order: [['condition', 'ASC']],
+    });
 
     this.logger.log(
       `Found ${conditions.length} conditions requiring ${type} accommodations`,
@@ -428,20 +411,20 @@ export class ChronicConditionService {
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
     // Get total count
-    const total = await this.chronicConditionRepository.count({
+    const total = await this.chronicConditionModel.count({
       where: baseWhere,
     });
 
-    // Get counts by status
-    const byStatusRaw = await this.chronicConditionRepository
-      .createQueryBuilder('cc')
-      .select('cc.status', 'status')
-      .addSelect('COUNT(*)', 'count')
-      .where(baseWhere)
-      .groupBy('cc.status')
-      .getRawMany();
+    // Get counts by status using raw query
+    const byStatusRaw = await this.chronicConditionModel.sequelize!.query(
+      `SELECT status, COUNT(*) as count FROM chronic_conditions WHERE is_active = true ${filters?.studentId ? 'AND student_id = $studentId' : ''} GROUP BY status`,
+      {
+        type: 'SELECT',
+        bind: filters?.studentId ? { studentId: filters.studentId } : {},
+      },
+    );
 
-    const byStatus = byStatusRaw.reduce(
+    const byStatus = (byStatusRaw[0] as any[]).reduce(
       (acc, item) => {
         acc[item.status] = parseInt(item.count, 10);
         return acc;
@@ -450,22 +433,24 @@ export class ChronicConditionService {
     );
 
     // Get other counts
-    const requiresIEP = await this.chronicConditionRepository.count({
+    const requiresIEP = await this.chronicConditionModel.count({
       where: { ...baseWhere, requiresIEP: true },
     });
 
-    const requires504 = await this.chronicConditionRepository.count({
+    const requires504 = await this.chronicConditionModel.count({
       where: { ...baseWhere, requires504: true },
     });
 
-    const reviewDueSoon = await this.chronicConditionRepository.count({
+    const reviewDueSoon = await this.chronicConditionModel.count({
       where: {
         ...baseWhere,
-        nextReviewDate: Between(new Date(), thirtyDaysFromNow),
+        nextReviewDate: {
+          [Op.between]: [new Date(), thirtyDaysFromNow],
+        },
       },
     });
 
-    const activeConditions = await this.chronicConditionRepository.count({
+    const activeConditions = await this.chronicConditionModel.count({
       where: { ...baseWhere, status: ConditionStatus.ACTIVE },
     });
 
@@ -501,25 +486,23 @@ export class ChronicConditionService {
     conditionsData: CreateChronicConditionDto[],
   ): Promise<ChronicCondition[]> {
     try {
-      const conditions = conditionsData.map((dto) => {
-        return this.chronicConditionRepository.create({
-          ...dto,
-          diagnosedDate: new Date(dto.diagnosedDate),
-          lastReviewDate: dto.lastReviewDate
-            ? new Date(dto.lastReviewDate)
-            : null,
-          nextReviewDate: dto.nextReviewDate
-            ? new Date(dto.nextReviewDate)
-            : null,
-          medications: dto.medications || [],
-          restrictions: dto.restrictions || [],
-          triggers: dto.triggers || [],
-          accommodations: dto.accommodations || [],
-        });
-      });
+      const conditions = conditionsData.map((dto) => ({
+        ...dto,
+        diagnosedDate: new Date(dto.diagnosedDate),
+        lastReviewDate: dto.lastReviewDate
+          ? new Date(dto.lastReviewDate)
+          : null,
+        nextReviewDate: dto.nextReviewDate
+          ? new Date(dto.nextReviewDate)
+          : null,
+        medications: dto.medications || [],
+        restrictions: dto.restrictions || [],
+        triggers: dto.triggers || [],
+        accommodations: dto.accommodations || [],
+        isActive: true, // Default to active
+      }));
 
-      const savedConditions =
-        await this.chronicConditionRepository.save(conditions);
+      const savedConditions = await this.chronicConditionModel.bulkCreate(conditions as any);
 
       // PHI Audit Log
       this.logger.log({

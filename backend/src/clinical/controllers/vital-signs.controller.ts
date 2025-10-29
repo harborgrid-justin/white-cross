@@ -47,21 +47,7 @@ export class VitalSignsController {
     return this.vitalsService.findAll(filters);
   }
 
-  @Get('visit/:visitId')
-  @ApiOperation({ 
-    summary: 'Get vitals for a visit',
-    description: 'Retrieves all vital signs recorded during a specific clinical visit. Returns comprehensive vital signs data including timestamps and recording staff.'
-  })
-  @ApiParam({ name: 'visitId', description: 'Visit UUID', format: 'uuid' })
-  @ApiResponse({
-    status: 200,
-    description: 'Visit vital signs retrieved successfully',
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Visit not found' })
-  async findByVisit(@Param('visitId') visitId: string) {
-    return this.vitalsService.findByVisit(visitId);
-  }
+
 
   @Get('student/:studentId')
   @ApiOperation({ 

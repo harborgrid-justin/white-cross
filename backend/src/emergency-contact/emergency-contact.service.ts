@@ -9,10 +9,10 @@
  * - Statistics and reporting
  */
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
-import { EmergencyContact } from '../contact/entities/emergency-contact.entity';
-import { Student } from '../student/entities/student.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { EmergencyContact } from '../database/models/emergency-contact.model';
+import { Student } from '../database/models/student.model';
 import { ContactPriority, VerificationStatus } from '../contact/enums';
 import {
   CreateEmergencyContactDto,
@@ -26,10 +26,10 @@ export class EmergencyContactService {
   private readonly logger = new Logger(EmergencyContactService.name);
 
   constructor(
-    @InjectRepository(EmergencyContact)
-    private readonly emergencyContactRepository: Repository<EmergencyContact>,
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    @InjectModel(EmergencyContact)
+    private readonly emergencyContactModel: typeof EmergencyContact,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
   ) {}
 
   /**
@@ -37,15 +37,15 @@ export class EmergencyContactService {
    */
   async getStudentEmergencyContacts(studentId: string): Promise<EmergencyContact[]> {
     try {
-      const contacts = await this.emergencyContactRepository.find({
+      const contacts = await this.emergencyContactModel.findAll({
         where: {
           studentId,
           isActive: true,
         },
-        order: {
-          priority: 'ASC',
-          firstName: 'ASC',
-        },
+        order: [
+          ['priority', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
       this.logger.log(`Retrieved ${contacts.length} emergency contacts for student ${studentId}`);
@@ -60,14 +60,13 @@ export class EmergencyContactService {
    * Create new emergency contact
    */
   async createEmergencyContact(data: CreateEmergencyContactDto): Promise<EmergencyContact> {
-    const queryRunner = this.emergencyContactRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.emergencyContactModel.sequelize.transaction();
 
     try {
       // Verify student exists
-      const student = await this.studentRepository.findOne({
+      const student = await this.studentModel.findOne({
         where: { id: data.studentId },
+        transaction,
       });
 
       if (!student) {
@@ -121,12 +120,13 @@ export class EmergencyContactService {
 
       // Check if creating a PRIMARY contact and enforce business rules
       if (data.priority === ContactPriority.PRIMARY) {
-        const existingPrimaryContacts = await this.emergencyContactRepository.count({
+        const existingPrimaryContacts = await this.emergencyContactModel.count({
           where: {
             studentId: data.studentId,
             priority: ContactPriority.PRIMARY,
             isActive: true,
           },
+          transaction,
         });
 
         if (existingPrimaryContacts >= 2) {
@@ -144,22 +144,19 @@ export class EmergencyContactService {
           : JSON.stringify(['sms', 'email']), // Default channels
       };
 
-      const contact = this.emergencyContactRepository.create(contactData);
-      const savedContact = await queryRunner.manager.save(contact);
+      const savedContact = await this.emergencyContactModel.create(contactData, { transaction });
 
-      await queryRunner.commitTransaction();
+      await transaction.commit();
 
       this.logger.log(
-        `Emergency contact created: ${contact.firstName} ${contact.lastName} (${contact.priority}) for student ${student.firstName} ${student.lastName}`,
+        `Emergency contact created: ${savedContact.firstName} ${savedContact.lastName} (${savedContact.priority}) for student ${student.firstName} ${student.lastName}`,
       );
 
       return savedContact;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error(`Error creating emergency contact: ${error.message}`, error.stack);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -170,13 +167,12 @@ export class EmergencyContactService {
     id: string,
     data: UpdateEmergencyContactDto,
   ): Promise<EmergencyContact> {
-    const queryRunner = this.emergencyContactRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.emergencyContactModel.sequelize.transaction();
 
     try {
-      const existingContact = await this.emergencyContactRepository.findOne({
+      const existingContact = await this.emergencyContactModel.findOne({
         where: { id },
+        transaction,
       });
 
       if (!existingContact) {
@@ -223,13 +219,14 @@ export class EmergencyContactService {
       if (data.priority !== undefined && data.priority !== existingContact.priority) {
         if (data.priority === ContactPriority.PRIMARY) {
           // Check if student already has 2 PRIMARY contacts
-          const existingPrimaryContacts = await this.emergencyContactRepository.count({
+          const existingPrimaryContacts = await this.emergencyContactModel.count({
             where: {
               studentId: existingContact.studentId,
               priority: ContactPriority.PRIMARY,
               isActive: true,
-              id: Not(id),
+              id: { [Op.ne]: id },
             },
+            transaction,
           });
 
           if (existingPrimaryContacts >= 2) {
@@ -239,13 +236,14 @@ export class EmergencyContactService {
           }
         } else if (existingContact.priority === ContactPriority.PRIMARY) {
           // Downgrading from PRIMARY - ensure at least one PRIMARY contact remains
-          const otherPrimaryContacts = await this.emergencyContactRepository.count({
+          const otherPrimaryContacts = await this.emergencyContactModel.count({
             where: {
               studentId: existingContact.studentId,
               priority: ContactPriority.PRIMARY,
               isActive: true,
-              id: Not(id),
+              id: { [Op.ne]: id },
             },
+            transaction,
           });
 
           if (otherPrimaryContacts === 0) {
@@ -262,13 +260,14 @@ export class EmergencyContactService {
         existingContact.isActive &&
         existingContact.priority === ContactPriority.PRIMARY
       ) {
-        const otherActivePrimaryContacts = await this.emergencyContactRepository.count({
+        const otherActivePrimaryContacts = await this.emergencyContactModel.count({
           where: {
             studentId: existingContact.studentId,
             priority: ContactPriority.PRIMARY,
             isActive: true,
-            id: Not(id),
+            id: { [Op.ne]: id },
           },
+          transaction,
         });
 
         if (otherActivePrimaryContacts === 0) {
@@ -284,29 +283,19 @@ export class EmergencyContactService {
         updateData.notificationChannels = JSON.stringify(data.notificationChannels);
       }
 
-      await queryRunner.manager.update(EmergencyContact, id, updateData);
+      await existingContact.update(updateData, { transaction });
 
-      const updatedContact = await this.emergencyContactRepository.findOne({
-        where: { id },
-      });
-
-      if (!updatedContact) {
-        throw new NotFoundException('Emergency contact not found after update');
-      }
-
-      await queryRunner.commitTransaction();
+      await transaction.commit();
 
       this.logger.log(
-        `Emergency contact updated: ${updatedContact.firstName} ${updatedContact.lastName}`,
+        `Emergency contact updated: ${existingContact.firstName} ${existingContact.lastName}`,
       );
 
-      return updatedContact;
+      return existingContact;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error(`Error updating emergency contact: ${error.message}`, error.stack);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -314,13 +303,12 @@ export class EmergencyContactService {
    * Delete emergency contact (soft delete)
    */
   async deleteEmergencyContact(id: string): Promise<{ success: boolean }> {
-    const queryRunner = this.emergencyContactRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.emergencyContactModel.sequelize.transaction();
 
     try {
-      const contact = await this.emergencyContactRepository.findOne({
+      const contact = await this.emergencyContactModel.findOne({
         where: { id },
+        transaction,
       });
 
       if (!contact) {
@@ -329,13 +317,14 @@ export class EmergencyContactService {
 
       // Prevent deletion if this is the only active PRIMARY contact
       if (contact.isActive && contact.priority === ContactPriority.PRIMARY) {
-        const otherActivePrimaryContacts = await this.emergencyContactRepository.count({
+        const otherActivePrimaryContacts = await this.emergencyContactModel.count({
           where: {
             studentId: contact.studentId,
             priority: ContactPriority.PRIMARY,
             isActive: true,
-            id: Not(id),
+            id: { [Op.ne]: id },
           },
+          transaction,
         });
 
         if (otherActivePrimaryContacts === 0) {
@@ -345,19 +334,17 @@ export class EmergencyContactService {
         }
       }
 
-      await queryRunner.manager.update(EmergencyContact, id, { isActive: false });
+      await contact.update({ isActive: false }, { transaction });
 
-      await queryRunner.commitTransaction();
+      await transaction.commit();
 
       this.logger.log(`Emergency contact deleted: ${contact.firstName} ${contact.lastName}`);
 
       return { success: true };
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error(`Error deleting emergency contact: ${error.message}`, error.stack);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -449,7 +436,7 @@ export class EmergencyContactService {
     notificationData: NotificationDto,
   ): Promise<NotificationResultDto> {
     try {
-      const contact = await this.emergencyContactRepository.findOne({
+      const contact = await this.emergencyContactModel.findOne({
         where: { id: contactId },
       });
 
@@ -529,7 +516,7 @@ export class EmergencyContactService {
    */
   async verifyContact(contactId: string, verificationMethod: 'sms' | 'email' | 'voice') {
     try {
-      const contact = await this.emergencyContactRepository.findOne({
+      const contact = await this.emergencyContactModel.findOne({
         where: { id: contactId },
       });
 
@@ -568,7 +555,7 @@ export class EmergencyContactService {
       }
 
       // Update verification status to PENDING
-      await this.emergencyContactRepository.update(contactId, {
+      await contact.update({
         verificationStatus: VerificationStatus.PENDING,
       });
 
@@ -590,31 +577,30 @@ export class EmergencyContactService {
    */
   async getContactStatistics() {
     try {
-      const totalContacts = await this.emergencyContactRepository.count({
+      const totalContacts = await this.emergencyContactModel.count({
         where: { isActive: true },
       });
 
       // Get counts by priority
       const byPriority: Record<string, number> = {};
       for (const priority of Object.values(ContactPriority)) {
-        const count = await this.emergencyContactRepository.count({
+        const count = await this.emergencyContactModel.count({
           where: { isActive: true, priority },
         });
         byPriority[priority] = count;
       }
 
       // Count students without contacts
-      const allStudents = await this.studentRepository.count({
+      const allStudents = await this.studentModel.count({
         where: { isActive: true },
       });
 
-      const studentsWithContacts = await this.emergencyContactRepository
-        .createQueryBuilder('ec')
-        .select('COUNT(DISTINCT ec.studentId)', 'count')
-        .where('ec.isActive = :isActive', { isActive: true })
-        .getRawOne();
+      const [studentsWithContactsResult]: any = await this.emergencyContactModel.sequelize.query(
+        'SELECT COUNT(DISTINCT "studentId") as count FROM "EmergencyContacts" WHERE "isActive" = true',
+        { type: 'SELECT' }
+      );
 
-      const studentsWithoutContacts = allStudents - (parseInt(studentsWithContacts.count) || 0);
+      const studentsWithoutContacts = allStudents - (parseInt(studentsWithContactsResult.count) || 0);
 
       return {
         totalContacts,
@@ -632,7 +618,7 @@ export class EmergencyContactService {
    */
   async getEmergencyContactById(id: string): Promise<EmergencyContact> {
     try {
-      const contact = await this.emergencyContactRepository.findOne({
+      const contact = await this.emergencyContactModel.findOne({
         where: { id },
       });
 

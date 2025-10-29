@@ -70,9 +70,7 @@ export class PurchaseOrderService {
         }
         itemIds.add(item.inventoryItemId);
 
-        const inventoryItem = await this.inventoryItemRepository.findOne({
-          where: { id: item.inventoryItemId },
-        });
+        const inventoryItem = await this.inventoryItemModel.findByPk(item.inventoryItemId, { transaction });
 
         if (!inventoryItem) {
           throw new NotFoundException(`Inventory item not found: ${item.inventoryItemId}`);
@@ -96,7 +94,7 @@ export class PurchaseOrderService {
       }
 
       // Create purchase order
-      const purchaseOrder = this.purchaseOrderRepository.create({
+      const purchaseOrder = await this.purchaseOrderModel.create({
         orderNumber: data.orderNumber,
         vendorId: data.vendorId,
         orderDate: new Date(data.orderDate),
@@ -107,25 +105,29 @@ export class PurchaseOrderService {
         shipping: 0,
         total: subtotal,
         status: PurchaseOrderStatus.PENDING,
-      });
-
-      const savedOrder = await queryRunner.manager.save(purchaseOrder) as PurchaseOrder;
+      }, { transaction });
 
       // Create purchase order items
       for (const item of orderItems) {
-        const orderItem = this.purchaseOrderItemRepository.create({
+        await this.purchaseOrderItemModel.create({
           ...item,
-          purchaseOrderId: savedOrder.id,
-        });
-        await queryRunner.manager.save(orderItem);
+          purchaseOrderId: purchaseOrder.id,
+        }, { transaction });
       }
 
-      await queryRunner.commitTransaction();
+      await transaction.commit();
 
       // Reload with associations
-      const completeOrder = await this.purchaseOrderRepository.findOne({
-        where: { id: savedOrder.id },
-        relations: ['vendor', 'items', 'items.inventoryItem'],
+      const completeOrder = await this.purchaseOrderModel.findByPk(purchaseOrder.id, {
+        include: [
+          { model: Vendor, as: 'vendor' },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [{ model: InventoryItem, as: 'inventoryItem' }]
+          }
+        ],
+        transaction,
       });
 
       if (!completeOrder) {
@@ -138,11 +140,9 @@ export class PurchaseOrderService {
 
       return completeOrder;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error('Error creating purchase order:', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -161,10 +161,13 @@ export class PurchaseOrderService {
         where.vendorId = vendorId;
       }
 
-      const purchaseOrders = await this.purchaseOrderRepository.find({
+      const purchaseOrders = await this.purchaseOrderModel.findAll({
         where,
-        relations: ['vendor', 'items'],
-        order: { orderDate: 'DESC' },
+        include: [
+          { model: Vendor, as: 'vendor' },
+          { model: PurchaseOrderItem, as: 'items' }
+        ],
+        order: [['orderDate', 'DESC']],
       });
 
       return purchaseOrders;
@@ -179,9 +182,15 @@ export class PurchaseOrderService {
    */
   async getPurchaseOrderById(id: string): Promise<PurchaseOrder> {
     try {
-      const purchaseOrder = await this.purchaseOrderRepository.findOne({
-        where: { id },
-        relations: ['vendor', 'items', 'items.inventoryItem'],
+      const purchaseOrder = await this.purchaseOrderModel.findByPk(id, {
+        include: [
+          { model: Vendor, as: 'vendor' },
+          {
+            model: PurchaseOrderItem,
+            as: 'items',
+            include: [{ model: InventoryItem, as: 'inventoryItem' }]
+          }
+        ],
       });
 
       if (!purchaseOrder) {
@@ -195,22 +204,17 @@ export class PurchaseOrderService {
     }
   }
 
-  /**
-   * Update purchase order status with workflow validation
-   */
   async updatePurchaseOrderStatus(
     id: string,
     status: PurchaseOrderStatus,
     receivedDate?: Date,
   ): Promise<PurchaseOrder> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
-      const purchaseOrder = await this.purchaseOrderRepository.findOne({
-        where: { id },
-        relations: ['items'],
+      const purchaseOrder = await this.purchaseOrderModel.findByPk(id, {
+        include: [{ model: PurchaseOrderItem, as: 'items' }],
+        transaction,
       });
 
       if (!purchaseOrder) {
@@ -253,8 +257,8 @@ export class PurchaseOrderService {
         purchaseOrder.receivedDate = receivedDate || new Date();
       }
 
-      const updatedOrder = await queryRunner.manager.save(purchaseOrder);
-      await queryRunner.commitTransaction();
+      const updatedOrder = await purchaseOrder.save({ transaction });
+      await transaction.commit();
 
       this.logger.log(
         `Purchase order ${purchaseOrder.orderNumber} status updated: ${currentStatus} -> ${status}`,
@@ -262,11 +266,9 @@ export class PurchaseOrderService {
 
       return updatedOrder;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error('Error updating purchase order status:', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 }

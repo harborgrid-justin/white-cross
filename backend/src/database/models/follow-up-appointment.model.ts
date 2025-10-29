@@ -12,29 +12,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { ClinicVisit } from './clinic-visit.model';
-
-export enum FollowUpStatus {
-  /** Follow-up is scheduled */
-  SCHEDULED = 'scheduled',
-
-  /** Reminder sent to student */
-  REMINDED = 'reminded',
-
-  /** Student confirmed attendance */
-  CONFIRMED = 'confirmed',
-
-  /** Follow-up completed */
-  COMPLETED = 'completed',
-
-  /** Student missed appointment */
-  MISSED = 'missed',
-
-  /** Appointment cancelled */
-  CANCELLED = 'cancelled',
-
-  /** Appointment rescheduled */
-  RESCHEDULED = 'rescheduled',
-}
+import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
 
 export interface FollowUpAppointmentAttributes {
   id: string;

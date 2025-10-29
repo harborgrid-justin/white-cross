@@ -12,27 +12,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { DrugCatalog } from './drug-catalog.model';
-
-/**
- * Drug Interaction Severity Levels
- * Used for categorizing the severity of drug-drug interactions
- */
-export enum InteractionSeverity {
-  /** Minor interaction with minimal clinical significance */
-  MINOR = 'MINOR',
-
-  /** Moderate interaction requiring monitoring */
-  MODERATE = 'MODERATE',
-
-  /** Major interaction requiring intervention or alternative therapy */
-  MAJOR = 'MAJOR',
-
-  /** Severe interaction with serious adverse effects */
-  SEVERE = 'SEVERE',
-
-  /** Contraindicated - drugs should not be used together */
-  CONTRAINDICATED = 'CONTRAINDICATED',
-}
+import { InteractionSeverity } from '../../clinical/enums/interaction-severity.enum';
 
 export interface DrugInteractionAttributes {
   id: string;

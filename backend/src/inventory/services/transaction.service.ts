@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import { InventoryTransaction } from '../entities/inventory-transaction.entity';
 import { CreateInventoryTransactionDto } from '../dto/create-inventory-transaction.dto';
 
@@ -9,8 +8,8 @@ export class TransactionService {
   private readonly logger = new Logger(TransactionService.name);
 
   constructor(
-    @InjectRepository(InventoryTransaction)
-    private readonly transactionRepository: Repository<InventoryTransaction>,
+    @InjectModel(InventoryTransaction)
+    private readonly transactionModel: typeof InventoryTransaction,
   ) {}
 
   /**
@@ -18,18 +17,16 @@ export class TransactionService {
    */
   async createTransaction(data: CreateInventoryTransactionDto): Promise<InventoryTransaction> {
     try {
-      const transaction = this.transactionRepository.create({
+      const transaction = await this.transactionModel.create({
         ...data,
-        expirationDate: data.expirationDate ? new Date(data.expirationDate) : null,
-      });
-
-      const savedTransaction = await this.transactionRepository.save(transaction);
+        expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+      } as any);
 
       this.logger.log(
-        `Inventory transaction created: ${savedTransaction.type} - ${savedTransaction.quantity} units`,
+        `Inventory transaction created: ${transaction.type} - ${transaction.quantity} units`,
       );
 
-      return savedTransaction;
+      return transaction;
     } catch (error) {
       this.logger.error('Error creating inventory transaction:', error);
       throw error;
@@ -41,9 +38,9 @@ export class TransactionService {
    */
   async getTransactionsByItem(inventoryItemId: string): Promise<InventoryTransaction[]> {
     try {
-      const transactions = await this.transactionRepository.find({
+      const transactions = await this.transactionModel.findAll({
         where: { inventoryItemId },
-        order: { createdAt: 'DESC' },
+        order: [['createdAt', 'DESC']],
       });
 
       return transactions;

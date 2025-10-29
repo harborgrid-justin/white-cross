@@ -65,5 +65,4 @@ export class PolicyAcknowledgment extends Model<PolicyAcknowledgmentAttributes> 
 
   @BelongsTo(() => PolicyDocument)
   policy: PolicyDocument;
-}</content>
-<parameter name="filePath">c:\temp\white-cross\backend\src\database\models\policy-acknowledgment.model.ts
+}

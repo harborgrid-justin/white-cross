@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { District } from '../entities/district.entity';
 import { School } from '../entities/school.entity';
 import { License } from '../entities/license.entity';
@@ -14,40 +14,39 @@ export class DistrictService {
   private readonly logger = new Logger(DistrictService.name);
 
   constructor(
-    @InjectRepository(District)
-    private districtRepository: Repository<District>,
-    @InjectRepository(School)
-    private schoolRepository: Repository<School>,
-    @InjectRepository(License)
-    private licenseRepository: Repository<License>,
+    @InjectModel(District)
+    private districtModel: typeof District,
+    @InjectModel(School)
+    private schoolModel: typeof School,
+    @InjectModel(License)
+    private licenseModel: typeof License,
     private auditService: AuditService,
-    private dataSource: DataSource,
+    private sequelize: Sequelize,
   ) {}
 
   async createDistrict(data: CreateDistrictDto): Promise<District> {
     try {
       const normalizedCode = data.code.toUpperCase().trim();
-      const existing = await this.districtRepository.findOne({ 
-        where: { code: normalizedCode } 
+      const existing = await this.districtModel.findOne({
+        where: { code: normalizedCode }
       });
 
       if (existing) {
         throw new BadRequestException(`District with code '${normalizedCode}' already exists`);
       }
 
-      const district = this.districtRepository.create({ ...data, code: normalizedCode });
-      const saved = await this.districtRepository.save(district);
+      const district = await this.districtModel.create({ ...data, code: normalizedCode } as any);
 
       await this.auditService.createAuditLog(
         AuditAction.CREATE,
         'District',
-        saved.id,
+        district.id,
         undefined,
-        { name: saved.name, code: saved.code },
+        { name: district.name, code: district.code },
       );
 
-      this.logger.log(`District created: ${saved.name} (${saved.code})`);
-      return saved;
+      this.logger.log(`District created: ${district.name} (${district.code})`);
+      return district;
     } catch (error) {
       this.logger.error('Error creating district:', error);
       throw error;
@@ -59,11 +58,11 @@ export class DistrictService {
       const { page = 1, limit = 20 } = queryDto;
       const offset = (page - 1) * limit;
 
-      const [districts, total] = await this.districtRepository.findAndCount({
-        skip: offset,
-        take: limit,
-        relations: ['schools'],
-        order: { name: 'ASC' },
+      const { rows: districts, count: total } = await this.districtModel.findAndCountAll({
+        offset,
+        limit,
+        include: ['schools'],
+        order: [['name', 'ASC']],
       });
 
       const pagination: PaginationResult = {
@@ -82,9 +81,8 @@ export class DistrictService {
 
   async getDistrictById(id: string): Promise<District> {
     try {
-      const district = await this.districtRepository.findOne({
-        where: { id },
-        relations: ['schools', 'licenses'],
+      const district = await this.districtModel.findByPk(id, {
+        include: ['schools', 'licenses'],
       });
 
       if (!district) {
@@ -102,7 +100,7 @@ export class DistrictService {
     try {
       const district = await this.getDistrictById(id);
       Object.assign(district, data);
-      const updated = await this.districtRepository.save(district);
+      await district.save();
 
       await this.auditService.createAuditLog(
         AuditAction.UPDATE,
@@ -113,7 +111,7 @@ export class DistrictService {
       );
 
       this.logger.log(`District updated: ${district.name} (${id})`);
-      return updated;
+      return district;
     } catch (error) {
       this.logger.error('Error updating district:', error);
       throw error;
@@ -121,18 +119,17 @@ export class DistrictService {
   }
 
   async deleteDistrict(id: string): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
-      const district = await queryRunner.manager.findOne(District, { where: { id } });
+      const district = await this.districtModel.findByPk(id);
       if (!district) {
         throw new NotFoundException('District not found');
       }
 
-      const activeSchools = await queryRunner.manager.count(School, {
+      const activeSchools = await this.schoolModel.count({
         where: { districtId: id, isActive: true },
+        transaction,
       });
 
       if (activeSchools > 0) {
@@ -141,8 +138,9 @@ export class DistrictService {
         );
       }
 
-      const activeLicenses = await queryRunner.manager.count(License, {
+      const activeLicenses = await this.licenseModel.count({
         where: { districtId: id, status: LicenseStatus.ACTIVE },
+        transaction,
       });
 
       if (activeLicenses > 0) {
@@ -152,7 +150,7 @@ export class DistrictService {
       }
 
       district.isActive = false;
-      await queryRunner.manager.save(district);
+      await district.save({ transaction });
 
       await this.auditService.createAuditLog(
         AuditAction.DELETE,
@@ -162,14 +160,12 @@ export class DistrictService {
         { deactivated: true },
       );
 
-      await queryRunner.commitTransaction();
+      await transaction.commit();
       this.logger.log(`District deactivated: ${id}`);
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error('Error deleting district:', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 }

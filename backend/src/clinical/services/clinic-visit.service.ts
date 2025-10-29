@@ -5,9 +5,9 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, IsNull } from 'typeorm';
-import { ClinicVisit } from '../entities/clinic-visit.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { ClinicVisit } from '../../database/models/clinic-visit.model';
 import { VisitDisposition } from '../enums/visit-disposition.enum';
 import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
@@ -26,8 +26,8 @@ export class ClinicVisitService {
   private readonly logger = new Logger(ClinicVisitService.name);
 
   constructor(
-    @InjectRepository(ClinicVisit)
-    private clinicVisitRepository: Repository<ClinicVisit>,
+    @InjectModel(ClinicVisit)
+    private readonly clinicVisitModel: typeof ClinicVisit,
   ) {}
 
   /**
@@ -37,10 +37,10 @@ export class ClinicVisitService {
     this.logger.log(`Checking in student ${data.studentId}`);
 
     // Validate student doesn't have an active visit
-    const activeVisit = await this.clinicVisitRepository.findOne({
+    const activeVisit = await this.clinicVisitModel.findOne({
       where: {
         studentId: data.studentId,
-        checkOutTime: IsNull(),
+        checkOutTime: null as any,
       },
     });
 
@@ -49,13 +49,13 @@ export class ClinicVisitService {
     }
 
     // Create new visit
-    const visit = this.clinicVisitRepository.create({
+    const visit = await this.clinicVisitModel.create({
       ...data,
       checkInTime: new Date(),
       disposition: VisitDisposition.OTHER, // Temporary, will be set at checkout
-    });
+    } as any);
 
-    return this.clinicVisitRepository.save(visit);
+    return visit;
   }
 
   /**
@@ -64,7 +64,7 @@ export class ClinicVisitService {
   async checkOut(visitId: string, data: CheckOutDto): Promise<ClinicVisit> {
     this.logger.log(`Checking out visit ${visitId}`);
 
-    const visit = await this.clinicVisitRepository.findOne({
+    const visit = await this.clinicVisitModel.findOne({
       where: { id: visitId },
     });
 
@@ -77,21 +77,23 @@ export class ClinicVisitService {
     }
 
     // Update visit with checkout data
-    Object.assign(visit, {
+    await visit.update({
       ...data,
       checkOutTime: new Date(),
     });
 
-    return this.clinicVisitRepository.save(visit);
+    return visit.reload();
   }
 
   /**
    * Get active clinic visits
    */
   async getActiveVisits(): Promise<ClinicVisit[]> {
-    return this.clinicVisitRepository.find({
-      where: { checkOutTime: IsNull() },
-      order: { checkInTime: 'ASC' },
+    return this.clinicVisitModel.findAll({
+      where: {
+        checkOutTime: null as any,
+      },
+      order: [['checkInTime', 'ASC']],
     });
   }
 
@@ -99,44 +101,42 @@ export class ClinicVisitService {
    * Get visits with filtering and pagination
    */
   async getVisits(filters: VisitFiltersDto): Promise<{ visits: ClinicVisit[]; total: number }> {
-    const queryBuilder = this.clinicVisitRepository.createQueryBuilder('visit');
+    const where: any = {};
 
     if (filters.studentId) {
-      queryBuilder.andWhere('visit.studentId = :studentId', { studentId: filters.studentId });
+      where.studentId = filters.studentId;
     }
 
     if (filters.attendedBy) {
-      queryBuilder.andWhere('visit.attendedBy = :attendedBy', { attendedBy: filters.attendedBy });
+      where.attendedBy = filters.attendedBy;
     }
 
     if (filters.disposition) {
-      queryBuilder.andWhere('visit.disposition = :disposition', {
-        disposition: filters.disposition,
-      });
+      where.disposition = filters.disposition;
     }
 
     if (filters.activeOnly) {
-      queryBuilder.andWhere('visit.checkOutTime IS NULL');
+      where.checkOutTime = null as any;
     }
 
     if (filters.dateFrom || filters.dateTo) {
       if (filters.dateFrom && filters.dateTo) {
-        queryBuilder.andWhere('visit.checkInTime BETWEEN :dateFrom AND :dateTo', {
-          dateFrom: filters.dateFrom,
-          dateTo: filters.dateTo,
-        });
+        where.checkInTime = {
+          [Op.between]: [filters.dateFrom, filters.dateTo],
+        };
       } else if (filters.dateFrom) {
-        queryBuilder.andWhere('visit.checkInTime >= :dateFrom', { dateFrom: filters.dateFrom });
+        where.checkInTime = { [Op.gte]: filters.dateFrom };
       } else if (filters.dateTo) {
-        queryBuilder.andWhere('visit.checkInTime <= :dateTo', { dateTo: filters.dateTo });
+        where.checkInTime = { [Op.lte]: filters.dateTo };
       }
     }
 
-    const [visits, total] = await queryBuilder
-      .skip(filters.offset || 0)
-      .take(filters.limit || 20)
-      .orderBy('visit.checkInTime', 'DESC')
-      .getManyAndCount();
+    const { rows: visits, count: total } = await this.clinicVisitModel.findAndCountAll({
+      where,
+      offset: filters.offset || 0,
+      limit: filters.limit || 20,
+      order: [['checkInTime', 'DESC']],
+    });
 
     return { visits, total };
   }
@@ -145,7 +145,7 @@ export class ClinicVisitService {
    * Get visit by ID
    */
   async getVisitById(id: string): Promise<ClinicVisit> {
-    const visit = await this.clinicVisitRepository.findOne({
+    const visit = await this.clinicVisitModel.findOne({
       where: { id },
     });
 
@@ -160,10 +160,10 @@ export class ClinicVisitService {
    * Get visits for a student
    */
   async getVisitsByStudent(studentId: string, limit: number = 10): Promise<ClinicVisit[]> {
-    return this.clinicVisitRepository.find({
+    return this.clinicVisitModel.findAll({
       where: { studentId },
-      order: { checkInTime: 'DESC' },
-      take: limit,
+      order: [['checkInTime', 'DESC']],
+      limit,
     });
   }
 
@@ -173,18 +173,20 @@ export class ClinicVisitService {
   async updateVisit(id: string, updates: Partial<CheckInDto & CheckOutDto>): Promise<ClinicVisit> {
     const visit = await this.getVisitById(id);
 
-    Object.assign(visit, updates);
-    return this.clinicVisitRepository.save(visit);
+    await visit.update(updates);
+    return visit.reload();
   }
 
   /**
    * Delete a visit
    */
   async deleteVisit(id: string): Promise<void> {
-    const result = await this.clinicVisitRepository.delete(id);
+    const result = await this.clinicVisitModel.destroy({
+      where: { id },
+    });
 
-    if (result.affected === 0) {
-      throw new NotFoundException('Visit not found');
+    if (result === 0) {
+      throw new NotFoundException(`Visit with ID ${id} not found`);
     }
 
     this.logger.log(`Deleted visit ${id}`);
@@ -194,9 +196,11 @@ export class ClinicVisitService {
    * Get visit statistics
    */
   async getStatistics(startDate: Date, endDate: Date): Promise<VisitStatistics> {
-    const visits = await this.clinicVisitRepository.find({
+    const visits = await this.clinicVisitModel.findAll({
       where: {
-        checkInTime: Between(startDate, endDate),
+        checkInTime: {
+          [Op.between]: [startDate, endDate],
+        },
       },
     });
 
@@ -267,18 +271,18 @@ export class ClinicVisitService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<StudentVisitSummary> {
-    const queryBuilder = this.clinicVisitRepository
-      .createQueryBuilder('visit')
-      .where('visit.studentId = :studentId', { studentId });
+    const whereClause: any = { studentId };
 
     if (startDate && endDate) {
-      queryBuilder.andWhere('visit.checkInTime BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      whereClause.checkInTime = {
+        [Op.between]: [startDate, endDate],
+      };
     }
 
-    const visits = await queryBuilder.orderBy('visit.checkInTime', 'DESC').getMany();
+    const visits = await this.clinicVisitModel.findAll({
+      where: whereClause,
+      order: [['checkInTime', 'DESC']],
+    });
 
     const summary: StudentVisitSummary = {
       studentId,
@@ -346,11 +350,13 @@ export class ClinicVisitService {
     endDate: Date,
     limit: number = 10,
   ): Promise<StudentVisitSummary[]> {
-    const visits = await this.clinicVisitRepository.find({
+    const visits = await this.clinicVisitModel.findAll({
       where: {
-        checkInTime: Between(startDate, endDate),
+        checkInTime: {
+          [Op.between]: [startDate, endDate],
+        },
       },
-      order: { checkInTime: 'DESC' },
+      order: [['checkInTime', 'DESC']],
     });
 
     // Group by student
@@ -376,9 +382,11 @@ export class ClinicVisitService {
    * Get visits by time of day distribution
    */
   async getVisitsByTimeOfDay(startDate: Date, endDate: Date): Promise<Record<string, number>> {
-    const visits = await this.clinicVisitRepository.find({
+    const visits = await this.clinicVisitModel.findAll({
       where: {
-        checkInTime: Between(startDate, endDate),
+        checkInTime: {
+          [Op.between]: [startDate, endDate],
+        },
       },
     });
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In, MoreThan, LessThan, IsNull } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import {
@@ -18,9 +18,9 @@ import {
   HealthConditionTrend,
   MedicationTrend,
 } from '../interfaces';
-import { Student } from '../../student/entities/student.entity';
-import { HealthRecord } from '../../health-record/entities/health-record.entity';
-import { IncidentReport } from '../../incident-report/entities/incident-report.entity';
+import { Student } from '../../database/models/student.model';
+import { HealthRecord } from '../../database/models/health-record.model';
+import { IncidentReport } from '../../database/models/incident-report.model';
 
 /**
  * Health Trend Analytics Service
@@ -39,12 +39,12 @@ export class HealthTrendAnalyticsService {
   private readonly logger = new Logger(HealthTrendAnalyticsService.name);
 
   constructor(
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
-    @InjectRepository(HealthRecord)
-    private readonly healthRecordRepository: Repository<HealthRecord>,
-    @InjectRepository(IncidentReport)
-    private readonly incidentRepository: Repository<IncidentReport>,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
+    @InjectModel(HealthRecord)
+    private readonly healthRecordModel: typeof HealthRecord,
+    @InjectModel(IncidentReport)
+    private readonly incidentReportModel: typeof IncidentReport,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -70,22 +70,29 @@ export class HealthTrendAnalyticsService {
       const { start, end } = dateRange;
 
       // Query total active students
-      const totalStudents = await this.studentRepository.count({
+      const totalStudents = await this.studentModel.count({
         where: {
           schoolId,
           isActive: true,
-          deletedAt: IsNull(),
         },
       });
 
-      // Query health visits in period
-      const healthVisits = await this.healthRecordRepository.find({
+      // Get student IDs for the school
+      const students = await this.studentModel.findAll({
         where: {
-          student: { schoolId },
-          recordDate: Between(start, end),
-          deletedAt: IsNull(),
+          schoolId,
+          isActive: true,
         },
-        relations: ['student'],
+        attributes: ['id'],
+      });
+      const studentIds = students.map(s => s.id);
+
+      // Query health visits in period
+      const healthVisits = await this.healthRecordModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+          recordDate: { [Op.between]: [start, end] },
+        },
       });
 
       const totalHealthVisits = healthVisits.length;
@@ -95,11 +102,10 @@ export class HealthTrendAnalyticsService {
 
       // Get previous period for trend comparison
       const previousPeriod = this.getPreviousPeriod(start, end);
-      const previousHealthVisits = await this.healthRecordRepository.count({
+      const previousHealthVisits = await this.healthRecordModel.count({
         where: {
-          student: { schoolId },
-          recordDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: IsNull(),
+          studentId: { [Op.in]: studentIds },
+          recordDate: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
         },
       });
 
@@ -121,11 +127,10 @@ export class HealthTrendAnalyticsService {
       }
 
       // Get previous period condition counts
-      const previousVisits = await this.healthRecordRepository.find({
+      const previousVisits = await this.healthRecordModel.findAll({
         where: {
-          student: { schoolId },
-          recordDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: IsNull(),
+          studentId: { [Op.in]: studentIds },
+          recordDate: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
         },
       });
 
@@ -157,21 +162,19 @@ export class HealthTrendAnalyticsService {
         }));
 
       // Query chronic conditions
-      const chronicConditionCount = await this.healthRecordRepository.count({
+      const chronicConditionCount = await this.healthRecordModel.count({
         where: {
-          student: { schoolId },
+          studentId: { [Op.in]: studentIds },
           recordType: 'CHRONIC_CONDITION_REVIEW',
-          deletedAt: IsNull(),
         },
       });
 
       // Query new diagnoses in period
-      const newDiagnosesCount = await this.healthRecordRepository.count({
+      const newDiagnosesCount = await this.healthRecordModel.count({
         where: {
-          student: { schoolId },
-          recordDate: Between(start, end),
-          recordType: In(['ILLNESS', 'INJURY', 'DIAGNOSIS']),
-          deletedAt: IsNull(),
+          studentId: { [Op.in]: studentIds },
+          recordDate: { [Op.between]: [start, end] },
+          recordType: { [Op.in]: ['ILLNESS', 'INJURY', 'DIAGNOSIS'] },
         },
       });
 
@@ -204,9 +207,9 @@ export class HealthTrendAnalyticsService {
       ];
 
       // Query incidents
-      const incidents = await this.incidentRepository.find({
+      const incidents = await this.incidentReportModel.findAll({
         where: {
-          occurredAt: Between(start, end),
+          occurredAt: { [Op.between]: [start, end] },
         },
       });
 
@@ -215,9 +218,9 @@ export class HealthTrendAnalyticsService {
         ? Number(((totalIncidents / totalStudents) * 100).toFixed(2))
         : 0;
 
-      const previousIncidents = await this.incidentRepository.count({
+      const previousIncidents = await this.incidentReportModel.count({
         where: {
-          occurredAt: Between(previousPeriod.start, previousPeriod.end),
+          occurredAt: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
         },
       });
 
@@ -292,13 +295,11 @@ export class HealthTrendAnalyticsService {
       const dateRange = this.getDateRange(period);
       const { start, end } = dateRange;
 
-      const healthRecords = await this.healthRecordRepository.find({
+      const healthRecords = await this.healthRecordModel.findAll({
         where: {
-          student: { schoolId },
-          recordDate: Between(start, end),
-          deletedAt: IsNull(),
+          recordDate: { [Op.between]: [start, end] },
         },
-        order: { recordDate: 'ASC' },
+        order: [['recordDate', 'ASC']],
       });
 
       // Aggregate by condition and date
@@ -398,11 +399,11 @@ export class HealthTrendAnalyticsService {
       const dateRange = this.getDateRange(period);
       const { start, end } = dateRange;
 
-      const incidents = await this.incidentRepository.find({
+      const incidents = await this.incidentReportModel.findAll({
         where: {
-          occurredAt: Between(start, end),
+          occurredAt: { [Op.between]: [start, end] },
         },
-        order: { occurredAt: 'ASC' },
+        order: [['occurredAt', 'ASC']],
       });
 
       // Analyze by type
@@ -578,11 +579,9 @@ export class HealthTrendAnalyticsService {
     try {
       const dateRange = this.getDateRange(TimePeriod.LAST_90_DAYS);
 
-      const recentRecords = await this.healthRecordRepository.find({
+      const recentRecords = await this.healthRecordModel.findAll({
         where: {
-          student: { schoolId },
-          recordDate: Between(dateRange.start, dateRange.end),
-          deletedAt: IsNull(),
+          recordDate: { [Op.between]: [dateRange.start, dateRange.end] },
         },
       });
 
@@ -656,15 +655,14 @@ export class HealthTrendAnalyticsService {
     try {
       const cohorts = await Promise.all(
         cohortDefinitions.map(async (def) => {
-          const students = await this.studentRepository.find({
-            where: { schoolId, ...def.filter, isActive: true, deletedAt: null },
+          const students = await this.studentModel.findAll({
+            where: { schoolId, ...def.filter, isActive: true },
           });
 
           const studentIds = students.map(s => s.id);
-          const healthVisits = await this.healthRecordRepository.count({
+          const healthVisits = await this.healthRecordModel.count({
             where: {
-              studentId: In(studentIds),
-              deletedAt: IsNull(),
+              studentId: { [Op.in]: studentIds },
             },
           });
 
@@ -704,19 +702,15 @@ export class HealthTrendAnalyticsService {
       const dateRange = this.getDateRange(period);
       const previousPeriod = this.getPreviousPeriod(dateRange.start, dateRange.end);
 
-      const currentVisits = await this.healthRecordRepository.count({
+      const currentVisits = await this.healthRecordModel.count({
         where: {
-          student: { schoolId },
-          recordDate: Between(dateRange.start, dateRange.end),
-          deletedAt: IsNull(),
+          recordDate: { [Op.between]: [dateRange.start, dateRange.end] },
         },
       });
 
-      const previousVisits = await this.healthRecordRepository.count({
+      const previousVisits = await this.healthRecordModel.count({
         where: {
-          student: { schoolId },
-          recordDate: Between(previousPeriod.start, previousPeriod.end),
-          deletedAt: IsNull(),
+          recordDate: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
         },
       });
 
