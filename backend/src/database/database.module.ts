@@ -14,6 +14,7 @@
 import { Module, Global } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getDatabaseConfig } from './config/database.config';
 
 // Services
 import { CacheService } from './services/cache.service';
@@ -71,6 +72,75 @@ import { PurchaseOrder } from './models/purchase-order.model';
 import { PurchaseOrderItem } from './models/purchase-order-item.model';
 import { Vendor } from './models/vendor.model';
 
+// Compliance & Policy Models
+import { ComplianceChecklistItem } from './models/compliance-checklist-item.model';
+import { ComplianceReport } from './models/compliance-report.model';
+import { ComplianceViolation } from './models/compliance-violation.model';
+import { ConsentForm } from './models/consent-form.model';
+import { ConsentSignature } from './models/consent-signature.model';
+import { DataRetentionPolicy } from './models/data-retention-policy.model';
+import { PolicyAcknowledgment } from './models/policy-acknowledgment.model';
+import { PolicyDocument } from './models/policy-document.model';
+import { PhiDisclosure } from './models/phi-disclosure.model';
+import { PhiDisclosureAudit } from './models/phi-disclosure-audit.model';
+
+// Additional Clinical Models
+import { ClinicVisit } from './models/clinic-visit.model';
+import { ClinicalNote } from './models/clinical-note.model';
+import { ClinicalProtocol } from './models/clinical-protocol.model';
+import { FollowUpAction } from './models/follow-up-action.model';
+import { FollowUpAppointment } from './models/follow-up-appointment.model';
+import { MedicationLog } from './models/medication-log.model';
+import { Prescription } from './models/prescription.model';
+import { Vaccination } from './models/vaccination.model';
+import { WitnessStatement } from './models/witness-statement.model';
+import { MentalHealthRecord } from './models/mental-health-record.model';
+
+// Administration Models
+import { AcademicTranscript } from './models/academic-transcript.model';
+import { BackupLog } from './models/backup-log.model';
+import { ConfigurationHistory } from './models/configuration-history.model';
+import { District } from './models/district.model';
+import { License } from './models/license.model';
+import { PerformanceMetric } from './models/performance-metric.model';
+import { School } from './models/school.model';
+import { TrainingModule } from './models/training-module.model';
+import { AlertRule } from './models/alert-rule.model';
+import { EmergencyContact } from './models/emergency-contact.model';
+
+// Reporting Models
+import { ReportExecution } from './models/report-execution.model';
+import { ReportSchedule } from './models/report-schedule.model';
+import { ReportTemplate } from './models/report-template.model';
+
+// Communication & Mobile Models
+import { DeviceToken } from './models/device-token.model';
+import { PushNotification } from './models/push-notification.model';
+
+// Integration & Sync Models
+import { IntegrationConfig } from './models/integration-config.model';
+import { IntegrationLog } from './models/integration-log.model';
+import { SISSyncConflict } from './models/sis-sync-conflict.model';
+import { SyncConflict } from './models/sync-conflict.model';
+import { SyncQueueItem } from './models/sync-queue-item.model';
+import { SyncSession } from './models/sync-session.model';
+
+// Budget & Finance Models
+import { BudgetCategory } from './models/budget-category.model';
+import { BudgetTransaction } from './models/budget-transaction.model';
+
+// Contact Models
+import { Contact } from './models/contact.model';
+
+// Remediation Models
+import { RemediationAction } from './models/remediation-action.model';
+
+// Security Models (from security/entities)
+import { LoginAttemptEntity } from '../security/entities/login-attempt.entity';
+import { SessionEntity } from '../security/entities/session.entity';
+import { IpRestrictionEntity } from '../security/entities/ip-restriction.entity';
+import { SecurityIncidentEntity } from '../security/entities/security-incident.entity';
+
 // Sample Repositories (add more as they are migrated)
 import { StudentRepository } from './repositories/impl/student.repository';
 import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broadcast.repository';
@@ -86,37 +156,33 @@ import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broa
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get('DATABASE_URL');
-        
-        if (databaseUrl) {
-          // Use DATABASE_URL if provided (for cloud deployments)
-          return {
-            dialect: 'postgres',
-            uri: databaseUrl,
-            autoLoadModels: true,
-            synchronize: false,
-            logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-            dialectOptions: databaseUrl.includes('sslmode=require') ? {
-              ssl: {
-                require: true,
-                rejectUnauthorized: false
-              }
-            } : {},
-          };
-        } else {
-          // Use individual connection parameters for local development
-          return {
-            dialect: 'postgres',
-            host: configService.get('DB_HOST', 'localhost'),
-            port: configService.get<number>('DB_PORT', 5432),
-            username: configService.get('DB_USERNAME', 'postgres'),
-            password: configService.get('DB_PASSWORD'),
-            database: configService.get('DB_NAME', 'whitecross'),
-            autoLoadModels: true,
-            synchronize: false,
-            logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-          };
-        }
+        // Get comprehensive database configuration
+        const config = getDatabaseConfig({
+          DATABASE_URL: configService.get('DATABASE_URL'),
+          DB_HOST: configService.get('DB_HOST'),
+          DB_PORT: configService.get('DB_PORT'),
+          DB_USERNAME: configService.get('DB_USERNAME'),
+          DB_PASSWORD: configService.get('DB_PASSWORD'),
+          DB_NAME: configService.get('DB_NAME'),
+          DB_DIALECT: configService.get('DB_DIALECT'),
+          DB_SSL: configService.get('DB_SSL'),
+          DB_SSL_REJECT_UNAUTHORIZED: configService.get('DB_SSL_REJECT_UNAUTHORIZED'),
+          DB_POOL_MIN: configService.get('DB_POOL_MIN'),
+          DB_POOL_MAX: configService.get('DB_POOL_MAX'),
+          DB_POOL_IDLE: configService.get('DB_POOL_IDLE'),
+          DB_POOL_ACQUIRE: configService.get('DB_POOL_ACQUIRE'),
+          DB_POOL_EVICT: configService.get('DB_POOL_EVICT'),
+          DB_LOGGING: configService.get('DB_LOGGING'),
+          DB_TIMEZONE: configService.get('DB_TIMEZONE'),
+          NODE_ENV: configService.get('NODE_ENV'),
+        });
+
+        // Add NestJS-specific options
+        return {
+          ...config,
+          autoLoadModels: true,
+          synchronize: false, // Never use synchronize in production
+        };
       },
       inject: [ConfigService],
     }),
@@ -177,6 +243,75 @@ import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broa
       SystemConfig,
       ThreatDetection,
       Webhook,
+
+      // Compliance & Policy Models
+      ComplianceChecklistItem,
+      ComplianceReport,
+      ComplianceViolation,
+      ConsentForm,
+      ConsentSignature,
+      DataRetentionPolicy,
+      PolicyAcknowledgment,
+      PolicyDocument,
+      PhiDisclosure,
+      PhiDisclosureAudit,
+
+      // Additional Clinical Models
+      ClinicVisit,
+      ClinicalNote,
+      ClinicalProtocol,
+      FollowUpAction,
+      FollowUpAppointment,
+      MedicationLog,
+      Prescription,
+      Vaccination,
+      WitnessStatement,
+      MentalHealthRecord,
+
+      // Administration Models
+      AcademicTranscript,
+      BackupLog,
+      ConfigurationHistory,
+      District,
+      License,
+      PerformanceMetric,
+      School,
+      TrainingModule,
+      AlertRule,
+      EmergencyContact,
+
+      // Reporting Models
+      ReportExecution,
+      ReportSchedule,
+      ReportTemplate,
+
+      // Communication & Mobile Models
+      DeviceToken,
+      PushNotification,
+
+      // Integration & Sync Models
+      IntegrationConfig,
+      IntegrationLog,
+      SISSyncConflict,
+      SyncConflict,
+      SyncQueueItem,
+      SyncSession,
+
+      // Budget & Finance Models
+      BudgetCategory,
+      BudgetTransaction,
+
+      // Contact Models
+      Contact,
+
+      // Remediation Models
+      RemediationAction,
+
+      // Security Models
+      LoginAttemptEntity,
+      SessionEntity,
+      IpRestrictionEntity,
+      SecurityIncidentEntity,
     ])
   ],
   providers: [

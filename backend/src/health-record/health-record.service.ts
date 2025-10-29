@@ -163,9 +163,9 @@ export class HealthRecordService {
     id: string,
     data: Partial<any>,
   ): Promise<HealthRecord> {
-    const existingRecord = await this.healthRecordRepository.findOne({
+    const existingRecord = await this.healthRecordModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!existingRecord) {
@@ -174,14 +174,11 @@ export class HealthRecordService {
 
     // Update record
     Object.assign(existingRecord, data);
-    const updatedRecord = await this.healthRecordRepository.save(
-      existingRecord,
-    );
+    await existingRecord.save();
 
     // Reload with associations
-    const record = await this.healthRecordRepository.findOne({
-      where: { id: updatedRecord.id },
-      relations: ['student'],
+    const record = await this.healthRecordModel.findByPk(existingRecord.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!record) {
@@ -190,7 +187,7 @@ export class HealthRecordService {
 
     // PHI Modification Audit Log
     this.logger.log(
-      `PHI Modified: Health record ${record.recordType} updated for student ${record.student.firstName} ${record.student.lastName}`,
+      `PHI Modified: Health record ${record.recordType} updated for student ${record.student!.firstName} ${record.student!.lastName}`,
     );
 
     return record;
@@ -202,15 +199,13 @@ export class HealthRecordService {
    * @returns Array of vaccination records
    */
   async getVaccinationRecords(studentId: string): Promise<HealthRecord[]> {
-    const records = await this.healthRecordRepository.find({
+    const records = await this.healthRecordModel.findAll({
       where: {
         studentId,
         recordType: 'VACCINATION' as any,
       },
-      relations: ['student'],
-      order: {
-        recordDate: 'DESC',
-      },
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
     });
 
     // PHI Access Audit Log
@@ -234,19 +229,18 @@ export class HealthRecordService {
     }
 
     // Get records to be deleted for logging
-    const recordsToDelete = await this.healthRecordRepository.find({
+    const recordsToDelete = await this.healthRecordModel.findAll({
       where: {
-        id: In(recordIds),
+        id: { [Op.in]: recordIds },
       },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     // Soft delete (preserves audit trail)
-    const deleteResult = await this.healthRecordRepository.softDelete({
-      id: In(recordIds),
+    const deletedCount = await this.healthRecordModel.destroy({
+      where: { id: { [Op.in]: recordIds } },
     });
 
-    const deletedCount = deleteResult.affected || 0;
     const notFoundCount = recordIds.length - deletedCount;
 
     // PHI Deletion Audit Log
@@ -258,7 +252,7 @@ export class HealthRecordService {
       const studentNames = [
         ...new Set(
           recordsToDelete.map(
-            (r) => `${r.student.firstName} ${r.student.lastName}`,
+            (r) => `${r.student!.firstName} ${r.student!.lastName}`,
           ),
         ),
       ];
@@ -283,7 +277,7 @@ export class HealthRecordService {
    */
   async addAllergy(data: any): Promise<Allergy> {
     // Verify student exists
-    const student = await this.studentRepository.findOne({
+    const student = await this.studentModel.findOne({
       where: { id: data.studentId },
     });
 
@@ -292,7 +286,7 @@ export class HealthRecordService {
     }
 
     // Check for duplicate
-    const existingAllergy = await this.allergyRepository.findOne({
+    const existingAllergy = await this.allergyModel.findOne({
       where: {
         studentId: data.studentId,
         allergen: data.allergen,
@@ -306,16 +300,15 @@ export class HealthRecordService {
     }
 
     // Create allergy
-    const allergy = this.allergyRepository.create({
+    const allergyData = {
       ...data,
       verifiedAt: data.verified ? new Date() : null,
-    });
-    const savedAllergy = await this.allergyRepository.save(allergy);
+    };
+    const savedAllergy = await this.allergyModel.create(allergyData);
 
     // Reload with associations
-    const allergyWithRelations = await this.allergyRepository.findOne({
-      where: { id: (savedAllergy as any).id },
-      relations: ['student'],
+    const allergyWithRelations = await this.allergyModel.findByPk(savedAllergy.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!allergyWithRelations) {
@@ -343,9 +336,9 @@ export class HealthRecordService {
    * @returns Updated allergy record
    */
   async updateAllergy(id: string, data: Partial<any>): Promise<Allergy> {
-    const existingAllergy = await this.allergyRepository.findOne({
+    const existingAllergy = await this.allergyModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!existingAllergy) {
@@ -360,12 +353,11 @@ export class HealthRecordService {
 
     // Update allergy
     Object.assign(existingAllergy, updateData);
-    const updatedAllergy = await this.allergyRepository.save(existingAllergy);
+    await existingAllergy.save();
 
     // Reload with associations
-    const allergyWithRelations = await this.allergyRepository.findOne({
-      where: { id: updatedAllergy.id },
-      relations: ['student'],
+    const allergyWithRelations = await this.allergyModel.findByPk(existingAllergy.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!allergyWithRelations) {
@@ -386,13 +378,13 @@ export class HealthRecordService {
    * @returns Array of allergies ordered by severity
    */
   async getStudentAllergies(studentId: string): Promise<Allergy[]> {
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: { studentId },
-      relations: ['student'],
-      order: {
-        severity: 'DESC', // Most severe first
-        allergen: 'ASC',
-      },
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [
+        ['severity', 'DESC'], // Most severe first
+        ['allergen', 'ASC'],
+      ],
     });
 
     // PHI Access Audit Log
@@ -409,9 +401,9 @@ export class HealthRecordService {
    * @returns Success status
    */
   async deleteAllergy(id: string): Promise<{ success: boolean }> {
-    const allergy = await this.allergyRepository.findOne({
+    const allergy = await this.allergyModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!allergy) {
@@ -419,7 +411,7 @@ export class HealthRecordService {
     }
 
     // Soft delete
-    await this.allergyRepository.softDelete(id);
+    await this.allergyModel.destroy({ where: { id } });
 
     // PHI Deletion Audit Log
     this.logger.warn(
@@ -438,7 +430,7 @@ export class HealthRecordService {
    */
   async addChronicCondition(data: any): Promise<ChronicCondition> {
     // Verify student exists
-    const student = await this.studentRepository.findOne({
+    const student = await this.studentModel.findOne({
       where: { id: data.studentId },
     });
 
@@ -447,20 +439,16 @@ export class HealthRecordService {
     }
 
     // Create chronic condition
-    const chronicCondition = this.chronicConditionRepository.create({
+    const chronicConditionData = {
       ...data,
       isActive: true,
-    });
-    const savedCondition = await this.chronicConditionRepository.save(
-      chronicCondition,
-    );
+    };
+    const savedCondition = await this.chronicConditionModel.create(chronicConditionData);
 
     // Reload with associations
-    const conditionWithRelations =
-      await this.chronicConditionRepository.findOne({
-        where: { id: (savedCondition as any).id },
-        relations: ['student'],
-      });
+    const conditionWithRelations = await this.chronicConditionModel.findByPk(savedCondition.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
+    });
 
     if (!conditionWithRelations) {
       throw new Error('Failed to reload chronic condition after creation');
@@ -480,13 +468,13 @@ export class HealthRecordService {
    * @returns Array of chronic conditions ordered by severity
    */
   async getStudentChronicConditions(studentId: string): Promise<any[]> {
-    const conditions = await this.chronicConditionRepository.find({
+    const conditions = await this.chronicConditionModel.findAll({
       where: { studentId, isActive: true },
-      relations: ['student'],
-      order: {
-        status: 'ASC',
-        diagnosedDate: 'DESC',
-      },
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [
+        ['status', 'ASC'],
+        ['diagnosedDate', 'DESC'],
+      ],
     });
 
     // PHI Access Audit Log
@@ -507,9 +495,9 @@ export class HealthRecordService {
     id: string,
     data: Partial<any>,
   ): Promise<ChronicCondition> {
-    const existingCondition = await this.chronicConditionRepository.findOne({
+    const existingCondition = await this.chronicConditionModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!existingCondition) {
@@ -518,16 +506,12 @@ export class HealthRecordService {
 
     // Update chronic condition
     Object.assign(existingCondition, data);
-    const updatedCondition = await this.chronicConditionRepository.save(
-      existingCondition,
-    );
+    await existingCondition.save();
 
     // Reload with associations
-    const conditionWithRelations =
-      await this.chronicConditionRepository.findOne({
-        where: { id: updatedCondition.id },
-        relations: ['student'],
-      });
+    const conditionWithRelations = await this.chronicConditionModel.findByPk(existingCondition.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
+    });
 
     if (!conditionWithRelations) {
       throw new Error('Failed to reload chronic condition after update');
@@ -547,9 +531,9 @@ export class HealthRecordService {
    * @returns Success status
    */
   async deleteChronicCondition(id: string): Promise<{ success: boolean }> {
-    const condition = await this.chronicConditionRepository.findOne({
+    const condition = await this.chronicConditionModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!condition) {
@@ -557,7 +541,7 @@ export class HealthRecordService {
     }
 
     // Soft delete
-    await this.chronicConditionRepository.softDelete(id);
+    await this.chronicConditionModel.destroy({ where: { id } });
 
     // PHI Deletion Audit Log
     this.logger.warn(
@@ -576,7 +560,7 @@ export class HealthRecordService {
    */
   async addVaccination(data: any): Promise<Vaccination> {
     // Verify student exists
-    const student = await this.studentRepository.findOne({
+    const student = await this.studentModel.findOne({
       where: { id: data.studentId },
     });
 
@@ -591,16 +575,15 @@ export class HealthRecordService {
         : false;
 
     // Create vaccination
-    const vaccination = this.vaccinationRepository.create({
+    const vaccinationData = {
       ...data,
       seriesComplete,
-    });
-    const savedVaccination = await this.vaccinationRepository.save(vaccination);
+    };
+    const savedVaccination = await this.vaccinationModel.create(vaccinationData);
 
     // Reload with associations
-    const vaccinationWithRelations = await this.vaccinationRepository.findOne({
-      where: { id: (savedVaccination as any).id },
-      relations: ['student'],
+    const vaccinationWithRelations = await this.vaccinationModel.findByPk(savedVaccination.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!vaccinationWithRelations) {
@@ -621,12 +604,10 @@ export class HealthRecordService {
    * @returns Array of vaccinations ordered by administration date
    */
   async getStudentVaccinations(studentId: string): Promise<Vaccination[]> {
-    const vaccinations = await this.vaccinationRepository.find({
+    const vaccinations = await this.vaccinationModel.findAll({
       where: { studentId },
-      relations: ['student'],
-      order: {
-        administrationDate: 'DESC',
-      },
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['administrationDate', 'DESC']],
     });
 
     // PHI Access Audit Log
@@ -647,9 +628,9 @@ export class HealthRecordService {
     id: string,
     data: Partial<any>,
   ): Promise<Vaccination> {
-    const existingVaccination = await this.vaccinationRepository.findOne({
+    const existingVaccination = await this.vaccinationModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!existingVaccination) {
@@ -667,14 +648,11 @@ export class HealthRecordService {
 
     // Update vaccination
     Object.assign(existingVaccination, data);
-    const updatedVaccination = await this.vaccinationRepository.save(
-      existingVaccination,
-    );
+    await existingVaccination.save();
 
     // Reload with associations
-    const vaccinationWithRelations = await this.vaccinationRepository.findOne({
-      where: { id: updatedVaccination.id },
-      relations: ['student'],
+    const vaccinationWithRelations = await this.vaccinationModel.findByPk(existingVaccination.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!vaccinationWithRelations) {
@@ -683,7 +661,7 @@ export class HealthRecordService {
 
     // PHI Modification Audit Log
     this.logger.log(
-      `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student.firstName} ${vaccinationWithRelations.student.lastName}`,
+      `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student!.firstName} ${vaccinationWithRelations.student!.lastName}`,
     );
 
     return vaccinationWithRelations;
@@ -695,9 +673,9 @@ export class HealthRecordService {
    * @returns Success status
    */
   async deleteVaccination(id: string): Promise<{ success: boolean }> {
-    const vaccination = await this.vaccinationRepository.findOne({
+    const vaccination = await this.vaccinationModel.findOne({
       where: { id },
-      relations: ['student'],
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!vaccination) {
@@ -705,11 +683,11 @@ export class HealthRecordService {
     }
 
     // Soft delete
-    await this.vaccinationRepository.softDelete(id);
+    await this.vaccinationModel.destroy({ where: { id } });
 
     // PHI Deletion Audit Log
     this.logger.warn(
-      `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student.firstName} ${vaccination.student.lastName}`,
+      `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student!.firstName} ${vaccination.student!.lastName}`,
     );
 
     return { success: true };
@@ -723,13 +701,17 @@ export class HealthRecordService {
    * @returns Array of growth data points
    */
   async getGrowthChartData(studentId: string): Promise<GrowthDataPoint[]> {
-    // Query health records with vital signs metadata
-    const records = await this.healthRecordRepository
-      .createQueryBuilder('hr')
-      .where('hr.studentId = :studentId', { studentId })
-      .andWhere("hr.metadata->>'height' IS NOT NULL OR hr.metadata->>'weight' IS NOT NULL")
-      .orderBy('hr.recordDate', 'ASC')
-      .getMany();
+    // Query health records with vital signs metadata using Sequelize
+    const records = await this.healthRecordModel.findAll({
+      where: {
+        studentId,
+        [Op.or]: [
+          { '$metadata.height$': { [Op.ne]: null } },
+          { '$metadata.weight$': { [Op.ne]: null } },
+        ],
+      },
+      order: [['recordDate', 'ASC']],
+    });
 
     // Extract growth data points
     const growthData: GrowthDataPoint[] = records
@@ -774,15 +756,13 @@ export class HealthRecordService {
    * @returns Array of recent vital signs
    */
   async getRecentVitals(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
-    const records = await this.healthRecordRepository.find({
+    const records = await this.healthRecordModel.findAll({
       where: {
         studentId,
-        recordType: In(['VITAL_SIGNS_CHECK', 'CHECKUP', 'PHYSICAL_EXAM']),
+        recordType: { [Op.in]: ['VITAL_SIGNS_CHECK', 'CHECKUP', 'PHYSICAL_EXAM'] },
       },
-      order: {
-        recordDate: 'DESC',
-      },
-      take: limit,
+      order: [['recordDate', 'DESC']],
+      limit,
     });
 
     // Extract vital signs from metadata
@@ -817,7 +797,7 @@ export class HealthRecordService {
    */
   async getHealthSummary(studentId: string): Promise<HealthSummary> {
     // Get student information
-    const student = await this.studentRepository.findOne({
+    const student = await this.studentModel.findOne({
       where: { id: studentId },
     });
 
@@ -826,33 +806,35 @@ export class HealthRecordService {
     }
 
     // Get allergies
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: { studentId },
-      order: { severity: 'DESC' },
+      order: [['severity', 'DESC']],
     });
 
     // Get recent vitals
     const recentVitals = await this.getRecentVitals(studentId, 5);
 
     // Get recent vaccinations
-    const recentVaccinations = await this.vaccinationRepository.find({
+    const recentVaccinations = await this.vaccinationModel.findAll({
       where: { studentId },
-      order: { administrationDate: 'DESC' },
-      take: 5,
+      order: [['administrationDate', 'DESC']],
+      limit: 5,
     });
 
-    // Count records by type
+    // Count records by type using Sequelize aggregation
     const recordCounts: Record<string, number> = {};
-    const countsByType = await this.healthRecordRepository
-      .createQueryBuilder('hr')
-      .select('hr.recordType', 'type')
-      .addSelect('COUNT(*)', 'count')
-      .where('hr.studentId = :studentId', { studentId })
-      .groupBy('hr.recordType')
-      .getRawMany();
+    const countsByType = await this.healthRecordModel.findAll({
+      attributes: [
+        'recordType',
+        [this.healthRecordModel.sequelize!.fn('COUNT', '*'), 'count'],
+      ],
+      where: { studentId },
+      group: ['recordType'],
+      raw: true,
+    });
 
-    countsByType.forEach((row) => {
-      recordCounts[row.type] = parseInt(row.count, 10);
+    countsByType.forEach((row: any) => {
+      recordCounts[row.recordType] = parseInt(row.count, 10);
     });
 
     // PHI Access Audit Log
@@ -885,25 +867,28 @@ export class HealthRecordService {
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
     const offset = (page - 1) * limit;
 
-    const queryBuilder = this.healthRecordRepository
-      .createQueryBuilder('hr')
-      .leftJoinAndSelect('hr.student', 'student')
-      .where(
-        'hr.title ILIKE :query OR hr.description ILIKE :query OR hr.diagnosis ILIKE :query OR hr.treatment ILIKE :query',
-        { query: `%${query}%` },
-      );
+    const whereClause: any = {
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${query}%` } },
+        { description: { [Op.iLike]: `%${query}%` } },
+        { diagnosis: { [Op.iLike]: `%${query}%` } },
+        { treatment: { [Op.iLike]: `%${query}%` } },
+      ],
+    };
 
     // Apply type filter if provided
     if (type) {
-      queryBuilder.andWhere('hr.recordType = :type', { type });
+      whereClause.recordType = type;
     }
 
     // Execute query with pagination
-    const [records, total] = await queryBuilder
-      .orderBy('hr.recordDate', 'DESC')
-      .skip(offset)
-      .take(limit)
-      .getManyAndCount();
+    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+      offset,
+      limit,
+    });
 
     // PHI Access Audit Log
     this.logger.log(
@@ -928,7 +913,7 @@ export class HealthRecordService {
    */
   async exportHealthHistory(studentId: string): Promise<any> {
     // Get student
-    const student = await this.studentRepository.findOne({
+    const student = await this.studentModel.findOne({
       where: { id: studentId },
     });
 
@@ -937,24 +922,24 @@ export class HealthRecordService {
     }
 
     // Get all health data
-    const healthRecords = await this.healthRecordRepository.find({
+    const healthRecords = await this.healthRecordModel.findAll({
       where: { studentId },
-      order: { recordDate: 'DESC' },
+      order: [['recordDate', 'DESC']],
     });
 
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: { studentId },
-      order: { severity: 'DESC' },
+      order: [['severity', 'DESC']],
     });
 
-    const vaccinations = await this.vaccinationRepository.find({
+    const vaccinations = await this.vaccinationModel.findAll({
       where: { studentId },
-      order: { administrationDate: 'DESC' },
+      order: [['administrationDate', 'DESC']],
     });
 
-    const chronicConditions = await this.chronicConditionRepository.find({
+    const chronicConditions = await this.chronicConditionModel.findAll({
       where: { studentId },
-      order: { diagnosedDate: 'DESC' },
+      order: [['diagnosedDate', 'DESC']],
     });
 
     // PHI Access Audit Log
@@ -1000,7 +985,7 @@ export class HealthRecordService {
     };
 
     // Verify student exists
-    const student = await this.studentRepository.findOne({
+    const student = await this.studentModel.findOne({
       where: { id: studentId },
     });
 
@@ -1013,13 +998,12 @@ export class HealthRecordService {
     if (importData.healthRecords && Array.isArray(importData.healthRecords)) {
       for (const recordData of importData.healthRecords) {
         try {
-          const record = this.healthRecordRepository.create({
+          await this.healthRecordModel.create({
             ...recordData,
             studentId,
           });
-          await this.healthRecordRepository.save(record);
           results.imported++;
-        } catch (error) {
+        } catch (error: any) {
           results.errors.push(
             `Failed to import health record: ${error.message}`,
           );
@@ -1033,7 +1017,7 @@ export class HealthRecordService {
       for (const allergyData of importData.allergies) {
         try {
           // Check for duplicate
-          const existing = await this.allergyRepository.findOne({
+          const existing = await this.allergyModel.findOne({
             where: {
               studentId,
               allergen: allergyData.allergen,
@@ -1045,13 +1029,12 @@ export class HealthRecordService {
             continue;
           }
 
-          const allergy = this.allergyRepository.create({
+          await this.allergyModel.create({
             ...allergyData,
             studentId,
           });
-          await this.allergyRepository.save(allergy);
           results.imported++;
-        } catch (error) {
+        } catch (error: any) {
           results.errors.push(`Failed to import allergy: ${error.message}`);
           results.skipped++;
         }
@@ -1062,13 +1045,12 @@ export class HealthRecordService {
     if (importData.vaccinations && Array.isArray(importData.vaccinations)) {
       for (const vaccinationData of importData.vaccinations) {
         try {
-          const vaccination = this.vaccinationRepository.create({
+          await this.vaccinationModel.create({
             ...vaccinationData,
             studentId,
           });
-          await this.vaccinationRepository.save(vaccination);
           results.imported++;
-        } catch (error) {
+        } catch (error: any) {
           results.errors.push(
             `Failed to import vaccination: ${error.message}`,
           );
@@ -1091,32 +1073,33 @@ export class HealthRecordService {
    */
   async getHealthRecordStatistics(): Promise<HealthRecordStatistics> {
     // Count total health records
-    const totalRecords = await this.healthRecordRepository.count();
+    const totalRecords = await this.healthRecordModel.count();
 
     // Count active allergies
-    const activeAllergies = await this.allergyRepository.count({
+    const activeAllergies = await this.allergyModel.count({
       where: { isActive: true },
     });
 
     // Count chronic conditions
-    const chronicConditions = await this.chronicConditionRepository.count({
+    const chronicConditions = await this.chronicConditionModel.count({
       where: { isActive: true },
     });
 
     // Count vaccinations due (next due date in past and series not complete)
     const today = new Date();
-    const vaccinationsDue = await this.vaccinationRepository
-      .createQueryBuilder('v')
-      .where('v.nextDueDate < :today', { today })
-      .andWhere('v.seriesComplete = :complete', { complete: false })
-      .getCount();
+    const vaccinationsDue = await this.vaccinationModel.count({
+      where: {
+        nextDueDate: { [Op.lt]: today },
+        seriesComplete: false,
+      },
+    });
 
     // Count recent records (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentRecords = await this.healthRecordRepository.count({
+    const recentRecords = await this.healthRecordModel.count({
       where: {
-        createdAt: Between(thirtyDaysAgo, new Date()),
+        createdAt: { [Op.between]: [thirtyDaysAgo, new Date()] },
       },
     });
 
@@ -1138,9 +1121,14 @@ export class HealthRecordService {
    * @returns Health record or null if not found
    */
   async getHealthRecord(studentId: string): Promise<HealthRecord | null> {
-    return this.healthRecordRepository.findOne({
+    return this.healthRecordModel.findOne({
       where: { studentId },
-      relations: ['student', 'allergies', 'vaccinations', 'chronicConditions'],
+      include: [
+        { model: this.studentModel, as: 'student' },
+        { model: this.allergyModel, as: 'allergies' },
+        { model: this.vaccinationModel, as: 'vaccinations' },
+        { model: this.chronicConditionModel, as: 'chronicConditions' },
+      ],
     });
   }
 
@@ -1149,8 +1137,10 @@ export class HealthRecordService {
    * @param id - Health record identifier
    */
   async deleteHealthRecord(id: string): Promise<void> {
-    const result = await this.healthRecordRepository.delete(id);
-    if (result.affected === 0) {
+    const deletedCount = await this.healthRecordModel.destroy({
+      where: { id },
+    });
+    if (deletedCount === 0) {
       throw new NotFoundException(`Health record with ID ${id} not found`);
     }
   }
@@ -1167,15 +1157,15 @@ export class HealthRecordService {
     }
 
     // Get additional related data
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: { studentId },
     });
 
-    const vaccinations = await this.vaccinationRepository.find({
+    const vaccinations = await this.vaccinationModel.findAll({
       where: { studentId },
     });
 
-    const chronicConditions = await this.chronicConditionRepository.find({
+    const chronicConditions = await this.chronicConditionModel.findAll({
       where: { studentId },
     });
 

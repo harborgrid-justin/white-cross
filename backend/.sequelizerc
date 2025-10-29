@@ -1,0 +1,20 @@
+/**
+ * Sequelize CLI Configuration
+ * Defines paths for migrations, seeders, models, and configuration
+ */
+
+const path = require('path');
+
+module.exports = {
+  // Configuration file for database connection
+  config: path.resolve('config', 'sequelize.js'),
+
+  // Models directory (Sequelize entities)
+  'models-path': path.resolve('src', 'database', 'models'),
+
+  // Seeders directory for initial data
+  'seeders-path': path.resolve('src', 'database', 'seeders'),
+
+  // Migrations directory for schema changes
+  'migrations-path': path.resolve('src', 'database', 'migrations'),
+};

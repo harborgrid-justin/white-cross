@@ -1,7 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { Student } from '../student/entities/student.entity';
+import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize, Transaction } from 'sequelize';
+import { Student } from '../database/models/student.model';
 import { TransitionResultDto, BulkTransitionResultDto } from './dto';
 
 /**
@@ -34,9 +34,10 @@ export class GradeTransitionService {
   };
 
   constructor(
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
-    private readonly dataSource: DataSource,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
+    @Inject('SEQUELIZE')
+    private readonly sequelize: Sequelize,
   ) {}
 
   /**
@@ -49,14 +50,16 @@ export class GradeTransitionService {
     effectiveDate: Date = new Date(),
     dryRun: boolean = false,
   ): Promise<BulkTransitionResultDto> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    let transaction: Transaction | null = null;
 
     try {
+      // Start transaction
+      transaction = await this.sequelize.transaction();
+
       // Get all active students
-      const students = await queryRunner.manager.find(Student, {
-        where: { isActive: true },
+      const students = await this.studentModel.findAll({
+        where: { isActive: true } as any,
+        transaction,
       });
 
       const results: TransitionResultDto[] = [];
@@ -82,13 +85,12 @@ export class GradeTransitionService {
           }
 
           if (!dryRun) {
-            await queryRunner.manager.update(
-              Student,
-              { id: student.id },
+            await student.update(
               {
                 grade: newGrade,
                 updatedBy: 'system',
-              },
+              } as any,
+              { transaction }
             );
           }
 
@@ -114,9 +116,9 @@ export class GradeTransitionService {
       }
 
       if (dryRun) {
-        await queryRunner.rollbackTransaction();
+        await transaction.rollback();
       } else {
-        await queryRunner.commitTransaction();
+        await transaction.commit();
       }
 
       this.logger.log('Grade transition completed', {
@@ -133,11 +135,11 @@ export class GradeTransitionService {
         results,
       };
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      if (transaction) {
+        await transaction.rollback();
+      }
       this.logger.error('Error performing grade transition', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -154,8 +156,8 @@ export class GradeTransitionService {
     transitionedBy: string,
   ): Promise<boolean> {
     try {
-      const student = await this.studentRepository.findOne({
-        where: { id: studentId },
+      const student = await this.studentModel.findOne({
+        where: { id: studentId } as any,
       });
 
       if (!student) {
@@ -164,13 +166,10 @@ export class GradeTransitionService {
 
       const oldGrade = student.grade;
 
-      await this.studentRepository.update(
-        { id: studentId },
-        {
-          grade: newGrade,
-          updatedBy: transitionedBy,
-        },
-      );
+      await student.update({
+        grade: newGrade,
+        updatedBy: transitionedBy,
+      } as any);
 
       this.logger.log('Student grade transitioned', {
         studentId,
@@ -196,11 +195,11 @@ export class GradeTransitionService {
    */
   async getGraduatingStudents(): Promise<Student[]> {
     try {
-      const students = await this.studentRepository.find({
+      const students = await this.studentModel.findAll({
         where: {
           grade: '12',
           isActive: true,
-        },
+        } as any,
       });
 
       this.logger.log('Graduating students retrieved', {

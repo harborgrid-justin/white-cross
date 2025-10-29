@@ -11,3 +11,6 @@ export * from './query.types';
 
 // Database Enums
 export * from './database.enums';
+
+// Sequelize Helper Types
+export * from './sequelize-helpers';
