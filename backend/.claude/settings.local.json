@@ -39,7 +39,11 @@
       "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/api/docs-json'' -Method Get\")",
       "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health'' -Method Get; Write-Output $response\")",
       "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health/ready'' -Method Get; Write-Output $response\")",
-      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health/live'' -Method Get; Write-Output $response\")"
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health/live'' -Method Get; Write-Output $response\")",
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/students'' -Method Get; Write-Output $response\")",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/students'' -Method Get\")",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/appointments'' -Method Get\")",
+      "Bash(powershell -Command \"$spec = Invoke-RestMethod -Uri ''http://localhost:3001/api-json'' -Method Get; $spec.paths.PSObject.Properties.Name | Sort-Object\")"
     ],
     "deny": [],
     "ask": []

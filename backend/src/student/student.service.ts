@@ -155,6 +155,9 @@ export class StudentService {
           ['lastName', 'ASC'],
           ['firstName', 'ASC'],
         ],
+        attributes: {
+          exclude: ['schoolId', 'districtId'],
+        },
       });
 
       return {

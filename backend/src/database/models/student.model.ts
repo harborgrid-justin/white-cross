@@ -196,25 +196,32 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @AllowNull
   @ForeignKey(() => require('./user.model').User)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'nurseId',
+  })
   nurseId?: string;
 
   /**
    * School ID (foreign key to schools table)
-   * Note: Column may not exist in database
    */
   @AllowNull
   @ForeignKey(() => require('./school.model').School)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'schoolId',
+  })
   schoolId?: string;
 
   /**
    * District ID (foreign key to districts table)
-   * Note: Column may not exist in database
    */
   @AllowNull
   @ForeignKey(() => require('./district.model').District)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'districtId',
+  })
   districtId?: string;
 
   /**

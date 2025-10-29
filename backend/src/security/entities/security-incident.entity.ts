@@ -67,84 +67,105 @@ export class SecurityIncidentEntity extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'userId',
   })
   userId?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'ipAddress',
   })
   ipAddress?: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
+    field: 'userAgent',
   })
   userAgent?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'resourceAccessed',
   })
   resourceAccessed?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    field: 'detectedAt',
   })
   declare detectedAt: Date;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'detectionMethod',
   })
   detectionMethod: string; // 'automated', 'manual', 'pattern_matching', etc.
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
+    field: 'indicators',
   })
   indicators: string[]; // List of indicators that triggered detection
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
+    field: 'impact',
   })
   impact?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'assignedTo',
   })
   assignedTo?: string; // User ID of security team member
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'resolvedAt',
   })
   resolvedAt?: Date;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
+    field: 'resolution',
   })
   resolution?: string;
 
   @Column({
     type: DataType.JSON,
     allowNull: true,
+    field: 'preventiveMeasures',
   })
   preventiveMeasures?: string[];
 
   @Column({
     type: DataType.JSON,
     allowNull: true,
+    field: 'metadata',
   })
   metadata?: Record<string, any>; // Additional context-specific data
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    field: 'updatedAt',
   })
   declare updatedAt: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    field: 'createdAt',
+  })
+  declare createdAt: Date;
 }

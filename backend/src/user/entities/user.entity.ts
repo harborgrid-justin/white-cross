@@ -124,14 +124,14 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'schoolid',
+    field: 'schoolId',
   })
   schoolId?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'districtid',
+    field: 'districtId',
   })
   districtId?: string;
 
@@ -148,42 +148,42 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    field: 'emailverified',
+    field: 'emailVerified',
   })
   emailVerified: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'emailverificationtoken',
+    field: 'emailVerificationToken',
   })
   emailVerificationToken?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: 'emailverificationexpires',
+    field: 'emailVerificationExpires',
   })
   emailVerificationExpires?: Date;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'passwordresettoken',
+    field: 'passwordResetToken',
   })
   passwordResetToken?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: 'passwordresetexpires',
+    field: 'passwordResetExpires',
   })
   passwordResetExpires?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: 'passwordchangedat',
+    field: 'passwordChangedAt',
   })
   passwordChangedAt?: Date;
 
@@ -191,14 +191,14 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    field: 'twofactorenabled',
+    field: 'twoFactorEnabled',
   })
   twoFactorEnabled: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'twofactorsecret',
+    field: 'twoFactorSecret',
   })
   twoFactorSecret?: string;
 
@@ -206,21 +206,21 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    field: 'failedloginattempts',
+    field: 'failedLoginAttempts',
   })
   failedLoginAttempts: number;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: 'lockoutuntil',
+    field: 'lockoutUntil',
   })
   lockoutUntil?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: 'lastpasswordchange',
+    field: 'lastPasswordChange',
   })
   lastPasswordChange?: Date;
 
@@ -228,7 +228,7 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    field: 'mustchangepassword',
+    field: 'mustChangePassword',
   })
   mustChangePassword: boolean;
 
@@ -380,4 +380,16 @@ export class User extends Model<UserAttributes> {
 
     return false;
   }
+
+  @Column({
+    type: DataType.DATE,
+    field: 'createdAt',
+  })
+  declare createdAt: Date;
+
+  @Column({
+    type: DataType.DATE,
+    field: 'updatedAt',
+  })
+  declare updatedAt: Date;
 }

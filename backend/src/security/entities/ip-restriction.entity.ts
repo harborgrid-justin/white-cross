@@ -36,42 +36,49 @@ export class IpRestrictionEntity extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'ipAddress',
   })
   ipAddress?: string; // Single IP or CIDR notation (e.g., "192.168.1.0/24")
 
   @Column({
     type: DataType.JSON,
     allowNull: true,
+    field: 'ipRange',
   })
   ipRange?: { start: string; end: string };
 
   @Column({
     type: DataType.JSON,
     allowNull: true,
+    field: 'countries',
   })
   countries?: string[]; // ISO country codes for geo restrictions
 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
+    field: 'reason',
   })
   reason: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'createdBy',
   })
   createdBy: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    field: 'createdAt',
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'expiresAt',
   })
   expiresAt?: Date;
 
@@ -79,6 +86,14 @@ export class IpRestrictionEntity extends Model {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
+    field: 'isActive',
   })
   isActive: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    field: 'updatedAt',
+  })
+  declare updatedAt: Date;
 }
