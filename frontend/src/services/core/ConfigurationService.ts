@@ -210,9 +210,9 @@ export class ConfigurationService {
     // Load API configuration
     const api: ApiConfig = {
       baseUrl: this.validateApiUrl(
-        import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
+        process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api'
       ),
-      timeout: this.parseNumber(import.meta.env.VITE_API_TIMEOUT) || 30000,
+      timeout: this.parseNumber(process.env.NEXT_PUBLIC_API_TIMEOUT) || 30000,
       retryAttempts: 3,
       retryDelay: 1000,
       enableLogging: environment === 'development',
@@ -288,7 +288,7 @@ export class ConfigurationService {
       resilience: Object.freeze(resilience),
       performance: Object.freeze(performance),
       environment,
-      version: import.meta.env.VITE_APP_VERSION || '1.0.0',
+      version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     });
   }
 
@@ -302,8 +302,8 @@ export class ConfigurationService {
    * @throws {Error} If HTTP is used in production environment
    */
   private validateApiUrl(url: string): string {
-    const isProduction = import.meta.env.PROD;
-    const isDevelopment = import.meta.env.DEV;
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isDevelopment = process.env.NODE_ENV === 'development';
     const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
 
     // Allow HTTP only for localhost in development
@@ -332,13 +332,13 @@ export class ConfigurationService {
    * @returns Environment name
    */
   private getEnvironment(): 'development' | 'staging' | 'production' | 'test' {
-    const mode = import.meta.env.MODE;
-    const nodeEnv = import.meta.env.VITE_NODE_ENV;
+    const mode = process.env.NODE_ENV;
+    const nodeEnv = process.env.NODE_ENV;
 
     if (mode === 'test' || nodeEnv === 'test') {
       return 'test';
     }
-    if (mode === 'production' || import.meta.env.PROD) {
+    if (mode === 'production' || process.env.NODE_ENV === 'production') {
       return 'production';
     }
     if (mode === 'staging') {

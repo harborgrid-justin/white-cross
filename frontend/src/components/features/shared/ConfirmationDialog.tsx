@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Modal } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, HelpCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

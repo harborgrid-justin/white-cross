@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useMemo } from 'react';
 import { AlertTriangle, RefreshCw, ExternalLink } from 'lucide-react';
 
@@ -17,7 +19,7 @@ interface BackendConnectionErrorProps {
  */
 const BackendConnectionError = React.memo<BackendConnectionErrorProps>(({
   onRetry,
-  apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
+  apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api'
 }) => {
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -141,7 +143,7 @@ const BackendConnectionError = React.memo<BackendConnectionErrorProps>(({
         </div>
 
         {/* Technical Details */}
-        {import.meta.env.DEV && (
+        {process.env.NODE_ENV === 'development' && (
           <details className="mb-6">
             <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 font-medium">
               Technical Details (Development Mode)

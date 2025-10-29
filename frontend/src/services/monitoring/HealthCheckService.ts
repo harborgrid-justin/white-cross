@@ -450,7 +450,7 @@ export class HealthCheckService {
       timestamp: Date.now(),
       checks,
       uptime: Date.now() - this.startTime,
-      version: import.meta.env.VITE_APP_VERSION || 'unknown',
+      version: process.env.NEXT_PUBLIC_APP_VERSION || 'unknown',
     };
 
     this.lastHealthCheck = result;

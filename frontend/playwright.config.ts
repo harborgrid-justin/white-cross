@@ -1,154 +1,170 @@
+/**
+ * Playwright End-to-End Testing Configuration - White Cross Healthcare Platform
+ *
+ * Comprehensive E2E testing configuration for healthcare workflows, user journeys,
+ * and critical patient care operations. Tests run across multiple browsers and
+ * devices to ensure consistent healthcare user experience.
+ *
+ * Key Features:
+ * - Multi-browser testing (Chromium, Firefox, WebKit)
+ * - Mobile device testing (iPhone, Android)
+ * - Parallel test execution for faster CI/CD
+ * - Automatic screenshot/video capture on failure
+ * - Trace collection for debugging failed tests
+ * - Integrated dev server management
+ *
+ * Healthcare Testing Scope:
+ * - Authentication and authorization flows
+ * - Student health record management
+ * - Medication administration workflows
+ * - Emergency contact updates
+ * - Appointment scheduling
+ * - Incident reporting
+ * - HIPAA compliance verification
+ *
+ * CI/CD Integration:
+ * - Automatic retry on failure (2 retries in CI)
+ * - Serial execution in CI for stability
+ * - HTML, JSON, and list reporters
+ * - Artifact retention for debugging
+ *
+ * Performance Considerations:
+ * - Parallel execution in local development
+ * - 2-minute server startup timeout
+ * - Trace collection only on retry (reduces overhead)
+ *
+ * @module playwright.config
+ * @see https://playwright.dev/docs/test-configuration
+ * @see https://playwright.dev/docs/test-sharding
+ * @version 1.0.0
+ * @since 2025-10-26
+ */
+
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration for White Cross Healthcare Management System
- * Migrated from Cypress configuration with enterprise-grade settings
+ * Read environment variables from file.
+ * Uncomment to load .env file for E2E test configuration.
+ * @see https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * Playwright test configuration for White Cross healthcare platform.
  *
- * @see https://playwright.dev/docs/test-configuration
+ * @type {import('@playwright/test').PlaywrightTestConfig}
  */
 export default defineConfig({
-  // Test directory
+  // E2E test directory location
   testDir: './tests/e2e',
 
-  // Test file pattern
-  testMatch: '**/*.spec.ts',
-
-  // Run tests in files in parallel
+  // Run tests within each file in parallel for faster execution
   fullyParallel: true,
 
-  // Fail the build on CI if you accidentally left test.only in the source code
+  // Prevent accidental test.only commits in CI builds
+  // Ensures all tests run in production pipelines
   forbidOnly: !!process.env.CI,
 
-  // Retry configuration for flaky test resilience (matching Cypress)
+  // Retry failed tests in CI only (2 retries)
+  // Helps handle flaky tests in automated pipelines
+  // No retries in local development for faster feedback
   retries: process.env.CI ? 2 : 0,
 
-  // Opt out of parallel tests on CI for more predictable results
+  // Workers configuration for parallel execution
+  // CI: 1 worker (serial) for stability and resource constraints
+  // Local: Undefined (uses CPU core count) for speed
   workers: process.env.CI ? 1 : undefined,
 
-  // Reporter configuration - multiple reporters for different purposes
+  // Test reporters for different output formats
+  // - HTML: Interactive report with screenshots/videos (playwright-report/)
+  // - JSON: Machine-readable results for CI/CD integration
+  // - List: Console output with test names and status
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'playwright-report/results.json' }],
-    ['junit', { outputFile: 'playwright-report/results.xml' }],
-    ['list']
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['list'],
   ],
 
-  // Global timeout settings (matching Cypress timeouts)
-  timeout: 60000, // 60s - matches Cypress pageLoadTimeout
-  expect: {
-    timeout: 10000 // 10s - matches Cypress defaultCommandTimeout
-  },
-
-  // Shared settings for all projects
+  // Shared settings applied to all browser projects
   use: {
-    // Base URL to use in actions like `await page.goto('/')`
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
+    // Base URL for all navigation (page.goto('/') -> http://localhost:3000/)
+    // Configure via PLAYWRIGHT_BASE_URL env var for different environments
+    baseURL: 'http://localhost:3000',
 
-    // Collect trace when retrying the failed test
+    // Trace collection strategy (on-first-retry)
+    // Collects detailed trace only when test retries
+    // Reduces storage overhead while enabling debugging
     trace: 'on-first-retry',
 
-    // Record video only on failure (matching Cypress behavior)
-    video: 'retain-on-failure',
-
-    // Screenshots on failure (matching Cypress)
+    // Screenshot capture strategy (only-on-failure)
+    // Captures visual state when healthcare workflows fail
+    // Aids in debugging authentication, form submissions, etc.
     screenshot: 'only-on-failure',
 
-    // Navigation timeout (matching Cypress)
-    navigationTimeout: 60000,
-
-    // Action timeout (matching Cypress defaultCommandTimeout)
-    actionTimeout: 10000,
-
-    // Viewport settings for healthcare applications (matching Cypress)
-    viewport: { width: 1440, height: 900 },
-
-    // Ignore HTTPS errors (matching Cypress chromeWebSecurity: false)
-    ignoreHTTPSErrors: true,
-
-    // Extra HTTP headers
-    extraHTTPHeaders: {
-      'Accept-Language': 'en-US,en;q=0.9'
-    },
-
-    // Locale and timezone
-    locale: 'en-US',
-    timezoneId: 'America/New_York',
-
-    // Context options for better test reliability
-    contextOptions: {
-      strictSelectors: true
-    }
+    // Video recording strategy (retain-on-failure)
+    // Records full test execution video only for failed tests
+    // Critical for debugging complex healthcare workflows
+    video: 'retain-on-failure',
   },
 
-  // Configure projects for major browsers
+  // Browser and device configurations for cross-platform testing
+  // Tests healthcare workflows across desktop and mobile devices
   projects: [
-    // Desktop Browsers
+    // Desktop Chrome (Chromium)
+    // Most common browser for school nurses accessing White Cross
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        viewport: { width: 1440, height: 900 }
-      }
+      use: { ...devices['Desktop Chrome'] },
     },
+
+    // Desktop Firefox
+    // Alternative browser for school district IT restrictions
     {
       name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        viewport: { width: 1440, height: 900 }
-      }
+      use: { ...devices['Desktop Firefox'] },
     },
+
+    // Desktop Safari (WebKit)
+    // Primary browser for Mac-based school environments
     {
       name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        viewport: { width: 1440, height: 900 }
-      }
+      use: { ...devices['Desktop Safari'] },
     },
 
-    // Mobile browsers (optional - uncomment if needed for healthcare mobile testing)
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
+    // Mobile Chrome (Android)
+    // School nurses accessing system from mobile devices
+    // Tests responsive healthcare dashboards on Android
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
 
-    // Tablet browsers (optional - useful for healthcare applications)
-    // {
-    //   name: 'iPad',
-    //   use: { ...devices['iPad Pro'] },
-    // }
+    // Mobile Safari (iOS)
+    // School nurses accessing system from iPads/iPhones
+    // Tests responsive healthcare dashboards on iOS
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
+    },
   ],
 
-  // Global setup and teardown
-  globalSetup: undefined, // Can add global setup file if needed
-  globalTeardown: undefined, // Can add global teardown file if needed
-
-  // Output folder for test artifacts
-  outputDir: 'test-results/',
-
-  // Folder for screenshots and videos
-  snapshotDir: 'tests/snapshots',
-
-  // Whether to preserve output between runs
-  preserveOutput: 'always',
-
-  // Maximum number of failures before stopping all tests
-  maxFailures: process.env.CI ? 10 : undefined,
-
-  // Web server configuration - start dev server before tests
+  // Development server configuration
+  // Automatically starts Next.js dev server before running tests
   webServer: {
+    // Command to start the development server
     command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000, // 2 minutes to start server
-    stdout: 'ignore',
-    stderr: 'pipe'
-  },
 
-  // Grep configuration for filtering tests
-  grep: process.env.TEST_GREP ? new RegExp(process.env.TEST_GREP) : undefined,
-  grepInvert: process.env.TEST_GREP_INVERT ? new RegExp(process.env.TEST_GREP_INVERT) : undefined
+    // URL to wait for before starting tests
+    // Ensures healthcare application is fully loaded
+    url: 'http://localhost:3000',
+
+    // Reuse existing server in local development (faster iteration)
+    // Always start fresh server in CI for consistency
+    reuseExistingServer: !process.env.CI,
+
+    // Server startup timeout (2 minutes)
+    // Allows time for Next.js compilation and healthcare data initialization
+    timeout: 120000,
+  },
 });
+

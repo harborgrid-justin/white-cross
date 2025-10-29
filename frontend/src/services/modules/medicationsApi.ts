@@ -44,12 +44,12 @@
  * @see {@link medication/api/MedicationFormularyApi} for drug database
  */
 
-import type { ApiClient } from '../core/ApiClient';
-import { API_ENDPOINTS } from '../../constants/api';
-import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
-import { createApiError } from '../core/errors';
+import type { ApiClient } from '@/services/core/ApiClient';
+import { API_ENDPOINTS } from '@/constants/api';
+import { ApiResponse, PaginatedResponse, buildPaginationParams } from '@/services/utils/apiUtils';
+import { createApiError } from '@/services/core/errors';
 import { z } from 'zod';
-import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
+import { auditService, AuditAction, AuditResourceType, AuditStatus } from '@/services/audit';
 import {
   Medication,
   StudentMedication,
@@ -1414,7 +1414,7 @@ export function createMedicationsApi(client: ApiClient): MedicationsApi {
 }
 
 // Export singleton instance
-import { apiClient } from '../core/ApiClient';
+import { apiClient } from '@/services/core/ApiClient';
 
 /**
  * Singleton MedicationsApi instance

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ComplianceReportRepository } from '../repositories/compliance-report.repository';
 import { ChecklistRepository } from '../repositories/checklist.repository';
 import { PolicyRepository } from '../repositories/policy.repository';
@@ -8,7 +8,7 @@ import { QueryStatisticsDto } from '../dto/statistics.dto';
 @Injectable()
 export class StatisticsService {
   constructor(
-    private readonly reportRepository: ComplianceReportRepository,
+    @Inject('ComplianceReportRepository') private readonly reportRepository: ComplianceReportRepository,
     private readonly checklistRepository: ChecklistRepository,
     private readonly policyRepository: PolicyRepository,
     private readonly violationRepository: ViolationRepository,

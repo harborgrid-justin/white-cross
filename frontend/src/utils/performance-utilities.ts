@@ -103,6 +103,10 @@ export function useThrottle<T extends (...args: any[]) => any>(
 /**
  * Intersection Observer hook for lazy loading and infinite scroll
  *
+ * @param {React.RefObject<Element>} ref - Reference to the element to observe
+ * @param {IntersectionObserverInit} options - Intersection observer options
+ * @returns {boolean} Whether the element is currently intersecting
+ *
  * @example
  * ```tsx
  * const ref = useRef<HTMLDivElement>(null);
@@ -116,7 +120,7 @@ export function useThrottle<T extends (...args: any[]) => any>(
  * ```
  */
 export function useIntersectionObserver(
-  ref: React.RefObject<Element>,
+  ref: React.RefObject<Element | null>,
   options: IntersectionObserverInit = {}
 ): boolean {
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -141,6 +145,12 @@ export function useIntersectionObserver(
 
 /**
  * Infinite scroll hook
+ *
+ * @param {object} config - Configuration object
+ * @param {() => Promise<void>} config.onLoadMore - Callback to load more items
+ * @param {boolean} [config.hasMore=true] - Whether there are more items to load
+ * @param {number} [config.threshold=0.5] - Intersection threshold
+ * @returns {{ ref: React.RefObject<HTMLDivElement | null>, isLoading: boolean }} Ref and loading state
  *
  * @example
  * ```tsx
@@ -170,7 +180,7 @@ export function useInfiniteScroll({
   threshold?: number;
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const observerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<HTMLDivElement | null>(null);
 
   const isVisible = useIntersectionObserver(observerRef, {
     threshold,
@@ -450,6 +460,9 @@ export function useIdleCallback(
 /**
  * Lazy image loading hook
  *
+ * @param {string} src - Image source URL
+ * @returns {{ ref: React.RefObject<HTMLImageElement | null>, loaded: boolean }} Ref and loaded state
+ *
  * @example
  * ```tsx
  * const { ref, loaded } = useLazyImage('image.jpg');
@@ -465,7 +478,7 @@ export function useIdleCallback(
  */
 export function useLazyImage(src: string) {
   const [loaded, setLoaded] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   const isVisible = useIntersectionObserver(imgRef, {
     threshold: 0.1,
@@ -543,6 +556,9 @@ export function useBatchUpdates() {
 /**
  * Resize observer hook
  *
+ * @param {React.RefObject<Element | null>} ref - Reference to the element to observe
+ * @returns {{ width: number, height: number }} Current element dimensions
+ *
  * @example
  * ```tsx
  * const ref = useRef<HTMLDivElement>(null);
@@ -556,7 +572,7 @@ export function useBatchUpdates() {
  * ```
  */
 export function useResizeObserver(
-  ref: React.RefObject<Element>
+  ref: React.RefObject<Element | null>
 ): { width: number; height: number } {
   const [size, setSize] = useState({ width: 0, height: 0 });
 

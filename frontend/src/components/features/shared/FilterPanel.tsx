@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';

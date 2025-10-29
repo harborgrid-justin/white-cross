@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-THEME-001 | DarkModeToggle.tsx - Dark Mode Toggle Component
  * Purpose: Toggle between light and dark mode themes

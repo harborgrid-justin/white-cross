@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Radio button components for single-selection input in healthcare forms.
  *
@@ -35,7 +37,7 @@
  *
  * @example Basic Radio Button
  * ```tsx
- * import { Radio } from '@/components/ui/inputs/Radio';
+ * import { Radio } from '@/components/ui/Inputs/Radio';
  *
  * function ConsentForm() {
  *   const [consent, setConsent] = useState('');
@@ -65,7 +67,7 @@
  *
  * @example RadioGroup for Visit Type Selection
  * ```tsx
- * import { RadioGroup, Radio } from '@/components/ui/inputs/Radio';
+ * import { RadioGroup, Radio } from '@/components/ui/Inputs/Radio';
  *
  * function AppointmentForm() {
  *   const [visitType, setVisitType] = useState('');

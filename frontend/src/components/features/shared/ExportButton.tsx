@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/overlays/Modal';
 import { Download, FileText, FileSpreadsheet, File, Check } from 'lucide-react';
 import { clsx } from 'clsx';

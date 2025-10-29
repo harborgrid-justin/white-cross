@@ -65,3 +65,5 @@ export {
   type CardContentProps,
   type CardFooterProps
 } from './Card';
+
+export { Separator, type SeparatorProps } from './Separator';

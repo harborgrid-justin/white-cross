@@ -212,8 +212,8 @@ export function isSuccessResponse<T>(
 /**
  * Type guard to check if response is an error
  *
- * @param response - The API response to check
- * @returns True if response is an error
+ * @param {ApiResponse<unknown> | ErrorResponse} response - The API response to check
+ * @returns {boolean} True if response is an error
  *
  * @example
  * ```typescript
@@ -223,7 +223,7 @@ export function isSuccessResponse<T>(
  * ```
  */
 export function isErrorResponse(
-  response: ApiResponse<any>
+  response: ApiResponse<unknown> | ErrorResponse
 ): response is ErrorResponse {
   return response.success === false && 'errors' in response;
 }

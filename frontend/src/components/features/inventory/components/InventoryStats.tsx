@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-038 | InventoryStats.tsx - React component or utility module
  * Purpose: react component or utility module

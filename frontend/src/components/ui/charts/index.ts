@@ -18,3 +18,10 @@ export type { AreaChartProps, AreaChartDataPoint, AreaChartSeries } from './Area
 
 export { DonutChart } from './DonutChart';
 export type { DonutChartProps, DonutChartDataPoint } from './DonutChart';
+
+// Advanced charts
+export { MultiSeriesLineChart } from './MultiSeriesLineChart';
+export { StackedBarChart } from './StackedBarChart';
+export { HeatMapChart } from './HeatMapChart';
+export { GaugeChart } from './GaugeChart';
+export { FunnelChart } from './FunnelChart';

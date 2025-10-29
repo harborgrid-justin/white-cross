@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   Table,
@@ -9,9 +11,9 @@ import {
   TableEmptyState,
   TableLoadingState
 } from '@/components/ui/data/Table';
-import { Input } from '@/components/ui/inputs/Input';
-import { Button } from '@/components/ui/buttons/Button';
-import { Select } from '@/components/ui/inputs/Select';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
 import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

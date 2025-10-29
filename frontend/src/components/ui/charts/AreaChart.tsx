@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * AreaChart Component - Cumulative Data Visualization
  *

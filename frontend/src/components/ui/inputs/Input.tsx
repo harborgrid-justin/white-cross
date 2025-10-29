@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-INPUT-001 | Input.tsx - Core Input Component
  * Purpose: Base input component with validation and states

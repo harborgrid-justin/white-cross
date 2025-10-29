@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-CHECKBOX-001 | Checkbox.tsx - Checkbox Component
  * Purpose: Checkbox input with label, description, and validation states

@@ -1,10 +1,12 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { DataTable, DataTableColumn } from '../shared/DataTable';
 import { BulkActionBar } from '../shared/BulkActionBar';
 import { StudentCard } from './StudentCard';
 import { StudentStatusBadge } from './StudentStatusBadge';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { Eye, Edit, Trash2, LayoutGrid, LayoutList } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

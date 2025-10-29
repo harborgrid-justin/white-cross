@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-014 | ErrorBoundary.tsx - React component or utility module
  * Purpose: react component or utility module
@@ -42,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
     });
 
     // Log error to monitoring service in production
-    if (import.meta.env.PROD) {
+    if (process.env.NODE_ENV === 'production') {
       // Here you would integrate with your error monitoring service
       // e.g., Sentry, LogRocket, etc.
     }
@@ -99,7 +101,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 }
               </p>
 
-              {import.meta.env.DEV && this.state.error && (
+              {process.env.NODE_ENV === 'development' && this.state.error && (
                 <details className="mt-2">
                   <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
                     Error Details (Development)

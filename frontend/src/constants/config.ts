@@ -1,221 +1,105 @@
 /**
- * WF-COMP-105 | config.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: React ecosystem
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Application Configuration Constants
+ * 
+ * Centralized configuration values for the Next.js application
+ * Environment-aware settings for API connections, timeouts, and feature flags
  */
 
 /**
- * Centralized configuration constants for the healthcare platform
- * Consolidates all configuration values for consistency and maintainability
+ * API Configuration
+ * Base URL and timeout settings for backend API calls
  */
-
-/**
- * Validate and enforce HTTPS in production environments
- * Security requirement: All healthcare data must be transmitted over HTTPS
- *
- * @param url - API base URL to validate
- * @returns Validated URL
- * @throws {Error} If HTTP is used in production environment
- */
-function validateApiUrl(url: string): string {
-  const isProduction = import.meta.env.PROD;
-  const isDevelopment = import.meta.env.DEV;
-  const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
-
-  // Allow HTTP only for localhost in development
-  if (url.startsWith('http://') && !isLocalhost && isProduction) {
-    throw new Error(
-      '[SECURITY ERROR] HTTP is not allowed in production. HIPAA compliance requires HTTPS for all PHI transmission. ' +
-      'Please configure VITE_API_BASE_URL with https:// protocol.'
-    );
-  }
-
-  // Warn if using HTTP in development (but allow it for localhost)
-  if (url.startsWith('http://') && !isLocalhost && isDevelopment) {
-    console.warn(
-      '[SECURITY WARNING] Using HTTP in development environment. ' +
-      'Ensure HTTPS is configured before deploying to production.'
-    );
-  }
-
-  return url;
-}
-
-// API Configuration
 export const API_CONFIG = {
-  BASE_URL: validateApiUrl(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'),
-  TIMEOUT: 30000, // 30 seconds
-  RETRY_ATTEMPTS: 3,
-  RETRY_DELAY: 1000, // 1 second
-  DEFAULT_HEADERS: {
-    'Content-Type': 'application/json',
+  /**
+   * Base URL for API requests
+   * - Docker environment: Uses backend service name (http://backend:3001/api/v1)
+   * - Local development: Uses localhost (http://localhost:3001/api/v1)
+   * - Can be overridden via NEXT_PUBLIC_API_URL environment variable
+   */
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+  
+  /**
+   * Internal API URL for server-side requests in Docker
+   * Used for API routes and server-side rendering
+   */
+  INTERNAL_API_URL: process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+  
+  /**
+   * Request timeout in milliseconds
+   * Default: 30 seconds
+   */
+  TIMEOUT: 30000,
+  
+  /**
+   * Retry configuration for failed requests
+   */
+  RETRY: {
+    MAX_RETRIES: 3,
+    RETRY_DELAY: 1000, // ms
+    RETRY_CODES: [408, 429, 500, 502, 503, 504],
   },
 } as const;
 
-// Pagination Configuration
-export const PAGINATION_CONFIG = {
-  DEFAULT_PAGE_SIZE: 10,
-  PAGE_SIZE_OPTIONS: [5, 10, 25, 50, 100],
-  MAX_PAGE_SIZE: 100,
+/**
+ * Application Environment
+ */
+export const APP_ENV = {
+  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
+  IS_PRODUCTION: process.env.NODE_ENV === 'production',
+  IS_TEST: process.env.NODE_ENV === 'test',
 } as const;
 
-// Search Configuration
-export const SEARCH_CONFIG = {
-  MIN_SEARCH_LENGTH: 2,
-  SEARCH_DELAY: 300, // ms
-  MAX_RESULTS: 100,
-  DEBOUNCE_DELAY: 300,
+/**
+ * Feature Flags
+ * Toggle features on/off based on environment or configuration
+ */
+export const FEATURE_FLAGS = {
+  ENABLE_DEBUG_LOGGING: process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true',
+  ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',
 } as const;
 
-// Date and Time Configuration
-export const DATE_CONFIG = {
-  FORMATS: {
-    DISPLAY: 'MMM dd, yyyy',
-    INPUT: 'yyyy-MM-dd',
-    DATETIME: 'MMM dd, yyyy HH:mm',
-    TIME: 'HH:mm',
-    API: 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx',
-  },
-  TIMEZONES: {
-    DEFAULT: 'America/New_York',
-  },
-} as const;
-
-// File Upload Configuration
-export const FILE_CONFIG = {
-  MAX_SIZE: 10 * 1024 * 1024, // 10MB
-  ALLOWED_TYPES: [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  ],
-  ALLOWED_EXTENSIONS: ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx'],
-} as const;
-
-// Form Validation Configuration
-export const VALIDATION_CONFIG = {
-  DEBOUNCE_DELAY: 300,
-  MAX_FIELD_LENGTH: 1000,
-  MIN_PASSWORD_LENGTH: 8,
-  EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PHONE_REGEX: /^[+]?[1-9][\d]{0,15}$/,
-} as const;
-
-// UI Configuration
-export const UI_CONFIG = {
-  TOAST_DURATION: 5000,
-  MODAL_ANIMATION_DURATION: 200,
-  DRAWER_WIDTH: 400,
-  MOBILE_BREAKPOINT: 768,
-  TABLET_BREAKPOINT: 1024,
-} as const;
-
-// Healthcare-specific Configuration
-export const HEALTHCARE_CONFIG = {
-  AGE_GROUPS: [
-    { value: 'infant', label: 'Infant (0-12 months)', minAge: 0, maxAge: 1 },
-    { value: 'toddler', label: 'Toddler (1-3 years)', minAge: 1, maxAge: 3 },
-    { value: 'preschool', label: 'Preschool (3-5 years)', minAge: 3, maxAge: 5 },
-    { value: 'school-age', label: 'School Age (6-12 years)', minAge: 6, maxAge: 12 },
-    { value: 'adolescent', label: 'Adolescent (13-18 years)', minAge: 13, maxAge: 18 },
-    { value: 'adult', label: 'Adult (18+ years)', minAge: 18, maxAge: 999 },
-  ],
-  STOCK_THRESHOLDS: {
-    CRITICAL: 5,
-    LOW: 20,
-    REORDER: 50,
-  },
-  EXPIRATION_WARNINGS: {
-    CRITICAL: 7,    // Red alert - expires within 7 days
-    WARNING: 30,    // Yellow alert - expires within 30 days
-    NOTICE: 90,     // Blue notice - expires within 90 days
-  },
-} as const;
-
-// Security Configuration
+/**
+ * Security Configuration
+ * HIPAA-compliant security settings for token management and session handling
+ */
 export const SECURITY_CONFIG = {
-  CSP_NONCE_LENGTH: 16,
-  MAX_LOGIN_ATTEMPTS: 5,
-  LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
-  SESSION_TIMEOUT: 8 * 60 * 60 * 1000, // 8 hours
-} as const;
-
-// Performance Configuration
-export const PERFORMANCE_CONFIG = {
-  VIRTUAL_SCROLL_THRESHOLD: 50,
-  LAZY_LOAD_THRESHOLD: 100,
-  CACHE_TTL: 5 * 60 * 1000, // 5 minutes
-  DEBOUNCE_THRESHOLD: 100,
-} as const;
-
-// Query Refetch Intervals (in milliseconds)
-export const QUERY_INTERVALS = {
-  REMINDERS: 60000, // 1 minute - for medication reminders
-  DASHBOARD: 30000, // 30 seconds - for real-time dashboard
-  NONE: false, // Disable auto-refetch
-  SHORT: 30000, // 30 seconds
-  MEDIUM: 60000, // 1 minute
-  LONG: 300000, // 5 minutes
-} as const;
-
-// Date Calculations (in milliseconds)
-export const DATE_CALCULATIONS = {
-  ONE_DAY: 24 * 60 * 60 * 1000,
-  ONE_WEEK: 7 * 24 * 60 * 60 * 1000,
-  ONE_MONTH: 30 * 24 * 60 * 60 * 1000,
-  THREE_MONTHS: 90 * 24 * 60 * 60 * 1000,
-  SIX_MONTHS: 180 * 24 * 60 * 60 * 1000,
-  ONE_YEAR: 365 * 24 * 60 * 60 * 1000,
-} as const;
-
-// Toast/Notification Configuration
-export const TOAST_CONFIG = {
-  DURATION: 5000, // 5 seconds
-  SUCCESS_DURATION: 3000, // 3 seconds
-  ERROR_DURATION: 7000, // 7 seconds
-  WARNING_DURATION: 5000, // 5 seconds
-  INFO_DURATION: 4000, // 4 seconds
-} as const;
-
-// Modal Configuration
-export const MODAL_CONFIG = {
-  Z_INDEX: 50,
-  OVERLAY_OPACITY: 0.5,
-  ANIMATION_DURATION: 200, // ms
-  MAX_WIDTH: {
-    SM: 'max-w-md',
-    MD: 'max-w-lg',
-    LG: 'max-w-2xl',
-    XL: 'max-w-4xl',
-    FULL: 'max-w-full',
+  /**
+   * Token storage location
+   * 'sessionStorage' for enhanced security (lost on tab close)
+   * 'localStorage' for persistent sessions (survives tab close)
+   */
+  STORAGE_TYPE: 'sessionStorage' as 'localStorage' | 'sessionStorage',
+  
+  /**
+   * Token expiration settings
+   */
+  TOKEN_EXPIRY: {
+    /** Default token lifetime in milliseconds (1 hour) */
+    DEFAULT: 60 * 60 * 1000,
+    /** Maximum token lifetime in milliseconds (8 hours) */
+    MAX: 8 * 60 * 60 * 1000,
+    /** Refresh token lifetime (7 days) */
+    REFRESH: 7 * 24 * 60 * 60 * 1000,
+  },
+  
+  /**
+   * Inactivity timeout in milliseconds (30 minutes)
+   * User will be logged out after this period of inactivity
+   */
+  INACTIVITY_TIMEOUT: 30 * 60 * 1000,
+  
+  /**
+   * Session activity check interval (1 minute)
+   */
+  ACTIVITY_CHECK_INTERVAL: 60 * 1000,
+  
+  /**
+   * Encryption settings
+   */
+  ENCRYPTION: {
+    /** Whether to encrypt tokens in storage */
+    ENABLED: process.env.NEXT_PUBLIC_ENCRYPT_TOKENS === 'true',
+    /** Algorithm for encryption */
+    ALGORITHM: 'AES-GCM',
   },
 } as const;
-
-// Export all configurations as a single object for easy importing
-export const APP_CONFIG = {
-  API: API_CONFIG,
-  PAGINATION: PAGINATION_CONFIG,
-  SEARCH: SEARCH_CONFIG,
-  DATE: DATE_CONFIG,
-  FILE: FILE_CONFIG,
-  VALIDATION: VALIDATION_CONFIG,
-  UI: UI_CONFIG,
-  HEALTHCARE: HEALTHCARE_CONFIG,
-  SECURITY: SECURITY_CONFIG,
-  PERFORMANCE: PERFORMANCE_CONFIG,
-  QUERY_INTERVALS,
-  DATE_CALCULATIONS,
-  TOAST: TOAST_CONFIG,
-  MODAL: MODAL_CONFIG,
-} as const;
-
-export default APP_CONFIG;

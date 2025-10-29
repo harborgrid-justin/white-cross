@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ChartWidget Component - Container for Chart Displays
  *

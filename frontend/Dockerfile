@@ -1,116 +1,87 @@
 # =============================================================================
-# White Cross Healthcare Platform - Frontend Dockerfile
-# Multi-stage build for optimized production deployment with Nginx
+# White Cross Healthcare Platform - Next.js Production Dockerfile
+# Multi-stage build optimized for production deployment
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Build Stage with Node.js and Vite
+# Stage 1: Dependencies
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS build
+FROM node:20-alpine AS deps
 
-LABEL maintainer="White Cross DevOps <devops@whitecross.com>"
-LABEL description="White Cross Healthcare Platform - Frontend Build Stage"
+# Install libc6-compat for compatibility
+RUN apk add --no-cache libc6-compat
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci && \
+# Install dependencies with clean install
+RUN npm ci --only=production && \
     npm cache clean --force
 
-# Copy source code
+# -----------------------------------------------------------------------------
+# Stage 2: Builder
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy application source
 COPY . .
 
-# Build arguments for environment configuration
-ARG VITE_API_BASE_URL
-ARG VITE_APP_ENVIRONMENT=production
-ARG VITE_ENABLE_DEBUG_TOOLS=false
-ARG VITE_ENABLE_ANALYTICS=true
-ARG VITE_SENTRY_DSN
+# Set build-time environment variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_ENVIRONMENT=production
+ARG NEXT_PUBLIC_SENTRY_DSN
+ARG NEXT_PUBLIC_ENABLE_ANALYTICS=true
 
-# Set environment variables for build
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3001/api}
-ENV VITE_APP_ENVIRONMENT=${VITE_APP_ENVIRONMENT}
-ENV VITE_ENABLE_DEBUG_TOOLS=${VITE_ENABLE_DEBUG_TOOLS}
-ENV VITE_ENABLE_ANALYTICS=${VITE_ENABLE_ANALYTICS}
-ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_ENVIRONMENT=$NEXT_PUBLIC_ENVIRONMENT
+ENV NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_ENABLE_ANALYTICS=$NEXT_PUBLIC_ENABLE_ANALYTICS
 
-# Build the application
+# Disable Next.js telemetry
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build Next.js application
 RUN npm run build
 
 # -----------------------------------------------------------------------------
-# Stage 2: Production Runtime with Nginx
+# Stage 3: Production Runner
 # -----------------------------------------------------------------------------
-FROM nginx:1.25-alpine AS production
+FROM node:20-alpine AS runner
 
-LABEL maintainer="White Cross DevOps <devops@whitecross.com>"
-LABEL description="White Cross Healthcare Platform - Production Frontend"
-LABEL version="1.0.0"
+# Security: Run as non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Install curl for health checks
-RUN apk add --no-cache curl
-
-# Remove default nginx configuration
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built application from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Create non-root user for nginx
-RUN addgroup -g 1001 -S nginx-runner && \
-    adduser -S nginx-runner -u 1001 -G nginx-runner && \
-    chown -R nginx-runner:nginx-runner /usr/share/nginx/html && \
-    chown -R nginx-runner:nginx-runner /var/cache/nginx && \
-    chown -R nginx-runner:nginx-runner /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R nginx-runner:nginx-runner /var/run/nginx.pid
-
-# Switch to non-root user
-USER nginx-runner
-
-# Expose port
-EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
-
-# -----------------------------------------------------------------------------
-# Stage 3: Development Runtime with Vite Dev Server
-# -----------------------------------------------------------------------------
-FROM node:20-alpine AS development
-
-LABEL maintainer="White Cross DevOps <devops@whitecross.com>"
-LABEL description="White Cross Healthcare Platform - Development Frontend"
-
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install dependencies
-RUN npm ci
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Copy source code (will be mounted as volume in docker-compose)
-COPY . .
+# Set ownership to nextjs user
+RUN chown -R nextjs:nodejs /app
 
-# Environment variables
-ENV VITE_APP_ENVIRONMENT=development
-ENV VITE_ENABLE_DEBUG_TOOLS=true
-ENV VITE_ENABLE_ANALYTICS=false
+# Switch to non-root user
+USER nextjs
 
-# Expose Vite dev server port
-EXPOSE 5173
+# Expose port
+EXPOSE 3000
 
-# Start Vite dev server with host binding
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start Next.js server
+CMD ["node", "server.js"]

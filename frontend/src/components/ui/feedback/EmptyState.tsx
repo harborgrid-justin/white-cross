@@ -1,69 +1,77 @@
 /**
- * WF-COMP-082 | EmptyState.tsx - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: React ecosystem
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: functional component
- * Last Updated: 2025-10-17 | File Type: .tsx
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * EmptyState Component
+ *
+ * Reusable empty state component for inventory pages.
+ * Displays helpful messaging and optional action button when no data is available.
+ *
+ * @module EmptyState
  */
 
-interface EmptyStateProps {
-  icon?: React.ReactNode
-  title: string
-  description?: string
+import React from 'react';
+
+export interface EmptyStateProps {
+  /** Icon to display (emoji or SVG element) */
+  icon?: React.ReactNode;
+  /** Main title text */
+  title: string;
+  /** Description or helpful message */
+  description?: string;
+  /** Optional action button */
   action?: {
-    label: string
-    onClick: () => void
-    variant?: 'primary' | 'secondary'
-  }
-  className?: string
-  testId?: string
+    label: string;
+    onClick: () => void;
+  };
+  /** Additional CSS classes */
+  className?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
-  icon,
+/**
+ * EmptyState component for displaying when no data is available
+ *
+ * @param props - EmptyState component props
+ * @returns Rendered empty state UI
+ *
+ * @example
+ * ```tsx
+ * <EmptyState
+ *   icon="📦"
+ *   title="No inventory items"
+ *   description="Get started by adding your first inventory item"
+ *   action={{
+ *     label: "Add Item",
+ *     onClick: () => navigate('/inventory/new')
+ *   }}
+ * />
+ * ```
+ */
+export default function EmptyState({
+  icon = '📦',
   title,
   description,
   action,
   className = '',
-  testId
-}) => {
+}: EmptyStateProps) {
   return (
-    <div 
-      data-testid={testId}
-      className={`text-center py-12 ${className}`}
-    >
-      <div className="flex flex-col items-center">
-        {icon && (
-          <div className="text-gray-400 mb-4">
-            {icon}
-          </div>
-        )}
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-            {description}
-          </p>
-        )}
-        {action && (
-          <button
-            data-testid={`${testId}-action`}
-            onClick={action.onClick}
-            className={
-              action.variant === 'secondary'
-                ? 'inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                : 'btn-primary inline-flex items-center'
-            }
-          >
-            {action.label}
-          </button>
-        )}
+    <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
+      <div className="mb-4 text-6xl opacity-50">
+        {icon}
       </div>
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        {title}
+      </h3>
+      {description && (
+        <p className="text-gray-600 max-w-md mb-6">
+          {description}
+        </p>
+      )}
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          {action.label}
+        </button>
+      )}
     </div>
-  )
+  );
 }

@@ -1,0 +1,156 @@
+/**
+ * Hooks Index - Enterprise SOA Architecture
+ *
+ * Central export point for all custom React hooks organized by domain.
+ * Enterprise-grade hook architecture with domain-driven design patterns.
+ *
+ * @module hooks
+ */
+
+// ======================
+// DOMAIN EXPORTS
+// ======================
+
+// Students Domain - Student management with PHI compliance  
+export * from './domains/students';
+
+// Medications Domain - Medication management with HIPAA compliance
+export * from './domains/medications';
+
+// Appointments Domain - Appointment scheduling and management
+export * from './domains/appointments';
+
+// Health Domain - Health records and medical data
+export * from './domains/health';
+
+// Emergency Domain - Emergency contacts and crisis management
+export * from './domains/emergency';
+
+// Inventory Domain - Supply chain and inventory management  
+export * from './domains/inventory';
+
+// Incidents Domain - Incident reporting and management
+export * from './domains/incidents';
+
+// ======================
+// SHARED UTILITIES
+// ======================
+
+// Shared Enterprise Hooks (error handling, compliance, caching)
+export * from './shared';
+
+// Cross-cutting Utilities (auth, validation, UI utilities)
+export * from './utilities';
+
+// ======================  
+// ENTERPRISE STANDARDS
+// ======================
+
+export * from './enterprise-standards';
+
+export {
+  useOptimisticStudentReactivate,
+  useOptimisticStudentTransfer,
+  useOptimisticStudentPermanentDelete,
+  useOptimisticStudents,
+  studentKeys,
+} from './useOptimisticStudents';
+
+export {
+  // Medication Management
+  useOptimisticMedicationCreate,
+  useOptimisticMedicationUpdate,
+  useOptimisticMedicationDelete,
+  useOptimisticPrescriptionCreate,
+  useOptimisticPrescriptionDeactivate,
+  useOptimisticMedicationAdministration,
+  useOptimisticInventoryAdd,
+  useOptimisticInventoryUpdate,
+  useOptimisticAdverseReactionReport,
+  useOptimisticMedications,
+  medicationKeys,
+} from './useOptimisticMedications';
+
+export {
+  // Incident Management
+  useOptimisticIncidentCreate,
+  useOptimisticIncidentUpdate,
+  useOptimisticIncidentDelete,
+  useOptimisticIncidents,
+
+  // Witness Statements
+  useOptimisticWitnessCreate,
+  useOptimisticWitnessUpdate,
+  useOptimisticWitnessVerify,
+  useOptimisticWitnessStatements,
+
+  // Follow-up Actions
+  useOptimisticFollowUpCreate,
+  useOptimisticFollowUpUpdate,
+  useOptimisticFollowUpComplete,
+  useOptimisticFollowUpActions,
+
+  incidentKeys,
+} from './useOptimisticIncidents';
+
+// ======================
+// DATA FETCHING HOOKS
+// ======================
+
+export { useStudents } from './useStudents';
+export { useStudentManagement } from './useStudentManagement';
+export { useMedicationsData } from './useMedicationsData';
+export { useMedicationAdministration } from './useMedicationAdministration';
+export { useHealthRecords } from './useHealthRecords';
+export { useHealthRecordsData } from './useHealthRecordsData';
+export { useEmergencyContacts } from './useEmergencyContacts';
+export { useAppointments } from './useAppointments';
+export { useInventory } from './useInventory';
+export { useInventoryManagement } from './useInventoryManagement';
+
+// ======================
+// UTILITY HOOKS
+// ======================
+
+export { useToast } from './useToast';
+export { useMedicationToast } from './useMedicationToast';
+export { useFormValidation } from './useFormValidation';
+export { useMedicationFormValidation } from './useMedicationFormValidation';
+export { useRouteState } from './useRouteState';
+export { useReminderManagement } from './useReminderManagement';
+export { useCommunicationOptions } from './useCommunicationOptions';
+
+// ======================
+// TYPE EXPORTS
+// ======================
+
+// Re-export commonly used types from hooks
+export type {
+  Student,
+  CreateStudentData,
+  UpdateStudentData,
+  TransferStudentRequest,
+} from '@/types/student.types';
+
+export type {
+  Medication,
+  StudentMedication,
+  MedicationLog,
+  InventoryItem,
+  AdverseReaction,
+  MedicationAdministrationData,
+  StudentMedicationFormData,
+  AdverseReactionData,
+} from '@/types/medications';
+
+export type {
+  IncidentReport,
+  WitnessStatement,
+  FollowUpAction,
+  CreateIncidentReportRequest,
+  UpdateIncidentReportRequest,
+  CreateWitnessStatementRequest,
+  UpdateWitnessStatementRequest,
+  CreateFollowUpActionRequest,
+  UpdateFollowUpActionRequest,
+} from '@/types/incidents';

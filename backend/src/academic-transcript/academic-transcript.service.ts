@@ -6,7 +6,7 @@
  */
 
 import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { Inject } from '@nestjs/common';
 import {
   AcademicRecord,
   SubjectGrade,
@@ -14,18 +14,18 @@ import {
   BehaviorRecord,
 } from './interfaces/academic-record.interface';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
-import { AcademicTranscript } from '../database/models/academic-transcript.model';
-import { Student } from '../database/models/student.model';
+import { AcademicTranscriptRepository } from '../database/repositories/impl/academic-transcript.repository';
+import { StudentRepository } from '../database/repositories/impl/student.repository';
 
 @Injectable()
 export class AcademicTranscriptService {
   private readonly logger = new Logger(AcademicTranscriptService.name);
 
   constructor(
-    @InjectModel(AcademicTranscript)
-    private readonly academicTranscriptModel: typeof AcademicTranscript,
-    @InjectModel(Student)
-    private readonly studentModel: typeof Student,
+    @Inject(AcademicTranscriptRepository)
+    private readonly academicTranscriptRepository: AcademicTranscriptRepository,
+    @Inject(StudentRepository)
+    private readonly studentRepository: StudentRepository,
   ) {}
 
   /**
@@ -70,19 +70,21 @@ export class AcademicTranscriptService {
       const { studentId, academicYear, semester, subjects, attendance, behavior, importedBy } = data;
 
       // Validate student exists
-      const student = await this.studentModel.findByPk(studentId);
+      const student = await this.studentRepository.findById(studentId);
       if (!student) {
         throw new NotFoundException(`Student with ID ${studentId} not found`);
       }
 
       // Check for existing record for same student, year, and semester
-      const existingTranscript = await this.academicTranscriptModel.findOne({
+      const existingResults = await this.academicTranscriptRepository.findMany({
         where: {
           studentId,
           academicYear,
           semester,
         },
+        pagination: { page: 1, limit: 1 }
       });
+      const existingTranscript = existingResults.data.length > 0 ? existingResults.data[0] : null;
 
       if (existingTranscript) {
         throw new ConflictException(
@@ -94,7 +96,7 @@ export class AcademicTranscriptService {
       const gpa = this.calculateGPA(subjects as SubjectGrade[]);
 
       // Create academic transcript record in database
-      const transcript = await this.academicTranscriptModel.create({
+      const transcript = await this.academicTranscriptRepository.create({
         studentId,
         academicYear,
         semester,
@@ -110,10 +112,10 @@ export class AcademicTranscriptService {
         importedBy,
         importedAt: new Date(),
         importSource: 'API',
-      });
+      }, { userId: importedBy || 'system', userRole: 'SYSTEM', timestamp: new Date() });
 
       this.logger.log(
-        `Academic transcript imported: Student ${studentId}, ${academicYear} ${semester}, GPA: ${gpa}, Credits: ${transcript.getTotalCredits()}, imported by ${importedBy}`,
+        `Academic transcript imported: Student ${studentId}, ${academicYear} ${semester}, GPA: ${gpa}, imported by ${importedBy}`,
       );
 
       // Convert to AcademicRecord interface
@@ -221,19 +223,17 @@ export class AcademicTranscriptService {
   async getAcademicHistory(studentId: string): Promise<AcademicRecord[]> {
     try {
       // Validate student exists
-      const student = await this.studentModel.findByPk(studentId);
+      const student = await this.studentRepository.findById(studentId);
       if (!student) {
         throw new NotFoundException(`Student with ID ${studentId} not found`);
       }
 
       // Query academic transcripts from database
-      const transcripts = await this.academicTranscriptModel.findAll({
+      const transcriptResults = await this.academicTranscriptRepository.findMany({
         where: { studentId },
-        order: [
-          ['academicYear', 'DESC'],
-          ['semester', 'DESC'],
-        ],
+        orderBy: { academicYear: 'DESC', semester: 'DESC' }
       });
+      const transcripts = transcriptResults.data;
 
       this.logger.log(
         `Fetching academic history for student ${studentId}: ${transcripts.length} records found`,
@@ -307,7 +307,7 @@ export class AcademicTranscriptService {
   ): Promise<any> {
     try {
       // Get student information
-      const student = await this.studentModel.findByPk(studentId);
+      const student = await this.studentRepository.findById(studentId);
       if (!student) {
         throw new NotFoundException(`Student with ID ${studentId} not found`);
       }
@@ -330,7 +330,7 @@ export class AcademicTranscriptService {
           studentNumber: student.studentNumber,
           grade: student.grade,
           dateOfBirth: student.dateOfBirth,
-          enrollmentDate: student.enrollmentDate,
+          enrollmentDate: (student as any).enrollmentDate,
         },
         summary: {
           totalRecords: academicHistory.length,

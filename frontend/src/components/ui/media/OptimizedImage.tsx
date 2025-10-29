@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-UI-301 | OptimizedImage.tsx - High-Performance Image Component
  *

@@ -301,7 +301,7 @@ const endpointUrlSchema = z.string()
   .refine(
     (url) => {
       // In production, prevent localhost URLs
-      if (import.meta.env.PROD) {
+      if (process.env.NODE_ENV === 'production') {
         try {
           const parsedUrl = new URL(url);
           return !['localhost', '127.0.0.1', '0.0.0.0'].includes(parsedUrl.hostname);

@@ -389,12 +389,14 @@ export class VendorApi {
   }
 }
 
-// Export singleton instance
-
-// Export default for convenience
-export default vendorApi;
-
 // Factory function for creating VendorApi instances
 export function createVendorApi(client: ApiClient): VendorApi {
   return new VendorApi(client);
 }
+
+// Singleton instance (will be initialized when ApiClient is available)
+import { apiClient } from '@/services/core/ApiClient';
+export const vendorApi = createVendorApi(apiClient);
+
+// Export default for convenience
+export default vendorApi;

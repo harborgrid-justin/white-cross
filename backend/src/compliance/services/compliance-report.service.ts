@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { ComplianceReportRepository } from '../../database/repositories/impl/compliance-report.repository';
 import { CreateComplianceReportDto, UpdateComplianceReportDto, GenerateReportDto, QueryComplianceReportDto } from '../dto/compliance-report.dto';
 import { ComplianceStatus } from '../entities/compliance-report.entity';
@@ -6,7 +6,10 @@ import { ExecutionContext } from '../../database/types';
 
 @Injectable()
 export class ComplianceReportService {
-  constructor(private readonly reportRepository: ComplianceReportRepository) {}
+  constructor(
+    @Inject('DatabaseComplianceReportRepository')
+    private readonly reportRepository: ComplianceReportRepository
+  ) {}
 
   async listReports(query: QueryComplianceReportDto) {
     const { page = 1, limit = 20, ...filters } = query;

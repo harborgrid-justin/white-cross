@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-TEXTAREA-001 | Textarea.tsx - Textarea Component
  * Purpose: Multi-line text input with validation and auto-resize

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * LineChart Component - Trend Visualization
  *

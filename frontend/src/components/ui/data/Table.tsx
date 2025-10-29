@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Enterprise-grade Table component system for displaying tabular data in healthcare applications.
  *

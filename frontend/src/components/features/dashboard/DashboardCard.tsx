@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * DashboardCard Component - Container for Dashboard Widgets
  *

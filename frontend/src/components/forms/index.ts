@@ -1,25 +1,23 @@
 /**
- * Form Components Exports
+ * Form Components
  *
- * Reusable form components integrated with React Hook Form + Zod.
+ * Specialized form components and form-related utilities.
+ * Note: Most form components are feature-specific and located within their respective feature directories.
  */
 
-// Base wrapper
-export { FormField } from './FormField';
-export type { FormFieldProps } from './FormField';
+// Form components are currently organized within their respective feature directories:
+// - Student forms: components/features/students/components/modals/StudentFormFields.tsx
+// - Medication forms: components/features/medications/components/MedicationFormModal.tsx
+// - Appointment forms: components/features/appointments/components/AppointmentFormModal.tsx
+// - Health records forms: within components/features/health-records/components/modals/
 
-// Input components
-export { FormInput } from './inputs/FormInput';
-export type { FormInputProps } from './inputs/FormInput';
+// This index currently serves as documentation of the form architecture.
+// Generic/shared form utilities could be added here in the future.
 
-export { FormTextArea } from './inputs/FormTextArea';
-export type { FormTextAreaProps } from './inputs/FormTextArea';
-
-export { FormSelect } from './inputs/FormSelect';
-export type { FormSelectProps, SelectOption } from './inputs/FormSelect';
-
-export { FormCheckbox } from './inputs/FormCheckbox';
-export type { FormCheckboxProps } from './inputs/FormCheckbox';
-
-export { FormDatePicker } from './inputs/FormDatePicker';
-export type { FormDatePickerProps } from './inputs/FormDatePicker';
+// Export empty object to make this a valid module
+export {}
+export * from './FormBuilderList';
+export * from './FormBuilder';
+export * from './FormRenderer';
+export * from './FormResponseViewer';
+export * from './FormFieldLibrary';

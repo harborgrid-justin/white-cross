@@ -35,10 +35,10 @@
  * @requires zod for runtime validation
  */
 
-import type { ApiClient } from '../core/ApiClient';
-import { API_ENDPOINTS } from '../../constants/api';
+import type { ApiClient } from '@/services/core/ApiClient';
+import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
-import { createApiError, createValidationError } from '../core/errors';
+import { createApiError, createValidationError } from '@/services/core/errors';
 import {
   DashboardStats,
   DashboardRecentActivity,
@@ -566,5 +566,5 @@ export function createDashboardApi(client: ApiClient): DashboardApi {
 }
 
 // Export singleton instance
-import { apiClient } from '../core/ApiClient'
+import { apiClient } from '@/services/core/ApiClient'
 export const dashboardApi = createDashboardApi(apiClient)

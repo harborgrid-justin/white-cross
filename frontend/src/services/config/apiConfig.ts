@@ -15,9 +15,6 @@ import { API_CONFIG } from '../../constants/config';
 import {
   API_ENDPOINTS,
   HTTP_STATUS,
-  CONTENT_TYPES,
-  REQUEST_CONFIG,
-  API_CONSTANTS
 } from '../../constants/api';
 import type { ITokenManager } from '../core/interfaces/ITokenManager';
 import { setupCsrfProtection } from '../security/CsrfProtection';
@@ -74,7 +71,7 @@ export function createTokenUtils(tokenManager: ITokenManager) {
 }
 
 // Export API constants for use in other modules
-export { API_ENDPOINTS, HTTP_STATUS, CONTENT_TYPES, REQUEST_CONFIG, API_CONSTANTS };
+export { API_ENDPOINTS, HTTP_STATUS };
 
 // Export API_CONFIG from constants
 export { API_CONFIG } from '../../constants/config';

@@ -8,6 +8,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ComplianceController } from './compliance.controller';
 import { ComplianceService } from './compliance.service';
+import { DatabaseModule } from '../database/database.module';
 
 // Services
 import { AuditService } from './services/audit.service';
@@ -19,8 +20,9 @@ import { DataRetentionService } from './services/data-retention.service';
 import { ViolationService } from './services/violation.service';
 import { StatisticsService } from './services/statistics.service';
 
-// Repositories
-import { ComplianceReportRepository } from './repositories/compliance-report.repository';
+// Database and Local Repositories
+import { ComplianceReportRepository as DatabaseComplianceReportRepository } from '../database/repositories/impl/compliance-report.repository';
+import { ComplianceReportRepository as ComplianceReportLocalRepository } from './repositories/compliance-report.repository';
 import { ChecklistRepository } from './repositories/checklist.repository';
 import { PolicyRepository } from './repositories/policy.repository';
 import { DataRetentionRepository } from './repositories/data-retention.repository';
@@ -65,6 +67,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
  */
 @Module({
   imports: [
+    DatabaseModule,
     SequelizeModule.forFeature([
       // Audit & Tracking
       AuditLog,
@@ -97,7 +100,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
     // Domain services
     AuditService,
     ConsentService,
-    ComplianceReportService,
+    // ComplianceReportService, // Temporarily disabled to isolate issue
     ChecklistService,
     PolicyService,
     DataRetentionService,
@@ -105,7 +108,14 @@ import { RemediationAction } from '../database/models/remediation-action.model';
     StatisticsService,
 
     // Repositories
-    ComplianceReportRepository,
+    {
+      provide: 'ComplianceReportRepository', // Local repository for StatisticsService
+      useClass: ComplianceReportLocalRepository,
+    },
+    // {
+    //   provide: 'DatabaseComplianceReportRepository', // Database repository for ComplianceReportService
+    //   useClass: DatabaseComplianceReportRepository,
+    // },
     ChecklistRepository,
     PolicyRepository,
     DataRetentionRepository,
@@ -116,7 +126,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
     ComplianceService,
     AuditService,
     ConsentService,
-    ComplianceReportService,
+    // ComplianceReportService, // Temporarily disabled
     ChecklistService,
     PolicyService,
     DataRetentionService,

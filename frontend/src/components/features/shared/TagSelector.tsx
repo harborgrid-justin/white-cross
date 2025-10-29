@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/Button';
 import { X, Plus, Check, Tag as TagIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

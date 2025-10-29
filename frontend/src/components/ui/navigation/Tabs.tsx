@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-TABS-001 | Tabs.tsx - Accessible Tabs Component
  * Purpose: Fully accessible tab navigation with keyboard support and ARIA

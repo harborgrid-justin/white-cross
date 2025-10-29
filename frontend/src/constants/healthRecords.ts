@@ -1,100 +1,149 @@
 /**
- * WF-COMP-107 | healthRecords.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: lucide-react
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Health Records Constants
+ *
+ * Constants related to health records management.
  */
 
-import { 
-  FileText, 
-  Heart, 
-  Shield, 
-  TrendingUp, 
-  AlertCircle, 
-  Stethoscope, 
-  Eye, 
-  Ear, 
-  Activity 
-} from 'lucide-react'
-import type { TabType, HealthRecordType } from '@/types/healthRecords'
+/**
+ * Health record types
+ */
+export const HEALTH_RECORD_TYPES = {
+  ALLERGY: 'allergy',
+  IMMUNIZATION: 'immunization',
+  MEDICATION: 'medication',
+  VITAL: 'vital',
+  SCREENING: 'screening',
+  CONDITION: 'condition',
+  PROCEDURE: 'procedure',
+  VISIT: 'visit'
+} as const
 
-export const RECORD_TYPES = [
-  { value: 'CHECKUP' as HealthRecordType, label: 'Regular Checkup', icon: Stethoscope },
-  { value: 'VACCINATION' as HealthRecordType, label: 'Vaccination', icon: Shield },
-  { value: 'ILLNESS' as HealthRecordType, label: 'Illness', icon: AlertCircle },
-  { value: 'INJURY' as HealthRecordType, label: 'Injury', icon: Activity },
-  { value: 'SCREENING' as HealthRecordType, label: 'Screening', icon: Eye },
-  { value: 'VISION' as HealthRecordType, label: 'Vision Test', icon: Eye },
-  { value: 'HEARING' as HealthRecordType, label: 'Hearing Test', icon: Ear },
-  { value: 'PHYSICAL_EXAM' as HealthRecordType, label: 'Physical Exam', icon: Stethoscope },
-]
+export type HealthRecordType = typeof HEALTH_RECORD_TYPES[keyof typeof HEALTH_RECORD_TYPES]
 
-export const HEALTH_TABS = [
-  { id: 'overview' as TabType, label: 'Overview', icon: FileText },
-  { id: 'records' as TabType, label: 'Health Records', icon: FileText },
-  { id: 'allergies' as TabType, label: 'Allergies', icon: AlertCircle },
-  { id: 'chronic' as TabType, label: 'Chronic Conditions', icon: Heart },
-  { id: 'vaccinations' as TabType, label: 'Vaccinations', icon: Shield },
-  { id: 'growth' as TabType, label: 'Growth Charts', icon: TrendingUp },
-  { id: 'screenings' as TabType, label: 'Screenings', icon: Eye },
-]
+/**
+ * Health record status options
+ */
+export const HEALTH_RECORD_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  RESOLVED: 'resolved',
+  PENDING: 'pending'
+} as const
 
-export const SEVERITY_LEVELS = [
-  { value: 'MILD', label: 'Mild', color: 'green' },
-  { value: 'MODERATE', label: 'Moderate', color: 'yellow' },
-  { value: 'SEVERE', label: 'Severe', color: 'orange' },
-  { value: 'LIFE_THREATENING', label: 'Life Threatening', color: 'red' },
+export type HealthRecordStatus = typeof HEALTH_RECORD_STATUS[keyof typeof HEALTH_RECORD_STATUS]
+
+/**
+ * Vital sign types
+ */
+export const VITAL_TYPES = {
+  TEMPERATURE: 'temperature',
+  BLOOD_PRESSURE: 'blood_pressure',
+  HEART_RATE: 'heart_rate',
+  RESPIRATORY_RATE: 'respiratory_rate',
+  OXYGEN_SATURATION: 'oxygen_saturation',
+  HEIGHT: 'height',
+  WEIGHT: 'weight',
+  BMI: 'bmi'
+} as const
+
+export type VitalType = typeof VITAL_TYPES[keyof typeof VITAL_TYPES]
+
+/**
+ * Allergy types
+ */
+export const ALLERGY_TYPES = {
+  FOOD: 'food',
+  MEDICATION: 'medication',
+  ENVIRONMENTAL: 'environmental',
+  INSECT: 'insect',
+  OTHER: 'other'
+} as const
+
+export type AllergyType = typeof ALLERGY_TYPES[keyof typeof ALLERGY_TYPES]
+
+/**
+ * Allergy severity levels
+ */
+export const ALLERGY_SEVERITY = {
+  MILD: 'mild',
+  MODERATE: 'moderate',
+  SEVERE: 'severe',
+  LIFE_THREATENING: 'life_threatening'
+} as const
+
+export type AllergySeverity = typeof ALLERGY_SEVERITY[keyof typeof ALLERGY_SEVERITY]
+
+/**
+ * Severity levels (alias for compatibility)
+ */
+export const SEVERITY_LEVELS = ALLERGY_SEVERITY
+
+/**
+ * Immunization status
+ */
+export const IMMUNIZATION_STATUS = {
+  COMPLETED: 'completed',
+  OVERDUE: 'overdue',
+  UPCOMING: 'upcoming',
+  EXEMPTED: 'exempted'
+} as const
+
+export type ImmunizationStatus = typeof IMMUNIZATION_STATUS[keyof typeof IMMUNIZATION_STATUS]
+
+/**
+ * Common vaccines
+ */
+export const COMMON_VACCINES = [
+  'MMR (Measles, Mumps, Rubella)',
+  'DTaP (Diphtheria, Tetanus, Pertussis)',
+  'Polio (IPV)',
+  'Hepatitis B',
+  'Hepatitis A',
+  'Varicella (Chickenpox)',
+  'Meningococcal',
+  'HPV (Human Papillomavirus)',
+  'Flu (Influenza)',
+  'COVID-19',
+  'Tdap (Tetanus, Diphtheria, Pertussis booster)'
 ] as const
 
+/**
+ * Growth chart percentiles
+ */
+export const GROWTH_PERCENTILES = [
+  5, 10, 25, 50, 75, 90, 95
+] as const
+
+/**
+ * Screening types
+ */
+export const SCREENING_TYPES = {
+  VISION: 'vision',
+  HEARING: 'hearing',
+  SCOLIOSIS: 'scoliosis',
+  DENTAL: 'dental',
+  BMI: 'bmi',
+  MENTAL_HEALTH: 'mental_health'
+} as const
+
+export type ScreeningType = typeof SCREENING_TYPES[keyof typeof SCREENING_TYPES]
+
+/**
+ * Condition status options
+ */
 export const CONDITION_STATUS_OPTIONS = [
-  { value: 'ACTIVE', label: 'Active', color: 'green' },
-  { value: 'MANAGED', label: 'Managed', color: 'blue' },
-  { value: 'IN_REMISSION', label: 'In Remission', color: 'blue' },
-  { value: 'RESOLVED', label: 'Resolved', color: 'gray' },
-  { value: 'UNDER_OBSERVATION', label: 'Under Observation', color: 'yellow' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'resolved', label: 'Resolved' },
+  { value: 'monitoring', label: 'Under Monitoring' }
 ] as const
 
-export const ALLERGY_TYPES = [
-  { value: 'MEDICATION', label: 'Medication' },
-  { value: 'FOOD', label: 'Food' },
-  { value: 'ENVIRONMENTAL', label: 'Environmental' },
-  { value: 'INSECT', label: 'Insect' },
-  { value: 'LATEX', label: 'Latex' },
-  { value: 'OTHER', label: 'Other' },
-] as const
-
-export const VACCINATION_PRIORITIES = [
-  { value: 'High', label: 'High', color: 'red' },
-  { value: 'Medium', label: 'Medium', color: 'yellow' },
-  { value: 'Low', label: 'Low', color: 'green' },
-] as const
-
-export const EXPORT_FORMATS = [
-  { value: 'CSV', label: 'CSV' },
-  { value: 'PDF', label: 'PDF' },
-  { value: 'Excel', label: 'Excel' },
-] as const
-
-export const REPORT_TYPES = [
-  { value: 'Summary', label: 'Summary' },
-  { value: 'Comprehensive', label: 'Comprehensive' },
-  { value: 'Compliance', label: 'Compliance' },
-] as const
-
-export const REMINDER_METHODS = [
-  { value: 'Email', label: 'Email' },
-  { value: 'SMS', label: 'SMS' },
-  { value: 'Both', label: 'Both' },
-] as const
-
-export const GROWTH_CHART_TYPES = [
-  { value: 'Height', label: 'Height' },
-  { value: 'Weight', label: 'Weight' },
-  { value: 'BMI', label: 'BMI' },
-  { value: 'Head Circumference', label: 'Head Circumference' },
-] as const
+/**
+ * Vaccination compliance status
+ */
+export const VaccinationComplianceStatus = {
+  COMPLIANT: 'compliant',
+  NON_COMPLIANT: 'non_compliant',
+  PARTIALLY_COMPLIANT: 'partially_compliant',
+  PENDING: 'pending'
+} as const

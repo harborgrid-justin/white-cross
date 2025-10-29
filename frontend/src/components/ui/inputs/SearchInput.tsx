@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-087 | SearchInput.tsx - React component or utility module
  * Purpose: react component or utility module

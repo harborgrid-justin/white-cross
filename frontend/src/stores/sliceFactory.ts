@@ -19,6 +19,7 @@ import {
   SerializedError,
   EntityState,
 } from '@reduxjs/toolkit';
+import type { WritableDraft } from '@reduxjs/toolkit';
 import type {
   BaseEntity,
   HealthcareEntity,
@@ -32,8 +33,25 @@ import type {
   AsyncThunkResult,
   AsyncThunkError,
   EntityQueryParams,
+  AuditRecord,
 } from './types/entityTypes';
 import { createInitialEntityState } from './types/entityTypes';
+
+/**
+ * Data classification type for healthcare entities
+ * Matches the HealthcareEntity dataClassification field
+ */
+export type DataClassification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'PHI';
+
+/**
+ * API error structure with proper typing
+ */
+export interface ApiError {
+  message: string;
+  status?: number;
+  code?: string;
+  validationErrors?: Record<string, string[]>;
+}
 
 /**
  * Enhanced entity state that extends RTK's EntityState
@@ -85,7 +103,7 @@ export interface SliceFactoryOptions<T extends BaseEntity> {
   /** Whether to include bulk operations */
   enableBulkOperations?: boolean;
   /** Custom reducers to add to the slice */
-  extraReducers?: Record<string, (state: EnhancedEntityState<T>, action: PayloadAction<any>) => void>;
+  extraReducers?: Record<string, (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<unknown>) => void>;
   /** Custom initial state */
   customInitialState?: Partial<EnhancedEntityState<T>>;
 }
@@ -192,7 +210,7 @@ export function createEntitySlice<
   // Create entity adapter for normalized state management
   const adapter = createEntityAdapter<T, string>({
     selectId: (entity: T) => entity.id,
-    sortComparer: (a, b) => {
+    sortComparer: (a: T, b: T) => {
       // Default sort by updatedAt descending
       if (!a.updatedAt || !b.updatedAt) return 0;
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
@@ -202,27 +220,54 @@ export function createEntitySlice<
   // Create initial state
   const initialState = createInitialEnhancedState<T>(adapter, customInitialState);
 
+  // Helper function to safely extract error information
+  const extractErrorInfo = (error: unknown): ApiError => {
+    if (error instanceof Error) {
+      return {
+        message: error.message,
+        status: (error as any).status,
+        code: (error as any).code,
+        validationErrors: (error as any).validationErrors,
+      };
+    }
+
+    if (typeof error === 'object' && error !== null) {
+      const err = error as Record<string, any>;
+      return {
+        message: err.message || 'An error occurred',
+        status: err.status,
+        code: err.code,
+        validationErrors: err.validationErrors,
+      };
+    }
+
+    return {
+      message: String(error) || 'An unknown error occurred',
+    };
+  };
+
   // Helper function to update loading state
   const updateLoadingState = (
-    state: any,
+    state: WritableDraft<EnhancedEntityState<T>>,
     operation: keyof EnhancedEntityState<T>['loading'],
     loading: Partial<LoadingState>
-  ) => {
+  ): void => {
     state.loading[operation] = { ...state.loading[operation], ...loading };
   };
 
   // Create async thunks
   const fetchList = createAsyncThunk(
     `${name}/fetchList`,
-    async (params: EntityQueryParams | void, { rejectWithValue }) => {
+    async (params: EntityQueryParams | void, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.getAll(params || {});
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || 'Failed to fetch list',
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || 'Failed to fetch list',
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -230,15 +275,16 @@ export function createEntitySlice<
 
   const fetchById = createAsyncThunk(
     `${name}/fetchById`,
-    async (id: string, { rejectWithValue }) => {
+    async (id: string, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.getById(id);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to fetch ${name}`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to fetch ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -246,16 +292,17 @@ export function createEntitySlice<
 
   const create = createAsyncThunk(
     `${name}/create`,
-    async (data: TCreate, { rejectWithValue }) => {
+    async (data: TCreate, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.create(data);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to create ${name}`,
-          status: error.status,
-          code: error.code,
-          validationErrors: error.validationErrors,
+          message: errorInfo.message || `Failed to create ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
+          validationErrors: errorInfo.validationErrors,
         });
       }
     }
@@ -263,16 +310,17 @@ export function createEntitySlice<
 
   const update = createAsyncThunk(
     `${name}/update`,
-    async ({ id, data }: { id: string; data: TUpdate }, { rejectWithValue }) => {
+    async ({ id, data }: { id: string; data: TUpdate }, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.update(id, data);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to update ${name}`,
-          status: error.status,
-          code: error.code,
-          validationErrors: error.validationErrors,
+          message: errorInfo.message || `Failed to update ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
+          validationErrors: errorInfo.validationErrors,
         });
       }
     }
@@ -280,15 +328,16 @@ export function createEntitySlice<
 
   const deleteEntity = createAsyncThunk(
     `${name}/delete`,
-    async (id: string, { rejectWithValue }) => {
+    async (id: string, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.delete(id);
         return { ...result, id };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to delete ${name}`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to delete ${name}`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -297,15 +346,16 @@ export function createEntitySlice<
   // Bulk operations (if enabled and API service supports them)
   const bulkDelete = enableBulkOperations && apiService.bulkDelete ? createAsyncThunk(
     `${name}/bulkDelete`,
-    async (ids: string[], { rejectWithValue }) => {
+    async (ids: string[], { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.bulkDelete!(ids);
         return { ...result, ids };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to bulk delete ${name}s`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to bulk delete ${name}s`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -313,15 +363,16 @@ export function createEntitySlice<
 
   const bulkUpdate = enableBulkOperations && apiService.bulkUpdate ? createAsyncThunk(
     `${name}/bulkUpdate`,
-    async (updates: Array<{ id: string; data: TUpdate }>, { rejectWithValue }) => {
+    async (updates: Array<{ id: string; data: TUpdate }>, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
       try {
         const result = await apiService.bulkUpdate!(updates);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorInfo = extractErrorInfo(error);
         return rejectWithValue({
-          message: error.message || `Failed to bulk update ${name}s`,
-          status: error.status,
-          code: error.code,
+          message: errorInfo.message || `Failed to bulk update ${name}s`,
+          status: errorInfo.status,
+          code: errorInfo.code,
         });
       }
     }
@@ -333,45 +384,45 @@ export function createEntitySlice<
     initialState,
     reducers: {
       // Entity management
-      setEntities: (state, action: PayloadAction<T[]>) => {
+      setEntities: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<T[]>) => {
         adapter.setAll(state, action.payload);
         state.cache.lastFetched = Date.now();
         state.cache.isStale = false;
       },
 
-      addEntity: (state, action: PayloadAction<T>) => {
+      addEntity: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<T>) => {
         adapter.addOne(state, action.payload);
       },
 
-      updateEntity: (state, action: PayloadAction<{ id: string; changes: Partial<T> }>) => {
+      updateEntity: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<{ id: string; changes: Partial<T> }>) => {
         adapter.updateOne(state, action.payload);
       },
 
-      removeEntity: (state, action: PayloadAction<string>) => {
+      removeEntity: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<string>) => {
         adapter.removeOne(state, action.payload);
         // Remove from selection if selected
-        state.selection.selectedIds = state.selection.selectedIds.filter(id => id !== action.payload);
+        state.selection.selectedIds = state.selection.selectedIds.filter((id: string) => id !== action.payload);
         if (state.selection.focusedId === action.payload) {
           state.selection.focusedId = null;
         }
       },
 
       // Pagination
-      setPagination: (state, action: PayloadAction<Partial<PaginationState>>) => {
+      setPagination: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<Partial<PaginationState>>) => {
         state.pagination = { ...state.pagination, ...action.payload };
       },
 
       // Sorting
-      setSort: (state, action: PayloadAction<SortState>) => {
+      setSort: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<SortState>) => {
         state.sort = action.payload;
       },
 
       // Filtering
-      setFilters: (state, action: PayloadAction<Partial<FilterState>>) => {
+      setFilters: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<Partial<FilterState>>) => {
         state.filters = { ...state.filters, ...action.payload };
       },
 
-      clearFilters: (state) => {
+      clearFilters: (state: WritableDraft<EnhancedEntityState<T>>) => {
         state.filters = {
           active: {},
           search: '',
@@ -380,11 +431,11 @@ export function createEntitySlice<
       },
 
       // Selection
-      setSelection: (state, action: PayloadAction<Partial<SelectionState>>) => {
+      setSelection: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<Partial<SelectionState>>) => {
         state.selection = { ...state.selection, ...action.payload };
       },
 
-      selectEntity: (state, action: PayloadAction<string>) => {
+      selectEntity: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<string>) => {
         const id = action.payload;
         if (state.selection.mode === 'single') {
           state.selection.selectedIds = [id];
@@ -396,39 +447,39 @@ export function createEntitySlice<
         state.selection.focusedId = id;
       },
 
-      deselectEntity: (state, action: PayloadAction<string>) => {
+      deselectEntity: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<string>) => {
         const id = action.payload;
-        state.selection.selectedIds = state.selection.selectedIds.filter(selectedId => selectedId !== id);
+        state.selection.selectedIds = state.selection.selectedIds.filter((selectedId: string) => selectedId !== id);
         if (state.selection.focusedId === id) {
           state.selection.focusedId = null;
         }
       },
 
-      clearSelection: (state) => {
+      clearSelection: (state: WritableDraft<EnhancedEntityState<T>>) => {
         state.selection.selectedIds = [];
         state.selection.focusedId = null;
         state.selection.isAllSelected = false;
       },
 
-      selectAll: (state) => {
+      selectAll: (state: WritableDraft<EnhancedEntityState<T>>) => {
         state.selection.selectedIds = [...state.ids] as string[];
         state.selection.isAllSelected = true;
       },
 
       // UI state
-      setUI: (state, action: PayloadAction<Partial<UIState>>) => {
+      setUI: (state: WritableDraft<EnhancedEntityState<T>>, action: PayloadAction<Partial<UIState>>) => {
         state.ui = { ...state.ui, ...action.payload };
       },
 
       // Cache management
-      invalidateCache: (state) => {
+      invalidateCache: (state: WritableDraft<EnhancedEntityState<T>>) => {
         state.cache.isStale = true;
         state.cache.lastFetched = 0;
       },
 
       // Error handling
-      clearErrors: (state) => {
-        Object.keys(state.loading).forEach(key => {
+      clearErrors: (state: WritableDraft<EnhancedEntityState<T>>) => {
+        Object.keys(state.loading).forEach((key: string) => {
           state.loading[key as keyof typeof state.loading].error = null;
         });
       },
@@ -437,10 +488,10 @@ export function createEntitySlice<
       ...extraReducers,
     },
 
-    extraReducers: (builder) => {
+    extraReducers: (builder: any) => {
       // Fetch list
       builder
-        .addCase(fetchList.pending, (state) => {
+        .addCase(fetchList.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
           updateLoadingState(state, 'list', {
             status: 'pending',
             isLoading: true,
@@ -448,7 +499,7 @@ export function createEntitySlice<
             startedAt: Date.now(),
           });
         })
-        .addCase(fetchList.fulfilled, (state, action) => {
+        .addCase(fetchList.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           adapter.setAll(state, action.payload.data);
           updateLoadingState(state, 'list', {
             status: 'fulfilled',
@@ -456,7 +507,7 @@ export function createEntitySlice<
             error: null,
             completedAt: Date.now(),
           });
-          
+
           // Update pagination if provided
           if (action.payload.pagination) {
             state.pagination = { ...state.pagination, ...action.payload.pagination };
@@ -464,11 +515,11 @@ export function createEntitySlice<
           if (action.payload.total !== undefined) {
             state.pagination.total = action.payload.total;
           }
-          
+
           state.cache.lastFetched = Date.now();
           state.cache.isStale = false;
         })
-        .addCase(fetchList.rejected, (state, action) => {
+        .addCase(fetchList.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           updateLoadingState(state, 'list', {
             status: 'rejected',
             isLoading: false,
@@ -479,7 +530,7 @@ export function createEntitySlice<
 
       // Fetch by ID
       builder
-        .addCase(fetchById.pending, (state) => {
+        .addCase(fetchById.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
           updateLoadingState(state, 'detail', {
             status: 'pending',
             isLoading: true,
@@ -487,7 +538,7 @@ export function createEntitySlice<
             startedAt: Date.now(),
           });
         })
-        .addCase(fetchById.fulfilled, (state, action) => {
+        .addCase(fetchById.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           adapter.upsertOne(state, action.payload.data);
           updateLoadingState(state, 'detail', {
             status: 'fulfilled',
@@ -496,7 +547,7 @@ export function createEntitySlice<
             completedAt: Date.now(),
           });
         })
-        .addCase(fetchById.rejected, (state, action) => {
+        .addCase(fetchById.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           updateLoadingState(state, 'detail', {
             status: 'rejected',
             isLoading: false,
@@ -507,7 +558,7 @@ export function createEntitySlice<
 
       // Create
       builder
-        .addCase(create.pending, (state) => {
+        .addCase(create.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
           updateLoadingState(state, 'create', {
             status: 'pending',
             isLoading: true,
@@ -515,7 +566,7 @@ export function createEntitySlice<
             startedAt: Date.now(),
           });
         })
-        .addCase(create.fulfilled, (state, action) => {
+        .addCase(create.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           adapter.addOne(state, action.payload.data);
           updateLoadingState(state, 'create', {
             status: 'fulfilled',
@@ -523,11 +574,11 @@ export function createEntitySlice<
             error: null,
             completedAt: Date.now(),
           });
-          
+
           // Update pagination
           state.pagination.total += 1;
         })
-        .addCase(create.rejected, (state, action) => {
+        .addCase(create.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           updateLoadingState(state, 'create', {
             status: 'rejected',
             isLoading: false,
@@ -538,7 +589,7 @@ export function createEntitySlice<
 
       // Update
       builder
-        .addCase(update.pending, (state) => {
+        .addCase(update.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
           updateLoadingState(state, 'update', {
             status: 'pending',
             isLoading: true,
@@ -546,7 +597,7 @@ export function createEntitySlice<
             startedAt: Date.now(),
           });
         })
-        .addCase(update.fulfilled, (state, action) => {
+        .addCase(update.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           adapter.upsertOne(state, action.payload.data);
           updateLoadingState(state, 'update', {
             status: 'fulfilled',
@@ -555,7 +606,7 @@ export function createEntitySlice<
             completedAt: Date.now(),
           });
         })
-        .addCase(update.rejected, (state, action) => {
+        .addCase(update.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           updateLoadingState(state, 'update', {
             status: 'rejected',
             isLoading: false,
@@ -566,7 +617,7 @@ export function createEntitySlice<
 
       // Delete
       builder
-        .addCase(deleteEntity.pending, (state) => {
+        .addCase(deleteEntity.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
           updateLoadingState(state, 'delete', {
             status: 'pending',
             isLoading: true,
@@ -574,7 +625,7 @@ export function createEntitySlice<
             startedAt: Date.now(),
           });
         })
-        .addCase(deleteEntity.fulfilled, (state, action) => {
+        .addCase(deleteEntity.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           adapter.removeOne(state, action.payload.id);
           updateLoadingState(state, 'delete', {
             status: 'fulfilled',
@@ -582,11 +633,11 @@ export function createEntitySlice<
             error: null,
             completedAt: Date.now(),
           });
-          
+
           // Update pagination
           state.pagination.total = Math.max(0, state.pagination.total - 1);
         })
-        .addCase(deleteEntity.rejected, (state, action) => {
+        .addCase(deleteEntity.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
           updateLoadingState(state, 'delete', {
             status: 'rejected',
             isLoading: false,
@@ -598,7 +649,7 @@ export function createEntitySlice<
       // Bulk operations
       if (bulkDelete) {
         builder
-          .addCase(bulkDelete.pending, (state) => {
+          .addCase(bulkDelete.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
             updateLoadingState(state, 'bulk', {
               status: 'pending',
               isLoading: true,
@@ -606,7 +657,7 @@ export function createEntitySlice<
               startedAt: Date.now(),
             });
           })
-          .addCase(bulkDelete.fulfilled, (state, action) => {
+          .addCase(bulkDelete.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
             adapter.removeMany(state, action.payload.ids);
             updateLoadingState(state, 'bulk', {
               status: 'fulfilled',
@@ -614,15 +665,15 @@ export function createEntitySlice<
               error: null,
               completedAt: Date.now(),
             });
-            
+
             // Update pagination
             state.pagination.total = Math.max(0, state.pagination.total - action.payload.ids.length);
-            
+
             // Clear selection
             state.selection.selectedIds = [];
             state.selection.isAllSelected = false;
           })
-          .addCase(bulkDelete.rejected, (state, action) => {
+          .addCase(bulkDelete.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
             updateLoadingState(state, 'bulk', {
               status: 'rejected',
               isLoading: false,
@@ -634,7 +685,7 @@ export function createEntitySlice<
 
       if (bulkUpdate) {
         builder
-          .addCase(bulkUpdate.pending, (state) => {
+          .addCase(bulkUpdate.pending, (state: WritableDraft<EnhancedEntityState<T>>) => {
             updateLoadingState(state, 'bulk', {
               status: 'pending',
               isLoading: true,
@@ -642,7 +693,7 @@ export function createEntitySlice<
               startedAt: Date.now(),
             });
           })
-          .addCase(bulkUpdate.fulfilled, (state, action) => {
+          .addCase(bulkUpdate.fulfilled, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
             adapter.upsertMany(state, action.payload.data);
             updateLoadingState(state, 'bulk', {
               status: 'fulfilled',
@@ -651,7 +702,7 @@ export function createEntitySlice<
               completedAt: Date.now(),
             });
           })
-          .addCase(bulkUpdate.rejected, (state, action) => {
+          .addCase(bulkUpdate.rejected, (state: WritableDraft<EnhancedEntityState<T>>, action: any) => {
             updateLoadingState(state, 'bulk', {
               status: 'rejected',
               isLoading: false,
@@ -699,22 +750,28 @@ export function createHealthcareEntitySlice<
     ...options,
     extraReducers: {
       ...options.extraReducers,
-      
+
       // Audit trail management
-      addAuditRecord: (state, action: PayloadAction<{ entityId: string; auditRecord: any }>) => {
+      addAuditRecord: (state: any, action: PayloadAction<{ entityId: string; auditRecord: AuditRecord }>) => {
         const { entityId, auditRecord } = action.payload;
         const entity = state.entities[entityId];
         if (entity && 'auditTrail' in entity) {
-          (entity as any).auditTrail = [...((entity as any).auditTrail || []), auditRecord];
+          const healthcareEntity = entity as HealthcareEntity;
+          if (healthcareEntity.auditTrail) {
+            healthcareEntity.auditTrail = [...healthcareEntity.auditTrail, auditRecord];
+          } else {
+            healthcareEntity.auditTrail = [auditRecord];
+          }
         }
       },
-      
+
       // Data classification updates
-      updateDataClassification: (state, action: PayloadAction<{ entityId: string; classification: any }>) => {
+      updateDataClassification: (state: any, action: PayloadAction<{ entityId: string; classification: DataClassification }>) => {
         const { entityId, classification } = action.payload;
         const entity = state.entities[entityId];
         if (entity && 'dataClassification' in entity) {
-          (entity as any).dataClassification = classification;
+          const healthcareEntity = entity as HealthcareEntity;
+          healthcareEntity.dataClassification = classification;
         }
       },
     },

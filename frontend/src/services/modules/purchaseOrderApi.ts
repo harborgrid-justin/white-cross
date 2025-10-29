@@ -537,12 +537,14 @@ export class PurchaseOrderApi {
   }
 }
 
-// Export singleton instance
-
-// Export default for convenience
-export default purchaseOrderApi;
-
 // Factory function for creating PurchaseOrderApi instances
 export function createPurchaseOrderApi(client: ApiClient): PurchaseOrderApi {
   return new PurchaseOrderApi(client);
 }
+
+// Singleton instance (will be initialized when ApiClient is available)
+import { apiClient } from '@/services/core/ApiClient';
+export const purchaseOrderApi = createPurchaseOrderApi(apiClient);
+
+// Export default for convenience
+export default purchaseOrderApi;

@@ -14,7 +14,7 @@
  * - PHI data handling
  * - Audit logging integration
  *
- * Last Updated: 2025-10-23 | File Type: .ts
+ * Last Updated: 2025-10-26 | File Type: .ts
  */
 
 import { ApolloClient, InMemoryCache, HttpLink, from, ApolloLink } from '@apollo/client';
@@ -22,7 +22,6 @@ import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 import { RetryLink } from '@apollo/client/link/retry';
 import toast from 'react-hot-toast';
-import { auditService } from '../services/audit';
 
 // ==========================================
 // CONFIGURATION
@@ -32,7 +31,7 @@ import { auditService } from '../services/audit';
  * Get GraphQL endpoint URL
  */
 function getGraphQLEndpoint(): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
   // GraphQL is at /graphql not /api/graphql
   return baseUrl.replace('/api', '/graphql');
 }
@@ -42,8 +41,11 @@ function getGraphQLEndpoint(): string {
  */
 function getAuthToken(): string | null {
   try {
-    const token = localStorage.getItem('auth_token');
-    return token;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token');
+      return token;
+    }
+    return null;
   } catch (error) {
     console.error('[Apollo] Failed to get auth token:', error);
     return null;
@@ -73,7 +75,7 @@ const authLink = setContext((_, { headers }) => {
       ...headers,
       ...(token && { authorization: `Bearer ${token}` }),
       'Content-Type': 'application/json',
-      'X-Client-Version': import.meta.env.VITE_APP_VERSION || '1.0.0',
+      'X-Client-Version': process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     },
   };
 });
@@ -100,103 +102,71 @@ const retryLink = new RetryLink({
 /**
  * Error Link - handles GraphQL and network errors
  */
-const errorLink = onError((errorResponse: any) => {
-  const { graphQLErrors, networkError, operation } = errorResponse;
+const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path, extensions }) => {
-      const errorCode = extensions?.code as string;
-      
-      // Log error in development
-      if (import.meta.env.DEV) {
-        console.error(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}, Code: ${errorCode}`
-        );
-      }
+      console.error(
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+      );
 
       // Handle authentication errors
-      if (errorCode === 'UNAUTHENTICATED') {
-        toast.error('Session expired. Please log in again.');
-        // Clear auth token
-        localStorage.removeItem('auth_token');
-        // Redirect to login (if not already there)
-        if (window.location.pathname !== '/login') {
+      if (extensions?.code === 'UNAUTHENTICATED') {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          toast.error('Session expired. Please login again.');
+          // Redirect to login - in Next.js we'll handle this differently
           window.location.href = '/login';
         }
         return;
       }
 
       // Handle authorization errors
-      if (errorCode === 'FORBIDDEN') {
-        toast.error('You do not have permission to perform this action.');
+      if (extensions?.code === 'FORBIDDEN') {
+        toast.error('You do not have permission to perform this action');
         return;
       }
 
-      // Handle not found errors
-      if (errorCode === 'NOT_FOUND') {
-        toast.error('The requested resource was not found.');
-        return;
+      // Show user-friendly error messages
+      if (!message.includes('Network')) {
+        toast.error(message || 'An unexpected error occurred');
       }
-
-      // Handle validation errors
-      if (errorCode === 'BAD_USER_INPUT') {
-        toast.error(`Validation error: ${message}`);
-        return;
-      }
-
-      // Audit log for errors
-      auditService.logFailure(
-        {
-          action: 'READ' as any, // Using generic READ action for GraphQL errors
-          resourceType: 'DOCUMENT' as any, // Using generic DOCUMENT type for API errors
-          context: {
-            operation: operation.operationName,
-            message,
-            code: errorCode,
-            path,
-          },
-        },
-        new Error(message)
-      );
-
-      // Show generic error for other cases
-      toast.error('An error occurred. Please try again.');
     });
   }
 
   if (networkError) {
-    console.error(`[Network error]: ${networkError}`);
-    
-    // Check if it's a connectivity issue
+    console.error(`[Network error]:`, networkError);
+
+    // Handle specific network errors
     if ('statusCode' in networkError) {
-      const statusCode = (networkError as any).statusCode;
-      
-      if (statusCode >= 500) {
-        toast.error('Server error. Please try again later.');
-      } else if (statusCode === 401) {
-        toast.error('Session expired. Please log in again.');
-        localStorage.removeItem('auth_token');
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-      } else {
-        toast.error('Network error. Please check your connection.');
+      switch (networkError.statusCode) {
+        case 401:
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('auth_token');
+            toast.error('Authentication required');
+            window.location.href = '/login';
+          }
+          break;
+        case 403:
+          toast.error('Access denied');
+          break;
+        case 404:
+          toast.error('Resource not found');
+          break;
+        case 429:
+          toast.error('Too many requests. Please try again later.');
+          break;
+        case 500:
+          toast.error('Server error. Please try again.');
+          break;
+        default:
+          if (networkError.statusCode >= 500) {
+            toast.error('Server error. Please try again.');
+          }
       }
     } else {
-      toast.error('Unable to connect to server. Please check your connection.');
+      // Connection errors
+      toast.error('Connection error. Please check your internet connection.');
     }
-
-    // Audit log for network errors
-    auditService.logFailure(
-      {
-        action: 'READ' as any, // Using generic READ action for network errors
-        resourceType: 'DOCUMENT' as any, // Using generic DOCUMENT type for API errors
-        context: {
-          operation: operation.operationName,
-          error: networkError.message,
-        },
-      },
-      networkError
-    );
   }
 });
 
@@ -205,7 +175,7 @@ const errorLink = onError((errorResponse: any) => {
 // ==========================================
 
 /**
- * Apollo Cache configuration with type policies
+ * Apollo InMemory Cache with healthcare-specific policies
  */
 const cache = new InMemoryCache({
   typePolicies: {
@@ -213,60 +183,53 @@ const cache = new InMemoryCache({
       fields: {
         // Pagination handling for contacts
         contacts: {
-          keyArgs: ['filters', 'orderBy', 'orderDirection'],
+          keyArgs: false,
           merge(existing, incoming, { args }) {
-            if (!existing) return incoming;
+            const merged = existing ? existing.slice(0) : [];
+            const { offset = 0 } = args || {};
             
-            // Handle pagination - append or replace based on page
-            if (args?.page === 1) {
-              return incoming;
+            for (let i = 0; i < incoming.length; ++i) {
+              merged[offset + i] = incoming[i];
             }
             
-            return {
-              ...incoming,
-              contacts: [...(existing.contacts || []), ...(incoming.contacts || [])],
-            };
+            return merged;
           },
         },
+        
         // Pagination handling for students
         students: {
-          keyArgs: ['filters', 'orderBy'],
+          keyArgs: false,
           merge(existing, incoming, { args }) {
-            if (!existing) return incoming;
+            const merged = existing ? existing.slice(0) : [];
+            const { offset = 0 } = args || {};
             
-            if (args?.page === 1) {
-              return incoming;
+            for (let i = 0; i < incoming.length; ++i) {
+              merged[offset + i] = incoming[i];
             }
             
-            return {
-              ...incoming,
-              students: [...(existing.students || []), ...(incoming.students || [])],
-            };
+            return merged;
           },
         },
       },
     },
+    
     Contact: {
-      keyFields: ['id'],
       fields: {
-        // Computed fields are handled by resolvers
+        // Handle computed fields
         fullName: {
-          read(_, { readField }) {
-            const firstName = readField('firstName');
-            const lastName = readField('lastName');
-            return `${firstName} ${lastName}`;
+          read(existing, { readField }) {
+            return existing || `${readField('firstName')} ${readField('lastName')}`;
           },
         },
       },
     },
+    
     Student: {
-      keyFields: ['id'],
       fields: {
+        // Handle computed fields
         fullName: {
-          read(_, { readField }) {
-            const firstName = readField('firstName');
-            const lastName = readField('lastName');
-            return `${firstName} ${lastName}`;
+          read(existing, { readField }) {
+            return existing || `${readField('firstName')} ${readField('lastName')}`;
           },
         },
       },
@@ -275,74 +238,47 @@ const cache = new InMemoryCache({
 });
 
 // ==========================================
-// APOLLO CLIENT INSTANCE
+// APOLLO CLIENT
 // ==========================================
 
 /**
- * Create Apollo Client instance
+ * Create and configure Apollo Client instance
  */
 export const apolloClient = new ApolloClient({
   link: from([
-    errorLink,
     retryLink,
+    errorLink,
     authLink,
     httpLink,
   ]),
   cache,
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-and-network',
       errorPolicy: 'all',
       notifyOnNetworkStatusChange: true,
     },
     query: {
-      fetchPolicy: 'cache-first',
       errorPolicy: 'all',
     },
     mutate: {
       errorPolicy: 'all',
     },
   },
-  // connectToDevTools is not available in the current Apollo Client version
+  connectToDevTools: process.env.NODE_ENV === 'development',
 });
 
-// ==========================================
-// UTILITY FUNCTIONS
-// ==========================================
-
 /**
- * Clear Apollo cache (called on logout)
+ * Reset Apollo Client cache and storage
  */
-export function clearApolloCache(): void {
-  apolloClient.clearStore().catch((error) => {
-    console.error('[Apollo] Failed to clear cache:', error);
-  });
-  
-  if (import.meta.env.DEV) {
-    console.log('[Apollo] Cache cleared');
+export async function resetApolloClient(): Promise<void> {
+  try {
+    await apolloClient.clearStore();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
+  } catch (error) {
+    console.error('[Apollo] Failed to reset client:', error);
   }
-}
-
-/**
- * Refetch all active queries
- */
-export function refetchActiveQueries(): Promise<any[]> {
-  return apolloClient.refetchQueries({
-    include: 'active',
-  });
-}
-
-/**
- * Get cache statistics
- */
-export function getApolloCacheStats() {
-  const cache = apolloClient.cache;
-  const extract = cache.extract();
-  
-  return {
-    entries: Object.keys(extract).length,
-    size: JSON.stringify(extract).length,
-  };
 }
 
 export default apolloClient;

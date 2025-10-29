@@ -82,7 +82,7 @@ class WebSocketService {
       return;
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
     this.updateState(ConnectionState.CONNECTING);
 

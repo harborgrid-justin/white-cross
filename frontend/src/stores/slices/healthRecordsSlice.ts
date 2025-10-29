@@ -1,704 +1,548 @@
 /**
- * @fileoverview Health Records Redux Slice
+ * @module pages/students/store/healthRecordsSlice
  *
- * Manages health records state for student health data including medical history,
- * immunizations, allergies, chronic conditions, and health assessments. This slice
- * provides centralized state management for all health-related Protected Health
- * Information (PHI) with built-in HIPAA compliance safeguards.
+ * Health Records Redux Slice - HIPAA-Compliant PHI Management
  *
- * @module stores/slices/healthRecordsSlice
+ * Manages student health records with strict HIPAA compliance requirements.
+ * Provides standardized CRUD operations for health record management using the
+ * entity slice factory pattern with enhanced security and audit logging.
  *
  * @remarks
- * **HIPAA Compliance**: This slice manages Protected Health Information (PHI) and
- * requires strict handling:
- * - All health record access must be audit logged by backend API
- * - PHI data is NEVER persisted to localStorage (session-only storage)
- * - Access requires proper authentication and authorization
- * - Data must be encrypted in transit and at rest
+ * **CRITICAL - HIPAA Compliance:** This slice manages Protected Health Information (PHI)
+ * and is subject to strict HIPAA regulations. All operations trigger comprehensive audit
+ * logging in the backend for compliance tracking.
  *
- * **FERPA Compliance**: Student health records are protected educational records
- * under FERPA. Access requires legitimate educational interest and proper consent.
+ * **PHI Data Handling:**
+ * - Health records contain highly sensitive PHI (diagnoses, treatments, medical history)
+ * - PHI data is NEVER persisted to localStorage
+ * - All PHI data stored in sessionStorage or memory only
+ * - Automatic data clearing on session end or logout
+ * - Encryption at rest and in transit (handled by backend API)
  *
- * **State Management Pattern**: Uses Redux Toolkit createSlice for immutable state
- * updates with simple reducer pattern. For production, consider migrating to entity
- * slice factory pattern for normalized state and standardized CRUD operations.
+ * **Audit Logging Integration:**
+ * - Every CRUD operation logs: user ID, timestamp, operation type, record ID
+ * - Read operations log PHI access for compliance audits
+ * - All audit logs are immutable and stored in backend database
+ * - Audit logs include IP address, device info for security tracking
  *
- * **Data Minimization**: Only fetch and display health records necessary for the
- * current task. Avoid loading all records unnecessarily to limit PHI exposure.
+ * **Cross-Tab Synchronization:**
+ * - Uses BroadcastChannel API (NOT localStorage) for cross-tab sync
+ * - Prevents PHI exposure through persistent storage
+ * - Real-time updates across browser tabs for multi-nurse workflows
  *
- * **Audit Logging**: All CRUD operations on health records trigger audit logs in
- * the backend API layer to maintain HIPAA-compliant access tracking.
+ * **Bulk Operations Disabled:**
+ * - Bulk operations intentionally disabled for safety
+ * - Each health record change requires individual review and validation
+ * - Prevents accidental mass updates to sensitive medical data
  *
- * @security
- * **PHI Data Fields**: HealthRecord contains sensitive medical information including:
- * - Medical diagnoses and conditions
- * - Treatment history and medications
- * - Immunization records
- * - Test results and health assessments
- * - Provider information and notes
+ * **Data Minimization:**
+ * - Only loads health records for currently active student
+ * - Automatic cache clearing when navigating away from student
+ * - Reduces PHI exposure per HIPAA data minimization principle
  *
- * **Security Requirements**:
- * - Must use HTTPS for all API communication
- * - JWT authentication required for all operations
- * - Role-based access control enforced by backend
- * - Session timeout for inactive users
- * - No PHI data in browser localStorage or sessionStorage
- *
- * @compliance HIPAA Privacy Rule (45 CFR 164.502)
- * @compliance HIPAA Security Rule (45 CFR 164.306)
- * @compliance FERPA (20 U.S.C. § 1232g; 34 CFR Part 99)
- *
- * @see {@link healthRecordsApi} for API integration
- * @see {@link useHealthRecords} for React hook integration
- * @see {@link HealthRecord} for type definition
+ * @see {@link healthRecordsApi} for backend API integration with audit logging
+ * @see {@link HealthRecord} for health record entity type definition
+ * @see {@link createEntitySlice} for factory implementation details
  *
  * @since 1.0.0
- *
- * @example
- * ```typescript
- * // Fetching health records for a student
- * import { useDispatch, useSelector } from 'react-redux';
- * import { healthRecordsSelectors } from '@/stores/slices/healthRecordsSlice';
- * import { healthRecordsApi } from '@/services/api';
- *
- * function StudentHealthView({ studentId }) {
- *   const dispatch = useDispatch();
- *   const records = useSelector(state =>
- *     selectHealthRecordsByStudent(studentId)(state)
- *   );
- *   const isLoading = useSelector(healthRecordsSelectors.selectLoading);
- *
- *   useEffect(() => {
- *     // Fetch records - triggers HIPAA audit log
- *     healthRecordsApi.getByStudentId(studentId)
- *       .then(data => {
- *         dispatch(healthRecordsActions.setRecords(data));
- *       })
- *       .catch(error => {
- *         dispatch(healthRecordsActions.setError(error.message));
- *       });
- *   }, [studentId]);
- *
- *   return (
- *     <div>
- *       {isLoading && <Spinner />}
- *       {records.map(record => (
- *         <HealthRecordCard key={record.id} record={record} />
- *       ))}
- *     </div>
- *   );
- * }
- * ```
- *
- * @example
- * ```typescript
- * // Filtering records by type
- * import { selectHealthRecordsByType } from '@/stores/slices/healthRecordsSlice';
- *
- * function ImmunizationsView({ studentId }) {
- *   const immunizations = useSelector(state =>
- *     selectHealthRecordsByType('immunization')(state).filter(
- *       record => record.studentId === studentId
- *     )
- *   );
- *
- *   return (
- *     <ImmunizationList immunizations={immunizations} />
- *   );
- * }
- * ```
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { HealthRecord } from '@/types/student.types';
+import { healthRecordsApi } from '@/services/api';
 
 /**
- * Health record entity interface.
+ * Data required to create a new health record.
  *
- * Represents a single health record entry for a student, including medical history,
- * immunizations, allergies, chronic conditions, assessments, and other health data.
+ * @interface CreateHealthRecordData
  *
- * @interface HealthRecord
- *
- * @property {string} id - Unique identifier for the health record (UUID)
- * @property {string} studentId - ID of student this record belongs to (foreign key)
- * @property {string} type - Health record type classification
- *   - 'immunization' - Vaccination records
- *   - 'allergy' - Allergy documentation
- *   - 'chronic_condition' - Ongoing medical conditions
- *   - 'medication' - Medication history
- *   - 'assessment' - Health screenings and assessments
- *   - 'injury' - Injury reports and treatment
- *   - 'illness' - Illness episodes and care
- *   - 'physical' - Physical examination results
- *   - 'dental' - Dental health records
- *   - 'vision' - Vision screening results
- *   - 'hearing' - Hearing screening results
- * @property {string} date - Record date in ISO 8601 format (e.g., '2024-03-15')
- * @property {any} data - Health record data payload (structure varies by type)
- *   - For immunizations: { vaccine, dose, manufacturer, lot, site, provider }
- *   - For allergies: { allergen, reaction, severity, treatment }
- *   - For conditions: { condition, diagnosis_date, icd10_code, treatment_plan }
- *   - For assessments: { type, results, measurements, notes, provider }
+ * @property {string} studentId - Student ID (PHI - links to student identity)
+ * @property {string} recordType - Type of health record (e.g., 'IMMUNIZATION', 'PHYSICAL_EXAM', 'VISIT', 'CONDITION')
+ * @property {string} recordDate - ISO date when record was created or event occurred
+ * @property {string} [provider] - Healthcare provider name or ID (optional)
+ * @property {string} [notes] - Clinical notes or observations (PHI - medical information)
+ * @property {string[]} [attachments] - Document IDs for attached files (e.g., lab results, forms)
  *
  * @remarks
- * **PHI Warning**: This interface contains Protected Health Information. All access
- * must be logged for HIPAA compliance. Never log this data to console or store in
- * localStorage.
+ * **PHI Content:** All fields except recordType and recordDate may contain PHI.
+ * Notes field commonly contains diagnoses, treatments, and medical observations.
  *
- * **Data Validation**: Backend validates health record data against type-specific
- * schemas. ICD-10 codes are validated for diagnoses, vaccine codes validated against
- * CDC schedules, etc.
- *
- * **Type Safety**: The `data` field is typed as `any` for flexibility but should be
- * validated against type-specific schemas. Consider creating type-specific interfaces
- * for production use (e.g., ImmunizationRecord, AllergyRecord).
- *
- * @security PHI - Protected Health Information
- * @compliance HIPAA Privacy Rule - Individually Identifiable Health Information
+ * **Validation:** Backend validates recordType against allowed values, ensures
+ * recordDate is not in future, and verifies studentId exists.
  *
  * @example
  * ```typescript
- * // Example immunization record
- * const immunizationRecord: HealthRecord = {
- *   id: 'rec-uuid-123',
- *   studentId: 'stu-uuid-456',
- *   type: 'immunization',
- *   date: '2024-09-15',
- *   data: {
- *     vaccine: 'Tdap',
- *     dose: '1',
- *     manufacturer: 'Sanofi Pasteur',
- *     lot: 'U3472',
- *     site: 'left deltoid',
- *     provider: 'Dr. Jane Smith, MD',
- *     notes: 'No adverse reactions observed'
- *   }
- * };
- * ```
- *
- * @example
- * ```typescript
- * // Example allergy record
- * const allergyRecord: HealthRecord = {
- *   id: 'rec-uuid-789',
- *   studentId: 'stu-uuid-456',
- *   type: 'allergy',
- *   date: '2023-02-10',
- *   data: {
- *     allergen: 'Penicillin',
- *     reaction: 'Hives, difficulty breathing',
- *     severity: 'severe',
- *     treatment: 'Epinephrine auto-injector',
- *     notes: 'Parent confirmed multiple reactions'
- *   }
+ * const newRecord: CreateHealthRecordData = {
+ *   studentId: 'student-123',
+ *   recordType: 'PHYSICAL_EXAM',
+ *   recordDate: '2024-08-15',
+ *   provider: 'Dr. Smith',
+ *   notes: 'Annual physical examination. All vitals normal.',
+ *   attachments: ['doc-456', 'doc-789']
  * };
  * ```
  */
-interface HealthRecord {
-  id: string;
+interface CreateHealthRecordData {
   studentId: string;
-  type: string;
-  date: string;
-  data: any;
+  recordType: string;
+  recordDate: string;
+  provider?: string;
+  notes?: string;
+  attachments?: string[];
 }
 
 /**
- * Health records slice state interface.
+ * Data allowed for updating an existing health record.
  *
- * Manages the complete state for health records including the record collection,
- * loading states, and error information.
+ * All fields are optional to support partial updates. StudentId cannot be changed
+ * after creation (immutable for audit trail integrity).
  *
- * @interface HealthRecordsState
+ * @interface UpdateHealthRecordData
  *
- * @property {HealthRecord[]} records - Array of all loaded health records
- *   - Stored in denormalized array format (consider normalizing for production)
- *   - Filtered and sorted in selectors, not in state
- *   - Never persisted to localStorage (HIPAA requirement)
- * @property {boolean} isLoading - Loading state indicator
- *   - true when API request in progress
- *   - false when request complete or idle
- *   - Used to show loading spinners and disable interactions
- * @property {string | null} error - Error message from failed operations
- *   - null when no error
- *   - Contains user-friendly error message on failure
- *   - Should not expose sensitive system information or PHI
+ * @property {string} [recordType] - Updated record type
+ * @property {string} [recordDate] - Updated record date
+ * @property {string} [provider] - Updated provider information
+ * @property {string} [notes] - Updated or appended clinical notes
+ * @property {string[]} [attachments] - Updated attachment list
  *
  * @remarks
- * **State Structure**: Simple denormalized array structure. For production with
- * large datasets, consider:
- * - Normalizing with entity adapter for O(1) lookups
- * - Pagination to limit memory usage
- * - Virtual scrolling for long lists
+ * **Audit Trail:** Updates create new audit log entries recording which fields changed.
+ * Original values are preserved in audit history for compliance.
  *
- * **Memory Management**: Clear records on logout or when navigating away from
- * health records section to minimize PHI exposure in memory.
- *
- * **Persistence**: This state is NEVER persisted to localStorage or sessionStorage
- * due to HIPAA requirements. All data is session-only and cleared on page refresh.
- *
- * @security PHI - Contains Protected Health Information
- * @compliance HIPAA - Session-only storage, no persistence
+ * **Notes Appending:** Common pattern is to append to existing notes rather than
+ * replace, maintaining full medical history timeline.
  */
-interface HealthRecordsState {
-  records: HealthRecord[];
-  isLoading: boolean;
-  error: string | null;
+interface UpdateHealthRecordData {
+  recordType?: string;
+  recordDate?: string;
+  provider?: string;
+  notes?: string;
+  attachments?: string[];
 }
 
 /**
- * Initial state for health records slice.
+ * Filter parameters for querying health records.
  *
- * Provides clean starting state with empty records, no loading, and no errors.
+ * Supports filtering by student, record type, date range, and provider with
+ * pagination support for large record sets.
  *
- * @const {HealthRecordsState}
+ * @interface HealthRecordFilters
+ *
+ * @property {string} [studentId] - Filter by specific student (required for getAll)
+ * @property {string} [recordType] - Filter by record type (e.g., 'IMMUNIZATION')
+ * @property {string} [startDate] - Filter by date range start (ISO format)
+ * @property {string} [endDate] - Filter by date range end (ISO format)
+ * @property {string} [provider] - Filter by healthcare provider
+ * @property {number} [page] - Page number for pagination (1-indexed)
+ * @property {number} [limit] - Number of records per page (default: 20)
+ *
+ * @remarks
+ * **Required studentId:** For HIPAA data minimization, health records queries
+ * must specify studentId to prevent broad PHI access.
+ *
+ * **Date Range Filtering:** Useful for generating compliance reports or
+ * reviewing records for specific time periods.
  */
-const initialState: HealthRecordsState = {
-  records: [],
-  isLoading: false,
-  error: null,
+interface HealthRecordFilters {
+  studentId?: string;
+  recordType?: string;
+  startDate?: string;
+  endDate?: string;
+  provider?: string;
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * API service adapter for health records.
+ *
+ * Wraps the healthRecordsApi service to conform to the EntityApiService interface
+ * required by the entity slice factory. Handles response transformation, error
+ * handling, and enforces studentId requirement for all operations.
+ *
+ * @const {EntityApiService<HealthRecord, CreateHealthRecordData, UpdateHealthRecordData>}
+ *
+ * @remarks
+ * **HIPAA Audit Logging:** All methods trigger comprehensive audit logging in the
+ * backend API layer, recording user, timestamp, operation, and record ID.
+ *
+ * **Required studentId:** The getAll method requires studentId parameter to enforce
+ * data minimization - prevents broad PHI queries that could expose multiple students'
+ * health information.
+ *
+ * **Error Handling:** API errors are caught and transformed to user-friendly messages
+ * without exposing PHI details in error messages.
+ *
+ * @see {@link healthRecordsApi} for underlying API implementation with audit logging
+ * @see {@link EntityApiService} for interface definition
+ */
+const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecordData, UpdateHealthRecordData> = {
+  /**
+   * Fetches all health records for a specific student with optional filtering.
+   *
+   * @param {HealthRecordFilters} [params] - Filter parameters (studentId required)
+   * @returns {Promise<{data: HealthRecord[], total?: number, pagination?: any}>} Health records and pagination
+   * @throws {Error} If studentId is missing or student not found
+   *
+   * @remarks
+   * **HIPAA Audit:** This operation logs PHI access for compliance audits.
+   *
+   * **Required Parameter:** studentId is required to enforce data minimization.
+   * Backend rejects queries without studentId to prevent broad PHI access.
+   *
+   * **Performance:** Returns paginated results for students with many records.
+   *
+   * @example
+   * ```typescript
+   * // Fetch all immunization records for a student
+   * const response = await healthRecordsApiService.getAll({
+   *   studentId: 'student-123',
+   *   recordType: 'IMMUNIZATION'
+   * });
+   * ```
+   */
+  async getAll(params?: HealthRecordFilters) {
+    // HealthRecordsApi requires studentId as first parameter
+    const studentId = params?.studentId || '';
+    if (!studentId) {
+      throw new Error('studentId is required for fetching health records');
+    }
+    const response = await healthRecordsApi.getRecords(studentId, params);
+    return {
+      data: response.data || [],
+      total: response.total,
+      pagination: response.pagination,
+    };
+  },
+
+  /**
+   * Fetches a single health record by ID.
+   *
+   * @param {string} id - Health record ID to fetch
+   * @returns {Promise<{data: HealthRecord}>} Single health record
+   * @throws {Error} If record not found or access denied
+   *
+   * @remarks
+   * **HIPAA Audit:** This operation logs PHI access for compliance audits.
+   *
+   * **Access Control:** Backend verifies user has permission to access this
+   * record based on role and student assignment.
+   *
+   * @example
+   * ```typescript
+   * const record = await healthRecordsApiService.getById('record-456');
+   * ```
+   */
+  async getById(id: string) {
+    const response = await healthRecordsApi.getRecordById(id);
+    return { data: response };
+  },
+
+  /**
+   * Creates a new health record.
+   *
+   * @param {CreateHealthRecordData} data - Health record creation data
+   * @returns {Promise<{data: HealthRecord}>} Created health record
+   * @throws {Error} If validation fails or studentId not found
+   *
+   * @remarks
+   * **HIPAA Audit:** Creation triggers audit log for new PHI record creation,
+   * recording who created the record, when, and for which student.
+   *
+   * **Validation:** Backend validates recordType, ensures recordDate is valid,
+   * and verifies studentId exists before creation.
+   *
+   * **Medical Record Integrity:** Creates immutable baseline record that can only
+   * be updated via audit-logged operations.
+   *
+   * @example
+   * ```typescript
+   * const newRecord = await healthRecordsApiService.create({
+   *   studentId: 'student-123',
+   *   recordType: 'IMMUNIZATION',
+   *   recordDate: '2024-09-01',
+   *   provider: 'School Nurse',
+   *   notes: 'Flu vaccine administered. No adverse reactions.'
+   * });
+   * ```
+   */
+  async create(data: CreateHealthRecordData) {
+    const response = await healthRecordsApi.createRecord(data as any);
+    return { data: response };
+  },
+
+  /**
+   * Updates an existing health record.
+   *
+   * @param {string} id - Health record ID to update
+   * @param {UpdateHealthRecordData} data - Updated health record data (partial)
+   * @returns {Promise<{data: HealthRecord}>} Updated health record
+   * @throws {Error} If record not found, access denied, or validation fails
+   *
+   * @remarks
+   * **HIPAA Audit:** Update triggers audit log recording which fields changed,
+   * preserving original values for compliance and legal requirements.
+   *
+   * **Partial Updates:** Supports updating only specific fields without affecting
+   * others, maintaining data integrity.
+   *
+   * **Medical Record Integrity:** Updates are appended to audit trail, original
+   * data is never physically deleted or overwritten.
+   *
+   * @example
+   * ```typescript
+   * // Append follow-up note to existing record
+   * const updated = await healthRecordsApiService.update('record-456', {
+   *   notes: record.notes + '\n\nFollow-up 9/15: No complications reported.'
+   * });
+   * ```
+   */
+  async update(id: string, data: UpdateHealthRecordData) {
+    const response = await healthRecordsApi.updateRecord(id, data as any);
+    return { data: response };
+  },
+
+  /**
+   * Deletes (soft-deletes) a health record.
+   *
+   * @param {string} id - Health record ID to delete
+   * @returns {Promise<{success: boolean}>} Deletion success status
+   * @throws {Error} If record not found or access denied
+   *
+   * @remarks
+   * **HIPAA Audit:** Deletion triggers audit log for data retention compliance.
+   *
+   * **Soft Delete:** Health records are soft-deleted (marked inactive) rather than
+   * physically deleted to maintain medical history and legal compliance. Physical
+   * deletion requires elevated permissions and separate retention policy procedures.
+   *
+   * **Medical-Legal Requirements:** Health records typically must be retained for
+   * minimum period (7 years for minors in most jurisdictions) per legal requirements.
+   *
+   * **Access After Deletion:** Soft-deleted records remain accessible to authorized
+   * users for compliance audits and legal discovery.
+   *
+   * @example
+   * ```typescript
+   * await healthRecordsApiService.delete('record-456');
+   * // Record is marked inactive, not physically deleted
+   * ```
+   */
+  async delete(id: string) {
+    await healthRecordsApi.deleteRecord(id);
+    return { success: true };
+  },
 };
+
+/**
+ * Health records slice factory instance.
+ *
+ * Creates the Redux slice with standardized CRUD operations, loading states,
+ * and error handling using the entity slice factory pattern.
+ *
+ * @const
+ *
+ * @remarks
+ * **Bulk Operations Disabled:** Intentionally disabled for health records to ensure
+ * each medical record change receives individual validation and review. This prevents
+ * accidental mass updates to sensitive medical data that could compromise patient safety
+ * or data integrity.
+ *
+ * **Normalized State:** Uses EntityAdapter for normalized state management with
+ * efficient O(1) lookups by record ID.
+ *
+ * **Medical Record Safety:** Individual operations ensure proper validation,
+ * access control, and audit logging for each health record change.
+ *
+ * @see {@link createEntitySlice} for factory implementation details
+ */
+const healthRecordsSliceFactory = createEntitySlice<HealthRecord, CreateHealthRecordData, UpdateHealthRecordData>(
+  'healthRecords',
+  healthRecordsApiService,
+  {
+    enableBulkOperations: false, // Disable bulk operations for sensitive health data
+  }
+);
 
 /**
  * Health records Redux slice.
  *
- * Creates the slice with reducers for managing health records state. Provides
- * simple CRUD state management without async thunks (API calls handled in components).
- *
- * @const
- */
-const healthRecordsSlice = createSlice({
-  name: 'healthRecords',
-  initialState,
-  reducers: {
-    /**
-     * Sets the complete health records array.
-     *
-     * Replaces all existing records with new array, typically after fetching from API.
-     * This is a complete replacement, not a merge.
-     *
-     * @param {HealthRecordsState} state - Current state
-     * @param {PayloadAction<HealthRecord[]>} action - Action with records payload
-     * @param {HealthRecord[]} action.payload - Array of health records to set
-     *
-     * @remarks
-     * **Usage Pattern**: Typically called after successful API fetch to populate state.
-     * Clears any existing records before setting new ones.
-     *
-     * **HIPAA Consideration**: When setting records, ensure they were fetched with
-     * proper authentication and audit logging was triggered by the API.
-     *
-     * @example
-     * ```typescript
-     * // After fetching from API
-     * const records = await healthRecordsApi.getByStudentId(studentId);
-     * dispatch(healthRecordsActions.setRecords(records));
-     * ```
-     *
-     * @example
-     * ```typescript
-     * // Clearing all records (e.g., on logout)
-     * dispatch(healthRecordsActions.setRecords([]));
-     * ```
-     */
-    setRecords: (state, action: PayloadAction<HealthRecord[]>) => {
-      state.records = action.payload;
-    },
-
-    /**
-     * Sets the loading state.
-     *
-     * Updates the loading indicator to show/hide loading UI elements like spinners
-     * and to disable user interactions during API requests.
-     *
-     * @param {HealthRecordsState} state - Current state
-     * @param {PayloadAction<boolean>} action - Action with loading state
-     * @param {boolean} action.payload - New loading state (true = loading, false = idle)
-     *
-     * @remarks
-     * **Usage Pattern**: Set to true before API call, false after completion or error.
-     *
-     * @example
-     * ```typescript
-     * // Before API call
-     * dispatch(healthRecordsActions.setLoading(true));
-     *
-     * try {
-     *   const records = await healthRecordsApi.getAll();
-     *   dispatch(healthRecordsActions.setRecords(records));
-     * } catch (error) {
-     *   dispatch(healthRecordsActions.setError(error.message));
-     * } finally {
-     *   dispatch(healthRecordsActions.setLoading(false));
-     * }
-     * ```
-     */
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-
-    /**
-     * Sets error state after failed operations.
-     *
-     * Updates error message to display user feedback after API failures or validation
-     * errors. Pass null to clear error.
-     *
-     * @param {HealthRecordsState} state - Current state
-     * @param {PayloadAction<string | null>} action - Action with error message
-     * @param {string | null} action.payload - Error message or null to clear
-     *
-     * @remarks
-     * **Security**: Error messages should be user-friendly and not expose sensitive
-     * system information, stack traces, or PHI data.
-     *
-     * **Error Handling Pattern**: Backend API should return sanitized error messages.
-     * Generic messages like "Failed to load health records" are preferred over
-     * detailed system errors.
-     *
-     * @example
-     * ```typescript
-     * // Setting error after failed API call
-     * try {
-     *   const records = await healthRecordsApi.getAll();
-     *   dispatch(healthRecordsActions.setRecords(records));
-     *   dispatch(healthRecordsActions.setError(null)); // Clear any previous errors
-     * } catch (error) {
-     *   dispatch(healthRecordsActions.setError(
-     *     'Failed to load health records. Please try again.'
-     *   ));
-     * }
-     * ```
-     *
-     * @example
-     * ```typescript
-     * // Clearing error (e.g., when user dismisses error message)
-     * dispatch(healthRecordsActions.setError(null));
-     * ```
-     */
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-  },
-});
-
-/**
- * Health records slice instance.
- *
  * @exports healthRecordsSlice
  */
-export { healthRecordsSlice };
+export const healthRecordsSlice = healthRecordsSliceFactory.slice;
 
 /**
- * Action creators for health records state management.
+ * Health records reducer for Redux store.
  *
- * Provides action creators for updating health records state:
- * - setRecords: Replace all records
- * - setLoading: Update loading state
- * - setError: Set or clear error message
+ * @exports healthRecordsReducer
+ */
+export const healthRecordsReducer = healthRecordsSlice.reducer;
+
+/**
+ * Action creators for health record state updates.
+ *
+ * Includes synchronous actions (setFilters, clearCache, etc.) and
+ * auto-generated actions from async thunks (pending, fulfilled, rejected).
  *
  * @exports healthRecordsActions
- *
- * @example
- * ```typescript
- * import { healthRecordsActions } from '@/stores/slices/healthRecordsSlice';
- * import { useDispatch } from 'react-redux';
- *
- * function MyComponent() {
- *   const dispatch = useDispatch();
- *
- *   const loadRecords = async () => {
- *     dispatch(healthRecordsActions.setLoading(true));
- *     try {
- *       const records = await healthRecordsApi.getAll();
- *       dispatch(healthRecordsActions.setRecords(records));
- *     } catch (error) {
- *       dispatch(healthRecordsActions.setError(error.message));
- *     } finally {
- *       dispatch(healthRecordsActions.setLoading(false));
- *     }
- *   };
- * }
- * ```
  */
-export const healthRecordsActions = healthRecordsSlice.actions;
+export const healthRecordsActions = healthRecordsSliceFactory.actions;
 
 /**
- * Async thunks placeholder.
+ * Entity adapter selectors for normalized health record state.
  *
- * Currently empty as API calls are handled in components. For production, consider
- * implementing async thunks with createAsyncThunk for standardized API integration.
- *
- * @exports healthRecordsThunks
- *
- * @remarks
- * **Future Enhancement**: Implement thunks for:
- * - fetchHealthRecords(studentId): Fetch all records for a student
- * - fetchHealthRecordById(id): Fetch single record
- * - createHealthRecord(data): Create new record
- * - updateHealthRecord(id, data): Update existing record
- * - deleteHealthRecord(id): Delete record
- *
- * @example
- * ```typescript
- * // Future implementation example
- * const fetchHealthRecords = createAsyncThunk(
- *   'healthRecords/fetchAll',
- *   async (studentId: string) => {
- *     const response = await healthRecordsApi.getByStudentId(studentId);
- *     return response;
- *   }
- * );
- * ```
- */
-export const healthRecordsThunks = {};
-
-/**
- * Basic selectors for health records state.
- *
- * Provides simple selectors for accessing health records state slices:
- * - selectAll: Get all health records
- * - selectLoading: Get loading state
- * - selectError: Get error state
+ * Provides efficient selectors for accessing health records:
+ * - selectAll: Get all health records as array
+ * - selectById: Get health record by ID
+ * - selectIds: Get all health record IDs
+ * - selectEntities: Get health records as normalized object
+ * - selectTotal: Get total count
  *
  * @exports healthRecordsSelectors
  *
  * @example
  * ```typescript
- * import { useSelector } from 'react-redux';
- * import { healthRecordsSelectors } from '@/stores/slices/healthRecordsSlice';
- *
- * function HealthRecordsList() {
- *   const records = useSelector(healthRecordsSelectors.selectAll);
- *   const isLoading = useSelector(healthRecordsSelectors.selectLoading);
- *   const error = useSelector(healthRecordsSelectors.selectError);
- *
- *   if (isLoading) return <Spinner />;
- *   if (error) return <ErrorMessage message={error} />;
- *
- *   return (
- *     <div>
- *       {records.map(record => (
- *         <HealthRecordCard key={record.id} record={record} />
- *       ))}
- *     </div>
- *   );
- * }
+ * const allRecords = useSelector(healthRecordsSelectors.selectAll);
+ * const record = useSelector(state => healthRecordsSelectors.selectById(state, 'record-123'));
  * ```
  */
-export const healthRecordsSelectors = {
-  /**
-   * Selects all health records from state.
-   *
-   * @param {any} state - Redux root state
-   * @returns {HealthRecord[]} Array of all health records
-   *
-   * @example
-   * ```typescript
-   * const allRecords = useSelector(healthRecordsSelectors.selectAll);
-   * ```
-   */
-  selectAll: (state: any) => state.healthRecords.records,
+export const healthRecordsSelectors = healthRecordsSliceFactory.adapter.getSelectors((state: any) => state.healthRecords);
 
-  /**
-   * Selects loading state.
-   *
-   * @param {any} state - Redux root state
-   * @returns {boolean} Current loading state
-   *
-   * @example
-   * ```typescript
-   * const isLoading = useSelector(healthRecordsSelectors.selectLoading);
-   * ```
-   */
-  selectLoading: (state: any) => state.healthRecords.isLoading,
+/**
+ * Async thunks for health record API operations.
+ *
+ * Provides thunks for all CRUD operations:
+ * - fetchAll: Fetch health records with filters (requires studentId)
+ * - fetchById: Fetch single health record
+ * - create: Create new health record
+ * - update: Update existing health record
+ * - delete: Delete (soft-delete) health record
+ *
+ * @exports healthRecordsThunks
+ *
+ * @example
+ * ```typescript
+ * // Fetch all immunization records for a student
+ * dispatch(healthRecordsThunks.fetchAll({
+ *   studentId: 'student-123',
+ *   recordType: 'IMMUNIZATION'
+ * }));
+ *
+ * // Create new health record
+ * dispatch(healthRecordsThunks.create(recordData));
+ * ```
+ */
+export const healthRecordsThunks = healthRecordsSliceFactory.thunks;
 
-  /**
-   * Selects error state.
-   *
-   * @param {any} state - Redux root state
-   * @returns {string | null} Current error message or null
-   *
-   * @example
-   * ```typescript
-   * const error = useSelector(healthRecordsSelectors.selectError);
-   * if (error) {
-   *   toast.error(error);
-   * }
-   * ```
-   */
-  selectError: (state: any) => state.healthRecords.error,
+/**
+ * Selector for health records by student.
+ *
+ * Returns all health records for a specific student, useful for displaying
+ * student's complete medical history.
+ *
+ * @param {any} state - Redux root state
+ * @param {string} studentId - Student ID to filter by
+ * @returns {HealthRecord[]} Health records for specified student
+ *
+ * @remarks
+ * **HIPAA Data Minimization:** Only returns records for specified student,
+ * preventing broad PHI exposure.
+ *
+ * @example
+ * ```typescript
+ * const studentRecords = useSelector(state =>
+ *   selectHealthRecordsByStudent(state, 'student-123')
+ * );
+ * ```
+ */
+export const selectHealthRecordsByStudent = (state: any, studentId: string): HealthRecord[] => {
+  const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
+  return allRecords.filter(record => record.studentId === studentId);
 };
 
 /**
- * Selector factory for filtering health records by student ID.
+ * Selector for health records by type.
  *
- * Returns a selector function that filters all health records to only those
- * belonging to the specified student.
- *
- * @param {string} studentId - Student ID to filter by
- * @returns {Function} Selector function that takes state and returns filtered records
- *
- * @remarks
- * **Performance**: For production use with large datasets, consider memoizing with
- * reselect's createSelector to prevent unnecessary recalculations.
- *
- * **HIPAA Consideration**: Only request records for students the current user has
- * authorization to access. Backend enforces access control but frontend should
- * respect authorization as well.
- *
- * @example
- * ```typescript
- * function StudentHealthView({ studentId }) {
- *   const studentRecords = useSelector(
- *     selectHealthRecordsByStudent(studentId)
- *   );
- *
- *   return (
- *     <div>
- *       <h2>Health Records for Student {studentId}</h2>
- *       {studentRecords.map(record => (
- *         <HealthRecordCard key={record.id} record={record} />
- *       ))}
- *     </div>
- *   );
- * }
- * ```
- *
- * @example
- * ```typescript
- * // With memoization for production
- * import { createSelector } from '@reduxjs/toolkit';
- *
- * const selectHealthRecordsByStudent = (studentId: string) =>
- *   createSelector(
- *     [healthRecordsSelectors.selectAll],
- *     (records) => records.filter(r => r.studentId === studentId)
- *   );
- * ```
- */
-export const selectHealthRecordsByStudent = (studentId: string) => (state: any) =>
-  state.healthRecords.records.filter((r: HealthRecord) => r.studentId === studentId);
-
-/**
- * Selector factory for filtering health records by type.
- *
- * Returns a selector function that filters all health records to only those
- * matching the specified type (e.g., 'immunization', 'allergy').
- *
- * @param {string} type - Health record type to filter by
- * @returns {Function} Selector function that takes state and returns filtered records
- *
- * @remarks
- * **Valid Types**: immunization, allergy, chronic_condition, medication, assessment,
- * injury, illness, physical, dental, vision, hearing
- *
- * **Use Cases**:
- * - Show only immunization records in immunization view
- * - Display allergies in medication administration screen
- * - Filter assessments for compliance reporting
- *
- * @example
- * ```typescript
- * function ImmunizationsList() {
- *   const immunizations = useSelector(
- *     selectHealthRecordsByType('immunization')
- *   );
- *
- *   return (
- *     <div>
- *       <h2>Immunization Records</h2>
- *       {immunizations.map(record => (
- *         <ImmunizationCard key={record.id} immunization={record} />
- *       ))}
- *     </div>
- *   );
- * }
- * ```
- *
- * @example
- * ```typescript
- * // Combining multiple type filters
- * const allergies = useSelector(selectHealthRecordsByType('allergy'));
- * const medications = useSelector(selectHealthRecordsByType('medication'));
- *
- * // Show warnings if student has allergies
- * if (allergies.length > 0) {
- *   showAllergyWarning(allergies);
- * }
- * ```
- */
-export const selectHealthRecordsByType = (type: string) => (state: any) =>
-  state.healthRecords.records.filter((r: HealthRecord) => r.type === type);
-
-/**
- * Selector for recent health records (most recent 10).
- *
- * Returns the 10 most recently added health records. Records are assumed to be
- * ordered by insertion order (most recent first).
+ * Returns health records of a specific type (e.g., 'IMMUNIZATION', 'PHYSICAL_EXAM',
+ * 'VISIT', 'CONDITION'), useful for generating type-specific reports.
  *
  * @param {any} state - Redux root state
- * @returns {HealthRecord[]} Array of up to 10 most recent health records
+ * @param {string} recordType - Record type to filter by
+ * @returns {HealthRecord[]} Health records of specified type
  *
  * @remarks
- * **Ordering Assumption**: Assumes records array is ordered with most recent first.
- * For production, consider:
- * - Sorting by date field explicitly
- * - Backend sorting with pagination
- * - Configurable limit instead of hardcoded 10
- *
- * **Performance**: Slice operation is O(1) but should still limit data fetched from
- * backend to avoid loading unnecessary records.
- *
- * **Use Cases**:
- * - Dashboard "Recent Activity" widget
- * - Quick overview of latest health events
- * - Compliance monitoring for recent assessments
+ * **Use Cases:**
+ * - Immunization compliance reports
+ * - Physical exam tracking
+ * - Chronic condition monitoring
+ * - Visit history analysis
  *
  * @example
  * ```typescript
- * function RecentHealthActivity() {
- *   const recentRecords = useSelector(selectRecentHealthRecords);
- *
- *   return (
- *     <Card title="Recent Health Activity">
- *       {recentRecords.map(record => (
- *         <ActivityItem key={record.id} record={record} />
- *       ))}
- *     </Card>
- *   );
- * }
- * ```
- *
- * @example
- * ```typescript
- * // With explicit date sorting
- * export const selectRecentHealthRecords = (state: any) => {
- *   const records = state.healthRecords.records;
- *   return [...records]
- *     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
- *     .slice(0, 10);
- * };
+ * const immunizations = useSelector(state =>
+ *   selectHealthRecordsByType(state, 'IMMUNIZATION')
+ * );
  * ```
  */
-export const selectRecentHealthRecords = (state: any) =>
-  state.healthRecords.records.slice(0, 10);
+export const selectHealthRecordsByType = (state: any, recordType: string): HealthRecord[] => {
+  const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
+  return allRecords.filter(record => record.recordType === recordType);
+};
 
 /**
- * Health records reducer for Redux store configuration.
+ * Selector for health records by provider.
  *
- * @exports default
+ * Returns health records documented by a specific healthcare provider,
+ * useful for provider-specific reporting and quality assurance.
+ *
+ * @param {any} state - Redux root state
+ * @param {string} provider - Provider name or ID to filter by
+ * @returns {HealthRecord[]} Health records by specified provider
  *
  * @example
  * ```typescript
- * // In store configuration
- * import { configureStore } from '@reduxjs/toolkit';
- * import healthRecordsReducer from '@/stores/slices/healthRecordsSlice';
- *
- * export const store = configureStore({
- *   reducer: {
- *     healthRecords: healthRecordsReducer,
- *     // ... other reducers
- *   },
- * });
+ * const nurseRecords = useSelector(state =>
+ *   selectHealthRecordsByProvider(state, 'Nurse Smith')
+ * );
  * ```
  */
-export default healthRecordsSlice.reducer;
+export const selectHealthRecordsByProvider = (state: any, provider: string): HealthRecord[] => {
+  const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
+  return allRecords.filter(record => record.provider === provider);
+};
+
+/**
+ * Selector for recent health records.
+ *
+ * Returns health records created or updated within the specified number of days,
+ * sorted by date (most recent first). Useful for displaying recent medical activity.
+ *
+ * @param {any} state - Redux root state
+ * @param {number} [days=30] - Number of days to look back (default: 30)
+ * @returns {HealthRecord[]} Recent health records sorted by date descending
+ *
+ * @remarks
+ * **Performance:** Consider using with pagination for students with extensive
+ * medical histories (100+ records).
+ *
+ * **Clinical Relevance:** Recent records (30 days) are typically most relevant
+ * for current treatment decisions and follow-ups.
+ *
+ * @example
+ * ```typescript
+ * // Get records from last 7 days
+ * const recentRecords = useSelector(state =>
+ *   selectRecentHealthRecords(state, 7)
+ * );
+ * ```
+ */
+export const selectRecentHealthRecords = (state: any, days: number = 30): HealthRecord[] => {
+  const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+
+  return allRecords.filter(record => {
+    const recordDate = new Date(record.recordDate);
+    return recordDate >= cutoffDate;
+  }).sort((a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime());
+};

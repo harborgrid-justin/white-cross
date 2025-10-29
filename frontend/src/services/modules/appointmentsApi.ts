@@ -85,9 +85,9 @@ import type {
   CreateAppointmentData,
   UpdateAppointmentData
 } from '../../types/appointments'
-import type { PaginatedResponse } from '../../types/common'
-import type { ApiClient } from '../core/ApiClient'
-import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtils'
+import type { PaginatedResponse } from '@/types/common'
+import type { ApiClient } from '@/services/core/ApiClient'
+import { extractApiData, handleApiError, buildUrlParams } from '@/services/utils/apiUtils'
 
 /**
  * Appointments API Interface
@@ -1081,5 +1081,5 @@ export { AppointmentsApiImpl }
 export type { IAppointmentsApi }
 
 // Export singleton instance
-import { apiClient } from '../core/ApiClient'
+import { apiClient } from '@/services/core/ApiClient'
 export const appointmentsApi = createAppointmentsApi(apiClient)

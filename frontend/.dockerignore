@@ -1,12 +1,40 @@
 # =============================================================================
-# Docker Ignore - Frontend
-# Excludes unnecessary files from Docker build context
+# Docker Ignore - Next.js White Cross Healthcare Platform
 # =============================================================================
 
-# Version Control
-.git
-.gitignore
-.gitattributes
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+test-results
+playwright-report
+tests/screenshots
+tests/videos
+
+# Build artifacts
+.next
+out
+dist
+build
+.cache
+.turbo
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.test
+!.env.example
+!.env.production.example
+!.env.staging.example
 
 # IDE and Editor
 .vscode
@@ -15,85 +43,56 @@
 *.swo
 *~
 .DS_Store
+*.iml
 
-# Dependencies
-node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Git
+.git
+.gitignore
+.gitattributes
 
-# Build Artifacts
-dist
-build
-*.log
-
-# Test Files and Coverage
-tests
-cypress
-**/*.test.ts
-**/*.test.tsx
-**/*.spec.ts
-**/*.spec.tsx
-coverage
-.nyc_output
-test-results
-playwright-report
-cypress/videos
-cypress/screenshots
-e2e
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
 
 # Documentation
 *.md
 !README.md
 docs
+.storybook
+storybook-static
 
-# Environment Files
-.env
-.env.local
-.env.*.local
-.env.production
+# Logs
+logs
+*.log
+npm-debug.log*
 
-# Temporary Files
+# Misc
+.prettierrc*
+.eslintrc*
+.editorconfig
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Testing
+jest.config.*
+playwright.config.*
+cypress
+cypress.config.*
+vitest.config.*
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+__mocks__
+
+# Temporary files
+.temp
 tmp
 temp
 *.tmp
 
-# Docker Files
-Dockerfile*
-.dockerignore
-nginx.conf
-
-# TypeScript Config
-tsconfig.json
-tsconfig.*.json
-
-# Vite Config
-vite.config.ts
-vitest.config.ts
-
-# Linting and Formatting
-.eslintrc*
-.prettierrc*
-.eslintcache
-eslint.config.js
-
-# Tailwind Config
-tailwind.config.js
-postcss.config.js
-
-# Playwright Config
-playwright.config.ts
-playwright.config.*.ts
-
-# Cypress Config
-cypress.config.ts
-
-# CI/CD
-.circleci
-.travis.yml
-.gitlab-ci.yml
-
-# Miscellaneous
-.cache
-.npm
-public/*.map
+# Backup files
+*.backup
+*.bak

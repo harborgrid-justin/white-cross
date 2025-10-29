@@ -2,7 +2,7 @@
  * Academic Transcript Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-ERROR-001 | GlobalErrorBoundary.tsx - Application-wide Error Boundary
  * Purpose: Catch and handle React errors gracefully with audit logging
@@ -53,7 +55,7 @@ const DefaultErrorFallback = React.memo<{
   errorInfo: ErrorInfo;
   onReset: () => void;
 }>(({ error, errorInfo, onReset }) => {
-  const isDev = import.meta.env.DEV;
+  const isDev = process.env.NODE_ENV === 'development';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

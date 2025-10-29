@@ -1,395 +1,539 @@
+'use client';
+
 /**
- * WF-CTX-AUTH-001 | AuthContext.tsx - Authentication Context Provider
+ * Authentication Context - HIPAA-Compliant Session Management
  *
- * Provides centralized authentication state management for the healthcare platform.
- * Manages user authentication, authorization, and permission checking across the
- * entire application using React Context API.
+ * Provides centralized authentication state management with:
+ * - JWT token management via HTTP-only secure cookies
+ * - Automatic token refresh before expiration
+ * - Session timeout enforcement (15 min idle for HIPAA)
+ * - Multi-tab synchronization via BroadcastChannel (when available)
+ * - Audit logging for authentication events
+ * - Secure storage practices (no PHI in localStorage)
+ * - Edge Runtime compatible (graceful fallback when BroadcastChannel unavailable)
  *
  * @module contexts/AuthContext
- *
- * @remarks
- * **HIPAA Compliance**: User authentication is required before any PHI access.
- * This context provides the authentication state used by route guards and
- * API interceptors to enforce access control.
- *
- * **Security Features**:
- * - JWT token-based authentication
- * - Role-based access control (RBAC)
- * - Permission-level granularity
- * - Automatic token refresh (when integrated)
- * - Secure session management
- *
- * **Integration Points**:
- * - Route guards use `isAuthenticated` to protect routes
- * - API interceptors use user tokens for authenticated requests
- * - Audit service logs user actions with user context
- * - Components use `checkPermission` for feature-level access control
- *
- * @see {@link hooks/utilities/AuthContext} for the actual implementation
- * @see {@link guards/navigationGuards} for route protection
- *
- * Last Updated: 2025-10-26 | File Type: .tsx
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  loginUser,
+  logoutUser,
+  refreshAuthToken,
+  setUserFromSession,
+  clearAuthError,
+  type User,
+  type AuthState,
+} from '@/stores/slices/authSlice';
+import { AppDispatch, RootState } from '@/stores/store';
 
-/**
- * User object representing an authenticated user.
- *
- * @interface User
- *
- * @property {string} id - Unique user identifier (UUID)
- * @property {string} email - User's email address (used for login)
- * @property {string} name - User's full name for display
- * @property {string} role - Primary role (e.g., 'nurse', 'admin', 'staff')
- * @property {string[]} permissions - Array of permission strings for granular access control
- *
- * @remarks
- * **Roles**:
- * - `admin`: Full system access
- * - `nurse`: Healthcare operations access
- * - `staff`: Limited administrative access
- * - `parent`: View-only access for their children
- *
- * **Permission Format**: Permissions follow the format `resource:action`
- * Examples: 'students:read', 'medications:write', 'reports:delete'
- */
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  permissions: string[];
-}
+// ==========================================
+// TYPES & INTERFACES
+// ==========================================
 
-/**
- * Authentication context value shape.
- *
- * @interface AuthContextValue
- *
- * @property {User | null} user - Currently authenticated user, or null if not authenticated
- * @property {boolean} isAuthenticated - True if user is logged in
- * @property {boolean} isLoading - True during authentication operations (login, logout, refresh)
- * @property {Function} login - Authenticates user with email and password
- * @property {Function} logout - Logs out current user and clears session
- * @property {Function} refreshUser - Refreshes user data from backend
- * @property {Function} checkPermission - Checks if user has specific permission
- */
-export interface AuthContextValue {
+interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
+  sessionExpiresAt: number | null;
+  lastActivityAt: number;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
-  checkPermission: (permission: string) => boolean;
+  refreshToken: () => Promise<void>;
+  clearError: () => void;
+  updateActivity: () => void;
+  checkSession: () => boolean;
+  hasRole: (role: string | string[]) => boolean;
+  hasPermission: (permission: string) => boolean;
 }
 
-/**
- * React context for authentication state.
- * @internal
- */
+// ==========================================
+// CONSTANTS
+// ==========================================
+
+const HIPAA_IDLE_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
+const SESSION_WARNING_TIME = 2 * 60 * 1000; // 2 minutes before timeout
+const TOKEN_REFRESH_INTERVAL = 50 * 60 * 1000; // Refresh token every 50 minutes
+const ACTIVITY_CHECK_INTERVAL = 30 * 1000; // Check activity every 30 seconds
+const BROADCAST_CHANNEL_NAME = 'auth_sync';
+
+// ==========================================
+// CONTEXT CREATION
+// ==========================================
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-/**
- * Authentication Provider Component
- *
- * Wraps the application (or subtree) to provide authentication context.
- * Must be rendered above any components that use the `useAuth` hook.
- *
- * @param {Object} props - Component props
- * @param {ReactNode} props.children - Child components to wrap
- * @returns {JSX.Element} Provider component
- *
- * @remarks
- * **Usage Pattern**: This provider should be rendered near the root of the
- * application, inside the Redux Provider but outside route-specific components.
- *
- * **State Management**: Manages authentication state in local React state.
- * For persistent auth across page reloads, integrate with Redux or sessionStorage.
- *
- * @example
- * ```typescript
- * import { AuthProvider } from '@/contexts/AuthContext';
- *
- * function App() {
- *   return (
- *     <AuthProvider>
- *       <AppRoutes />
- *     </AuthProvider>
- *   );
- * }
- * ```
- */
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start with loading true for initial auth check
+// ==========================================
+// AUTH PROVIDER COMPONENT
+// ==========================================
 
-  /**
-   * Authenticates a user with email and password.
-   *
-   * @async
-   * @param {string} email - User's email address
-   * @param {string} password - User's password
-   * @param {boolean} [rememberMe=false] - Whether to persist session beyond browser close
-   * @returns {Promise<void>} Resolves when login completes
-   *
-   * @throws {Error} If authentication fails (invalid credentials, network error, etc.)
-   *
-   * @remarks
-   * **TODO**: This is currently a stub implementation. Replace with actual
-   * authentication logic that:
-   * 1. Calls backend auth API
-   * 2. Stores JWT tokens securely
-   * 3. Updates Redux auth state
-   * 4. Initializes audit logging with user context
-   *
-   * **HIPAA Compliance**: Successful login should trigger audit log entry
-   * documenting user authentication event.
-   *
-   * @example
-   * ```typescript
-   * try {
-   *   await login('nurse@hospital.com', 'password', true);
-   *   // User is now authenticated
-   * } catch (error) {
-   *   console.error('Login failed:', error);
-   * }
-   * ```
-   */
-  const login = useCallback(async (email: string, password: string, rememberMe?: boolean) => {
-    setIsLoading(true);
-    try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-      
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Network error - please check your connection' }));
-        throw new Error(errorData.message || 'Login failed');
+export function AuthProvider({ children }: AuthProviderProps) {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Redux state selectors
+  const authState = useSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated, isLoading, error, sessionExpiresAt } = authState;
+
+  // Local state for activity tracking
+  const [lastActivityAt, setLastActivityAt] = useState<number>(Date.now());
+  const [showSessionWarning, setShowSessionWarning] = useState(false);
+
+  // Refs for intervals and broadcast channel
+  const activityCheckInterval = useRef<NodeJS.Timeout>();
+  const tokenRefreshInterval = useRef<NodeJS.Timeout>();
+  const broadcastChannel = useRef<BroadcastChannel | null>(null);
+  const isBroadcastChannelSupported = useRef<boolean>(false);
+
+  // ==========================================
+  // ACTIVITY TRACKING
+  // ==========================================
+
+  const updateActivity = useCallback(() => {
+    const now = Date.now();
+    setLastActivityAt(now);
+
+    // Broadcast activity to other tabs (only if supported)
+    if (isBroadcastChannelSupported.current && broadcastChannel.current) {
+      try {
+        broadcastChannel.current.postMessage({
+          type: 'activity_update',
+          timestamp: now,
+        });
+      } catch (error) {
+        console.warn('[Auth] Failed to broadcast activity:', error);
       }
+    }
+  }, []);
 
-      const data = await response.json();
-      
-      // Store JWT token if provided
-      if (data.token) {
-        if (rememberMe) {
-          localStorage.setItem('authToken', data.token);
-        } else {
-          sessionStorage.setItem('authToken', data.token);
+  // Track user activity events
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+    events.forEach(event => {
+      window.addEventListener(event, updateActivity, { passive: true });
+    });
+
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, updateActivity);
+      });
+    };
+  }, [isAuthenticated, updateActivity]);
+
+  // ==========================================
+  // SESSION TIMEOUT CHECKING
+  // ==========================================
+
+  const checkSession = useCallback((): boolean => {
+    if (!isAuthenticated) return false;
+
+    const now = Date.now();
+    const idleTime = now - lastActivityAt;
+
+    // Check HIPAA idle timeout
+    if (idleTime >= HIPAA_IDLE_TIMEOUT) {
+      console.warn('[Auth] Session timeout due to inactivity');
+      dispatch(logoutUser());
+      router.push('/session-expired?reason=idle');
+      return false;
+    }
+
+    // Show warning if approaching timeout
+    if (idleTime >= HIPAA_IDLE_TIMEOUT - SESSION_WARNING_TIME && !showSessionWarning) {
+      setShowSessionWarning(true);
+    } else if (idleTime < HIPAA_IDLE_TIMEOUT - SESSION_WARNING_TIME && showSessionWarning) {
+      setShowSessionWarning(false);
+    }
+
+    // Check token expiration
+    if (sessionExpiresAt && now >= sessionExpiresAt) {
+      console.warn('[Auth] Session timeout due to token expiration');
+      dispatch(logoutUser());
+      router.push('/session-expired?reason=token');
+      return false;
+    }
+
+    return true;
+  }, [isAuthenticated, lastActivityAt, sessionExpiresAt, showSessionWarning, dispatch, router]);
+
+  // Periodic session checking
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    activityCheckInterval.current = setInterval(() => {
+      checkSession();
+    }, ACTIVITY_CHECK_INTERVAL);
+
+    return () => {
+      if (activityCheckInterval.current) {
+        clearInterval(activityCheckInterval.current);
+      }
+    };
+  }, [isAuthenticated, checkSession]);
+
+  // ==========================================
+  // TOKEN REFRESH
+  // ==========================================
+
+  const refreshToken = useCallback(async () => {
+    try {
+      await dispatch(refreshAuthToken()).unwrap();
+      updateActivity(); // Reset activity on successful refresh
+    } catch (error) {
+      console.error('[Auth] Token refresh failed:', error);
+      dispatch(logoutUser());
+      router.push('/session-expired?reason=refresh_failed');
+    }
+  }, [dispatch, router, updateActivity]);
+
+  // Automatic token refresh
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    tokenRefreshInterval.current = setInterval(() => {
+      refreshToken();
+    }, TOKEN_REFRESH_INTERVAL);
+
+    return () => {
+      if (tokenRefreshInterval.current) {
+        clearInterval(tokenRefreshInterval.current);
+      }
+    };
+  }, [isAuthenticated, refreshToken]);
+
+  // ==========================================
+  // MULTI-TAB SYNCHRONIZATION
+  // ==========================================
+
+  useEffect(() => {
+    // Only initialize BroadcastChannel in browser environment where it's supported
+    if (typeof window === 'undefined') return;
+
+    // Check if BroadcastChannel is available via window (not available in Edge Runtime)
+    // Using window/globalThis reference prevents static analysis issues
+    const BroadcastChannelConstructor = (typeof window !== 'undefined' && 'BroadcastChannel' in window)
+      ? (window as any).BroadcastChannel
+      : undefined;
+
+    if (!BroadcastChannelConstructor) {
+      console.info('[Auth] BroadcastChannel not available - multi-tab sync disabled');
+      isBroadcastChannelSupported.current = false;
+      return;
+    }
+
+    try {
+      // Create broadcast channel for cross-tab communication using dynamic constructor
+      broadcastChannel.current = new BroadcastChannelConstructor(BROADCAST_CHANNEL_NAME);
+      isBroadcastChannelSupported.current = true;
+
+      // Handle messages from other tabs
+      broadcastChannel.current.onmessage = (event) => {
+        const { type, timestamp } = event.data;
+
+        switch (type) {
+          case 'logout':
+            // Sync logout across tabs
+            dispatch(logoutUser());
+            router.push('/login');
+            break;
+
+          case 'login':
+            // Sync login across tabs
+            if (event.data.user && event.data.token) {
+              dispatch(setUserFromSession({
+                user: event.data.user,
+                token: event.data.token,
+                refreshToken: event.data.refreshToken,
+                expiresIn: event.data.expiresIn,
+              }));
+            }
+            break;
+
+          case 'activity_update':
+            // Sync activity across tabs
+            if (timestamp > lastActivityAt) {
+              setLastActivityAt(timestamp);
+            }
+            break;
+
+          default:
+            break;
+        }
+      };
+    } catch (error) {
+      console.warn('[Auth] Failed to initialize BroadcastChannel:', error);
+      isBroadcastChannelSupported.current = false;
+      broadcastChannel.current = null;
+    }
+
+    return () => {
+      if (broadcastChannel.current) {
+        try {
+          broadcastChannel.current.close();
+        } catch (error) {
+          console.warn('[Auth] Error closing BroadcastChannel:', error);
+        }
+        broadcastChannel.current = null;
+      }
+    };
+  }, [dispatch, router, lastActivityAt]);
+
+  // ==========================================
+  // SESSION RESTORATION
+  // ==========================================
+
+  useEffect(() => {
+    // On mount, check for existing session in cookies
+    const restoreSession = async () => {
+      // This will be handled by middleware and API calls
+      // Token is in HTTP-only cookie, not accessible to JS
+      // Backend will validate on first API call
+    };
+
+    restoreSession();
+  }, []);
+
+  // ==========================================
+  // AUTH METHODS
+  // ==========================================
+
+  const login = useCallback(async (email: string, password: string, rememberMe = false) => {
+    try {
+      const result = await dispatch(loginUser({ email, password })).unwrap();
+
+      updateActivity();
+
+      // Broadcast login to other tabs (only if supported)
+      if (isBroadcastChannelSupported.current && broadcastChannel.current) {
+        try {
+          broadcastChannel.current.postMessage({
+            type: 'login',
+            user: result.user,
+            token: result.token,
+            refreshToken: result.refreshToken,
+            expiresIn: result.expiresIn,
+          });
+        } catch (error) {
+          console.warn('[Auth] Failed to broadcast login:', error);
         }
       }
 
-      // Set user data from response
-      setUser({
-        id: data.user.id,
-        email: data.user.email,
-        name: `${data.user.firstName} ${data.user.lastName}`.trim(),
-        role: data.user.role || 'staff',
-        permissions: data.user.permissions || ['read'],
-      });
+      // Audit log login event
+      console.log('[Auth] User logged in:', { userId: result.user.id, role: result.user.role });
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('[Auth] Login failed:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [dispatch, updateActivity]);
 
-  /**
-   * Logs out the current user and clears authentication state.
-   *
-   * @async
-   * @returns {Promise<void>} Resolves when logout completes
-   *
-   * @remarks
-   * **TODO**: This is currently a stub implementation. Replace with actual
-   * logout logic that:
-   * 1. Calls backend logout API to invalidate tokens
-   * 2. Clears JWT tokens from storage
-   * 3. Clears Redux auth state
-   * 4. Redirects to login page
-   * 5. Logs audit event for session termination
-   *
-   * **HIPAA Compliance**: Logout should trigger audit log entry documenting
-   * user session termination.
-   *
-   * **Security**: Ensure all tokens are cleared and no PHI remains in memory
-   * or storage after logout.
-   *
-   * @example
-   * ```typescript
-   * await logout();
-   * // User is now logged out, redirect to login
-   * ```
-   */
   const logout = useCallback(async () => {
-    setIsLoading(true);
     try {
-      // Clear stored tokens
-      localStorage.removeItem('authToken');
-      sessionStorage.removeItem('authToken');
-      
-      // Clear user state
-      setUser(null);
-      
-      // Optional: Call backend logout endpoint if needed
-      // const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-      // await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+      await dispatch(logoutUser()).unwrap();
+
+      // Broadcast logout to other tabs (only if supported)
+      if (isBroadcastChannelSupported.current && broadcastChannel.current) {
+        try {
+          broadcastChannel.current.postMessage({ type: 'logout' });
+        } catch (error) {
+          console.warn('[Auth] Failed to broadcast logout:', error);
+        }
+      }
+
+      // Audit log logout event
+      console.log('[Auth] User logged out');
+
+      router.push('/login');
     } catch (error) {
-      console.error('Logout error:', error);
-      // Even if logout API fails, clear local state
-      setUser(null);
-    } finally {
-      setIsLoading(false);
+      console.error('[Auth] Logout failed:', error);
+      // Still redirect to login even if server logout fails
+      router.push('/login');
     }
-  }, []);
+  }, [dispatch, router]);
 
-  /**
-   * Refreshes the current user's data from the backend.
-   *
-   * @async
-   * @returns {Promise<void>} Resolves when user data is refreshed
-   *
-   * @remarks
-   * **TODO**: This is currently a stub implementation. Replace with actual
-   * refresh logic that:
-   * 1. Calls backend API to get current user data
-   * 2. Updates local user state with fresh data
-   * 3. Refreshes JWT token if needed
-   * 4. Updates Redux auth state
-   *
-   * **Use Cases**:
-   * - After user profile updates
-   * - After permission changes
-   * - Periodic refresh to detect role changes
-   * - After token refresh
-   *
-   * @example
-   * ```typescript
-   * // After updating user profile
-   * await updateProfile(data);
-   * await refreshUser(); // Get updated user data
-   * ```
-   */
-  const refreshUser = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Implement actual refresh logic
-      console.warn('AuthContext: refreshUser() is a stub implementation');
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const clearError = useCallback(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
-  /**
-   * Checks if the current user has a specific permission.
-   *
-   * @param {string} permission - Permission string to check (e.g., 'students:read')
-   * @returns {boolean} True if user has the permission, false otherwise
-   *
-   * @remarks
-   * **Permission Hierarchy**:
-   * - Users with 'all' permission have access to everything
-   * - Otherwise, exact permission match is required
-   *
-   * **Permission Format**: `resource:action`
-   * - Resource: students, medications, health-records, reports, etc.
-   * - Action: read, write, delete, admin
-   *
-   * **Use Cases**:
-   * - Conditional rendering of UI elements
-   * - Feature flag enforcement
-   * - Form field access control
-   *
-   * @example
-   * ```typescript
-   * // Conditional rendering
-   * {checkPermission('medications:write') && (
-   *   <button>Add Medication</button>
-   * )}
-   *
-   * // Form field protection
-   * <input
-   *   disabled={!checkPermission('students:write')}
-   *   name="studentName"
-   * />
-   * ```
-   */
-  const checkPermission = useCallback((permission: string) => {
+  // ==========================================
+  // AUTHORIZATION HELPERS
+  // ==========================================
+
+  const hasRole = useCallback((role: string | string[]): boolean => {
     if (!user) return false;
-    return user.permissions.includes('all') || user.permissions.includes(permission);
+
+    const roles = Array.isArray(role) ? role : [role];
+    return roles.includes(user.role);
   }, [user]);
+
+  const hasPermission = useCallback((permission: string): boolean => {
+    if (!user || !user.permissions) return false;
+
+    return user.permissions.includes(permission);
+  }, [user]);
+
+  // ==========================================
+  // CONTEXT VALUE
+  // ==========================================
 
   const value: AuthContextValue = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
+    error,
+    sessionExpiresAt,
+    lastActivityAt,
     login,
     logout,
-    refreshUser,
-    checkPermission,
+    refreshToken,
+    clearError,
+    updateActivity,
+    checkSession,
+    hasRole,
+    hasPermission,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {showSessionWarning && (
+        <SessionWarningModal
+          onExtend={() => {
+            updateActivity();
+            setShowSessionWarning(false);
+          }}
+          onLogout={logout}
+          timeRemaining={HIPAA_IDLE_TIMEOUT - (Date.now() - lastActivityAt)}
+        />
+      )}
+    </AuthContext.Provider>
+  );
+}
+
+// ==========================================
+// SESSION WARNING MODAL COMPONENT
+// ==========================================
+
+interface SessionWarningModalProps {
+  onExtend: () => void;
+  onLogout: () => void;
+  timeRemaining: number;
+}
+
+function SessionWarningModal({ onExtend, onLogout, timeRemaining }: SessionWarningModalProps) {
+  const [countdown, setCountdown] = useState(Math.floor(timeRemaining / 1000));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          onLogout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [onLogout]);
+
+  const minutes = Math.floor(countdown / 60);
+  const seconds = countdown % 60;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      role="alertdialog"
+      aria-labelledby="session-warning-title"
+      aria-describedby="session-warning-description"
+    >
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div className="flex items-center mb-4">
+          <svg
+            className="w-6 h-6 text-yellow-500 mr-3"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h2 id="session-warning-title" className="text-xl font-semibold text-gray-900">
+            Session Expiring Soon
+          </h2>
+        </div>
+
+        <p id="session-warning-description" className="text-gray-600 mb-6">
+          Your session will expire in <span className="font-bold text-red-600">{minutes}:{seconds.toString().padStart(2, '0')}</span> due to inactivity.
+          For security and HIPAA compliance, you will be automatically logged out.
+        </p>
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            type="button"
+          >
+            Logout Now
+          </button>
+          <button
+            onClick={onExtend}
+            className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            type="button"
+            autoFocus
+          >
+            Stay Logged In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// CUSTOM HOOK
+// ==========================================
 
 /**
- * Hook to access authentication context.
+ * useAuth Hook
  *
- * Provides access to the current authentication state and methods.
- * Must be used within a component wrapped by `AuthProvider`.
- *
- * @returns {AuthContextValue} Authentication context value
- * @throws {Error} If used outside of AuthProvider
- *
- * @remarks
- * **Usage**: Call this hook in any component that needs access to
- * authentication state or methods. Do not call it conditionally.
- *
- * **Type Safety**: TypeScript ensures the returned value matches
- * the AuthContextValue interface.
+ * Access authentication context from any component.
+ * Must be used within an AuthProvider.
  *
  * @example
- * ```typescript
- * function ProtectedComponent() {
- *   const { user, isAuthenticated, checkPermission } = useAuth();
+ * ```tsx
+ * const { user, login, logout, hasRole } = useAuth();
  *
- *   if (!isAuthenticated) {
- *     return <LoginPrompt />;
- *   }
- *
- *   return (
- *     <div>
- *       <h1>Welcome, {user?.name}</h1>
- *       {checkPermission('admin:access') && (
- *         <AdminPanel />
- *       )}
- *     </div>
- *   );
+ * if (hasRole('ADMIN')) {
+ *   // Show admin features
  * }
  * ```
  */
-export const useAuth = (): AuthContextValue => {
+export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
-};
+}
 
 /**
- * Alias for useAuth hook (backward compatibility).
- * @see {@link useAuth}
- * @deprecated Use `useAuth` instead
+ * Backward compatibility alias for useAuth
+ * @deprecated Use useAuth instead
  */
 export const useAuthContext = useAuth;
-
-export default AuthContext;

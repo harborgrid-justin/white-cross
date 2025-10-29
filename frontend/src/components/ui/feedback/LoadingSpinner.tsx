@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-084 | LoadingSpinner.tsx - Optimized Loading Spinner Component
  * Purpose: Display loading indicator with configurable size, color, and message

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @fileoverview Progress indicator components for visualizing task completion and loading states.
  *

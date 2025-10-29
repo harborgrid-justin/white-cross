@@ -1,37 +1,427 @@
 /**
- * WF-COMP-103 | api.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ./config | Dependencies: ./config
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview API Endpoints Constants
+ * @module constants/api
+ *
+ * Centralized API endpoint definitions for the White Cross platform.
+ * All backend routes are defined here to prevent hardcoded strings and improve maintainability.
+ *
+ * Backend Base: /api/v1
+ *
+ * @see /backend/src/routes/v1/ for backend route definitions
  */
 
-/**
- * Centralized API constants and endpoints for the healthcare platform
- * Provides consistent API endpoint definitions and HTTP configurations
- */
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
-import { API_CONFIG } from './config';
+export const API_ENDPOINTS = {
+  // ==========================================
+  // AUTHENTICATION & AUTHORIZATION
+  // ==========================================
+  AUTH: {
+    LOGIN: `/auth/login`,
+    LOGOUT: `/auth/logout`,
+    REFRESH: `/auth/refresh`,
+    VERIFY: `/auth/verify`,
+    REGISTER: `/auth/register`,
+    PROFILE: `/auth/me`,
+    CHANGE_PASSWORD: `/auth/change-password`,
+    FORGOT_PASSWORD: `/auth/forgot-password`,
+    RESET_PASSWORD: `/auth/reset-password`,
+  },
 
-// HTTP Methods
-export const HTTP_METHODS = {
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
-  PATCH: 'PATCH',
-  DELETE: 'DELETE',
-  HEAD: 'HEAD',
-  OPTIONS: 'OPTIONS',
+  // ==========================================
+  // USERS & ACCESS CONTROL
+  // ==========================================
+  USERS: {
+    BASE: `/users`,
+    BY_ID: (id: string) => `/users/${id}`,
+    ME: `/users/me`,
+    PROFILE: `/users/profile`,
+    UPDATE_PROFILE: `/users/profile`,
+  },
+
+  RBAC: {
+    ROLES: `/access-control/roles`,
+    PERMISSIONS: `/access-control/permissions`,
+    USER_ROLES: (userId: string) => `/access-control/users/${userId}/roles`,
+    USER_PERMISSIONS: (userId: string) => `/access-control/users/${userId}/permissions`,
+  },
+
+  // ==========================================
+  // STUDENTS
+  // ==========================================
+  STUDENTS: {
+    BASE: `/students`,
+    BY_ID: (id: string) => `/students/${id}`,
+    DEACTIVATE: (id: string) => `/students/${id}/deactivate`,
+    REACTIVATE: (id: string) => `/students/${id}/reactivate`,
+    TRANSFER: (id: string) => `/students/${id}/transfer`,
+    ASSIGN: (id: string) => `/students/${id}/assign`,
+    ASSIGN_BULK: `/students/assign-bulk`,
+    PHOTO: (id: string) => `/students/${id}/photo`,
+    EXPORT: (id: string) => `/students/${id}/export`,
+    REPORT_CARD: (id: string) => `/students/${id}/report-card`,
+    VERIFY_ELIGIBILITY: (id: string) => `/students/${id}/verify-eligibility`,
+    SEARCH: `/students/search`,
+    BY_GRADE: (grade: string) => `/students/grade/${grade}`,
+    BY_NURSE: (nurseId: string) => `/students/nurse/${nurseId}`,
+    HEALTH_RECORDS: (id: string) => `/students/${id}/health-records`,
+    MEDICATIONS: (id: string) => `/students/${id}/medications`,
+    IMMUNIZATIONS: (id: string) => `/students/${id}/immunizations`,
+    ALLERGIES: (id: string) => `/students/${id}/allergies`,
+    APPOINTMENTS: (id: string) => `/students/${id}/appointments`,
+    INCIDENTS: (id: string) => `/students/${id}/incidents`,
+    EMERGENCY_CONTACTS: (id: string) => `/students/${id}/emergency-contacts`,
+  },
+
+  // ==========================================
+  // APPOINTMENTS
+  // ==========================================
+  APPOINTMENTS: {
+    BASE: `/appointments`,
+    BY_ID: (id: string) => `/appointments/${id}`,
+    RESCHEDULE: (id: string) => `/appointments/${id}/reschedule`,
+    CANCEL: (id: string) => `/appointments/${id}/cancel`,
+    COMPLETE: (id: string) => `/appointments/${id}/complete`,
+    NO_SHOW: (id: string) => `/appointments/${id}/no-show`,
+    CONFIRM: (id: string) => `/appointments/${id}/confirm`,
+    SEND_REMINDER: (id: string) => `/appointments/${id}/send-reminder`,
+    AVAILABILITY: `/appointments/availability`,
+    CONFLICTS: `/appointments/conflicts`,
+    REMINDERS: `/appointments/reminders`,
+    BY_STUDENT: (studentId: string) => `/appointments/student/${studentId}`,
+    BY_DATE: `/appointments/by-date`,
+    UPCOMING: `/appointments/upcoming`,
+    REPORTS: `/appointments/reports`,
+  },
+
+  // ==========================================
+  // HEALTH RECORDS
+  // ==========================================
+  HEALTH_RECORDS: {
+    BASE: `/health-records`,
+    BY_ID: (id: string) => `/health-records/${id}`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/health-records`,
+    BY_TYPE: (type: string) => `/health-records/type/${type}`,
+    SEARCH: `/health-records/search`,
+    EXPORT: (id: string) => `/health-records/${id}/export`,
+  },
+
+  // ==========================================
+  // IMMUNIZATIONS / VACCINATIONS
+  // ==========================================
+  IMMUNIZATIONS: {
+    BASE: `/vaccinations`,
+    BY_ID: (id: string) => `/vaccinations/${id}`,
+    SCHEDULE: `/vaccinations/schedule`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/immunizations`,
+    DUE: `/vaccinations/due`,
+    OVERDUE: `/vaccinations/overdue`,
+    COMPLIANCE: `/vaccinations/compliance`,
+    EXEMPTIONS: `/vaccinations/exemptions`,
+  },
+
+  // ==========================================
+  // ALLERGIES
+  // ==========================================
+  ALLERGIES: {
+    BASE: `/allergies`,
+    BY_ID: (id: string) => `/allergies/${id}`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/allergies`,
+    CRITICAL: `/allergies/critical`,
+    ACTIVE: `/allergies/active`,
+  },
+
+  // ==========================================
+  // VITAL SIGNS
+  // ==========================================
+  VITAL_SIGNS: {
+    BASE: `/vital-signs`,
+    BY_ID: (id: string) => `/vital-signs/${id}`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/vital-signs`,
+    BY_HEALTH_RECORD: (healthRecordId: string) => `/health-records/${healthRecordId}/vital-signs`,
+    LATEST: (studentId: string) => `/students/${studentId}/vital-signs/latest`,
+    TRENDS: (studentId: string) => `/students/${studentId}/vital-signs/trends`,
+  },
+
+  // ==========================================
+  // CHRONIC CONDITIONS
+  // ==========================================
+  CHRONIC_CONDITIONS: {
+    BASE: `/chronic-conditions`,
+    BY_ID: (id: string) => `/chronic-conditions/${id}`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/chronic-conditions`,
+    ACTIVE: `/chronic-conditions/active`,
+    REVIEW_DUE: `/chronic-conditions/review-due`,
+  },
+
+  // ==========================================
+  // MEDICATIONS
+  // ==========================================
+  MEDICATIONS: {
+    BASE: `/medications`,
+    BY_ID: (id: string) => `/medications/${id}`,
+    DETAIL: (id: string) => `/medications/${id}`,
+    ADMINISTER: (id: string) => `/medications/${id}/administer`,
+    DISCONTINUE: (id: string) => `/medications/${id}/discontinue`,
+    REFILL: (id: string) => `/medications/${id}/refill`,
+    MISSED_DOSE: (id: string) => `/medications/${id}/missed-dose`,
+    ADVERSE_REACTION: (id: string) => `/medications/${id}/adverse-reaction`,
+    ADJUST_INVENTORY: (id: string) => `/medications/${id}/adjust-inventory`,
+    REMINDER: (id: string) => `/medications/${id}/reminder`,
+    SCHEDULE: (id: string) => `/medications/${id}/schedule`,
+    INTERACTIONS: (id: string) => `/medications/${id}/interactions`,
+    CALENDAR: `/medications/calendar`,
+    DUE: `/medications/due`,
+    OVERDUE: `/medications/overdue`,
+    MISSED: `/medications/missed`,
+    COMPLETED: `/medications/completed`,
+    AS_NEEDED: `/medications/as-needed`,
+    EMERGENCY: `/medications/emergency`,
+    CONTROLLED: `/medications/controlled-substances`,
+    OTC: `/medications/over-the-counter`,
+    CATEGORIES: `/medications/categories`,
+    RULES: `/medications/administration-rules`,
+    CHECK_INTERACTIONS: `/medications/check-interactions`,
+    FORMULARY: `/medications/formulary`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/medications`,
+  },
+
+  // ==========================================
+  // PRESCRIPTIONS
+  // ==========================================
+  PRESCRIPTIONS: {
+    BASE: `/prescriptions`,
+    BY_ID: (id: string) => `/prescriptions/${id}`,
+    DETAIL: (id: string) => `/prescriptions/${id}`,
+    REFILL: (id: string) => `/prescriptions/${id}/refill`,
+    ACTIVE: `/prescriptions/active`,
+    EXPIRING: `/prescriptions/expiring`,
+  },
+
+  // ==========================================
+  // INVENTORY
+  // ==========================================
+  INVENTORY: {
+    BASE: `/inventory`,
+    BY_ID: (id: string) => `/inventory/${id}`,
+    DETAIL: (id: string) => `/inventory/${id}`,
+    ADJUST: (id: string) => `/inventory/${id}/adjust`,
+    LOW_STOCK: `/inventory/low-stock`,
+    EXPIRING: `/inventory/expiring`,
+    REORDER: `/inventory/reorder`,
+    AUDIT: `/inventory/audit`,
+  },
+
+  // ==========================================
+  // ADMINISTRATION LOG
+  // ==========================================
+  ADMINISTRATION_LOG: {
+    BASE: `/administration-log`,
+    BY_ID: (id: string) => `/administration-log/${id}`,
+    DETAIL: (id: string) => `/administration-log/${id}`,
+    BY_MEDICATION: (medicationId: string) => `/medications/${medicationId}/administration-log`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/administration-log`,
+    TODAY: `/administration-log/today`,
+    MISSED: `/administration-log/missed`,
+  },
+
+  // ==========================================
+  // EMERGENCY CONTACTS
+  // ==========================================
+  EMERGENCY_CONTACTS: {
+    BASE: `/emergency-contacts`,
+    BY_ID: (id: string) => `/emergency-contacts/${id}`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/emergency-contacts`,
+    PRIMARY: (studentId: string) => `/students/${studentId}/emergency-contacts/primary`,
+    VERIFY: (id: string) => `/emergency-contacts/${id}/verify`,
+    NOTIFY: (id: string) => `/emergency-contacts/${id}/notify`,
+  },
+
+  // ==========================================
+  // INCIDENTS
+  // ==========================================
+  INCIDENTS: {
+    BASE: `/incidents`,
+    BY_ID: (id: string) => `/incidents/${id}`,
+    WITNESSES: (incidentId: string) => `/incidents/${incidentId}/witnesses`,
+    WITNESS_STATEMENT: (incidentId: string, witnessId: string) =>
+      `/incidents/${incidentId}/witnesses/${witnessId}/statement`,
+    VERIFY_STATEMENT: (statementId: string) => `/incidents/statements/${statementId}/verify`,
+    FOLLOW_UP: (incidentId: string) => `/incidents/${incidentId}/follow-up`,
+    FOLLOW_UP_PROGRESS: (followUpId: string) => `/incidents/follow-up/${followUpId}/progress`,
+    FOLLOW_UP_COMPLETE: (followUpId: string) => `/incidents/follow-up/${followUpId}/complete`,
+    ANALYTICS: `/incidents/analytics`,
+    TRENDING: `/incidents/trending`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/incidents`,
+    BY_TYPE: (type: string) => `/incidents/type/${type}`,
+    BY_SEVERITY: (severity: string) => `/incidents/severity/${severity}`,
+  },
+
+  // ==========================================
+  // DOCUMENTS
+  // ==========================================
+  DOCUMENTS: {
+    BASE: `/documents`,
+    BY_ID: (id: string) => `/documents/${id}`,
+    UPLOAD: `/documents/upload`,
+    DOWNLOAD: (id: string) => `/documents/${id}/download`,
+    PREVIEW: (id: string) => `/documents/${id}/preview`,
+    SIGN: (id: string) => `/documents/${id}/sign`,
+    VERIFY_SIGNATURE: (id: string) => `/documents/${id}/verify-signature`,
+    BY_STUDENT: (studentId: string) => `/students/${studentId}/documents`,
+    BY_TYPE: (type: string) => `/documents/type/${type}`,
+    TEMPLATES: `/documents/templates`,
+  },
+
+  // ==========================================
+  // COMPLIANCE & AUDIT
+  // ==========================================
+  COMPLIANCE: {
+    REPORTS: `/compliance/reports`,
+    AUDIT_LOGS: `/compliance/audit-logs`,
+    PHI_DISCLOSURES: `/compliance/phi-disclosures`,
+    ACCESS_LOG: `/compliance/access-log`,
+    DATA_RETENTION: `/compliance/data-retention`,
+    EXPORT: `/compliance/export`,
+  },
+
+  AUDIT: {
+    LOGS: `/audit-logs`,
+    BY_ID: (id: string) => `/audit-logs/${id}`,
+    BY_USER: (userId: string) => `/audit-logs/user/${userId}`,
+    BY_RESOURCE: (resourceType: string, resourceId: string) =>
+      `/audit-logs/resource/${resourceType}/${resourceId}`,
+    BY_ACTION: (action: string) => `/audit-logs/action/${action}`,
+    PHI_ACCESS: `/audit-logs/phi-access`,
+    EXPORT: `/audit-logs/export`,
+  },
+
+  // ==========================================
+  // COMMUNICATIONS
+  // ==========================================
+  MESSAGES: {
+    BASE: `/messages`,
+    BY_ID: (id: string) => `/messages/${id}`,
+    SEND: `/messages/send`,
+    INBOX: `/messages/inbox`,
+    SENT: `/messages/sent`,
+    UNREAD: `/messages/unread`,
+    MARK_READ: (id: string) => `/messages/${id}/mark-read`,
+  },
+
+  BROADCASTS: {
+    BASE: `/broadcasts`,
+    BY_ID: (id: string) => `/broadcasts/${id}`,
+    SEND: `/broadcasts/send`,
+    SCHEDULE: `/broadcasts/schedule`,
+    RECIPIENTS: (id: string) => `/broadcasts/${id}/recipients`,
+  },
+
+  ALERTS: {
+    BASE: `/alerts`,
+    BY_ID: (id: string) => `/alerts/${id}`,
+    ACTIVE: `/alerts/active`,
+    ACKNOWLEDGE: (id: string) => `/alerts/${id}/acknowledge`,
+    DISMISS: (id: string) => `/alerts/${id}/dismiss`,
+    MEDICATION_REMINDERS: `/alerts/medication-reminders`,
+    APPOINTMENT_REMINDERS: `/alerts/appointment-reminders`,
+  },
+
+  // ==========================================
+  // ANALYTICS & REPORTING
+  // ==========================================
+  ANALYTICS: {
+    METRICS: `/analytics/metrics`,
+    DASHBOARD: `/analytics/dashboard`,
+    HEALTH_METRICS: `/analytics/health-metrics`,
+    MEDICATION_COMPLIANCE: `/analytics/medication-compliance`,
+    APPOINTMENT_METRICS: `/analytics/appointment-metrics`,
+    INCIDENT_ANALYTICS: `/analytics/incident-analytics`,
+    CUSTOM_REPORT: `/analytics/custom-report`,
+  },
+
+  REPORTS: {
+    MEDICATIONS: {
+      ADMINISTRATION: `/reports/medications/administration`,
+      COMPLIANCE: `/reports/medications/compliance`,
+      EXPIRATION: `/reports/medications/expiration`,
+      INVENTORY: `/reports/medications/inventory`,
+      REFILLS: `/reports/medications/refills`,
+    },
+    IMMUNIZATIONS: {
+      COMPLIANCE: `/reports/immunizations/compliance`,
+      DUE: `/reports/immunizations/due`,
+      OVERDUE: `/reports/immunizations/overdue`,
+      EXEMPTIONS: `/reports/immunizations/exemptions`,
+    },
+    APPOINTMENTS: {
+      ATTENDANCE: `/reports/appointments/attendance`,
+      NO_SHOWS: `/reports/appointments/no-shows`,
+      CANCELLATIONS: `/reports/appointments/cancellations`,
+    },
+    INCIDENTS: {
+      SUMMARY: `/reports/incidents/summary`,
+      BY_TYPE: `/reports/incidents/by-type`,
+      TRENDS: `/reports/incidents/trends`,
+    },
+    STUDENTS: {
+      ENROLLMENT: `/reports/students/enrollment`,
+      HEALTH_SUMMARY: `/reports/students/health-summary`,
+      DEMOGRAPHICS: `/reports/students/demographics`,
+    },
+  },
+
+  // ==========================================
+  // SYSTEM & ADMINISTRATION
+  // ==========================================
+  SYSTEM: {
+    HEALTH: `/health`,
+    STATUS: `/system/status`,
+    CONFIGURATION: `/system/configuration`,
+    SETTINGS: `/system/settings`,
+    BACKUP: `/system/backup`,
+    RESTORE: `/system/restore`,
+  },
+
+  INTEGRATIONS: {
+    BASE: `/integrations`,
+    BY_ID: (id: string) => `/integrations/${id}`,
+    CONFIGURE: (id: string) => `/integrations/${id}/configure`,
+    TEST: (id: string) => `/integrations/${id}/test`,
+    SYNC: (id: string) => `/integrations/${id}/sync`,
+  },
+
+  // ==========================================
+  // FORMS
+  // ==========================================
+  FORMS: {
+    BASE: `/forms`,
+    BY_ID: (id: string) => `/forms/${id}`,
+    TEMPLATES: `/forms/templates`,
+    SUBMIT: `/forms/submit`,
+    RESPONSES: (formId: string) => `/forms/${formId}/responses`,
+  },
+
+  // ==========================================
+  // SETTINGS
+  // ==========================================
+  SETTINGS: {
+    USER: `/settings/user`,
+    SCHOOL: `/settings/school`,
+    NOTIFICATIONS: `/settings/notifications`,
+    PREFERENCES: `/settings/preferences`,
+    PRIVACY: `/settings/privacy`,
+    SECURITY: `/settings/security`,
+  },
 } as const;
 
-// HTTP Status Codes
+/**
+ * HTTP Status Codes
+ */
 export const HTTP_STATUS = {
   OK: 200,
   CREATED: 201,
+  ACCEPTED: 202,
   NO_CONTENT: 204,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
@@ -46,391 +436,45 @@ export const HTTP_STATUS = {
   GATEWAY_TIMEOUT: 504,
 } as const;
 
-// Content Types
-export const CONTENT_TYPES = {
-  JSON: 'application/json',
-  FORM_DATA: 'multipart/form-data',
-  FORM_URLENCODED: 'application/x-www-form-urlencoded',
-  TEXT: 'text/plain',
-  HTML: 'text/html',
-  XML: 'application/xml',
-  PDF: 'application/pdf',
-  CSV: 'text/csv',
-} as const;
+/**
+ * API Response Types
+ */
+export type ApiSuccessResponse<T = unknown> = {
+  success: true;
+  data: T;
+  message?: string;
+};
 
-// API Response Types
-export const RESPONSE_TYPES = {
-  SUCCESS: 'success',
-  ERROR: 'error',
-  WARNING: 'warning',
-  INFO: 'info',
-} as const;
+export type ApiErrorResponse = {
+  success: false;
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
+  traceId?: string;
+};
 
-// API Endpoints
-export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN: '/v1/auth/login',
-    LOGOUT: '/v1/auth/logout',
-    REFRESH: '/v1/auth/refresh',
-    VERIFY: '/v1/auth/verify',
-    REGISTER: '/v1/auth/register',
-    FORGOT_PASSWORD: '/v1/auth/forgot-password',
-    RESET_PASSWORD: '/v1/auth/reset-password',
-    CHANGE_PASSWORD: '/v1/auth/change-password',
-    PROFILE: '/v1/auth/me',
-    PERMISSIONS: '/v1/auth/permissions',
-  },
-  DEV: {
-    USERS: '/dev/users',
-  },
-  STUDENTS: {
-    BASE: '/v1/students',
-    BY_ID: (id: string) => `/v1/students/${id}`,
-    ASSIGNED: '/v1/students/assigned',
-    SEARCH: '/v1/students/search',
-    BULK: '/v1/students/bulk',
-    IMPORT: '/v1/students/import',
-    EXPORT: '/v1/students/export',
-    STATS: '/v1/students/stats',
-  },
-  HEALTH_RECORDS: {
-    BASE: '/health-records',
-    STUDENT: (studentId: string) => `/health-records/student/${studentId}`,
-    ALLERGIES: (studentId: string) => `/health-records/student/${studentId}/allergies`,
-    CHRONIC_CONDITIONS: (studentId: string) => `/health-records/student/${studentId}/chronic-conditions`,
-    VACCINATIONS: (studentId: string) => `/health-records/student/${studentId}/vaccinations`,
-    GROWTH_CHART: (studentId: string) => `/health-records/student/${studentId}/growth-chart`,
-    VITALS: (studentId: string) => `/health-records/student/${studentId}/vitals`,
-    SCREENINGS: (studentId: string) => `/health-records/student/${studentId}/screenings`,
-    RECORDS: (studentId: string) => `/health-records/student/${studentId}/records`,
-    SUMMARY: (studentId: string) => `/health-records/student/${studentId}/summary`,
-  },
-  MEDICATIONS: {
-    BASE: '/medications',
-    INVENTORY: '/medications/inventory',
-    SCHEDULE: '/medications/schedule',
-    REMINDERS: '/medications/reminders',
-    STUDENT: (studentId: string) => `/medications/student/${studentId}`,
-    ADMINISTER: (id: string) => `/medications/${id}/administer`,
-    ADVERSE_REACTIONS: '/medications/adverse-reactions',
-    INTERACTIONS: '/medications/interactions',
-    SEARCH: '/medications/search',
-    BULK: '/medications/bulk',
-    ADMINISTRATION_INITIATE: '/api/v1/medications/administration/initiate',
-    ADMINISTRATION_VERIFY: '/api/v1/medications/administration/verify-five-rights',
-    ADMINISTRATION_RECORD: '/api/v1/medications/administration/record',
-    ADMINISTRATION_REFUSAL: '/api/v1/medications/administration/record-refusal',
-    ADMINISTRATION_MISSED: '/api/v1/medications/administration/record-missed',
-    ADMINISTRATION_HELD: '/api/v1/medications/administration/record-held',
-    ADMINISTRATION_HISTORY: '/api/v1/medications/administration/history',
-    ADMINISTRATION_TODAY: '/api/v1/medications/administration/today',
-    ADMINISTRATION_OVERDUE: '/api/v1/medications/administration/overdue',
-    ADMINISTRATION_WITNESS: (logId: string) => `/api/v1/medications/administration/${logId}/witness`,
-    ADMINISTRATION_WITNESS_SIGN: (logId: string) => `/api/v1/medications/administration/${logId}/witness/sign`,
-    ADMINISTRATION_CHECK_ALLERGIES: '/api/v1/medications/administration/check-allergies',
-    ADMINISTRATION_CHECK_INTERACTIONS: '/api/v1/medications/administration/check-interactions',
-    ADMINISTRATION_CALCULATE_DOSE: '/api/v1/medications/administration/calculate-dose',
-    STUDENT_SCHEDULE: (studentId: string) => `/api/v1/medications/student/${studentId}/schedule`,
-  },
-  APPOINTMENTS: {
-    BASE: '/appointments',
-    UPCOMING: '/appointments/upcoming',
-    TODAY: '/appointments/today',
-    PAST: '/appointments/past',
-    CANCEL: (id: string) => `/appointments/${id}/cancel`,
-    RESCHEDULE: (id: string) => `/appointments/${id}/reschedule`,
-    CHECK_IN: (id: string) => `/appointments/${id}/check-in`,
-  },
-  COMMUNICATION: {
-    BASE: '/communication',
-    MESSAGES: '/communication/messages',
-    NOTIFICATIONS: '/communication/notifications',
-    TEMPLATES: '/communication/templates',
-    CHANNELS: '/communication/channels',
-    SEND: '/communication/send',
-    BULK: '/communication/bulk',
-  },
-  EMERGENCY_CONTACTS: {
-    BASE: '/emergency-contacts',
-    STUDENT: (studentId: string) => `/emergency-contacts/student/${studentId}`,
-    NOTIFY: '/emergency-contacts/notify',
-    TEST: '/emergency-contacts/test',
-  },
-  INCIDENT_REPORTS: {
-    BASE: '/incident-reports',
-    STUDENT: (studentId: string) => `/incident-reports/student/${studentId}`,
-    TYPES: '/incident-reports/types',
-    SEVERITY: '/incident-reports/severity',
-    STATUS: '/incident-reports/status',
-  },
-  DOCUMENTS: {
-    BASE: '/documents',
-    UPLOAD: '/documents/upload',
-    DOWNLOAD: (id: string) => `/documents/${id}/download`,
-    DELETE: (id: string) => `/documents/${id}/delete`,
-    SHARE: (id: string) => `/documents/${id}/share`,
-    CATEGORIES: '/documents/categories',
-    TAGS: '/documents/tags',
-  },
-  REPORTS: {
-    BASE: '/reports',
-    GENERATE: '/reports/generate',
-    EXPORT: (id: string) => `/reports/${id}/export`,
-    SCHEDULE: '/reports/schedule',
-    TEMPLATES: '/reports/templates',
-    DASHBOARD: '/reports/dashboard',
-  },
-  ADMIN: {
-    BASE: '/admin',
-    SETTINGS: '/admin/settings',
-    USERS: '/admin/users',
-    INTEGRATIONS: '/admin/integrations',
-    SYSTEM: '/admin/system',
-    BACKUP: '/admin/backup',
-    AUDIT: '/admin/audit',
-    LICENSES: '/admin/licenses',
-  },
-  SETTINGS: {
-    BASE: '/settings',
-    PROFILE: '/settings/profile',
-    PREFERENCES: '/settings/preferences',
-    NOTIFICATIONS: '/settings/notifications',
-    SECURITY: '/settings/security',
-  },
-  INTEGRATIONS: {
-    BASE: '/integrations',
-    BY_ID: (id: string) => `/integrations/${id}`,
-    TEST: (id: string) => `/integrations/${id}/test`,
-    SYNC: (id: string) => `/integrations/${id}/sync`,
-    LOGS: (id: string) => `/integrations/${id}/logs`,
-    ALL_LOGS: '/integrations/logs/all',
-    STATISTICS: '/integrations/statistics/overview',
-    SIS: '/integrations/sis',
-    EHR: '/integrations/ehr',
-    PHARMACY: '/integrations/pharmacy',
-    STATUS: '/integrations/status',
-  },
-  INVENTORY: {
-    BASE: '/api/inventory',
-    BY_ID: (id: string) => `/api/inventory/${id}`,
-    TRANSACTIONS: '/api/inventory/transactions',
-    ALERTS: '/api/inventory/alerts',
-    MAINTENANCE: '/api/inventory/maintenance',
-    MAINTENANCE_SCHEDULE: '/api/inventory/maintenance/schedule',
-    PURCHASE_ORDER: '/api/inventory/purchase-order',
-    VALUATION: '/api/inventory/valuation',
-    USAGE_ANALYTICS: '/api/inventory/analytics/usage',
-    SUPPLIER_PERFORMANCE: '/api/inventory/analytics/suppliers',
-    SEARCH: (query: string) => `/api/inventory/search/${query}`,
-    STOCK: (id: string) => `/api/inventory/${id}/stock`,
-    ADJUST: (id: string) => `/api/inventory/${id}/adjust`,
-    HISTORY: (id: string) => `/api/inventory/${id}/history`,
-    STATS: '/api/inventory/stats',
-    VENDORS: '/api/vendors',
-    VENDOR_BY_ID: (id: string) => `/api/vendors/${id}`,
-    PURCHASE_ORDERS: '/api/purchase-orders',
-    PURCHASE_ORDER_BY_ID: (id: string) => `/api/purchase-orders/${id}`,
-  },
-  BUDGET: {
-    BASE: '/api/budget',
-    CATEGORIES: '/api/budget/categories',
-    CATEGORY_BY_ID: (id: string) => `/api/budget/categories/${id}`,
-    SUMMARY: '/api/budget/summary',
-    TRANSACTIONS: '/api/budget/transactions',
-    TRANSACTION_BY_ID: (id: string) => `/api/budget/transactions/${id}`,
-    TRENDS: '/api/budget/trends',
-    YEAR_COMPARISON: '/api/budget/year-comparison',
-    OVER_BUDGET: '/api/budget/over-budget',
-    RECOMMENDATIONS: '/api/budget/recommendations',
-    EXPORT: '/api/budget/export',
-  },
-  PURCHASE_ORDERS: {
-    BASE: '/api/v1/purchase-orders',
-    BY_ID: (id: string) => `/api/v1/purchase-orders/${id}`,
-    APPROVE: (id: string) => `/api/v1/purchase-orders/${id}/approve`,
-    RECEIVE: (id: string) => `/api/v1/purchase-orders/${id}/receive`,
-    CANCEL: (id: string) => `/api/v1/purchase-orders/${id}/cancel`,
-    REORDER_NEEDED: '/api/v1/purchase-orders/reorder/needed',
-    STATISTICS: '/api/v1/purchase-orders/statistics',
-    VENDOR_HISTORY: (vendorId: string) => `/api/v1/purchase-orders/vendor/${vendorId}/history`,
-    EXPORT: (id: string) => `/api/v1/purchase-orders/${id}/export`,
-    PRINT: (id: string) => `/api/v1/purchase-orders/${id}/print`,
-    SEND: (id: string) => `/api/v1/purchase-orders/${id}/send`,
-    DUPLICATE: (id: string) => `/api/v1/purchase-orders/${id}/duplicate`,
-    NOTES: (id: string) => `/api/v1/purchase-orders/${id}/notes`,
-  },
-  DASHBOARD: {
-    BASE: '/api/v1/dashboard',
-    STATS: '/api/dashboard/stats',
-    RECENT_ACTIVITIES: '/api/dashboard/recent-activities',
-    UPCOMING_APPOINTMENTS: '/api/dashboard/upcoming-appointments',
-    CHART_DATA: '/api/dashboard/chart-data',
-  },
-} as const;
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
-// API Query Parameters
-export const QUERY_PARAMS = {
-  PAGE: 'page',
-  LIMIT: 'limit',
-  SORT: 'sort',
-  ORDER: 'order',
-  SEARCH: 'search',
-  FILTER: 'filter',
-  INCLUDE: 'include',
-  EXCLUDE: 'exclude',
-  START_DATE: 'startDate',
-  END_DATE: 'endDate',
-  STATUS: 'status',
-  TYPE: 'type',
-  CATEGORY: 'category',
-} as const;
+/**
+ * Pagination Types
+ */
+export type PaginationParams = {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
+};
 
-// Default Query Values
-export const DEFAULT_QUERY_VALUES = {
-  PAGE: 1,
-  LIMIT: 10,
-  SORT: 'createdAt',
-  ORDER: 'desc',
-} as const;
+export type PaginatedResponse<T> = {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+};
 
-// API Headers
-export const API_HEADERS = {
-  AUTHORIZATION: 'Authorization',
-  CONTENT_TYPE: 'Content-Type',
-  ACCEPT: 'Accept',
-  USER_AGENT: 'User-Agent',
-  X_API_KEY: 'X-API-Key',
-  X_CLIENT_VERSION: 'X-Client-Version',
-  X_REQUEST_ID: 'X-Request-ID',
-  IF_MATCH: 'If-Match',
-  IF_NONE_MATCH: 'If-None-Match',
-} as const;
-
-// Rate Limiting Configuration
-export const RATE_LIMITING = {
-  REQUESTS_PER_MINUTE: 60,
-  REQUESTS_PER_HOUR: 1000,
-  REQUESTS_PER_DAY: 10000,
-  BURST_LIMIT: 10,
-} as const;
-
-// Caching Configuration
-export const CACHE_CONFIG = {
-  DEFAULT_TTL: 5 * 60 * 1000, // 5 minutes
-  MAX_TTL: 60 * 60 * 1000, // 1 hour
-  MIN_TTL: 30 * 1000, // 30 seconds
-  CACHE_KEY_PREFIX: 'wc_api_',
-} as const;
-
-// Request Configuration
-export const REQUEST_CONFIG = {
-  DEFAULT_TIMEOUT: API_CONFIG.TIMEOUT,
-  RETRY_ATTEMPTS: API_CONFIG.RETRY_ATTEMPTS,
-  RETRY_DELAY: API_CONFIG.RETRY_DELAY,
-  MAX_REDIRECTS: 5,
-  VALIDATE_STATUS: (status: number) => status >= 200 && status < 300,
-} as const;
-
-// Error Response Structure
-export const ERROR_RESPONSE = {
-  CODE: 'code',
-  MESSAGE: 'message',
-  DETAILS: 'details',
-  FIELD: 'field',
-  VALIDATION: 'validation',
-  TRACE_ID: 'traceId',
-  TIMESTAMP: 'timestamp',
-} as const;
-
-// Success Response Structure
-export const SUCCESS_RESPONSE = {
-  DATA: 'data',
-  MESSAGE: 'message',
-  META: 'meta',
-  LINKS: 'links',
-  INCLUDED: 'included',
-} as const;
-
-// Pagination Response Structure
-export const PAGINATION_RESPONSE = {
-  DATA: 'data',
-  TOTAL: 'total',
-  PAGE: 'page',
-  LIMIT: 'limit',
-  PAGES: 'pages',
-  HAS_NEXT: 'hasNext',
-  HAS_PREV: 'hasPrev',
-  NEXT_PAGE: 'nextPage',
-  PREV_PAGE: 'prevPage',
-} as const;
-
-// File Upload Configuration
-export const UPLOAD_CONFIG = {
-  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
-  CHUNK_SIZE: 1024 * 1024, // 1MB
-  ALLOWED_TYPES: [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/csv',
-    'application/json',
-  ],
-  ALLOWED_EXTENSIONS: ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.csv', '.json'],
-} as const;
-
-// API Versioning
-export const API_VERSION = {
-  CURRENT: 'v1',
-  HEADER: 'X-API-Version',
-  ACCEPT_HEADER: 'application/vnd.whitecross.v1+json',
-} as const;
-
-// WebSocket Events
-export const WS_EVENTS = {
-  CONNECT: 'connect',
-  DISCONNECT: 'disconnect',
-  ERROR: 'error',
-  AUTHENTICATION: 'authentication',
-  SUBSCRIBE: 'subscribe',
-  UNSUBSCRIBE: 'unsubscribe',
-  NOTIFICATION: 'notification',
-  UPDATE: 'update',
-  DELETE: 'delete',
-  CREATE: 'create',
-} as const;
-
-// Real-time Update Channels
-export const WS_CHANNELS = {
-  MEDICATIONS: 'medications',
-  APPOINTMENTS: 'appointments',
-  EMERGENCY: 'emergency',
-  COMMUNICATIONS: 'communications',
-  SYSTEM: 'system',
-} as const;
-
-// Export comprehensive API constants
-export const API_CONSTANTS = {
-  METHODS: HTTP_METHODS,
-  STATUS: HTTP_STATUS,
-  CONTENT_TYPES,
-  RESPONSE_TYPES,
-  ENDPOINTS: API_ENDPOINTS,
-  QUERY_PARAMS,
-  DEFAULT_QUERY_VALUES,
-  HEADERS: API_HEADERS,
-  RATE_LIMITING,
-  CACHE_CONFIG,
-  REQUEST_CONFIG,
-  ERROR_RESPONSE,
-  SUCCESS_RESPONSE,
-  PAGINATION_RESPONSE,
-  UPLOAD_CONFIG,
-  VERSION: API_VERSION,
-  WS_EVENTS,
-  WS_CHANNELS,
-} as const;
-
-export default API_CONSTANTS;
+export default API_ENDPOINTS;

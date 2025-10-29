@@ -5,6 +5,11 @@
  * Provides a composable card pattern with header, content, footer, and title components.
  *
  * @module components/ui/layout/Card
+ *
+ * NOTE: Converted to Server Component (Phase 1 Quick Wins)
+ * - No client-side interactivity required
+ * - Pure presentational wrapper component
+ * - Reduces bundle size
  */
 
 import React from 'react';

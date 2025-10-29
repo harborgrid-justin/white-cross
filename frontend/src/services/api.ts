@@ -76,20 +76,34 @@ export {
   AllergySeverity,
   ConditionSeverity,
   ConditionStatus,
-  HealthRecordType,
+  type HealthRecordType,
   ScreeningType,
   ScreeningOutcome,
   VaccinationStatus
 } from './modules/healthRecordsApi';
 
-// Export health assessments API with renamed types to avoid conflicts
+// Export health assessments API - avoiding conflicts with healthRecordsApi
 export {
   healthAssessmentsApi,
   HealthAssessmentsApi,
   createHealthAssessmentsApi,
-  type RiskAssessment,
-  type CreateRiskAssessmentRequest,
-  type GrowthTracking
+  type HealthRiskAssessment,
+  type HighRiskStudent,
+  type HealthScreening,
+  type CreateScreeningRequest,
+  // GrowthMeasurement already exported from healthRecordsApi
+  type CreateGrowthMeasurementRequest,
+  type GrowthAnalysis,
+  type ImmunizationForecast,
+  type EmergencyNotification,
+  type CreateEmergencyNotificationRequest,
+  type MedicationInteraction,
+  type MedicationInteractionCheck,
+  type CheckNewMedicationRequest,
+  // ScreeningType already exported from healthRecordsApi
+  type ScreeningResult,
+  type EmergencyType,
+  type EmergencySeverity
 } from './modules/healthAssessmentsApi';
 
 // Note: AdministrationService exports same classes as administrationApi, so we only export administrationApi to avoid ambiguity

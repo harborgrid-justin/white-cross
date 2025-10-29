@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-SELECT-001 | Select.tsx - Select Component
  * Purpose: Dropdown select component with search and multi-select

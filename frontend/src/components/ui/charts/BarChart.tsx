@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * BarChart Component - Comparison Data Visualization
  *

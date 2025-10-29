@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * WF-COMP-085 | OptimisticUpdateIndicator.tsx - React component or utility module
  * Purpose: react component or utility module

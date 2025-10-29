@@ -84,11 +84,11 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authApi, LoginCredentials, RegisterData } from '../../services/modules/authApi';
-import { User } from '../../types';
+import { authApi, LoginCredentials, RegisterData } from '@/services/modules/authApi';
+import { User } from '@/types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
-import { clearPersistedState } from '../reduxStore';
+import { clearPersistedState } from '@/stores/reduxStore';
 
 const log = debug('whitecross:auth-slice');
 
@@ -652,8 +652,15 @@ const authSlice = createSlice({
  *
  * @exports clearError - Clear authentication error message
  * @exports setUser - Manually set user profile (for updates, cross-tab sync)
+ * @exports clearAuthError - Alias for clearError (backward compatibility)
+ * @exports setUserFromSession - Alias for setUser (backward compatibility)
  */
 export const { clearError, setUser } = authSlice.actions;
+
+// Backward compatibility aliases
+export const clearAuthError = clearError;
+export const setUserFromSession = setUser;
+export const refreshAuthToken = refreshUser;
 
 /**
  * Authentication reducer for Redux store integration.

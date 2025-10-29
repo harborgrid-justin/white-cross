@@ -1,5 +1,7 @@
+'use client'
+
 import { useState, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export interface RouteState {
   from?: string;
@@ -7,36 +9,43 @@ export interface RouteState {
   data?: Record<string, any>;
 }
 
+/**
+ * Custom hook for managing route state in Next.js
+ * Migrated from react-router-dom to Next.js navigation
+ */
 export const useRouteState = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [routeState, setRouteState] = useState<RouteState>(location.state || {});
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [routeState, setRouteState] = useState<RouteState>({});
 
   const updateRouteState = useCallback((newState: Partial<RouteState>) => {
     const updatedState = { ...routeState, ...newState };
     setRouteState(updatedState);
-    
+
     // Update the current location's state without triggering navigation
-    window.history.replaceState(updatedState, '', location.pathname + location.search);
-  }, [routeState, location.pathname, location.search]);
+    const search = searchParams?.toString() ? `?${searchParams.toString()}` : '';
+    window.history.replaceState(updatedState, '', pathname + search);
+  }, [routeState, pathname, searchParams]);
 
   const navigateWithState = useCallback((to: string, state?: RouteState) => {
     const navigationState = {
       ...state,
-      from: location.pathname
+      from: pathname
     };
-    navigate(to, { state: navigationState });
-  }, [navigate, location.pathname]);
+    setRouteState(navigationState);
+    router.push(to);
+  }, [router, pathname]);
 
   const goBack = useCallback(() => {
     if (routeState.returnTo) {
-      navigate(routeState.returnTo);
+      router.push(routeState.returnTo);
     } else if (routeState.from) {
-      navigate(routeState.from);
+      router.push(routeState.from);
     } else {
-      navigate(-1);
+      router.back();
     }
-  }, [navigate, routeState]);
+  }, [router, routeState]);
 
   return {
     routeState,
@@ -46,5 +55,11 @@ export const useRouteState = () => {
     canGoBack: !!(routeState.returnTo || routeState.from)
   };
 };
+
+/**
+ * Backward compatibility alias for useRouteState
+ * @deprecated Use useRouteState instead
+ */
+export const useNavigationState = useRouteState;
 
 export default useRouteState;

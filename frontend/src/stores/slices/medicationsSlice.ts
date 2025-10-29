@@ -1,612 +1,432 @@
 /**
- * @fileoverview Medications Redux Slice for White Cross Healthcare Platform
+ * Medications Redux Slice
  *
- * Manages medication records state for school nursing operations. This slice handles
- * student medication data including prescriptions, administration schedules, consent
- * tracking, and expiration monitoring. Medication data is Protected Health Information
- * (PHI) and requires strict HIPAA compliance measures.
+ * Redux Toolkit slice for managing student medication prescriptions and administration
+ * data. Provides standardized CRUD operations, selectors, and thunks for medication
+ * management throughout the application.
  *
- * **Key Features:**
- * - Medication inventory and prescription management
- * - Administration schedule tracking and alerts
- * - Consent requirement monitoring for controlled substances
- * - Medication expiration tracking and notifications
- * - Route-based medication filtering (oral, injection, topical, etc.)
- * - Student-specific medication history and active prescriptions
- * - Integration with TanStack Query for server state synchronization
+ * Uses the entity slice factory pattern for consistent state management across all
+ * medication-related operations with built-in loading states, error handling, and
+ * optimistic updates.
  *
- * **HIPAA Compliance - CRITICAL:**
- * - Medication data is PHI and MUST NOT be persisted to localStorage
- * - All medication access MUST be audit logged on the backend
- * - This slice is NOT included in redux-persist configuration
- * - Data cleared on logout and tab close for security
- * - Encryption required for data in transit (HTTPS only)
- * - Access restricted by RBAC permissions (read:medications, write:medications)
+ * @module pages/medications/store/medicationsSlice
  *
- * **State Management:**
- * - Feature store location: `stores/slices/medicationsSlice.ts`
- * - NOT persisted (in-memory only) - cleared on page refresh
- * - Server state managed via TanStack Query for caching
- * - Real-time updates via WebSocket for medication administration events
+ * @remarks
+ * HIPAA Compliance: All medication operations automatically generate audit logs for
+ * PHI access tracking. State updates trigger cross-tab synchronization via BroadcastChannel.
  *
- * **Data Security:**
- * - No localStorage persistence (PHI protection)
- * - All API calls include authentication token
- * - Backend enforces row-level security based on user permissions
- * - Audit trail automatically created for all medication access
- * - Cross-tab state sync disabled (security by design)
+ * Medication Safety: Bulk operations are intentionally disabled for medication management
+ * to ensure each medication change receives individual validation and review.
  *
- * **Integration:**
- * - Backend API: `services/modules/medicationsApi.ts`
- * - TanStack Query hooks: `hooks/useMedications.ts`
- * - Student records: `pages/students/store/studentsSlice.ts`
- * - Used by: Medication administration forms, student profiles, daily schedules
+ * State Structure: Uses Redux Toolkit's EntityAdapter for normalized state management,
+ * enabling efficient lookups and updates by medication ID.
  *
- * @module stores/slices/medicationsSlice
- * @requires @reduxjs/toolkit
- * @security PHI data - NO localStorage persistence, audit logging required
- * @compliance HIPAA-compliant in-memory state management, backend audit logging
+ * @see {@link medicationsApi} for API integration
+ * @see {@link useMedicationsData} for hook-based data access
+ * @see {@link MedicationTypes} for type definitions
  *
- * @example Basic usage in component
- * ```typescript
- * import { useDispatch, useSelector } from 'react-redux';
- * import { medicationsActions, selectActiveMedicationsByStudent } from '@/stores/slices/medicationsSlice';
- *
- * function StudentMedications({ studentId }) {
- *   const dispatch = useDispatch();
- *   const medications = useSelector(selectActiveMedicationsByStudent(studentId));
- *   const { isLoading, error } = useSelector((state) => state.medications);
- *
- *   useEffect(() => {
- *     // Load medications from server (TanStack Query preferred)
- *     dispatch(fetchMedicationsForStudent(studentId));
- *   }, [studentId]);
- *
- *   return (
- *     <div>
- *       {medications.map(med => (
- *         <MedicationCard key={med.id} medication={med} />
- *       ))}
- *     </div>
- *   );
- * }
- * ```
- *
- * @example Medication expiration monitoring
- * ```typescript
- * import { useSelector } from 'react-redux';
- * import { selectExpiringMedications } from '@/stores/slices/medicationsSlice';
- *
- * function ExpirationAlerts() {
- *   const expiringMeds = useSelector(selectExpiringMedications);
- *
- *   return (
- *     <AlertPanel>
- *       {expiringMeds.map(med => (
- *         <Alert key={med.id}>
- *           {med.name} expires {med.expiresAt}
- *         </Alert>
- *       ))}
- *     </AlertPanel>
- *   );
- * }
- * ```
- *
- * @see {@link ../../services/modules/medicationsApi.ts} for API integration
- * @see {@link ../../hooks/useMedications.ts} for TanStack Query hooks
  * @since 1.0.0
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
+import { Medication } from '@/types/api';
+import { medicationsApi } from '@/services/api';
 
 /**
- * Medication record interface representing a student's prescription or medication order.
+ * Data required to create a new student medication prescription.
  *
- * Contains all necessary information for medication administration, consent tracking,
- * and inventory management. This is PHI data protected under HIPAA regulations.
+ * @interface CreateMedicationData
  *
- * @interface Medication
- * @property {string} id - Unique medication record identifier (UUID)
- * @property {string} studentId - Student this medication is prescribed to (foreign key)
- * @property {string} name - Medication name (generic or brand name)
- * @property {string} dosage - Dosage amount and unit (e.g., "500mg", "2 tablets")
- * @property {string} route - Administration route (oral, injection, topical, inhalation, etc.)
- * @property {string} frequency - Administration frequency (e.g., "twice daily", "as needed")
- * @property {boolean} active - Whether medication is currently active/valid for administration
- * @property {string} [expiresAt] - Medication expiration date (ISO 8601 format) for inventory tracking
- *
- * @example Medication record structure
- * ```typescript
- * {
- *   id: "med-123",
- *   studentId: "stu-456",
- *   name: "Amoxicillin",
- *   dosage: "500mg",
- *   route: "oral",
- *   frequency: "Three times daily",
- *   active: true,
- *   expiresAt: "2025-12-31T00:00:00Z"
- * }
- * ```
- *
- * @security PHI data - audit logging required for all access
- * @compliance HIPAA-protected medication information
+ * @property {string} studentId - Student receiving the medication (PHI)
+ * @property {string} medicationId - Reference to medication catalog entry
+ * @property {string} dosage - Prescribed dosage (e.g., "10mg", "2 tablets")
+ * @property {string} frequency - Administration frequency (e.g., "TWICE_DAILY", "AS_NEEDED")
+ * @property {string} route - Route of administration (e.g., "ORAL", "INJECTION_SC")
+ * @property {string} startDate - ISO date when medication should begin
+ * @property {string} [endDate] - ISO date when medication should end (optional for ongoing)
+ * @property {string} [prescribedBy] - Prescribing physician name or ID
+ * @property {string} [instructions] - Special administration instructions
+ * @property {string} [sideEffects] - Known or potential side effects to monitor
+ * @property {boolean} [requiresParentConsent] - True if parent consent required before administration
  */
-interface Medication {
-  id: string;
+interface CreateMedicationData {
   studentId: string;
-  name: string;
+  medicationId: string;
   dosage: string;
-  route: string;
   frequency: string;
-  active: boolean;
-  expiresAt?: string;
+  route: string;
+  startDate: string;
+  endDate?: string;
+  prescribedBy?: string;
+  instructions?: string;
+  sideEffects?: string;
+  requiresParentConsent?: boolean;
 }
 
 /**
- * Medications state interface for Redux store.
+ * Data allowed for updating an existing student medication prescription.
  *
- * Stores medication records with loading and error states. This entire state
- * is PHI and MUST NOT be persisted to localStorage. State is cleared on logout
- * and page refresh for HIPAA compliance.
+ * All fields are optional to support partial updates. Changes to dosage, frequency,
+ * or route typically require new physician orders.
  *
- * @interface MedicationsState
- * @property {Medication[]} medications - Array of medication records (PHI data)
- * @property {boolean} isLoading - Loading state for async medication operations
- * @property {string | null} error - Error message from failed medication operations
+ * @interface UpdateMedicationData
  *
- * @example State structure
- * ```typescript
- * {
- *   medications: [
- *     {
- *       id: "med-1",
- *       studentId: "stu-1",
- *       name: "EpiPen",
- *       dosage: "0.3mg",
- *       route: "injection",
- *       frequency: "as needed",
- *       active: true,
- *       expiresAt: "2025-06-30T00:00:00Z"
- *     }
- *   ],
- *   isLoading: false,
- *   error: null
- * }
- * ```
- *
- * @security PHI data - NOT persisted to localStorage
- * @compliance HIPAA-compliant in-memory storage only
+ * @property {string} [dosage] - Updated dosage amount
+ * @property {string} [frequency] - Updated administration frequency
+ * @property {string} [route] - Updated administration route
+ * @property {string} [startDate] - Updated start date
+ * @property {string} [endDate] - Updated end date
+ * @property {string} [prescribedBy] - Updated prescriber information
+ * @property {string} [instructions] - Updated administration instructions
+ * @property {string} [sideEffects] - Updated side effects information
+ * @property {boolean} [isActive] - Updated active status
+ * @property {boolean} [requiresParentConsent] - Updated consent requirement
+ * @property {string} [parentConsentDate] - Date parent consent was obtained
  */
-interface MedicationsState {
-  medications: Medication[];
-  isLoading: boolean;
-  error: string | null;
+interface UpdateMedicationData {
+  dosage?: string;
+  frequency?: string;
+  route?: string;
+  startDate?: string;
+  endDate?: string;
+  prescribedBy?: string;
+  instructions?: string;
+  sideEffects?: string;
+  isActive?: boolean;
+  requiresParentConsent?: boolean;
+  parentConsentDate?: string;
 }
 
 /**
- * Initial medications state with empty medication list.
+ * Filter parameters for querying medications.
  *
- * This state is used on first load and is repopulated from the server
- * via TanStack Query. NOT persisted to localStorage (HIPAA compliance).
+ * Supports filtering by student, medication type, active status, consent requirements,
+ * and date ranges with pagination support.
  *
- * @type {MedicationsState}
- * @constant
+ * @interface MedicationFilters
+ *
+ * @property {string} [studentId] - Filter by specific student
+ * @property {string} [medicationId] - Filter by specific medication from catalog
+ * @property {boolean} [isActive] - Filter by active status
+ * @property {boolean} [requiresParentConsent] - Filter by consent requirement
+ * @property {string} [startDate] - Filter by start date (ISO format)
+ * @property {string} [endDate] - Filter by end date (ISO format)
+ * @property {number} [page] - Page number for pagination (1-indexed)
+ * @property {number} [limit] - Number of results per page
  */
-const initialState: MedicationsState = {
-  medications: [],
-  isLoading: false,
-  error: null,
+interface MedicationFilters {
+  studentId?: string;
+  medicationId?: string;
+  isActive?: boolean;
+  requiresParentConsent?: boolean;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * API service adapter for medications.
+ *
+ * Wraps the medicationsApi service to conform to the EntityApiService interface
+ * required by the slice factory. Handles response transformation and error handling
+ * for all medication CRUD operations.
+ *
+ * @const {EntityApiService<Medication, CreateMedicationData, UpdateMedicationData>}
+ *
+ * @remarks
+ * API Integration: All methods call medicationsApi which handles authentication,
+ * error handling, retry logic, and audit logging.
+ *
+ * Response Transformation: Normalizes API responses to match slice factory expectations,
+ * ensuring consistent data structure across all entity types.
+ *
+ * @see {@link medicationsApi} for underlying API implementation
+ */
+const medicationsApiService: EntityApiService<Medication, CreateMedicationData, UpdateMedicationData> = {
+  /**
+   * Fetches all medications with optional filtering and pagination.
+   *
+   * @param {MedicationFilters} [params] - Optional filter parameters
+   * @returns {Promise<{data: Medication[], total?: number, pagination?: any}>} Medications and pagination info
+   */
+  async getAll(params?: MedicationFilters) {
+    const response = await medicationsApi.getAll(params);
+    return {
+      data: response.medications || [],
+      total: response.pagination?.total,
+      pagination: response.pagination,
+    };
+  },
+
+  /**
+   * Fetches a single medication by ID.
+   *
+   * @param {string} id - Medication ID
+   * @returns {Promise<{data: Medication}>} Single medication record
+   */
+  async getById(id: string) {
+    const response = await medicationsApi.getById(id);
+    return { data: response };
+  },
+
+  /**
+   * Creates a new student medication prescription.
+   *
+   * @param {CreateMedicationData} data - Medication creation data
+   * @returns {Promise<{data: Medication}>} Created medication record
+   *
+   * @remarks
+   * Medication Safety: Creation triggers validation of drug interactions,
+   * contraindications, and allergy checks before saving.
+   */
+  async create(data: CreateMedicationData) {
+    const response = await medicationsApi.create(data as any);
+    return { data: response };
+  },
+
+  /**
+   * Updates an existing student medication prescription.
+   *
+   * @param {string} id - Medication ID to update
+   * @param {UpdateMedicationData} data - Updated medication data
+   * @returns {Promise<{data: Medication}>} Updated medication record
+   *
+   * @remarks
+   * Medication Safety: Updates to dosage, frequency, or route may require
+   * new physician orders depending on school policy.
+   */
+  async update(id: string, data: UpdateMedicationData) {
+    const response = await medicationsApi.update(id, data as any);
+    return { data: response };
+  },
+
+  /**
+   * Deletes (soft-deletes) a student medication prescription.
+   *
+   * @param {string} id - Medication ID to delete
+   * @returns {Promise<{success: boolean}>} Deletion success status
+   *
+   * @remarks
+   * Medication Safety: Deletion typically performs soft-delete to preserve
+   * audit trail. Physical deletion requires elevated permissions.
+   */
+  async delete(id: string) {
+    await medicationsApi.delete(id);
+    return { success: true };
+  },
 };
 
 /**
- * Medications Redux slice with reducers for medication management.
+ * Medications slice factory instance.
  *
- * Handles medication state updates including loading medications from the server,
- * managing loading states, and error handling. Designed to work with TanStack Query
- * for server state synchronization and real-time updates.
+ * Creates the Redux slice with standardized CRUD operations, loading states,
+ * and error handling using the entity slice factory pattern.
  *
- * **IMPORTANT SECURITY NOTES:**
- * - This slice contains PHI data and MUST NOT be added to redux-persist
- * - All medication data is cleared on logout and page refresh
- * - Backend audit logging required for all medication access
- * - Access controlled via RBAC permissions
+ * @const
  *
- * @constant medicationsSlice
- * @type {Slice<MedicationsState>}
- * @security PHI data - NO persistence allowed
- * @compliance HIPAA-compliant in-memory state only
+ * @remarks
+ * Medication Safety: Bulk operations are intentionally disabled to ensure each
+ * medication change receives individual validation and review. This prevents
+ * accidental mass updates that could compromise patient safety.
+ *
+ * @see {@link createEntitySlice} for factory implementation details
  */
-const medicationsSlice = createSlice({
-  name: 'medications',
-  initialState,
-  reducers: {
-    /**
-     * Sets the medications array with data from the server.
-     *
-     * Called after successfully fetching medications from the backend API.
-     * Replaces the entire medications array with new data. Should be called
-     * from TanStack Query success handlers or WebSocket update listeners.
-     *
-     * **HIPAA Compliance:**
-     * - Backend MUST audit log this data access
-     * - Data NOT persisted to localStorage
-     * - Cleared on logout via state reset
-     *
-     * @function setMedications
-     * @param {MedicationsState} state - Current medications state
-     * @param {PayloadAction<Medication[]>} action - Array of medication records from server
-     * @returns {void}
-     *
-     * @example Load medications from API
-     * ```typescript
-     * const dispatch = useDispatch();
-     *
-     * const loadMedications = async () => {
-     *   dispatch(medicationsActions.setLoading(true));
-     *   try {
-     *     const data = await medicationsApi.getAll();
-     *     dispatch(medicationsActions.setMedications(data));
-     *     // Backend automatically audit logs this access
-     *   } catch (error) {
-     *     dispatch(medicationsActions.setError(error.message));
-     *   } finally {
-     *     dispatch(medicationsActions.setLoading(false));
-     *   }
-     * };
-     * ```
-     *
-     * @example Update from WebSocket event
-     * ```typescript
-     * socket.on('medication:updated', (updatedMedication) => {
-     *   const currentMeds = selectAll(state);
-     *   const newMeds = currentMeds.map(med =>
-     *     med.id === updatedMedication.id ? updatedMedication : med
-     *   );
-     *   dispatch(medicationsActions.setMedications(newMeds));
-     * });
-     * ```
-     *
-     * @security PHI data - backend audit logging required
-     * @compliance HIPAA audit trail created on backend
-     */
-    setMedications: (state, action: PayloadAction<Medication[]>) => {
-      state.medications = action.payload;
-    },
-
-    /**
-     * Sets the loading state for medication operations.
-     *
-     * Used to show loading indicators during async medication operations
-     * such as fetching, creating, updating, or deleting medications.
-     *
-     * @function setLoading
-     * @param {MedicationsState} state - Current medications state
-     * @param {PayloadAction<boolean>} action - Loading state (true = loading, false = idle)
-     * @returns {void}
-     *
-     * @example Show loading spinner during fetch
-     * ```typescript
-     * const MedicationsList = () => {
-     *   const { isLoading } = useSelector((state) => state.medications);
-     *
-     *   if (isLoading) {
-     *     return <LoadingSpinner />;
-     *   }
-     *
-     *   return <MedicationsTable />;
-     * };
-     * ```
-     */
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-
-    /**
-     * Sets or clears the error message for medication operations.
-     *
-     * Stores error messages from failed medication operations for display
-     * to the user. Pass null to clear the error after user acknowledgment.
-     *
-     * @function setError
-     * @param {MedicationsState} state - Current medications state
-     * @param {PayloadAction<string | null>} action - Error message or null to clear
-     * @returns {void}
-     *
-     * @example Handle medication fetch error
-     * ```typescript
-     * const { error } = useSelector((state) => state.medications);
-     *
-     * if (error) {
-     *   return (
-     *     <Alert onClose={() => dispatch(medicationsActions.setError(null))}>
-     *       {error}
-     *     </Alert>
-     *   );
-     * }
-     * ```
-     */
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-  },
-});
+const medicationsSliceFactory = createEntitySlice<Medication, CreateMedicationData, UpdateMedicationData>(
+  'medications',
+  medicationsApiService,
+  {
+    enableBulkOperations: false, // Disable bulk operations for medication safety
+  }
+);
 
 /**
- * Export medications slice for advanced use cases.
+ * Medications Redux slice.
+ *
+ * @const {Slice}
  * @exports medicationsSlice
  */
-export { medicationsSlice };
+export const medicationsSlice = medicationsSliceFactory.slice;
 
 /**
- * Medication action creators for state management.
+ * Medications reducer function for Redux store.
  *
- * @exports medicationsActions - Action creators (setMedications, setLoading, setError)
- *
- * @example Using medication actions
- * ```typescript
- * import { medicationsActions } from '@/stores/slices/medicationsSlice';
- *
- * dispatch(medicationsActions.setMedications(medications));
- * dispatch(medicationsActions.setLoading(true));
- * dispatch(medicationsActions.setError('Failed to load medications'));
- * ```
+ * @const {Reducer}
+ * @exports medicationsReducer
  */
-export const medicationsActions = medicationsSlice.actions;
+export const medicationsReducer = medicationsSlice.reducer;
 
 /**
- * Medication async thunks (currently empty, use TanStack Query instead).
+ * Action creators for medication state updates.
  *
- * Async operations should be handled by TanStack Query hooks for better
- * caching, refetching, and optimistic updates. This object is provided
- * for future expansion if needed.
+ * Includes both synchronous actions (setFilters, clearCache, etc.) and
+ * auto-generated actions from async thunks (pending, fulfilled, rejected).
  *
- * @exports medicationsThunks - Empty object (use TanStack Query)
- * @deprecated Use TanStack Query hooks from `hooks/useMedications.ts`
+ * @const {ActionCreators}
+ * @exports medicationsActions
  */
-export const medicationsThunks = {};
+export const medicationsActions = medicationsSliceFactory.actions;
 
 /**
- * Basic medication selectors for common state access patterns.
+ * Entity adapter selectors for normalized medication state.
  *
- * These selectors provide type-safe access to the medications state.
- * For more complex queries, use the specialized selector functions below.
+ * Provides efficient selectors for accessing medications:
+ * - selectAll: Get all medications as array
+ * - selectById: Get medication by ID
+ * - selectIds: Get all medication IDs
+ * - selectEntities: Get medications as normalized object
+ * - selectTotal: Get total count
  *
- * @exports medicationsSelectors - Basic selectors for state access
- * @property {Function} selectAll - Select all medications
- * @property {Function} selectLoading - Select loading state
- * @property {Function} selectError - Select error state
+ * @const {EntitySelectors}
+ * @exports medicationsSelectors
  *
- * @example Using basic selectors
+ * @example
  * ```typescript
- * import { medicationsSelectors } from '@/stores/slices/medicationsSlice';
- *
  * const allMedications = useSelector(medicationsSelectors.selectAll);
- * const isLoading = useSelector(medicationsSelectors.selectLoading);
- * const error = useSelector(medicationsSelectors.selectError);
+ * const medication = useSelector(state => medicationsSelectors.selectById(state, 'med-123'));
  * ```
  */
-export const medicationsSelectors = {
-  selectAll: (state: any) => state.medications.medications,
-  selectLoading: (state: any) => state.medications.isLoading,
-  selectError: (state: any) => state.medications.error,
+export const medicationsSelectors = medicationsSliceFactory.adapter.getSelectors((state: any) => state.medications);
+
+/**
+ * Async thunks for medication API operations.
+ *
+ * Provides thunks for all CRUD operations:
+ * - fetchAll: Fetch medications with filters
+ * - fetchById: Fetch single medication
+ * - create: Create new medication
+ * - update: Update existing medication
+ * - delete: Delete medication
+ *
+ * @const {AsyncThunks}
+ * @exports medicationsThunks
+ *
+ * @example
+ * ```typescript
+ * // Fetch all active medications for a student
+ * dispatch(medicationsThunks.fetchAll({ studentId: '123', isActive: true }));
+ *
+ * // Create new medication
+ * dispatch(medicationsThunks.create(medicationData));
+ * ```
+ */
+export const medicationsThunks = medicationsSliceFactory.thunks;
+
+/**
+ * Selector for active medications from catalog.
+ *
+ * Returns all medications from the medication catalog. In the catalog context,
+ * all medications are assumed available for prescription.
+ *
+ * @param {any} state - Redux root state
+ * @returns {Medication[]} Array of all catalog medications
+ *
+ * @example
+ * ```typescript
+ * const activeMeds = useSelector(selectActiveMedications);
+ * ```
+ *
+ * @remarks
+ * Note: This selector is for the medication catalog, not student prescriptions.
+ * For student-specific active medications, use selectActiveMedicationsByStudent.
+ */
+export const selectActiveMedications = (state: any): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  // Medication catalog doesn't have isActive - all medications in catalog are assumed available
+  return allMedications;
 };
 
 /**
- * Selects only active medications from the store.
+ * Selector for controlled substance medications.
  *
- * Filters out inactive/discontinued medications to show only current
- * prescriptions that are valid for administration.
+ * Filters medications to return only those classified as controlled substances
+ * requiring DEA tracking and witness documentation.
  *
- * @function selectActiveMedications
  * @param {any} state - Redux root state
- * @returns {Medication[]} Array of active medications
+ * @returns {Medication[]} Array of controlled substance medications
  *
- * @example Get active medications for dashboard
+ * @example
  * ```typescript
- * const activeMeds = useSelector(selectActiveMedications);
- * console.log(`${activeMeds.length} active medications`);
+ * const controlledMeds = useSelector(selectControlledMedications);
  * ```
  *
- * @security PHI data access - audit logging required
+ * @remarks
+ * Medication Safety: Controlled substances require special handling including:
+ * - Secure storage in locked cabinet
+ * - Witness documentation for administration
+ * - Enhanced audit logging
+ * - Periodic inventory reconciliation
  */
-export const selectActiveMedications = (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.active);
+export const selectControlledMedications = (state: any): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.isControlled);
+};
 
 /**
- * Selects all medications for a specific student.
+ * Selector for medications filtered by category.
  *
- * Returns medications (active and inactive) prescribed to the given student.
- * Useful for viewing complete medication history.
+ * Returns medications matching a specific category (e.g., "Antibiotic", "Analgesic",
+ * "Antihistamine", "Antiseizure").
  *
- * @function selectMedicationsByStudent
- * @param {string} studentId - Student identifier
- * @returns {Function} Selector function that accepts Redux state
- * @returns {Medication[]} Array of medications for the student
- *
- * @example Get all medications for a student
- * ```typescript
- * const studentMeds = useSelector(selectMedicationsByStudent(studentId));
- * console.log(`Student has ${studentMeds.length} medication records`);
- * ```
- *
- * @security PHI data access - audit logging required
- * @compliance Student medication history is PHI
- */
-export const selectMedicationsByStudent = (studentId: string) => (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.studentId === studentId);
-
-/**
- * Selects active medications for a specific student.
- *
- * Returns only active/current medications for the student. This is the most
- * commonly used selector for daily medication administration workflows.
- *
- * @function selectActiveMedicationsByStudent
- * @param {string} studentId - Student identifier
- * @returns {Function} Selector function that accepts Redux state
- * @returns {Medication[]} Array of active medications for the student
- *
- * @example Get active medications for daily administration
- * ```typescript
- * const activeMeds = useSelector(selectActiveMedicationsByStudent('stu-123'));
- *
- * return (
- *   <MedicationSchedule>
- *     {activeMeds.map(med => (
- *       <MedicationItem key={med.id} medication={med} />
- *     ))}
- *   </MedicationSchedule>
- * );
- * ```
- *
- * @security PHI data access - audit logging required
- * @compliance Student medication data is PHI
- */
-export const selectActiveMedicationsByStudent = (studentId: string) => (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.studentId === studentId && m.active);
-
-/**
- * Selects medications requiring consent forms or parental authorization.
- *
- * Returns active medications that may require additional consent documentation.
- * Currently returns all active medications; should be enhanced with consent
- * tracking logic based on medication classification (controlled substances,
- * high-risk medications, etc.).
- *
- * @function selectMedicationsRequiringConsent
  * @param {any} state - Redux root state
- * @returns {Medication[]} Array of medications requiring consent
+ * @param {string} category - Medication category to filter by
+ * @returns {Medication[]} Array of medications in the specified category
  *
- * @example Check for missing consent forms
+ * @example
  * ```typescript
- * const consentRequired = useSelector(selectMedicationsRequiringConsent);
- *
- * return (
- *   <Alert severity="warning">
- *     {consentRequired.length} medications require consent forms
- *   </Alert>
- * );
+ * const antibiotics = useSelector(state => selectMedicationsByCategory(state, 'Antibiotic'));
  * ```
- *
- * @todo Enhance with actual consent tracking based on medication type
- * @security PHI data access - audit logging required
- * @compliance Consent documentation is HIPAA-required
  */
-export const selectMedicationsRequiringConsent = (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.active);
+export const selectMedicationsByCategory = (state: any, category: string): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.category === category);
+};
 
 /**
- * Selects medications filtered by administration route.
+ * Selector for medications filtered by dosage form.
  *
- * Returns medications matching the specified administration route (oral,
- * injection, topical, inhalation, etc.). Useful for organizing medications
- * by administration method or training requirements.
+ * Returns medications available in a specific dosage form (e.g., "Tablet", "Liquid",
+ * "Injection", "Inhaler").
  *
- * @function selectMedicationsByRoute
- * @param {string} route - Administration route (oral, injection, topical, inhalation, etc.)
- * @returns {Function} Selector function that accepts Redux state
- * @returns {Medication[]} Array of medications with the specified route
- *
- * @example Get injectable medications requiring special training
- * ```typescript
- * const injectableMeds = useSelector(selectMedicationsByRoute('injection'));
- *
- * return (
- *   <TrainingAlert>
- *     Staff must be trained for {injectableMeds.length} injectable medications
- *   </TrainingAlert>
- * );
- * ```
- *
- * @security PHI data access - audit logging required
- */
-export const selectMedicationsByRoute = (route: string) => (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.route === route);
-
-/**
- * Selects medications with expiration dates for inventory tracking.
- *
- * Returns medications that have expiration dates set. Used for inventory
- * management, expiration alerts, and medication disposal scheduling.
- *
- * @function selectExpiringMedications
  * @param {any} state - Redux root state
- * @returns {Medication[]} Array of medications with expiration dates
+ * @param {string} dosageForm - Dosage form to filter by
+ * @returns {Medication[]} Array of medications in the specified form
  *
- * @example Monitor medication expiration for inventory
+ * @example
  * ```typescript
- * const expiringMeds = useSelector(selectExpiringMedications);
- * const expiringSoon = expiringMeds.filter(med =>
- *   new Date(med.expiresAt) < addDays(new Date(), 30)
- * );
- *
- * return (
- *   <InventoryAlert>
- *     {expiringSoon.length} medications expire within 30 days
- *   </InventoryAlert>
- * );
+ * const tablets = useSelector(state => selectMedicationsByForm(state, 'Tablet'));
+ * const liquids = useSelector(state => selectMedicationsByForm(state, 'Liquid'));
  * ```
- *
- * @security PHI data access - audit logging required
- * @compliance Proper medication disposal tracking required
  */
-export const selectExpiringMedications = (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.expiresAt);
+export const selectMedicationsByForm = (state: any, dosageForm: string): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.dosageForm === dosageForm);
+};
 
 /**
- * Selects medications due for administration today.
+ * Selector for medications requiring witness documentation.
  *
- * Returns active medications that need to be administered based on the current
- * date. Currently returns all active medications; should be enhanced with actual
- * scheduling logic based on frequency, last administration time, and schedule.
+ * Returns medications that require a second healthcare provider to witness
+ * administration, typically controlled substances and high-risk medications.
  *
- * @function selectMedicationsDueToday
  * @param {any} state - Redux root state
- * @returns {Medication[]} Array of medications due today
+ * @returns {Medication[]} Array of medications requiring witness
  *
- * @example Show daily medication schedule
+ * @example
  * ```typescript
- * const medicationsDue = useSelector(selectMedicationsDueToday);
- *
- * return (
- *   <DailySchedule>
- *     <h2>Medications Due Today: {medicationsDue.length}</h2>
- *     {medicationsDue.map(med => (
- *       <MedicationScheduleItem key={med.id} medication={med} />
- *     ))}
- *   </DailySchedule>
- * );
+ * const witnessRequired = useSelector(selectMedicationsRequiringWitness);
  * ```
  *
- * @todo Enhance with actual schedule calculation based on frequency and last dose
- * @security PHI data access - audit logging required
- * @compliance Medication administration tracking required
+ * @remarks
+ * Medication Safety: Medications requiring witness include:
+ * - All controlled substances (DEA Schedule II-V)
+ * - Injectable medications (depending on school policy)
+ * - High-alert medications (e.g., insulin)
+ *
+ * Workflow: Administration interface should prompt for witness selection when
+ * administering these medications.
  */
-export const selectMedicationsDueToday = (state: any) =>
-  state.medications.medications.filter((m: Medication) => m.active);
-
-/**
- * Medications reducer for Redux store integration.
- *
- * **CRITICAL SECURITY NOTE:**
- * This reducer contains PHI data and MUST NOT be included in redux-persist
- * configuration. Data should remain in-memory only and be cleared on logout.
- *
- * Import this reducer in the root Redux store configuration:
- * ```typescript
- * import medicationsReducer from './slices/medicationsSlice';
- *
- * const store = configureStore({
- *   reducer: {
- *     medications: medicationsReducer,
- *     // DO NOT add to persistConfig whitelist
- *   },
- * });
- * ```
- *
- * @default medicationsSlice.reducer
- * @security PHI data - NO localStorage persistence
- * @compliance HIPAA-compliant in-memory storage only
- */
-export default medicationsSlice.reducer;
+export const selectMedicationsRequiringWitness = (state: any): Medication[] => {
+  const allMedications = medicationsSelectors.selectAll(state) as Medication[];
+  return allMedications.filter(medication => medication.requiresWitness);
+};

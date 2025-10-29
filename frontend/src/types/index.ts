@@ -91,6 +91,8 @@ export * from './state'
 export * from './navigation'
 export * from './cache'
 // export * from './healthRecords' // Conflicts: MedicationAdherence, Allergy, ChronicCondition, etc.
+// Export specific health records types that are needed in schemas
+export type { AllergyType, HealthRecordType, VaccinationComplianceStatus } from './healthRecords'
 export * from './documents'
 // export * from './student.types' // Conflicts: Student, EmergencyContact, Gender, etc.
 

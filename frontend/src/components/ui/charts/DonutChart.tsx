@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * DonutChart Component - Category Breakdown with Center Label
  *

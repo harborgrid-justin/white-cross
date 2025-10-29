@@ -2,7 +2,7 @@
  * Compliance Report Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -62,12 +62,11 @@ export interface UpdateComplianceReportDTO {
   reviewedBy?: string;
 }
 
-@Injectable()
 export class ComplianceReportRepository extends BaseRepository<any, ComplianceReportAttributes, CreateComplianceReportDTO> {
   constructor(
     @InjectModel(ComplianceReport) model: typeof ComplianceReport,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager
   ) {
     super(model, auditLogger, cacheManager, 'ComplianceReport');
   }
