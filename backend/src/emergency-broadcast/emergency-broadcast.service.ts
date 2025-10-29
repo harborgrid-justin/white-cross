@@ -29,6 +29,7 @@ import {
 import { EmergencyBroadcastRepository } from '../database/repositories/impl/emergency-broadcast.repository';
 import { StudentRepository } from '../database/repositories/impl/student.repository';
 import { ExecutionContext } from '../database/types';
+import { CommunicationService } from '../communication/services/communication.service';
 
 @Injectable()
 export class EmergencyBroadcastService {
@@ -39,6 +40,7 @@ export class EmergencyBroadcastService {
     private readonly broadcastRepository: EmergencyBroadcastRepository,
     @Inject(StudentRepository)
     private readonly studentRepository: StudentRepository,
+    private readonly communicationService: CommunicationService,
   ) {}
 
   /**
@@ -332,6 +334,17 @@ export class EmergencyBroadcastService {
 
   /**
    * Deliver messages to recipients via all specified channels
+   *
+   * Implements multi-channel delivery with retry logic:
+   * - SMS: Immediate delivery for critical alerts
+   * - Email: Detailed information delivery
+   * - Push: Mobile app notifications
+   * - Voice: Phone calls for critical emergencies
+   *
+   * Retry strategy:
+   * - 3 attempts per channel with exponential backoff (1s, 2s, 4s)
+   * - Failed deliveries are logged but don't block other channels
+   * - Each channel delivery is independent
    */
   private async deliverToRecipients(
     broadcastId: string,
@@ -339,52 +352,256 @@ export class EmergencyBroadcastService {
   ): Promise<RecipientDeliveryStatus[]> {
     const deliveryStatuses: RecipientDeliveryStatus[] = [];
 
+    // Get broadcast details for message content and channel configuration
+    const broadcast = await this.broadcastRepository.findById(broadcastId);
+    if (!broadcast) {
+      throw new NotFoundException(`Broadcast ${broadcastId} not found`);
+    }
+
+    const channels = (broadcast as any).channels || [CommunicationChannel.EMAIL];
+    const messageTitle = (broadcast as any).title;
+    const messageContent = (broadcast as any).message;
+
+    this.logger.log(`Delivering to ${recipients.length} recipients via channels: ${channels.join(', ')}`);
+
+    // Process each recipient
     for (const recipient of recipients) {
-      try {
-        // TODO: Integrate with communication service
-        // For each channel (SMS, Email, Push, Voice):
-        // - Format message appropriately for channel
-        // - Send via channelService
-        // - Track delivery status
-        // - Retry on failure (with backoff)
-
-        const status: RecipientDeliveryStatus = {
-          recipientId: recipient.id,
-          recipientType: recipient.type,
-          name: recipient.name,
-          contactMethod: CommunicationChannel.SMS, // Would iterate through all channels
-          phoneNumber: recipient.phone,
-          email: recipient.email,
-          status: DeliveryStatus.DELIVERED,
-          deliveredAt: new Date(),
-        };
-
-        deliveryStatuses.push(status);
-
-        this.logger.debug('Message delivered to recipient', {
+      // Deliver to each channel for this recipient
+      for (const channel of channels) {
+        const deliveryResult = await this.deliverToChannel(
           broadcastId,
-          recipientId: recipient.id,
-          channel: 'SMS',
-        });
-      } catch (error) {
-        this.logger.error('Failed to deliver to recipient', {
-          broadcastId,
-          recipientId: recipient.id,
-          error,
-        });
+          recipient,
+          channel,
+          messageTitle,
+          messageContent,
+        );
 
-        deliveryStatuses.push({
-          recipientId: recipient.id,
-          recipientType: recipient.type,
-          name: recipient.name,
-          contactMethod: CommunicationChannel.SMS,
-          status: DeliveryStatus.FAILED,
-          error: (error as Error).message,
-        });
+        deliveryStatuses.push(deliveryResult);
       }
     }
 
     return deliveryStatuses;
+  }
+
+  /**
+   * Deliver message to a single recipient via specific channel
+   * Implements retry logic with exponential backoff
+   */
+  private async deliverToChannel(
+    broadcastId: string,
+    recipient: any,
+    channel: CommunicationChannel,
+    title: string,
+    content: string,
+  ): Promise<RecipientDeliveryStatus> {
+    const maxRetries = 3;
+    const baseDelay = 1000; // 1 second
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger.debug(`Delivery attempt ${attempt}/${maxRetries}`, {
+          broadcastId,
+          recipientId: recipient.id,
+          channel,
+        });
+
+        // Format message based on channel
+        const formattedMessage = this.formatMessageForChannel(
+          channel,
+          title,
+          content,
+        );
+
+        // Send via communication service
+        const deliveryResponse = await this.sendViaChannel(
+          channel,
+          recipient,
+          formattedMessage,
+        );
+
+        // Success - log and return
+        this.logger.debug('Message delivered successfully', {
+          broadcastId,
+          recipientId: recipient.id,
+          channel,
+          attempt,
+        });
+
+        return {
+          recipientId: recipient.id,
+          recipientType: recipient.type,
+          name: recipient.name,
+          contactMethod: channel,
+          phoneNumber: recipient.phone,
+          email: recipient.email,
+          status: DeliveryStatus.DELIVERED,
+          deliveredAt: new Date(),
+          attemptCount: attempt,
+        };
+      } catch (error) {
+        this.logger.warn(`Delivery attempt ${attempt} failed`, {
+          broadcastId,
+          recipientId: recipient.id,
+          channel,
+          error: (error as Error).message,
+        });
+
+        // If not the last attempt, wait with exponential backoff
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          await this.sleep(delay);
+        } else {
+          // All retries exhausted - mark as failed
+          this.logger.error('All delivery attempts failed', {
+            broadcastId,
+            recipientId: recipient.id,
+            channel,
+            attempts: maxRetries,
+          });
+
+          return {
+            recipientId: recipient.id,
+            recipientType: recipient.type,
+            name: recipient.name,
+            contactMethod: channel,
+            phoneNumber: recipient.phone,
+            email: recipient.email,
+            status: DeliveryStatus.FAILED,
+            error: `Failed after ${maxRetries} attempts: ${(error as Error).message}`,
+            attemptCount: maxRetries,
+          };
+        }
+      }
+    }
+
+    // Fallback (should never reach here, but TypeScript needs it)
+    return {
+      recipientId: recipient.id,
+      recipientType: recipient.type,
+      name: recipient.name,
+      contactMethod: channel,
+      status: DeliveryStatus.FAILED,
+      error: 'Unknown error',
+    };
+  }
+
+  /**
+   * Format message content appropriately for each channel type
+   */
+  private formatMessageForChannel(
+    channel: CommunicationChannel,
+    title: string,
+    content: string,
+  ): string {
+    switch (channel) {
+      case CommunicationChannel.SMS:
+        // SMS: Keep it short (160 chars max), remove formatting
+        const smsMessage = `${title}: ${content}`;
+        return smsMessage.length > 160
+          ? smsMessage.substring(0, 157) + '...'
+          : smsMessage;
+
+      case CommunicationChannel.EMAIL:
+        // Email: Full HTML formatting with title and content
+        return `
+          <html>
+            <body>
+              <h2>${title}</h2>
+              <p>${content}</p>
+              <hr>
+              <p><small>This is an emergency notification from White Cross School System.</small></p>
+            </body>
+          </html>
+        `;
+
+      case CommunicationChannel.PUSH:
+        // Push: Title and body for mobile notification
+        return JSON.stringify({
+          title,
+          body: content,
+          priority: 'high',
+          sound: 'emergency_alert',
+        });
+
+      case CommunicationChannel.VOICE:
+        // Voice: Clean text for text-to-speech
+        return `${title}. ${content}. I repeat. ${title}. ${content}.`;
+
+      default:
+        return `${title}: ${content}`;
+    }
+  }
+
+  /**
+   * Send message via specific communication channel
+   */
+  private async sendViaChannel(
+    channel: CommunicationChannel,
+    recipient: any,
+    message: string,
+  ): Promise<any> {
+    // Prepare message DTO for communication service
+    const messageDto = {
+      recipientId: recipient.id,
+      recipientType: recipient.type,
+      subject: 'Emergency Alert',
+      content: message,
+      priority: 'high',
+      channel: this.mapChannelToServiceChannel(channel),
+    };
+
+    // Route to appropriate communication service method based on channel
+    switch (channel) {
+      case CommunicationChannel.SMS:
+        if (!recipient.phone) {
+          throw new Error('Recipient has no phone number for SMS delivery');
+        }
+        messageDto['phoneNumber'] = recipient.phone;
+        break;
+
+      case CommunicationChannel.EMAIL:
+        if (!recipient.email) {
+          throw new Error('Recipient has no email for email delivery');
+        }
+        messageDto['email'] = recipient.email;
+        break;
+
+      case CommunicationChannel.PUSH:
+        // Push requires device tokens (would be fetched from user profile)
+        messageDto['deviceTokens'] = []; // In real implementation, fetch from DB
+        break;
+
+      case CommunicationChannel.VOICE:
+        if (!recipient.phone) {
+          throw new Error('Recipient has no phone number for voice call');
+        }
+        messageDto['phoneNumber'] = recipient.phone;
+        break;
+    }
+
+    // Call communication service
+    const result = await this.communicationService.sendMessage(messageDto as any);
+    return result;
+  }
+
+  /**
+   * Map emergency broadcast channel to communication service channel format
+   */
+  private mapChannelToServiceChannel(channel: CommunicationChannel): string {
+    const channelMap = {
+      [CommunicationChannel.SMS]: 'sms',
+      [CommunicationChannel.EMAIL]: 'email',
+      [CommunicationChannel.PUSH]: 'push',
+      [CommunicationChannel.VOICE]: 'voice',
+    };
+    return channelMap[channel] || 'email';
+  }
+
+  /**
+   * Sleep utility for retry backoff
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

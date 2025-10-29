@@ -1,0 +1,415 @@
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
+  ForeignKey,
+  BelongsTo,
+  Index,
+} from 'sequelize-typescript';
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * Alert Severity Levels
+ */
+export enum AlertSeverity {
+  INFO = 'INFO',
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL',
+  EMERGENCY = 'EMERGENCY',
+}
+
+/**
+ * Alert Categories
+ */
+export enum AlertCategory {
+  HEALTH = 'HEALTH',
+  SAFETY = 'SAFETY',
+  COMPLIANCE = 'COMPLIANCE',
+  SYSTEM = 'SYSTEM',
+  MEDICATION = 'MEDICATION',
+  APPOINTMENT = 'APPOINTMENT',
+}
+
+/**
+ * Trigger Condition Interface
+ */
+export interface TriggerCondition {
+  field: string;
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'regex';
+  value: any;
+  dataType?: 'string' | 'number' | 'boolean' | 'date';
+}
+
+/**
+ * Notification Channel Interface
+ */
+export interface NotificationChannel {
+  type: 'websocket' | 'email' | 'sms' | 'push';
+  enabled: boolean;
+  config?: Record<string, any>;
+}
+
+/**
+ * Alert Rule Attributes
+ */
+export interface AlertRuleAttributes {
+  id: string;
+  name: string;
+  description?: string;
+  category: AlertCategory;
+  severity: AlertSeverity;
+  isActive: boolean;
+  priority: number;
+  triggerConditions: TriggerCondition[];
+  notificationChannels: NotificationChannel[];
+  targetRoles?: string[];
+  targetUsers?: string[];
+  schoolId?: string;
+  districtId?: string;
+  autoEscalateAfter?: number; // minutes
+  cooldownPeriod?: number; // minutes
+  requiresAcknowledgment: boolean;
+  expiresAfter?: number; // minutes
+  metadata?: Record<string, any>;
+  createdBy?: string;
+  updatedBy?: string;
+  lastTriggered?: Date;
+  triggerCount?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+/**
+ * Alert Rule Model
+ *
+ * Defines rules for generating and routing alerts in the White Cross system.
+ * Supports complex trigger conditions and multi-channel delivery.
+ *
+ * Features:
+ * - Complex trigger condition evaluation
+ * - Multi-channel notification routing
+ * - Role and user-based targeting
+ * - Auto-escalation support
+ * - Cooldown period to prevent alert spam
+ * - Priority-based alert ordering
+ *
+ * Use Cases:
+ * - Medication administration alerts
+ * - Critical health condition notifications
+ * - Appointment reminders
+ * - Compliance violation alerts
+ * - System health monitoring
+ *
+ * Indexes:
+ * - category for filtering by alert type
+ * - severity for priority sorting
+ * - isActive for active rule queries
+ * - priority for rule evaluation order
+ */
+@Table({
+  tableName: 'alert_rules',
+  timestamps: true,
+  indexes: [
+    {
+      fields: ['category'],
+      name: 'alert_rules_category_idx',
+    },
+    {
+      fields: ['severity'],
+      name: 'alert_rules_severity_idx',
+    },
+    {
+      fields: ['is_active'],
+      name: 'alert_rules_is_active_idx',
+    },
+    {
+      fields: ['priority'],
+      name: 'alert_rules_priority_idx',
+    },
+    {
+      fields: ['school_id'],
+      name: 'alert_rules_school_id_idx',
+    },
+    {
+      fields: ['district_id'],
+      name: 'alert_rules_district_id_idx',
+    },
+    {
+      fields: ['category', 'is_active', 'priority'],
+      name: 'alert_rules_active_category_priority_idx',
+    },
+  ],
+})
+export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAttributes {
+  @PrimaryKey
+  @Default(() => uuidv4())
+  @Column(DataType.UUID)
+  declare id: string;
+
+  /**
+   * Rule name (must be unique and descriptive)
+   */
+  @Column({
+    type: DataType.STRING(200),
+    allowNull: false,
+    unique: true,
+  })
+  name: string;
+
+  /**
+   * Detailed description of the rule
+   */
+  @Column(DataType.TEXT)
+  description?: string;
+
+  /**
+   * Alert category
+   */
+  @Column({
+    type: DataType.ENUM(...Object.values(AlertCategory)),
+    allowNull: false,
+  })
+  category: AlertCategory;
+
+  /**
+   * Alert severity level
+   */
+  @Column({
+    type: DataType.ENUM(...Object.values(AlertSeverity)),
+    allowNull: false,
+  })
+  severity: AlertSeverity;
+
+  /**
+   * Whether this rule is currently active
+   */
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'is_active',
+  })
+  isActive: boolean;
+
+  /**
+   * Rule priority (higher = more important, evaluated first)
+   */
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  priority: number;
+
+  /**
+   * Conditions that trigger this alert
+   */
+  @Column({
+    type: DataType.JSONB,
+    allowNull: false,
+    field: 'trigger_conditions',
+  })
+  triggerConditions: TriggerCondition[];
+
+  /**
+   * Notification channels to use for this alert
+   */
+  @Column({
+    type: DataType.JSONB,
+    allowNull: false,
+    defaultValue: [],
+    field: 'notification_channels',
+  })
+  notificationChannels: NotificationChannel[];
+
+  /**
+   * Roles that should receive this alert
+   */
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    field: 'target_roles',
+  })
+  targetRoles?: string[];
+
+  /**
+   * Specific users that should receive this alert
+   */
+  @Column({
+    type: DataType.ARRAY(DataType.UUID),
+    field: 'target_users',
+  })
+  targetUsers?: string[];
+
+  /**
+   * School this rule applies to (null = all schools)
+   */
+  @Column({
+    type: DataType.UUID,
+    field: 'school_id',
+  })
+  schoolId?: string;
+
+  /**
+   * District this rule applies to (null = all districts)
+   */
+  @Column({
+    type: DataType.UUID,
+    field: 'district_id',
+  })
+  districtId?: string;
+
+  /**
+   * Auto-escalate if not acknowledged within this many minutes
+   */
+  @Column({
+    type: DataType.INTEGER,
+    field: 'auto_escalate_after',
+  })
+  autoEscalateAfter?: number;
+
+  /**
+   * Cooldown period in minutes before triggering again
+   */
+  @Column({
+    type: DataType.INTEGER,
+    field: 'cooldown_period',
+  })
+  cooldownPeriod?: number;
+
+  /**
+   * Whether this alert requires acknowledgment
+   */
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'requires_acknowledgment',
+  })
+  requiresAcknowledgment: boolean;
+
+  /**
+   * Alert expires after this many minutes
+   */
+  @Column({
+    type: DataType.INTEGER,
+    field: 'expires_after',
+  })
+  expiresAfter?: number;
+
+  /**
+   * Additional metadata
+   */
+  @Column(DataType.JSONB)
+  metadata?: Record<string, any>;
+
+  /**
+   * User who created this rule
+   */
+  @Column({
+    type: DataType.UUID,
+    field: 'created_by',
+  })
+  createdBy?: string;
+
+  /**
+   * User who last updated this rule
+   */
+  @Column({
+    type: DataType.UUID,
+    field: 'updated_by',
+  })
+  updatedBy?: string;
+
+  /**
+   * Last time this rule was triggered
+   */
+  @Column({
+    type: DataType.DATE,
+    field: 'last_triggered',
+  })
+  lastTriggered?: Date;
+
+  /**
+   * Total number of times this rule has been triggered
+   */
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+    field: 'trigger_count',
+  })
+  triggerCount?: number;
+
+  @Column({
+    type: DataType.DATE,
+    field: 'created_at',
+  })
+  declare createdAt?: Date;
+
+  @Column({
+    type: DataType.DATE,
+    field: 'updated_at',
+  })
+  declare updatedAt?: Date;
+
+  /**
+   * Check if rule is in cooldown period
+   */
+  isInCooldown(): boolean {
+    if (!this.cooldownPeriod || !this.lastTriggered) {
+      return false;
+    }
+
+    const cooldownMs = this.cooldownPeriod * 60 * 1000;
+    const timeSinceLastTrigger = Date.now() - this.lastTriggered.getTime();
+
+    return timeSinceLastTrigger < cooldownMs;
+  }
+
+  /**
+   * Evaluate if conditions are met
+   */
+  evaluateConditions(data: Record<string, any>): boolean {
+    // All conditions must be met (AND logic)
+    return this.triggerConditions.every(condition => {
+      const fieldValue = data[condition.field];
+
+      switch (condition.operator) {
+        case 'equals':
+          return fieldValue === condition.value;
+        case 'not_equals':
+          return fieldValue !== condition.value;
+        case 'greater_than':
+          return fieldValue > condition.value;
+        case 'less_than':
+          return fieldValue < condition.value;
+        case 'contains':
+          return String(fieldValue).includes(String(condition.value));
+        case 'regex':
+          return new RegExp(condition.value).test(String(fieldValue));
+        default:
+          return false;
+      }
+    });
+  }
+
+  /**
+   * Get enabled notification channels
+   */
+  getEnabledChannels(): NotificationChannel[] {
+    return this.notificationChannels.filter(channel => channel.enabled);
+  }
+
+  /**
+   * Record that this rule was triggered
+   */
+  async recordTrigger(): Promise<void> {
+    this.lastTriggered = new Date();
+    this.triggerCount = (this.triggerCount || 0) + 1;
+    await this.save();
+  }
+}

@@ -67,6 +67,27 @@ export class MonitoringService implements OnModuleInit {
     lastSecondRequests: [] as number[],
   };
 
+  // Database query metrics
+  private queryMetrics = {
+    totalQueries: 0,
+    queryTimes: [] as number[],
+    slowQueries: 0,
+    slowQueryThreshold: 1000, // ms - configurable
+  };
+
+  // WebSocket metrics
+  private wsMetrics = {
+    messagesSent: 0,
+    messagesReceived: 0,
+    lastMinuteMessages: [] as number[], // timestamps
+  };
+
+  // Job processing metrics
+  private jobMetrics = {
+    totalJobs: 0,
+    processingTimes: [] as number[],
+  };
+
   // Alert management
   private alerts: Map<string, Alert> = new Map();
   private alertConfig: AlertConfig = {
@@ -652,6 +673,12 @@ export class MonitoringService implements OnModuleInit {
     const idleConnections = driver.master?.pool?.idleCount || 0;
     const activeConnections = poolSize - idleConnections;
 
+    // Calculate average query time
+    const queryTimes = this.queryMetrics.queryTimes;
+    const avgQueryTime = queryTimes.length > 0
+      ? queryTimes.reduce((a, b) => a + b, 0) / queryTimes.length
+      : 0;
+
     // Cache metrics
     const cacheStats = this.cacheService?.getStats() || {
       hitRate: 0,
@@ -699,8 +726,9 @@ export class MonitoringService implements OnModuleInit {
       database: {
         activeConnections,
         idleConnections,
-        averageQueryTime: 0, // TODO: Track query times
-        slowQueries: 0, // TODO: Track slow queries
+        averageQueryTime: Math.round(avgQueryTime * 100) / 100,
+        slowQueries: this.queryMetrics.slowQueries,
+        totalQueries: this.queryMetrics.totalQueries,
       },
       cache: {
         hitRate: cacheStats.hitRate,
@@ -711,12 +739,17 @@ export class MonitoringService implements OnModuleInit {
       },
       websocket: {
         connectedClients: wsConnectedClients,
-        messagesPerSecond: 0, // TODO: Track WebSocket messages
-        totalMessages: 0,
+        messagesPerSecond: Math.round((this.wsMetrics.lastMinuteMessages.length / 60) * 100) / 100,
+        totalMessages: this.wsMetrics.messagesSent + this.wsMetrics.messagesReceived,
+        messagesSent: this.wsMetrics.messagesSent,
+        messagesReceived: this.wsMetrics.messagesReceived,
       },
       queue: {
         ...queueMetrics,
-        averageProcessingTime: 0, // TODO: Track job processing times
+        averageProcessingTime: this.jobMetrics.processingTimes.length > 0
+          ? Math.round((this.jobMetrics.processingTimes.reduce((a, b) => a + b, 0) / this.jobMetrics.processingTimes.length) * 100) / 100
+          : 0,
+        totalJobsProcessed: this.jobMetrics.totalJobs,
       },
     };
   }
@@ -1022,6 +1055,70 @@ export class MonitoringService implements OnModuleInit {
   }
 
   /**
+   * Track database query execution time
+   *
+   * @param queryTime Query execution time in milliseconds
+   */
+  trackQuery(queryTime: number): void {
+    this.queryMetrics.totalQueries++;
+    this.queryMetrics.queryTimes.push(queryTime);
+
+    // Check if query is slow
+    if (queryTime > this.queryMetrics.slowQueryThreshold) {
+      this.queryMetrics.slowQueries++;
+      this.logger.warn(`Slow query detected: ${queryTime}ms (threshold: ${this.queryMetrics.slowQueryThreshold}ms)`);
+    }
+
+    // Keep query times bounded (last 1000 queries)
+    if (this.queryMetrics.queryTimes.length > 1000) {
+      this.queryMetrics.queryTimes.shift();
+    }
+  }
+
+  /**
+   * Track WebSocket message
+   *
+   * @param direction Direction of message: 'sent' or 'received'
+   */
+  trackWebSocketMessage(direction: 'sent' | 'received'): void {
+    if (direction === 'sent') {
+      this.wsMetrics.messagesSent++;
+    } else {
+      this.wsMetrics.messagesReceived++;
+    }
+
+    // Track timestamp for rate calculation
+    this.wsMetrics.lastMinuteMessages.push(Date.now());
+
+    // Keep bounded to last 60 seconds
+    const oneMinuteAgo = Date.now() - 60000;
+    this.wsMetrics.lastMinuteMessages = this.wsMetrics.lastMinuteMessages.filter(
+      (timestamp) => timestamp > oneMinuteAgo
+    );
+  }
+
+  /**
+   * Track job processing time
+   *
+   * @param processingTime Job processing time in milliseconds
+   * @param jobType Type of job processed
+   */
+  trackJobProcessing(processingTime: number, jobType?: string): void {
+    this.jobMetrics.totalJobs++;
+    this.jobMetrics.processingTimes.push(processingTime);
+
+    // Log slow jobs (>30 seconds)
+    if (processingTime > 30000) {
+      this.logger.warn(`Slow job detected: ${jobType || 'unknown'} took ${processingTime}ms`);
+    }
+
+    // Keep processing times bounded (last 1000 jobs)
+    if (this.jobMetrics.processingTimes.length > 1000) {
+      this.jobMetrics.processingTimes.shift();
+    }
+  }
+
+  /**
    * Load alert configuration from environment
    */
   private loadAlertConfig(): void {
@@ -1034,6 +1131,9 @@ export class MonitoringService implements OnModuleInit {
       dbConnectionThreshold: this.configService.get('ALERT_DB_CONNECTION_THRESHOLD', 90),
       failedJobsThreshold: this.configService.get('ALERT_FAILED_JOBS_THRESHOLD', 100),
     };
+
+    // Load slow query threshold
+    this.queryMetrics.slowQueryThreshold = this.configService.get('SLOW_QUERY_THRESHOLD_MS', 1000);
 
     this.logger.log('Alert configuration loaded', this.alertConfig);
   }

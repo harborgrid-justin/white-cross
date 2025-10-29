@@ -23,12 +23,13 @@
 
 import { Module } from '@nestjs/common';
 import { CoreV1Module } from './core/core.module';
+import { HealthcareV1Module } from './healthcare/healthcare.module';
 
 @Module({
   imports: [
     CoreV1Module,
+    HealthcareV1Module,
     // Add other v1 route modules here as they are migrated
-    // HealthcareV1Module,
     // OperationsV1Module,
     // DocumentsV1Module,
     // ComplianceV1Module,
