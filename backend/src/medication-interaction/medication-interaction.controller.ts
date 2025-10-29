@@ -8,6 +8,14 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { MedicationInteractionService } from './medication-interaction.service';
 import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
 
@@ -17,6 +25,8 @@ import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
  *
  * Migrated from backend/src/routes/enhancedFeatures.ts
  */
+@ApiTags('medication-interaction')
+@ApiBearerAuth()
 @Controller('medication-interaction')
 export class MedicationInteractionController {
   private readonly logger = new Logger(MedicationInteractionController.name);
@@ -31,6 +41,29 @@ export class MedicationInteractionController {
    */
   @Get('students/:studentId/check')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check student medication interactions',
+    description: 'Analyzes all current medications for a student to detect potential drug-drug interactions',
+  })
+  @ApiParam({
+    name: 'studentId',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Medication interaction check completed',
+    type: InteractionCheckResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
   async checkStudentMedications(
     @Param('studentId') studentId: string,
   ): Promise<InteractionCheckResultDto> {

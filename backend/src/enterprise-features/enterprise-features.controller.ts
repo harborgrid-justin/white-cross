@@ -10,7 +10,15 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { EnterpriseFeaturesService } from './enterprise-features.service';
 import {
   // Waitlist DTOs
@@ -75,6 +83,7 @@ import {
 
 @ApiTags('Enterprise Features')
 @Controller('enterprise-features')
+@ApiBearerAuth()
 export class EnterpriseFeaturesController {
   constructor(
     private readonly enterpriseFeaturesService: EnterpriseFeaturesService,
@@ -85,12 +94,19 @@ export class EnterpriseFeaturesController {
   // ============================================
 
   @Post('waitlist')
-  @ApiOperation({ summary: 'Add student to waitlist' })
+  @ApiOperation({ 
+    summary: 'Add student to waitlist',
+    description: 'Adds a student to the intelligent waitlist system with priority scoring based on medical urgency and appointment type.'
+  })
+  @ApiBody({ type: AddToWaitlistDto })
   @ApiResponse({
     status: 201,
     description: 'Student added to waitlist successfully',
     type: WaitlistEntryResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Invalid request data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Student not found' })
   async addToWaitlist(@Body() dto: AddToWaitlistDto) {
     return this.enterpriseFeaturesService.addToWaitlist(
       dto.studentId,

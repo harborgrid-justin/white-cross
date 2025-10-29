@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
 import { StockManagementService } from './services/stock-management.service';
 import { AlertsService } from './services/alerts.service';
@@ -27,6 +27,7 @@ import { AlertType, AlertSeverity } from './dto/inventory-alert.dto';
 
 @ApiTags('inventory')
 @Controller('inventory')
+@ApiBearerAuth()
 export class InventoryController {
   constructor(
     private readonly inventoryService: InventoryService,
@@ -40,20 +41,103 @@ export class InventoryController {
   // ============ Inventory CRUD Operations ============
 
   @Post()
-  @ApiOperation({ summary: 'Create a new inventory item' })
-  @ApiResponse({ status: 201, description: 'Inventory item created successfully' })
+  @ApiOperation({ 
+    summary: 'Create a new inventory item',
+    description: 'Creates a new inventory item with complete specifications including supplier information, stock levels, reorder points, and categorization. Supports medical supplies, medications, and general healthcare inventory.'
+  })
+  @ApiBody({ type: CreateInventoryItemDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Inventory item created successfully with generated UUID',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        name: { type: 'string' },
+        category: { type: 'string' },
+        supplier: { type: 'string' },
+        currentStock: { type: 'number' },
+        minimumStock: { type: 'number' },
+        reorderPoint: { type: 'number' },
+        unitPrice: { type: 'number' },
+        location: { type: 'string' },
+        expirationDate: { type: 'string', format: 'date', nullable: true },
+        isActive: { type: 'boolean', example: true },
+        createdAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data or validation errors' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions for inventory management' })
   @ApiResponse({ status: 409, description: 'Item with this name already exists' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createInventoryItem(@Body() createDto: CreateInventoryItemDto) {
     return this.inventoryService.createInventoryItem(createDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all inventory items' })
-  @ApiQuery({ name: 'category', required: false })
-  @ApiQuery({ name: 'supplier', required: false })
-  @ApiQuery({ name: 'location', required: false })
-  @ApiQuery({ name: 'isActive', required: false, type: Boolean })
-  @ApiResponse({ status: 200, description: 'Returns all inventory items' })
+  @ApiOperation({ 
+    summary: 'Get all inventory items',
+    description: 'Retrieves paginated inventory items with comprehensive filtering by category, supplier, location, stock levels, and expiration dates. Includes stock status indicators and reorder recommendations.'
+  })
+  @ApiQuery({ name: 'page', required: false, type: 'number', example: 1, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: 'number', example: 20, description: 'Items per page' })
+  @ApiQuery({ name: 'category', required: false, description: 'Filter by item category (medications, supplies, equipment)' })
+  @ApiQuery({ name: 'supplier', required: false, description: 'Filter by supplier name' })
+  @ApiQuery({ name: 'location', required: false, description: 'Filter by storage location' })
+  @ApiQuery({ name: 'isActive', required: false, type: 'boolean', description: 'Filter by active status' })
+  @ApiQuery({ name: 'lowStock', required: false, type: 'boolean', description: 'Show only low stock items' })
+  @ApiQuery({ name: 'expired', required: false, type: 'boolean', description: 'Show only expired items' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Inventory items retrieved successfully with stock status',
+    schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              category: { type: 'string' },
+              supplier: { type: 'string' },
+              currentStock: { type: 'number' },
+              minimumStock: { type: 'number' },
+              stockStatus: { type: 'string', enum: ['in_stock', 'low_stock', 'out_of_stock'], example: 'in_stock' },
+              location: { type: 'string' },
+              unitPrice: { type: 'number' },
+              expirationDate: { type: 'string', format: 'date', nullable: true },
+              daysToExpiry: { type: 'number', nullable: true },
+              requiresReorder: { type: 'boolean' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            pages: { type: 'number' }
+          }
+        },
+        summary: {
+          type: 'object',
+          properties: {
+            totalItems: { type: 'number' },
+            lowStockCount: { type: 'number' },
+            expiredCount: { type: 'number' },
+            totalValue: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getAllInventoryItems(
     @Query('category') category?: string,
     @Query('supplier') supplier?: string,
@@ -86,10 +170,68 @@ export class InventoryController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get single inventory item by ID' })
-  @ApiParam({ name: 'id', description: 'Inventory item UUID' })
-  @ApiResponse({ status: 200, description: 'Returns inventory item' })
-  @ApiResponse({ status: 404, description: 'Item not found' })
+  @ApiOperation({ 
+    summary: 'Get single inventory item by ID',
+    description: 'Retrieves detailed information for a specific inventory item including full specifications, stock history, transaction logs, and usage analytics.'
+  })
+  @ApiParam({ name: 'id', description: 'Inventory item UUID', format: 'uuid' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Inventory item retrieved successfully with detailed information',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        category: { type: 'string' },
+        supplier: { type: 'string' },
+        supplierContact: { type: 'string' },
+        currentStock: { type: 'number' },
+        minimumStock: { type: 'number' },
+        maximumStock: { type: 'number' },
+        reorderPoint: { type: 'number' },
+        reorderQuantity: { type: 'number' },
+        unitPrice: { type: 'number' },
+        totalValue: { type: 'number' },
+        location: { type: 'string' },
+        barcode: { type: 'string', nullable: true },
+        expirationDate: { type: 'string', format: 'date', nullable: true },
+        batchNumber: { type: 'string', nullable: true },
+        isControlled: { type: 'boolean' },
+        isActive: { type: 'boolean' },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+        stockMovements: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              date: { type: 'string', format: 'date-time' },
+              type: { type: 'string', enum: ['in', 'out', 'adjustment'] },
+              quantity: { type: 'number' },
+              reason: { type: 'string' },
+              userId: { type: 'string' }
+            }
+          }
+        },
+        alerts: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              type: { type: 'string', enum: ['low_stock', 'expired', 'expiring_soon'] },
+              message: { type: 'string' },
+              severity: { type: 'string' }
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 404, description: 'Inventory item not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getInventoryItem(@Param('id') id: string) {
     return this.inventoryService.getInventoryItem(id);
   }
@@ -126,10 +268,39 @@ export class InventoryController {
 
   @Post(':id/stock/adjust')
   @ApiTags('stock')
-  @ApiOperation({ summary: 'Adjust stock level with audit trail' })
-  @ApiParam({ name: 'id', description: 'Inventory item UUID' })
-  @ApiResponse({ status: 200, description: 'Stock adjusted successfully' })
-  @ApiResponse({ status: 404, description: 'Item not found' })
+  @ApiOperation({ 
+    summary: 'Adjust stock level with audit trail',
+    description: 'Adjusts inventory stock levels with comprehensive audit logging. Supports positive and negative adjustments with mandatory reason codes. Tracks user, timestamp, and maintains complete audit trail for regulatory compliance.'
+  })
+  @ApiParam({ name: 'id', description: 'Inventory item UUID', format: 'uuid' })
+  @ApiBody({ type: StockAdjustmentDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Stock adjusted successfully with audit record created',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        inventoryItemId: { type: 'string', format: 'uuid' },
+        previousStock: { type: 'number' },
+        adjustmentQuantity: { type: 'number' },
+        newStock: { type: 'number' },
+        adjustmentType: { type: 'string', enum: ['increase', 'decrease', 'correction'] },
+        reason: { type: 'string' },
+        adjustedBy: { type: 'string' },
+        adjustedAt: { type: 'string', format: 'date-time' },
+        batchNumber: { type: 'string', nullable: true },
+        expirationDate: { type: 'string', format: 'date', nullable: true },
+        cost: { type: 'number', nullable: true },
+        auditId: { type: 'string', format: 'uuid' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid adjustment data or insufficient stock for decrease' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions for stock adjustments' })
+  @ApiResponse({ status: 404, description: 'Inventory item not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async adjustStock(@Param('id') id: string, @Body() adjustmentDto: StockAdjustmentDto) {
     return this.stockManagementService.adjustStock(id, adjustmentDto);
   }
@@ -169,8 +340,57 @@ export class InventoryController {
 
   @Get('alerts/all')
   @ApiTags('alerts')
-  @ApiOperation({ summary: 'Get all inventory alerts' })
-  @ApiResponse({ status: 200, description: 'Returns all alerts sorted by severity' })
+  @ApiOperation({ 
+    summary: 'Get all inventory alerts',
+    description: 'Retrieves all active inventory alerts including low stock warnings, expiration notices, and reorder recommendations. Sorted by severity and priority with actionable recommendations.'
+  })
+  @ApiQuery({ name: 'severity', required: false, enum: ['low', 'medium', 'high', 'critical'], description: 'Filter by alert severity' })
+  @ApiQuery({ name: 'type', required: false, enum: ['low_stock', 'out_of_stock', 'expired', 'expiring_soon'], description: 'Filter by alert type' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Inventory alerts retrieved successfully sorted by severity',
+    schema: {
+      type: 'object',
+      properties: {
+        alerts: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              inventoryItemId: { type: 'string', format: 'uuid' },
+              itemName: { type: 'string' },
+              alertType: { type: 'string', enum: ['low_stock', 'out_of_stock', 'expired', 'expiring_soon'] },
+              severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+              message: { type: 'string' },
+              currentStock: { type: 'number' },
+              minimumStock: { type: 'number' },
+              expirationDate: { type: 'string', format: 'date', nullable: true },
+              daysToExpiry: { type: 'number', nullable: true },
+              recommendedAction: { type: 'string' },
+              priority: { type: 'number' },
+              createdAt: { type: 'string', format: 'date-time' },
+              location: { type: 'string' },
+              category: { type: 'string' }
+            }
+          }
+        },
+        summary: {
+          type: 'object',
+          properties: {
+            totalAlerts: { type: 'number' },
+            criticalCount: { type: 'number' },
+            highCount: { type: 'number' },
+            mediumCount: { type: 'number' },
+            lowCount: { type: 'number' },
+            actionRequired: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getInventoryAlerts() {
     return this.alertsService.getInventoryAlerts();
   }
@@ -222,9 +442,52 @@ export class InventoryController {
 
   @Post('purchase-orders')
   @ApiTags('purchase-orders')
-  @ApiOperation({ summary: 'Create a new purchase order' })
-  @ApiResponse({ status: 201, description: 'Purchase order created successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid order data' })
+  @ApiOperation({ 
+    summary: 'Create a new purchase order',
+    description: 'Creates a comprehensive purchase order with line items, vendor information, delivery details, and approval workflow integration. Supports automated reorder generation and budget validation.'
+  })
+  @ApiBody({ type: CreatePurchaseOrderDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Purchase order created successfully with order number',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        orderNumber: { type: 'string', example: 'PO-2024-001234' },
+        vendorId: { type: 'string', format: 'uuid' },
+        vendorName: { type: 'string' },
+        status: { type: 'string', enum: ['draft', 'pending_approval', 'approved', 'sent', 'received', 'cancelled'], example: 'draft' },
+        totalAmount: { type: 'number' },
+        taxAmount: { type: 'number' },
+        shippingAmount: { type: 'number' },
+        grandTotal: { type: 'number' },
+        expectedDeliveryDate: { type: 'string', format: 'date' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string', format: 'date-time' },
+        lineItems: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              inventoryItemId: { type: 'string', format: 'uuid' },
+              itemName: { type: 'string' },
+              quantity: { type: 'number' },
+              unitPrice: { type: 'number' },
+              totalPrice: { type: 'number' }
+            }
+          }
+        },
+        approvalRequired: { type: 'boolean' },
+        budgetValidated: { type: 'boolean' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid order data, validation errors, or budget exceeded' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions for purchase order creation' })
+  @ApiResponse({ status: 404, description: 'Vendor or inventory items not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createPurchaseOrder(@Body() createDto: CreatePurchaseOrderDto) {
     return this.purchaseOrderService.createPurchaseOrder(createDto);
   }

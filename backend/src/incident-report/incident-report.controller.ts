@@ -19,6 +19,7 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
+  ApiBody,
 } from '@nestjs/swagger';
 import {
   IncidentCoreService,
@@ -38,8 +39,8 @@ import {
 
 @ApiTags('incident-report')
 @Controller('incident-report')
+@ApiBearerAuth()
 // @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
-// @ApiBearerAuth()
 export class IncidentReportController {
   constructor(
     private readonly coreService: IncidentCoreService,
@@ -52,8 +53,65 @@ export class IncidentReportController {
   // ==================== INCIDENT REPORTS ====================
 
   @Get()
-  @ApiOperation({ summary: 'Get all incident reports with filters' })
-  @ApiResponse({ status: 200, description: 'Returns paginated incident reports' })
+  @ApiOperation({ 
+    summary: 'Get all incident reports with filters',
+    description: 'Retrieves paginated incident reports with comprehensive filtering by type, severity, status, date range, student, and location. Includes summary statistics and trends.'
+  })
+  @ApiQuery({ name: 'page', required: false, type: 'number', example: 1, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: 'number', example: 20, description: 'Items per page' })
+  @ApiQuery({ name: 'type', required: false, description: 'Filter by incident type (injury, illness, behavioral, etc.)' })
+  @ApiQuery({ name: 'severity', required: false, enum: ['low', 'medium', 'high', 'critical'], description: 'Filter by severity level' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filter by incident status' })
+  @ApiQuery({ name: 'studentId', required: false, format: 'uuid', description: 'Filter by student UUID' })
+  @ApiQuery({ name: 'dateFrom', required: false, format: 'date', description: 'Filter incidents from this date' })
+  @ApiQuery({ name: 'dateTo', required: false, format: 'date', description: 'Filter incidents up to this date' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Incident reports retrieved successfully with pagination and filters applied',
+    schema: {
+      type: 'object',
+      properties: {
+        incidents: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              incidentNumber: { type: 'string' },
+              type: { type: 'string' },
+              severity: { type: 'string' },
+              status: { type: 'string' },
+              studentId: { type: 'string', format: 'uuid' },
+              location: { type: 'string' },
+              incidentDate: { type: 'string', format: 'date-time' },
+              reportedBy: { type: 'string' },
+              requiresFollowUp: { type: 'boolean' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            pages: { type: 'number' }
+          }
+        },
+        summary: {
+          type: 'object',
+          properties: {
+            totalIncidents: { type: 'number' },
+            criticalCount: { type: 'number' },
+            pendingFollowUp: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getIncidentReports(@Query() filters: IncidentFiltersDto) {
     return this.coreService.getIncidentReports(filters);
   }
@@ -153,9 +211,40 @@ export class IncidentReportController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create new incident report' })
-  @ApiResponse({ status: 201, description: 'Incident report created successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiOperation({ 
+    summary: 'Create new incident report',
+    description: 'Creates a comprehensive incident report with detailed information including student involvement, injuries, treatments, witnesses, and immediate actions taken. Triggers notification workflows based on severity.'
+  })
+  @ApiBody({ type: CreateIncidentReportDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Incident report created successfully with auto-generated incident number',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        incidentNumber: { type: 'string', example: 'INC-2024-001234' },
+        type: { type: 'string' },
+        severity: { type: 'string' },
+        status: { type: 'string', example: 'open' },
+        studentId: { type: 'string', format: 'uuid' },
+        incidentDate: { type: 'string', format: 'date-time' },
+        location: { type: 'string' },
+        reportedBy: { type: 'string' },
+        reportedAt: { type: 'string', format: 'date-time' },
+        requiresFollowUp: { type: 'boolean' },
+        notificationsTriggered: {
+          type: 'array',
+          items: { type: 'string' }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data or validation errors' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions to create incident reports' })
+  @ApiResponse({ status: 404, description: 'Referenced student or user not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   @HttpCode(HttpStatus.CREATED)
   async createIncidentReport(@Body() dto: CreateIncidentReportDto) {
     return this.coreService.createIncidentReport(dto);

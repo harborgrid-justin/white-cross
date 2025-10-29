@@ -33,9 +33,9 @@ import { MedicationSearchDto } from './dto/medication-search.dto';
 import { SearchSuggestionsDto } from './dto/search-suggestions.dto';
 import { SearchAnalyticsDto, AnalyticsPeriod } from './dto/search-analytics.dto';
 
-@ApiTags('ai-search')
+@ApiTags('AI Search')
 @Controller('ai-search')
-// @ApiBearerAuth()
+@ApiBearerAuth()
 export class AiSearchController {
   constructor(private readonly aiSearchService: AiSearchService) {}
 
@@ -44,7 +44,7 @@ export class AiSearchController {
   @ApiOperation({
     summary: 'Perform AI-powered search',
     description:
-      'Executes semantic search across indexed content using AI embeddings and vector similarity.',
+      'Executes semantic search across indexed content using AI embeddings and vector similarity for intelligent healthcare data retrieval.',
   })
   @ApiResponse({
     status: 200,
@@ -72,7 +72,15 @@ export class AiSearchController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid search query',
+    description: 'Invalid search query - missing or malformed search parameters',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Rate limit exceeded - too many search requests',
   })
   async search(@Body() queryDto: SearchQueryDto) {
     return this.aiSearchService.search(queryDto.query, queryDto.options);

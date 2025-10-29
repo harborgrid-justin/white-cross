@@ -37,7 +37,16 @@ async function bootstrap() {
       'Comprehensive HIPAA-compliant API for school health management systems. ' +
       'Provides complete student health record management, medication tracking, ' +
       'vaccination monitoring, allergy management, chronic condition tracking, ' +
-      'appointment scheduling, incident reporting, analytics, and administrative functions.',
+      'appointment scheduling, incident reporting, analytics, and administrative functions.\n\n' +
+      '## Authentication\n' +
+      'All API endpoints require Bearer token authentication except for public endpoints like health checks and authentication endpoints.\n\n' +
+      '## Rate Limiting\n' +
+      'API requests are rate limited to prevent abuse. Standard limits apply unless otherwise specified.\n\n' +
+      '## HIPAA Compliance\n' +
+      'This API handles Protected Health Information (PHI) and is designed to be HIPAA compliant. ' +
+      'All data access is logged for audit purposes.\n\n' +
+      '## Error Handling\n' +
+      'The API uses standard HTTP status codes and returns detailed error messages in JSON format.',
     )
     .setVersion('2.0')
     .setContact(
@@ -46,6 +55,9 @@ async function bootstrap() {
       'support@whitecross.health',
     )
     .setLicense('Proprietary', 'https://whitecross.health/license')
+    .setTermsOfService('https://whitecross.health/terms')
+    .addServer('http://localhost:3001', 'Development server')
+    .addServer('https://api.whitecross.health', 'Production server')
 
     // Core Modules
     .addTag('Authentication', 'User authentication, registration, login, and token management')
@@ -108,13 +120,85 @@ async function bootstrap() {
       name: 'Authorization',
       in: 'header',
     })
+    .addGlobalParameters({
+      name: 'X-Request-ID',
+      in: 'header',
+      description: 'Optional request ID for tracking',
+      required: false,
+      schema: {
+        type: 'string',
+        format: 'uuid',
+      },
+    })
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  const document = SwaggerModule.createDocument(app, config, {
+    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    deepScanRoutes: true,
+  });
+
+  // Add global response schemas
+  document.components = document.components || {};
+  document.components.schemas = {
+    ...document.components.schemas,
+    ErrorResponse: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: false },
+        message: { type: 'string', example: 'An error occurred' },
+        error: {
+          type: 'object',
+          properties: {
+            code: { type: 'string', example: 'VALIDATION_ERROR' },
+            details: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        timestamp: { type: 'string', format: 'date-time' },
+        path: { type: 'string', example: '/api/students' },
+      },
+    },
+    PaginationResponse: {
+      type: 'object',
+      properties: {
+        page: { type: 'number', example: 1 },
+        limit: { type: 'number', example: 20 },
+        total: { type: 'number', example: 150 },
+        pages: { type: 'number', example: 8 },
+      },
+    },
+    SuccessResponse: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Operation completed successfully' },
+        data: { type: 'object' },
+      },
+    },
+  };
+
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      docExpansion: 'none',
+      filter: true,
+      showRequestHeaders: true,
+      tryItOutEnabled: true,
+    },
+    customSiteTitle: 'White Cross Health API Documentation',
+    customfavIcon: '/favicon.ico',
+    customJs: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js',
+    ],
+    customCssUrl: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
+    ],
+  });
   
   // Also expose the JSON spec at /api/docs-json for automated tools
   app.getHttpAdapter().get('/api/docs-json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     res.json(document);
   });
 

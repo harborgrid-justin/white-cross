@@ -17,6 +17,7 @@ import {
   ApiParam,
   ApiBody,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MedicationService } from './services/medication.service';
 import {
@@ -56,6 +57,7 @@ import {
  */
 @ApiTags('medications')
 @Controller('medications')
+@ApiBearerAuth()
 export class MedicationController {
   private readonly logger = new Logger(MedicationController.name);
 

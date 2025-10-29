@@ -30,9 +30,9 @@ import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.
 import { ScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
-@ApiTags('advanced-features')
+@ApiTags('Advanced Features')
 @Controller('advanced-features')
-// @ApiBearerAuth()
+@ApiBearerAuth()
 export class AdvancedFeaturesController {
   constructor(
     private readonly advancedFeaturesService: AdvancedFeaturesService,
@@ -44,15 +44,33 @@ export class AdvancedFeaturesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Record health screening',
-    description: 'Records a health screening (vision, hearing, scoliosis, etc.) for a student.',
+    description: 'Records a health screening (vision, hearing, scoliosis, etc.) for a student with comprehensive results tracking.',
   })
   @ApiResponse({
     status: 201,
     description: 'Screening recorded successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        studentId: { type: 'string', format: 'uuid' },
+        screeningType: { type: 'string', example: 'VISION' },
+        results: { type: 'object' },
+        createdAt: { type: 'string', format: 'date-time' }
+      }
+    }
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid screening data',
+    description: 'Invalid screening data - validation errors',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
   })
   async recordScreening(@Body() screeningData: RecordScreeningDto) {
     return this.advancedFeaturesService.recordScreening(screeningData);
@@ -61,15 +79,47 @@ export class AdvancedFeaturesController {
   @Get('screenings/student/:studentId')
   @ApiOperation({
     summary: 'Get screening history',
-    description: 'Retrieves screening history for a specific student.',
+    description: 'Retrieves complete screening history for a specific student including all screening types and results.',
   })
   @ApiParam({
     name: 'studentId',
     description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiQuery({
+    name: 'screeningType',
+    required: false,
+    description: 'Filter by screening type (VISION, HEARING, SCOLIOSIS, etc.)',
+    type: 'string',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of records to return',
+    type: 'number',
+    example: 10,
   })
   @ApiResponse({
     status: 200,
     description: 'Screening history retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          screeningType: { type: 'string' },
+          results: { type: 'object' },
+          screenerName: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' }
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
   })
   @ApiResponse({
     status: 404,

@@ -16,6 +16,14 @@ import {
   UsePipes,
   Logger,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { EmergencyBroadcastService } from './emergency-broadcast.service';
 import {
   CreateEmergencyBroadcastDto,
@@ -28,6 +36,8 @@ import {
   EmergencyTemplatesResponseDto,
 } from './dto';
 
+@ApiTags('Emergency Broadcast')
+@ApiBearerAuth()
 @Controller('emergency-broadcast')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class EmergencyBroadcastController {
@@ -43,6 +53,31 @@ export class EmergencyBroadcastController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Create emergency broadcast',
+    description: 'Creates a new emergency broadcast message for immediate or scheduled delivery',
+  })
+  @ApiBody({
+    type: CreateEmergencyBroadcastDto,
+    description: 'Emergency broadcast creation data',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Emergency broadcast created successfully',
+    type: EmergencyBroadcastResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data - validation error',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - emergency broadcast privileges required',
+  })
   async createBroadcast(
     @Body() createDto: CreateEmergencyBroadcastDto,
   ): Promise<EmergencyBroadcastResponseDto> {
@@ -59,6 +94,37 @@ export class EmergencyBroadcastController {
    */
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Update emergency broadcast',
+    description: 'Updates an existing emergency broadcast before sending',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Emergency broadcast UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiBody({
+    type: UpdateEmergencyBroadcastDto,
+    description: 'Emergency broadcast update data',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Emergency broadcast updated successfully',
+    type: EmergencyBroadcastResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or broadcast already sent',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Emergency broadcast not found',
+  })
   async updateBroadcast(
     @Param('id') id: string,
     @Body() updateDto: UpdateEmergencyBroadcastDto,
@@ -73,6 +139,33 @@ export class EmergencyBroadcastController {
    */
   @Post(':id/send')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Send emergency broadcast',
+    description: 'Immediately sends an emergency broadcast to all recipients',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Emergency broadcast UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Emergency broadcast sent successfully',
+    type: SendBroadcastResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Broadcast already sent or invalid state',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Emergency broadcast not found',
+  })
   async sendBroadcast(
     @Param('id') id: string,
   ): Promise<SendBroadcastResponseDto> {

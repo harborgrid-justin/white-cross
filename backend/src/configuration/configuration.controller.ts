@@ -12,7 +12,7 @@ import {
   UseGuards,
   Req
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ConfigurationService } from './services/configuration.service';
 import {
   CreateConfigurationDto,
@@ -45,9 +45,51 @@ export class ConfigurationController {
   @Get()
   @ApiOperation({
     summary: 'Get all configurations',
-    description: 'Retrieve configurations with optional filtering by category, scope, tags, visibility, etc.'
+    description: 'Retrieve configurations with optional filtering by category, scope, tags, visibility, etc. Supports pagination and advanced search capabilities.'
   })
-  @ApiResponse({ status: 200, description: 'Configurations retrieved successfully' })
+  @ApiQuery({ name: 'page', required: false, type: 'number', example: 1, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: 'number', example: 50, description: 'Items per page' })
+  @ApiQuery({ name: 'category', required: false, enum: ['system', 'security', 'notification', 'integration'], description: 'Filter by configuration category' })
+  @ApiQuery({ name: 'scope', required: false, description: 'Filter by configuration scope' })
+  @ApiQuery({ name: 'isPublic', required: false, type: 'boolean', description: 'Filter by public visibility' })
+  @ApiQuery({ name: 'search', required: false, description: 'Search in configuration keys and descriptions' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configurations retrieved successfully with pagination',
+    schema: {
+      type: 'object',
+      properties: {
+        configurations: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              key: { type: 'string' },
+              value: { type: 'string' },
+              description: { type: 'string' },
+              category: { type: 'string' },
+              dataType: { type: 'string', enum: ['string', 'number', 'boolean', 'json'] },
+              isPublic: { type: 'boolean' },
+              isEditable: { type: 'boolean' },
+              requiresRestart: { type: 'boolean' },
+              updatedAt: { type: 'string', format: 'date-time' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            pages: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getConfigurations(@Query() filter: FilterConfigurationDto) {
     return this.configurationService.getConfigurations(filter);
   }
@@ -193,10 +235,32 @@ export class ConfigurationController {
   @Post()
   @ApiOperation({
     summary: 'Create configuration',
-    description: 'Create a new system configuration (ADMIN ONLY)'
+    description: 'Create a new system configuration with validation and audit trail. Requires ADMIN role. Supports various data types and validation rules.'
   })
-  @ApiResponse({ status: 201, description: 'Configuration created successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid input or key already exists' })
+  @ApiBody({ type: CreateConfigurationDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Configuration created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        key: { type: 'string' },
+        value: { type: 'string' },
+        description: { type: 'string' },
+        category: { type: 'string' },
+        dataType: { type: 'string' },
+        isPublic: { type: 'boolean' },
+        isEditable: { type: 'boolean' },
+        requiresRestart: { type: 'boolean' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data, validation errors, or key already exists' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createConfiguration(@Body() createDto: CreateConfigurationDto) {
     return this.configurationService.createConfiguration(createDto);
   }
@@ -208,13 +272,32 @@ export class ConfigurationController {
   @Put(':key')
   @ApiOperation({
     summary: 'Update configuration',
-    description: 'Update a configuration value with audit trail'
+    description: 'Update a configuration value with comprehensive validation and audit trail. Tracks all changes for compliance. Some configurations may require system restart.'
   })
-  @ApiParam({ name: 'key', description: 'Configuration key' })
-  @ApiQuery({ name: 'scopeId', required: false, description: 'Optional scope ID' })
-  @ApiResponse({ status: 200, description: 'Configuration updated successfully' })
-  @ApiResponse({ status: 400, description: 'Validation error or configuration not editable' })
+  @ApiParam({ name: 'key', description: 'Configuration key', example: 'notification.email.enabled' })
+  @ApiQuery({ name: 'scopeId', required: false, description: 'Optional scope ID for scoped configurations' })
+  @ApiBody({ type: UpdateConfigurationDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configuration updated successfully with audit record',
+    schema: {
+      type: 'object',
+      properties: {
+        key: { type: 'string' },
+        oldValue: { type: 'string' },
+        newValue: { type: 'string' },
+        updatedBy: { type: 'string' },
+        updatedAt: { type: 'string', format: 'date-time' },
+        requiresRestart: { type: 'boolean' },
+        changeId: { type: 'string', format: 'uuid' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Validation error, configuration not editable, or invalid value' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions to modify this configuration' })
   @ApiResponse({ status: 404, description: 'Configuration not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async updateConfiguration(
     @Param('key') key: string,
     @Body() updateDto: UpdateConfigurationDto,

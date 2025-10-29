@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { IpRestrictionService } from './services/ip-restriction.service';
 import { SecurityIncidentService } from './services/security-incident.service';
 import { SessionManagementService } from './services/session-management.service';
@@ -41,8 +41,30 @@ export class SecurityController {
   // ==================== IP Restriction Endpoints ====================
 
   @Post('ip-restrictions')
-  @ApiOperation({ summary: 'Create IP restriction rule' })
-  @ApiResponse({ status: 201, description: 'IP restriction created' })
+  @ApiOperation({ 
+    summary: 'Create IP restriction rule',
+    description: 'Creates a new IP restriction rule for whitelist, blacklist, or geo-restriction. Supports individual IPs, CIDR notation, or geographic regions.'
+  })
+  @ApiBody({ type: CreateIpRestrictionDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'IP restriction created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        type: { type: 'string', enum: ['whitelist', 'blacklist', 'geo_restriction'] },
+        ipAddress: { type: 'string' },
+        description: { type: 'string' },
+        isActive: { type: 'boolean' },
+        createdAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid IP address format or restriction data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async createIpRestriction(@Body() dto: CreateIpRestrictionDto) {
     if (dto.type === 'whitelist') {
       return await this.ipRestrictionService.addToWhitelist(dto);
@@ -54,15 +76,68 @@ export class SecurityController {
   }
 
   @Get('ip-restrictions')
-  @ApiOperation({ summary: 'List all IP restrictions' })
-  @ApiResponse({ status: 200, description: 'List of IP restrictions' })
+  @ApiOperation({ 
+    summary: 'List all IP restrictions',
+    description: 'Retrieves all IP restriction rules with optional filtering by type (whitelist, blacklist, geo_restriction).'
+  })
+  @ApiQuery({ 
+    name: 'type', 
+    required: false, 
+    enum: ['whitelist', 'blacklist', 'geo_restriction'],
+    description: 'Filter by restriction type'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'List of IP restrictions retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          type: { type: 'string', enum: ['whitelist', 'blacklist', 'geo_restriction'] },
+          ipAddress: { type: 'string' },
+          description: { type: 'string' },
+          isActive: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async listIpRestrictions(@Query('type') type?: string) {
     return await this.ipRestrictionService.getAllRestrictions(type as any);
   }
 
   @Patch('ip-restrictions/:id')
-  @ApiOperation({ summary: 'Update IP restriction' })
-  @ApiResponse({ status: 200, description: 'IP restriction updated' })
+  @ApiOperation({ 
+    summary: 'Update IP restriction',
+    description: 'Updates an existing IP restriction rule. Allows modification of description, active status, and IP address.'
+  })
+  @ApiParam({ name: 'id', description: 'IP restriction UUID' })
+  @ApiBody({ type: UpdateIpRestrictionDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'IP restriction updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        type: { type: 'string' },
+        ipAddress: { type: 'string' },
+        description: { type: 'string' },
+        isActive: { type: 'boolean' },
+        updatedAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid update data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 404, description: 'IP restriction not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async updateIpRestriction(
     @Param('id') id: string,
     @Body() dto: UpdateIpRestrictionDto,
@@ -71,16 +146,54 @@ export class SecurityController {
   }
 
   @Delete('ip-restrictions/:id')
-  @ApiOperation({ summary: 'Remove IP restriction' })
-  @ApiResponse({ status: 200, description: 'IP restriction removed' })
+  @ApiOperation({ 
+    summary: 'Remove IP restriction',
+    description: 'Permanently removes an IP restriction rule from the system. This action cannot be undone.'
+  })
+  @ApiParam({ name: 'id', description: 'IP restriction UUID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'IP restriction removed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'IP restriction removed successfully' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 404, description: 'IP restriction not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async removeIpRestriction(@Param('id') id: string) {
     const result = await this.ipRestrictionService.removeRestriction(id);
     return { success: result };
   }
 
   @Post('ip-restrictions/check')
-  @ApiOperation({ summary: 'Check if IP address is allowed' })
-  @ApiResponse({ status: 200, description: 'IP check result' })
+  @ApiOperation({ 
+    summary: 'Check if IP address is allowed',
+    description: 'Validates if a specific IP address is allowed based on current restriction rules. Used for real-time access control validation.'
+  })
+  @ApiBody({ type: IpCheckDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'IP access check completed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        isAllowed: { type: 'boolean' },
+        reason: { type: 'string' },
+        restrictionType: { type: 'string', nullable: true },
+        ipAddress: { type: 'string' },
+        checkDate: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid IP address format' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async checkIpAccess(@Body() dto: IpCheckDto) {
     return await this.ipRestrictionService.checkIPAccess(
       dto.ipAddress,
@@ -91,15 +204,80 @@ export class SecurityController {
   // ==================== Security Incident Endpoints ====================
 
   @Post('incidents')
-  @ApiOperation({ summary: 'Report security incident' })
-  @ApiResponse({ status: 201, description: 'Incident reported' })
+  @ApiOperation({ 
+    summary: 'Report security incident',
+    description: 'Reports a new security incident with detailed information including type, severity, affected resources, and initial assessment. Triggers automated response workflows.'
+  })
+  @ApiBody({ type: CreateSecurityIncidentDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Security incident reported successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        incidentNumber: { type: 'string' },
+        type: { type: 'string' },
+        severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+        status: { type: 'string', enum: ['open', 'investigating', 'resolved', 'closed'] },
+        reportedAt: { type: 'string', format: 'date-time' },
+        reportedBy: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid incident data or missing required fields' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async reportIncident(@Body() dto: CreateSecurityIncidentDto) {
     return await this.incidentService.reportIncident(dto);
   }
 
   @Get('incidents')
-  @ApiOperation({ summary: 'List security incidents with filters' })
-  @ApiResponse({ status: 200, description: 'List of incidents' })
+  @ApiOperation({ 
+    summary: 'List security incidents with filters',
+    description: 'Retrieves paginated list of security incidents with filtering by status, severity, type, date range, and affected resources.'
+  })
+  @ApiQuery({ name: 'status', required: false, enum: ['open', 'investigating', 'resolved', 'closed'], description: 'Filter by incident status' })
+  @ApiQuery({ name: 'severity', required: false, enum: ['low', 'medium', 'high', 'critical'], description: 'Filter by severity level' })
+  @ApiQuery({ name: 'type', required: false, description: 'Filter by incident type' })
+  @ApiQuery({ name: 'page', required: false, type: 'number', example: 1, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: 'number', example: 20, description: 'Items per page' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Security incidents retrieved successfully with pagination',
+    schema: {
+      type: 'object',
+      properties: {
+        incidents: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              incidentNumber: { type: 'string' },
+              type: { type: 'string' },
+              severity: { type: 'string' },
+              status: { type: 'string' },
+              title: { type: 'string' },
+              reportedAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            pages: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async listIncidents(@Query() filters: IncidentFilterDto) {
     return await this.incidentService.getAllIncidents(filters);
   }
