@@ -105,12 +105,14 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'studentId',
   })
   studentId: string;
 
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'reportedById',
   })
   reportedById: string;
 
@@ -148,27 +150,46 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.TEXT,
     allowNull: false,
+    field: 'actionsTaken',
   })
   actionsTaken: string;
 
   @Default(false)
-  @Column(DataType.BOOLEAN)
+  @Column({
+    type: DataType.BOOLEAN,
+    field: 'parentNotified',
+  })
   parentNotified: boolean;
 
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.STRING,
+    field: 'parentNotificationMethod',
+  })
   parentNotificationMethod?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'parentNotifiedAt',
+  })
   parentNotifiedAt?: Date;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'parentNotifiedBy',
+  })
   parentNotifiedBy?: string;
 
   @Default(false)
-  @Column(DataType.BOOLEAN)
+  @Column({
+    type: DataType.BOOLEAN,
+    field: 'followUpRequired',
+  })
   followUpRequired: boolean;
 
-  @Column(DataType.TEXT)
+  @Column({
+    type: DataType.TEXT,
+    field: 'followUpNotes',
+  })
   followUpNotes?: string;
 
   @Default([])
@@ -182,6 +203,7 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.ARRAY(DataType.STRING),
     allowNull: false,
+    field: 'evidencePhotos',
   })
   evidencePhotos: string[];
 
@@ -189,14 +211,19 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.ARRAY(DataType.STRING),
     allowNull: false,
+    field: 'evidenceVideos',
   })
   evidenceVideos: string[];
 
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.STRING,
+    field: 'insuranceClaimNumber',
+  })
   insuranceClaimNumber?: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(InsuranceClaimStatus) as string[])),
+    field: 'insuranceClaimStatus',
   })
   insuranceClaimStatus?: InsuranceClaimStatus;
 
@@ -204,25 +231,39 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
     allowNull: false,
+    field: 'legalComplianceStatus',
   })
   legalComplianceStatus: ComplianceStatus;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    field: 'occurredAt',
   })
   occurredAt: Date;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'createdBy',
+  })
   createdBy?: string;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'updatedBy',
+  })
   updatedBy?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'createdAt',
+  })
   declare createdAt: Date;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'updatedAt',
+  })
   declare updatedAt: Date;
 
   @BelongsTo(() => require('./student.model').Student)

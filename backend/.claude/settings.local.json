@@ -25,7 +25,21 @@
       "Bash(node fix-import-types.js:*)",
       "Bash(node fix-duplicate-dtos.js:*)",
       "Bash(node fix-dto-imports.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(ConvertFrom-Json)",
+      "Bash(ConvertTo-Json -Depth 10)",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3000/api-json'' -Method Get | ConvertTo-Json -Depth 10\")",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-Content package.json | Select-String -Pattern ''start:dev''\")",
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/api-json'' -Method Get; $response | ConvertTo-Json -Depth 3\")",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:3001/api-json\")",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/api/docs-json'' -Method Get\")",
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health'' -Method Get; Write-Output $response\")",
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health/ready'' -Method Get; Write-Output $response\")",
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/health/live'' -Method Get; Write-Output $response\")"
     ],
     "deny": [],
     "ask": []

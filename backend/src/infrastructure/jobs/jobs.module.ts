@@ -28,8 +28,9 @@ import { EmailModule } from '../email/email.module';
         redis: {
           host: configService.get<string>('REDIS_HOST', 'localhost'),
           port: configService.get<number>('REDIS_PORT', 6379),
+          username: configService.get<string>('REDIS_USERNAME'),
           password: configService.get<string>('REDIS_PASSWORD'),
-          maxRetriesPerRequest: null
+          maxRetriesPerRequest: 20
         },
         defaultJobOptions: {
           attempts: 3,

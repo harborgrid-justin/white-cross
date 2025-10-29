@@ -79,6 +79,7 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'studentId',
   })
   studentId: string;
 
@@ -92,6 +93,7 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @Column({
     type: DataType.ENUM(...(Object.values(AllergyType) as string[])),
     allowNull: false,
+    field: 'allergyType',
   })
   allergyType: AllergyType;
 
@@ -110,26 +112,44 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @Column(DataType.TEXT)
   treatment?: string;
 
-  @Column(DataType.TEXT)
+  @Column({
+    type: DataType.TEXT,
+    field: 'emergencyProtocol',
+  })
   emergencyProtocol?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'onsetDate',
+  })
   onsetDate?: Date;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'diagnosedDate',
+  })
   diagnosedDate?: Date;
 
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.STRING,
+    field: 'diagnosedBy',
+  })
   diagnosedBy?: string;
 
   @Default(false)
   @Column(DataType.BOOLEAN)
   verified: boolean;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'verifiedBy',
+  })
   verifiedBy?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'verificationDate',
+  })
   verificationDate?: Date;
 
   @Default(true)
@@ -140,28 +160,52 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   notes?: string;
 
   @Default(false)
-  @Column(DataType.BOOLEAN)
+  @Column({
+    type: DataType.BOOLEAN,
+    field: 'epiPenRequired',
+  })
   epiPenRequired: boolean;
 
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.STRING,
+    field: 'epiPenLocation',
+  })
   epiPenLocation?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'epiPenExpiration',
+  })
   epiPenExpiration?: Date;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'healthRecordId',
+  })
   healthRecordId?: string;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'createdBy',
+  })
   createdBy?: string;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'updatedBy',
+  })
   updatedBy?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'createdAt',
+  })
   declare createdAt: Date;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'updatedAt',
+  })
   declare updatedAt: Date;
 
   @BelongsTo(() => require('./student.model').Student)

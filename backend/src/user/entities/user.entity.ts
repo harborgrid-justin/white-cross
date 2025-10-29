@@ -89,12 +89,14 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'firstName',
   })
   firstName: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'lastName',
   })
   lastName: string;
 
@@ -109,10 +111,14 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
+    field: 'isActive',
   })
   isActive: boolean;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'lastLogin',
+  })
   lastLogin?: Date;
 
   @Column({

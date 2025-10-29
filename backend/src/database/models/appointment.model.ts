@@ -64,6 +64,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'studentId',
     comment: 'Foreign key to students table - appointment patient',
   })
   studentId: string;
@@ -73,6 +74,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
+    field: 'nurseId',
     comment: 'Foreign key to users table - assigned nurse',
   })
   nurseId: string;
@@ -106,6 +108,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    field: 'scheduledAt',
   })
   scheduledAt: Date;
 
@@ -163,6 +166,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
+    field: 'recurringGroupId',
     comment: 'Group ID for recurring appointments',
   })
   recurringGroupId?: string;
@@ -170,6 +174,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
+    field: 'recurringFrequency',
     comment: 'Frequency: DAILY, WEEKLY, MONTHLY, YEARLY',
   })
   recurringFrequency?: string;
@@ -177,6 +182,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'recurringEndDate',
     comment: 'End date for recurring appointments',
   })
   recurringEndDate?: Date;
@@ -187,14 +193,14 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    field: 'created_at',
+    field: 'createdAt',
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    field: 'updated_at',
+    field: 'updatedAt',
   })
   declare updatedAt?: Date;
 

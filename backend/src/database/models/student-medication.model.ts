@@ -68,6 +68,7 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'studentId',
   })
   studentId: string;
 
@@ -75,6 +76,7 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    field: 'medicationId',
   })
   medicationId: string;
 
@@ -102,39 +104,65 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    field: 'startDate',
   })
   startDate: Date;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'endDate',
+  })
   endDate?: Date;
 
   @Default(true)
-  @Column(DataType.BOOLEAN)
+  @Column({
+    type: DataType.BOOLEAN,
+    field: 'isActive',
+  })
   isActive: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'prescribedBy',
   })
   prescribedBy: string;
 
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.STRING,
+    field: 'prescriptionNumber',
+  })
   prescriptionNumber?: string;
 
   @Default(0)
-  @Column(DataType.INTEGER)
+  @Column({
+    type: DataType.INTEGER,
+    field: 'refillsRemaining',
+  })
   refillsRemaining?: number;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'createdBy',
+  })
   createdBy?: string;
 
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    field: 'updatedBy',
+  })
   updatedBy?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'createdAt',
+  })
   declare createdAt: Date;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'updatedAt',
+  })
   declare updatedAt: Date;
 
   @BelongsTo(() => require('./student.model').Student)

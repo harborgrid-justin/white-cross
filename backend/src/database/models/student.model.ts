@@ -43,35 +43,34 @@ export interface StudentAttributes {
   updatedBy?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  deletedAt?: Date;
 }
 
 @Table({
   tableName: 'students',
   timestamps: true,
-  paranoid: true, // Enable soft deletes for HIPAA compliance
+  paranoid: false, // Disable soft deletes - table doesn't have deletedAt column
   indexes: [
     {
-      fields: ['student_number'],
+      fields: ['studentNumber'],
       unique: true,
     },
     {
-      fields: ['nurse_id'],
+      fields: ['nurseId'],
     },
     {
-      fields: ['is_active'],
+      fields: ['isActive'],
     },
     {
       fields: ['grade'],
     },
     {
-      fields: ['last_name', 'first_name'],
+      fields: ['lastName', 'firstName'],
     },
     {
-      fields: ['medical_record_num'],
+      fields: ['medicalRecordNum'],
       unique: true,
       where: {
-        medical_record_num: {
+        medicalRecordNum: {
           [Op.ne]: null,
         },
       },
@@ -92,7 +91,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
     type: DataType.STRING(50),
     allowNull: false,
     unique: true,
-    field: 'student_number',
+    field: 'studentNumber',
   })
   studentNumber: string;
 
@@ -103,7 +102,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    field: 'first_name',
+    field: 'firstName',
   })
   firstName: string;
 
@@ -114,7 +113,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    field: 'last_name',
+    field: 'lastName',
   })
   lastName: string;
 
@@ -125,7 +124,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.DATEONLY,
     allowNull: false,
-    field: 'date_of_birth',
+    field: 'dateOfBirth',
   })
   dateOfBirth: Date;
 
@@ -166,7 +165,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.STRING(50),
     unique: true,
-    field: 'medical_record_num',
+    field: 'medicalRecordNum',
   })
   medicalRecordNum?: string;
 
@@ -177,7 +176,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    field: 'is_active',
+    field: 'isActive',
   })
   isActive: boolean;
 
@@ -188,7 +187,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    field: 'enrollment_date',
+    field: 'enrollmentDate',
   })
   enrollmentDate: Date;
 
@@ -197,32 +196,25 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @AllowNull
   @ForeignKey(() => require('./user.model').User)
-  @Column({
-    type: DataType.UUID,
-    field: 'nurse_id',
-  })
+  @Column(DataType.UUID)
   nurseId?: string;
 
   /**
    * School ID (foreign key to schools table)
+   * Note: Column may not exist in database
    */
   @AllowNull
   @ForeignKey(() => require('./school.model').School)
-  @Column({
-    type: DataType.UUID,
-    field: 'school_id',
-  })
+  @Column(DataType.UUID)
   schoolId?: string;
 
   /**
    * District ID (foreign key to districts table)
+   * Note: Column may not exist in database
    */
   @AllowNull
   @ForeignKey(() => require('./district.model').District)
-  @Column({
-    type: DataType.UUID,
-    field: 'district_id',
-  })
+  @Column(DataType.UUID)
   districtId?: string;
 
   /**
@@ -231,7 +223,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @Column({
     type: DataType.UUID,
-    field: 'created_by',
+    field: 'createdBy',
   })
   createdBy?: string;
 
@@ -241,18 +233,21 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @Column({
     type: DataType.UUID,
-    field: 'updated_by',
+    field: 'updatedBy',
   })
   updatedBy?: string;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'createdAt',
+  })
   declare createdAt?: Date;
 
-  @Column(DataType.DATE)
+  @Column({
+    type: DataType.DATE,
+    field: 'updatedAt',
+  })
   declare updatedAt?: Date;
-
-  @Column(DataType.DATE)
-  declare deletedAt?: Date;
 
   // Relationships
   // Using lazy evaluation with require() to prevent circular dependencies
@@ -314,10 +309,10 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   }
 
   /**
-   * Check if student is currently enrolled (active and not deleted)
-   * @returns true if student is active and not soft-deleted
+   * Check if student is currently enrolled (active)
+   * @returns true if student is active
    */
   isCurrentlyEnrolled(): boolean {
-    return this.isActive && !this.deletedAt;
+    return this.isActive;
   }
 }
