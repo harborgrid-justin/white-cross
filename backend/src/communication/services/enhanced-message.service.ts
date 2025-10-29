@@ -7,7 +7,9 @@ import { MessageRead } from '../../database/models/message-read.model';
 import { MessageReaction } from '../../database/models/message-reaction.model';
 import { Conversation, ConversationType } from '../../database/models/conversation.model';
 import { ConversationParticipant } from '../../database/models/conversation-participant.model';
-import { EncryptionService } from '../../common/encryption/encryption.service';
+import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
+import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
+import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
@@ -49,6 +51,8 @@ export class EnhancedMessageService {
     @InjectModel(Conversation) private conversationModel: typeof Conversation,
     @InjectModel(ConversationParticipant) private participantModel: typeof ConversationParticipant,
     private readonly encryptionService: EncryptionService,
+    private readonly queueService: MessageQueueService,
+    private readonly queueHelper: QueueIntegrationHelper,
   ) {}
 
   /**
@@ -106,6 +110,8 @@ export class EnhancedMessageService {
       conversationId: conversation.id,
       content: dto.content,
       encryptedContent,
+      isEncrypted: !!dto.encrypted,
+      encryptionVersion: dto.encrypted ? '1.0.0' : undefined,
       senderId,
       recipientCount: 1,
       priority: 'MEDIUM',
@@ -120,20 +126,31 @@ export class EnhancedMessageService {
     // Update conversation's last message timestamp
     await conversation.update({ lastMessageAt: new Date() });
 
-    // Create delivery record
-    await this.deliveryModel.create({
+    // Queue message for async delivery, notification, and indexing
+    const queueResult = await this.queueHelper.queueMessageWorkflow({
       messageId: message.id,
+      senderId,
       recipientId: dto.recipientId,
-      recipientType: 'STAFF',
-      channel: 'IN_APP',
-      status: DeliveryStatus.DELIVERED,
-      sentAt: new Date(),
-      deliveredAt: new Date(),
-    } as any);
+      conversationId: conversation.id,
+      content: dto.content,
+      encrypted: dto.encrypted,
+      attachments: dto.attachments,
+      priority: 'HIGH', // Direct messages are high priority
+      metadata: dto.metadata,
+    });
+
+    this.logger.log(
+      `Message ${message.id} queued for delivery. Jobs: ${Object.keys(queueResult.jobIds).join(', ')}`
+    );
 
     return {
       message: message.toJSON(),
       conversation: conversation.toJSON(),
+      queueStatus: {
+        queued: queueResult.success,
+        jobIds: queueResult.jobIds,
+        errors: queueResult.errors,
+      },
     };
   }
 
@@ -196,6 +213,8 @@ export class EnhancedMessageService {
       conversationId: conversation.id,
       content: dto.content,
       encryptedContent,
+      isEncrypted: !!dto.encrypted,
+      encryptionVersion: dto.encrypted ? '1.0.0' : undefined,
       senderId,
       recipientCount: participants.length - 1, // Exclude sender
       priority: 'MEDIUM',
@@ -213,27 +232,39 @@ export class EnhancedMessageService {
     // Update conversation's last message timestamp
     await conversation.update({ lastMessageAt: new Date() });
 
-    // Create delivery records for all participants except sender
-    const deliveryPromises = participants
+    // Get recipient IDs (exclude sender)
+    const recipientIds = participants
       .filter(p => p.userId !== senderId)
-      .map(participant =>
-        this.deliveryModel.create({
-          messageId: message.id,
-          recipientId: participant.userId,
-          recipientType: 'STAFF',
-          channel: 'IN_APP',
-          status: DeliveryStatus.DELIVERED,
-          sentAt: new Date(),
-          deliveredAt: new Date(),
-        } as any)
-      );
+      .map(p => p.userId);
 
-    await Promise.all(deliveryPromises);
+    // Queue message for batch delivery
+    const queueResult = await this.queueService.addBatchMessageJob({
+      batchId: `batch-${message.id}`,
+      senderId,
+      recipientIds,
+      conversationId: conversation.id,
+      content: dto.content,
+      priority: 'MEDIUM',
+      chunkSize: 20, // Process 20 recipients at a time
+      chunkDelay: 50, // 50ms between chunks
+      requiresEncryption: dto.encrypted,
+      createdAt: new Date(),
+      initiatedBy: senderId,
+    });
+
+    this.logger.log(
+      `Group message ${message.id} queued for batch delivery to ${recipientIds.length} recipients. Job ID: ${queueResult.id}`
+    );
 
     return {
       message: message.toJSON(),
       conversation: conversation.toJSON(),
-      recipientCount: participants.length - 1,
+      recipientCount: recipientIds.length,
+      queueStatus: {
+        queued: true,
+        jobId: queueResult.id as string,
+        recipientCount: recipientIds.length,
+      },
     };
   }
 

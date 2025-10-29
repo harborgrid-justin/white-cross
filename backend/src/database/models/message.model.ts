@@ -36,6 +36,9 @@ export interface MessageAttributes {
   subject?: string;
   content: string;
   encryptedContent?: string;
+  isEncrypted: boolean;
+  encryptionMetadata?: Record<string, any>;
+  encryptionVersion?: string;
   priority: MessagePriority;
   category: MessageCategory;
   recipientCount: number;
@@ -56,7 +59,7 @@ export interface MessageAttributes {
 export interface MessageCreationAttributes
   extends Optional<
     MessageAttributes,
-    'id' | 'conversationId' | 'subject' | 'encryptedContent' | 'scheduledAt' | 'templateId' | 'parentId' | 'threadId' | 'isEdited' | 'editedAt' | 'metadata' | 'createdAt' | 'updatedAt' | 'deletedAt'
+    'id' | 'conversationId' | 'subject' | 'encryptedContent' | 'isEncrypted' | 'encryptionMetadata' | 'encryptionVersion' | 'scheduledAt' | 'templateId' | 'parentId' | 'threadId' | 'isEdited' | 'editedAt' | 'metadata' | 'createdAt' | 'updatedAt' | 'deletedAt'
   > {}
 
 @Table({
@@ -99,6 +102,29 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
     comment: 'Encrypted message content for E2E encryption',
   })
   declare encryptedContent?: string;
+
+  @Index
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Whether the message content is encrypted (E2E encryption)',
+  })
+  declare isEncrypted: boolean;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+    comment: 'Encryption metadata including algorithm, IV, auth tag, and key ID',
+  })
+  declare encryptionMetadata?: Record<string, any>;
+
+  @Column({
+    type: DataType.STRING(20),
+    allowNull: true,
+    comment: 'Encryption version for backward compatibility (e.g., "1.0.0")',
+  })
+  declare encryptionVersion?: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(MessagePriority) as string[])),

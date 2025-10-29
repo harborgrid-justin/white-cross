@@ -28,6 +28,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { EnhancedMessageService } from '../services/enhanced-message.service';
 import { ConversationService } from '../services/conversation.service';
+import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
@@ -59,6 +60,7 @@ export class EnhancedMessageController {
   constructor(
     private readonly messageService: EnhancedMessageService,
     private readonly conversationService: ConversationService,
+    private readonly queueService: MessageQueueService,
   ) {}
 
   // ===== Message Endpoints =====
@@ -465,5 +467,130 @@ export class EnhancedMessageController {
   ) {
     const userId = req.user?.id;
     return this.conversationService.updateParticipantSettings(id, dto, userId);
+  }
+
+  // ===== Queue Status Endpoints =====
+
+  @Get('queue/metrics')
+  @ApiOperation({
+    summary: 'Get queue metrics',
+    description: 'Retrieve metrics for all message queues (waiting, active, completed, failed).',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Queue metrics retrieved successfully',
+    schema: {
+      example: {
+        'message-delivery': {
+          waiting: 5,
+          active: 2,
+          completed: 1523,
+          failed: 3,
+        },
+        'message-notification': {
+          waiting: 10,
+          active: 5,
+          completed: 2051,
+          failed: 1,
+        },
+      },
+    },
+  })
+  async getQueueMetrics() {
+    return this.queueService.getQueueMetrics();
+  }
+
+  @Get('queue/:queueName/health')
+  @ApiOperation({
+    summary: 'Check queue health',
+    description: 'Get health status for a specific queue.',
+  })
+  @ApiParam({
+    name: 'queueName',
+    description: 'Queue name (e.g., message-delivery, message-notification)',
+    enum: [
+      'message-delivery',
+      'message-notification',
+      'message-encryption',
+      'message-indexing',
+      'batch-message-sending',
+      'message-cleanup',
+    ],
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Queue health status',
+    schema: {
+      example: {
+        status: 'healthy',
+        failureRate: 0.02,
+        checks: {
+          hasJobs: true,
+          isProcessing: true,
+          failureRate: 'normal',
+        },
+      },
+    },
+  })
+  async getQueueHealth(@Param('queueName') queueName: string) {
+    return this.queueService.getQueueHealth(queueName as any);
+  }
+
+  @Get('queue/:queueName/failed')
+  @ApiOperation({
+    summary: 'Get failed jobs',
+    description: 'Retrieve list of failed jobs from a specific queue for debugging.',
+  })
+  @ApiParam({ name: 'queueName', description: 'Queue name' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of failed jobs to return (default: 50)',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of failed jobs',
+    schema: {
+      example: [
+        {
+          id: 'job-123',
+          data: { messageId: 'msg-456' },
+          failedReason: 'Recipient not found',
+          attemptsMade: 5,
+          timestamp: '2025-10-29T12:00:00Z',
+        },
+      ],
+    },
+  })
+  async getFailedJobs(
+    @Param('queueName') queueName: string,
+    @Query('limit') limit?: number,
+  ) {
+    const maxJobs = limit || 50;
+    return this.queueService.getFailedJobs(queueName as any, maxJobs);
+  }
+
+  @Post('queue/:queueName/failed/:jobId/retry')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Retry a failed job',
+    description: 'Manually retry a specific failed job.',
+  })
+  @ApiParam({ name: 'queueName', description: 'Queue name' })
+  @ApiParam({ name: 'jobId', description: 'Job ID to retry' })
+  @ApiResponse({
+    status: 200,
+    description: 'Job queued for retry',
+  })
+  async retryFailedJob(
+    @Param('queueName') queueName: string,
+    @Param('jobId') jobId: string,
+  ) {
+    await this.queueService.retryFailedJob(queueName as any, jobId);
+    return {
+      success: true,
+      message: `Job ${jobId} queued for retry in ${queueName}`,
+    };
   }
 }
