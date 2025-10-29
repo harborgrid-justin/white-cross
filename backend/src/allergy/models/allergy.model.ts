@@ -79,7 +79,7 @@ export class Allergy extends Model {
    * Category of allergen for classification
    */
   @Column({
-    type: DataType.ENUM(...Object.values(AllergenType)),
+    type: DataType.ENUM(...(Object.values(AllergenType) as string[])),
     allowNull: true,
   })
   allergenType?: AllergenType;
@@ -89,7 +89,7 @@ export class Allergy extends Model {
    * Guides medication cross-checking priority and emergency response
    */
   @Column({
-    type: DataType.ENUM(...Object.values(AllergySeverity)),
+    type: DataType.ENUM(...(Object.values(AllergySeverity) as string[])),
     allowNull: false,
   })
   severity: AllergySeverity;
@@ -191,5 +191,5 @@ export class Allergy extends Model {
     type: DataType.DATE,
     allowNull: true,
   })
-  deletedAt?: Date;
+  declare deletedAt?: Date;
 }

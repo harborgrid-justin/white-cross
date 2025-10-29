@@ -43,6 +43,59 @@ export interface StudentFilterDto {
   isActive?: boolean;
   page?: number;
   limit?: number;
+  gender?: string;
+}
+
+/**
+ * Transfer Student DTO
+ */
+export interface TransferStudentDto {
+  nurseId?: string;
+  grade?: string;
+  reason?: string;
+}
+
+/**
+ * Bulk Update DTO
+ */
+export interface BulkUpdateDto {
+  studentIds: string[];
+  nurseId?: string;
+  grade?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Paginated Response Interface
+ */
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+/**
+ * Student Statistics Interface
+ */
+export interface StudentStatistics {
+  healthRecords: number;
+  allergies: number;
+  medications: number;
+  appointments: number;
+  incidents: number;
+}
+
+/**
+ * Student Data Export Interface
+ */
+export interface StudentDataExport {
+  exportDate: string;
+  student: Student;
+  statistics: StudentStatistics;
 }
 
 /**
@@ -91,7 +144,7 @@ export class StudentService {
         ...createStudentDto,
         isActive: createStudentDto.isActive ?? true,
         enrollmentDate: createStudentDto.enrollmentDate ?? new Date(),
-      });
+      } as any);
 
       this.logger.log(`Student created: ${student.id}`);
       return student;
@@ -107,18 +160,14 @@ export class StudentService {
   /**
    * Find all students with filtering and pagination
    */
-  async findAll(filterDto: StudentFilterDto = {}): Promise<{
-    data: Student[];
-    total: number;
-    page: number;
-    pages: number;
-  }> {
+  async findAll(filterDto: StudentFilterDto = {}): Promise<PaginatedResponse<Student>> {
     try {
       const {
         search,
         grade,
         nurseId,
         isActive,
+        gender,
         page = 1,
         limit = 20,
       } = filterDto;
@@ -146,6 +195,10 @@ export class StudentService {
         where.isActive = isActive;
       }
 
+      if (gender) {
+        where.gender = gender;
+      }
+
       const offset = (page - 1) * limit;
 
       const { rows: data, count: total } = await this.studentModel.findAndCountAll({
@@ -159,9 +212,12 @@ export class StudentService {
 
       return {
         data,
-        total,
-        page,
-        pages,
+        meta: {
+          page,
+          limit,
+          total,
+          pages,
+        },
       };
     } catch (error) {
       this.logger.error(`Failed to fetch students: ${error.message}`);
@@ -391,5 +447,310 @@ export class StudentService {
       this.logger.error(`Failed to get student count: ${error.message}`);
       throw new BadRequestException('Failed to get student count');
     }
+  }
+
+  // ==================== Student Management Operations ====================
+
+  /**
+   * Deactivate a student (soft delete with reason)
+   * Sets isActive to false and logs the reason for HIPAA audit trail
+   *
+   * @param id - Student UUID
+   * @param reason - Optional reason for deactivation (for audit trail)
+   * @returns Updated student record
+   */
+  async deactivate(id: string, reason?: string): Promise<Student> {
+    try {
+      const student = await this.findOne(id);
+
+      await student.update({ isActive: false });
+
+      this.logger.log(
+        `Student deactivated: ${student.id} (${student.studentNumber})${reason ? ` - Reason: ${reason}` : ''}`,
+      );
+
+      return student;
+    } catch (error) {
+      this.logger.error(`Failed to deactivate student ${id}: ${error.message}`);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to deactivate student');
+    }
+  }
+
+  /**
+   * Reactivate a student (restore soft delete)
+   * Sets isActive to true with HIPAA audit logging
+   *
+   * @param id - Student UUID
+   * @returns Updated student record
+   */
+  async reactivate(id: string): Promise<Student> {
+    try {
+      const student = await this.findOne(id);
+
+      await student.update({ isActive: true });
+
+      this.logger.log(`Student reactivated: ${student.id} (${student.studentNumber})`);
+
+      return student;
+    } catch (error) {
+      this.logger.error(`Failed to reactivate student ${id}: ${error.message}`);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to reactivate student');
+    }
+  }
+
+  /**
+   * Transfer student to different nurse or grade
+   * Updates nurse assignment and/or grade level with audit trail
+   *
+   * @param id - Student UUID
+   * @param transferDto - Transfer details (nurseId, grade, reason)
+   * @returns Updated student record
+   */
+  async transfer(id: string, transferDto: TransferStudentDto): Promise<Student> {
+    try {
+      const student = await this.findOne(id);
+
+      const updates: Partial<Student> = {};
+
+      // Update nurse if provided
+      if (transferDto.nurseId !== undefined) {
+        updates.nurseId = transferDto.nurseId;
+      }
+
+      // Update grade if provided
+      if (transferDto.grade !== undefined) {
+        updates.grade = transferDto.grade;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        throw new BadRequestException('No transfer updates provided (nurseId or grade required)');
+      }
+
+      await student.update(updates);
+
+      this.logger.log(
+        `Student transferred: ${student.id} (${student.studentNumber})${transferDto.reason ? ` - Reason: ${transferDto.reason}` : ''}`,
+      );
+
+      return student;
+    } catch (error) {
+      this.logger.error(`Failed to transfer student ${id}: ${error.message}`);
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to transfer student');
+    }
+  }
+
+  /**
+   * Bulk update multiple students
+   * Applies same updates to multiple students at once
+   *
+   * @param bulkUpdateDto - Student IDs and update fields
+   * @returns Count of updated students
+   */
+  async bulkUpdate(bulkUpdateDto: BulkUpdateDto): Promise<{ updated: number }> {
+    try {
+      const { studentIds, nurseId, grade, isActive } = bulkUpdateDto;
+
+      if (!studentIds || studentIds.length === 0) {
+        throw new BadRequestException('Student IDs array cannot be empty');
+      }
+
+      // Build update object
+      const updates: any = {};
+      if (nurseId !== undefined) updates.nurseId = nurseId;
+      if (grade !== undefined) updates.grade = grade;
+      if (isActive !== undefined) updates.isActive = isActive;
+
+      if (Object.keys(updates).length === 0) {
+        throw new BadRequestException('No update fields provided (nurseId, grade, or isActive required)');
+      }
+
+      // Perform bulk update
+      const [affectedCount] = await this.studentModel.update(updates, {
+        where: { id: { [Op.in]: studentIds } },
+      });
+
+      this.logger.log(
+        `Bulk update completed: ${affectedCount} students updated (${Object.keys(updates).join(', ')})`,
+      );
+
+      return { updated: affectedCount };
+    } catch (error) {
+      this.logger.error(`Failed to bulk update students: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to bulk update students');
+    }
+  }
+
+  // ==================== Query Operations ====================
+
+  /**
+   * Get all unique grades
+   * Returns list of all grade levels currently in use by active students
+   *
+   * @returns Array of grade strings sorted alphabetically
+   */
+  async findAllGrades(): Promise<string[]> {
+    try {
+      const results = await this.studentModel.findAll({
+        attributes: [
+          [this.studentModel.sequelize!.fn('DISTINCT', this.studentModel.sequelize!.col('grade')), 'grade'],
+        ],
+        where: { isActive: true },
+        order: [['grade', 'ASC']],
+        raw: true,
+      });
+
+      const grades = results.map((r: any) => r.grade).filter((g: any) => g !== null);
+
+      this.logger.log(`Retrieved ${grades.length} unique grades`);
+
+      return grades;
+    } catch (error) {
+      this.logger.error(`Failed to fetch grades: ${error.message}`);
+      throw new BadRequestException('Failed to fetch grades');
+    }
+  }
+
+  /**
+   * Get students assigned to a specific nurse
+   * Returns all active students for a nurse with limited fields
+   *
+   * @param nurseId - Nurse UUID
+   * @returns Array of students assigned to the nurse
+   */
+  async findAssignedStudents(nurseId: string): Promise<Student[]> {
+    try {
+      // Validate UUID format
+      if (!this.isValidUUID(nurseId)) {
+        throw new BadRequestException('Invalid nurse ID format (must be UUID)');
+      }
+
+      const students = await this.studentModel.findAll({
+        where: {
+          nurseId,
+          isActive: true,
+        },
+        attributes: [
+          'id',
+          'studentNumber',
+          'firstName',
+          'lastName',
+          'grade',
+          'dateOfBirth',
+          'gender',
+          'photo',
+        ],
+        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
+      });
+
+      this.logger.log(`Retrieved ${students.length} students assigned to nurse ${nurseId}`);
+
+      return students;
+    } catch (error) {
+      this.logger.error(`Failed to fetch assigned students for nurse ${nurseId}: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to fetch assigned students');
+    }
+  }
+
+  // ==================== Analytics & Export Operations ====================
+
+  /**
+   * Get student statistics
+   * Aggregates counts for health records, allergies, medications, etc.
+   *
+   * NOTE: Currently returns placeholder data. Implement when related modules are available:
+   * - HealthRecord module for healthRecords count
+   * - Allergy module for allergies count
+   * - Medication module for medications count
+   * - Appointment module for appointments count
+   * - Incident module for incidents count
+   *
+   * @param studentId - Student UUID
+   * @returns Statistics object with counts
+   */
+  async getStatistics(studentId: string): Promise<StudentStatistics> {
+    try {
+      // Verify student exists
+      await this.findOne(studentId);
+
+      // TODO: Implement actual counts when related modules are integrated
+      // For now, return placeholder data
+      const statistics: StudentStatistics = {
+        healthRecords: 0,
+        allergies: 0,
+        medications: 0,
+        appointments: 0,
+        incidents: 0,
+      };
+
+      this.logger.log(`Statistics retrieved for student: ${studentId}`);
+
+      return statistics;
+    } catch (error) {
+      this.logger.error(`Failed to get statistics for student ${studentId}: ${error.message}`);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to get student statistics');
+    }
+  }
+
+  /**
+   * Export student data
+   * Generates comprehensive data export for compliance and reporting
+   *
+   * @param studentId - Student UUID
+   * @returns Export object with student data and statistics
+   */
+  async exportData(studentId: string): Promise<StudentDataExport> {
+    try {
+      const student = await this.findOne(studentId);
+      const statistics = await this.getStatistics(studentId);
+
+      const exportData: StudentDataExport = {
+        exportDate: new Date().toISOString(),
+        student,
+        statistics,
+      };
+
+      this.logger.log(
+        `Data export completed for student: ${studentId} (${student.studentNumber})`,
+      );
+
+      return exportData;
+    } catch (error) {
+      this.logger.error(`Failed to export data for student ${studentId}: ${error.message}`);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to export student data');
+    }
+  }
+
+  // ==================== Helper Methods ====================
+
+  /**
+   * Validate UUID format
+   *
+   * @param id - String to validate
+   * @returns true if valid UUID v4, false otherwise
+   */
+  private isValidUUID(id: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
   }
 }

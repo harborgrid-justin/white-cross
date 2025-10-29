@@ -13,6 +13,14 @@ import {
 } from 'sequelize-typescript';
 import { Student } from './student.model';
 
+export enum MedicationLogStatus {
+  PENDING = 'PENDING',
+  ADMINISTERED = 'ADMINISTERED',
+  MISSED = 'MISSED',
+  CANCELLED = 'CANCELLED',
+  REFUSED = 'REFUSED',
+}
+
 export interface MedicationLogAttributes {
   id: string;
   studentId: string;
@@ -20,8 +28,10 @@ export interface MedicationLogAttributes {
   dosage: number;
   dosageUnit: string;
   route: string;
+  scheduledAt?: Date;
   administeredAt: Date;
   administeredBy: string;
+  status?: MedicationLogStatus;
   notes?: string;
   wasGiven: boolean;
   reasonNotGiven?: string;
@@ -80,6 +90,13 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
 
   @Column({
     type: DataType.DATE,
+    allowNull: true,
+    comment: 'Scheduled time for medication administration',
+  })
+  scheduledAt?: Date;
+
+  @Column({
+    type: DataType.DATE,
     allowNull: false,
   })
   administeredAt: Date;
@@ -90,6 +107,15 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
     field: 'administered_by',
   })
   administeredBy: string;
+
+  @Index
+  @Column({
+    type: DataType.ENUM(...(Object.values(MedicationLogStatus) as string[])),
+    allowNull: true,
+    defaultValue: MedicationLogStatus.ADMINISTERED,
+    comment: 'Status of medication administration',
+  })
+  status?: MedicationLogStatus;
 
   @Column({
     type: DataType.TEXT,

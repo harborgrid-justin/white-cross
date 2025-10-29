@@ -34,7 +34,7 @@ export class ReportSchedule extends Model {
   name: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
   reportType: ReportType;
@@ -50,7 +50,7 @@ export class ReportSchedule extends Model {
   template?: ReportTemplate;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ScheduleFrequency)),
+    type: DataType.ENUM(...(Object.values(ScheduleFrequency) as string[])),
     allowNull: false,
   })
   frequency: ScheduleFrequency;
@@ -63,7 +63,7 @@ export class ReportSchedule extends Model {
 
   @Default(OutputFormat.PDF)
   @Column({
-    type: DataType.ENUM(...Object.values(OutputFormat)),
+    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
   outputFormat: OutputFormat;

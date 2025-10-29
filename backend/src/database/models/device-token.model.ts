@@ -19,7 +19,7 @@ export enum NotificationPlatform {
 }
 
 export interface DeviceTokenAttributes {
-  id: string;
+  id?: string;
   userId: string;
   deviceId: string;
   platform: NotificationPlatform;
@@ -40,6 +40,26 @@ export interface DeviceTokenAttributes {
   lastUsedAt?: Date;
 }
 
+export interface DeviceTokenCreationAttributes {
+  id?: string;
+  userId: string;
+  deviceId: string;
+  platform: NotificationPlatform;
+  token: string;
+  deviceName?: string;
+  deviceModel?: string;
+  osVersion?: string;
+  appVersion?: string;
+  isActive?: boolean;
+  isValid?: boolean;
+  lastValidated?: Date;
+  invalidReason?: string;
+  allowNotifications?: boolean;
+  allowSound?: boolean;
+  allowBadge?: boolean;
+  lastUsedAt?: Date;
+}
+
 @Table({
   tableName: 'device_tokens',
   timestamps: true,
@@ -56,11 +76,11 @@ export interface DeviceTokenAttributes {
     },
   ],
 })
-export class DeviceToken extends Model<DeviceTokenAttributes> implements DeviceTokenAttributes {
+export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreationAttributes> implements DeviceTokenAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  declare id: string;
+  declare id?: string;
 
   @Column({
     type: DataType.UUID,
@@ -78,7 +98,7 @@ export class DeviceToken extends Model<DeviceTokenAttributes> implements DeviceT
   deviceId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(NotificationPlatform)),
+    type: DataType.ENUM(...(Object.values(NotificationPlatform) as string[])),
     allowNull: false,
   })
   @Index

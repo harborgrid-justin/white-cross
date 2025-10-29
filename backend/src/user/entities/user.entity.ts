@@ -99,7 +99,7 @@ export class User extends Model<UserAttributes> {
   lastName: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(UserRole)),
+    type: DataType.ENUM(...(Object.values(UserRole) as string[])),
     allowNull: false,
     defaultValue: UserRole.NURSE,
   })

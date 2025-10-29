@@ -36,7 +36,9 @@ export interface AppointmentAttributes {
   studentId: string;
   nurseId: string;
   type: AppointmentType;
+  appointmentType?: AppointmentType; // Alias for type
   scheduledAt: Date;
+  appointmentDate?: Date; // Alias for scheduledAt
   duration: number;
   status: AppointmentStatus;
   reason: string;
@@ -79,10 +81,22 @@ export class Appointment extends Model<AppointmentAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(AppointmentType)),
+    type: DataType.ENUM(...(Object.values(AppointmentType) as string[])),
     allowNull: false,
   })
   type: AppointmentType;
+
+  /**
+   * Alias for 'type' field - used for DTO compatibility
+   * @returns The appointment type
+   */
+  get appointmentType(): AppointmentType {
+    return this.type;
+  }
+
+  set appointmentType(value: AppointmentType) {
+    this.type = value;
+  }
 
   @Index
   @Column({
@@ -90,6 +104,18 @@ export class Appointment extends Model<AppointmentAttributes> {
     allowNull: false,
   })
   scheduledAt: Date;
+
+  /**
+   * Alias for 'scheduledAt' field - used for DTO compatibility and legacy code
+   * @returns The scheduled date and time
+   */
+  get appointmentDate(): Date {
+    return this.scheduledAt;
+  }
+
+  set appointmentDate(value: Date) {
+    this.scheduledAt = value;
+  }
 
   @Column({
     type: DataType.INTEGER,
@@ -105,7 +131,7 @@ export class Appointment extends Model<AppointmentAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(AppointmentStatus)),
+    type: DataType.ENUM(...(Object.values(AppointmentStatus) as string[])),
     allowNull: false,
     defaultValue: AppointmentStatus.SCHEDULED,
   })

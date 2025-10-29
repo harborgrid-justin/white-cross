@@ -84,7 +84,7 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ViolationType)),
+    type: DataType.ENUM(...(Object.values(ViolationType) as string[])),
     allowNull: false,
     field: 'violation_type',
   })
@@ -103,13 +103,13 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
   description: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ViolationSeverity)),
+    type: DataType.ENUM(...(Object.values(ViolationSeverity) as string[])),
     allowNull: false,
   })
   severity: ViolationSeverity;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ViolationStatus)),
+    type: DataType.ENUM(...(Object.values(ViolationStatus) as string[])),
     allowNull: false,
     defaultValue: ViolationStatus.REPORTED,
   })

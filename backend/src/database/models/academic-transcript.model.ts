@@ -21,7 +21,7 @@ export interface SubjectGrade {
   grade: string;
   percentage: number;
   credits: number;
-  teacher?: string;
+  teacher: string;
 }
 
 /**
@@ -64,6 +64,14 @@ export interface AcademicTranscriptAttributes {
   metadata?: Record<string, any>;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+/**
+ * Academic Transcript Creation Attributes
+ * Omits auto-generated fields (id, createdAt, updatedAt)
+ */
+export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTranscriptAttributes, 'id' | 'createdAt' | 'updatedAt'> {
+  id?: string;
 }
 
 /**
@@ -111,7 +119,7 @@ export interface AcademicTranscriptAttributes {
     },
   ],
 })
-export class AcademicTranscript extends Model<AcademicTranscriptAttributes> implements AcademicTranscriptAttributes {
+export class AcademicTranscript extends Model<AcademicTranscriptAttributes, AcademicTranscriptCreationAttributes> implements AcademicTranscriptAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)

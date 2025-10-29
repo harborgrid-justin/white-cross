@@ -65,7 +65,7 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   inventoryItemId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(MaintenanceType)),
+    type: DataType.ENUM(...(Object.values(MaintenanceType) as string[])),
     allowNull: false,
   })
   type: MaintenanceType;

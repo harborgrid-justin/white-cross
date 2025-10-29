@@ -24,13 +24,13 @@ import { Type } from 'class-transformer';
  * PHI Protected: Facial recognition queries are logged for compliance
  */
 export class SearchPhotoDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Base64 encoded image data for facial recognition search',
     example: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA...',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  imageData: string;
+  imageData?: string;
 
   @ApiPropertyOptional({
     description: 'Confidence threshold for matches (0.0 to 1.0, default: 0.85)',
@@ -45,4 +45,26 @@ export class SearchPhotoDto {
   @Min(0)
   @Max(1)
   threshold?: number = 0.85;
+
+  @ApiPropertyOptional({
+    description: 'Maximum number of results to return',
+    example: 10,
+    default: 10,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  limit?: number;
+
+  @ApiPropertyOptional({
+    description: 'Metadata filters for narrowing search',
+    example: { grade: '5', gender: 'M' },
+  })
+  @IsOptional()
+  @IsObject()
+  metadata?: {
+    grade?: string;
+    gender?: string;
+  };
 }

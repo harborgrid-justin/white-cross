@@ -37,7 +37,7 @@ export class ReportTemplate extends Model {
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
   reportType: ReportType;
@@ -50,7 +50,7 @@ export class ReportTemplate extends Model {
 
   @Default(OutputFormat.PDF)
   @Column({
-    type: DataType.ENUM(...Object.values(OutputFormat)),
+    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
   defaultOutputFormat: OutputFormat;

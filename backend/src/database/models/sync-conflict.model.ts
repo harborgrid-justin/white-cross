@@ -67,7 +67,7 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
   queueItemId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncEntityType)),
+    type: DataType.ENUM(...(Object.values(SyncEntityType) as string[])),
     allowNull: false,
     field: 'entity_type',
   })
@@ -97,7 +97,7 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
 
   @AllowNull
   @Column({
-    type: DataType.ENUM(...Object.values(ConflictResolution)),
+    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[])),
   })
   resolution?: ConflictResolution;
 
@@ -123,7 +123,7 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
   mergedData?: any;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncStatus)),
+    type: DataType.ENUM(...(Object.values(SyncStatus) as string[])),
     allowNull: false,
     defaultValue: SyncStatus.PENDING,
   })

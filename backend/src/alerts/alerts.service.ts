@@ -18,88 +18,15 @@
  */
 
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import { CreateAlertDto } from './dto/create-alert.dto';
+import { Alert, AlertSeverity, AlertCategory, AlertStatus } from '../database/models/alert.model';
+import { AlertPreferences, DeliveryChannel } from '../database/models/alert-preferences.model';
+import { DeliveryLog } from '../database/models/delivery-log.model';
+import { Op } from 'sequelize';
 
-export enum AlertSeverity {
-  INFO = 'INFO',
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL',
-  EMERGENCY = 'EMERGENCY',
-}
-
-export enum AlertCategory {
-  HEALTH = 'HEALTH',
-  SAFETY = 'SAFETY',
-  COMPLIANCE = 'COMPLIANCE',
-  SYSTEM = 'SYSTEM',
-  MEDICATION = 'MEDICATION',
-  APPOINTMENT = 'APPOINTMENT',
-}
-
-export enum AlertStatus {
-  ACTIVE = 'ACTIVE',
-  ACKNOWLEDGED = 'ACKNOWLEDGED',
-  RESOLVED = 'RESOLVED',
-  EXPIRED = 'EXPIRED',
-  DISMISSED = 'DISMISSED',
-}
-
-export enum DeliveryChannel {
-  WEBSOCKET = 'WEBSOCKET',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
-}
-
-export interface Alert {
-  id: string;
-  definitionId?: string;
-  severity: AlertSeverity;
-  category: AlertCategory;
-  title: string;
-  message: string;
-  studentId?: string;
-  userId?: string;
-  schoolId?: string;
-  status: AlertStatus;
-  metadata?: Record<string, any>;
-  createdBy: string;
-  createdAt: Date;
-  acknowledgedAt?: Date;
-  acknowledgedBy?: string;
-  resolvedAt?: Date;
-  resolvedBy?: string;
-  expiresAt?: Date;
-  autoEscalateAfter?: number;
-  escalationLevel?: number;
-  requiresAcknowledgment: boolean;
-}
-
-export interface AlertPreferences {
-  userId: string;
-  schoolId?: string;
-  channels: DeliveryChannel[];
-  severityFilter: AlertSeverity[];
-  categoryFilter: AlertCategory[];
-  quietHoursStart?: string; // HH:MM format
-  quietHoursEnd?: string;
-  isActive: boolean;
-}
-
-export interface DeliveryLog {
-  id: string;
-  alertId: string;
-  channel: DeliveryChannel;
-  recipientId?: string;
-  success: boolean;
-  attemptCount: number;
-  lastAttempt: Date;
-  deliveredAt?: Date;
-  errorMessage?: string;
-}
+export { AlertSeverity, AlertCategory, AlertStatus, DeliveryChannel };
 
 export interface AlertStatistics {
   totalAlerts: number;
@@ -137,12 +64,15 @@ export class AlertNotFoundException extends AlertException {
 export class AlertsService {
   private readonly logger = new Logger(AlertsService.name);
 
-  // In-memory storage (replace with database in production)
-  private alerts: Map<string, Alert> = new Map();
-  private preferences: Map<string, AlertPreferences> = new Map();
-  private deliveryLogs: Map<string, DeliveryLog[]> = new Map();
-
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @InjectModel(Alert)
+    private readonly alertModel: typeof Alert,
+    @InjectModel(AlertPreferences)
+    private readonly alertPreferencesModel: typeof AlertPreferences,
+    @InjectModel(DeliveryLog)
+    private readonly deliveryLogModel: typeof DeliveryLog,
+    private readonly configService: ConfigService
+  ) {}
 
   /**
    * Create and broadcast a new alert
@@ -150,16 +80,13 @@ export class AlertsService {
   async createAlert(data: CreateAlertDto, createdBy: string): Promise<Alert> {
     this.logger.log(`Creating alert: ${data.title} [${data.severity}]`);
 
-    const alert: Alert = {
-      id: this.generateId(),
+    // Create alert in database
+    const alert = await this.alertModel.create({
       ...data,
       status: AlertStatus.ACTIVE,
       createdBy,
-      createdAt: new Date(),
-    };
-
-    // Store alert
-    this.alerts.set(alert.id, alert);
+      requiresAcknowledgment: data.requiresAcknowledgment ?? false,
+    });
 
     // Broadcast via WebSocket
     await this.sendViaWebSocket(alert.userId || '', alert);
@@ -324,7 +251,7 @@ export class AlertsService {
    * Mark alert as read/acknowledged
    */
   async markAsRead(alertId: string, userId: string): Promise<Alert> {
-    const alert = this.alerts.get(alertId);
+    const alert = await this.alertModel.findByPk(alertId);
 
     if (!alert) {
       throw new AlertNotFoundException(alertId);
@@ -334,7 +261,7 @@ export class AlertsService {
     alert.acknowledgedBy = userId;
     alert.acknowledgedAt = new Date();
 
-    this.alerts.set(alertId, alert);
+    await alert.save();
 
     this.logger.log(`Alert ${alertId} acknowledged by ${userId}`);
 
@@ -348,7 +275,7 @@ export class AlertsService {
    * Resolve an alert
    */
   async resolveAlert(alertId: string, userId: string, notes?: string): Promise<Alert> {
-    const alert = this.alerts.get(alertId);
+    const alert = await this.alertModel.findByPk(alertId);
 
     if (!alert) {
       throw new AlertNotFoundException(alertId);
@@ -365,7 +292,7 @@ export class AlertsService {
       };
     }
 
-    this.alerts.set(alertId, alert);
+    await alert.save();
 
     this.logger.log(`Alert ${alertId} resolved by ${userId}`);
 
@@ -383,28 +310,29 @@ export class AlertsService {
 
     let retriedCount = 0;
 
-    for (const [alertId, logs] of this.deliveryLogs.entries()) {
-      const failedLogs = logs.filter((log) => !log.success);
+    // Find all failed delivery logs
+    const failedLogs = await this.deliveryLogModel.findAll({
+      where: {
+        success: false,
+      },
+      include: [Alert],
+    });
 
-      for (const log of failedLogs) {
-        // Implement exponential backoff
-        const backoffMs = Math.min(1000 * Math.pow(2, log.attemptCount), 60000); // Max 1 minute
-        const timeSinceLastAttempt = Date.now() - log.lastAttempt.getTime();
+    for (const log of failedLogs) {
+      // Check if ready for retry using model method
+      if (!log.isReadyForRetry()) {
+        continue;
+      }
 
-        if (timeSinceLastAttempt < backoffMs) {
-          continue; // Not ready to retry yet
-        }
+      // Get the alert
+      const alert = log.alert || await this.alertModel.findByPk(log.alertId);
+      if (!alert) continue;
 
-        // Retry delivery
-        const alert = this.alerts.get(alertId);
-        if (!alert) continue;
-
-        try {
-          await this.retryDelivery(alert, log.channel, log.recipientId);
-          retriedCount++;
-        } catch (error) {
-          this.logger.error(`Retry failed for alert ${alertId} on ${log.channel}`, error);
-        }
+      try {
+        await this.retryDelivery(alert, log.channel, log.recipientId);
+        retriedCount++;
+      } catch (error) {
+        this.logger.error(`Retry failed for alert ${log.alertId} on ${log.channel}`, error);
       }
     }
 
@@ -415,17 +343,19 @@ export class AlertsService {
    * Get user alert preferences
    */
   async getUserAlertPreferences(userId: string): Promise<AlertPreferences> {
-    const prefs = this.preferences.get(userId);
+    let prefs = await this.alertPreferencesModel.findOne({
+      where: { userId },
+    });
 
     if (!prefs) {
-      // Return default preferences
-      return {
+      // Create default preferences
+      prefs = await this.alertPreferencesModel.create({
         userId,
         channels: [DeliveryChannel.WEBSOCKET, DeliveryChannel.EMAIL],
         severityFilter: Object.values(AlertSeverity),
         categoryFilter: Object.values(AlertCategory),
         isActive: true,
-      };
+      });
     }
 
     return prefs;
@@ -440,17 +370,12 @@ export class AlertsService {
   ): Promise<AlertPreferences> {
     const existing = await this.getUserAlertPreferences(userId);
 
-    const updated: AlertPreferences = {
-      ...existing,
-      ...preferences,
-      userId, // Ensure userId is preserved
-    };
-
-    this.preferences.set(userId, updated);
+    // Update the existing preferences
+    await existing.update(preferences);
 
     this.logger.log(`Updated alert preferences for user ${userId}`);
 
-    return updated;
+    return existing;
   }
 
   /**
@@ -458,25 +383,28 @@ export class AlertsService {
    */
   async getUserAlerts(userId: string, filterDto: any): Promise<{ data: Alert[]; total: number; page: number; limit: number }> {
     const { page = 1, limit = 20, unreadOnly = false } = filterDto;
-    const alerts: Alert[] = [];
 
-    for (const alert of this.alerts.values()) {
-      if (alert.userId === userId || alert.schoolId) {
-        if (unreadOnly && alert.status !== AlertStatus.ACTIVE) {
-          continue;
-        }
-        alerts.push(alert);
-      }
+    const where: any = {
+      [Op.or]: [
+        { userId },
+        { schoolId: { [Op.ne]: null } },
+      ],
+    };
+
+    if (unreadOnly) {
+      where.status = AlertStatus.ACTIVE;
     }
 
-    const sorted = alerts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedData = sorted.slice(startIndex, endIndex);
+    const { rows: data, count: total } = await this.alertModel.findAndCountAll({
+      where,
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset: (page - 1) * limit,
+    });
 
     return {
-      data: paginatedData,
-      total: alerts.length,
+      data,
+      total,
       page,
       limit,
     };
@@ -486,13 +414,13 @@ export class AlertsService {
    * Delete an alert
    */
   async deleteAlert(alertId: string): Promise<void> {
-    const alert = this.alerts.get(alertId);
+    const alert = await this.alertModel.findByPk(alertId);
 
     if (!alert) {
       throw new AlertNotFoundException(alertId);
     }
 
-    this.alerts.delete(alertId);
+    await alert.destroy();
     this.logger.log(`Alert ${alertId} deleted`);
   }
 
@@ -518,7 +446,14 @@ export class AlertsService {
   async getAlertStatistics(filters?: any): Promise<AlertStatistics> {
     this.logger.log('Calculating alert statistics');
 
-    const alerts = Array.from(this.alerts.values());
+    const where: any = {};
+    if (filters) {
+      if (filters.schoolId) where.schoolId = filters.schoolId;
+      if (filters.startDate) where.createdAt = { [Op.gte]: filters.startDate };
+      if (filters.endDate) where.createdAt = { ...where.createdAt, [Op.lte]: filters.endDate };
+    }
+
+    const alerts = await this.alertModel.findAll({ where });
 
     const stats: AlertStatistics = {
       totalAlerts: alerts.length,
@@ -547,7 +482,7 @@ export class AlertsService {
       stats.byStatus[alert.status] = (stats.byStatus[alert.status] || 0) + 1;
 
       // Calculate acknowledgment time
-      if (alert.acknowledgedAt) {
+      if (alert.acknowledgedAt && alert.createdAt) {
         const ackTime =
           (alert.acknowledgedAt.getTime() - alert.createdAt.getTime()) / 60000; // minutes
         totalAckTime += ackTime;
@@ -555,7 +490,7 @@ export class AlertsService {
       }
 
       // Calculate resolution time
-      if (alert.resolvedAt) {
+      if (alert.resolvedAt && alert.createdAt) {
         const resTime = (alert.resolvedAt.getTime() - alert.createdAt.getTime()) / 60000; // minutes
         totalResTime += resTime;
         resCount++;
@@ -587,31 +522,21 @@ export class AlertsService {
    * Get subscribers for an alert based on preferences
    */
   private async getSubscribersForAlert(alert: Alert): Promise<AlertPreferences[]> {
-    const subscribers: AlertPreferences[] = [];
+    // Get all active preferences that match the alert filters
+    const allPrefs = await this.alertPreferencesModel.findAll({
+      where: {
+        isActive: true,
+        severityFilter: {
+          [Op.contains]: [alert.severity],
+        },
+        categoryFilter: {
+          [Op.contains]: [alert.category],
+        },
+      },
+    });
 
-    for (const prefs of this.preferences.values()) {
-      // Check if user wants this severity
-      if (!prefs.severityFilter.includes(alert.severity)) {
-        continue;
-      }
-
-      // Check if user wants this category
-      if (!prefs.categoryFilter.includes(alert.category)) {
-        continue;
-      }
-
-      // Check quiet hours
-      if (this.isQuietHours(prefs)) {
-        continue;
-      }
-
-      // Check if active
-      if (!prefs.isActive) {
-        continue;
-      }
-
-      subscribers.push(prefs);
-    }
+    // Filter out those in quiet hours
+    const subscribers = allPrefs.filter(prefs => !prefs.isQuietHours());
 
     return subscribers;
   }
@@ -679,20 +604,24 @@ export class AlertsService {
   /**
    * Log delivery attempt
    */
-  private logDelivery(
+  private async logDelivery(
     alertId: string,
     channel: DeliveryChannel,
     recipientId: string | undefined,
     success: boolean,
     errorMessage?: string
-  ): void {
-    const logs = this.deliveryLogs.get(alertId) || [];
-
-    const existingLog = logs.find(
-      (log) => log.channel === channel && log.recipientId === recipientId
-    );
+  ): Promise<void> {
+    // Try to find existing log for this alert/channel/recipient combination
+    const existingLog = await this.deliveryLogModel.findOne({
+      where: {
+        alertId,
+        channel,
+        ...(recipientId && { recipientId }),
+      },
+    });
 
     if (existingLog) {
+      // Update existing log
       existingLog.success = success;
       existingLog.attemptCount++;
       existingLog.lastAttempt = new Date();
@@ -702,9 +631,10 @@ export class AlertsService {
       if (errorMessage) {
         existingLog.errorMessage = errorMessage;
       }
+      await existingLog.save();
     } else {
-      logs.push({
-        id: this.generateId(),
+      // Create new log
+      await this.deliveryLogModel.create({
         alertId,
         channel,
         recipientId,
@@ -715,34 +645,8 @@ export class AlertsService {
         errorMessage,
       });
     }
-
-    this.deliveryLogs.set(alertId, logs);
   }
 
-  /**
-   * Check if current time is within quiet hours
-   */
-  private isQuietHours(prefs: AlertPreferences): boolean {
-    if (!prefs.quietHoursStart || !prefs.quietHoursEnd) {
-      return false;
-    }
-
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-
-    const [startHour, startMin] = prefs.quietHoursStart.split(':').map(Number);
-    const [endHour, endMin] = prefs.quietHoursEnd.split(':').map(Number);
-
-    const startTime = startHour * 60 + startMin;
-    const endTime = endHour * 60 + endMin;
-
-    if (startTime < endTime) {
-      return currentTime >= startTime && currentTime <= endTime;
-    } else {
-      // Quiet hours span midnight
-      return currentTime >= startTime || currentTime <= endTime;
-    }
-  }
 
   /**
    * Schedule auto-escalation
@@ -751,10 +655,10 @@ export class AlertsService {
     this.logger.log(`Scheduling auto-escalation for alert ${alertId} in ${delayMinutes} minutes`);
 
     setTimeout(async () => {
-      const alert = this.alerts.get(alertId);
+      const alert = await this.alertModel.findByPk(alertId);
       if (alert && alert.status === AlertStatus.ACTIVE && !alert.acknowledgedAt) {
         alert.escalationLevel = (alert.escalationLevel || 0) + 1;
-        this.alerts.set(alertId, alert);
+        await alert.save();
         this.logger.warn(`Alert ${alertId} auto-escalated to level ${alert.escalationLevel}`);
         // Re-deliver to subscribers
         const subscribers = await this.getSubscribersForAlert(alert);
@@ -773,11 +677,11 @@ export class AlertsService {
       return; // Already expired
     }
 
-    setTimeout(() => {
-      const alert = this.alerts.get(alertId);
+    setTimeout(async () => {
+      const alert = await this.alertModel.findByPk(alertId);
       if (alert && alert.status === AlertStatus.ACTIVE) {
         alert.status = AlertStatus.EXPIRED;
-        this.alerts.set(alertId, alert);
+        await alert.save();
         this.logger.log(`Alert ${alertId} expired`);
       }
     }, delay);
@@ -797,13 +701,6 @@ export class AlertsService {
     };
 
     return icons[severity] || 'default_icon';
-  }
-
-  /**
-   * Generate unique ID
-   */
-  private generateId(): string {
-    return `alert_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
 
   /**

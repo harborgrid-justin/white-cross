@@ -156,7 +156,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
 
   @Default(ConfigCategory.GENERAL)
   @Column({
-    type: DataType.ENUM(...Object.values(ConfigCategory)),
+    type: DataType.ENUM(...(Object.values(ConfigCategory) as string[])),
     allowNull: false,
     defaultValue: ConfigCategory.GENERAL,
     comment: 'Configuration category',
@@ -166,7 +166,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
 
   @Default(ConfigValueType.STRING)
   @Column({
-    type: DataType.ENUM(...Object.values(ConfigValueType)),
+    type: DataType.ENUM(...(Object.values(ConfigValueType) as string[])),
     allowNull: false,
     defaultValue: ConfigValueType.STRING,
     comment: 'Data type of the configuration value',
@@ -250,7 +250,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
 
   @Default(ConfigScope.SYSTEM)
   @Column({
-    type: DataType.ENUM(...Object.values(ConfigScope)),
+    type: DataType.ENUM(...(Object.values(ConfigScope) as string[])),
     allowNull: false,
     defaultValue: ConfigScope.SYSTEM,
     comment: 'Scope of the configuration (system, district, school, user)',

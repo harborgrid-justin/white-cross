@@ -53,7 +53,7 @@ export class ConsentForm extends Model<ConsentFormAttributes> implements Consent
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ConsentType)),
+    type: DataType.ENUM(...(Object.values(ConsentType) as string[])),
     allowNull: false,
   })
   type: ConsentType;
@@ -81,7 +81,7 @@ export class ConsentForm extends Model<ConsentFormAttributes> implements Consent
     allowNull: false,
     defaultValue: '1.0',
   })
-  version: string;
+  declare version: string;
 
   @Column({
     type: DataType.BOOLEAN,

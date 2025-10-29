@@ -60,6 +60,9 @@ export class EmergencyContactService {
    * Create new emergency contact
    */
   async createEmergencyContact(data: CreateEmergencyContactDto): Promise<EmergencyContact> {
+    if (!this.emergencyContactModel.sequelize) {
+      throw new Error('Database connection not available');
+    }
     const transaction = await this.emergencyContactModel.sequelize.transaction();
 
     try {
@@ -167,6 +170,9 @@ export class EmergencyContactService {
     id: string,
     data: UpdateEmergencyContactDto,
   ): Promise<EmergencyContact> {
+    if (!this.emergencyContactModel.sequelize) {
+      throw new Error('Database connection not available');
+    }
     const transaction = await this.emergencyContactModel.sequelize.transaction();
 
     try {
@@ -303,6 +309,9 @@ export class EmergencyContactService {
    * Delete emergency contact (soft delete)
    */
   async deleteEmergencyContact(id: string): Promise<{ success: boolean }> {
+    if (!this.emergencyContactModel.sequelize) {
+      throw new Error('Database connection not available');
+    }
     const transaction = await this.emergencyContactModel.sequelize.transaction();
 
     try {
@@ -594,6 +603,10 @@ export class EmergencyContactService {
       const allStudents = await this.studentModel.count({
         where: { isActive: true },
       });
+
+      if (!this.emergencyContactModel.sequelize) {
+        throw new Error('Database connection not available');
+      }
 
       const [studentsWithContactsResult]: any = await this.emergencyContactModel.sequelize.query(
         'SELECT COUNT(DISTINCT "studentId") as count FROM "EmergencyContacts" WHERE "isActive" = true',

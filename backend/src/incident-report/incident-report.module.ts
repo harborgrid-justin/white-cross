@@ -9,11 +9,10 @@ import {
   IncidentWitnessService,
   IncidentStatisticsService,
 } from './services';
-import {
-  IncidentReport,
-  FollowUpAction,
-  WitnessStatement,
-} from '../../database/models';
+import { IncidentReport } from '../database/models/incident-report.model';
+import { FollowUpAction } from '../database/models/follow-up-action.model';
+import { WitnessStatement } from '../database/models/witness-statement.model';
+import { EmergencyContact } from '../database/models/emergency-contact.model';
 
 @Module({
   imports: [
@@ -21,6 +20,7 @@ import {
       IncidentReport,
       FollowUpAction,
       WitnessStatement,
+      EmergencyContact,
     ]),
   ],
   controllers: [IncidentReportController],

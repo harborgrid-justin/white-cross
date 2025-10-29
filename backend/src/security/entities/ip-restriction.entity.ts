@@ -28,7 +28,7 @@ export class IpRestrictionEntity extends Model {
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(IpRestrictionType)),
+    type: DataType.ENUM(...(Object.values(IpRestrictionType) as string[])),
     allowNull: false,
   })
   type: IpRestrictionType;

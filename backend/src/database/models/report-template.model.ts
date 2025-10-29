@@ -67,7 +67,7 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
     field: 'report_type',
   })
@@ -81,7 +81,7 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
   queryConfiguration?: Record<string, any>;
 
   @Column({
-    type: DataType.ENUM(...Object.values(OutputFormat)),
+    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
     defaultValue: OutputFormat.PDF,
     field: 'default_output_format',

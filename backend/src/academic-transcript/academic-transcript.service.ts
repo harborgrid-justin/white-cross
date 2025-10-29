@@ -91,7 +91,7 @@ export class AcademicTranscriptService {
       }
 
       // Calculate GPA
-      const gpa = this.calculateGPA(subjects);
+      const gpa = this.calculateGPA(subjects as SubjectGrade[]);
 
       // Create academic transcript record in database
       const transcript = await this.academicTranscriptModel.create({
@@ -100,9 +100,9 @@ export class AcademicTranscriptService {
         semester,
         grade: student.grade,
         gpa,
-        subjects,
-        attendance,
-        behavior: behavior || {
+        subjects: subjects as SubjectGrade[],
+        attendance: attendance as AttendanceRecord,
+        behavior: (behavior as BehaviorRecord) || {
           conductGrade: 'N/A',
           incidents: 0,
           commendations: 0,

@@ -153,7 +153,7 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
   medications?: string[];
 
   @Column({
-    type: DataType.ENUM(...Object.values(ProtocolStatus)),
+    type: DataType.ENUM(...(Object.values(ProtocolStatus) as string[])),
     allowNull: false,
     defaultValue: ProtocolStatus.DRAFT,
   })

@@ -74,7 +74,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   nurse: User;
 
   @Column({
-    type: DataType.ENUM(...Object.values(AppointmentType)),
+    type: DataType.ENUM(...(Object.values(AppointmentType) as string[])),
     allowNull: false,
   })
   type: AppointmentType;
@@ -95,7 +95,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(WaitlistPriority)),
+    type: DataType.ENUM(...(Object.values(WaitlistPriority) as string[])),
     allowNull: false,
     defaultValue: WaitlistPriority.NORMAL,
   })
@@ -115,7 +115,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(WaitlistStatus)),
+    type: DataType.ENUM(...(Object.values(WaitlistStatus) as string[])),
     allowNull: false,
     defaultValue: WaitlistStatus.WAITING,
   })

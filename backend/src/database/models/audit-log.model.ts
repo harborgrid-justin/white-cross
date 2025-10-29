@@ -117,7 +117,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(AuditAction)),
+    type: DataType.ENUM(...(Object.values(AuditAction) as string[])),
     allowNull: false,
     comment: 'Type of action performed (CREATE, READ, UPDATE, DELETE, etc.)',
   })
@@ -216,7 +216,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   isPHI: boolean;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ComplianceType)),
+    type: DataType.ENUM(...(Object.values(ComplianceType) as string[])),
     allowNull: false,
     defaultValue: ComplianceType.GENERAL,
     comment: 'Compliance regulation this audit log relates to',
@@ -225,7 +225,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   complianceType: ComplianceType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(AuditSeverity)),
+    type: DataType.ENUM(...(Object.values(AuditSeverity) as string[])),
     allowNull: false,
     defaultValue: AuditSeverity.LOW,
     comment: 'Severity level of the audited action',

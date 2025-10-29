@@ -85,14 +85,14 @@ export class RemediationAction extends Model<RemediationActionAttributes> implem
   action: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(RemediationPriority)),
+    type: DataType.ENUM(...(Object.values(RemediationPriority) as string[])),
     allowNull: false,
     defaultValue: RemediationPriority.MEDIUM,
   })
   priority: RemediationPriority;
 
   @Column({
-    type: DataType.ENUM(...Object.values(RemediationStatus)),
+    type: DataType.ENUM(...(Object.values(RemediationStatus) as string[])),
     allowNull: false,
     defaultValue: RemediationStatus.PLANNED,
   })

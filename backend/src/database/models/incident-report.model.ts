@@ -115,13 +115,13 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   reportedById: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(IncidentType)),
+    type: DataType.ENUM(...(Object.values(IncidentType) as string[])),
     allowNull: false,
   })
   type: IncidentType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(IncidentSeverity)),
+    type: DataType.ENUM(...(Object.values(IncidentSeverity) as string[])),
     allowNull: false,
   })
   severity: IncidentSeverity;
@@ -196,13 +196,13 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   insuranceClaimNumber?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(InsuranceClaimStatus)),
+    type: DataType.ENUM(...(Object.values(InsuranceClaimStatus) as string[])),
   })
   insuranceClaimStatus?: InsuranceClaimStatus;
 
   @Default(ComplianceStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...Object.values(ComplianceStatus)),
+    type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
     allowNull: false,
   })
   legalComplianceStatus: ComplianceStatus;

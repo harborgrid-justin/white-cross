@@ -261,7 +261,7 @@ export class AnalyticsService {
         .filter(record => record.recordType === 'VITAL_SIGNS_CHECK' && record.metadata?.vitalSigns)
         .map(record => ({
           date: record.recordDate,
-          ...record.metadata.vitalSigns,
+          ...(record.metadata?.vitalSigns || {}),
         }));
 
       // Group health visits by type

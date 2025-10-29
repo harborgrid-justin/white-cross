@@ -171,7 +171,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Alert category
    */
   @Column({
-    type: DataType.ENUM(...Object.values(AlertCategory)),
+    type: DataType.ENUM(...(Object.values(AlertCategory) as string[])),
     allowNull: false,
   })
   category: AlertCategory;
@@ -180,7 +180,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Alert severity level
    */
   @Column({
-    type: DataType.ENUM(...Object.values(AlertSeverity)),
+    type: DataType.ENUM(...(Object.values(AlertSeverity) as string[])),
     allowNull: false,
   })
   severity: AlertSeverity;

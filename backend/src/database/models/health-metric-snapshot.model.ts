@@ -79,7 +79,7 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
   category: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(TrendDirection)),
+    type: DataType.ENUM(...(Object.values(TrendDirection) as string[])),
   })
   trend?: TrendDirection;
 

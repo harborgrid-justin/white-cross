@@ -34,20 +34,20 @@ export class SecurityIncidentEntity extends Model {
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SecurityIncidentType)),
+    type: DataType.ENUM(...(Object.values(SecurityIncidentType) as string[])),
     allowNull: false,
   })
   type: SecurityIncidentType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(IncidentSeverity)),
+    type: DataType.ENUM(...(Object.values(IncidentSeverity) as string[])),
     allowNull: false,
   })
   severity: IncidentSeverity;
 
   @Default(IncidentStatus.DETECTED)
   @Column({
-    type: DataType.ENUM(...Object.values(IncidentStatus)),
+    type: DataType.ENUM(...(Object.values(IncidentStatus) as string[])),
     allowNull: false,
   })
   status: IncidentStatus;

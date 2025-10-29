@@ -170,7 +170,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Type of mental health record
    */
   @Column({
-    type: DataType.ENUM(...Object.values(MentalHealthRecordType)),
+    type: DataType.ENUM(...(Object.values(MentalHealthRecordType) as string[])),
     allowNull: false,
     field: 'record_type',
   })
@@ -271,7 +271,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Current risk level assessment
    */
   @Column({
-    type: DataType.ENUM(...Object.values(RiskLevel)),
+    type: DataType.ENUM(...(Object.values(RiskLevel) as string[])),
     allowNull: false,
     defaultValue: RiskLevel.NONE,
     field: 'risk_level',

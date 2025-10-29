@@ -60,7 +60,7 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   appointment: Appointment;
 
   @Column({
-    type: DataType.ENUM(...Object.values(MessageType)),
+    type: DataType.ENUM(...(Object.values(MessageType) as string[])),
     allowNull: false,
   })
   type: MessageType;
@@ -74,7 +74,7 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(ReminderStatus)),
+    type: DataType.ENUM(...(Object.values(ReminderStatus) as string[])),
     allowNull: false,
     defaultValue: ReminderStatus.SCHEDULED,
   })

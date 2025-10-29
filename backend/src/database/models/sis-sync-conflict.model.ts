@@ -43,7 +43,7 @@ export class SISSyncConflict extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @ForeignKey(() => SyncSession)
   @Column({
@@ -85,7 +85,7 @@ export class SISSyncConflict extends Model {
   sisValue: any;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ConflictResolution)),
+    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[])),
     allowNull: true,
     comment: 'How the conflict was resolved',
   })

@@ -51,7 +51,7 @@ export class SyncSession extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.UUID,
@@ -77,7 +77,7 @@ export class SyncSession extends Model {
   completedAt: Date | null;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncStatus)),
+    type: DataType.ENUM(...(Object.values(SyncStatus) as string[])),
     allowNull: false,
     defaultValue: SyncStatus.PENDING,
     comment: 'Current status of the sync session',
@@ -86,7 +86,7 @@ export class SyncSession extends Model {
   status: SyncStatus;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncDirection)),
+    type: DataType.ENUM(...(Object.values(SyncDirection) as string[])),
     allowNull: false,
     comment: 'Direction of the sync operation',
   })

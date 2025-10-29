@@ -1,7 +1,7 @@
 /**
  * @fileoverview Student DTOs Index
  * @module student/dto
- * @description Barrel export file for all student-related DTOs
+ * @description Barrel export file for all student-related DTOs and types
  */
 
 // CRUD DTOs
@@ -37,3 +37,6 @@ export * from './verify-medication.dto';
 // Waitlist Management DTOs
 export * from './add-waitlist.dto';
 export * from './waitlist-status.dto';
+
+// Type definitions
+export * from '../types';

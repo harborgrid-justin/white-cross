@@ -100,7 +100,7 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
   reportType: ReportType;
@@ -173,13 +173,13 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
 
   @Default(ReportStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...Object.values(ReportStatus)),
+    type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
     allowNull: false,
   })
   status: ReportStatus;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportFormat)),
+    type: DataType.ENUM(...(Object.values(ReportFormat) as string[])),
     allowNull: false,
   })
   format: ReportFormat;

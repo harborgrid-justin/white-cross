@@ -115,7 +115,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
 
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM(...Object.values(TrainingCategory)),
+    type: DataType.ENUM(...(Object.values(TrainingCategory) as string[])),
     allowNull: false,
     comment: 'Category of the training module',
   })

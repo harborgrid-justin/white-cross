@@ -115,7 +115,7 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
 
   @Default(PurchaseOrderStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...Object.values(PurchaseOrderStatus)),
+    type: DataType.ENUM(...(Object.values(PurchaseOrderStatus) as string[])),
     allowNull: false,
   })
   status: PurchaseOrderStatus;

@@ -34,7 +34,7 @@ export class InventoryService {
       const savedItem = await this.inventoryItemModel.create({
         ...data,
         isActive: true,
-      });
+      } as any);
 
       this.logger.log(`Inventory item created: ${savedItem.name} (${savedItem.category})`);
       return savedItem;

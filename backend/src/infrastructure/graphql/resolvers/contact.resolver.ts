@@ -20,6 +20,7 @@ import {
 } from '../dto';
 import { ContactService } from '../../../contact/services/contact.service';
 import { ContactType as DomainContactType } from '../../../contact/enums/contact-type.enum';
+import { Contact } from '../../../database/models/contact.model';
 
 /**
  * Contact Resolver
@@ -70,6 +71,40 @@ export class ContactResolver {
   }
 
   /**
+   * Map Contact model to ContactDto
+   * Converts all null values to undefined for GraphQL compatibility
+   */
+  private mapContactToDto(contact: Contact): ContactDto {
+    return {
+      id: contact.id,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      email: contact.email ?? undefined,
+      phone: contact.phone ?? undefined,
+      organization: contact.organization ?? undefined,
+      address: contact.address ?? undefined,
+      city: contact.city ?? undefined,
+      state: contact.state ?? undefined,
+      zip: contact.zip ?? undefined,
+      relationTo: contact.relationTo ?? undefined,
+      relationshipType: contact.relationshipType ?? undefined,
+      customFields: contact.customFields ?? undefined,
+      notes: contact.notes ?? undefined,
+      title: contact.title ?? undefined,
+      createdBy: contact.createdBy ?? undefined,
+      updatedBy: contact.updatedBy ?? undefined,
+      type: this.transformContactType(contact.type),
+      isActive: contact.isActive,
+      createdAt: contact.createdAt,
+      updatedAt: contact.updatedAt,
+      fullName: `${contact.firstName} ${contact.lastName}`,
+      displayName: contact.organization
+        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
+        : `${contact.firstName} ${contact.lastName}`
+    };
+  }
+
+  /**
    * Query: Get paginated list of contacts with optional filtering
    */
   @Query(() => ContactListResponseDto, { name: 'contacts' })
@@ -101,15 +136,11 @@ export class ContactResolver {
     });
 
     return {
-      contacts: result.contacts.map(contact => ({
-        ...contact,
-        type: this.transformContactType(contact.type),
-        fullName: `${contact.firstName} ${contact.lastName}`,
-        displayName: contact.organization
-          ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-          : `${contact.firstName} ${contact.lastName}`
-      })),
-      pagination: result.pagination
+      contacts: result.contacts.map(contact => this.mapContactToDto(contact)),
+      pagination: {
+        ...result.pagination,
+        totalPages: result.pagination.pages
+      }
     };
   }
 
@@ -127,14 +158,7 @@ export class ContactResolver {
       return null;
     }
 
-    return {
-      ...contact,
-      type: this.transformContactType(contact.type),
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    };
+    return this.mapContactToDto(contact);
   }
 
   /**
@@ -148,13 +172,7 @@ export class ContactResolver {
     @Context() context?: any
   ): Promise<ContactDto[]> {
     const contacts = await this.contactService.getContactsByRelation(relationTo, type as any);
-    return contacts.map(contact => ({
-      ...contact,
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    }));
+    return contacts.map(contact => this.mapContactToDto(contact));
   }
 
   /**
@@ -168,14 +186,7 @@ export class ContactResolver {
     @Context() context?: any
   ): Promise<ContactDto[]> {
     const contacts = await this.contactService.searchContacts(query, limit);
-    return contacts.map(contact => ({
-      ...contact,
-      type: this.transformContactType(contact.type),
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    }));
+    return contacts.map(contact => this.mapContactToDto(contact));
   }
 
   /**
@@ -203,14 +214,7 @@ export class ContactResolver {
     };
     const contact = await this.contactService.createContact(transformedInput);
 
-    return {
-      ...contact,
-      type: this.transformContactType(contact.type),
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    };
+    return this.mapContactToDto(contact);
   }
 
   /**
@@ -230,14 +234,7 @@ export class ContactResolver {
     };
     const contact = await this.contactService.updateContact(id, transformedInput);
 
-    return {
-      ...contact,
-      type: this.transformContactType(contact.type),
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    };
+    return this.mapContactToDto(contact);
   }
 
   /**
@@ -268,14 +265,7 @@ export class ContactResolver {
     const userId = context.req?.user?.id;
     const contact = await this.contactService.deactivateContact(id, userId);
 
-    return {
-      ...contact,
-      type: this.transformContactType(contact.type),
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    };
+    return this.mapContactToDto(contact);
   }
 
   /**
@@ -290,13 +280,6 @@ export class ContactResolver {
     const userId = context.req?.user?.id;
     const contact = await this.contactService.reactivateContact(id, userId);
 
-    return {
-      ...contact,
-      type: this.transformContactType(contact.type),
-      fullName: `${contact.firstName} ${contact.lastName}`,
-      displayName: contact.organization
-        ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
-    };
+    return this.mapContactToDto(contact);
   }
 }

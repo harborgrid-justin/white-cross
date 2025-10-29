@@ -75,7 +75,7 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   title: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(PolicyCategory)),
+    type: DataType.ENUM(...(Object.values(PolicyCategory) as string[])),
     allowNull: false,
   })
   category: PolicyCategory;
@@ -105,7 +105,7 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   reviewDate?: Date;
 
   @Column({
-    type: DataType.ENUM(...Object.values(PolicyStatus)),
+    type: DataType.ENUM(...(Object.values(PolicyStatus) as string[])),
     allowNull: false,
     defaultValue: PolicyStatus.DRAFT,
   })

@@ -101,7 +101,7 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   treatment?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(VisitDisposition)),
+    type: DataType.ENUM(...(Object.values(VisitDisposition) as string[])),
     allowNull: false,
   })
   @Index

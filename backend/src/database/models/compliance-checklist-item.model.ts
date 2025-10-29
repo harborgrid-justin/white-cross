@@ -84,13 +84,13 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ComplianceCategory)),
+    type: DataType.ENUM(...(Object.values(ComplianceCategory) as string[])),
     allowNull: false,
   })
   category: ComplianceCategory;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ChecklistItemStatus)),
+    type: DataType.ENUM(...(Object.values(ChecklistItemStatus) as string[])),
     allowNull: false,
     defaultValue: ChecklistItemStatus.PENDING,
   })

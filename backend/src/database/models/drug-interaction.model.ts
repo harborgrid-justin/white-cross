@@ -68,7 +68,7 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   drug2Id: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(InteractionSeverity)),
+    type: DataType.ENUM(...(Object.values(InteractionSeverity) as string[])),
     allowNull: false,
   })
   @Index

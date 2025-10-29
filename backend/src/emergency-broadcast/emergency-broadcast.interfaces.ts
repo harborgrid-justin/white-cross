@@ -65,6 +65,7 @@ export interface RecipientDeliveryStatus {
   deliveredAt?: Date;
   acknowledgedAt?: Date;
   error?: string;
+  attemptCount?: number;
 }
 
 /**

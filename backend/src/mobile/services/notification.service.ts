@@ -327,25 +327,18 @@ export class NotificationService implements OnModuleInit {
   }
 
   /**
-   * Get active tokens for users
+   * Register a device token for push notifications
    */
-  private async getActiveTokensForUsers(userIds: string[]): Promise<DeviceToken[]> {
-    const tokens: DeviceToken[] = [];
-
-    for (const userId of userIds) {
-      const userTokens = await this.deviceTokenRepository.findAll({
-        where: {
-          userId,
-          isActive: true,
-          isValid: true,
-          allowNotifications: true
-        }
-      });
-      tokens.push(...userTokens);
-    }
-
-    return tokens;
-  }
+  async registerDeviceToken(userId: string, dto: RegisterDeviceDto): Promise<DeviceToken> {
+    try {
+      // Deactivate existing tokens for the same device
+      await this.deviceTokenModel.update(
+        { isActive: false },
+        {
+          where: {
+            userId,
+            deviceId: dto.deviceId,
+          },
         }
       );
 
@@ -379,7 +372,7 @@ export class NotificationService implements OnModuleInit {
    * Unregister a device token
    */
   async unregisterDeviceToken(userId: string, tokenId: string): Promise<void> {
-    const token = await this.deviceTokenRepository.findOne({
+    const token = await this.deviceTokenModel.findOne({
       where: { id: tokenId, userId }
     });
 
@@ -387,7 +380,7 @@ export class NotificationService implements OnModuleInit {
       throw new NotFoundException('Device token not found');
     }
 
-    await this.deviceTokenRepository.update(
+    await this.deviceTokenModel.update(
       { isActive: false },
       { where: { id: tokenId } }
     );
@@ -399,7 +392,7 @@ export class NotificationService implements OnModuleInit {
    * Get user's registered devices
    */
   async getUserDevices(userId: string): Promise<DeviceToken[]> {
-    return this.deviceTokenRepository.findAll({
+    return this.deviceTokenModel.findAll({
       where: {
         userId,
         isActive: true,
@@ -416,7 +409,7 @@ export class NotificationService implements OnModuleInit {
     tokenId: string,
     dto: UpdatePreferencesDto
   ): Promise<DeviceToken> {
-    const token = await this.deviceTokenRepository.findOne({
+    const token = await this.deviceTokenModel.findOne({
       where: { id: tokenId, userId }
     });
 
@@ -468,7 +461,7 @@ export class NotificationService implements OnModuleInit {
       });
 
       // Send immediately if not scheduled
-      if (!dto.scheduledFor) {
+      if (!dto.scheduledFor && notification.id) {
         await this.deliverNotification(notification.id);
       }
 
@@ -499,7 +492,7 @@ export class NotificationService implements OnModuleInit {
       await notification.save();
 
       // Get device tokens
-      const tokens = await this.deviceTokenRepository.findAll({
+      const tokens = await this.deviceTokenModel.findAll({
         where: {
           token: notification.deviceTokens,
           isActive: true,
@@ -1078,7 +1071,9 @@ export class NotificationService implements OnModuleInit {
           }
 
           // Deliver the notification
-          await this.deliverNotification(notification.id);
+          if (notification.id) {
+            await this.deliverNotification(notification.id);
+          }
         } catch (error) {
           this.logger.error(`Failed to deliver scheduled notification ${notification.id}`, error);
         }
@@ -1128,7 +1123,9 @@ export class NotificationService implements OnModuleInit {
           notification.nextRetryAt = undefined;
           await notification.save();
 
-          await this.deliverNotification(notification.id);
+          if (notification.id) {
+            await this.deliverNotification(notification.id);
+          }
         } catch (error) {
           this.logger.error(`Failed to retry notification ${notification.id}`, error);
         }
@@ -1269,6 +1266,10 @@ export class NotificationService implements OnModuleInit {
 
   /**
    * Get active tokens for users
+   *
+   * @private
+   * @param userIds - Array of user IDs to get tokens for
+   * @returns Active device tokens for the specified users
    */
   private async getActiveTokensForUsers(userIds: string[]): Promise<DeviceToken[]> {
     // For multiple users, we need to find tokens where userId is in the array
