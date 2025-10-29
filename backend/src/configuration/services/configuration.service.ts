@@ -1,9 +1,9 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
-import { SystemConfiguration } from '../../administration/entities/system-configuration.entity';
-import { ConfigurationHistory } from '../../administration/entities/configuration-history.entity';
-import { ConfigCategory, ConfigValueType, ConfigScope } from '../../administration/enums/administration.enums';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { SystemConfig } from '../../database/models/system-config.model';
+import { ConfigurationHistory } from '../../database/models/configuration-history.model';
+import { ConfigCategory, ConfigValueType, ConfigScope } from '../../database/models/system-config.model';
 import {
   CreateConfigurationDto,
   UpdateConfigurationDto,
@@ -38,11 +38,10 @@ export class ConfigurationService {
   private readonly logger = new Logger(ConfigurationService.name);
 
   constructor(
-    @InjectRepository(SystemConfiguration)
-    private readonly configRepository: Repository<SystemConfiguration>,
-    @InjectRepository(ConfigurationHistory)
-    private readonly historyRepository: Repository<ConfigurationHistory>,
-    private readonly dataSource: DataSource,
+    @InjectModel(SystemConfig)
+    private readonly configModel: typeof SystemConfig,
+    @InjectModel(ConfigurationHistory)
+    private readonly historyModel: typeof ConfigurationHistory,
   ) {}
 
   /**
@@ -51,7 +50,7 @@ export class ConfigurationService {
    * Implements scope priority: more specific scopes take precedence
    * (e.g., SCHOOL > DISTRICT > SYSTEM for the same key)
    */
-  async getConfigByKey(key: string, scopeId?: string): Promise<SystemConfiguration> {
+  async getConfigByKey(key: string, scopeId?: string): Promise<SystemConfig> {
     try {
       const whereClause: any = { key };
 
@@ -59,12 +58,12 @@ export class ConfigurationService {
         whereClause.scopeId = scopeId;
       }
 
-      const configs = await this.configRepository.find({
+      const configs = await this.configModel.findAll({
         where: whereClause,
-        order: {
-          scope: 'DESC', // Prioritize more specific scopes
-          createdAt: 'DESC'
-        }
+        order: [
+          ['scope', 'DESC'],
+          ['createdAt', 'DESC']
+        ]
       });
 
       const config = configs[0];
@@ -86,49 +85,50 @@ export class ConfigurationService {
    * Supports filtering by category, subcategory, scope, tags, visibility, and editability
    * Results are ordered by sortOrder, category, subcategory, and key
    */
-  async getConfigurations(filter: FilterConfigurationDto = {}): Promise<SystemConfiguration[]> {
+  async getConfigurations(filter: FilterConfigurationDto = {}): Promise<SystemConfig[]> {
     try {
       const { category, subCategory, scope, scopeId, tags, isPublic, isEditable } = filter;
 
-      const queryBuilder = this.configRepository.createQueryBuilder('config');
+      const where: any = {};
 
       if (category) {
-        queryBuilder.andWhere('config.category = :category', { category });
+        where.category = category;
       }
 
       if (subCategory) {
-        queryBuilder.andWhere('config.subCategory = :subCategory', { subCategory });
+        where.subCategory = subCategory;
       }
 
       if (scope) {
-        queryBuilder.andWhere('config.scope = :scope', { scope });
+        where.scope = scope;
       }
 
       if (scopeId) {
-        queryBuilder.andWhere('config.scopeId = :scopeId', { scopeId });
+        where.scopeId = scopeId;
       }
 
       // Handle array overlap search for tags (PostgreSQL specific)
       if (tags && tags.length > 0) {
-        queryBuilder.andWhere('config.tags && :tags', { tags });
+        where.tags = { [Op.overlap]: tags };
       }
 
       if (isPublic !== undefined) {
-        queryBuilder.andWhere('config.isPublic = :isPublic', { isPublic });
+        where.isPublic = isPublic;
       }
 
       if (isEditable !== undefined) {
-        queryBuilder.andWhere('config.isEditable = :isEditable', { isEditable });
+        where.isEditable = isEditable;
       }
 
-      queryBuilder.orderBy({
-        'config.sortOrder': 'ASC',
-        'config.category': 'ASC',
-        'config.subCategory': 'ASC',
-        'config.key': 'ASC'
+      const configs = await this.configModel.findAll({
+        where,
+        order: [
+          ['sortOrder', 'ASC'],
+          ['category', 'ASC'],
+          ['subCategory', 'ASC'],
+          ['key', 'ASC']
+        ]
       });
-
-      const configs = await queryBuilder.getMany();
       return configs;
     } catch (error) {
       this.logger.error('Error fetching configurations:', error);
@@ -139,14 +139,14 @@ export class ConfigurationService {
   /**
    * Get configurations by category with optional scope filtering
    */
-  async getConfigsByCategory(category: ConfigCategory, scopeId?: string): Promise<SystemConfiguration[]> {
+  async getConfigsByCategory(category: ConfigCategory, scopeId?: string): Promise<SystemConfig[]> {
     return this.getConfigurations({ category, scopeId });
   }
 
   /**
    * Get public configurations safe to expose to frontend
    */
-  async getPublicConfigurations(): Promise<SystemConfiguration[]> {
+  async getPublicConfigurations(): Promise<SystemConfig[]> {
     return this.getConfigurations({ isPublic: true });
   }
 
@@ -159,7 +159,7 @@ export class ConfigurationService {
    * - Range validation for numbers (min/max)
    * - Enumeration validation for restricted value sets
    */
-  validateConfigValue(config: SystemConfiguration, newValue: string): ConfigurationValidationResult {
+  validateConfigValue(config: SystemConfig, newValue: string): ConfigurationValidationResult {
     // Check if config is editable
     if (!config.isEditable) {
       return {
@@ -265,7 +265,7 @@ export class ConfigurationService {
     key: string,
     updateData: UpdateConfigurationDto,
     scopeId?: string
-  ): Promise<SystemConfiguration> {
+  ): Promise<SystemConfig> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -337,8 +337,8 @@ export class ConfigurationService {
    */
   async bulkUpdateConfigurations(
     bulkUpdate: BulkUpdateDto
-  ): Promise<Array<SystemConfiguration | { key: string; error: string }>> {
-    const results: Array<SystemConfiguration | { key: string; error: string }> = [];
+  ): Promise<Array<SystemConfig | { key: string; error: string }>> {
+    const results: Array<SystemConfig | { key: string; error: string }> = [];
 
     for (const update of bulkUpdate.updates) {
       try {
@@ -368,10 +368,10 @@ export class ConfigurationService {
    * Creates a new system configuration with all specified attributes.
    * Key must be unique across all configurations.
    */
-  async createConfiguration(data: CreateConfigurationDto): Promise<SystemConfiguration> {
+  async createConfiguration(data: CreateConfigurationDto): Promise<SystemConfig> {
     try {
       // Check if key already exists
-      const existing = await this.configRepository.findOne({
+      const existing = await this.configModel.findOne({
         where: { key: data.key }
       });
 
@@ -379,7 +379,7 @@ export class ConfigurationService {
         throw new BadRequestException(`Configuration with key '${data.key}' already exists`);
       }
 
-      const config = this.configRepository.create({
+      const config = await this.configModel.create({
         key: data.key,
         value: data.value,
         valueType: data.valueType,
@@ -397,9 +397,7 @@ export class ConfigurationService {
         scopeId: data.scopeId,
         tags: data.tags,
         sortOrder: data.sortOrder !== undefined ? data.sortOrder : 0
-      });
-
-      const savedConfig = await this.configRepository.save(config);
+      } as any);
 
       this.logger.log(`Configuration created: ${data.key} in category ${data.category}`);
       return savedConfig;
@@ -418,7 +416,7 @@ export class ConfigurationService {
   async deleteConfiguration(key: string, scopeId?: string): Promise<void> {
     try {
       const config = await this.getConfigByKey(key, scopeId);
-      await this.configRepository.remove(config);
+      await config.destroy();
       this.logger.log(`Configuration deleted: ${key}`);
     } catch (error) {
       this.logger.error(`Error deleting configuration ${key}:`, error);
@@ -432,7 +430,7 @@ export class ConfigurationService {
    * Resets a configuration to its default value with full audit trail.
    * Only works if a default value was specified when creating the config.
    */
-  async resetToDefault(key: string, changedBy: string, scopeId?: string): Promise<SystemConfiguration> {
+  async resetToDefault(key: string, changedBy: string, scopeId?: string): Promise<SystemConfig> {
     try {
       const config = await this.getConfigByKey(key, scopeId);
 
@@ -466,11 +464,14 @@ export class ConfigurationService {
    */
   async getConfigHistory(key: string, limit: number = 50): Promise<ConfigurationHistory[]> {
     try {
-      const history = await this.historyRepository.find({
+      const history = await this.historyModel.findAll({
         where: { configKey: key },
-        relations: ['configuration'],
-        order: { createdAt: 'DESC' },
-        take: limit
+        include: [{
+          model: this.configModel,
+          as: 'configuration',
+        }],
+        order: [['createdAt', 'DESC']],
+        limit
       });
 
       return history;
@@ -529,7 +530,7 @@ export class ConfigurationService {
    * Returns all configurations marked with requiresRestart = true.
    * Used to warn administrators when changes need a restart to take effect.
    */
-  async getConfigsRequiringRestart(): Promise<SystemConfiguration[]> {
+  async getConfigsRequiringRestart(): Promise<SystemConfig[]> {
     try {
       const configs = await this.configRepository.find({
         where: { requiresRestart: true },

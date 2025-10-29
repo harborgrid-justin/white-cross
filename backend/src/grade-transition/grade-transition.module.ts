@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { GradeTransitionController } from './grade-transition.controller';
 import { GradeTransitionService } from './grade-transition.service';
-import { Student } from '../student/entities/student.entity';
+import { Student } from '../database/models/student.model';
 
 /**
  * Grade Transition Module
  * Handles automated grade transitions at year-end
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Student])],
+  imports: [SequelizeModule.forFeature([Student])],
   controllers: [GradeTransitionController],
   providers: [GradeTransitionService],
   exports: [GradeTransitionService],

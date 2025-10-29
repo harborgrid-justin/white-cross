@@ -5,7 +5,7 @@
  */
 
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ComplianceController } from './compliance.controller';
 import { ComplianceService } from './compliance.service';
 
@@ -26,21 +26,19 @@ import { PolicyRepository } from './repositories/policy.repository';
 import { DataRetentionRepository } from './repositories/data-retention.repository';
 import { ViolationRepository } from './repositories/violation.repository';
 
-// Entities
-import {
-  AuditLog,
-  ConsentForm,
-  ConsentSignature,
-  PhiDisclosure,
-  PhiDisclosureAudit,
-  ComplianceReport,
-  ComplianceChecklistItem,
-  PolicyDocument,
-  PolicyAcknowledgment,
-  DataRetentionPolicy,
-  ComplianceViolation,
-  RemediationAction,
-} from './entities';
+// Entities - now Sequelize models
+import { AuditLog } from '../database/models/audit-log.model';
+import { ConsentForm } from '../database/models/consent-form.model';
+import { ConsentSignature } from '../database/models/consent-signature.model';
+import { PhiDisclosure } from '../database/models/phi-disclosure.model';
+import { PhiDisclosureAudit } from '../database/models/phi-disclosure-audit.model';
+import { ComplianceReport } from '../database/models/compliance-report.model';
+import { ComplianceChecklistItem } from '../database/models/compliance-checklist-item.model';
+import { PolicyDocument } from '../database/models/policy-document.model';
+import { PolicyAcknowledgment } from '../database/models/policy-acknowledgment.model';
+import { DataRetentionPolicy } from '../database/models/data-retention-policy.model';
+import { ComplianceViolation } from '../database/models/compliance-violation.model';
+import { RemediationAction } from '../database/models/remediation-action.model';
 
 /**
  * ComplianceModule provides comprehensive HIPAA/FERPA-compliant features:
@@ -67,7 +65,7 @@ import {
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       // Audit & Tracking
       AuditLog,
       PhiDisclosure,

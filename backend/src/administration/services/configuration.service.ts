@@ -1,9 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { SystemConfiguration } from '../entities/system-configuration.entity';
-import { ConfigurationHistory } from '../entities/configuration-history.entity';
-import { ConfigCategory } from '../enums/administration.enums';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { SystemConfig, ConfigCategory } from '../../database/models/system-config.model';
+import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigurationDto } from '../dto/configuration.dto';
 
 /**
@@ -16,19 +15,19 @@ export class ConfigurationService {
   private readonly logger = new Logger(ConfigurationService.name);
 
   constructor(
-    @InjectRepository(SystemConfiguration)
-    private configRepository: Repository<SystemConfiguration>,
-    @InjectRepository(ConfigurationHistory)
-    private historyRepository: Repository<ConfigurationHistory>,
-    private dataSource: DataSource,
+    @InjectModel(SystemConfig)
+    private configModel: typeof SystemConfig,
+    @InjectModel(ConfigurationHistory)
+    private historyModel: typeof ConfigurationHistory,
+    private sequelize: Sequelize,
   ) {}
 
   /**
    * Get a single configuration by key
    */
-  async getConfiguration(key: string): Promise<SystemConfiguration> {
+  async getConfiguration(key: string): Promise<SystemConfig> {
     try {
-      const config = await this.configRepository.findOne({ where: { key } });
+      const config = await this.configModel.findOne({ where: { key } });
       if (!config) {
         throw new NotFoundException(`Configuration with key '${key}' not found`);
       }
@@ -44,20 +43,20 @@ export class ConfigurationService {
    */
   async getAllConfigurations(
     category?: ConfigCategory,
-  ): Promise<SystemConfiguration[]> {
+  ): Promise<SystemConfig[]> {
     try {
       const whereClause: any = {};
       if (category) {
         whereClause.category = category;
       }
 
-      const configs = await this.configRepository.find({
+      const configs = await this.configModel.findAll({
         where: whereClause,
-        order: {
-          category: 'ASC',
-          sortOrder: 'ASC',
-          key: 'ASC',
-        },
+        order: [
+          ['category', 'ASC'],
+          ['sortOrder', 'ASC'],
+          ['key', 'ASC'],
+        ],
       });
 
       return configs;
@@ -73,58 +72,42 @@ export class ConfigurationService {
   async setConfiguration(
     data: ConfigurationDto,
     changedBy?: string,
-  ): Promise<SystemConfiguration> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  ): Promise<SystemConfig> {
+    const transaction = await this.sequelize.transaction();
 
     try {
-      const existingConfig = await queryRunner.manager.findOne(
-        SystemConfiguration,
-        { where: { key: data.key } },
-      );
+      const existingConfig = await this.configModel.findOne({
+        where: { key: data.key },
+        transaction,
+      });
 
-      let config: SystemConfiguration;
+      let config: SystemConfig;
       const oldValue = existingConfig?.value;
 
       if (existingConfig) {
-        await queryRunner.manager.update(
-          SystemConfiguration,
-          { key: data.key },
-          { ...data },
-        );
-        const foundConfig = await queryRunner.manager.findOne(SystemConfiguration, {
-          where: { key: data.key },
-        });
-        if (!foundConfig) {
-          throw new Error(`Configuration with key '${data.key}' not found after update`);
-        }
-        config = foundConfig;
+        await existingConfig.update(data, { transaction });
+        config = existingConfig;
       } else {
-        config = queryRunner.manager.create(SystemConfiguration, data);
-        config = await queryRunner.manager.save(config);
+        config = await this.configModel.create(data, { transaction });
       }
 
-      if (changedBy) {
-        const history = queryRunner.manager.create(ConfigurationHistory, {
+      if (changedBy && config.id) {
+        await this.historyModel.create({
           configKey: data.key,
           oldValue,
           newValue: data.value,
           changedBy,
           configurationId: config.id,
-        });
-        await queryRunner.manager.save(history);
+        }, { transaction });
       }
 
-      await queryRunner.commitTransaction();
+      await transaction.commit();
       this.logger.log(`Configuration set: ${data.key} = ${data.value}`);
       return config;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error('Error setting configuration:', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -133,11 +116,11 @@ export class ConfigurationService {
    */
   async deleteConfiguration(key: string): Promise<void> {
     try {
-      const config = await this.configRepository.findOne({ where: { key } });
+      const config = await this.configModel.findOne({ where: { key } });
       if (!config) {
         throw new NotFoundException(`Configuration with key '${key}' not found`);
       }
-      await this.configRepository.remove(config);
+      await config.destroy();
       this.logger.log(`Configuration deleted: ${key}`);
     } catch (error) {
       this.logger.error(`Error deleting configuration ${key}:`, error);
@@ -153,10 +136,10 @@ export class ConfigurationService {
     limit: number = 50,
   ): Promise<ConfigurationHistory[]> {
     try {
-      return await this.historyRepository.find({
+      return await this.historyModel.findAll({
         where: { configKey },
-        take: limit,
-        order: { createdAt: 'DESC' },
+        limit,
+        order: [['createdAt', 'DESC']],
       });
     } catch (error) {
       this.logger.error(`Error fetching configuration history:`, error);

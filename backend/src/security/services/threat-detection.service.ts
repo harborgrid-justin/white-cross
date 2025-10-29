@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { LoginAttemptEntity } from '../entities';
 import { SecurityIncidentType, IncidentSeverity } from '../enums';
 
@@ -15,9 +15,14 @@ export class ThreatDetectionService {
   private readonly BRUTE_FORCE_WINDOW = 300000; // 5 minutes in milliseconds
 
   constructor(
-    @InjectRepository(LoginAttemptEntity)
-    private readonly loginAttemptRepo: Repository<LoginAttemptEntity>,
+    @InjectModel(LoginAttemptEntity)
+    private readonly loginAttemptModel: typeof LoginAttemptEntity,
   ) {}
+
+  // Alias for backward compatibility
+  private get loginAttemptRepo() {
+    return this.loginAttemptModel;
+  }
 
   /**
    * Detect brute force attacks
@@ -29,11 +34,13 @@ export class ThreatDetectionService {
     try {
       const windowStart = new Date(Date.now() - this.BRUTE_FORCE_WINDOW);
 
-      const recentFailures = await this.loginAttemptRepo.count({
+      const recentFailures = await this.loginAttemptModel.count({
         where: {
           ipAddress,
           success: false,
-          createdAt: MoreThan(windowStart),
+          createdAt: {
+            [Op.gt]: windowStart,
+          },
         },
       });
 
@@ -362,8 +369,8 @@ export class ThreatDetectionService {
     metadata?: Record<string, any>;
   }): Promise<LoginAttemptEntity> {
     try {
-      const attempt = this.loginAttemptRepo.create(data);
-      return await this.loginAttemptRepo.save(attempt);
+      const attempt = await this.loginAttemptModel.create(data);
+      return attempt;
     } catch (error) {
       this.logger.error('Error recording login attempt', { error });
       throw error;
@@ -380,15 +387,15 @@ export class ThreatDetectionService {
     try {
       const windowStart = new Date(Date.now() - windowMs);
 
-      return await this.loginAttemptRepo.find({
+      return await this.loginAttemptModel.findAll({
         where: {
           ipAddress,
           success: false,
-          createdAt: MoreThan(windowStart),
+          createdAt: {
+            [Op.gt]: windowStart,
+          },
         },
-        order: {
-          createdAt: 'DESC',
-        },
+        order: [['createdAt', 'DESC']],
       });
     } catch (error) {
       this.logger.error('Error fetching failed attempts', { error, ipAddress });

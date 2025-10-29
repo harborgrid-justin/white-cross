@@ -6,11 +6,11 @@
  */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import { AuditLog } from '../entities/audit-log.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
 import { CreateAuditLogDto } from '../dto/create-audit-log.dto';
-import { AuditAction } from '../enums';
+import { AuditAction } from '../../database/types/database.enums';
 
 export interface AuditLogFilters {
   userId?: string;
@@ -32,8 +32,8 @@ export class AuditService {
   private readonly logger = new Logger(AuditService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -59,18 +59,24 @@ export class AuditService {
         whereClause.action = filters.action;
       }
       if (filters.startDate && filters.endDate) {
-        whereClause.createdAt = Between(filters.startDate, filters.endDate);
+        whereClause.createdAt = {
+          [Op.between]: [filters.startDate, filters.endDate],
+        };
       } else if (filters.startDate) {
-        whereClause.createdAt = MoreThanOrEqual(filters.startDate);
+        whereClause.createdAt = {
+          [Op.gte]: filters.startDate,
+        };
       } else if (filters.endDate) {
-        whereClause.createdAt = LessThanOrEqual(filters.endDate);
+        whereClause.createdAt = {
+          [Op.lte]: filters.endDate,
+        };
       }
 
-      const [logs, total] = await this.auditLogRepository.findAndCount({
+      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
         where: whereClause,
-        skip: offset,
-        take: limit,
-        order: { createdAt: 'DESC' },
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
       });
 
       this.logger.log(`Retrieved ${logs.length} audit logs`);
@@ -95,7 +101,7 @@ export class AuditService {
    */
   async getAuditLogById(id: string): Promise<AuditLog> {
     try {
-      const log = await this.auditLogRepository.findOne({ where: { id } });
+      const log = await this.auditLogModel.findByPk(id);
 
       if (!log) {
         throw new NotFoundException('Audit log not found');
@@ -115,7 +121,7 @@ export class AuditService {
    */
   async createAuditLog(data: CreateAuditLogDto): Promise<AuditLog> {
     try {
-      const auditLog = this.auditLogRepository.create({
+      const auditLog = await this.auditLogModel.create({
         userId: data.userId || null,
         action: data.action,
         entityType: data.entityType,
@@ -125,13 +131,11 @@ export class AuditService {
         userAgent: data.userAgent || null,
       });
 
-      const savedLog = await this.auditLogRepository.save(auditLog);
-
       this.logger.log(
         `Audit log created: ${data.action} on ${data.entityType}${data.entityId ? ` (${data.entityId})` : ''} by user ${data.userId || 'system'}`,
       );
 
-      return savedLog;
+      return auditLog;
     } catch (error) {
       this.logger.error('Error creating audit log:', error);
       throw error;
@@ -150,11 +154,11 @@ export class AuditService {
     try {
       const offset = (page - 1) * limit;
 
-      const [logs, total] = await this.auditLogRepository.findAndCount({
+      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
         where: { entityType, entityId },
-        skip: offset,
-        take: limit,
-        order: { createdAt: 'DESC' },
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
       });
 
       this.logger.log(`Retrieved ${logs.length} audit logs for ${entityType} ${entityId}`);
@@ -185,11 +189,11 @@ export class AuditService {
     try {
       const offset = (page - 1) * limit;
 
-      const [logs, total] = await this.auditLogRepository.findAndCount({
+      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
         where: { userId },
-        skip: offset,
-        take: limit,
-        order: { createdAt: 'DESC' },
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
       });
 
       this.logger.log(`Retrieved ${logs.length} audit logs for user ${userId}`);
@@ -221,13 +225,15 @@ export class AuditService {
     try {
       const offset = (page - 1) * limit;
 
-      const [logs, total] = await this.auditLogRepository.findAndCount({
+      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
         where: {
-          createdAt: Between(startDate, endDate),
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
         },
-        skip: offset,
-        take: limit,
-        order: { createdAt: 'DESC' },
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
       });
 
       this.logger.log(
@@ -262,18 +268,24 @@ export class AuditService {
       const whereClause: any = {};
 
       if (startDate && endDate) {
-        whereClause.createdAt = Between(startDate, endDate);
+        whereClause.createdAt = {
+          [Op.between]: [startDate, endDate],
+        };
       } else if (startDate) {
-        whereClause.createdAt = MoreThanOrEqual(startDate);
+        whereClause.createdAt = {
+          [Op.gte]: startDate,
+        };
       } else if (endDate) {
-        whereClause.createdAt = LessThanOrEqual(endDate);
+        whereClause.createdAt = {
+          [Op.lte]: endDate,
+        };
       }
 
-      const totalLogs = await this.auditLogRepository.count({ where: whereClause });
-      const logs = await this.auditLogRepository.find({
+      const totalLogs = await this.auditLogModel.count({ where: whereClause });
+      const logs = await this.auditLogModel.findAll({
         where: whereClause,
-        select: ['action', 'entityType', 'createdAt'],
-        order: { createdAt: 'DESC' },
+        attributes: ['action', 'entityType', 'createdAt'],
+        order: [['createdAt', 'DESC']],
       });
 
       // Calculate breakdowns
@@ -289,7 +301,7 @@ export class AuditService {
         entityTypeBreakdown[log.entityType] = (entityTypeBreakdown[log.entityType] || 0) + 1;
 
         // Daily activity
-        const date = log.createdAt.toISOString().split('T')[0];
+        const date = log.createdAt!.toISOString().split('T')[0];
         dailyActivity[date] = (dailyActivity[date] || 0) + 1;
       });
 

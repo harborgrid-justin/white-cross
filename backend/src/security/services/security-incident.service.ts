@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { SecurityIncidentEntity, IpRestrictionEntity } from '../entities';
 import {
   SecurityIncidentType,
@@ -24,11 +24,20 @@ export class SecurityIncidentService {
   private readonly logger = new Logger(SecurityIncidentService.name);
 
   constructor(
-    @InjectRepository(SecurityIncidentEntity)
-    private readonly incidentRepo: Repository<SecurityIncidentEntity>,
-    @InjectRepository(IpRestrictionEntity)
-    private readonly ipRestrictionRepo: Repository<IpRestrictionEntity>,
+    @InjectModel(SecurityIncidentEntity)
+    private readonly incidentModel: typeof SecurityIncidentEntity,
+    @InjectModel(IpRestrictionEntity)
+    private readonly ipRestrictionModel: typeof IpRestrictionEntity,
   ) {}
+
+  // Alias for backward compatibility
+  private get incidentRepo() {
+    return this.incidentModel;
+  }
+
+  private get ipRestrictionRepo() {
+    return this.ipRestrictionModel;
+  }
 
   /**
    * Report a security incident
@@ -37,23 +46,21 @@ export class SecurityIncidentService {
     dto: CreateSecurityIncidentDto,
   ): Promise<SecurityIncidentEntity> {
     try {
-      const incident = this.incidentRepo.create({
+      const incident = await this.incidentModel.create({
         ...dto,
         status: IncidentStatus.DETECTED,
       });
 
-      const saved = await this.incidentRepo.save(incident);
-
       this.logger.error('Security incident reported', {
-        incidentId: saved.id,
-        type: saved.type,
-        severity: saved.severity,
+        incidentId: incident.id,
+        type: incident.type,
+        severity: incident.severity,
       });
 
       // Auto-respond based on severity
-      await this.autoRespond(saved);
+      await this.autoRespond(incident);
 
-      return saved;
+      return incident;
     } catch (error) {
       this.logger.error('Error reporting security incident', { error });
       throw error;
@@ -154,7 +161,7 @@ export class SecurityIncidentService {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour temporary block
 
-      const restriction = this.ipRestrictionRepo.create({
+      const restriction = await this.ipRestrictionModel.create({
         type: IpRestrictionType.BLACKLIST,
         ipAddress,
         reason: `Automatic blacklist due to security incident ${incidentId}`,
@@ -162,8 +169,6 @@ export class SecurityIncidentService {
         expiresAt,
         isActive: true,
       });
-
-      await this.ipRestrictionRepo.save(restriction);
       this.logger.warn('Temporary IP blacklist added', {
         ipAddress,
         incidentId,
@@ -209,10 +214,12 @@ export class SecurityIncidentService {
       // Check for similar incidents in the last hour
       const oneHourAgo = new Date(Date.now() - 3600000);
 
-      const similarIncidents = await this.incidentRepo.count({
+      const similarIncidents = await this.incidentModel.count({
         where: {
           type: incident.type,
-          detectedAt: Between(oneHourAgo, new Date()),
+          detectedAt: {
+            [Op.between]: [oneHourAgo, new Date()],
+          },
         },
       });
 
@@ -240,17 +247,16 @@ export class SecurityIncidentService {
         if (filters.userId) where.userId = filters.userId;
 
         if (filters.startDate && filters.endDate) {
-          where.detectedAt = Between(
-            new Date(filters.startDate),
-            new Date(filters.endDate),
-          );
+          where.detectedAt = {
+            [Op.between]: [new Date(filters.startDate), new Date(filters.endDate)],
+          };
         }
       }
 
-      return await this.incidentRepo.find({
+      return await this.incidentModel.findAll({
         where,
-        order: { detectedAt: 'DESC' },
-        take: 100,
+        order: [['detectedAt', 'DESC']],
+        limit: 100,
       });
     } catch (error) {
       this.logger.error('Error fetching incidents', { error });
@@ -263,7 +269,7 @@ export class SecurityIncidentService {
    */
   async getIncidentById(id: string): Promise<SecurityIncidentEntity | null> {
     try {
-      return await this.incidentRepo.findOne({ where: { id } });
+      return await this.incidentModel.findByPk(id);
     } catch (error) {
       this.logger.error('Error fetching incident', { error, id });
       return null;
@@ -278,9 +284,7 @@ export class SecurityIncidentService {
     dto: UpdateIncidentStatusDto,
   ): Promise<SecurityIncidentEntity | null> {
     try {
-      const incident = await this.incidentRepo.findOne({
-        where: { id: incidentId },
-      });
+      const incident = await this.incidentModel.findByPk(incidentId);
 
       if (!incident) {
         this.logger.warn('Incident not found', { incidentId });
@@ -296,7 +300,7 @@ export class SecurityIncidentService {
         incident.resolvedAt = new Date();
       }
 
-      const updated = await this.incidentRepo.save(incident);
+      await incident.save();
 
       this.logger.log('Incident status updated', {
         incidentId,
@@ -304,7 +308,7 @@ export class SecurityIncidentService {
         hasResolution: !!dto.resolution,
       });
 
-      return updated;
+      return incident;
     } catch (error) {
       this.logger.error('Error updating incident status', {
         error,
@@ -328,9 +332,11 @@ export class SecurityIncidentService {
     criticalIncidents: SecurityIncidentEntity[];
   }> {
     try {
-      const incidents = await this.incidentRepo.find({
+      const incidents = await this.incidentModel.findAll({
         where: {
-          detectedAt: Between(startDate, endDate),
+          detectedAt: {
+            [Op.between]: [startDate, endDate],
+          },
         },
       });
 
@@ -390,22 +396,22 @@ export class SecurityIncidentService {
         criticalUnresolved,
         highUnresolved,
       ] = await Promise.all([
-        this.incidentRepo.count({
-          where: { detectedAt: Between(day24Ago, now) },
+        this.incidentModel.count({
+          where: { detectedAt: { [Op.between]: [day24Ago, now] } },
         }),
-        this.incidentRepo.count({
-          where: { detectedAt: Between(days7Ago, now) },
+        this.incidentModel.count({
+          where: { detectedAt: { [Op.between]: [days7Ago, now] } },
         }),
-        this.incidentRepo.count({
-          where: { detectedAt: Between(days30Ago, now) },
+        this.incidentModel.count({
+          where: { detectedAt: { [Op.between]: [days30Ago, now] } },
         }),
-        this.incidentRepo.count({
+        this.incidentModel.count({
           where: {
             severity: IncidentSeverity.CRITICAL,
             status: IncidentStatus.DETECTED,
           },
         }),
-        this.incidentRepo.count({
+        this.incidentModel.count({
           where: {
             severity: IncidentSeverity.HIGH,
             status: IncidentStatus.DETECTED,

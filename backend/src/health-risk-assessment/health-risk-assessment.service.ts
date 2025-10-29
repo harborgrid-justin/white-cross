@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 
-// Import Sequelize models from backend
-// Note: This is a temporary bridge solution until models are migrated to TypeORM
-import {
-  Student,
-  // Allergy,
-  // ChronicCondition,
-} from '../database/models/student.model';
+// Import Sequelize models
+import { Student } from '../database/models/student.model';
+import { Allergy } from '../database/models/allergy.model';
+import { ChronicCondition } from '../database/models/chronic-condition.model';
+import { StudentMedication } from '../database/models/student-medication.model';
+import { IncidentReport } from '../database/models/incident-report.model';
 
 import {
   HealthRiskScoreDto,
@@ -32,18 +32,31 @@ import {
 export class HealthRiskAssessmentService {
   private readonly logger = new Logger(HealthRiskAssessmentService.name);
 
+  constructor(
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
+    @InjectModel(Allergy)
+    private readonly allergyModel: typeof Allergy,
+    @InjectModel(ChronicCondition)
+    private readonly chronicConditionModel: typeof ChronicCondition,
+    @InjectModel(StudentMedication)
+    private readonly studentMedicationModel: typeof StudentMedication,
+    @InjectModel(IncidentReport)
+    private readonly incidentReportModel: typeof IncidentReport,
+  ) {}
+
   /**
    * Calculate comprehensive health risk score for a student
    */
   async calculateRiskScore(studentId: string): Promise<HealthRiskScoreDto> {
     try {
-      // Type assertion for Sequelize model methods
-      const student = await (Student as any).findByPk(studentId, {
+      // Get student with related data
+      const student = await this.studentModel.findByPk(studentId, {
         include: [
-          // { model: Allergy, as: 'allergies' },
-          // { model: ChronicCondition, as: 'chronicConditions' },
-          // { model: StudentMedication, as: 'medications' },
-          // { model: IncidentReport, as: 'incidentReports' },
+          { model: this.allergyModel, as: 'allergies' },
+          { model: this.chronicConditionModel, as: 'chronicConditions' },
+          { model: this.studentMedicationModel, as: 'medications' },
+          { model: this.incidentReportModel, as: 'incidentReports' },
         ],
       });
 
@@ -298,14 +311,16 @@ export class HealthRiskAssessmentService {
     minScore: number = 50,
   ): Promise<HighRiskStudentDto[]> {
     try {
-      // Type assertion for Sequelize model methods
-      const students = await (Student as any).findAll({
+      // Get all active students
+      const students = await this.studentModel.findAll({
         where: { isActive: true },
       });
 
       const highRiskStudents: HighRiskStudentDto[] = [];
 
       for (const student of students) {
+        if (!student.id) continue;
+
         const assessment = await this.calculateRiskScore(student.id);
 
         if (assessment.overallScore >= minScore) {

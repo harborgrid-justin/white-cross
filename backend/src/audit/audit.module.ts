@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
-import { AuditLog } from './entities';
+import { AuditLog } from '../database/models/audit-log.model';
 import {
   AuditLogService,
   PHIAccessService,
@@ -33,7 +33,7 @@ import { AuditInterceptor } from './interceptors';
  * - AuditInterceptor: For automatic audit logging
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([AuditLog])],
+  imports: [SequelizeModule.forFeature([AuditLog])],
   providers: [
     // Main facade service
     AuditService,

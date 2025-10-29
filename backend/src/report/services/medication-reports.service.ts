@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, Between, IsNull, Not } from 'typeorm';
-import { MedicationLog, StudentMedication } from '../../medication/entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
+import { MedicationLog } from '../../database/models/medication-log.model';
+import { StudentMedication } from '../../database/models/student-medication.model';
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 
@@ -14,12 +16,11 @@ export class MedicationReportsService {
   private readonly logger = new Logger(MedicationReportsService.name);
 
   constructor(
-    @InjectRepository(MedicationLog)
-    private medicationLogRepository: Repository<MedicationLog>,
-    @InjectRepository(StudentMedication)
-    private studentMedicationRepository: Repository<StudentMedication>,
-    @InjectDataSource()
-    private dataSource: DataSource,
+    @InjectModel(MedicationLog)
+    private medicationLogModel: typeof MedicationLog,
+    @InjectModel(StudentMedication)
+    private studentMedicationModel: typeof StudentMedication,
+    private sequelize: Sequelize,
   ) {}
 
   /**
@@ -34,43 +35,44 @@ export class MedicationReportsService {
 
       if (startDate || endDate) {
         whereClause.administeredAt = {};
-        if (startDate) whereClause.administeredAt = Between(startDate, endDate || new Date());
+        if (startDate && endDate) {
+          whereClause.administeredAt = { [Op.between]: [startDate, endDate] };
+        } else if (startDate) {
+          whereClause.administeredAt = { [Op.gte]: startDate };
+        } else if (endDate) {
+          whereClause.administeredAt = { [Op.lte]: endDate };
+        }
       }
 
       // Get medication administration logs with full details
-      const queryBuilder = this.medicationLogRepository
-        .createQueryBuilder('ml')
-        .leftJoinAndSelect('ml.studentMedication', 'sm')
-        .leftJoinAndSelect('sm.medication', 'm')
-        .leftJoinAndSelect('sm.student', 's')
-        .leftJoinAndSelect('ml.nurse', 'n')
-        .orderBy('ml.administeredAt', 'DESC')
-        .take(100);
-
-      if (whereClause.administeredAt) {
-        queryBuilder.andWhere('ml.administeredAt BETWEEN :start AND :end', {
-          start: startDate,
-          end: endDate || new Date(),
-        });
-      }
-
-      if (medicationId) {
-        queryBuilder.andWhere('sm.medicationId = :medicationId', { medicationId });
-      }
-
-      const administrationLogs = await queryBuilder.getMany();
+      const administrationLogs = await this.medicationLogModel.findAll({
+        include: [
+          {
+            model: this.studentMedicationModel,
+            as: 'studentMedication',
+            include: [
+              { model: this.studentMedicationModel.associations.medication?.target, as: 'medication' },
+              { model: this.studentMedicationModel.associations.student?.target, as: 'student' },
+            ],
+          },
+          { model: this.medicationLogModel.associations.nurse?.target, as: 'nurse' },
+        ],
+        where: medicationId ? { ...whereClause, '$studentMedication.medicationId$': medicationId } : whereClause,
+        order: [['administeredAt', 'DESC']],
+        limit: 100,
+      });
 
       // Get compliance statistics
-      const totalScheduled = await this.studentMedicationRepository.count({
+      const totalScheduled = await this.studentMedicationModel.count({
         where: { isActive: true },
       });
 
-      const totalLogs = await this.medicationLogRepository.count({
+      const totalLogs = await this.medicationLogModel.count({
         where: whereClause,
       });
 
       // Get most administered medications with medication names
-      const topMedicationsRaw = await this.dataSource.query(
+      const topMedicationsRaw = await this.sequelize.query(
         `SELECT
           m.id as "medicationId",
           m.name as "medicationName",
@@ -85,7 +87,10 @@ export class MedicationReportsService {
         GROUP BY m.id, m.name
         ORDER BY count DESC
         LIMIT 10`,
-        startDate && endDate ? [startDate, endDate] : startDate ? [startDate] : endDate ? [endDate] : [],
+        {
+          bind: startDate && endDate ? [startDate, endDate] : startDate ? [startDate] : endDate ? [endDate] : [],
+          type: 'SELECT',
+        },
       );
 
       const topMedications = topMedicationsRaw.map((record: any) => ({
@@ -95,14 +100,24 @@ export class MedicationReportsService {
 
       // Get medication logs with side effects (adverse reactions)
       const adverseReactionsWhere: any = {
-        sideEffects: Not(IsNull()),
+        sideEffects: { [Op.ne]: null },
         ...whereClause,
       };
 
-      const adverseReactions = await this.medicationLogRepository.find({
+      const adverseReactions = await this.medicationLogModel.findAll({
         where: adverseReactionsWhere,
-        relations: ['studentMedication', 'studentMedication.medication', 'studentMedication.student', 'nurse'],
-        order: { administeredAt: 'DESC' },
+        include: [
+          {
+            model: this.studentMedicationModel,
+            as: 'studentMedication',
+            include: [
+              { model: this.studentMedicationModel.associations.medication?.target, as: 'medication' },
+              { model: this.studentMedicationModel.associations.student?.target, as: 'student' },
+            ],
+          },
+          { model: this.medicationLogModel.associations.nurse?.target, as: 'nurse' },
+        ],
+        order: [['administeredAt', 'DESC']],
       });
 
       this.logger.log(

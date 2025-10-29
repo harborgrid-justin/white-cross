@@ -13,9 +13,9 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, Like, In } from 'typeorm';
-import { Student } from './entities/student.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { Student } from '../database/models/student.model';
 import {
   CreateStudentDto,
   UpdateStudentDto,
@@ -85,8 +85,8 @@ export class StudentService {
   private readonly logger = new Logger(StudentService.name);
 
   constructor(
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
   ) {}
 
   // ==================== CRUD Operations ====================

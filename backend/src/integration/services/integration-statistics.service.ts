@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import { IntegrationConfig, IntegrationStatus } from '../entities/integration-config.entity';
-import { IntegrationLog } from '../entities/integration-log.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
+import { IntegrationLog } from '../../database/models/integration-log.model';
 
 export interface IntegrationStatistics {
   totalIntegrations: number;
@@ -29,10 +29,10 @@ export class IntegrationStatisticsService {
   private readonly logger = new Logger(IntegrationStatisticsService.name);
 
   constructor(
-    @InjectRepository(IntegrationConfig)
-    private readonly configRepository: Repository<IntegrationConfig>,
-    @InjectRepository(IntegrationLog)
-    private readonly logRepository: Repository<IntegrationLog>,
+    @InjectModel(IntegrationConfig)
+    private readonly configModel: typeof IntegrationConfig,
+    @InjectModel(IntegrationLog)
+    private readonly logModel: typeof IntegrationLog,
   ) {}
 
   /**
@@ -48,15 +48,15 @@ export class IntegrationStatisticsService {
         activeIntegrations,
         recentLogs,
       ] = await Promise.all([
-        this.configRepository.count(),
-        this.configRepository.count({ where: { status: IntegrationStatus.ACTIVE } }),
-        this.logRepository.find({
+        this.configModel.count(),
+        this.configModel.count({ where: { status: IntegrationStatus.ACTIVE } }),
+        this.logModel.findAll({
           where: {
             action: 'sync',
-            createdAt: MoreThan(thirtyDaysAgo),
+            createdAt: { [Op.gt]: thirtyDaysAgo },
           },
-          order: { createdAt: 'DESC' },
-          take: 1000,
+          order: [['createdAt', 'DESC']],
+          limit: 1000,
         }),
       ]);
 

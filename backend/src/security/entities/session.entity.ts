@@ -1,51 +1,91 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  Table,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
   Index,
-} from 'typeorm';
+} from 'sequelize-typescript';
 
 /**
  * Session Entity
  * Manages active user sessions for security tracking and concurrent session limits
  */
-@Entity('sessions')
-@Index(['userId', 'isActive'])
-@Index(['sessionToken'])
-@Index(['expiresAt'])
-export class SessionEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+@Table({
+  tableName: 'sessions',
+  timestamps: true,
+  indexes: [
+    { fields: ['userId', 'isActive'] },
+    { fields: ['sessionToken'] },
+    { fields: ['expiresAt'] },
+  ],
+})
+export class SessionEntity extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.STRING)
+  declare id: string;
 
-  @Column({ unique: true })
+  @Index({ unique: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   sessionToken: string;
 
-  @Column()
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   userId: string;
 
-  @Column()
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   ipAddress: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   userAgent?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  declare createdAt: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
   expiresAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
   lastAccessedAt?: Date;
 
-  @Column({ default: true })
+  @Default(true)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
   isActive: boolean;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
   metadata?: Record<string, any>; // Device info, location, etc.
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  declare updatedAt: Date;
 }

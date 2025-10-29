@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AuditLog } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { AuditLog, ComplianceType, AuditSeverity } from '../../database/models/audit-log.model';
 import { IAuditLogEntry } from '../interfaces';
 
 /**
@@ -19,8 +18,8 @@ export class AuditLogService {
   private readonly logger = new Logger(AuditLogService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
   ) {}
 
   /**
@@ -32,7 +31,7 @@ export class AuditLogService {
    */
   async logAction(entry: IAuditLogEntry): Promise<void> {
     try {
-      await this.auditLogRepository.save({
+      await this.auditLogModel.create({
         userId: entry.userId || null,
         action: entry.action as any,
         entityType: entry.entityType,
@@ -45,6 +44,11 @@ export class AuditLogService {
         },
         ipAddress: entry.ipAddress || null,
         userAgent: entry.userAgent || null,
+        isPHI: false, // Default to false for general audit logs
+        complianceType: ComplianceType.GENERAL,
+        severity: AuditSeverity.LOW,
+        success: entry.success !== undefined ? entry.success : true,
+        tags: [],
       });
 
       this.logger.log(
@@ -64,9 +68,7 @@ export class AuditLogService {
    */
   async getAuditLogById(id: string): Promise<AuditLog | null> {
     try {
-      return await this.auditLogRepository.findOne({
-        where: { id },
-      });
+      return await this.auditLogModel.findByPk(id);
     } catch (error) {
       this.logger.error('Error fetching audit log by ID:', error);
       throw new Error('Failed to fetch audit log');
@@ -81,9 +83,9 @@ export class AuditLogService {
    */
   async getRecentAuditLogs(limit: number = 50): Promise<AuditLog[]> {
     try {
-      return await this.auditLogRepository.find({
-        order: { createdAt: 'DESC' },
-        take: limit,
+      return await this.auditLogModel.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: limit,
       });
     } catch (error) {
       this.logger.error('Error fetching recent audit logs:', error);

@@ -4,28 +4,31 @@
  */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
+// import { HealthRecordModule } from './health-record/health-record.module'; // TODO: Convert to Sequelize
 import { HealthRecordModule } from './health-record/health-record.module';
 import { UserModule } from './user/user.module';
 
+// import { AnalyticsModule } from './analytics/analytics.module'; // TODO: Convert to Sequelize
 import { AnalyticsModule } from './analytics/analytics.module';
+// import { ChronicConditionModule } from './chronic-condition/chronic-condition.module'; // TODO: Convert to Sequelize
 import { ChronicConditionModule } from './chronic-condition/chronic-condition.module';
-import { AllergyModule } from './allergy/allergy.module';
-import { BudgetModule } from './budget/budget.module';
+// import { AllergyModule } from './allergy/allergy.module'; // TODO: Convert to Sequelize
+// import { BudgetModule } from './budget/budget.module'; // TODO: Convert to Sequelize
 import { AdministrationModule } from './administration/administration.module';
-import { AuditModule } from './audit/audit.module';
+// import { AuditModule } from './audit/audit.module'; // TODO: Convert to Sequelize
 import { AccessControlModule } from './access-control/access-control.module';
-import { ContactModule } from './contact/contact.module';
-import { ComplianceModule } from './compliance/compliance.module';
-import { ClinicalModule } from './clinical/clinical.module';
-import { IncidentReportModule } from './incident-report/incident-report.module';
-import { IntegrationModule } from './integration/integration.module';
-import { IntegrationsModule } from './integrations/integrations.module';
+// import { ContactModule } from './contact/contact.module'; // TODO: Convert to Sequelize
+// import { ComplianceModule } from './compliance/compliance.module'; // TODO: Convert to Sequelize
+// import { ClinicalModule } from './clinical/clinical.module'; // TODO: Convert to Sequelize
+// import { IncidentReportModule } from './incident-report/incident-report.module'; // TODO: Convert to Sequelize
+// import { IntegrationModule } from './integration/integration.module'; // TODO: Convert to Sequelize
+// import { IntegrationsModule } from './integrations/integrations.module'; // TODO: Convert to Sequelize
+// import { SecurityModule } from './security/security.module'; // TODO: Convert to Sequelize
 import { SecurityModule } from './security/security.module';
-import { ReportModule } from './report/report.module';
-import { MobileModule } from './mobile/mobile.module';
+// import { ReportModule } from './report/report.module'; // TODO: Convert to Sequelize
+// import { MobileModule } from './mobile/mobile.module'; // TODO: Migrate to Sequelize
 import { PdfModule } from './pdf/pdf.module';
 import { AcademicTranscriptModule } from './academic-transcript/academic-transcript.module';
 import { AiSearchModule } from './ai-search/ai-search.module';
@@ -36,14 +39,15 @@ import { InterfacesModule } from './interfaces/interfaces.module';
 import { SharedModule } from './shared/shared.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AdvancedFeaturesModule } from './advanced-features/advanced-features.module';
-import { ConfigurationModule } from './configuration/configuration.module';
+// import { ConfigurationModule } from './configuration/configuration.module'; // TODO: Convert to Sequelize
 import { EmergencyBroadcastModule } from './emergency-broadcast/emergency-broadcast.module';
-import { GradeTransitionModule } from './grade-transition/grade-transition.module';
-import { EnterpriseFeaturesModule } from './enterprise-features/enterprise-features.module';
-import { HealthMetricsModule } from './health-metrics/health-metrics.module';
-import { MedicationInteractionModule } from './medication-interaction/medication-interaction.module';
+// import { GradeTransitionModule } from './grade-transition/grade-transition.module'; // TODO: Convert to Sequelize
+// import { EnterpriseFeaturesModule } from './enterprise-features/enterprise-features.module'; // TODO: Convert to Sequelize
+// import { HealthMetricsModule } from './health-metrics/health-metrics.module'; // TODO: Convert to Sequelize
+// import { MedicationInteractionModule } from './medication-interaction/medication-interaction.module'; // TODO: Convert to Sequelize
+// import { HealthRiskAssessmentModule } from './health-risk-assessment/health-risk-assessment.module'; // TODO: Convert to Sequelize
 import { HealthRiskAssessmentModule } from './health-risk-assessment/health-risk-assessment.module';
-import { EmergencyContactModule } from './emergency-contact/emergency-contact.module';
+// import { EmergencyContactModule } from './emergency-contact/emergency-contact.module'; // TODO: Convert to Sequelize
 import { EmailModule } from './infrastructure/email/email.module';
 import { SmsModule } from './infrastructure/sms/sms.module';
 import { MonitoringModule } from './infrastructure/monitoring/monitoring.module';
@@ -61,23 +65,6 @@ import { MedicationModule } from './medication/medication.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
-    }),
-
-    // TypeORM configuration
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get('DB_USERNAME', 'postgres'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME', 'whitecross'),
-        synchronize: false,
-        logging: configService.get('NODE_ENV') === 'development',
-        entities: [], // Entities are registered in their respective modules
-      }),
-      inject: [ConfigService],
     }),
 
     // Database connection (Sequelize)
@@ -109,40 +96,40 @@ import { MedicationModule } from './medication/medication.module';
     HealthRecordModule,
 
     // Analytics module
-    AnalyticsModule,
+    // AnalyticsModule, // TODO: Convert to Sequelize
 
-    ChronicConditionModule,
+    // ChronicConditionModule, // TODO: Convert to Sequelize
 
-    AllergyModule,
+    // AllergyModule, // TODO: Convert to Sequelize
 
-    BudgetModule,
+    // BudgetModule, // TODO: Convert to Sequelize
 
     AdministrationModule,
 
     // Configuration module (comprehensive configuration management)
-    ConfigurationModule,
+    // ConfigurationModule, // TODO: Convert to Sequelize
 
-    AuditModule,
+    // AuditModule, // TODO: Convert to Sequelize
 
     AccessControlModule,
 
-    ContactModule,
+    // ContactModule, // TODO: Convert to Sequelize
 
-    ComplianceModule,
+    // ComplianceModule, // TODO: Convert to Sequelize
 
     // Clinical module (Drug Interactions & Clinic Visits)
-    ClinicalModule,
+    // ClinicalModule, // TODO: Convert to Sequelize
 
-    IncidentReportModule,
+    // IncidentReportModule, // TODO: Convert to Sequelize
 
-    IntegrationModule,
+    // IntegrationModule, // TODO: Convert to Sequelize
 
     // Integration clients module (external API integrations with circuit breaker and rate limiting)
-    IntegrationsModule,
+    // IntegrationsModule, // TODO: Convert to Sequelize
 
-    ReportModule,
+    // ReportModule, // TODO: Convert to Sequelize
 
-    MobileModule,
+    // MobileModule, // TODO: Migrate to Sequelize
 
     PdfModule,
 
@@ -166,17 +153,19 @@ import { MedicationModule } from './medication/medication.module';
 
     EmergencyBroadcastModule,
 
-    GradeTransitionModule,
-
-    EnterpriseFeaturesModule,
-
-    HealthMetricsModule,
-
-    MedicationInteractionModule,
-
     HealthRiskAssessmentModule,
 
-    EmergencyContactModule,
+    // GradeTransitionModule, // TODO: Convert to Sequelize
+
+    // EnterpriseFeaturesModule, // TODO: Convert to Sequelize
+
+    // HealthMetricsModule, // TODO: Convert to Sequelize
+
+    // MedicationInteractionModule, // TODO: Convert to Sequelize
+
+    // HealthRiskAssessmentModule, // TODO: Convert to Sequelize
+
+    // EmergencyContactModule, // TODO: Convert to Sequelize
 
     // Feature modules
     MedicationModule,

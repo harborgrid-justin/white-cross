@@ -11,13 +11,11 @@
  * @module ConfigurationModule
  */
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 
-// Reuse entities from administration module
-import {
-  SystemConfiguration,
-  ConfigurationHistory
-} from '../administration/entities';
+// Import Sequelize models
+import { SystemConfig } from '../database/models/system-config.model';
+import { ConfigurationHistory } from '../database/models/configuration-history.model';
 
 // Services
 import { ConfigurationService } from './services/configuration.service';
@@ -27,8 +25,8 @@ import { ConfigurationController } from './configuration.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      SystemConfiguration,
+    SequelizeModule.forFeature([
+      SystemConfig,
       ConfigurationHistory,
     ]),
   ],

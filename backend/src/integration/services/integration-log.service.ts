@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { IntegrationLog } from '../entities/integration-log.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { IntegrationLog } from '../../database/models/integration-log.model';
+import { IntegrationConfig } from '../../database/models/integration-config.model';
 
 export interface CreateIntegrationLogDto {
   integrationId?: string;
@@ -25,8 +25,8 @@ export class IntegrationLogService {
   private readonly logger = new Logger(IntegrationLogService.name);
 
   constructor(
-    @InjectRepository(IntegrationLog)
-    private readonly logRepository: Repository<IntegrationLog>,
+    @InjectModel(IntegrationLog)
+    private readonly logModel: typeof IntegrationLog,
   ) {}
 
   /**
@@ -34,13 +34,11 @@ export class IntegrationLogService {
    */
   async create(data: CreateIntegrationLogDto): Promise<IntegrationLog> {
     try {
-      const log = this.logRepository.create({
+      return await this.logModel.create({
         ...data,
         startedAt: new Date(),
         completedAt: (data.status === 'success' || data.status === 'failed') ? new Date() : undefined,
       });
-
-      return await this.logRepository.save(log);
     } catch (error) {
       this.logger.error('Error creating integration log', error);
       throw error;
@@ -57,22 +55,25 @@ export class IntegrationLogService {
     limit: number = 20,
   ): Promise<{ logs: IntegrationLog[]; pagination: any }> {
     try {
-      const query = this.logRepository.createQueryBuilder('log')
-        .leftJoinAndSelect('log.integration', 'integration')
-        .orderBy('log.createdAt', 'DESC');
-
+      const whereClause: any = {};
       if (integrationId) {
-        query.andWhere('log.integrationId = :integrationId', { integrationId });
+        whereClause.integrationId = integrationId;
       }
-
       if (type) {
-        query.andWhere('log.integrationType = :type', { type });
+        whereClause.integrationType = type;
       }
 
       const offset = (page - 1) * limit;
-      query.skip(offset).take(limit);
-
-      const [logs, total] = await query.getManyAndCount();
+      const { rows: logs, count: total } = await this.logModel.findAndCountAll({
+        where: whereClause,
+        include: [{
+          model: IntegrationConfig,
+          as: 'integration',
+        }],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
+      });
 
       return {
         logs,

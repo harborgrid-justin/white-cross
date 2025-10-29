@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { StudentMedication } from './entities/student-medication.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { StudentMedication } from '../database/models/student-medication.model';
+import { Medication } from '../database/models/medication.model';
 import {
   DrugInteractionDto,
   InteractionCheckResultDto,
@@ -43,8 +43,8 @@ export class MedicationInteractionService {
   private readonly logger = new Logger(MedicationInteractionService.name);
 
   constructor(
-    @InjectRepository(StudentMedication)
-    private readonly studentMedicationRepository: Repository<StudentMedication>,
+    @InjectModel(StudentMedication)
+    private readonly studentMedicationModel: typeof StudentMedication,
   ) {}
 
   /**
@@ -52,9 +52,9 @@ export class MedicationInteractionService {
    */
   async checkStudentMedications(studentId: string): Promise<InteractionCheckResultDto> {
     try {
-      const medications = await this.studentMedicationRepository.find({
+      const medications = await this.studentMedicationModel.findAll({
         where: { studentId, isActive: true },
-        relations: ['medication'],
+        include: [{ model: Medication, as: 'medication' }],
       });
 
       const interactions: DrugInteractionDto[] = [];
@@ -102,9 +102,9 @@ export class MedicationInteractionService {
     newMedicationName: string,
   ): Promise<InteractionCheckResultDto> {
     try {
-      const existingMedications = await this.studentMedicationRepository.find({
+      const existingMedications = await this.studentMedicationModel.findAll({
         where: { studentId, isActive: true },
-        relations: ['medication'],
+        include: [{ model: Medication, as: 'medication' }],
       });
 
       const interactions: DrugInteractionDto[] = [];

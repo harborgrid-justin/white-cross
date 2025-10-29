@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { BudgetService } from './budget.service';
 import { BudgetController } from './budget.controller';
-import { BudgetCategory } from './entities/budget-category.entity';
-import { BudgetTransaction } from './entities/budget-transaction.entity';
+import { BudgetCategory } from '../database/models/budget-category.model';
+import { BudgetTransaction } from '../database/models/budget-transaction.model';
 
 /**
  * Budget Module
@@ -17,7 +17,7 @@ import { BudgetTransaction } from './entities/budget-transaction.entity';
  * Exports BudgetService for use in other modules.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([BudgetCategory, BudgetTransaction])],
+  imports: [SequelizeModule.forFeature([BudgetCategory, BudgetTransaction])],
   providers: [BudgetService],
   controllers: [BudgetController],
   exports: [BudgetService],

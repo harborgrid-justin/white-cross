@@ -1,11 +1,12 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  Table,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
   Index,
-} from 'typeorm';
+} from 'sequelize-typescript';
 import {
   SecurityIncidentType,
   IncidentSeverity,
@@ -16,79 +17,134 @@ import {
  * Security Incident Entity
  * Tracks security incidents, threats, and their investigation/resolution
  */
-@Entity('security_incidents')
-@Index(['type', 'severity', 'status'])
-@Index(['userId'])
-@Index(['ipAddress'])
-@Index(['detectedAt'])
-export class SecurityIncidentEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+@Table({
+  tableName: 'security_incidents',
+  timestamps: true,
+  indexes: [
+    { fields: ['type', 'severity', 'status'] },
+    { fields: ['userId'] },
+    { fields: ['ipAddress'] },
+    { fields: ['detectedAt'] },
+  ],
+})
+export class SecurityIncidentEntity extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.STRING)
+  declare id: string;
 
   @Column({
-    type: 'enum',
-    enum: SecurityIncidentType,
+    type: DataType.ENUM(...Object.values(SecurityIncidentType)),
+    allowNull: false,
   })
   type: SecurityIncidentType;
 
   @Column({
-    type: 'enum',
-    enum: IncidentSeverity,
+    type: DataType.ENUM(...Object.values(IncidentSeverity)),
+    allowNull: false,
   })
   severity: IncidentSeverity;
 
+  @Default(IncidentStatus.DETECTED)
   @Column({
-    type: 'enum',
-    enum: IncidentStatus,
-    default: IncidentStatus.DETECTED,
+    type: DataType.ENUM(...Object.values(IncidentStatus)),
+    allowNull: false,
   })
   status: IncidentStatus;
 
-  @Column()
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   title: string;
 
-  @Column({ type: 'text' })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
   description: string;
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   userId?: string;
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   ipAddress?: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   userAgent?: string;
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   resourceAccessed?: string;
 
-  @CreateDateColumn()
-  detectedAt: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  declare detectedAt: Date;
 
-  @Column()
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   detectionMethod: string; // 'automated', 'manual', 'pattern_matching', etc.
 
-  @Column({ type: 'simple-array' })
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+  })
   indicators: string[]; // List of indicators that triggered detection
 
-  @Column({ type: 'text', nullable: true })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   impact?: string;
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   assignedTo?: string; // User ID of security team member
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
   resolvedAt?: Date;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   resolution?: string;
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
   preventiveMeasures?: string[];
 
-  @Column({ type: 'json', nullable: true })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
   metadata?: Record<string, any>; // Additional context-specific data
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  declare updatedAt: Date;
 }

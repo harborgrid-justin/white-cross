@@ -1,50 +1,84 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  Table,
   Column,
-  CreateDateColumn,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
   Index,
-} from 'typeorm';
+} from 'sequelize-typescript';
 import { IpRestrictionType } from '../enums';
 
 /**
  * IP Restriction Entity
  * Manages IP whitelisting, blacklisting, and geolocation-based access control
  */
-@Entity('ip_restrictions')
-@Index(['type', 'isActive'])
-@Index(['ipAddress'])
-export class IpRestrictionEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+@Table({
+  tableName: 'ip_restrictions',
+  timestamps: true,
+  indexes: [
+    { fields: ['type', 'isActive'] },
+    { fields: ['ipAddress'] },
+  ],
+})
+export class IpRestrictionEntity extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.STRING)
+  declare id: string;
 
   @Column({
-    type: 'enum',
-    enum: IpRestrictionType,
+    type: DataType.ENUM(...Object.values(IpRestrictionType)),
+    allowNull: false,
   })
   type: IpRestrictionType;
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   ipAddress?: string; // Single IP or CIDR notation (e.g., "192.168.1.0/24")
 
-  @Column({ type: 'json', nullable: true })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
   ipRange?: { start: string; end: string };
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
   countries?: string[]; // ISO country codes for geo restrictions
 
-  @Column({ type: 'text' })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
   reason: string;
 
-  @Column()
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   createdBy: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  declare createdAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
   expiresAt?: Date;
 
-  @Column({ default: true })
+  @Default(true)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
   isActive: boolean;
 }

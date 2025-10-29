@@ -16,9 +16,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JobType } from './enums/job-type.enum';
 import { QueueManagerService } from './services/queue-manager.service';
 import { MedicationReminderProcessor, InventoryMaintenanceProcessor } from './processors';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
+    EmailModule,
     // Import BullModule with Redis configuration
     BullModule.forRootAsync({
       imports: [ConfigModule],

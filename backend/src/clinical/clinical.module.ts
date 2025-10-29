@@ -1,17 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 
-// Entities
-import { DrugCatalog } from './entities/drug-catalog.entity';
-import { DrugInteraction } from './entities/drug-interaction.entity';
-import { StudentDrugAllergy } from './entities/student-drug-allergy.entity';
-import { ClinicVisit } from './entities/clinic-visit.entity';
-import { TreatmentPlan } from './entities/treatment-plan.entity';
-import { Prescription } from './entities/prescription.entity';
-import { ClinicalProtocol } from './entities/clinical-protocol.entity';
-import { ClinicalNote } from './entities/clinical-note.entity';
-import { VitalSigns } from './entities/vital-signs.entity';
-import { FollowUpAppointment } from './entities/follow-up-appointment.entity';
+// Models
+import { DrugCatalog } from '../database/models/drug-catalog.model';
+import { DrugInteraction } from '../database/models/drug-interaction.model';
+import { StudentDrugAllergy } from '../database/models/student-drug-allergy.model';
+import { TreatmentPlan } from '../database/models/treatment-plan.model';
+import { VitalSigns } from '../database/models/vital-signs.model';
 
 // Services
 import { DrugInteractionService } from './services/drug-interaction.service';
@@ -90,19 +85,13 @@ import { FollowUpController } from './controllers/follow-up.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      // Existing entities
+    SequelizeModule.forFeature([
+      // Converted models
       DrugCatalog,
       DrugInteraction,
       StudentDrugAllergy,
-      ClinicVisit,
-      // New entities
       TreatmentPlan,
-      Prescription,
-      ClinicalProtocol,
-      ClinicalNote,
       VitalSigns,
-      FollowUpAppointment,
     ]),
   ],
   controllers: [

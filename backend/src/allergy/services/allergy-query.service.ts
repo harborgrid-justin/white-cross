@@ -11,9 +11,10 @@
  * @compliance HIPAA, Patient Safety Information Retrieval Standards
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, ILike } from 'typeorm';
-import { Allergy } from '../entities/allergy.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { Allergy } from '../models/allergy.model';
+import { Student } from '../../student/models/student.model';
 import { AllergySeverity } from '../../common/enums';
 import { AllergyFiltersDto } from '../dto/allergy-filters.dto';
 import { PaginationDto } from '../dto/pagination.dto';
@@ -39,8 +40,8 @@ export class AllergyQueryService {
   private readonly logger = new Logger(AllergyQueryService.name);
 
   constructor(
-    @InjectRepository(Allergy)
-    private readonly allergyRepository: Repository<Allergy>,
+    @InjectModel(Allergy)
+    private readonly allergyModel: typeof Allergy,
   ) {}
 
   /**
@@ -59,14 +60,14 @@ export class AllergyQueryService {
       whereClause.isActive = true;
     }
 
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: whereClause,
-      relations: ['student'],
-      order: {
-        severity: 'DESC', // Critical allergies first
-        verified: 'DESC', // Verified allergies first
-        createdAt: 'DESC',
-      },
+      include: [{ model: Student, as: 'student' }],
+      order: [
+        ['severity', 'DESC'], // Critical allergies first
+        ['verified', 'DESC'], // Verified allergies first
+        ['createdAt', 'DESC'],
+      ],
     });
 
     // PHI Audit Log
@@ -120,46 +121,23 @@ export class AllergyQueryService {
     // Full-text search across multiple fields
     if (filters.searchTerm) {
       const searchPattern = `%${filters.searchTerm}%`;
-      // Note: TypeORM doesn't support OR directly in where clause
-      // We'll need to use queryBuilder for complex OR conditions
-      const queryBuilder = this.allergyRepository
-        .createQueryBuilder('allergy')
-        .leftJoinAndSelect('allergy.student', 'student')
-        .where(whereClause)
-        .andWhere(
-          '(allergy.allergen ILIKE :searchTerm OR allergy.reaction ILIKE :searchTerm OR allergy.treatment ILIKE :searchTerm OR allergy.notes ILIKE :searchTerm)',
-          { searchTerm: searchPattern },
-        )
-        .orderBy('allergy.severity', 'DESC')
-        .addOrderBy('allergy.createdAt', 'DESC')
-        .skip(offset)
-        .take(limit);
-
-      const [allergies, total] = await queryBuilder.getManyAndCount();
-
-      // PHI Audit Log
-      this.logger.log(
-        `Allergy search: Filters: ${JSON.stringify(filters)}, Results: ${allergies.length}`,
-      );
-
-      return {
-        allergies,
-        total,
-        page,
-        pages: Math.ceil(total / limit),
-      };
+      whereClause[Op.or] = [
+        { allergen: { [Op.iLike]: searchPattern } },
+        { reaction: { [Op.iLike]: searchPattern } },
+        { treatment: { [Op.iLike]: searchPattern } },
+        { notes: { [Op.iLike]: searchPattern } },
+      ];
     }
 
-    // Simple search without full-text
-    const [allergies, total] = await this.allergyRepository.findAndCount({
+    const { rows: allergies, count: total } = await this.allergyModel.findAndCountAll({
       where: whereClause,
-      relations: ['student'],
-      skip: offset,
-      take: limit,
-      order: {
-        severity: 'DESC',
-        createdAt: 'DESC',
-      },
+      include: [{ model: Student, as: 'student' }],
+      offset,
+      limit,
+      order: [
+        ['severity', 'DESC'],
+        ['createdAt', 'DESC'],
+      ],
     });
 
     // PHI Audit Log
@@ -184,16 +162,16 @@ export class AllergyQueryService {
    * @returns Array of critical allergy records
    */
   async getCriticalAllergies(studentId: string): Promise<Allergy[]> {
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: {
         studentId,
-        severity: In([AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING]),
+        severity: { [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING] },
         isActive: true,
       },
-      relations: ['student'],
-      order: {
-        severity: 'DESC', // LIFE_THREATENING first
-      },
+      include: [{ model: Student, as: 'student' }],
+      order: [
+        ['severity', 'DESC'], // LIFE_THREATENING first
+      ],
     });
 
     // PHI Audit Log
@@ -222,18 +200,20 @@ export class AllergyQueryService {
     }
 
     // Get total count
-    const total = await this.allergyRepository.count({ where: whereClause });
+    const total = await this.allergyModel.count({ where: whereClause });
 
-    // Count by severity
-    const bySeverityRaw = await this.allergyRepository
-      .createQueryBuilder('allergy')
-      .select('allergy.severity', 'severity')
-      .addSelect('COUNT(*)', 'count')
-      .where(whereClause)
-      .groupBy('allergy.severity')
-      .getRawMany();
+    // Count by severity using Sequelize
+    const bySeverityRaw = await this.allergyModel.findAll({
+      where: whereClause,
+      attributes: [
+        'severity',
+        [this.allergyModel.sequelize!.fn('COUNT', this.allergyModel.sequelize!.col('id')), 'count']
+      ],
+      group: ['severity'],
+      raw: true,
+    });
 
-    const bySeverity = bySeverityRaw.reduce(
+    const bySeverity = (bySeverityRaw as any[]).reduce(
       (acc, item) => {
         acc[item.severity] = parseInt(item.count, 10);
         return acc;
@@ -242,15 +222,20 @@ export class AllergyQueryService {
     );
 
     // Count by type
-    const byTypeRaw = await this.allergyRepository
-      .createQueryBuilder('allergy')
-      .select('allergy.allergenType', 'allergenType')
-      .addSelect('COUNT(*)', 'count')
-      .where(whereClause)
-      .groupBy('allergy.allergenType')
-      .getRawMany();
+    const byTypeRaw = await this.allergyModel.findAll({
+      where: {
+        ...whereClause,
+        allergenType: { [Op.ne]: null },
+      },
+      attributes: [
+        'allergenType',
+        [this.allergyModel.sequelize!.fn('COUNT', this.allergyModel.sequelize!.col('id')), 'count']
+      ],
+      group: ['allergenType'],
+      raw: true,
+    });
 
-    const byType = byTypeRaw.reduce(
+    const byType = (byTypeRaw as any[]).reduce(
       (acc, item) => {
         if (item.allergenType) {
           acc[item.allergenType] = parseInt(item.count, 10);
@@ -261,15 +246,15 @@ export class AllergyQueryService {
     );
 
     // Count verified
-    const verified = await this.allergyRepository.count({
+    const verified = await this.allergyModel.count({
       where: { ...whereClause, verified: true },
     });
 
     // Count critical
-    const critical = await this.allergyRepository.count({
+    const critical = await this.allergyModel.count({
       where: {
         ...whereClause,
-        severity: In([AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING]),
+        severity: { [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING] },
       },
     });
 

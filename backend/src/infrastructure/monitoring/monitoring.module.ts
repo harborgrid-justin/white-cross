@@ -7,7 +7,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { MonitoringService } from './monitoring.service';
 import { HealthController } from './health.controller';
 import { MonitoringController } from './monitoring.controller';
@@ -135,8 +135,8 @@ import { MonitoringController } from './monitoring.controller';
 @Module({
   imports: [
     ConfigModule,
-    // TypeOrmModule provides the database connection for health checks
-    TypeOrmModule.forFeature([]),
+    // SequelizeModule provides the database connection for health checks
+    SequelizeModule.forFeature([]),
   ],
   controllers: [HealthController, MonitoringController],
   providers: [MonitoringService],

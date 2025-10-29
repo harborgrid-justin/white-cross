@@ -1,8 +1,8 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { IntegrationConfig, IntegrationStatus } from '../entities/integration-config.entity';
-import { IntegrationLog } from '../entities/integration-log.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model } from 'sequelize-typescript';
+import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
+import { IntegrationLog } from '../../database/models/integration-log.model';
 import { CreateIntegrationDto, UpdateIntegrationDto } from '../dto';
 import { IntegrationValidationService } from './integration-validation.service';
 import { IntegrationEncryptionService } from './integration-encryption.service';
@@ -17,8 +17,8 @@ export class IntegrationConfigService {
   private readonly logger = new Logger(IntegrationConfigService.name);
 
   constructor(
-    @InjectRepository(IntegrationConfig)
-    private readonly configRepository: Repository<IntegrationConfig>,
+    @InjectModel(IntegrationConfig)
+    private readonly configModel: typeof IntegrationConfig,
     private readonly validationService: IntegrationValidationService,
     private readonly encryptionService: IntegrationEncryptionService,
     private readonly logService: IntegrationLogService,
@@ -29,18 +29,24 @@ export class IntegrationConfigService {
    */
   async findAll(type?: string): Promise<IntegrationConfig[]> {
     try {
-      const query = this.configRepository.createQueryBuilder('integration')
-        .leftJoinAndSelect('integration.logs', 'logs')
-        .orderBy('integration.type', 'ASC')
-        .addOrderBy('integration.name', 'ASC')
-        .addOrderBy('logs.createdAt', 'DESC')
-        .limit(5);
-
+      const whereClause: any = {};
       if (type) {
-        query.where('integration.type = :type', { type });
+        whereClause.type = type;
       }
 
-      const integrations = await query.getMany();
+      const integrations = await this.configModel.findAll({
+        where: whereClause,
+        include: [{
+          model: IntegrationLog,
+          as: 'logs',
+          limit: 5,
+          order: [['createdAt', 'DESC']],
+        }],
+        order: [
+          ['type', 'ASC'],
+          ['name', 'ASC'],
+        ],
+      });
 
       // Mask sensitive data
       return integrations.map(integration => this.maskSensitiveData(integration));
@@ -55,9 +61,11 @@ export class IntegrationConfigService {
    */
   async findById(id: string, includeSensitive: boolean = false): Promise<IntegrationConfig> {
     try {
-      const integration = await this.configRepository.findOne({
-        where: { id },
-        relations: ['logs'],
+      const integration = await this.configModel.findByPk(id, {
+        include: [{
+          model: IntegrationLog,
+          as: 'logs',
+        }],
       });
 
       if (!integration) {
@@ -84,7 +92,7 @@ export class IntegrationConfigService {
       this.validationService.validateIntegrationData(data);
 
       // Check for duplicate names
-      const existingIntegration = await this.configRepository.findOne({
+      const existingIntegration = await this.configModel.findOne({
         where: { name: data.name },
       });
 
@@ -112,7 +120,7 @@ export class IntegrationConfigService {
       });
 
       // Create integration
-      const integration = this.configRepository.create({
+      const integration = await this.configModel.create({
         ...data,
         apiKey: encryptedData.apiKey,
         password: encryptedData.password,
@@ -120,13 +128,11 @@ export class IntegrationConfigService {
         isActive: true,
       });
 
-      const saved = await this.configRepository.save(integration);
-
       this.logger.log(`Integration created: ${data.name} (${data.type})`);
 
       // Log the creation
       await this.logService.create({
-        integrationId: saved.id,
+        integrationId: integration.id,
         integrationType: data.type,
         action: 'create',
         status: 'success',
@@ -135,7 +141,7 @@ export class IntegrationConfigService {
         },
       });
 
-      return this.maskSensitiveData(saved);
+      return this.maskSensitiveData(integration);
     } catch (error) {
       this.logger.error('Error creating integration', error);
       throw error;
@@ -151,7 +157,7 @@ export class IntegrationConfigService {
 
       // Check for name conflicts if name is being updated
       if (data.name && data.name !== existing.name) {
-        const duplicate = await this.configRepository.findOne({
+        const duplicate = await this.configModel.findOne({
           where: { name: data.name },
         });
 
@@ -193,7 +199,7 @@ export class IntegrationConfigService {
       }
 
       // Update integration
-      await this.configRepository.update(id, updateData);
+      await this.configModel.update(updateData, { where: { id } });
       const updated = await this.findById(id, false);
 
       this.logger.log(`Integration updated: ${updated.name} (${updated.type})`);
@@ -224,7 +230,7 @@ export class IntegrationConfigService {
     try {
       const integration = await this.findById(id, false);
 
-      await this.configRepository.delete(id);
+      await this.configModel.destroy({ where: { id } });
 
       this.logger.log(`Integration deleted: ${integration.name} (${integration.type})`);
     } catch (error) {
@@ -237,10 +243,11 @@ export class IntegrationConfigService {
    * Mask sensitive data in integration configuration
    */
   private maskSensitiveData(integration: IntegrationConfig): IntegrationConfig {
+    const plainIntegration = integration.get({ plain: true });
     return {
-      ...integration,
-      apiKey: integration.apiKey ? '***MASKED***' : null,
-      password: integration.password ? '***MASKED***' : null,
+      ...plainIntegration,
+      apiKey: plainIntegration.apiKey ? '***MASKED***' : null,
+      password: plainIntegration.password ? '***MASKED***' : null,
     };
   }
 }

@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { NotificationService } from './services/notification.service';
 import { OfflineSyncService } from './services/offline-sync.service';
 import { NotificationController } from './controllers/notification.controller';
 import { DeviceController } from './controllers/device.controller';
 import { SyncController } from './controllers/sync.controller';
-import { DeviceToken, PushNotification, SyncQueueItem, SyncConflict } from './entities';
+import { DeviceToken } from '../database/models/device-token.model';
+import { PushNotification } from '../database/models/push-notification.model';
+import { SyncQueueItem } from '../database/models/sync-queue-item.model';
+import { SyncConflict } from '../database/models/sync-conflict.model';
 
 /**
  * Mobile Module
@@ -20,7 +23,7 @@ import { DeviceToken, PushNotification, SyncQueueItem, SyncConflict } from './en
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       DeviceToken,
       PushNotification,
       SyncQueueItem,

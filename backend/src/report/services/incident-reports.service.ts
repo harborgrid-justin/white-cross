@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, Between } from 'typeorm';
-import { IncidentReport } from '../../incident-report/entities/incident-report.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { Op, fn, col } from 'sequelize';
+import { IncidentReport } from '../../database/models/incident-report.model';
 import { IncidentStatisticsReport } from '../interfaces/report-types.interface';
 import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
 
@@ -14,10 +15,9 @@ export class IncidentReportsService {
   private readonly logger = new Logger(IncidentReportsService.name);
 
   constructor(
-    @InjectRepository(IncidentReport)
-    private incidentReportRepository: Repository<IncidentReport>,
-    @InjectDataSource()
-    private dataSource: DataSource,
+    @InjectModel(IncidentReport)
+    private incidentReportModel: typeof IncidentReport,
+    private sequelize: Sequelize,
   ) {}
 
   /**
@@ -32,7 +32,13 @@ export class IncidentReportsService {
 
       if (startDate || endDate) {
         whereClause.occurredAt = {};
-        if (startDate) whereClause.occurredAt = Between(startDate, endDate || new Date());
+        if (startDate && endDate) {
+          whereClause.occurredAt = { [Op.between]: [startDate, endDate] };
+        } else if (startDate) {
+          whereClause.occurredAt = { [Op.gte]: startDate };
+        } else if (endDate) {
+          whereClause.occurredAt = { [Op.lte]: endDate };
+        }
       }
 
       if (incidentType) {
@@ -44,20 +50,22 @@ export class IncidentReportsService {
       }
 
       // Get incident reports with student details
-      const incidents = await this.incidentReportRepository.find({
+      const incidents = await this.incidentReportModel.findAll({
         where: whereClause,
-        relations: ['student', 'reportedBy'],
-        order: { occurredAt: 'DESC' },
+        include: ['student', 'reportedBy'],
+        order: [['occurredAt', 'DESC']],
       });
 
       // Group by type
-      const incidentsByTypeRaw = await this.incidentReportRepository
-        .createQueryBuilder('ir')
-        .select('ir.type', 'type')
-        .addSelect('COUNT(ir.id)', 'count')
-        .where(whereClause)
-        .groupBy('ir.type')
-        .getRawMany();
+      const incidentsByTypeRaw = await this.incidentReportModel.findAll({
+        where: whereClause,
+        attributes: [
+          'type',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['type'],
+        raw: true,
+      });
 
       const incidentsByType = incidentsByTypeRaw.map((record: any) => ({
         type: record.type,
@@ -65,13 +73,15 @@ export class IncidentReportsService {
       }));
 
       // Group by severity
-      const incidentsBySeverityRaw = await this.incidentReportRepository
-        .createQueryBuilder('ir')
-        .select('ir.severity', 'severity')
-        .addSelect('COUNT(ir.id)', 'count')
-        .where(whereClause)
-        .groupBy('ir.severity')
-        .getRawMany();
+      const incidentsBySeverityRaw = await this.incidentReportModel.findAll({
+        where: whereClause,
+        attributes: [
+          'severity',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['severity'],
+        raw: true,
+      });
 
       const incidentsBySeverity = incidentsBySeverityRaw.map((record: any) => ({
         severity: record.severity,
@@ -83,7 +93,7 @@ export class IncidentReportsService {
         startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
       const defaultEndDate = endDate || new Date();
 
-      const incidentsByMonthRaw = await this.dataSource.query(
+      const incidentsByMonthRaw = await this.sequelize.query(
         `SELECT
           DATE_TRUNC('month', "occurredAt") as month,
           type,
@@ -93,7 +103,10 @@ export class IncidentReportsService {
           AND "occurredAt" <= $2
         GROUP BY month, type
         ORDER BY month DESC`,
-        [defaultStartDate, defaultEndDate],
+        {
+          bind: [defaultStartDate, defaultEndDate],
+          type: 'SELECT',
+        },
       );
 
       const incidentsByMonth = incidentsByMonthRaw.map((record: any) => ({
@@ -103,15 +116,16 @@ export class IncidentReportsService {
       }));
 
       // Get injury types distribution (type + severity)
-      const injuryStatsRaw = await this.incidentReportRepository
-        .createQueryBuilder('ir')
-        .select('ir.type', 'type')
-        .addSelect('ir.severity', 'severity')
-        .addSelect('COUNT(ir.id)', 'count')
-        .where(whereClause)
-        .groupBy('ir.type')
-        .addGroupBy('ir.severity')
-        .getRawMany();
+      const injuryStatsRaw = await this.incidentReportModel.findAll({
+        where: whereClause,
+        attributes: [
+          'type',
+          'severity',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['type', 'severity'],
+        raw: true,
+      });
 
       const injuryStats = injuryStatsRaw.map((record: any) => ({
         type: record.type,
@@ -120,13 +134,15 @@ export class IncidentReportsService {
       }));
 
       // Get parent notification rate
-      const notificationStatsRaw = await this.incidentReportRepository
-        .createQueryBuilder('ir')
-        .select('ir.parentNotified', 'parentNotified')
-        .addSelect('COUNT(ir.id)', 'count')
-        .where(whereClause)
-        .groupBy('ir.parentNotified')
-        .getRawMany();
+      const notificationStatsRaw = await this.incidentReportModel.findAll({
+        where: whereClause,
+        attributes: [
+          'parentNotified',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['parentNotified'],
+        raw: true,
+      });
 
       const notificationStats = notificationStatsRaw.map((record: any) => ({
         parentNotified: record.parentNotified as boolean,
@@ -134,13 +150,15 @@ export class IncidentReportsService {
       }));
 
       // Safety compliance metrics
-      const complianceStatsRaw = await this.incidentReportRepository
-        .createQueryBuilder('ir')
-        .select('ir.legalComplianceStatus', 'legalComplianceStatus')
-        .addSelect('COUNT(ir.id)', 'count')
-        .where(whereClause)
-        .groupBy('ir.legalComplianceStatus')
-        .getRawMany();
+      const complianceStatsRaw = await this.incidentReportModel.findAll({
+        where: whereClause,
+        attributes: [
+          'legalComplianceStatus',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['legalComplianceStatus'],
+        raw: true,
+      });
 
       const complianceStats = complianceStatsRaw.map((record: any) => ({
         legalComplianceStatus: record.legalComplianceStatus,

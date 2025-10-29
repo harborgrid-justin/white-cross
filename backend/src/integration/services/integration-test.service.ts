@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { IntegrationConfig, IntegrationStatus } from '../entities/integration-config.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 
@@ -21,8 +20,8 @@ export class IntegrationTestService {
   private readonly logger = new Logger(IntegrationTestService.name);
 
   constructor(
-    @InjectRepository(IntegrationConfig)
-    private readonly configRepository: Repository<IntegrationConfig>,
+    @InjectModel(IntegrationConfig)
+    private readonly configModel: typeof IntegrationConfig,
     private readonly configService: IntegrationConfigService,
     private readonly logService: IntegrationLogService,
   ) {}
@@ -37,7 +36,7 @@ export class IntegrationTestService {
       const integration = await this.configService.findById(id, true);
 
       // Update status to TESTING
-      await this.configRepository.update(id, { status: IntegrationStatus.TESTING });
+      await this.configModel.update({ status: IntegrationStatus.TESTING }, { where: { id } });
 
       // Simulate connection test based on integration type
       const testResult = await this.performConnectionTest(integration);
@@ -45,10 +44,10 @@ export class IntegrationTestService {
       const responseTime = Date.now() - startTime;
 
       // Update status based on result
-      await this.configRepository.update(id, {
+      await this.configModel.update({
         status: testResult.success ? IntegrationStatus.ACTIVE : IntegrationStatus.ERROR,
         lastSyncStatus: testResult.success ? 'success' : 'failed',
-      });
+      }, { where: { id } });
 
       // Log the test
       await this.logService.create({
@@ -70,10 +69,10 @@ export class IntegrationTestService {
     } catch (error) {
       const responseTime = Date.now() - startTime;
 
-      await this.configRepository.update(id, {
+      await this.configModel.update({
         status: IntegrationStatus.ERROR,
         lastSyncStatus: 'failed',
-      });
+      }, { where: { id } });
 
       this.logger.error('Error testing connection', error);
 

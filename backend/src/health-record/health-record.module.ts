@@ -11,7 +11,7 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { HealthRecordService } from './health-record.service';
 import { HealthRecordController } from './health-record.controller';
 import { VaccinationModule } from './vaccination/vaccination.module';
@@ -23,20 +23,16 @@ import { ChronicConditionModule } from './chronic-condition/chronic-condition.mo
 import { ValidationModule } from './validation/validation.module';
 import { AllergyModule } from './allergy/allergy.module';
 
-// Entities
-import { HealthRecord } from './entities/health-record.entity';
-import { Allergy } from '../allergy/entities/allergy.entity';
-import { Vaccination } from './vaccination/entities/vaccination.entity';
-import { ChronicCondition } from '../chronic-condition/entities/chronic-condition.entity';
-import { Student } from '../student/entities/student.entity';
+// Models
+import { HealthRecord } from '../database/models/health-record.model';
+import { Allergy } from '../database/models/allergy.model';
+import { Student } from '../database/models/student.model';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       HealthRecord,
       Allergy,
-      Vaccination,
-      ChronicCondition,
       Student,
     ]),
     VaccinationModule,

@@ -12,13 +12,13 @@
  */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In, Like } from 'typeorm';
-import { HealthRecord } from './entities/health-record.entity';
-import { Allergy } from '../allergy/entities/allergy.entity';
-import { Vaccination } from './vaccination/entities/vaccination.entity';
-import { ChronicCondition } from '../chronic-condition/entities/chronic-condition.entity';
-import { Student } from '../student/entities/student.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { HealthRecord } from '../database/models/health-record.model';
+import { Allergy } from '../database/models/allergy.model';
+import { Student } from '../database/models/student.model';
+import { ChronicCondition } from '../database/models/chronic-condition.model';
+import { Vaccination } from '../database/models/vaccination.model';
 import {
   PaginatedHealthRecords,
   PaginationResult,
@@ -30,21 +30,27 @@ import {
   VitalSigns,
 } from './interfaces';
 
+/**
+ * HealthRecordService
+ *
+ * Comprehensive HIPAA-Compliant Health Management Service
+ * Migrated to Sequelize ORM
+ */
 @Injectable()
 export class HealthRecordService {
   private readonly logger = new Logger(HealthRecordService.name);
 
   constructor(
-    @InjectRepository(HealthRecord)
-    private readonly healthRecordRepository: Repository<HealthRecord>,
-    @InjectRepository(Allergy)
-    private readonly allergyRepository: Repository<Allergy>,
-    @InjectRepository(Vaccination)
-    private readonly vaccinationRepository: Repository<Vaccination>,
-    @InjectRepository(ChronicCondition)
-    private readonly chronicConditionRepository: Repository<ChronicCondition>,
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    @InjectModel(HealthRecord)
+    private readonly healthRecordModel: typeof HealthRecord,
+    @InjectModel(Allergy)
+    private readonly allergyModel: typeof Allergy,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
+    @InjectModel(ChronicCondition)
+    private readonly chronicConditionModel: typeof ChronicCondition,
+    @InjectModel(Vaccination)
+    private readonly vaccinationModel: typeof Vaccination,
   ) {}
 
   // ==================== Health Record Operations ====================
@@ -70,37 +76,33 @@ export class HealthRecordService {
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
     const offset = (page - 1) * limit;
 
-    const queryBuilder = this.healthRecordRepository
-      .createQueryBuilder('hr')
-      .leftJoinAndSelect('hr.student', 'student')
-      .where('hr.studentId = :studentId', { studentId });
+    const whereClause: any = { studentId };
 
     // Apply filters
     if (filters.type) {
-      queryBuilder.andWhere('hr.recordType = :type', { type: filters.type });
+      whereClause.recordType = filters.type;
     }
-    if (filters.dateFrom) {
-      queryBuilder.andWhere('hr.recordDate >= :dateFrom', {
-        dateFrom: filters.dateFrom,
-      });
-    }
-    if (filters.dateTo) {
-      queryBuilder.andWhere('hr.recordDate <= :dateTo', {
-        dateTo: filters.dateTo,
-      });
+    if (filters.dateFrom || filters.dateTo) {
+      whereClause.recordDate = {};
+      if (filters.dateFrom) {
+        whereClause.recordDate[Op.gte] = filters.dateFrom;
+      }
+      if (filters.dateTo) {
+        whereClause.recordDate[Op.lte] = filters.dateTo;
+      }
     }
     if (filters.provider) {
-      queryBuilder.andWhere('hr.provider ILIKE :provider', {
-        provider: `%${filters.provider}%`,
-      });
+      whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
     }
 
     // Execute query with pagination
-    const [records, total] = await queryBuilder
-      .orderBy('hr.recordDate', 'DESC')
-      .skip(offset)
-      .take(limit)
-      .getManyAndCount();
+    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+      limit,
+      offset,
+    });
 
     // PHI Access Audit Log
     this.logger.log(
@@ -125,22 +127,18 @@ export class HealthRecordService {
    */
   async createHealthRecord(data: any): Promise<HealthRecord> {
     // Verify student exists
-    const student = await this.studentRepository.findOne({
-      where: { id: data.studentId },
-    });
+    const student = await this.studentModel.findByPk(data.studentId);
 
     if (!student) {
       throw new NotFoundException('Student not found');
     }
 
     // Create health record
-    const healthRecord = this.healthRecordRepository.create(data);
-    const savedRecord = await this.healthRecordRepository.save(healthRecord);
+    const healthRecord = await this.healthRecordModel.create(data);
 
     // Reload with associations
-    const record = await this.healthRecordRepository.findOne({
-      where: { id: (savedRecord as any).id },
-      relations: ['student'],
+    const record = await this.healthRecordModel.findByPk(healthRecord.id, {
+      include: [{ model: this.studentModel, as: 'student' }],
     });
 
     if (!record) {

@@ -1,44 +1,78 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  Table,
   Column,
-  CreateDateColumn,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
   Index,
-} from 'typeorm';
+} from 'sequelize-typescript';
 
 /**
  * Login Attempt Entity
  * Tracks successful and failed login attempts for brute force detection
  */
-@Entity('login_attempts')
-@Index(['userId', 'createdAt'])
-@Index(['ipAddress', 'createdAt'])
-@Index(['success', 'createdAt'])
-export class LoginAttemptEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+@Table({
+  tableName: 'login_attempts',
+  timestamps: true,
+  indexes: [
+    { fields: ['userId', 'createdAt'] },
+    { fields: ['ipAddress', 'createdAt'] },
+    { fields: ['success', 'createdAt'] },
+  ],
+})
+export class LoginAttemptEntity extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.STRING)
+  declare id: string;
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   userId?: string; // May be null if login attempt failed before user identification
 
-  @Column({ nullable: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   username?: string; // Attempted username/email
 
-  @Column()
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   ipAddress: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   userAgent?: string;
 
-  @Column({ default: false })
+  @Default(false)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
   success: boolean;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   failureReason?: string; // e.g., 'invalid_password', 'user_not_found', 'account_locked'
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  declare createdAt: Date;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
   metadata?: Record<string, any>; // Additional context (e.g., 2FA status, device info)
 }

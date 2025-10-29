@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { IntegrationConfig, IntegrationStatus } from '../entities/integration-config.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 
@@ -23,8 +22,8 @@ export class IntegrationSyncService {
   private readonly logger = new Logger(IntegrationSyncService.name);
 
   constructor(
-    @InjectRepository(IntegrationConfig)
-    private readonly configRepository: Repository<IntegrationConfig>,
+    @InjectModel(IntegrationConfig)
+    private readonly configModel: typeof IntegrationConfig,
     private readonly configService: IntegrationConfigService,
     private readonly logService: IntegrationLogService,
   ) {}
@@ -43,7 +42,7 @@ export class IntegrationSyncService {
       }
 
       // Update status to SYNCING
-      await this.configRepository.update(id, { status: IntegrationStatus.SYNCING });
+      await this.configModel.update({ status: IntegrationStatus.SYNCING }, { where: { id } });
 
       // Perform the sync operation
       const syncResult = await this.performSync(integration);
@@ -51,11 +50,11 @@ export class IntegrationSyncService {
       const duration = Date.now() - startTime;
 
       // Update integration with sync results
-      await this.configRepository.update(id, {
+      await this.configModel.update({
         status: syncResult.success ? IntegrationStatus.ACTIVE : IntegrationStatus.ERROR,
         lastSyncAt: new Date(),
         lastSyncStatus: syncResult.success ? 'success' : 'failed',
-      });
+      }, { where: { id } });
 
       // Log the sync
       await this.logService.create({
@@ -84,11 +83,11 @@ export class IntegrationSyncService {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      await this.configRepository.update(id, {
+      await this.configModel.update({
         status: IntegrationStatus.ERROR,
         lastSyncAt: new Date(),
         lastSyncStatus: 'failed',
-      });
+      }, { where: { id } });
 
       this.logger.error('Error syncing integration', error);
 

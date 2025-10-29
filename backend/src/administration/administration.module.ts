@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { AdministrationController } from './administration.controller';
 
-// Import all entities
-import {
-  District,
-  School,
-  License,
-  SystemConfiguration,
-  ConfigurationHistory,
-  AuditLog,
-  BackupLog,
-  PerformanceMetric,
-  TrainingModule,
-} from './entities';
+// Import Sequelize models
+import { District } from '../database/models/district.model';
+import { School } from '../database/models/school.model';
+import { License } from '../database/models/license.model';
+import { SystemConfig } from '../database/models/system-config.model';
+import { ConfigurationHistory } from '../database/models/configuration-history.model';
+import { AuditLog } from '../database/models/audit-log.model';
+import { BackupLog } from '../database/models/backup-log.model';
+import { PerformanceMetric } from '../database/models/performance-metric.model';
+import { TrainingModule } from '../database/models/training-module.model';
 
 // Import all services
 import { AuditService } from './services/audit.service';
@@ -35,11 +33,11 @@ import { UserManagementService } from './services/user-management.service';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       District,
       School,
       License,
-      SystemConfiguration,
+      SystemConfig,
       ConfigurationHistory,
       AuditLog,
       BackupLog,
@@ -48,7 +46,25 @@ import { UserManagementService } from './services/user-management.service';
     ]),
   ],
   controllers: [AdministrationController],
-  providers: [AuditService, BackupService, ConfigurationService, DistrictService, SchoolService, LicenseService, PerformanceService, SettingsService, SystemHealthService, TrainingService, UserManagementService],
-  exports: [AuditService, ConfigurationService, DistrictService, SchoolService, LicenseService],
+  providers: [
+    AuditService,
+    BackupService,
+    ConfigurationService,
+    DistrictService,
+    SchoolService,
+    LicenseService,
+    PerformanceService,
+    SettingsService,
+    SystemHealthService,
+    TrainingService,
+    UserManagementService
+  ],
+  exports: [
+    AuditService,
+    ConfigurationService,
+    DistrictService,
+    SchoolService,
+    LicenseService
+  ],
 })
 export class AdministrationModule {}

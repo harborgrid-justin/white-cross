@@ -25,8 +25,8 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { StudentService, PaginatedResponse, StudentStatistics, StudentDataExport } from './student.service';
-import { Student } from './entities/student.entity';
+import { StudentService } from './student-sequelize.service';
+import { Student } from '../database/models/student.model';
 import {
   CreateStudentDto,
   UpdateStudentDto,

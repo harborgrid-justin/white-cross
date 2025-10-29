@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { IpRestrictionEntity } from '../entities';
 import { IpRestrictionType } from '../enums';
 import {
@@ -18,8 +19,8 @@ export class IpRestrictionService {
   private readonly logger = new Logger(IpRestrictionService.name);
 
   constructor(
-    @InjectRepository(IpRestrictionEntity)
-    private readonly ipRestrictionRepo: Repository<IpRestrictionEntity>,
+    @InjectModel(IpRestrictionEntity)
+    private readonly ipRestrictionModel: typeof IpRestrictionEntity,
   ) {}
 
   /**
@@ -105,7 +106,7 @@ export class IpRestrictionService {
     rule?: IPRestrictionRule;
   }> {
     try {
-      const blacklistRules = await this.ipRestrictionRepo.find({
+      const blacklistRules = await this.ipRestrictionModel.findAll({
         where: {
           type: IpRestrictionType.BLACKLIST,
           isActive: true,
@@ -136,7 +137,7 @@ export class IpRestrictionService {
     allowed: boolean;
   }> {
     try {
-      const whitelistRules = await this.ipRestrictionRepo.find({
+      const whitelistRules = await this.ipRestrictionModel.findAll({
         where: {
           type: IpRestrictionType.WHITELIST,
           isActive: true,
@@ -181,7 +182,7 @@ export class IpRestrictionService {
       const location = await this.getIPGeolocation(ipAddress);
 
       // Check if country is blocked
-      const geoRestrictions = await this.ipRestrictionRepo.find({
+      const geoRestrictions = await this.ipRestrictionModel.findAll({
         where: {
           type: IpRestrictionType.GEO_RESTRICTION,
           isActive: true,
@@ -371,18 +372,16 @@ export class IpRestrictionService {
     dto: CreateIpRestrictionDto,
   ): Promise<IpRestrictionEntity> {
     try {
-      const restriction = this.ipRestrictionRepo.create({
+      const restriction = await this.ipRestrictionModel.create({
         ...dto,
         type: IpRestrictionType.BLACKLIST,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       });
-
-      const saved = await this.ipRestrictionRepo.save(restriction);
       this.logger.log('IP added to blacklist', {
         ipAddress: dto.ipAddress,
         reason: dto.reason,
       });
-      return saved;
+      return restriction;
     } catch (error) {
       this.logger.error('Error adding IP to blacklist', { error, dto });
       throw error;
@@ -396,18 +395,16 @@ export class IpRestrictionService {
     dto: CreateIpRestrictionDto,
   ): Promise<IpRestrictionEntity> {
     try {
-      const restriction = this.ipRestrictionRepo.create({
+      const restriction = await this.ipRestrictionModel.create({
         ...dto,
         type: IpRestrictionType.WHITELIST,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       });
-
-      const saved = await this.ipRestrictionRepo.save(restriction);
       this.logger.log('IP added to whitelist', {
         ipAddress: dto.ipAddress,
         reason: dto.reason,
       });
-      return saved;
+      return restriction;
     } catch (error) {
       this.logger.error('Error adding IP to whitelist', { error, dto });
       throw error;
@@ -419,7 +416,10 @@ export class IpRestrictionService {
    */
   async removeRestriction(ruleId: string): Promise<boolean> {
     try {
-      await this.ipRestrictionRepo.update(ruleId, { isActive: false });
+      await this.ipRestrictionModel.update(
+        { isActive: false },
+        { where: { id: ruleId } }
+      );
       this.logger.log('IP restriction removed', { ruleId });
       return true;
     } catch (error) {
@@ -440,7 +440,7 @@ export class IpRestrictionService {
         where.type = type;
       }
 
-      return await this.ipRestrictionRepo.find({ where });
+      return await this.ipRestrictionModel.findAll({ where });
     } catch (error) {
       this.logger.error('Error fetching IP restrictions', { error });
       return [];
@@ -454,16 +454,14 @@ export class IpRestrictionService {
     id: string,
     dto: UpdateIpRestrictionDto,
   ): Promise<IpRestrictionEntity> {
-    const restriction = await this.ipRestrictionRepo.findOne({
-      where: { id },
-    });
+    const restriction = await this.ipRestrictionModel.findByPk(id);
 
     if (!restriction) {
       throw new Error('IP restriction not found');
     }
 
     Object.assign(restriction, dto);
-    return await this.ipRestrictionRepo.save(restriction);
+    return await restriction.save();
   }
 
   /**

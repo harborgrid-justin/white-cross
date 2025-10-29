@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ChronicConditionService } from './chronic-condition.service';
 import { ChronicConditionController } from './chronic-condition.controller';
-import { ChronicCondition } from './entities/chronic-condition.entity';
+import { ChronicCondition } from '../database/models/chronic-condition.model';
 
 /**
  * ChronicConditionModule
@@ -12,7 +12,7 @@ import { ChronicCondition } from './entities/chronic-condition.entity';
  * IEP/504 accommodation coordination, and monitoring.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([ChronicCondition])],
+  imports: [SequelizeModule.forFeature([ChronicCondition])],
   providers: [ChronicConditionService],
   controllers: [ChronicConditionController],
   exports: [ChronicConditionService],

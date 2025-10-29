@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { SecurityController } from './security.controller';
 import { IpRestrictionService } from './services/ip-restriction.service';
 import { SecurityIncidentService } from './services/security-incident.service';
@@ -22,7 +22,7 @@ import {
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       IpRestrictionEntity,
       SecurityIncidentEntity,
       LoginAttemptEntity,

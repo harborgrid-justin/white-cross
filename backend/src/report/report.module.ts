@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 
-// Entities
-import { ReportTemplate } from './entities/report-template.entity';
-import { ReportSchedule } from './entities/report-schedule.entity';
-import { ReportExecution } from './entities/report-execution.entity';
+// Models
+import { ReportTemplate } from './models/report-template.model';
+import { ReportSchedule } from './models/report-schedule.model';
+import { ReportExecution } from './models/report-execution.model';
 
-// External entities
-import { HealthRecord } from '../health-record/entities/health-record.entity';
-import { ChronicCondition } from '../chronic-condition/entities/chronic-condition.entity';
-import { Allergy } from '../allergy/entities/allergy.entity';
-import { MedicationLog } from '../medication/entities/medication-log.entity';
-import { StudentMedication } from '../medication/entities/student-medication.entity';
-import { IncidentReport } from '../incident-report/entities/incident-report.entity';
-import { Student } from '../student/entities/student.entity';
-import { Appointment } from '../appointment/entities/appointment.entity';
-import { AuditLog } from '../audit/entities/audit-log.entity';
+// External models
+import { HealthRecord } from '../database/models/health-record.model';
+import { ChronicCondition } from '../database/models/chronic-condition.model';
+import { Allergy } from '../database/models/allergy.model';
+import { MedicationLog } from '../database/models/medication-log.model';
+import { StudentMedication } from '../database/models/student-medication.model';
+import { IncidentReport } from '../database/models/incident-report.model';
+import { Student } from '../database/models/student.model';
+import { Appointment } from '../database/models/appointment.model';
+import { AuditLog } from '../database/models/audit-log.model';
 
 // Services
 import { ReportGenerationService } from './services/report-generation.service';
@@ -36,12 +36,12 @@ import { ReportsController } from './controllers/reports.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      // Report entities
+    SequelizeModule.forFeature([
+      // Report models
       ReportTemplate,
       ReportSchedule,
       ReportExecution,
-      // External entities
+      // External models
       HealthRecord,
       ChronicCondition,
       Allergy,

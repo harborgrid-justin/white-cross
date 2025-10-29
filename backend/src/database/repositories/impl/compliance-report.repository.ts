@@ -10,25 +10,62 @@ import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
+import { ComplianceReport } from '../../models/compliance-report.model';
 
 export interface ComplianceReportAttributes {
   id: string;
+  reportType: string;
+  title: string;
+  description?: string;
+  status: string;
+  period: string;
+  findings?: any;
+  recommendations?: any;
+  dueDate?: Date;
+  submittedAt?: Date;
+  submittedBy?: string;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  createdById: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateComplianceReportDTO {
-  id?: string;
+  reportType: string;
+  title: string;
+  description?: string;
+  status?: string;
+  period: string;
+  findings?: any;
+  recommendations?: any;
+  dueDate?: Date;
+  submittedAt?: Date;
+  submittedBy?: string;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  createdById: string;
 }
 
 export interface UpdateComplianceReportDTO {
-  id?: string;
+  reportType?: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  period?: string;
+  findings?: any;
+  recommendations?: any;
+  dueDate?: Date;
+  submittedAt?: Date;
+  submittedBy?: string;
+  reviewedAt?: Date;
+  reviewedBy?: string;
 }
 
 @Injectable()
 export class ComplianceReportRepository extends BaseRepository<any, ComplianceReportAttributes, CreateComplianceReportDTO> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel(ComplianceReport) model: typeof ComplianceReport,
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager
   ) {

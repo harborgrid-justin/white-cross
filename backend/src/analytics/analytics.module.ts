@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
 import { HealthTrendAnalyticsService } from './services/health-trend-analytics.service';
 import { ComplianceReportGeneratorService } from './services/compliance-report-generator.service';
-import { HealthMetricSnapshot, AnalyticsReport } from './entities';
-import { Student } from '../student/entities/student.entity';
-import { HealthRecord } from '../health-record/entities/health-record.entity';
-import { IncidentReport } from '../incident-report/entities/incident-report.entity';
+import { HealthMetricSnapshot } from '../database/models/health-metric-snapshot.model';
+import { AnalyticsReport } from '../database/models/analytics-report.model';
+import { Student } from '../database/models/student.model';
+import { HealthRecord } from '../database/models/health-record.model';
 
 /**
  * Analytics Module
@@ -33,15 +33,14 @@ import { IncidentReport } from '../incident-report/entities/incident-report.enti
       isGlobal: false,
     }),
 
-    // TypeORM entities for analytics data persistence and queries
-    TypeOrmModule.forFeature([
-      // Analytics entities
+    // Sequelize models for analytics data persistence and queries
+    SequelizeModule.forFeature([
+      // Analytics models
       HealthMetricSnapshot,
       AnalyticsReport,
-      // External entities for data aggregation
+      // External models for data aggregation
       Student,
       HealthRecord,
-      IncidentReport,
     ]),
   ],
   controllers: [AnalyticsController],

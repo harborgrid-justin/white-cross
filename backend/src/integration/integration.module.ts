@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 
-// Entities
-import { IntegrationConfig } from './entities/integration-config.entity';
-import { IntegrationLog } from './entities/integration-log.entity';
+// Models
+import { IntegrationConfig } from '../database/models/integration-config.model';
+import { IntegrationLog } from '../database/models/integration-log.model';
 
 // Services
 import { IntegrationService } from './services/integration.service';
@@ -23,7 +23,7 @@ import { IntegrationController } from './integration.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([IntegrationConfig, IntegrationLog]),
+    SequelizeModule.forFeature([IntegrationConfig, IntegrationLog]),
     ConfigModule,
   ],
   providers: [

@@ -10,15 +10,16 @@
  * - Student pickup authorization tracking
  */
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ContactService } from './services/contact.service';
 import { EmergencyContactService } from './services/emergency-contact.service';
 import { ContactController } from './contact.controller';
-import { Contact, EmergencyContact } from './entities';
+import { Contact } from '../database/models/contact.model';
+import { EmergencyContact } from '../database/models/emergency-contact.model';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Contact, EmergencyContact])
+    SequelizeModule.forFeature([Contact, EmergencyContact])
   ],
   providers: [ContactService, EmergencyContactService],
   controllers: [ContactController],

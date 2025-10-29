@@ -5,31 +5,31 @@
  */
 
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { StudentService } from './student.service';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { StudentService } from './student-sequelize.service';
 import { StudentController } from './student.controller';
-import { Student } from './entities/student.entity';
+import { Student } from '../database/models/student.model';
 
 /**
  * Student Module
  *
  * Provides complete student management functionality:
- * - Entity definition with TypeORM
+ * - Model definition with Sequelize
  * - Service layer for business logic
  * - Controller layer for HTTP endpoints
- * - Repository pattern via TypeORM
+ * - Repository pattern via Sequelize
  *
  * Exports:
  * - StudentService: For use in other modules (health records, appointments, etc.)
  *
  * Dependencies:
- * - TypeOrmModule: For database operations
+ * - SequelizeModule: For database operations
  * - ConfigModule: Inherited from AppModule (global)
  */
 @Module({
   imports: [
-    // Register Student entity with TypeORM
-    TypeOrmModule.forFeature([Student]),
+    // Register Student model with Sequelize
+    SequelizeModule.forFeature([Student]),
 
     // TODO: Import related modules when available
     // UserModule,           // For nurse validation

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
-import { InventoryItem } from './entities/inventory-item.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { InventoryItem } from '../database/models/inventory-item.model';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 
@@ -10,8 +10,8 @@ export class InventoryService {
   private readonly logger = new Logger(InventoryService.name);
 
   constructor(
-    @InjectRepository(InventoryItem)
-    private readonly inventoryItemRepository: Repository<InventoryItem>,
+    @InjectModel(InventoryItem)
+    private readonly inventoryItemModel: typeof InventoryItem,
   ) {}
 
   /**
@@ -20,7 +20,7 @@ export class InventoryService {
   async createInventoryItem(data: CreateInventoryItemDto): Promise<InventoryItem> {
     try {
       // Check if item with same name already exists
-      const existingItem = await this.inventoryItemRepository.findOne({
+      const existingItem = await this.inventoryItemModel.findOne({
         where: {
           name: data.name,
           isActive: true,
@@ -31,8 +31,10 @@ export class InventoryService {
         throw new ConflictException('Inventory item with this name already exists');
       }
 
-      const item = this.inventoryItemRepository.create(data);
-      const savedItem = await this.inventoryItemRepository.save(item);
+      const savedItem = await this.inventoryItemModel.create({
+        ...data,
+        isActive: true,
+      });
 
       this.logger.log(`Inventory item created: ${savedItem.name} (${savedItem.category})`);
       return savedItem;
@@ -47,14 +49,13 @@ export class InventoryService {
    */
   async updateInventoryItem(id: string, data: UpdateInventoryItemDto): Promise<InventoryItem> {
     try {
-      const existingItem = await this.inventoryItemRepository.findOne({ where: { id } });
+      const existingItem = await this.inventoryItemModel.findByPk(id);
 
       if (!existingItem) {
         throw new NotFoundException('Inventory item not found');
       }
 
-      Object.assign(existingItem, data);
-      const updatedItem = await this.inventoryItemRepository.save(existingItem);
+      const updatedItem = await existingItem.update(data);
 
       this.logger.log(`Inventory item updated: ${updatedItem.name}`);
       return updatedItem;
@@ -69,9 +70,8 @@ export class InventoryService {
    */
   async getInventoryItem(id: string): Promise<InventoryItem> {
     try {
-      const item = await this.inventoryItemRepository.findOne({
-        where: { id },
-        relations: ['transactions', 'maintenanceLogs'],
+      const item = await this.inventoryItemModel.findByPk(id, {
+        include: ['transactions', 'maintenanceLogs'],
       });
 
       if (!item) {
@@ -110,9 +110,9 @@ export class InventoryService {
         where.isActive = filters.isActive;
       }
 
-      const items = await this.inventoryItemRepository.find({
+      const items = await this.inventoryItemModel.findAll({
         where,
-        order: { name: 'ASC' },
+        order: [['name', 'ASC']],
       });
 
       return items;
@@ -127,7 +127,7 @@ export class InventoryService {
    */
   async deleteInventoryItem(id: string): Promise<InventoryItem> {
     try {
-      const item = await this.inventoryItemRepository.findOne({ where: { id } });
+      const item = await this.inventoryItemModel.findByPk(id);
 
       if (!item) {
         throw new NotFoundException('Inventory item not found');
@@ -135,7 +135,7 @@ export class InventoryService {
 
       // Soft delete by setting isActive to false
       item.isActive = false;
-      const deletedItem = await this.inventoryItemRepository.save(item);
+      const deletedItem = await item.save();
 
       this.logger.log(`Inventory item deleted: ${deletedItem.name}`);
       return deletedItem;
@@ -150,16 +150,19 @@ export class InventoryService {
    */
   async searchInventoryItems(query: string, limit: number = 20): Promise<InventoryItem[]> {
     try {
-      const items = await this.inventoryItemRepository.find({
-        where: [
-          { name: Like(`%${query}%`), isActive: true },
-          { description: Like(`%${query}%`), isActive: true },
-          { category: Like(`%${query}%`), isActive: true },
-          { sku: Like(`%${query}%`), isActive: true },
-          { supplier: Like(`%${query}%`), isActive: true },
-        ],
-        take: limit,
-        order: { name: 'ASC' },
+      const items = await this.inventoryItemModel.findAll({
+        where: {
+          isActive: true,
+          [Op.or]: [
+            { name: { [Op.iLike]: `%${query}%` } },
+            { description: { [Op.iLike]: `%${query}%` } },
+            { category: { [Op.iLike]: `%${query}%` } },
+            { sku: { [Op.iLike]: `%${query}%` } },
+            { supplier: { [Op.iLike]: `%${query}%` } },
+          ],
+        },
+        limit,
+        order: [['name', 'ASC']],
       });
 
       return items;
@@ -180,10 +183,11 @@ export class InventoryService {
         where.isActive = isActive;
       }
 
-      return await this.inventoryItemRepository.count({ where });
+      return await this.inventoryItemModel.count({ where });
     } catch (error) {
       this.logger.error('Error getting inventory items count:', error);
       throw error;
     }
   }
+}
 }

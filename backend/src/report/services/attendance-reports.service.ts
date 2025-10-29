@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, Between } from 'typeorm';
-import { ChronicCondition } from '../../chronic-condition/entities/chronic-condition.entity';
-import { Student } from '../../student/entities/student.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { ChronicCondition } from '../../database/models/chronic-condition.model';
+import { Student } from '../../database/models/student.model';
 import { AttendanceCorrelationReport } from '../interfaces/report-types.interface';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 
@@ -15,12 +15,11 @@ export class AttendanceReportsService {
   private readonly logger = new Logger(AttendanceReportsService.name);
 
   constructor(
-    @InjectRepository(ChronicCondition)
-    private chronicConditionRepository: Repository<ChronicCondition>,
-    @InjectRepository(Student)
-    private studentRepository: Repository<Student>,
-    @InjectDataSource()
-    private dataSource: DataSource,
+    @InjectModel(ChronicCondition)
+    private chronicConditionModel: typeof ChronicCondition,
+    @InjectModel(Student)
+    private studentModel: typeof Student,
+    private sequelize: Sequelize,
   ) {}
 
   /**
@@ -33,7 +32,7 @@ export class AttendanceReportsService {
       const { startDate, endDate, limit = 50 } = dto;
 
       // Get students with most health visits
-      const healthVisitsRaw = await this.dataSource.query(
+      const healthVisitsRaw = await this.sequelize.query(
         `SELECT
           "studentId",
           COUNT(*)::integer as count
@@ -45,19 +44,21 @@ export class AttendanceReportsService {
         GROUP BY "studentId"
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
-        [
-          startDate,
-          endDate,
-          limit,
-        ].filter(v => v !== undefined),
+        {
+          bind: [
+            startDate,
+            endDate,
+            limit,
+          ].filter(v => v !== undefined),
+          type: 'SELECT',
+        },
       );
 
       // Fetch student details for health visits
       const healthVisitsWithStudents = await Promise.all(
         healthVisitsRaw.map(async (record: any) => {
-          const student = await this.studentRepository.findOne({
-            where: { id: record.studentId },
-            select: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+          const student = await this.studentModel.findByPk(record.studentId, {
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
           });
           return {
             studentId: record.studentId,
@@ -68,7 +69,7 @@ export class AttendanceReportsService {
       );
 
       // Get students with most incidents
-      const incidentVisitsRaw = await this.dataSource.query(
+      const incidentVisitsRaw = await this.sequelize.query(
         `SELECT
           "studentId",
           COUNT(*)::integer as count
@@ -80,19 +81,21 @@ export class AttendanceReportsService {
         GROUP BY "studentId"
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
-        [
-          startDate,
-          endDate,
-          limit,
-        ].filter(v => v !== undefined),
+        {
+          bind: [
+            startDate,
+            endDate,
+            limit,
+          ].filter(v => v !== undefined),
+          type: 'SELECT',
+        },
       );
 
       // Fetch student details for incident visits
       const incidentVisitsWithStudents = await Promise.all(
         incidentVisitsRaw.map(async (record: any) => {
-          const student = await this.studentRepository.findOne({
-            where: { id: record.studentId },
-            select: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+          const student = await this.studentModel.findByPk(record.studentId, {
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
           });
           return {
             studentId: record.studentId,
@@ -103,12 +106,12 @@ export class AttendanceReportsService {
       );
 
       // Get students with chronic conditions
-      const chronicStudents = await this.chronicConditionRepository.find({
-        relations: ['student'],
+      const chronicStudents = await this.chronicConditionModel.findAll({
+        include: ['student'],
       });
 
       // Get appointment frequency by student
-      const appointmentFrequencyRaw = await this.dataSource.query(
+      const appointmentFrequencyRaw = await this.sequelize.query(
         `SELECT
           "studentId",
           COUNT(*)::integer as count
@@ -120,19 +123,21 @@ export class AttendanceReportsService {
         GROUP BY "studentId"
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
-        [
-          startDate,
-          endDate,
-          limit,
-        ].filter(v => v !== undefined),
+        {
+          bind: [
+            startDate,
+            endDate,
+            limit,
+          ].filter(v => v !== undefined),
+          type: 'SELECT',
+        },
       );
 
       // Fetch student details for appointment frequency
       const appointmentFrequencyWithStudents = await Promise.all(
         appointmentFrequencyRaw.map(async (record: any) => {
-          const student = await this.studentRepository.findOne({
-            where: { id: record.studentId },
-            select: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+          const student = await this.studentModel.findByPk(record.studentId, {
+            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
           });
           return {
             studentId: record.studentId,

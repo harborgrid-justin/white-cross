@@ -11,11 +11,11 @@
  * @compliance HIPAA, Healthcare Allergy Documentation Standards
  */
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 
-// Entities
-import { Allergy } from './entities/allergy.entity';
-import { Student } from '../student/entities/student.entity';
+// Models
+import { Allergy } from './models/allergy.model';
+import { Student } from '../student/models/student.model';
 
 // Services
 import { AllergyCrudService } from './services/allergy-crud.service';
@@ -27,7 +27,7 @@ import { AllergyController } from './allergy.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    SequelizeModule.forFeature([
       Allergy,
       Student, // Required for student validation
     ]),

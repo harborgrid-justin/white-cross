@@ -3,7 +3,7 @@
  * Injectable NestJS service for transaction management
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { IUnitOfWork, TransactionOptions } from './unit-of-work.interface';
@@ -18,7 +18,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
 
   constructor(
     private readonly sequelize: Sequelize,
-    private readonly auditLogger: IAuditLogger
+    @Inject('IAuditLogger') private readonly auditLogger: IAuditLogger
   ) {}
 
   async begin(): Promise<void> {

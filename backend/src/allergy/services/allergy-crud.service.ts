@@ -16,22 +16,22 @@ import {
   ConflictException,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Allergy } from '../entities/allergy.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model } from 'sequelize-typescript';
+import { Allergy } from '../models/allergy.model';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 import { UpdateAllergyDto } from '../dto/update-allergy.dto';
-import { Student } from '../../student/entities/student.entity';
+import { Student } from '../../student/models/student.model';
 
 @Injectable()
 export class AllergyCrudService {
   private readonly logger = new Logger(AllergyCrudService.name);
 
   constructor(
-    @InjectRepository(Allergy)
-    private readonly allergyRepository: Repository<Allergy>,
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    @InjectModel(Allergy)
+    private readonly allergyModel: typeof Allergy,
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
   ) {}
 
   /**
@@ -44,9 +44,7 @@ export class AllergyCrudService {
    */
   async createAllergy(createAllergyDto: CreateAllergyDto): Promise<Allergy> {
     // Validate student exists
-    const student = await this.studentRepository.findOne({
-      where: { id: createAllergyDto.studentId },
-    });
+    const student = await this.studentModel.findByPk(createAllergyDto.studentId);
 
     if (!student) {
       throw new NotFoundException(
@@ -55,7 +53,7 @@ export class AllergyCrudService {
     }
 
     // Check for duplicate allergy
-    const existingAllergy = await this.allergyRepository.findOne({
+    const existingAllergy = await this.allergyModel.findOne({
       where: {
         studentId: createAllergyDto.studentId,
         allergen: createAllergyDto.allergen,
@@ -76,8 +74,7 @@ export class AllergyCrudService {
     };
 
     // Create allergy record
-    const allergy = this.allergyRepository.create(allergyData);
-    const savedAllergy = await this.allergyRepository.save(allergy) as unknown as Allergy;
+    const savedAllergy = await this.allergyModel.create(allergyData);
 
     // PHI Audit Log
     this.logger.log(
@@ -85,10 +82,9 @@ export class AllergyCrudService {
     );
 
     // Reload with relations
-    return (await this.allergyRepository.findOne({
-      where: { id: savedAllergy.id },
-      relations: ['student'],
-    })) as unknown as Allergy;
+    return await this.allergyModel.findByPk(savedAllergy.id, {
+      include: [{ model: Student, as: 'student' }],
+    }) as Allergy;
   }
 
   /**
@@ -99,9 +95,8 @@ export class AllergyCrudService {
    * @throws NotFoundException if allergy doesn't exist
    */
   async getAllergyById(id: string): Promise<Allergy> {
-    const allergy = await this.allergyRepository.findOne({
-      where: { id },
-      relations: ['student'],
+    const allergy = await this.allergyModel.findByPk(id, {
+      include: [{ model: Student, as: 'student' }],
     });
 
     if (!allergy) {
@@ -126,9 +121,8 @@ export class AllergyCrudService {
     id: string,
     updateAllergyDto: UpdateAllergyDto,
   ): Promise<Allergy> {
-    const allergy = await this.allergyRepository.findOne({
-      where: { id },
-      relations: ['student'],
+    const allergy = await this.allergyModel.findByPk(id, {
+      include: [{ model: Student, as: 'student' }],
     });
 
     if (!allergy) {
@@ -149,8 +143,8 @@ export class AllergyCrudService {
     }
 
     // Update allergy
-    Object.assign(allergy, updateData);
-    const updatedAllergy = await this.allergyRepository.save(allergy);
+    await allergy.update(updateData);
+    const updatedAllergy = allergy;
 
     // PHI Audit Log
     this.logger.log(
@@ -159,9 +153,8 @@ export class AllergyCrudService {
     );
 
     // Reload with relations
-    const result = await this.allergyRepository.findOne({
-      where: { id: updatedAllergy.id },
-      relations: ['student'],
+    const result = await this.allergyModel.findByPk(updatedAllergy.id, {
+      include: [{ model: Student, as: 'student' }],
     });
     if (!result) {
       throw new NotFoundException(`Allergy with ID ${updatedAllergy.id} not found after update`);
@@ -177,17 +170,14 @@ export class AllergyCrudService {
    * @throws NotFoundException if allergy doesn't exist
    */
   async deactivateAllergy(id: string): Promise<{ success: boolean }> {
-    const allergy = await this.allergyRepository.findOne({
-      where: { id },
-    });
+    const allergy = await this.allergyModel.findByPk(id);
 
     if (!allergy) {
       throw new NotFoundException(`Allergy with ID ${id} not found`);
     }
 
     // Soft delete
-    allergy.isActive = false;
-    await this.allergyRepository.save(allergy);
+    await allergy.update({ isActive: false });
 
     // PHI Audit Log
     this.logger.log(
@@ -208,9 +198,8 @@ export class AllergyCrudService {
    * @throws NotFoundException if allergy doesn't exist
    */
   async deleteAllergy(id: string): Promise<{ success: boolean }> {
-    const allergy = await this.allergyRepository.findOne({
-      where: { id },
-      relations: ['student'],
+    const allergy = await this.allergyModel.findByPk(id, {
+      include: [{ model: Student, as: 'student' }],
     });
 
     if (!allergy) {
@@ -227,7 +216,7 @@ export class AllergyCrudService {
         : 'Unknown',
     };
 
-    await this.allergyRepository.remove(allergy);
+    await allergy.destroy();
 
     // PHI Audit Log - WARNING level due to permanent deletion
     this.logger.warn(

@@ -11,9 +11,10 @@
  * @compliance HIPAA, Medication Safety Standards
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import { Allergy } from '../entities/allergy.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { Allergy } from '../models/allergy.model';
+import { Student } from '../../student/models/student.model';
 import { AllergySeverity } from '../../common/enums';
 import { AllergyCrudService } from './allergy-crud.service';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
@@ -30,8 +31,8 @@ export class AllergySafetyService {
   private readonly logger = new Logger(AllergySafetyService.name);
 
   constructor(
-    @InjectRepository(Allergy)
-    private readonly allergyRepository: Repository<Allergy>,
+    @InjectModel(Allergy)
+    private readonly allergyModel: typeof Allergy,
     private readonly allergyCrudService: AllergyCrudService,
   ) {}
 
@@ -71,12 +72,12 @@ export class AllergySafetyService {
     medicationClass?: string,
   ): Promise<DrugAllergyConflict> {
     // Get all active allergies for student
-    const allergies = await this.allergyRepository.find({
+    const allergies = await this.allergyModel.findAll({
       where: {
         studentId,
         isActive: true,
       },
-      relations: ['student'],
+      include: [{ model: Student, as: 'student' }],
     });
 
     if (allergies.length === 0) {

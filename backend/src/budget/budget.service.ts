@@ -5,10 +5,10 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, MoreThan } from 'typeorm';
-import { BudgetCategory } from './entities/budget-category.entity';
-import { BudgetTransaction } from './entities/budget-transaction.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model, Op, Transaction } from 'sequelize';
+import { BudgetCategory } from '../database/models/budget-category.model';
+import { BudgetTransaction } from '../database/models/budget-transaction.model';
 import { CreateBudgetCategoryDto } from './dto/create-budget-category.dto';
 import { UpdateBudgetCategoryDto } from './dto/update-budget-category.dto';
 import { CreateBudgetTransactionDto } from './dto/create-budget-transaction.dto';
@@ -36,10 +36,10 @@ export class BudgetService {
   private readonly logger = new Logger(BudgetService.name);
 
   constructor(
-    @InjectRepository(BudgetCategory)
-    private readonly budgetCategoryRepository: Repository<BudgetCategory>,
-    @InjectRepository(BudgetTransaction)
-    private readonly budgetTransactionRepository: Repository<BudgetTransaction>,
+    @InjectModel(BudgetCategory)
+    private readonly budgetCategoryModel: typeof BudgetCategory,
+    @InjectModel(BudgetTransaction)
+    private readonly budgetTransactionModel: typeof BudgetTransaction,
   ) {}
 
   /**
@@ -51,25 +51,25 @@ export class BudgetService {
   ): Promise<BudgetCategory[]> {
     const currentYear = fiscalYear || new Date().getFullYear();
 
-    const queryBuilder = this.budgetCategoryRepository
-      .createQueryBuilder('category')
-      .leftJoinAndSelect('category.transactions', 'transaction')
-      .where('category.fiscalYear = :fiscalYear', { fiscalYear: currentYear });
-
+    const where: any = { fiscalYear: currentYear };
     if (activeOnly) {
-      queryBuilder.andWhere('category.isActive = :isActive', { isActive: true });
+      where.isActive = true;
     }
 
-    queryBuilder
-      .orderBy('category.name', 'ASC')
-      .addOrderBy('transaction.transactionDate', 'DESC');
-
-    const categories = await queryBuilder.getMany();
+    const categories = await this.budgetCategoryModel.findAll({
+      where,
+      include: [{
+        model: this.budgetTransactionModel,
+        as: 'transactions',
+        order: [['transactionDate', 'DESC']],
+      }],
+      order: [['name', 'ASC']],
+    });
 
     // Limit transactions to last 5 for each category
     categories.forEach(category => {
       if (category.transactions) {
-        category.transactions = category.transactions.slice(0, 5);
+        category.transactions = category.transactions.slice(0, 5) as any;
       }
     });
 
@@ -80,14 +80,13 @@ export class BudgetService {
    * Get budget category by ID with all transactions
    */
   async getBudgetCategoryById(id: string): Promise<BudgetCategory> {
-    const category = await this.budgetCategoryRepository.findOne({
+    const category = await this.budgetCategoryModel.findOne({
       where: { id },
-      relations: ['transactions'],
-      order: {
-        transactions: {
-          transactionDate: 'DESC',
-        },
-      },
+      include: [{
+        model: this.budgetTransactionModel,
+        as: 'transactions',
+        order: [['transactionDate', 'DESC']],
+      }],
     });
 
     if (!category) {
@@ -104,7 +103,7 @@ export class BudgetService {
     createDto: CreateBudgetCategoryDto,
   ): Promise<BudgetCategory> {
     // Check for duplicate category name in same fiscal year
-    const existing = await this.budgetCategoryRepository.findOne({
+    const existing = await this.budgetCategoryModel.findOne({
       where: {
         name: createDto.name,
         fiscalYear: createDto.fiscalYear,
@@ -118,18 +117,20 @@ export class BudgetService {
       );
     }
 
-    const category = this.budgetCategoryRepository.create({
-      ...createDto,
+    const category = await this.budgetCategoryModel.create({
+      name: createDto.name,
+      description: createDto.description || null,
+      fiscalYear: createDto.fiscalYear,
+      allocatedAmount: createDto.allocatedAmount,
       spentAmount: 0,
-    });
-
-    const saved = await this.budgetCategoryRepository.save(category);
+      isActive: true,
+    } as any);
 
     this.logger.log(
-      `Budget category created: ${saved.name} for FY${saved.fiscalYear}`,
+      `Budget category created: ${category.name} for FY${category.fiscalYear}`,
     );
 
-    return saved;
+    return category;
   }
 
   /**
@@ -143,12 +144,12 @@ export class BudgetService {
 
     // Check for duplicate name if name is being changed
     if (updateDto.name && updateDto.name !== category.name) {
-      const existing = await this.budgetCategoryRepository.findOne({
+      const existing = await this.budgetCategoryModel.findOne({
         where: {
           name: updateDto.name,
           fiscalYear: category.fiscalYear,
           isActive: true,
-          id: Not(id),
+          id: { [Op.ne]: id },
         },
       });
 
@@ -160,11 +161,11 @@ export class BudgetService {
     }
 
     Object.assign(category, updateDto);
-    const updated = await this.budgetCategoryRepository.save(category);
+    await category.save();
 
-    this.logger.log(`Budget category updated: ${updated.name}`);
+    this.logger.log(`Budget category updated: ${category.name}`);
 
-    return updated;
+    return category;
   }
 
   /**
@@ -174,7 +175,7 @@ export class BudgetService {
     const category = await this.getBudgetCategoryById(id);
 
     category.isActive = false;
-    await this.budgetCategoryRepository.save(category);
+    await category.save();
 
     this.logger.log(`Budget category soft deleted: ${category.name}`);
 
@@ -187,64 +188,71 @@ export class BudgetService {
   async createBudgetTransaction(
     createDto: CreateBudgetTransactionDto,
   ): Promise<BudgetTransaction> {
-    return await this.budgetCategoryRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        // Verify category exists and is active
-        const category = await transactionalEntityManager.findOne(BudgetCategory, {
-          where: { id: createDto.categoryId },
-        });
+    const sequelize = this.budgetCategoryModel.sequelize!;
+    return await sequelize.transaction(async (transaction) => {
+      // Verify category exists and is active
+      const category = await this.budgetCategoryModel.findOne({
+        where: { id: createDto.categoryId },
+        transaction,
+      });
 
-        if (!category) {
-          throw new NotFoundException(
-            `Budget category with ID ${createDto.categoryId} not found`,
-          );
-        }
-
-        if (!category.isActive) {
-          throw new BadRequestException(
-            'Cannot add transactions to inactive budget category',
-          );
-        }
-
-        // Check if transaction would exceed budget
-        const newSpent = Number(category.spentAmount) + createDto.amount;
-        const allocated = Number(category.allocatedAmount);
-
-        if (newSpent > allocated) {
-          this.logger.warn(
-            `Transaction would exceed budget for ${category.name}: $${newSpent} > $${allocated}`,
-          );
-        }
-
-        // Create transaction
-        const transaction = transactionalEntityManager.create(BudgetTransaction, {
-          ...createDto,
-          transactionDate: new Date(),
-        });
-
-        const savedTransaction = await transactionalEntityManager.save(transaction);
-
-        // Update category spent amount
-        category.spentAmount = Number(category.spentAmount) + createDto.amount;
-        await transactionalEntityManager.save(category);
-
-        this.logger.log(
-          `Budget transaction created: $${createDto.amount} for ${category.name}`,
+      if (!category) {
+        throw new NotFoundException(
+          `Budget category with ID ${createDto.categoryId} not found`,
         );
+      }
 
-        // Reload with category relation
-        const result = await transactionalEntityManager.findOne(BudgetTransaction, {
-          where: { id: savedTransaction.id },
-          relations: ['category'],
-        });
+      if (!category.isActive) {
+        throw new BadRequestException(
+          'Cannot add transactions to inactive budget category',
+        );
+      }
 
-        if (!result) {
-          throw new Error('Failed to reload transaction after creation');
-        }
+      // Check if transaction would exceed budget
+      const newSpent = Number(category.spentAmount) + createDto.amount;
+      const allocated = Number(category.allocatedAmount);
 
-        return result;
-      },
-    );
+      if (newSpent > allocated) {
+        this.logger.warn(
+          `Transaction would exceed budget for ${category.name}: $${newSpent} > $${allocated}`,
+        );
+      }
+
+      // Create transaction
+      const transactionRecord = await this.budgetTransactionModel.create({
+        categoryId: createDto.categoryId,
+        amount: createDto.amount,
+        description: createDto.description,
+        transactionDate: new Date(),
+        referenceId: createDto.referenceId || null,
+        referenceType: createDto.referenceType || null,
+        notes: createDto.notes || null,
+      } as any, { transaction });
+
+      // Update category spent amount
+      category.spentAmount = Number(category.spentAmount) + createDto.amount;
+      await category.save({ transaction });
+
+      this.logger.log(
+        `Budget transaction created: $${createDto.amount} for ${category.name}`,
+      );
+
+      // Reload with category relation
+      const result = await this.budgetTransactionModel.findOne({
+        where: { id: transactionRecord.id },
+        include: [{
+          model: this.budgetCategoryModel,
+          as: 'category',
+        }],
+        transaction,
+      });
+
+      if (!result) {
+        throw new Error('Failed to reload transaction after creation');
+      }
+
+      return result;
+    });
   }
 
   /**
@@ -254,97 +262,97 @@ export class BudgetService {
     id: string,
     updateDto: UpdateBudgetTransactionDto,
   ): Promise<BudgetTransaction> {
-    return await this.budgetTransactionRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        const transaction = await transactionalEntityManager.findOne(
-          BudgetTransaction,
-          {
-            where: { id },
-            relations: ['category'],
-          },
-        );
+    const sequelize = this.budgetTransactionModel.sequelize!;
+    return await sequelize.transaction(async (transaction) => {
+      const transactionRecord = await this.budgetTransactionModel.findOne({
+        where: { id },
+        include: [{
+          model: this.budgetCategoryModel,
+          as: 'category',
+        }],
+        transaction,
+      });
 
-        if (!transaction) {
-          throw new NotFoundException(`Budget transaction with ID ${id} not found`);
-        }
+      if (!transactionRecord) {
+        throw new NotFoundException(`Budget transaction with ID ${id} not found`);
+      }
 
-        const oldAmount = Number(transaction.amount);
-        const newAmount = updateDto.amount !== undefined ? updateDto.amount : oldAmount;
-        const amountDifference = newAmount - oldAmount;
+      const oldAmount = Number(transactionRecord.amount);
+      const newAmount = updateDto.amount !== undefined ? updateDto.amount : oldAmount;
+      const amountDifference = newAmount - oldAmount;
 
-        // Update category spent amount if amount changed
-        if (amountDifference !== 0) {
-          const category = await transactionalEntityManager.findOne(
-            BudgetCategory,
-            {
-              where: { id: transaction.categoryId },
-            },
-          );
-
-          if (category) {
-            category.spentAmount = Number(category.spentAmount) + amountDifference;
-            await transactionalEntityManager.save(category);
-          }
-        }
-
-        Object.assign(transaction, updateDto);
-        const updated = await transactionalEntityManager.save(transaction);
-
-        this.logger.log(`Budget transaction updated: ${updated.id}`);
-
-        const result = await transactionalEntityManager.findOne(BudgetTransaction, {
-          where: { id: updated.id },
-          relations: ['category'],
+      // Update category spent amount if amount changed
+      if (amountDifference !== 0) {
+        const category = await this.budgetCategoryModel.findOne({
+          where: { id: transactionRecord.categoryId },
+          transaction,
         });
 
-        if (!result) {
-          throw new Error('Failed to reload transaction after update');
+        if (category) {
+          category.spentAmount = Number(category.spentAmount) + amountDifference;
+          await category.save({ transaction });
         }
+      }
 
-        return result;
-      },
-    );
+      Object.assign(transactionRecord, updateDto);
+      await transactionRecord.save({ transaction });
+
+      this.logger.log(`Budget transaction updated: ${transactionRecord.id}`);
+
+      const result = await this.budgetTransactionModel.findOne({
+        where: { id: transactionRecord.id },
+        include: [{
+          model: this.budgetCategoryModel,
+          as: 'category',
+        }],
+        transaction,
+      });
+
+      if (!result) {
+        throw new Error('Failed to reload transaction after update');
+      }
+
+      return result;
+    });
   }
 
   /**
    * Delete budget transaction
    */
   async deleteBudgetTransaction(id: string): Promise<{ success: boolean }> {
-    return await this.budgetTransactionRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        const transaction = await transactionalEntityManager.findOne(
-          BudgetTransaction,
-          {
-            where: { id },
-          },
+    const sequelize = this.budgetTransactionModel.sequelize!;
+    return await sequelize.transaction(async (transaction) => {
+      const transactionRecord = await this.budgetTransactionModel.findOne({
+        where: { id },
+        transaction,
+      });
+
+      if (!transactionRecord) {
+        throw new NotFoundException(`Budget transaction with ID ${id} not found`);
+      }
+
+      const amount = Number(transactionRecord.amount);
+
+      // Update category spent amount
+      const category = await this.budgetCategoryModel.findOne({
+        where: { id: transactionRecord.categoryId },
+        transaction,
+      });
+
+      if (category) {
+        category.spentAmount = Math.max(
+          0,
+          Number(category.spentAmount) - amount,
         );
+        await category.save({ transaction });
+      }
 
-        if (!transaction) {
-          throw new NotFoundException(`Budget transaction with ID ${id} not found`);
-        }
+      await transactionRecord.destroy({ transaction });
 
-        const amount = Number(transaction.amount);
+      this.logger.log(`Budget transaction deleted: ${id} ($${amount})`);
 
-        // Update category spent amount
-        const category = await transactionalEntityManager.findOne(BudgetCategory, {
-          where: { id: transaction.categoryId },
-        });
-
-        if (category) {
-          category.spentAmount = Math.max(
-            0,
-            Number(category.spentAmount) - amount,
-          );
-          await transactionalEntityManager.save(category);
-        }
-
-        await transactionalEntityManager.remove(transaction);
-
-        this.logger.log(`Budget transaction deleted: ${id} ($${amount})`);
-
-        return { success: true };
-      },
-    );
+      return { success: true };
+    });
   }
 
   /**
@@ -353,36 +361,38 @@ export class BudgetService {
   async getBudgetTransactions(filters: BudgetTransactionFiltersDto) {
     const page = filters.page || 1;
     const limit = filters.limit || 20;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    const queryBuilder = this.budgetTransactionRepository
-      .createQueryBuilder('transaction')
-      .leftJoinAndSelect('transaction.category', 'category');
+    const where: any = {};
 
     if (filters.categoryId) {
-      queryBuilder.andWhere('transaction.categoryId = :categoryId', {
-        categoryId: filters.categoryId,
-      });
+      where.categoryId = filters.categoryId;
     }
 
     if (filters.startDate) {
-      queryBuilder.andWhere('transaction.transactionDate >= :startDate', {
-        startDate: new Date(filters.startDate),
-      });
+      where.transactionDate = {
+        ...where.transactionDate,
+        [Op.gte]: new Date(filters.startDate),
+      };
     }
 
     if (filters.endDate) {
-      queryBuilder.andWhere('transaction.transactionDate <= :endDate', {
-        endDate: new Date(filters.endDate),
-      });
+      where.transactionDate = {
+        ...where.transactionDate,
+        [Op.lte]: new Date(filters.endDate),
+      };
     }
 
-    queryBuilder
-      .orderBy('transaction.transactionDate', 'DESC')
-      .skip(skip)
-      .take(limit);
-
-    const [transactions, total] = await queryBuilder.getManyAndCount();
+    const { rows: transactions, count: total } = await this.budgetTransactionModel.findAndCountAll({
+      where,
+      include: [{
+        model: this.budgetCategoryModel,
+        as: 'category',
+      }],
+      order: [['transactionDate', 'DESC']],
+      offset,
+      limit,
+    });
 
     return {
       transactions,
@@ -401,17 +411,21 @@ export class BudgetService {
   async getBudgetSummary(fiscalYear?: number): Promise<BudgetSummaryDto> {
     const currentYear = fiscalYear || new Date().getFullYear();
 
-    const result = await this.budgetCategoryRepository
-      .createQueryBuilder('category')
-      .select('SUM(category.allocatedAmount)', 'totalAllocated')
-      .addSelect('SUM(category.spentAmount)', 'totalSpent')
-      .addSelect('COUNT(category.id)', 'categoryCount')
-      .where('category.fiscalYear = :fiscalYear', { fiscalYear: currentYear })
-      .andWhere('category.isActive = :isActive', { isActive: true })
-      .getRawOne();
+    const result = await this.budgetCategoryModel.findAll({
+      where: {
+        fiscalYear: currentYear,
+        isActive: true,
+      },
+      attributes: [
+        [this.budgetCategoryModel.sequelize!.fn('SUM', this.budgetCategoryModel.sequelize!.col('allocatedAmount')), 'totalAllocated'],
+        [this.budgetCategoryModel.sequelize!.fn('SUM', this.budgetCategoryModel.sequelize!.col('spentAmount')), 'totalSpent'],
+        [this.budgetCategoryModel.sequelize!.fn('COUNT', this.budgetCategoryModel.sequelize!.col('id')), 'categoryCount'],
+      ],
+      raw: true,
+    });
 
     // Manual count for over-budget categories
-    const categories = await this.budgetCategoryRepository.find({
+    const categories = await this.budgetCategoryModel.findAll({
       where: { fiscalYear: currentYear, isActive: true },
     });
 
@@ -419,8 +433,8 @@ export class BudgetService {
       (c) => Number(c.spentAmount) > Number(c.allocatedAmount),
     ).length;
 
-    const totalAllocated = Number(result.totalAllocated) || 0;
-    const totalSpent = Number(result.totalSpent) || 0;
+    const totalAllocated = Number((result[0] as any).totalAllocated) || 0;
+    const totalSpent = Number((result[0] as any).totalSpent) || 0;
     const totalRemaining = totalAllocated - totalSpent;
     const utilizationPercentage =
       totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0;
@@ -431,7 +445,7 @@ export class BudgetService {
       totalSpent,
       totalRemaining,
       utilizationPercentage: Math.round(utilizationPercentage * 100) / 100,
-      categoryCount: parseInt(result.categoryCount, 10) || 0,
+      categoryCount: parseInt((result[0] as any).categoryCount, 10) || 0,
       overBudgetCount: overBudget,
     };
   }
@@ -445,27 +459,31 @@ export class BudgetService {
   ): Promise<SpendingTrendDto[]> {
     const currentYear = fiscalYear || new Date().getFullYear();
 
-    const queryBuilder = this.budgetTransactionRepository
-      .createQueryBuilder('transaction')
-      .leftJoin('transaction.category', 'category')
-      .select("DATE_TRUNC('month', transaction.transactionDate)", 'month')
-      .addSelect('SUM(transaction.amount)', 'totalSpent')
-      .addSelect('COUNT(transaction.id)', 'transactionCount')
-      .where('category.fiscalYear = :fiscalYear', { fiscalYear: currentYear });
+    const where: any = {};
+    where['$category.fiscalYear$'] = currentYear;
 
     if (categoryId) {
-      queryBuilder.andWhere('transaction.categoryId = :categoryId', {
-        categoryId,
-      });
+      where.categoryId = categoryId;
     }
 
-    queryBuilder
-      .groupBy("DATE_TRUNC('month', transaction.transactionDate)")
-      .orderBy('month', 'ASC');
+    const results = await this.budgetTransactionModel.findAll({
+      where,
+      include: [{
+        model: this.budgetCategoryModel,
+        as: 'category',
+        attributes: [],
+      }],
+      attributes: [
+        [this.budgetTransactionModel.sequelize!.fn('DATE_TRUNC', 'month', this.budgetTransactionModel.sequelize!.col('transactionDate')), 'month'],
+        [this.budgetTransactionModel.sequelize!.fn('SUM', this.budgetTransactionModel.sequelize!.col('amount')), 'totalSpent'],
+        [this.budgetTransactionModel.sequelize!.fn('COUNT', this.budgetTransactionModel.sequelize!.col('id')), 'transactionCount'],
+      ],
+      group: [this.budgetTransactionModel.sequelize!.fn('DATE_TRUNC', 'month', this.budgetTransactionModel.sequelize!.col('transactionDate'))],
+      order: [[this.budgetTransactionModel.sequelize!.fn('DATE_TRUNC', 'month', this.budgetTransactionModel.sequelize!.col('transactionDate')), 'ASC']],
+      raw: true,
+    });
 
-    const results = await queryBuilder.getRawMany();
-
-    return results.map((result) => ({
+    return (results as any[]).map((result) => ({
       month: new Date(result.month),
       totalSpent: Number(result.totalSpent),
       transactionCount: parseInt(result.transactionCount, 10),
@@ -478,14 +496,13 @@ export class BudgetService {
   async getOverBudgetCategories(fiscalYear?: number) {
     const currentYear = fiscalYear || new Date().getFullYear();
 
-    const categories = await this.budgetCategoryRepository.find({
+    const categories = await this.budgetCategoryModel.findAll({
       where: { fiscalYear: currentYear, isActive: true },
-      relations: ['transactions'],
-      order: {
-        transactions: {
-          transactionDate: 'DESC',
-        },
-      },
+      include: [{
+        model: this.budgetTransactionModel,
+        as: 'transactions',
+        order: [['transactionDate', 'DESC']],
+      }],
     });
 
     const overBudget = categories
@@ -498,7 +515,7 @@ export class BudgetService {
 
         // Limit transactions to last 10
         if (category.transactions) {
-          category.transactions = category.transactions.slice(0, 10);
+          category.transactions = category.transactions.slice(0, 10) as any;
         }
 
         return {
@@ -518,13 +535,13 @@ export class BudgetService {
    * Get category year comparison
    */
   async getCategoryYearComparison(categoryName: string, years: number[]) {
-    const categories = await this.budgetCategoryRepository.find({
-      where: years.map((year) => ({
+    const categories = await this.budgetCategoryModel.findAll({
+      where: {
         name: categoryName,
-        fiscalYear: year,
+        fiscalYear: years,
         isActive: true,
-      })),
-      order: { fiscalYear: 'ASC' },
+      },
+      order: [['fiscalYear', 'ASC']],
     });
 
     return categories.map((category) => ({
@@ -546,10 +563,10 @@ export class BudgetService {
     const previousYear = currentYear - 1;
 
     const [currentCategories, previousCategories] = await Promise.all([
-      this.budgetCategoryRepository.find({
+      this.budgetCategoryModel.findAll({
         where: { fiscalYear: currentYear, isActive: true },
       }),
-      this.budgetCategoryRepository.find({
+      this.budgetCategoryModel.findAll({
         where: { fiscalYear: previousYear, isActive: true },
       }),
     ]);

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { SessionEntity } from '../entities';
 import { randomBytes } from 'crypto';
 
@@ -15,9 +15,14 @@ export class SessionManagementService {
   private readonly SESSION_DURATION_HOURS = 24;
 
   constructor(
-    @InjectRepository(SessionEntity)
-    private readonly sessionRepo: Repository<SessionEntity>,
+    @InjectModel(SessionEntity)
+    private readonly sessionModel: typeof SessionEntity,
   ) {}
+
+  // Alias for backward compatibility
+  private get sessionRepo() {
+    return this.sessionModel;
+  }
 
   /**
    * Create a new session
@@ -36,7 +41,7 @@ export class SessionManagementService {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + this.SESSION_DURATION_HOURS);
 
-      const session = this.sessionRepo.create({
+      const session = await this.sessionModel.create({
         sessionToken,
         userId: data.userId,
         ipAddress: data.ipAddress,
@@ -46,14 +51,12 @@ export class SessionManagementService {
         isActive: true,
         metadata: data.metadata,
       });
-
-      const saved = await this.sessionRepo.save(session);
       this.logger.log('Session created', {
         userId: data.userId,
-        sessionId: saved.id,
+        sessionId: session.id,
       });
 
-      return saved;
+      return session;
     } catch (error) {
       this.logger.error('Error creating session', { error });
       throw error;
@@ -65,7 +68,7 @@ export class SessionManagementService {
    */
   async validateSession(sessionToken: string): Promise<SessionEntity | null> {
     try {
-      const session = await this.sessionRepo.findOne({
+      const session = await this.sessionModel.findOne({
         where: {
           sessionToken,
           isActive: true,
@@ -84,7 +87,7 @@ export class SessionManagementService {
 
       // Update last accessed
       session.lastAccessedAt = new Date();
-      await this.sessionRepo.save(session);
+      await session.save();
 
       return session;
     } catch (error) {
@@ -98,7 +101,10 @@ export class SessionManagementService {
    */
   async invalidateSession(sessionId: string): Promise<boolean> {
     try {
-      await this.sessionRepo.update(sessionId, { isActive: false });
+      await this.sessionModel.update(
+        { isActive: false },
+        { where: { id: sessionId } }
+      );
       this.logger.log('Session invalidated', { sessionId });
       return true;
     } catch (error) {
@@ -112,17 +118,17 @@ export class SessionManagementService {
    */
   async invalidateUserSessions(userId: string): Promise<number> {
     try {
-      const result = await this.sessionRepo.update(
-        { userId, isActive: true },
+      const [affectedCount] = await this.sessionModel.update(
         { isActive: false },
+        { where: { userId, isActive: true } }
       );
 
       this.logger.log('User sessions invalidated', {
         userId,
-        count: result.affected || 0,
+        count: affectedCount,
       });
 
-      return result.affected || 0;
+      return affectedCount;
     } catch (error) {
       this.logger.error('Error invalidating user sessions', { error, userId });
       return 0;
@@ -134,15 +140,15 @@ export class SessionManagementService {
    */
   async getActiveSessions(userId: string): Promise<SessionEntity[]> {
     try {
-      return await this.sessionRepo.find({
+      return await this.sessionModel.findAll({
         where: {
           userId,
           isActive: true,
-          expiresAt: MoreThan(new Date()),
+          expiresAt: {
+            [Op.gt]: new Date(),
+          },
         },
-        order: {
-          createdAt: 'DESC',
-        },
+        order: [['createdAt', 'DESC']],
       });
     } catch (error) {
       this.logger.error('Error fetching active sessions', { error, userId });
@@ -183,20 +189,23 @@ export class SessionManagementService {
    */
   async cleanupExpiredSessions(): Promise<number> {
     try {
-      const result = await this.sessionRepo.update(
-        {
-          expiresAt: MoreThan(new Date()),
-          isActive: true,
-        },
+      const [affectedCount] = await this.sessionModel.update(
         { isActive: false },
+        {
+          where: {
+            expiresAt: {
+              [Op.lt]: new Date(),
+            },
+            isActive: true,
+          },
+        }
       );
 
-      const cleaned = result.affected || 0;
-      if (cleaned > 0) {
-        this.logger.log('Expired sessions cleaned up', { count: cleaned });
+      if (affectedCount > 0) {
+        this.logger.log('Expired sessions cleaned up', { count: affectedCount });
       }
 
-      return cleaned;
+      return affectedCount;
     } catch (error) {
       this.logger.error('Error cleaning up expired sessions', { error });
       return 0;

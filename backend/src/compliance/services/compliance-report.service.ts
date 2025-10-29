@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ComplianceReportRepository } from '../repositories/compliance-report.repository';
+import { ComplianceReportRepository } from '../../database/repositories/impl/compliance-report.repository';
 import { CreateComplianceReportDto, UpdateComplianceReportDto, GenerateReportDto, QueryComplianceReportDto } from '../dto/compliance-report.dto';
 import { ComplianceStatus } from '../entities/compliance-report.entity';
+import { ExecutionContext } from '../../database/types';
 
 @Injectable()
 export class ComplianceReportService {
@@ -9,15 +10,13 @@ export class ComplianceReportService {
 
   async listReports(query: QueryComplianceReportDto) {
     const { page = 1, limit = 20, ...filters } = query;
-    const { data, total } = await this.reportRepository.findAll(filters, page, limit);
+    const result = await this.reportRepository.findMany({
+      where: filters,
+      pagination: { page, limit }
+    });
     return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data: result.data,
+      pagination: result.pagination,
     };
   }
 
@@ -29,16 +28,16 @@ export class ComplianceReportService {
     return report;
   }
 
-  async createReport(dto: CreateComplianceReportDto, createdById: string) {
+  async createReport(dto: CreateComplianceReportDto, createdById: string, context: ExecutionContext) {
     return this.reportRepository.create({
       ...dto,
       createdById,
       status: ComplianceStatus.PENDING,
       dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-    });
+    }, context);
   }
 
-  async updateReport(id: string, dto: UpdateComplianceReportDto) {
+  async updateReport(id: string, dto: UpdateComplianceReportDto, context: ExecutionContext) {
     await this.getReportById(id); // Verify exists
     const updateData: any = { ...dto };
 
@@ -49,15 +48,15 @@ export class ComplianceReportService {
       updateData.reviewedAt = new Date();
     }
 
-    return this.reportRepository.update(id, updateData);
+    return this.reportRepository.update(id, updateData, context);
   }
 
-  async deleteReport(id: string) {
+  async deleteReport(id: string, context: ExecutionContext) {
     await this.getReportById(id); // Verify exists
-    return this.reportRepository.delete(id);
+    return this.reportRepository.delete(id, context);
   }
 
-  async generateReport(dto: GenerateReportDto, createdById: string) {
+  async generateReport(dto: GenerateReportDto, createdById: string, context: ExecutionContext) {
     // Automated report generation logic would go here
     // For now, create a basic report structure
     return this.createReport({
@@ -66,6 +65,6 @@ export class ComplianceReportService {
       description: `Auto-generated compliance report for ${dto.period} period`,
       period: dto.period,
       dueDate: dto.startDate,
-    }, createdById);
+    }, createdById, context);
   }
 }

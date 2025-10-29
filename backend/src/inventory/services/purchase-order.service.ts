@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { PurchaseOrder, PurchaseOrderStatus } from '../entities/purchase-order.entity';
-import { PurchaseOrderItem } from '../entities/purchase-order-item.entity';
-import { Vendor } from '../entities/vendor.entity';
-import { InventoryItem } from '../entities/inventory-item.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { PurchaseOrder, PurchaseOrderStatus } from '../../database/models/purchase-order.model';
+import { PurchaseOrderItem } from '../../database/models/purchase-order-item.model';
+import { Vendor } from '../../database/models/vendor.model';
+import { InventoryItem } from '../../database/models/inventory-item.model';
 import { CreatePurchaseOrderDto } from '../dto/create-purchase-order.dto';
 
 @Injectable()
@@ -12,28 +12,26 @@ export class PurchaseOrderService {
   private readonly logger = new Logger(PurchaseOrderService.name);
 
   constructor(
-    @InjectRepository(PurchaseOrder)
-    private readonly purchaseOrderRepository: Repository<PurchaseOrder>,
-    @InjectRepository(PurchaseOrderItem)
-    private readonly purchaseOrderItemRepository: Repository<PurchaseOrderItem>,
-    @InjectRepository(Vendor)
-    private readonly vendorRepository: Repository<Vendor>,
-    @InjectRepository(InventoryItem)
-    private readonly inventoryItemRepository: Repository<InventoryItem>,
-    private readonly dataSource: DataSource,
+    @InjectModel(PurchaseOrder)
+    private readonly purchaseOrderModel: typeof PurchaseOrder,
+    @InjectModel(PurchaseOrderItem)
+    private readonly purchaseOrderItemModel: typeof PurchaseOrderItem,
+    @InjectModel(Vendor)
+    private readonly vendorModel: typeof Vendor,
+    @InjectModel(InventoryItem)
+    private readonly inventoryItemModel: typeof InventoryItem,
+    private readonly sequelize: Sequelize,
   ) {}
 
   /**
    * Create purchase order with comprehensive validation
    */
   async createPurchaseOrder(data: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
       // Verify vendor exists and is active
-      const vendor = await this.vendorRepository.findOne({ where: { id: data.vendorId } });
+      const vendor = await this.vendorModel.findByPk(data.vendorId, { transaction });
 
       if (!vendor) {
         throw new NotFoundException('Vendor not found');
@@ -44,8 +42,9 @@ export class PurchaseOrderService {
       }
 
       // Validate order number uniqueness
-      const existingOrder = await this.purchaseOrderRepository.findOne({
+      const existingOrder = await this.purchaseOrderModel.findOne({
         where: { orderNumber: data.orderNumber },
+        transaction,
       });
 
       if (existingOrder) {

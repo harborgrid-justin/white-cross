@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, Between } from 'typeorm';
-import { HealthRecord } from '../../health-record/entities/health-record.entity';
-import { ChronicCondition } from '../../chronic-condition/entities/chronic-condition.entity';
-import { Allergy } from '../../allergy/entities/allergy.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize, Op, fn, col, literal } from 'sequelize';
+import { HealthRecord } from '../../database/models/health-record.model';
+import { ChronicCondition } from '../../database/models/chronic-condition.model';
+import { Allergy } from '../../database/models/allergy.model';
 import { HealthTrendsReport } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
 import { HealthRecordType, AllergySeverity } from '../../common/enums';
@@ -17,14 +17,13 @@ export class HealthReportsService {
   private readonly logger = new Logger(HealthReportsService.name);
 
   constructor(
-    @InjectRepository(HealthRecord)
-    private healthRecordRepository: Repository<HealthRecord>,
-    @InjectRepository(ChronicCondition)
-    private chronicConditionRepository: Repository<ChronicCondition>,
-    @InjectRepository(Allergy)
-    private allergyRepository: Repository<Allergy>,
-    @InjectDataSource()
-    private dataSource: DataSource,
+    @InjectModel(HealthRecord)
+    private healthRecordModel: typeof HealthRecord,
+    @InjectModel(ChronicCondition)
+    private chronicConditionModel: typeof ChronicCondition,
+    @InjectModel(Allergy)
+    private allergyModel: typeof Allergy,
+    private sequelize: Sequelize,
   ) {}
 
   /**
@@ -37,7 +36,13 @@ export class HealthReportsService {
 
       if (startDate || endDate) {
         whereClause.createdAt = {};
-        if (startDate) whereClause.createdAt = Between(startDate, endDate || new Date());
+        if (startDate && endDate) {
+          whereClause.createdAt = { [Op.between]: [startDate, endDate] };
+        } else if (startDate) {
+          whereClause.createdAt = { [Op.gte]: startDate };
+        } else if (endDate) {
+          whereClause.createdAt = { [Op.lte]: endDate };
+        }
       }
 
       if (recordType) {
@@ -45,13 +50,15 @@ export class HealthReportsService {
       }
 
       // Get health records summary grouped by type
-      const healthRecordsRaw = await this.healthRecordRepository
-        .createQueryBuilder('hr')
-        .select('hr.type', 'type')
-        .addSelect('COUNT(hr.id)', 'count')
-        .where(whereClause)
-        .groupBy('hr.type')
-        .getRawMany();
+      const healthRecordsRaw = await this.healthRecordModel.findAll({
+        where: whereClause,
+        attributes: [
+          'type',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['type'],
+        raw: true,
+      });
 
       const healthRecords = healthRecordsRaw.map((record: any) => ({
         type: record.type as HealthRecordType,
@@ -59,14 +66,16 @@ export class HealthReportsService {
       }));
 
       // Get chronic conditions trends (top 10)
-      const chronicConditionsRaw = await this.chronicConditionRepository
-        .createQueryBuilder('cc')
-        .select('cc.condition', 'condition')
-        .addSelect('COUNT(cc.id)', 'count')
-        .groupBy('cc.condition')
-        .orderBy('count', 'DESC')
-        .limit(10)
-        .getRawMany();
+      const chronicConditionsRaw = await this.chronicConditionModel.findAll({
+        attributes: [
+          'condition',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['condition'],
+        order: [[literal('count'), 'DESC']],
+        limit: 10,
+        raw: true,
+      });
 
       const chronicConditions = chronicConditionsRaw.map((record: any) => ({
         condition: record.condition,
@@ -74,16 +83,17 @@ export class HealthReportsService {
       }));
 
       // Get allergies summary (top 10)
-      const allergiesRaw = await this.allergyRepository
-        .createQueryBuilder('a')
-        .select('a.allergen', 'allergen')
-        .addSelect('a.severity', 'severity')
-        .addSelect('COUNT(a.id)', 'count')
-        .groupBy('a.allergen')
-        .addGroupBy('a.severity')
-        .orderBy('count', 'DESC')
-        .limit(10)
-        .getRawMany();
+      const allergiesRaw = await this.allergyModel.findAll({
+        attributes: [
+          'allergen',
+          'severity',
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['allergen', 'severity'],
+        order: [[literal('count'), 'DESC']],
+        limit: 10,
+        raw: true,
+      });
 
       const allergies = allergiesRaw.map((record: any) => ({
         allergen: record.allergen,
@@ -96,7 +106,7 @@ export class HealthReportsService {
         startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 12 months ago
       const defaultEndDate = endDate || new Date();
 
-      const monthlyTrendsRaw = await this.dataSource.query(
+      const monthlyTrendsRaw = await this.sequelize.query(
         `SELECT
           DATE_TRUNC('month', "createdAt") as month,
           type,
@@ -106,7 +116,10 @@ export class HealthReportsService {
           AND "createdAt" <= $2
         GROUP BY month, type
         ORDER BY month DESC`,
-        [defaultStartDate, defaultEndDate],
+        {
+          bind: [defaultStartDate, defaultEndDate],
+          type: 'SELECT',
+        },
       );
 
       const monthlyTrends = monthlyTrendsRaw.map((record: any) => ({

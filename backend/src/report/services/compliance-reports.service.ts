@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, Between, In } from 'typeorm';
-import { AuditLog } from '../../audit/entities/audit-log.entity';
-import { StudentMedication } from '../../medication/entities/student-medication.entity';
-import { IncidentReport } from '../../incident-report/entities/incident-report.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
+import { AuditLog } from '../../database/models/audit-log.model';
+import { StudentMedication } from '../../database/models/student-medication.model';
+import { IncidentReport } from '../../database/models/incident-report.model';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 
@@ -16,14 +17,13 @@ export class ComplianceReportsService {
   private readonly logger = new Logger(ComplianceReportsService.name);
 
   constructor(
-    @InjectRepository(AuditLog)
-    private auditLogRepository: Repository<AuditLog>,
-    @InjectRepository(StudentMedication)
-    private studentMedicationRepository: Repository<StudentMedication>,
-    @InjectRepository(IncidentReport)
-    private incidentReportRepository: Repository<IncidentReport>,
-    @InjectDataSource()
-    private dataSource: DataSource,
+    @InjectModel(AuditLog)
+    private auditLogModel: typeof AuditLog,
+    @InjectModel(StudentMedication)
+    private studentMedicationModel: typeof StudentMedication,
+    @InjectModel(IncidentReport)
+    private incidentReportModel: typeof IncidentReport,
+    private sequelize: Sequelize,
   ) {}
 
   /**
@@ -36,26 +36,30 @@ export class ComplianceReportsService {
 
       if (startDate || endDate) {
         whereClause.createdAt = {};
-        if (startDate) whereClause.createdAt = Between(startDate, endDate || new Date());
+        if (startDate && endDate) {
+          whereClause.createdAt = { [Op.between]: [startDate, endDate] };
+        } else if (startDate) {
+          whereClause.createdAt = { [Op.gte]: startDate };
+        } else if (endDate) {
+          whereClause.createdAt = { [Op.lte]: endDate };
+        }
       }
 
       // Get HIPAA-related audit logs
-      const hipaaLogs = await this.auditLogRepository.find({
+      const hipaaLogs = await this.auditLogModel.findAll({
         where: {
           ...whereClause,
-          action: In(['VIEW', 'EXPORT', 'ACCESS']),
+          action: { [Op.in]: ['VIEW', 'EXPORT', 'ACCESS'] },
         },
-        order: { createdAt: 'DESC' },
-        take: 100,
+        order: [['createdAt', 'DESC']],
+        limit: 100,
       });
 
       // Get medication compliance statistics
-      const medicationComplianceRaw = await this.studentMedicationRepository
-        .createQueryBuilder('sm')
-        .select('sm.isActive', 'isActive')
-        .addSelect('COUNT(sm.id)', 'count')
-        .groupBy('sm.isActive')
-        .getRawMany();
+      const medicationComplianceRaw = await this.sequelize.query(
+        `SELECT "isActive", COUNT("id")::integer as count FROM student_medications GROUP BY "isActive"`,
+        { type: 'SELECT' },
+      );
 
       const medicationCompliance = medicationComplianceRaw.map((record: any) => ({
         isActive: record.isActive as boolean,
@@ -63,13 +67,13 @@ export class ComplianceReportsService {
       }));
 
       // Get incident compliance statistics
-      const incidentComplianceRaw = await this.incidentReportRepository
-        .createQueryBuilder('ir')
-        .select('ir.legalComplianceStatus', 'legalComplianceStatus')
-        .addSelect('COUNT(ir.id)', 'count')
-        .where(whereClause)
-        .groupBy('ir.legalComplianceStatus')
-        .getRawMany();
+      const incidentComplianceRaw = await this.sequelize.query(
+        `SELECT "legalComplianceStatus", COUNT("id")::integer as count FROM incident_reports ${startDate || endDate ? 'WHERE' : ''} ${startDate ? '"createdAt" >= $1' : ''} ${startDate && endDate ? 'AND' : ''} ${endDate && startDate ? '"createdAt" <= $2' : endDate ? '"createdAt" <= $1' : ''} GROUP BY "legalComplianceStatus"`,
+        {
+          bind: [startDate, endDate].filter(v => v !== undefined),
+          type: 'SELECT',
+        },
+      );
 
       const incidentCompliance = incidentComplianceRaw.map((record: any) => ({
         legalComplianceStatus: record.legalComplianceStatus,
@@ -77,9 +81,12 @@ export class ComplianceReportsService {
       }));
 
       // Get vaccination record count
-      const vaccinationRecords = await this.dataSource.query(
+      const vaccinationRecords = await this.sequelize.query(
         `SELECT COUNT(*)::integer as count FROM vaccinations ${startDate || endDate ? 'WHERE' : ''} ${startDate ? '"createdAt" >= $1' : ''} ${startDate && endDate ? 'AND' : ''} ${endDate && startDate ? '"createdAt" <= $2' : endDate ? '"createdAt" <= $1' : ''}`,
-        [startDate, endDate].filter(v => v !== undefined),
+        {
+          bind: [startDate, endDate].filter(v => v !== undefined),
+          type: 'SELECT',
+        },
       );
 
       this.logger.log('Compliance report generated successfully');
@@ -88,7 +95,7 @@ export class ComplianceReportsService {
         hipaaLogs,
         medicationCompliance,
         incidentCompliance,
-        vaccinationRecords: vaccinationRecords[0]?.count || 0,
+        vaccinationRecords: (vaccinationRecords as any)[0]?.count || 0,
       };
     } catch (error) {
       this.logger.error('Error generating compliance report:', error);

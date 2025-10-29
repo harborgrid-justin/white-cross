@@ -9,9 +9,9 @@ import {
   BadRequestException,
   Logger
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, In } from 'typeorm';
-import { Contact } from '../entities';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { Contact } from '../../database/models/contact.model';
 import { CreateContactDto, UpdateContactDto, ContactQueryDto } from '../dto';
 import { ContactType } from '../enums';
 
@@ -20,8 +20,8 @@ export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
   constructor(
-    @InjectRepository(Contact)
-    private readonly contactRepository: Repository<Contact>
+    @InjectModel(Contact)
+    private readonly contactModel: typeof Contact
   ) {}
 
   /**
@@ -35,7 +35,7 @@ export class ContactService {
     const where: any = {};
 
     if (query.type) {
-      where.type = Array.isArray(query.type) ? In(query.type) : query.type;
+      where.type = Array.isArray(query.type) ? { [Op.in]: query.type } : query.type;
     }
 
     if (query.isActive !== undefined) {
@@ -50,18 +50,20 @@ export class ContactService {
     let searchWhere: any[] | undefined = undefined;
     if (query.search) {
       searchWhere = [
-        { ...where, firstName: ILike(`%${query.search}%`) },
-        { ...where, lastName: ILike(`%${query.search}%`) },
-        { ...where, email: ILike(`%${query.search}%`) },
-        { ...where, organization: ILike(`%${query.search}%`) }
+        { firstName: { [Op.iLike]: `%${query.search}%` } },
+        { lastName: { [Op.iLike]: `%${query.search}%` } },
+        { email: { [Op.iLike]: `%${query.search}%` } },
+        { organization: { [Op.iLike]: `%${query.search}%` } }
       ];
     }
 
-    const [contacts, total] = await this.contactRepository.findAndCount({
-      where: searchWhere || where,
-      skip: offset,
-      take: limit,
-      order: { [orderBy]: orderDirection }
+    const finalWhere = searchWhere ? { [Op.or]: searchWhere, ...where } : where;
+
+    const { rows: contacts, count: total } = await this.contactModel.findAndCountAll({
+      where: finalWhere,
+      offset,
+      limit,
+      order: [[orderBy, orderDirection]],
     });
 
     this.logger.log(`Retrieved ${contacts.length} contacts (page ${page}, total ${total})`);
@@ -72,8 +74,8 @@ export class ContactService {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -81,12 +83,14 @@ export class ContactService {
    * Get contact by ID
    */
   async getContactById(id: string): Promise<Contact> {
-    const contact = await this.contactRepository.findOne({ where: { id } });
+    this.logger.log(`Retrieving contact with ID: ${id}`);
 
+    const contact = await this.contactModel.findByPk(id);
     if (!contact) {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
 
+    this.logger.log(`Retrieved contact: ${contact.firstName} ${contact.lastName}`);
     return contact;
   }
 
@@ -105,7 +109,7 @@ export class ContactService {
 
     // Check for duplicate email if provided
     if (dto.email) {
-      const existingContact = await this.contactRepository.findOne({
+      const existingContact = await this.contactModel.findOne({
         where: {
           email: dto.email,
           type: dto.type,
@@ -120,15 +124,16 @@ export class ContactService {
       }
     }
 
-    const contact = this.contactRepository.create({
+    const contact = this.contactModel.build({
       ...dto,
       isActive: dto.isActive !== undefined ? dto.isActive : true
-    });
+    } as any);
 
-    const savedContact = await this.contactRepository.save(contact);
-    this.logger.log(`Created contact ${savedContact.id} (${savedContact.fullName})`);
+    await contact.save();
 
-    return savedContact;
+    this.logger.log(`Created contact ${contact.id} (${contact.firstName} ${contact.lastName})`);
+
+    return contact;
   }
 
   /**
@@ -139,24 +144,25 @@ export class ContactService {
 
     // Check for duplicate email if being updated
     if (dto.email && dto.email !== contact.email) {
-      const existingContact = await this.contactRepository.findOne({
+      const existingContact = await this.contactModel.findOne({
         where: {
           email: dto.email,
           type: dto.type || contact.type,
-          isActive: true
+          isActive: true,
+          id: { [Op.ne]: id }
         }
       });
 
-      if (existingContact && existingContact.id !== id) {
+      if (existingContact) {
         throw new ConflictException('Another contact with this email already exists');
       }
     }
 
     Object.assign(contact, dto);
-    const updatedContact = await this.contactRepository.save(contact);
+    await contact.save();
 
-    this.logger.log(`Updated contact ${updatedContact.id}`);
-    return updatedContact;
+    this.logger.log(`Updated contact ${contact.id}`);
+    return contact;
   }
 
   /**
@@ -164,7 +170,8 @@ export class ContactService {
    */
   async deleteContact(id: string): Promise<{ success: boolean; message: string }> {
     const contact = await this.getContactById(id);
-    await this.contactRepository.softRemove(contact);
+    contact.isActive = false;
+    await contact.save();
 
     this.logger.log(`Soft deleted contact ${id}`);
     return { success: true, message: 'Contact deleted successfully' };
@@ -180,10 +187,10 @@ export class ContactService {
       contact.updatedBy = updatedBy;
     }
 
-    const updated = await this.contactRepository.save(contact);
+    await contact.save();
     this.logger.log(`Deactivated contact ${id}`);
 
-    return updated;
+    return contact;
   }
 
   /**
@@ -196,10 +203,10 @@ export class ContactService {
       contact.updatedBy = updatedBy;
     }
 
-    const updated = await this.contactRepository.save(contact);
+    await contact.save();
     this.logger.log(`Reactivated contact ${id}`);
 
-    return updated;
+    return contact;
   }
 
   /**
@@ -215,9 +222,9 @@ export class ContactService {
       where.type = type;
     }
 
-    const contacts = await this.contactRepository.find({
+    const contacts = await this.contactModel.findAll({
       where,
-      order: { lastName: 'ASC' }
+      order: [['lastName', 'ASC']],
     });
 
     this.logger.log(`Retrieved ${contacts.length} contacts for relation ${relationTo}`);
@@ -228,15 +235,15 @@ export class ContactService {
    * Search contacts
    */
   async searchContacts(query: string, limit: number = 10): Promise<Contact[]> {
-    const contacts = await this.contactRepository.find({
+    const contacts = await this.contactModel.findAll({
       where: [
-        { firstName: ILike(`%${query}%`), isActive: true },
-        { lastName: ILike(`%${query}%`), isActive: true },
-        { email: ILike(`%${query}%`), isActive: true },
-        { organization: ILike(`%${query}%`), isActive: true }
+        { firstName: { [Op.iLike]: `%${query}%` }, isActive: true },
+        { lastName: { [Op.iLike]: `%${query}%` }, isActive: true },
+        { email: { [Op.iLike]: `%${query}%` }, isActive: true },
+        { organization: { [Op.iLike]: `%${query}%` }, isActive: true }
       ],
-      take: limit,
-      order: { lastName: 'ASC' }
+      limit,
+      order: [['lastName', 'ASC']],
     });
 
     this.logger.log(`Search for "${query}" returned ${contacts.length} results`);
@@ -247,19 +254,21 @@ export class ContactService {
    * Get contact statistics
    */
   async getContactStats(): Promise<{ total: number; byType: Record<string, number> }> {
-    const total = await this.contactRepository.count({ where: { isActive: true } });
+    const total = await this.contactModel.count({ where: { isActive: true } });
 
     // Get count by type
-    const byTypeResults = await this.contactRepository
-      .createQueryBuilder('contact')
-      .select('contact.type', 'type')
-      .addSelect('COUNT(contact.id)', 'count')
-      .where('contact.isActive = :isActive', { isActive: true })
-      .groupBy('contact.type')
-      .getRawMany();
+    const byTypeResults = await this.contactModel.findAll({
+      where: { isActive: true },
+      attributes: [
+        'type',
+        [this.contactModel.sequelize!.fn('COUNT', this.contactModel.sequelize!.col('id')), 'count']
+      ],
+      group: ['type'],
+      raw: true,
+    });
 
     const byType: Record<string, number> = {};
-    byTypeResults.forEach((result) => {
+    (byTypeResults as any[]).forEach((result) => {
       byType[result.type] = parseInt(result.count, 10);
     });
 
