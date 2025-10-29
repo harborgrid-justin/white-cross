@@ -20,7 +20,9 @@
       "Bash(fi)",
       "Bash(timeout 120 npm run start:dev)",
       "Bash(tee:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(node fix-import-types.js:*)"
     ],
     "deny": [],
     "ask": []

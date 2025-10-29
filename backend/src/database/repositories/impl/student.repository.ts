@@ -8,9 +8,9 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import { IStudentRepository, StudentAttributes, CreateStudentDTO, UpdateStudentDTO } from '../interfaces/student.repository.interface';
-import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
 import { Student } from '../../models/student.model';
 

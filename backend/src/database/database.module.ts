@@ -154,6 +154,8 @@ import { AppointmentRepository } from './repositories/impl/appointment.repositor
 import { HealthRecordRepository } from './repositories/impl/health-record.repository';
 import { MedicationLogRepository } from './repositories/impl/medication-log.repository';
 import { IncidentReportRepository } from './repositories/impl/incident-report.repository';
+import { AllergyRepository } from './repositories/impl/allergy.repository';
+import { ChronicConditionRepository } from './repositories/impl/chronic-condition.repository';
 
 /**
  * Database Module
@@ -406,8 +408,10 @@ import { IncidentReportRepository } from './repositories/impl/incident-report.re
     HealthRecordRepository,
     MedicationLogRepository,
     IncidentReportRepository,
-    // AllergyRepository,
+    AllergyRepository,
+    ChronicConditionRepository,
     // MedicationRepository,
+    // VaccinationRepository - TODO: Create this repository
     // etc.
   ],
   exports: [
@@ -432,6 +436,8 @@ import { IncidentReportRepository } from './repositories/impl/incident-report.re
     HealthRecordRepository,
     MedicationLogRepository,
     IncidentReportRepository,
+    AllergyRepository,
+    ChronicConditionRepository,
     // etc.
   ]
 })

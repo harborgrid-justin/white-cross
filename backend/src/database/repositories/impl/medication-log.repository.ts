@@ -7,9 +7,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
 import { MedicationLog } from '../../models/medication-log.model';
 
@@ -52,7 +52,7 @@ export interface UpdateMedicationLogDTO {
 
 @Injectable()
 export class MedicationLogRepository
-  extends BaseRepository<any, MedicationLogAttributes, CreateMedicationLogDTO>
+  extends BaseRepository<MedicationLog, MedicationLogAttributes, CreateMedicationLogDTO>
 {
   constructor(
     @InjectModel(MedicationLog) model: typeof MedicationLog,

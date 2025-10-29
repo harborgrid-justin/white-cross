@@ -27,6 +27,8 @@ import { AllergyModule } from './allergy/allergy.module';
 import { HealthRecord } from '../database/models/health-record.model';
 import { Allergy } from '../database/models/allergy.model';
 import { Student } from '../database/models/student.model';
+import { ChronicCondition } from '../database/models/chronic-condition.model';
+import { Vaccination } from '../database/models/vaccination.model';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { Student } from '../database/models/student.model';
       HealthRecord,
       Allergy,
       Student,
+      ChronicCondition,
+      Vaccination,
     ]),
     VaccinationModule,
     VitalsModule,

@@ -7,9 +7,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
 import { IncidentReport } from '../../models/incident-report.model';
 
@@ -54,7 +54,7 @@ export interface UpdateIncidentReportDTO {
 }
 
 @Injectable()
-export class IncidentReportRepository extends BaseRepository<any, IncidentReportAttributes, CreateIncidentReportDTO> {
+export class IncidentReportRepository extends BaseRepository<IncidentReport, IncidentReportAttributes, CreateIncidentReportDTO> {
   constructor(
     @InjectModel(IncidentReport) model: typeof IncidentReport,
     @Inject('IAuditLogger') auditLogger,
@@ -73,7 +73,7 @@ export class IncidentReportRepository extends BaseRepository<any, IncidentReport
     try {
       const incidents = await this.model.findAll({
         where: { studentId },
-        order: [['incidentDate', 'DESC']],
+        order: [['occurredAt', 'DESC']],
         ...options,
       });
       return incidents.map((incident: any) => this.mapToEntity(incident));
@@ -98,7 +98,7 @@ export class IncidentReportRepository extends BaseRepository<any, IncidentReport
     try {
       const incidents = await this.model.findAll({
         where: { severity },
-        order: [['incidentDate', 'DESC']],
+        order: [['occurredAt', 'DESC']],
         ...options,
       });
       return incidents.map((incident: any) => this.mapToEntity(incident));
@@ -124,11 +124,11 @@ export class IncidentReportRepository extends BaseRepository<any, IncidentReport
     try {
       const incidents = await this.model.findAll({
         where: {
-          incidentDate: {
+          occurredAt: {
             [Op.between]: [startDate, endDate],
           },
         },
-        order: [['incidentDate', 'DESC']],
+        order: [['occurredAt', 'DESC']],
         ...options,
       });
       return incidents.map((incident: any) => this.mapToEntity(incident));
