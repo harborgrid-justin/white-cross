@@ -28,7 +28,7 @@ export enum DeliveryChannel {
  * Alert Preferences Attributes Interface
  */
 export interface AlertPreferencesAttributes {
-  id: string;
+  id?: string;
   userId: string;
   schoolId?: string;
   channels: DeliveryChannel[];

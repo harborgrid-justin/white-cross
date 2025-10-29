@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Student } from '../database/models/student.model';
+import { Student, Gender } from '../database/models/student.model';
 
 /**
  * Simplified DTOs for basic CRUD operations
@@ -24,7 +24,7 @@ export interface CreateStudentDto {
   lastName: string;
   dateOfBirth: Date;
   grade: string;
-  gender: string;
+  gender: Gender;
   photo?: string;
   medicalRecordNum?: string;
   isActive?: boolean;
@@ -43,7 +43,7 @@ export interface StudentFilterDto {
   isActive?: boolean;
   page?: number;
   limit?: number;
-  gender?: string;
+  gender?: Gender;
 }
 
 /**

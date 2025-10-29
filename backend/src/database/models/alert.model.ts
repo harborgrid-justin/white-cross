@@ -55,7 +55,7 @@ export enum AlertStatus {
  * Alert Attributes Interface
  */
 export interface AlertAttributes {
-  id: string;
+  id?: string;
   definitionId?: string;
   severity: AlertSeverity;
   category: AlertCategory;

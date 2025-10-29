@@ -26,7 +26,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { StudentService } from './student.service';
-import type { PaginatedResponse, StudentStatistics, StudentDataExport } from './student.service';
+import type { PaginatedResponse, StudentStatistics, StudentDataExport } from './dto';
 import { Student } from '../database/models/student.model';
 import {
   CreateStudentDto,

@@ -18,7 +18,7 @@ import { DeliveryChannel } from './alert-preferences.model';
  * Delivery Log Attributes Interface
  */
 export interface DeliveryLogAttributes {
-  id: string;
+  id?: string;
   alertId: string;
   channel: DeliveryChannel;
   recipientId?: string;

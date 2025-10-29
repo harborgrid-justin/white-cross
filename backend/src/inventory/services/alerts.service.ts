@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { Sequelize } from 'sequelize-typescript';
 import { InventoryAlertDto, AlertType, AlertSeverity, AlertSummaryDto } from '../dto/inventory-alert.dto';
 
 interface StockQueryResult {
@@ -16,7 +16,7 @@ interface StockQueryResult {
 export class AlertsService {
   private readonly logger = new Logger(AlertsService.name);
 
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly sequelize: Sequelize) {}
 
   /**
    * Get all inventory alerts with priority sorting
@@ -65,7 +65,8 @@ export class AlertsService {
         WHERE i.is_active = true
       `;
 
-      const items: StockQueryResult[] = await this.dataSource.query(query);
+      const [results] = await this.sequelize.query(query, { type: 'SELECT' });
+      const items: StockQueryResult[] = results as StockQueryResult[];
 
       for (const item of items) {
         // Low stock alerts

@@ -1771,7 +1771,7 @@ export class StudentService {
       // });
 
       // Simulate waitlist entries for demonstration
-      const simulatedWaitlists = [];
+      const simulatedWaitlists: any[] = [];
 
       // If specific appointment type requested, show only that
       if (query.appointmentType) {
