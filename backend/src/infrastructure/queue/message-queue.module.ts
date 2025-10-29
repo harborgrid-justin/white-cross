@@ -43,6 +43,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { QueueName } from './enums';
 import { QueueConfigService, QUEUE_CONFIGS } from './queue.config';
 import { MessageQueueService } from './message-queue.service';
@@ -53,11 +54,18 @@ import {
   MessageIndexingProcessor,
   BatchMessageProcessor,
   MessageCleanupProcessor,
-} from './message-queue.processor';
+} from './message-queue.processor.complete';
+import { EncryptionModule } from '../encryption/encryption.module';
+import { WebSocketModule } from '../websocket/websocket.module';
+import { Message } from '../../database/models/message.model';
+import { MessageDelivery } from '../../database/models/message-delivery.model';
 
 @Module({
   imports: [
     ConfigModule,
+    EncryptionModule,
+    WebSocketModule,
+    SequelizeModule.forFeature([Message, MessageDelivery]),
 
     /**
      * Configure Bull with Redis connection
