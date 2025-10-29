@@ -187,7 +187,7 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
             // V6 recommended options
             define: {
               timestamps: true,
-              underscored: true,
+              underscored: false,
               freezeTableName: true,
             },
             pool: {
@@ -212,7 +212,7 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
             // V6 recommended options
             define: {
               timestamps: true,
-              underscored: true,
+              underscored: false,
               freezeTableName: true,
             },
             pool: {

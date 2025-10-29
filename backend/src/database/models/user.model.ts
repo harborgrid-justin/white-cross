@@ -47,7 +47,7 @@ export interface UserAttributes {
 @Table({
   tableName: 'users',
   timestamps: true,
-  underscored: true,
+  underscored: false,
 })
 export class User extends Model<UserAttributes> {
   @PrimaryKey
@@ -61,23 +61,25 @@ export class User extends Model<UserAttributes> {
     unique: true,
     validate: { isEmail: true },
   })
-  email: string;
+  declare email: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  password: string;
+  declare password: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'firstName',
   })
   firstName: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    field: 'lastName',
   })
   lastName: string;
 
@@ -92,30 +94,35 @@ export class User extends Model<UserAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
+    field: 'isActive',
   })
   isActive: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'lastLogin',
   })
   lastLogin?: Date;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
+    field: 'schoolId',
   })
   schoolId?: string;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
+    field: 'districtId',
   })
   districtId?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'phone',
   })
   phone?: string;
 
@@ -123,36 +130,42 @@ export class User extends Model<UserAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
+    field: 'emailVerified',
   })
   emailVerified: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'emailVerificationToken',
   })
   emailVerificationToken?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'emailVerificationExpires',
   })
   emailVerificationExpires?: Date;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'passwordResetToken',
   })
   passwordResetToken?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'passwordResetExpires',
   })
   passwordResetExpires?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'passwordChangedAt',
   })
   passwordChangedAt?: Date;
 
@@ -160,12 +173,14 @@ export class User extends Model<UserAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
+    field: 'twoFactorEnabled',
   })
   twoFactorEnabled: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    field: 'twoFactorSecret',
   })
   twoFactorSecret?: string;
 
@@ -173,18 +188,21 @@ export class User extends Model<UserAttributes> {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
+    field: 'failedLoginAttempts',
   })
   failedLoginAttempts: number;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'lockoutUntil',
   })
   lockoutUntil?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: 'lastPasswordChange',
   })
   lastPasswordChange?: Date;
 
@@ -192,6 +210,7 @@ export class User extends Model<UserAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
+    field: 'mustChangePassword',
   })
   mustChangePassword: boolean;
 
