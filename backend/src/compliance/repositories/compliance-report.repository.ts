@@ -1,52 +1,59 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ComplianceReport } from '../entities/compliance-report.entity';
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { ComplianceReport, ComplianceReportAttributes } from '../../database/models/compliance-report.model';
+import { ComplianceChecklistItem } from '../../database/models/compliance-checklist-item.model';
 
 @Injectable()
 export class ComplianceReportRepository {
   constructor(
-    @InjectRepository(ComplianceReport)
-    private readonly repository: Repository<ComplianceReport>,
+    @InjectModel(ComplianceReport)
+    private readonly complianceReportModel: typeof ComplianceReport,
   ) {}
 
   async findAll(filters: any = {}, page: number = 1, limit: number = 20) {
-    const queryBuilder = this.repository.createQueryBuilder('report');
+    const whereClause: any = {};
 
     if (filters.reportType) {
-      queryBuilder.andWhere('report.reportType = :reportType', { reportType: filters.reportType });
+      whereClause.reportType = filters.reportType;
     }
     if (filters.status) {
-      queryBuilder.andWhere('report.status = :status', { status: filters.status });
+      whereClause.status = filters.status;
     }
     if (filters.period) {
-      queryBuilder.andWhere('report.period = :period', { period: filters.period });
+      whereClause.period = filters.period;
     }
 
-    const [data, total] = await queryBuilder
-      .orderBy('report.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
+    const { rows: data, count: total } = await this.complianceReportModel.findAndCountAll({
+      where: whereClause,
+      include: [{ model: ComplianceChecklistItem, as: 'checklistItems' }],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset: (page - 1) * limit,
+    });
 
     return { data, total };
   }
 
   async findById(id: string) {
-    return this.repository.findOne({ where: { id }, relations: ['checklistItems'] });
+    return this.complianceReportModel.findByPk(id, {
+      include: [{ model: ComplianceChecklistItem, as: 'checklistItems' }],
+    });
   }
 
-  async create(data: Partial<ComplianceReport>) {
-    const report = this.repository.create(data);
-    return this.repository.save(report);
+  async create(data: Omit<ComplianceReportAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+    return this.complianceReportModel.create(data);
   }
 
-  async update(id: string, data: Partial<ComplianceReport>) {
-    await this.repository.update(id, data);
-    return this.findById(id);
+  async update(id: string, data: Partial<ComplianceReportAttributes>) {
+    const [affectedCount] = await this.complianceReportModel.update(data, { where: { id } });
+    if (affectedCount > 0) {
+      return this.findById(id);
+    }
+    return null;
   }
 
   async delete(id: string) {
-    return this.repository.delete(id);
+    return this.complianceReportModel.destroy({ where: { id } });
   }
 }

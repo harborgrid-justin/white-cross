@@ -3,14 +3,15 @@
  * HIPAA Compliance: 45 CFR 164.508 - Authorization requirements
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { ConsentForm } from '../entities/consent-form.entity';
-import { ConsentSignature } from '../entities/consent-signature.entity';
+import { Injectable, Logger, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model, Transaction } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { ConsentForm } from '../../database/models/consent-form.model';
+import { ConsentSignature } from '../../database/models/consent-signature.model';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
 import { ComplianceUtils, COMPLIANCE_ERRORS } from '../utils';
-import { ConsentType } from '../enums';
+import { ConsentType } from '../../database/models/consent-form.model';
 
 export interface CreateConsentFormData {
   type: ConsentType;
@@ -26,11 +27,12 @@ export class ConsentService {
   private readonly logger = new Logger(ConsentService.name);
 
   constructor(
-    @InjectRepository(ConsentForm)
-    private readonly consentFormRepository: Repository<ConsentForm>,
-    @InjectRepository(ConsentSignature)
-    private readonly consentSignatureRepository: Repository<ConsentSignature>,
-    private readonly dataSource: DataSource,
+    @InjectModel(ConsentForm)
+    private readonly consentFormModel: typeof ConsentForm,
+    @InjectModel(ConsentSignature)
+    private readonly consentSignatureModel: typeof ConsentSignature,
+    @Inject('SEQUELIZE')
+    private readonly sequelize: Sequelize,
   ) {}
 
   /**
@@ -44,10 +46,10 @@ export class ConsentService {
         whereClause.isActive = filters.isActive;
       }
 
-      const forms = await this.consentFormRepository.find({
+      const forms = await this.consentFormModel.findAll({
         where: whereClause,
-        relations: ['signatures'],
-        order: { createdAt: 'DESC' },
+        include: [{ model: ConsentSignature, as: 'signatures' }],
+        order: [['createdAt', 'DESC']],
       });
 
       this.logger.log(`Retrieved ${forms.length} consent forms`);
@@ -63,9 +65,8 @@ export class ConsentService {
    */
   async getConsentFormById(id: string): Promise<ConsentForm> {
     try {
-      const form = await this.consentFormRepository.findOne({
-        where: { id },
-        relations: ['signatures'],
+      const form = await this.consentFormModel.findByPk(id, {
+        include: [{ model: ConsentSignature, as: 'signatures' }],
       });
 
       if (!form) {
@@ -103,19 +104,14 @@ export class ConsentService {
         throw new BadRequestException(COMPLIANCE_ERRORS.CONTENT_TOO_SHORT);
       }
 
-      const form = this.consentFormRepository.create({
+      const form = await this.consentFormModel.create({
         ...data,
         version: data.version || '1.0',
         isActive: true,
       });
 
-      const savedForm = await this.consentFormRepository.save(form);
-
-      // Handle case where save might return an array
-      const formEntity = Array.isArray(savedForm) ? savedForm[0] : savedForm;
-
-      this.logger.log(`Created consent form: ${formEntity.id} - ${formEntity.title}`);
-      return formEntity;
+      this.logger.log(`Created consent form: ${form.id} - ${form.title}`);
+      return form;
     } catch (error) {
       this.logger.error('Error creating consent form:', error);
       throw error;
@@ -127,9 +123,7 @@ export class ConsentService {
    * HIPAA Compliance: Creates immutable audit trail of consent authorization
    */
   async signConsentForm(data: SignConsentFormDto): Promise<ConsentSignature> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
       // Validate relationship
@@ -143,9 +137,7 @@ export class ConsentService {
       }
 
       // Verify consent form exists and is active
-      const consentForm = await queryRunner.manager.findOne(ConsentForm, {
-        where: { id: data.consentFormId },
-      });
+      const consentForm = await this.consentFormModel.findByPk(data.consentFormId, { transaction });
 
       if (!consentForm) {
         throw new NotFoundException('Consent form not found');
@@ -161,11 +153,12 @@ export class ConsentService {
       }
 
       // Check if signature already exists
-      const existingSignature = await queryRunner.manager.findOne(ConsentSignature, {
+      const existingSignature = await this.consentSignatureModel.findOne({
         where: {
           consentFormId: data.consentFormId,
           studentId: data.studentId,
         },
+        transaction,
       });
 
       if (existingSignature) {
@@ -186,29 +179,27 @@ export class ConsentService {
       }
 
       // Create signature
-      const signature = queryRunner.manager.create(ConsentSignature, {
+      const signature = await this.consentSignatureModel.create({
         consentFormId: data.consentFormId,
         studentId: data.studentId,
         signedBy: data.signedBy.trim(),
         relationship: data.relationship,
-        signatureData: data.signatureData || null,
-        ipAddress: data.ipAddress || null,
-      });
+        signatureData: data.signatureData,
+        ipAddress: data.ipAddress,
+        signedAt: new Date(),
+      }, { transaction });
 
-      const savedSignature = await queryRunner.manager.save(signature);
-      await queryRunner.commitTransaction();
+      await transaction.commit();
 
       this.logger.log(
         `CONSENT SIGNED: Form ${data.consentFormId} for student ${data.studentId} by ${data.signedBy} (${data.relationship})`,
       );
 
-      return savedSignature;
+      return signature;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error('Error signing consent form:', error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -217,10 +208,10 @@ export class ConsentService {
    */
   async getStudentConsents(studentId: string): Promise<ConsentSignature[]> {
     try {
-      const consents = await this.consentSignatureRepository.find({
+      const consents = await this.consentSignatureModel.findAll({
         where: { studentId },
-        relations: ['consentForm'],
-        order: { signedAt: 'DESC' },
+        include: [{ model: ConsentForm, as: 'consentForm' }],
+        order: [['signedAt', 'DESC']],
       });
 
       this.logger.log(`Retrieved ${consents.length} consents for student ${studentId}`);
@@ -241,9 +232,8 @@ export class ConsentService {
         throw new BadRequestException('Withdrawn by name is required for audit trail');
       }
 
-      const signature = await this.consentSignatureRepository.findOne({
-        where: { id: signatureId },
-        relations: ['consentForm'],
+      const signature = await this.consentSignatureModel.findByPk(signatureId, {
+        include: [{ model: ConsentForm, as: 'consentForm' }],
       });
 
       if (!signature) {
@@ -254,16 +244,16 @@ export class ConsentService {
         throw new BadRequestException(COMPLIANCE_ERRORS.CONSENT_ALREADY_WITHDRAWN);
       }
 
-      signature.withdrawnAt = new Date();
-      signature.withdrawnBy = withdrawnBy.trim();
-
-      const updatedSignature = await this.consentSignatureRepository.save(signature);
+      await signature.update({
+        withdrawnAt: new Date(),
+        withdrawnBy: withdrawnBy.trim(),
+      });
 
       this.logger.warn(
         `CONSENT WITHDRAWN: Signature ${signatureId} for student ${signature.studentId} withdrawn by ${withdrawnBy}. Consent is no longer valid.`,
       );
 
-      return updatedSignature;
+      return signature;
     } catch (error) {
       this.logger.error(`Error withdrawing consent ${signatureId}:`, error);
       throw error;

@@ -118,11 +118,10 @@ export class StudentService {
       }
 
       // Create student
-      const student = this.studentRepository.create(normalizedData);
-      const saved = await this.studentRepository.save(student);
+      const student = await this.studentModel.create(normalizedData as any);
 
-      this.logger.log(`Student created: ${saved.id} (${saved.studentNumber})`);
-      return saved;
+      this.logger.log(`Student created: ${student.id} (${student.studentNumber})`);
+      return student;
     } catch (error) {
       this.handleError('Failed to create student', error);
     }
@@ -136,41 +135,46 @@ export class StudentService {
     try {
       const { page = 1, limit = 20, search, grade, isActive, nurseId, gender } = filterDto;
 
-      const queryBuilder = this.studentRepository.createQueryBuilder('student');
+      const where: any = {};
 
       // Apply filters
       if (search) {
-        queryBuilder.andWhere(
-          '(student.firstName ILIKE :search OR student.lastName ILIKE :search OR student.studentNumber ILIKE :search)',
-          { search: `%${search}%` },
-        );
+        where[Op.or] = [
+          { firstName: { [Op.iLike]: `%${search}%` } },
+          { lastName: { [Op.iLike]: `%${search}%` } },
+          { studentNumber: { [Op.iLike]: `%${search}%` } },
+        ];
       }
 
       if (grade) {
-        queryBuilder.andWhere('student.grade = :grade', { grade });
+        where.grade = grade;
       }
 
       if (isActive !== undefined) {
-        queryBuilder.andWhere('student.isActive = :isActive', { isActive });
+        where.isActive = isActive;
       }
 
       if (nurseId) {
-        queryBuilder.andWhere('student.nurseId = :nurseId', { nurseId });
+        where.nurseId = nurseId;
       }
 
       if (gender) {
-        queryBuilder.andWhere('student.gender = :gender', { gender });
+        where.gender = gender;
       }
 
       // Pagination
-      const skip = (page - 1) * limit;
-      queryBuilder.skip(skip).take(limit);
-
-      // Sorting
-      queryBuilder.orderBy('student.lastName', 'ASC').addOrderBy('student.firstName', 'ASC');
+      const offset = (page - 1) * limit;
 
       // Execute query
-      const [data, total] = await queryBuilder.getManyAndCount();
+      const { rows: data, count: total } = await this.studentModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+      });
 
       return {
         data,
@@ -194,9 +198,7 @@ export class StudentService {
     try {
       this.validateUUID(id);
 
-      const student = await this.studentRepository.findOne({
-        where: { id },
-      });
+      const student = await this.studentModel.findByPk(id);
 
       if (!student) {
         throw new NotFoundException(`Student with ID ${id} not found`);
@@ -250,7 +252,7 @@ export class StudentService {
 
       // Update student
       Object.assign(student, normalizedData);
-      const updated = await this.studentRepository.save(student);
+      const updated = await student.save();
 
       this.logger.log(`Student updated: ${updated.id} (${updated.studentNumber})`);
       return updated;
@@ -273,7 +275,7 @@ export class StudentService {
       const student = await this.findOne(id);
 
       student.isActive = false;
-      await this.studentRepository.save(student);
+      await student.save();
 
       this.logger.log(`Student deleted (soft): ${id} (${student.studentNumber})`);
     } catch (error) {
@@ -297,7 +299,7 @@ export class StudentService {
       const student = await this.findOne(id);
 
       student.isActive = false;
-      const updated = await this.studentRepository.save(student);
+      const updated = await student.save();
 
       this.logger.log(`Student deactivated: ${id} (${student.studentNumber})${reason ? `, reason: ${reason}` : ''}`);
       return updated;
@@ -320,7 +322,7 @@ export class StudentService {
       const student = await this.findOne(id);
 
       student.isActive = true;
-      const updated = await this.studentRepository.save(student);
+      const updated = await student.save();
 
       this.logger.log(`Student reactivated: ${id} (${student.studentNumber})`);
       return updated;
@@ -353,7 +355,7 @@ export class StudentService {
         student.grade = transferDto.grade;
       }
 
-      const updated = await this.studentRepository.save(student);
+      const updated = await student.save();
 
       this.logger.log(
         `Student transferred: ${id} (${student.studentNumber})${transferDto.reason ? `, reason: ${transferDto.reason}` : ''}`,
@@ -387,13 +389,13 @@ export class StudentService {
       if (isActive !== undefined) updateData.isActive = isActive;
 
       // Perform bulk update
-      const result = await this.studentRepository.update(
-        { id: In(studentIds) },
+      const [affectedCount] = await this.studentModel.update(
         updateData,
+        { where: { id: { [Op.in]: studentIds } } }
       );
 
-      this.logger.log(`Bulk update: ${result.affected} students updated`);
-      return { updated: result.affected || 0 };
+      this.logger.log(`Bulk update: ${affectedCount} students updated`);
+      return { updated: affectedCount };
     } catch (error) {
       this.handleError('Failed to bulk update students', error);
     }
@@ -407,17 +409,21 @@ export class StudentService {
    */
   async search(query: string, limit: number = 20): Promise<Student[]> {
     try {
-      const students = await this.studentRepository
-        .createQueryBuilder('student')
-        .where('student.isActive = :isActive', { isActive: true })
-        .andWhere(
-          '(student.firstName ILIKE :query OR student.lastName ILIKE :query OR student.studentNumber ILIKE :query)',
-          { query: `%${query}%` },
-        )
-        .orderBy('student.lastName', 'ASC')
-        .addOrderBy('student.firstName', 'ASC')
-        .take(limit)
-        .getMany();
+      const students = await this.studentModel.findAll({
+        where: {
+          isActive: true,
+          [Op.or]: [
+            { firstName: { [Op.iLike]: `%${query}%` } },
+            { lastName: { [Op.iLike]: `%${query}%` } },
+            { studentNumber: { [Op.iLike]: `%${query}%` } },
+          ],
+        },
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+        limit,
+      });
 
       return students;
     } catch (error) {
@@ -431,9 +437,12 @@ export class StudentService {
    */
   async findByGrade(grade: string): Promise<Student[]> {
     try {
-      const students = await this.studentRepository.find({
+      const students = await this.studentModel.findAll({
         where: { grade, isActive: true },
-        order: { lastName: 'ASC', firstName: 'ASC' },
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
       return students;
@@ -448,14 +457,14 @@ export class StudentService {
    */
   async findAllGrades(): Promise<string[]> {
     try {
-      const result = await this.studentRepository
-        .createQueryBuilder('student')
-        .select('DISTINCT student.grade', 'grade')
-        .where('student.isActive = :isActive', { isActive: true })
-        .orderBy('student.grade', 'ASC')
-        .getRawMany();
+      const result = await this.studentModel.findAll({
+        attributes: [[this.studentModel.sequelize!.fn('DISTINCT', this.studentModel.sequelize!.col('grade')), 'grade']],
+        where: { isActive: true },
+        order: [['grade', 'ASC']],
+        raw: true,
+      });
 
-      return result.map((r) => r.grade);
+      return result.map((r: any) => r.grade);
     } catch (error) {
       this.handleError('Failed to fetch grades', error);
     }
@@ -469,10 +478,13 @@ export class StudentService {
     try {
       this.validateUUID(nurseId);
 
-      const students = await this.studentRepository.find({
+      const students = await this.studentModel.findAll({
         where: { nurseId, isActive: true },
-        select: ['id', 'studentNumber', 'firstName', 'lastName', 'grade', 'dateOfBirth', 'gender', 'photo'],
-        order: { lastName: 'ASC', firstName: 'ASC' },
+        attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'grade', 'dateOfBirth', 'gender', 'photo'],
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
       return students;
@@ -545,10 +557,10 @@ export class StudentService {
 
     const where: any = { studentNumber: normalized };
     if (excludeId) {
-      where.id = Not(excludeId);
+      where.id = { [Op.ne]: excludeId };
     }
 
-    const existing = await this.studentRepository.findOne({ where });
+    const existing = await this.studentModel.findOne({ where });
 
     if (existing) {
       throw new ConflictException('Student number already exists. Please use a unique student number.');
@@ -563,10 +575,10 @@ export class StudentService {
 
     const where: any = { medicalRecordNum: normalized };
     if (excludeId) {
-      where.id = Not(excludeId);
+      where.id = { [Op.ne]: excludeId };
     }
 
-    const existing = await this.studentRepository.findOne({ where });
+    const existing = await this.studentModel.findOne({ where });
 
     if (existing) {
       throw new ConflictException(
