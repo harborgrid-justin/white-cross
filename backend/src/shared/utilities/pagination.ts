@@ -9,6 +9,7 @@
  */
 
 import { Request } from '@hapi/hapi';
+import { Op } from 'sequelize';
 
 /**
  * Default pagination values
@@ -221,9 +222,6 @@ export function buildFilters(
     : Object.keys(allowedFieldsOrConfig);
 
   const filters: Record<string, any> = { ...defaults };
-
-  // Import Sequelize operators dynamically to avoid circular dependencies
-  const Op = require('sequelize').Op;
 
   for (const field of allowedFields) {
     const value = query[field];

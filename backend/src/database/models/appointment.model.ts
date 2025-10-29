@@ -10,9 +10,10 @@ import {
   HasMany,
   Index,
 } from 'sequelize-typescript';
-import { User } from './user.model';
-import { AppointmentReminder } from './appointment-reminder.model';
-import { AppointmentWaitlist } from './appointment-waitlist.model';
+;
+;
+;
+;
 
 export enum AppointmentType {
   ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
@@ -68,7 +69,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   studentId: string;
 
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: true,
@@ -76,8 +77,11 @@ export class Appointment extends Model<AppointmentAttributes> {
   })
   nurseId: string;
 
-  @BelongsTo(() => User)
-  nurse: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse' })
+  declare nurse: any;
+
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student: any;
 
   @Index
   @Column({
@@ -177,8 +181,8 @@ export class Appointment extends Model<AppointmentAttributes> {
   })
   recurringEndDate?: Date;
 
-  @HasMany(() => AppointmentReminder)
-  reminders: AppointmentReminder[];
+  @HasMany(() => require('./appointment-reminder.model').AppointmentReminder)
+  declare reminders: any[];
 
   @Column({
     type: DataType.DATE,
@@ -194,6 +198,5 @@ export class Appointment extends Model<AppointmentAttributes> {
   })
   declare updatedAt?: Date;
 
-  // Computed property for student relation (will be populated via raw queries)
-  student?: any;
+
 }

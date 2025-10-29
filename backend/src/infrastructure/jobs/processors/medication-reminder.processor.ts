@@ -19,13 +19,13 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
-import { Sequelize, QueryTypes } from 'sequelize';
+import { Sequelize, QueryTypes, Op } from 'sequelize';
 import { Job } from 'bullmq';
 import { JobType } from '../enums/job-type.enum';
 import { MedicationReminderData } from '../interfaces/job-data.interface';
 import { CacheService } from '../../../shared/cache/cache.service';
 import { EmailService } from '../../email/email.service';
-import { MessageDelivery, RecipientType, DeliveryStatus } from '../../../database/models/message-delivery.model';
+import { MessageDelivery, RecipientType, DeliveryStatus, DeliveryChannelType } from '../../../database/models/message-delivery.model';
 import { MessageType } from '../../../database/models/message-template.model';
 
 interface MedicationReminder {
@@ -516,7 +516,7 @@ export class MedicationReminderProcessor {
     const delivery = await MessageDelivery.create({
       recipientType: contact.recipientType,
       recipientId: contact.studentId,
-      channel: MessageType.EMAIL,
+      channel: DeliveryChannelType.EMAIL,
       status: DeliveryStatus.PENDING,
       contactInfo: contact.email,
       messageId: jobId || `reminder-${Date.now()}`,
@@ -756,9 +756,9 @@ export class MedicationReminderProcessor {
         where: {
           status: DeliveryStatus.FAILED,
           createdAt: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-          } as any,
+            [Op.gte]: startOfDay,
+            [Op.lte]: endOfDay,
+          },
         },
       });
 

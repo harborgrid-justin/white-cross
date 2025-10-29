@@ -2,6 +2,8 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { StudentMedication, StudentMedicationAttributes } from '../database/models/student-medication.model';
+import { Student } from '../database/models/student.model';
+import { Medication } from '../database/models/medication.model';
 import { ListMedicationsQueryDto } from './dto';
 
 /**
@@ -53,7 +55,10 @@ export class MedicationRepository {
       offset: ((query.page || 1) - 1) * (query.limit || 20),
       limit: query.limit || 20,
       order: [['createdAt', 'DESC']],
-      include: ['medication', 'student'],
+      include: [
+        { model: Medication, as: 'medication' },
+        { model: Student, as: 'student' },
+      ],
     });
 
     return { medications, total };
@@ -64,7 +69,10 @@ export class MedicationRepository {
    */
   async findById(id: string): Promise<StudentMedication | null> {
     return this.studentMedicationModel.findByPk(id, {
-      include: ['medication', 'student'],
+      include: [
+        { model: Medication, as: 'medication' },
+        { model: Student, as: 'student' },
+      ],
     });
   }
 
@@ -81,7 +89,9 @@ export class MedicationRepository {
       offset: (page - 1) * limit,
       limit,
       order: [['createdAt', 'DESC']],
-      include: ['medication'],
+      include: [
+        { model: Medication, as: 'medication' },
+      ],
     });
 
     return { medications, total };
@@ -121,7 +131,12 @@ export class MedicationRepository {
     }
 
     await medication.update(data);
-    return medication.reload({ include: ['medication', 'student'] });
+    return medication.reload({ 
+      include: [
+        { model: Medication, as: 'medication' },
+        { model: Student, as: 'student' },
+      ],
+    });
   }
 
   /**
@@ -142,7 +157,12 @@ export class MedicationRepository {
     // Note: In a real implementation, you'd store deactivation reason and type
 
     await medication.save();
-    return medication.reload({ include: ['medication', 'student'] });
+    return medication.reload({ 
+      include: [
+        { model: Medication, as: 'medication' },
+        { model: Student, as: 'student' },
+      ],
+    });
   }
 
   /**
@@ -158,7 +178,12 @@ export class MedicationRepository {
     medication.endDate = undefined;
 
     await medication.save();
-    return medication.reload({ include: ['medication', 'student'] });
+    return medication.reload({ 
+      include: [
+        { model: Medication, as: 'medication' },
+        { model: Student, as: 'student' },
+      ],
+    });
   }
 
   /**

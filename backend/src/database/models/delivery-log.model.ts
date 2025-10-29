@@ -10,9 +10,13 @@ import {
   Index,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Alert } from './alert.model';
-import { User } from './user.model';
-import { DeliveryChannel } from './alert-preferences.model';
+
+export enum DeliveryChannel {
+  EMAIL = 'email',
+  SMS = 'sms',
+  PUSH = 'push',
+  VOICE = 'voice'
+}
 
 /**
  * Delivery Log Attributes Interface
@@ -20,7 +24,7 @@ import { DeliveryChannel } from './alert-preferences.model';
 export interface DeliveryLogAttributes {
   id?: string;
   alertId: string;
-  channel: DeliveryChannel;
+  channel: any;
   recipientId?: string;
   success: boolean;
   attemptCount: number;
@@ -90,7 +94,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
    * Alert being delivered
    */
   @Index
-  @ForeignKey(() => Alert)
+  @ForeignKey(() => require('./alert.model').Alert)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -98,8 +102,8 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   })
   alertId: string;
 
-  @BelongsTo(() => Alert, 'alertId')
-  alert?: Alert;
+  @BelongsTo(() => require('./alert.model').Alert, { foreignKey: 'alertId', as: 'alert' })
+  declare alert: any;
 
   /**
    * Delivery channel used
@@ -109,21 +113,21 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
     type: DataType.ENUM(...(Object.values(DeliveryChannel) as string[])),
     allowNull: false,
   })
-  channel: DeliveryChannel;
+  declare channel: any;
 
   /**
    * Recipient user (optional, for targeted deliveries)
    */
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     field: 'recipient_id',
   })
   recipientId?: string;
 
-  @BelongsTo(() => User, 'recipientId')
-  recipient?: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'recipientId', as: 'recipient' })
+  declare recipient: any;
 
   /**
    * Whether delivery was successful

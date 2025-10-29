@@ -16,7 +16,7 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-import { District } from './district.model';
+;
 
 /**
  * License types
@@ -161,7 +161,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   })
   issuedTo?: string;
 
-  @ForeignKey(() => District)
+  @ForeignKey(() => require('./district.model').District)
   @AllowNull(true)
   @Column({
     type: DataType.UUID,
@@ -228,9 +228,9 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => District, {
+  @BelongsTo(() => require('./district.model').District, {
     foreignKey: 'districtId',
     as: 'district',
   })
-  district?: District;
+  declare district?: any;
 }

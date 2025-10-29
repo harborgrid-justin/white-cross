@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, CreatedAt, UpdatedAt } from 'sequelize-typescript';
-import { BudgetCategory } from './budget-category.model';
+;
 
 /**
  * Budget Transaction Model
@@ -25,7 +25,7 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => BudgetCategory)
+  @ForeignKey(() => require('./budget-category.model').BudgetCategory)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -87,6 +87,6 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => BudgetCategory, 'category_id')
-  category: BudgetCategory;
+  @BelongsTo(() => require('./budget-category.model').BudgetCategory, { foreignKey: 'category_id', as: 'category' })
+  declare category: any;
 }

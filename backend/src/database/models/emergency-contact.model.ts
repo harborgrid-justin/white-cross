@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
-import { Student } from './student.model';
+;
 import { ContactPriority } from '../../contact/enums/contact-priority.enum';
 import { VerificationStatus } from '../../contact/enums/verification-status.enum';
 import { PreferredContactMethod } from '../../contact/enums/preferred-contact-method.enum';
@@ -82,7 +82,7 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -195,8 +195,8 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => Student, 'studentId')
-  student: Student;
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student: any;
 
   /**
    * Get full name

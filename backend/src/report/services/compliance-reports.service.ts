@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { AuditLog } from '../../database/models/audit-log.model';
 import { StudentMedication } from '../../database/models/student-medication.model';
 import { IncidentReport } from '../../database/models/incident-report.model';
@@ -58,7 +58,7 @@ export class ComplianceReportsService {
       // Get medication compliance statistics
       const medicationComplianceRaw = await this.sequelize.query(
         `SELECT "isActive", COUNT("id")::integer as count FROM student_medications GROUP BY "isActive"`,
-        { type: 'SELECT' },
+        { type: QueryTypes.SELECT },
       );
 
       const medicationCompliance = medicationComplianceRaw.map((record: any) => ({
@@ -71,7 +71,7 @@ export class ComplianceReportsService {
         `SELECT "legalComplianceStatus", COUNT("id")::integer as count FROM incident_reports ${startDate || endDate ? 'WHERE' : ''} ${startDate ? '"createdAt" >= $1' : ''} ${startDate && endDate ? 'AND' : ''} ${endDate && startDate ? '"createdAt" <= $2' : endDate ? '"createdAt" <= $1' : ''} GROUP BY "legalComplianceStatus"`,
         {
           bind: [startDate, endDate].filter(v => v !== undefined),
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 
@@ -85,7 +85,7 @@ export class ComplianceReportsService {
         `SELECT COUNT(*)::integer as count FROM vaccinations ${startDate || endDate ? 'WHERE' : ''} ${startDate ? '"createdAt" >= $1' : ''} ${startDate && endDate ? 'AND' : ''} ${endDate && startDate ? '"createdAt" <= $2' : endDate ? '"createdAt" <= $1' : ''}`,
         {
           bind: [startDate, endDate].filter(v => v !== undefined),
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 

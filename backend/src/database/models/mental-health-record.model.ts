@@ -10,7 +10,7 @@ import {
   Index,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
+;
 
 /**
  * Mental Health Record Types
@@ -158,7 +158,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Student reference
    * @PHI - Enhanced Protection Required
    */
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -446,8 +446,8 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => Student)
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student)
+  declare student?: any;
 
   /**
    * Log access to this record

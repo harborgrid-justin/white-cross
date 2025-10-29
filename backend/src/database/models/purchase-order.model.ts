@@ -11,8 +11,8 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Vendor } from './vendor.model';
-import { PurchaseOrderItem } from './purchase-order-item.model';
+;
+;
 
 export enum PurchaseOrderStatus {
   PENDING = 'PENDING',
@@ -70,7 +70,7 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
   })
   orderNumber: string;
 
-  @ForeignKey(() => Vendor)
+  @ForeignKey(() => require('./vendor.model').Vendor)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -130,9 +130,9 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => Vendor)
-  vendor?: Vendor;
+  @BelongsTo(() => require('./vendor.model').Vendor)
+  declare vendor?: any;
 
-  @HasMany(() => PurchaseOrderItem)
-  items?: PurchaseOrderItem[];
+  @HasMany(() => require('./purchase-order-item.model').PurchaseOrderItem)
+  declare items?: any[];
 }

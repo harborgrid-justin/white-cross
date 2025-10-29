@@ -14,7 +14,7 @@ import {
   Index,
   HasMany,
 } from 'sequelize-typescript';
-import { SISSyncConflict } from './sis-sync-conflict.model';
+;
 
 export enum SyncStatus {
   PENDING = 'PENDING',
@@ -171,9 +171,9 @@ export class SyncSession extends Model {
   declare updatedAt: Date | null;
 
   // Relationships
-  @HasMany(() => SISSyncConflict, {
+  @HasMany(() => require('./sis-sync-conflict.model').SISSyncConflict, {
     foreignKey: 'sessionId',
     as: 'conflicts',
   })
-  conflicts: SISSyncConflict[];
+  declare conflicts: any[];
 }

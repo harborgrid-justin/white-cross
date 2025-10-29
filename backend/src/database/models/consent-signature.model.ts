@@ -10,7 +10,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ConsentForm } from './consent-form.model';
+;
 
 export interface ConsentSignatureAttributes {
   id?: string;
@@ -48,7 +48,7 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @Column(DataType.UUID)
   declare id?: string;
 
-  @ForeignKey(() => ConsentForm)
+  @ForeignKey(() => require('./consent-form.model').ConsentForm)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -100,8 +100,8 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @Column(DataType.STRING(255))
   withdrawnBy?: string;
 
-  @BelongsTo(() => ConsentForm)
-  consentForm: ConsentForm;
+  @BelongsTo(() => require('./consent-form.model').ConsentForm)
+  declare consentForm: any;
 
   @Column(DataType.DATE)
   declare createdAt?: Date;

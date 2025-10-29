@@ -15,7 +15,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { IntegrationConfig } from './integration-config.model';
+;
 
 /**
  * IntegrationLog Model
@@ -41,7 +41,7 @@ export class IntegrationLog extends Model {
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => IntegrationConfig)
+  @ForeignKey(() => require('./integration-config.model').IntegrationConfig)
   @Column({
     type: DataType.UUID,
     allowNull: true,
@@ -148,9 +148,9 @@ export class IntegrationLog extends Model {
   declare updatedAt: Date | null;
 
   // Relationships
-  @BelongsTo(() => IntegrationConfig, {
+  @BelongsTo(() => require('./integration-config.model').IntegrationConfig, {
     foreignKey: 'integrationId',
     as: 'integration',
   })
-  integration: IntegrationConfig;
+  declare integration: any;
 }

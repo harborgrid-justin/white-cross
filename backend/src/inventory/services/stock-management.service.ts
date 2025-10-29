@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { QueryTypes } from 'sequelize';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';
@@ -216,7 +217,7 @@ export class StockManagementService {
         ORDER BY COALESCE(stock.total_quantity, 0) ASC
       `;
 
-      const [lowStockItems] = await this.sequelize.query(query);
+      const [lowStockItems] = await this.sequelize.query(query, { type: QueryTypes.SELECT });
       return lowStockItems as any[];
     } catch (error) {
       this.logger.error('Error getting low stock items:', error);
@@ -246,7 +247,7 @@ export class StockManagementService {
         ORDER BY i.name ASC
       `;
 
-      const [outOfStockItems] = await this.sequelize.query(query);
+      const [outOfStockItems] = await this.sequelize.query(query, { type: QueryTypes.SELECT });
       return outOfStockItems as any[];
     } catch (error) {
       this.logger.error('Error getting out of stock items:', error);

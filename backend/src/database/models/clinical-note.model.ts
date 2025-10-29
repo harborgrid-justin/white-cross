@@ -11,7 +11,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ClinicVisit } from './clinic-visit.model';
+;
 import { NoteType } from '../../clinical/enums/note-type.enum';
 
 export interface ClinicalNoteAttributes {
@@ -34,7 +34,7 @@ export interface ClinicalNoteAttributes {
   amendmentReason?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  visit?: ClinicVisit;
+  visit?: any;
 }
 
 @Table({
@@ -67,15 +67,15 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   studentId: string;
 
   @AllowNull
-  @ForeignKey(() => ClinicVisit)
+  @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
     type: DataType.UUID,
     field: 'visit_id',
   })
   visitId?: string;
 
-  @BelongsTo(() => ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
-  visit?: ClinicVisit;
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
+  declare visit?: any;
 
   @Column({
     type: DataType.ENUM(...(Object.values(NoteType) as string[])),

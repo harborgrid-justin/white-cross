@@ -15,7 +15,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { SyncSession } from './sync-session.model';
+;
 
 export enum ConflictResolution {
   KEEP_LOCAL = 'KEEP_LOCAL',
@@ -45,7 +45,7 @@ export class SISSyncConflict extends Model {
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => SyncSession)
+  @ForeignKey(() => require('./sync-session.model').SyncSession)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -124,9 +124,9 @@ export class SISSyncConflict extends Model {
   declare updatedAt: Date | null;
 
   // Relationships
-  @BelongsTo(() => SyncSession, {
+  @BelongsTo(() => require('./sync-session.model').SyncSession, {
     foreignKey: 'sessionId',
     as: 'session',
   })
-  session: SyncSession;
+  declare session: any;
 }

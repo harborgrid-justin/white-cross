@@ -10,8 +10,22 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ReportSchedule } from './report-schedule.model';
-import { ReportType, OutputFormat } from './report-template.model';
+import { ReportTemplate } from './report-template.model';
+
+export enum ReportType {
+  HEALTH_REPORT = 'HEALTH_REPORT',
+  MEDICATION_REPORT = 'MEDICATION_REPORT',
+  INCIDENT_REPORT = 'INCIDENT_REPORT',
+  COMPLIANCE_REPORT = 'COMPLIANCE_REPORT',
+  ANALYTICS_REPORT = 'ANALYTICS_REPORT',
+}
+
+export enum OutputFormat {
+  PDF = 'PDF',
+  CSV = 'CSV',
+  XLSX = 'XLSX',
+  JSON = 'JSON',
+}
 
 export enum ReportStatus {
   PENDING = 'pending',
@@ -37,7 +51,7 @@ export interface ReportExecutionAttributes {
   startedAt: Date;
   completedAt?: Date;
   expiresAt?: Date;
-  schedule?: ReportSchedule;
+  schedule?: any;
 }
 
 @Table({
@@ -51,15 +65,15 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   declare id: string;
 
   @AllowNull
-  @ForeignKey(() => ReportSchedule)
+  @ForeignKey(() => require('./report-schedule.model').ReportSchedule)
   @Column({
     type: DataType.UUID,
     field: 'schedule_id',
   })
   scheduleId?: string;
 
-  @BelongsTo(() => ReportSchedule, { foreignKey: 'scheduleId', as: 'schedule' })
-  schedule?: ReportSchedule;
+  @BelongsTo(() => require('./report-schedule.model').ReportSchedule, { foreignKey: 'scheduleId', as: 'schedule' })
+  declare schedule?: any;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),

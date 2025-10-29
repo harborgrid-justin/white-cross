@@ -11,7 +11,6 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
 
 export interface HealthRecordAttributes {
   id: string;
@@ -62,7 +61,7 @@ export class HealthRecord extends Model<HealthRecordAttributes> implements Healt
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -186,8 +185,9 @@ export class HealthRecord extends Model<HealthRecordAttributes> implements Healt
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => Student)
-  student?: Student;
+  // Using lazy evaluation with require() to prevent circular dependencies
+  @BelongsTo(() => require('./student.model').Student)
+  declare student?: any;
 
   // Note: Other relationships will be added as related models are converted
   // @HasMany(() => Vaccination)

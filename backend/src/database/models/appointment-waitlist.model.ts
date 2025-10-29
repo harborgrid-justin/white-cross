@@ -9,7 +9,6 @@ import {
   BelongsTo,
   Index,
 } from 'sequelize-typescript';
-import { User } from './user.model';
 import { AppointmentType } from './appointment.model';
 
 export enum WaitlistPriority {
@@ -63,15 +62,15 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   studentId: string;
 
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: true,
   })
   nurseId?: string;
 
-  @BelongsTo(() => User)
-  nurse: User;
+  @BelongsTo(() => require('./user.model').User)
+  declare nurse: any;
 
   @Column({
     type: DataType.ENUM(...(Object.values(AppointmentType) as string[])),

@@ -11,8 +11,8 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
-import { HealthRecord } from './health-record.model';
+;
+;
 
 /**
  * Vaccine type enumeration
@@ -121,8 +121,8 @@ export interface VaccinationAttributes {
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
-  student?: Student;
-  healthRecord?: HealthRecord;
+  student?: any;
+  healthRecord?: any;
 }
 
 @Table({
@@ -154,7 +154,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    * Student ID (foreign key, required)
    * @PHI - Links to student identity
    */
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -168,7 +168,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    * Links to specific health event if vaccination was part of clinic visit
    */
   @AllowNull
-  @ForeignKey(() => HealthRecord)
+  @ForeignKey(() => require('./health-record.model').HealthRecord)
   @Column({
     type: DataType.UUID,
     field: 'health_record_id',
@@ -516,11 +516,11 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   declare deletedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => Student, { foreignKey: 'studentId', as: 'student' })
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  student?: any;
 
-  @BelongsTo(() => HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
-  healthRecord?: HealthRecord;
+  @BelongsTo(() => require('./health-record.model').HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
+  healthRecord?: any;
 
   /**
    * Check if vaccination is overdue (past next due date)

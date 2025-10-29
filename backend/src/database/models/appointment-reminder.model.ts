@@ -9,7 +9,7 @@ import {
   BelongsTo,
   Index,
 } from 'sequelize-typescript';
-import { Appointment } from './appointment.model';
+;
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -49,15 +49,15 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   declare id?: string;
 
   @Index
-  @ForeignKey(() => Appointment)
+  @ForeignKey(() => require('./appointment.model').Appointment)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   appointmentId: string;
 
-  @BelongsTo(() => Appointment)
-  appointment: Appointment;
+  @BelongsTo(() => require('./appointment.model').Appointment)
+  declare appointment: any;
 
   @Column({
     type: DataType.ENUM(...(Object.values(MessageType) as string[])),

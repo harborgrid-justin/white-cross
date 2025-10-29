@@ -10,7 +10,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ComplianceReport } from './compliance-report.model';
+;
 
 export enum ComplianceCategory {
   HIPAA_PRIVACY = 'HIPAA_PRIVACY',
@@ -116,13 +116,13 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
   @Column(DataType.UUID)
   completedBy?: string;
 
-  @ForeignKey(() => ComplianceReport)
+  @ForeignKey(() => require('./compliance-report.model').ComplianceReport)
   @AllowNull
   @Column(DataType.UUID)
   reportId?: string;
 
-  @BelongsTo(() => ComplianceReport)
-  report?: ComplianceReport;
+  @BelongsTo(() => require('./compliance-report.model').ComplianceReport)
+  declare report?: any;
 
   @Column(DataType.DATE)
   declare createdAt?: Date;

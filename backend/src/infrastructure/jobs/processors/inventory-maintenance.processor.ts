@@ -33,7 +33,7 @@ import { JobType } from '../enums/job-type.enum';
 import { InventoryMaintenanceData } from '../interfaces/job-data.interface';
 import { CacheService } from '../../../shared/cache/cache.service';
 import { EmailService } from '../../email/email.service';
-import { MessageDelivery, RecipientType, DeliveryStatus } from '../../../database/models/message-delivery.model';
+import { MessageDelivery, RecipientType, DeliveryStatus, DeliveryChannelType } from '../../../database/models/message-delivery.model';
 import { MessageType } from '../../../database/models/message-template.model';
 
 interface InventoryAlert {
@@ -394,7 +394,7 @@ export class InventoryMaintenanceProcessor {
           const delivery = await MessageDelivery.create({
             recipientType: RecipientType.ADMINISTRATOR,
             recipientId: 'system',
-            channel: MessageType.EMAIL,
+            channel: DeliveryChannelType.EMAIL,
             status: DeliveryStatus.PENDING,
             contactInfo: email,
             messageId: `inventory-alert-${Date.now()}`,
@@ -471,7 +471,7 @@ export class InventoryMaintenanceProcessor {
           const delivery = await MessageDelivery.create({
             recipientType: RecipientType.ADMINISTRATOR,
             recipientId: 'system',
-            channel: MessageType.EMAIL,
+            channel: DeliveryChannelType.EMAIL,
             status: DeliveryStatus.PENDING,
             contactInfo: email,
             messageId: `inventory-alert-${Date.now()}`,
@@ -828,7 +828,7 @@ export class InventoryMaintenanceProcessor {
           const delivery = await MessageDelivery.create({
             recipientType: RecipientType.ADMINISTRATOR,
             recipientId: 'system',
-            channel: MessageType.EMAIL,
+            channel: DeliveryChannelType.EMAIL,
             status: DeliveryStatus.PENDING,
             contactInfo: email,
             messageId: `disposal-${Date.now()}`,

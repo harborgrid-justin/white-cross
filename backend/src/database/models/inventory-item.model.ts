@@ -9,9 +9,9 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { InventoryTransaction } from './inventory-transaction.model';
-import { MaintenanceLog } from './maintenance-log.model';
-import { PurchaseOrderItem } from './purchase-order-item.model';
+;
+;
+;
 
 export interface InventoryItemAttributes {
   id: string;
@@ -117,12 +117,12 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   declare updatedAt: Date;
 
   // Relationships
-  @HasMany(() => InventoryTransaction)
-  transactions?: InventoryTransaction[];
+  @HasMany(() => require('./inventory-transaction.model').InventoryTransaction)
+  declare transactions?: any[];
 
-  @HasMany(() => MaintenanceLog)
-  maintenanceLogs?: MaintenanceLog[];
+  @HasMany(() => require('./maintenance-log.model').MaintenanceLog)
+  declare maintenanceLogs?: any[];
 
-  @HasMany(() => PurchaseOrderItem)
-  purchaseOrderItems?: PurchaseOrderItem[];
+  @HasMany(() => require('./purchase-order-item.model').PurchaseOrderItem)
+  declare purchaseOrderItems?: any[];
 }

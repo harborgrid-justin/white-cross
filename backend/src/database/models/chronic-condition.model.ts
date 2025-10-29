@@ -11,8 +11,8 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
-import { HealthRecord } from './health-record.model';
+;
+;
 
 // Re-export enums for convenience
 export { AccommodationType } from '../../chronic-condition/enums';
@@ -57,8 +57,8 @@ export interface ChronicConditionAttributes {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  student?: Student;
-  healthRecord?: HealthRecord;
+  student?: any;
+  healthRecord?: any;
 }
 
 @Table({
@@ -88,7 +88,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -98,7 +98,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   studentId: string;
 
   @AllowNull
-  @ForeignKey(() => HealthRecord)
+  @ForeignKey(() => require('./health-record.model').HealthRecord)
   @Column({
     type: DataType.UUID,
     field: 'health_record_id',
@@ -243,9 +243,9 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => Student, { foreignKey: 'studentId', as: 'student' })
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
 
-  @BelongsTo(() => HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
-  healthRecord?: HealthRecord;
+  @BelongsTo(() => require('./health-record.model').HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
+  declare healthRecord?: any;
 }

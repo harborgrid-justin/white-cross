@@ -15,7 +15,7 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-import { ConfigurationHistory } from './configuration-history.model';
+;
 
 /**
  * Configuration categories
@@ -300,9 +300,9 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => ConfigurationHistory, {
+  @HasMany(() => require('./configuration-history.model').ConfigurationHistory, {
     foreignKey: 'configurationId',
     as: 'history',
   })
-  history?: ConfigurationHistory[];
+  declare history?: any[];
 }

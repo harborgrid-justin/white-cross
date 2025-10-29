@@ -177,6 +177,18 @@ import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broa
                 rejectUnauthorized: false
               }
             } : {},
+            // V6 recommended options
+            define: {
+              timestamps: true,
+              underscored: true,
+              freezeTableName: true,
+            },
+            pool: {
+              max: 5,
+              min: 0,
+              acquire: 30000,
+              idle: 10000,
+            },
           };
         } else {
           // Use individual connection parameters for local development
@@ -190,6 +202,18 @@ import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broa
             autoLoadModels: true,
             synchronize: false,
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+            // V6 recommended options
+            define: {
+              timestamps: true,
+              underscored: true,
+              freezeTableName: true,
+            },
+            pool: {
+              max: 5,
+              min: 0,
+              acquire: 30000,
+              idle: 10000,
+            },
           };
         }
       },

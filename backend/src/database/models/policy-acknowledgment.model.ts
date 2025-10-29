@@ -10,7 +10,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { PolicyDocument } from './policy-document.model';
+;
 
 export interface PolicyAcknowledgmentAttributes {
   id?: string;
@@ -36,7 +36,7 @@ export class PolicyAcknowledgment extends Model<PolicyAcknowledgmentAttributes> 
   @Column(DataType.UUID)
   declare id?: string;
 
-  @ForeignKey(() => PolicyDocument)
+  @ForeignKey(() => require('./policy-document.model').PolicyDocument)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -63,6 +63,6 @@ export class PolicyAcknowledgment extends Model<PolicyAcknowledgmentAttributes> 
   @Column(DataType.STRING(45))
   ipAddress?: string;
 
-  @BelongsTo(() => PolicyDocument)
-  policy: PolicyDocument;
+  @BelongsTo(() => require('./policy-document.model').PolicyDocument)
+  declare policy: any;
 }

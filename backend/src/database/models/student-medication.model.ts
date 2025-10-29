@@ -10,8 +10,8 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
-import { Medication } from './medication.model';
+;
+;
 
 export interface StudentMedicationAttributes {
   id: string;
@@ -64,7 +64,7 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -136,11 +136,11 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   @Column(DataType.DATE)
   declare updatedAt: Date;
 
-  @BelongsTo(() => Student)
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student)
+  declare student?: any;
 
-  @BelongsTo(() => Medication)
-  medication?: Medication;
+  @BelongsTo(() => require('./medication.model').Medication)
+  declare medication?: any;
 
   /**
    * Check if medication is currently active based on dates

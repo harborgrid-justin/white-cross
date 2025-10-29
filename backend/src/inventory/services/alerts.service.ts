@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Sequelize } from 'sequelize-typescript';
+import { QueryTypes } from 'sequelize';
 import { InventoryAlertDto, AlertType, AlertSeverity, AlertSummaryDto } from '../dto/inventory-alert.dto';
 
 interface StockQueryResult {
@@ -65,7 +66,7 @@ export class AlertsService {
         WHERE i.is_active = true
       `;
 
-      const [results] = await this.sequelize.query(query, { type: 'SELECT' });
+      const [results] = await this.sequelize.query(query, { type: QueryTypes.SELECT });
       const items: StockQueryResult[] = results as StockQueryResult[];
 
       for (const item of items) {

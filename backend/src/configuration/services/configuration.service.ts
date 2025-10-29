@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, QueryTypes } from 'sequelize';
 import { SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigCategory, ConfigValueType, ConfigScope } from '../../database/models/system-config.model';
@@ -658,11 +658,11 @@ export class ConfigurationService {
         this.configModel.count(),
         this.sequelize.query(
           'SELECT category, COUNT(*) as count FROM system_configurations GROUP BY category',
-          { type: 'SELECT' }
+          { type: QueryTypes.SELECT }
         ),
         this.sequelize.query(
           'SELECT scope, COUNT(*) as count FROM system_configurations GROUP BY scope',
-          { type: 'SELECT' }
+          { type: QueryTypes.SELECT }
         ),
         this.configModel.count({ where: { isPublic: true } }),
         this.configModel.count({ where: { isEditable: true } })

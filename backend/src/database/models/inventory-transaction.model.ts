@@ -10,7 +10,7 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { InventoryItem } from './inventory-item.model';
+;
 
 export enum InventoryTransactionType {
   PURCHASE = 'PURCHASE',
@@ -58,7 +58,7 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => InventoryItem)
+  @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -104,6 +104,6 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   declare createdAt: Date;
 
   // Relationships
-  @BelongsTo(() => InventoryItem)
-  inventoryItem?: InventoryItem;
+  @BelongsTo(() => require('./inventory-item.model').InventoryItem)
+  declare inventoryItem?: any;
 }

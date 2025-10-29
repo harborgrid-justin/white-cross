@@ -17,7 +17,7 @@ import {
   AllowNull,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { IncidentReport } from './incident-report.model';
+;
 
 export enum ActionStatus {
   PENDING = 'PENDING',
@@ -81,7 +81,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column(DataType.UUID)
   declare id?: string;
 
-  @ForeignKey(() => IncidentReport)
+  @ForeignKey(() => require('./incident-report.model').IncidentReport)
   @AllowNull(false)
   @Column({
     type: DataType.UUID,
@@ -178,9 +178,9 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => IncidentReport, {
+  @BelongsTo(() => require('./incident-report.model').IncidentReport, {
     foreignKey: 'incidentReportId',
     as: 'incidentReport',
   })
-  incidentReport?: IncidentReport;
+  declare incidentReport?: any;
 }

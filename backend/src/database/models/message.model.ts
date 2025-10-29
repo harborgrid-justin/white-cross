@@ -10,7 +10,7 @@ import {
   HasMany,
   Index,
 } from 'sequelize-typescript';
-import { User } from './user.model';
+;
 
 export enum MessagePriority {
   LOW = 'LOW',
@@ -102,15 +102,15 @@ export class Message extends Model<MessageAttributes> {
   attachments: string[];
 
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   senderId: string;
 
-  @BelongsTo(() => User, 'senderId')
-  sender: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'senderId', as: 'sender' })
+  declare sender?: any;
 
   @Column({
     type: DataType.UUID,

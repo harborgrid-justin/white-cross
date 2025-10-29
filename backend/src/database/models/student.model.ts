@@ -11,6 +11,7 @@ import {
   BelongsTo,
   HasMany,
 } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -71,7 +72,7 @@ export interface StudentAttributes {
       unique: true,
       where: {
         medical_record_num: {
-          [require('sequelize').Op.ne]: null,
+          [Op.ne]: null,
         },
       },
     },
@@ -254,24 +255,25 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   declare deletedAt?: Date;
 
   // Relationships
+  // Using lazy evaluation with require() to prevent circular dependencies
   @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse' })
-  nurse?: any;
+  declare nurse?: any;
 
   @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
-  school?: any;
+  declare school?: any;
 
   @BelongsTo(() => require('./district.model').District, { foreignKey: 'districtId', as: 'district' })
-  district?: any;
+  declare district?: any;
 
   // One-to-many relationships
   @HasMany(() => require('./health-record.model').HealthRecord, { foreignKey: 'studentId', as: 'healthRecords' })
-  healthRecords?: any[];
+  declare healthRecords?: any[];
 
   @HasMany(() => require('./academic-transcript.model').AcademicTranscript, { foreignKey: 'studentId', as: 'academicTranscripts' })
-  academicTranscripts?: any[];
+  declare academicTranscripts?: any[];
 
   @HasMany(() => require('./mental-health-record.model').MentalHealthRecord, { foreignKey: 'studentId', as: 'mentalHealthRecords' })
-  mentalHealthRecords?: any[];
+  declare mentalHealthRecords?: any[];
 
   // Additional relationships (commented out until related models are available)
   // @HasMany(() => Vaccination, { foreignKey: 'studentId', as: 'vaccinations' })

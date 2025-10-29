@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Sequelize, Op, fn, col, literal } from 'sequelize';
+import { Sequelize, Op, fn, col, literal, QueryTypes } from 'sequelize';
 import { HealthRecord } from '../../database/models/health-record.model';
 import { ChronicCondition } from '../../database/models/chronic-condition.model';
 import { Allergy } from '../../database/models/allergy.model';
@@ -118,7 +118,7 @@ export class HealthReportsService {
         ORDER BY month DESC`,
         {
           bind: [defaultStartDate, defaultEndDate],
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 

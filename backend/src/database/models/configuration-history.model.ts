@@ -16,7 +16,7 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-import { SystemConfig } from './system-config.model';
+;
 
 /**
  * ConfigurationHistory attributes interface
@@ -98,7 +98,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Index
   changedBy: string;
 
-  @ForeignKey(() => SystemConfig)
+  @ForeignKey(() => require('./system-config.model').SystemConfig)
   @AllowNull(false)
   @Column({
     type: DataType.UUID,
@@ -117,9 +117,9 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   declare createdAt?: Date;
 
   // Relationships
-  @BelongsTo(() => SystemConfig, {
+  @BelongsTo(() => require('./system-config.model').SystemConfig, {
     foreignKey: 'configurationId',
     as: 'configuration',
   })
-  configuration?: SystemConfig;
+  declare configuration?: any;
 }

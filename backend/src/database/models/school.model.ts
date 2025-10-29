@@ -16,7 +16,7 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-import { District } from './district.model';
+;
 
 /**
  * School attributes interface
@@ -96,7 +96,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Index
   code: string;
 
-  @ForeignKey(() => District)
+  @ForeignKey(() => require('./district.model').District)
   @AllowNull(false)
   @Column({
     type: DataType.UUID,
@@ -196,9 +196,9 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => District, {
+  @BelongsTo(() => require('./district.model').District, {
     foreignKey: 'districtId',
     as: 'district',
   })
-  district?: District;
+  declare district?: any;
 }

@@ -14,7 +14,7 @@ import {
   Index,
   HasMany,
 } from 'sequelize-typescript';
-import { IntegrationLog } from './integration-log.model';
+;
 
 export enum IntegrationType {
   SIS = 'SIS',
@@ -171,9 +171,9 @@ export class IntegrationConfig extends Model {
   declare updatedAt: Date;
 
   // Relationships
-  @HasMany(() => IntegrationLog, {
+  @HasMany(() => require('./integration-log.model').IntegrationLog, {
     foreignKey: 'integrationId',
     as: 'logs',
   })
-  logs: IntegrationLog[];
+  declare logs: any[];
 }

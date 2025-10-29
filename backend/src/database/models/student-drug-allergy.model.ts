@@ -13,7 +13,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { DrugCatalog } from './drug-catalog.model';
+;
 
 export interface StudentDrugAllergyAttributes {
   id: string;
@@ -58,7 +58,7 @@ export class StudentDrugAllergy extends Model<StudentDrugAllergyAttributes> impl
   })
   studentId: string;
 
-  @ForeignKey(() => DrugCatalog)
+  @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -107,6 +107,6 @@ export class StudentDrugAllergy extends Model<StudentDrugAllergyAttributes> impl
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => DrugCatalog)
-  drug?: DrugCatalog;
+  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog)
+  declare drug?: any;
 }

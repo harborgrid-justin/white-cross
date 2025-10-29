@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { MedicationLog } from '../../database/models/medication-log.model';
 import { StudentMedication } from '../../database/models/student-medication.model';
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
@@ -89,7 +89,7 @@ export class MedicationReportsService {
         LIMIT 10`,
         {
           bind: startDate && endDate ? [startDate, endDate] : startDate ? [startDate] : endDate ? [endDate] : [],
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 

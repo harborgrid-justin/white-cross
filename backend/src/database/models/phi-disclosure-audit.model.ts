@@ -10,7 +10,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { PhiDisclosure } from './phi-disclosure.model';
+;
 
 export interface PhiDisclosureAuditAttributes {
   id?: string;
@@ -38,7 +38,7 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
   @Column(DataType.UUID)
   declare id?: string;
 
-  @ForeignKey(() => PhiDisclosure)
+  @ForeignKey(() => require('./phi-disclosure.model').PhiDisclosure)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -71,8 +71,8 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
   @Column(DataType.TEXT)
   userAgent?: string;
 
-  @BelongsTo(() => PhiDisclosure)
-  disclosure: PhiDisclosure;
+  @BelongsTo(() => require('./phi-disclosure.model').PhiDisclosure)
+  declare disclosure: any;
 
   @Column(DataType.DATE)
   declare createdAt?: Date;

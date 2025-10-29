@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Op, fn, col } from 'sequelize';
+import { Op, fn, col, QueryTypes } from 'sequelize';
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { IncidentStatisticsReport } from '../interfaces/report-types.interface';
 import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
@@ -105,7 +105,7 @@ export class IncidentReportsService {
         ORDER BY month DESC`,
         {
           bind: [defaultStartDate, defaultEndDate],
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 

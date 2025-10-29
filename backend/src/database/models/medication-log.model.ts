@@ -11,7 +11,7 @@ import {
   CreatedAt,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { Student } from './student.model';
+;
 
 export enum MedicationLogStatus {
   PENDING = 'PENDING',
@@ -54,7 +54,7 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   @Column(DataType.STRING)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Index
   @Column({
     type: DataType.STRING,
@@ -151,6 +151,6 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   declare updatedAt: Date;
 
   // Relations
-  @BelongsTo(() => Student, { foreignKey: 'studentId', as: 'student' })
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
 }

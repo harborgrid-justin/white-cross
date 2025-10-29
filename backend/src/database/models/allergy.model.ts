@@ -10,7 +10,7 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
+;
 
 export enum AllergyType {
   FOOD = 'FOOD',
@@ -75,7 +75,7 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -164,6 +164,6 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @Column(DataType.DATE)
   declare updatedAt: Date;
 
-  @BelongsTo(() => Student)
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student)
+  declare student?: any;
 }

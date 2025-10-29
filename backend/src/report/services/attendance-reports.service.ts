@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { QueryTypes } from 'sequelize';
 import { ChronicCondition } from '../../database/models/chronic-condition.model';
 import { Student } from '../../database/models/student.model';
 import { AttendanceCorrelationReport } from '../interfaces/report-types.interface';
@@ -50,7 +51,7 @@ export class AttendanceReportsService {
             endDate,
             limit,
           ].filter(v => v !== undefined),
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 
@@ -87,7 +88,7 @@ export class AttendanceReportsService {
             endDate,
             limit,
           ].filter(v => v !== undefined),
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 
@@ -129,7 +130,7 @@ export class AttendanceReportsService {
             endDate,
             limit,
           ].filter(v => v !== undefined),
-          type: 'SELECT',
+          type: QueryTypes.SELECT,
         },
       );
 

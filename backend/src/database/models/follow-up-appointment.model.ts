@@ -11,7 +11,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ClinicVisit } from './clinic-visit.model';
+;
 import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
 
 export interface FollowUpAppointmentAttributes {
@@ -38,8 +38,8 @@ export interface FollowUpAppointmentAttributes {
   priority: string;
   createdAt?: Date;
   updatedAt?: Date;
-  originalVisit?: ClinicVisit;
-  completedVisit?: ClinicVisit;
+  originalVisit?: any;
+  completedVisit?: any;
 }
 
 @Table({
@@ -72,15 +72,15 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   studentId: string;
 
   @AllowNull
-  @ForeignKey(() => ClinicVisit)
+  @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
     type: DataType.UUID,
     field: 'original_visit_id',
   })
   originalVisitId?: string;
 
-  @BelongsTo(() => ClinicVisit, { foreignKey: 'originalVisitId', as: 'originalVisit' })
-  originalVisit?: ClinicVisit;
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'originalVisitId', as: 'originalVisit' })
+  declare originalVisit?: any;
 
   @Column({
     type: DataType.UUID,
@@ -155,15 +155,15 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   confirmedAt?: Date;
 
   @AllowNull
-  @ForeignKey(() => ClinicVisit)
+  @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
     type: DataType.UUID,
     field: 'completed_visit_id',
   })
   completedVisitId?: string;
 
-  @BelongsTo(() => ClinicVisit, { foreignKey: 'completedVisitId', as: 'completedVisit' })
-  completedVisit?: ClinicVisit;
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'completedVisitId', as: 'completedVisit' })
+  declare completedVisit?: any;
 
   @AllowNull
   @Column({

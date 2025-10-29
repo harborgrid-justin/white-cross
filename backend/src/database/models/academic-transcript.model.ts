@@ -10,7 +10,7 @@ import {
   Index,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
+;
 
 /**
  * Subject Grade Interface
@@ -128,7 +128,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   /**
    * Student reference
    */
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -260,8 +260,8 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => Student)
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student)
+  declare student?: any;
 
   /**
    * Get total credits for this period

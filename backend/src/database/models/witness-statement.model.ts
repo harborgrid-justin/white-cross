@@ -11,7 +11,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { IncidentReport } from './incident-report.model';
+;
 
 export enum WitnessType {
   STAFF = 'STAFF',
@@ -34,7 +34,7 @@ export interface WitnessStatementAttributes {
   verifiedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-  incidentReport?: IncidentReport;
+  incidentReport?: any;
 }
 
 @Table({
@@ -115,6 +115,6 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-  @BelongsTo(() => IncidentReport, { foreignKey: 'incidentReportId', as: 'incidentReport' })
-  incidentReport?: IncidentReport;
+  @BelongsTo(() => require('./incident-report.model').IncidentReport, { foreignKey: 'incidentReportId', as: 'incidentReport' })
+  declare incidentReport?: any;
 }

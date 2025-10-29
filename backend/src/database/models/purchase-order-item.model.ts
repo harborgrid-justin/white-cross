@@ -10,8 +10,8 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { PurchaseOrder } from './purchase-order.model';
-import { InventoryItem } from './inventory-item.model';
+;
+;
 
 export interface PurchaseOrderItemAttributes {
   id: string;
@@ -40,14 +40,14 @@ export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implem
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => PurchaseOrder)
+  @ForeignKey(() => require('./purchase-order.model').PurchaseOrder)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   purchaseOrderId: string;
 
-  @ForeignKey(() => InventoryItem)
+  @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -76,9 +76,9 @@ export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implem
   declare createdAt: Date;
 
   // Relationships
-  @BelongsTo(() => PurchaseOrder)
-  purchaseOrder?: PurchaseOrder;
+  @BelongsTo(() => require('./purchase-order.model').PurchaseOrder)
+  declare purchaseOrder?: any;
 
-  @BelongsTo(() => InventoryItem)
-  inventoryItem?: InventoryItem;
+  @BelongsTo(() => require('./inventory-item.model').InventoryItem)
+  declare inventoryItem?: any;
 }

@@ -9,9 +9,10 @@ import {
   Index,
   HasMany,
 } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { DrugInteraction } from './drug-interaction.model';
-import { StudentDrugAllergy } from './student-drug-allergy.model';
+;
+;
 
 export interface DrugCatalogAttributes {
   id: string;
@@ -28,9 +29,9 @@ export interface DrugCatalogAttributes {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  interactionsAsDrug1?: DrugInteraction[];
-  interactionsAsDrug2?: DrugInteraction[];
-  allergies?: StudentDrugAllergy[];
+  interactionsAsDrug1?: any[];
+  interactionsAsDrug2?: any[];
+  allergies?: any[];
 }
 
 @Table({
@@ -42,7 +43,7 @@ export interface DrugCatalogAttributes {
       unique: true,
       where: {
         rxnorm_id: {
-          [require('sequelize').Op.ne]: null,
+          [Op.ne]: null,
         },
       },
     },
@@ -51,7 +52,7 @@ export interface DrugCatalogAttributes {
       unique: true,
       where: {
         rxnorm_code: {
-          [require('sequelize').Op.ne]: null,
+          [Op.ne]: null,
         },
       },
     },
@@ -163,12 +164,12 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => DrugInteraction, { foreignKey: 'drug1Id', as: 'interactionsAsDrug1' })
-  interactionsAsDrug1?: DrugInteraction[];
+  @HasMany(() => require('./drug-interaction.model').DrugInteraction, { foreignKey: 'drug1Id', as: 'interactionsAsDrug1' })
+  interactionsAsDrug1?: any[];
 
-  @HasMany(() => DrugInteraction, { foreignKey: 'drug2Id', as: 'interactionsAsDrug2' })
-  interactionsAsDrug2?: DrugInteraction[];
+  @HasMany(() => require('./drug-interaction.model').DrugInteraction, { foreignKey: 'drug2Id', as: 'interactionsAsDrug2' })
+  interactionsAsDrug2?: any[];
 
-  @HasMany(() => StudentDrugAllergy, { foreignKey: 'drugId', as: 'allergies' })
-  allergies?: StudentDrugAllergy[];
+  @HasMany(() => require('./student-drug-allergy.model').StudentDrugAllergy, { foreignKey: 'drugId', as: 'allergies' })
+  allergies?: any[];
 }

@@ -11,8 +11,8 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ClinicVisit } from './clinic-visit.model';
-import { TreatmentPlan } from './treatment-plan.model';
+;
+;
 import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 
 export interface PrescriptionAttributes {
@@ -40,8 +40,8 @@ export interface PrescriptionAttributes {
   notes?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  visit?: ClinicVisit;
-  treatmentPlan?: TreatmentPlan;
+  visit?: any;
+  treatmentPlan?: any;
 }
 
 @Table({
@@ -74,26 +74,26 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   studentId: string;
 
   @AllowNull
-  @ForeignKey(() => ClinicVisit)
+  @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
     type: DataType.UUID,
     field: 'visit_id',
   })
   visitId?: string;
 
-  @BelongsTo(() => ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
-  visit?: ClinicVisit;
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
+  declare visit?: any;
 
   @AllowNull
-  @ForeignKey(() => TreatmentPlan)
+  @ForeignKey(() => require('./treatment-plan.model').TreatmentPlan)
   @Column({
     type: DataType.UUID,
     field: 'treatment_plan_id',
   })
   treatmentPlanId?: string;
 
-  @BelongsTo(() => TreatmentPlan, { foreignKey: 'treatmentPlanId', as: 'treatmentPlan' })
-  treatmentPlan?: TreatmentPlan;
+  @BelongsTo(() => require('./treatment-plan.model').TreatmentPlan, { foreignKey: 'treatmentPlanId', as: 'treatmentPlan' })
+  declare treatmentPlan?: any;
 
   @Column({
     type: DataType.UUID,

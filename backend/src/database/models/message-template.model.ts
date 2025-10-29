@@ -9,14 +9,22 @@ import {
   BelongsTo,
   Index,
 } from 'sequelize-typescript';
-import { User } from './user.model';
-import { MessageCategory } from './message.model';
+;
+;
 
 export enum MessageType {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
   PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
   VOICE = 'VOICE',
+}
+
+export enum MessageCategory {
+  APPOINTMENT = 'APPOINTMENT',
+  MEDICATION = 'MEDICATION',
+  EMERGENCY = 'EMERGENCY',
+  NOTIFICATION = 'NOTIFICATION',
+  REMINDER = 'REMINDER',
 }
 
 export interface MessageTemplateAttributes {
@@ -74,7 +82,7 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
     type: DataType.ENUM(...(Object.values(MessageCategory) as string[])),
     allowNull: false,
   })
-  category: MessageCategory;
+  declare category: any;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING),
@@ -92,15 +100,15 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   isActive: boolean;
 
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   createdById: string;
 
-  @BelongsTo(() => User, 'createdById')
-  createdBy: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'createdById', as: 'createdBy' })
+  declare createdBy?: any;
 
   @Column({
     type: DataType.DATE,

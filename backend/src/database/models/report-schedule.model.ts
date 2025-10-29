@@ -10,7 +10,8 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ReportTemplate, ReportType, OutputFormat } from './report-template.model';
+import { ReportTemplate } from './report-template.model';
+import { ReportType, OutputFormat } from './report-execution.model';
 
 export enum ScheduleFrequency {
   DAILY = 'daily',
@@ -23,11 +24,11 @@ export enum ScheduleFrequency {
 export interface ReportScheduleAttributes {
   id: string;
   name: string;
-  reportType: string;
+  reportType: ReportType;
   templateId?: string;
   frequency: ScheduleFrequency;
   cronExpression?: string;
-  outputFormat: string;
+  outputFormat: OutputFormat;
   parameters?: Record<string, any>;
   recipients: string[];
   isActive: boolean;
@@ -63,18 +64,18 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
     allowNull: false,
     field: 'report_type',
   })
-  reportType: string;
+  reportType: ReportType;
 
   @AllowNull
-  @ForeignKey(() => ReportTemplate)
+  @ForeignKey(() => require('./report-template.model').ReportTemplate)
   @Column({
     type: DataType.UUID,
     field: 'template_id',
   })
   templateId?: string;
 
-  @BelongsTo(() => ReportTemplate, { foreignKey: 'templateId', as: 'template' })
-  template?: ReportTemplate;
+  @BelongsTo(() => require('./report-template.model').ReportTemplate, { foreignKey: 'templateId', as: 'template' })
+  declare template?: any;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ScheduleFrequency) as string[])),
@@ -95,7 +96,7 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
     defaultValue: OutputFormat.PDF,
     field: 'output_format',
   })
-  outputFormat: string;
+  outputFormat: OutputFormat;
 
   @AllowNull
   @Column(DataType.JSONB)

@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasMany, CreatedAt, UpdatedAt } from 'sequelize-typescript';
-import { BudgetTransaction } from './budget-transaction.model';
+;
 
 /**
  * Budget Category Model
@@ -82,8 +82,8 @@ export class BudgetCategory extends Model<BudgetCategory> {
   declare updatedAt: Date;
 
   // Relationships
-  @HasMany(() => BudgetTransaction, 'category_id')
-  transactions: BudgetTransaction[];
+  @HasMany(() => require('./budget-transaction.model').BudgetTransaction, 'category_id')
+  declare transactions: any[];
 
   // Virtual properties for calculations
   get remainingAmount(): number {

@@ -11,9 +11,9 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Student } from './student.model';
-import { FollowUpAction } from './follow-up-action.model';
-import { WitnessStatement } from './witness-statement.model';
+;
+;
+;
 
 export enum IncidentType {
   INJURY = 'INJURY',
@@ -73,8 +73,8 @@ export interface IncidentReportAttributes {
   occurredAt: Date;
   createdBy?: string;
   updatedBy?: string;
-  followUpActions?: FollowUpAction[];
-  witnessStatements?: WitnessStatement[];
+  followUpActions?: any[];
+  witnessStatements?: any[];
 }
 
 @Table({
@@ -101,7 +101,7 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -225,12 +225,12 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column(DataType.DATE)
   declare updatedAt: Date;
 
-  @BelongsTo(() => Student)
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student)
+  declare student?: any;
 
-  @HasMany(() => FollowUpAction)
-  followUpActions?: FollowUpAction[];
+  @HasMany(() => require('./follow-up-action.model').FollowUpAction)
+  declare followUpActions?: any[];
 
-  @HasMany(() => WitnessStatement)
-  witnessStatements?: WitnessStatement[];
+  @HasMany(() => require('./witness-statement.model').WitnessStatement)
+  declare witnessStatements?: any[];
 }

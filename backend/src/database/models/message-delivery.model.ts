@@ -11,7 +11,6 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
-import { MessageType } from './message-template.model';
 
 export enum RecipientType {
   NURSE = 'NURSE',
@@ -31,11 +30,18 @@ export enum DeliveryStatus {
   BOUNCED = 'BOUNCED',
 }
 
+export enum DeliveryChannelType {
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+  PUSH = 'PUSH',
+  IN_APP = 'IN_APP',
+}
+
 export interface MessageDeliveryAttributes {
   id?: string;
   recipientType: RecipientType;
   recipientId: string;
-  channel: MessageType;
+  channel: DeliveryChannelType;
   status: DeliveryStatus;
   contactInfo?: string;
   sentAt?: Date;
@@ -80,10 +86,10 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(MessageType) as string[])),
+    type: DataType.ENUM(...(Object.values(DeliveryChannelType) as string[])),
     allowNull: false,
   })
-  channel: MessageType;
+  declare channel: any;
 
   @Index
   @Column({
@@ -124,15 +130,15 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   externalId?: string;
 
   @Index
-  @ForeignKey(() => Message)
+  @ForeignKey(() => require('./message.model').Message)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   messageId: string;
 
-  @BelongsTo(() => Message, 'messageId')
-  message: Message;
+  @BelongsTo(() => require('./message.model').Message, { foreignKey: 'messageId', as: 'message' })
+  declare message: any;
 
   @Column({
     type: DataType.DATE,

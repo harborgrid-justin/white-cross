@@ -10,7 +10,7 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { InventoryItem } from './inventory-item.model';
+;
 
 export enum MaintenanceType {
   CALIBRATION = 'CALIBRATION',
@@ -57,7 +57,7 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => InventoryItem)
+  @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -100,6 +100,6 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   declare createdAt: Date;
 
   // Relationships
-  @BelongsTo(() => InventoryItem)
-  inventoryItem?: InventoryItem;
+  @BelongsTo(() => require('./inventory-item.model').InventoryItem)
+  declare inventoryItem?: any;
 }

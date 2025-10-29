@@ -9,7 +9,7 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { PurchaseOrder } from './purchase-order.model';
+;
 
 export interface VendorAttributes {
   id: string;
@@ -97,6 +97,6 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
   declare updatedAt: Date;
 
   // Relationships
-  @HasMany(() => PurchaseOrder)
-  purchaseOrders?: PurchaseOrder[];
+  @HasMany(() => require('./purchase-order.model').PurchaseOrder)
+  declare purchaseOrders?: any[];
 }

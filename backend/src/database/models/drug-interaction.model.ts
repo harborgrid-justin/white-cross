@@ -11,7 +11,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { DrugCatalog } from './drug-catalog.model';
+;
 import { InteractionSeverity } from '../../clinical/enums/interaction-severity.enum';
 
 export interface DrugInteractionAttributes {
@@ -26,8 +26,8 @@ export interface DrugInteractionAttributes {
   evidenceLevel?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  drug1?: DrugCatalog;
-  drug2?: DrugCatalog;
+  drug1?: any;
+  drug2?: any;
 }
 
 @Table({
@@ -49,7 +49,7 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => DrugCatalog)
+  @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -58,7 +58,7 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @Index
   drug1Id: string;
 
-  @ForeignKey(() => DrugCatalog)
+  @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -113,9 +113,9 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => DrugCatalog, { foreignKey: 'drug1Id', as: 'drug1' })
-  drug1?: DrugCatalog;
+  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, { foreignKey: 'drug1Id', as: 'drug1' })
+  drug1?: any;
 
-  @BelongsTo(() => DrugCatalog, { foreignKey: 'drug2Id', as: 'drug2' })
-  drug2?: DrugCatalog;
+  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, { foreignKey: 'drug2Id', as: 'drug2' })
+  drug2?: any;
 }

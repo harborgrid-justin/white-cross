@@ -11,10 +11,10 @@ import {
   Index,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from './user.model';
-import { Student } from './student.model';
-import { School } from './school.model';
-import { AlertRule } from './alert-rule.model';
+;
+;
+;
+;
 
 /**
  * Alert Severity Levels
@@ -146,15 +146,15 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   /**
    * Optional reference to alert definition/rule
    */
-  @ForeignKey(() => AlertRule)
+  @ForeignKey(() => require('./alert-rule.model').AlertRule)
   @Column({
     type: DataType.UUID,
     field: 'definition_id',
   })
   definitionId?: string;
 
-  @BelongsTo(() => AlertRule, 'definitionId')
-  definition?: AlertRule;
+  @BelongsTo(() => require('./alert-rule.model').AlertRule, { foreignKey: 'definitionId', as: 'definition' })
+  declare definition?: any;
 
   /**
    * Alert severity level
@@ -198,43 +198,43 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * Student associated with this alert
    */
   @Index
-  @ForeignKey(() => Student)
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     field: 'student_id',
   })
   studentId?: string;
 
-  @BelongsTo(() => Student, 'studentId')
-  student?: Student;
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
 
   /**
    * User associated with this alert
    */
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     field: 'user_id',
   })
   userId?: string;
 
-  @BelongsTo(() => User, 'userId')
-  user?: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  declare user?: any;
 
   /**
    * School associated with this alert
    */
   @Index
-  @ForeignKey(() => School)
+  @ForeignKey(() => require('./school.model').School)
   @Column({
     type: DataType.UUID,
     field: 'school_id',
   })
   schoolId?: string;
 
-  @BelongsTo(() => School, 'schoolId')
-  school?: School;
+  @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
+  declare school?: any;
 
   /**
    * Current alert status
@@ -256,7 +256,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   /**
    * User who created this alert
    */
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -264,8 +264,8 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   })
   createdBy: string;
 
-  @BelongsTo(() => User, 'createdBy')
-  creator?: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'createdBy', as: 'creator' })
+  declare creator?: any;
 
   /**
    * When alert was acknowledged
@@ -279,15 +279,15 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   /**
    * User who acknowledged the alert
    */
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     field: 'acknowledged_by',
   })
   acknowledgedBy?: string;
 
-  @BelongsTo(() => User, 'acknowledgedBy')
-  acknowledger?: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'acknowledgedBy', as: 'acknowledger' })
+  declare acknowledger?: any;
 
   /**
    * When alert was resolved
@@ -301,15 +301,15 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   /**
    * User who resolved the alert
    */
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     field: 'resolved_by',
   })
   resolvedBy?: string;
 
-  @BelongsTo(() => User, 'resolvedBy')
-  resolver?: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'resolvedBy', as: 'resolver' })
+  declare resolver?: any;
 
   /**
    * When alert expires

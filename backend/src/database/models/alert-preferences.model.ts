@@ -10,8 +10,6 @@ import {
   Index,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from './user.model';
-import { School } from './school.model';
 import { AlertSeverity, AlertCategory } from './alert.model';
 
 /**
@@ -92,7 +90,7 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
    * User these preferences belong to
    */
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -100,22 +98,22 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   })
   userId: string;
 
-  @BelongsTo(() => User, 'userId')
-  user?: User;
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  declare user?: any;
 
   /**
    * Optional school-specific preferences
    */
   @Index
-  @ForeignKey(() => School)
+  @ForeignKey(() => require('./school.model').School)
   @Column({
     type: DataType.UUID,
     field: 'school_id',
   })
   schoolId?: string;
 
-  @BelongsTo(() => School, 'schoolId')
-  school?: School;
+  @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
+  declare school?: any;
 
   /**
    * Preferred delivery channels

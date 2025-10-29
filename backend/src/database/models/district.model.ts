@@ -15,8 +15,8 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-import { School } from './school.model';
-import { License } from './license.model';
+;
+;
 
 /**
  * District attributes interface
@@ -163,15 +163,15 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => School, {
+  @HasMany(() => require('./school.model').School, {
     foreignKey: 'districtId',
     as: 'schools',
   })
-  schools?: School[];
+  declare schools?: any[];
 
-  @HasMany(() => License, {
+  @HasMany(() => require('./license.model').License, {
     foreignKey: 'districtId',
     as: 'licenses',
   })
-  licenses?: License[];
+  declare licenses?: any[];
 }

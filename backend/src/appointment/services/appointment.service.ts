@@ -594,8 +594,12 @@ export class AppointmentService {
           // Appointment ends within the requested slot
           {
             [Op.and]: [
-              Sequelize.literal(`DATE_ADD(scheduled_at, INTERVAL duration MINUTE) > '\${slotStart.toISOString()}'`),
-              Sequelize.literal(`scheduled_at < '\${slotEnd.toISOString()}'`),
+              Sequelize.where(
+                Sequelize.fn('DATE_ADD', Sequelize.col('scheduled_at'), Sequelize.literal('INTERVAL duration MINUTE')),
+                Op.gt,
+                slotStart
+              ),
+              Sequelize.where(Sequelize.col('scheduled_at'), Op.lt, slotEnd),
             ],
           },
         ],
