@@ -2,7 +2,7 @@
  * Consent Form Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -51,8 +51,8 @@ export interface UpdateConsentFormDTO {
 export class ConsentFormRepository extends BaseRepository<any, ConsentFormAttributes, CreateConsentFormDTO> {
   constructor(
     @InjectModel(ConsentForm) model: typeof ConsentForm,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'ConsentForm');
   }

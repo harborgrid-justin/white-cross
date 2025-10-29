@@ -2,7 +2,7 @@
  * Supplier Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -30,8 +30,8 @@ export interface UpdateSupplierDTO {
 export class SupplierRepository extends BaseRepository<any, SupplierAttributes, CreateSupplierDTO> {
   constructor(
     @InjectModel(Supplier) model: typeof Supplier,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'Supplier');
   }

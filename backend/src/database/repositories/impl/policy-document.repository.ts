@@ -2,7 +2,7 @@
  * Policy Document Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -63,8 +63,8 @@ export interface UpdatePolicyDocumentDTO {
 export class PolicyDocumentRepository extends BaseRepository<any, PolicyDocumentAttributes, CreatePolicyDocumentDTO> {
   constructor(
     @InjectModel(PolicyDocument) model: typeof PolicyDocument,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'PolicyDocument');
   }

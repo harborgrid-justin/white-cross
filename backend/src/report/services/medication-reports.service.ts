@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
@@ -20,6 +20,7 @@ export class MedicationReportsService {
     private medicationLogModel: typeof MedicationLog,
     @InjectModel(StudentMedication)
     private studentMedicationModel: typeof StudentMedication,
+    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

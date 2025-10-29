@@ -147,4 +147,8 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+  // Relationships
+  @HasMany(() => require('./compliance-checklist-item.model').ComplianceChecklistItem)
+  declare checklistItems?: any[];
 }

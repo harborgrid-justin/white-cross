@@ -60,8 +60,8 @@ export class AcademicTranscriptRepository extends BaseRepository<AcademicTranscr
   constructor(
     @InjectModel(AcademicTranscript)
     private readonly academicTranscriptModel: typeof AcademicTranscript,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(academicTranscriptModel, auditLogger, cacheManager, 'AcademicTranscript');
   }

@@ -2,7 +2,7 @@
  * Treatment Plan Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -52,8 +52,8 @@ export interface UpdateTreatmentPlanDTO {
 export class TreatmentPlanRepository extends BaseRepository<any, TreatmentPlanAttributes, CreateTreatmentPlanDTO> {
   constructor(
     @InjectModel(TreatmentPlan) model: typeof TreatmentPlan,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'TreatmentPlan');
   }

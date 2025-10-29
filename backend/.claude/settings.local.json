@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run start:dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(mkdir:*)",
+      "Bash(timeout 120 npm run build:*)",
+      "Bash(node fix-imports.js:*)",
+      "Bash(node fix-imports-v2.js:*)",
+      "Bash(node fix-inject.js:*)",
+      "Bash(node fix-all-repos.js:*)",
+      "Bash(npm run start:*)",
+      "Bash(node add-inject-import.js:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

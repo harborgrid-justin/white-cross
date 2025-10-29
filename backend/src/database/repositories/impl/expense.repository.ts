@@ -2,7 +2,7 @@
  * Expense Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -29,8 +29,8 @@ export interface UpdateExpenseDTO {
 export class ExpenseRepository extends BaseRepository<any, ExpenseAttributes, CreateExpenseDTO> {
   constructor(
     @InjectModel(('' as any)) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'Expense');
   }

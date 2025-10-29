@@ -2,7 +2,7 @@
  * Alert Rule Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -91,8 +91,8 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
   constructor(
     @InjectModel(AlertRule)
     private readonly alertRuleModel: typeof AlertRule,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(alertRuleModel, auditLogger, cacheManager, 'AlertRule');
   }

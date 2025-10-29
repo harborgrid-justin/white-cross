@@ -2,7 +2,7 @@
  * Alert Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -26,8 +26,8 @@ export interface UpdateAlertDTO {
 @Injectable()
 export class AlertRepository extends BaseRepository<any, AlertAttributes, CreateAlertDTO> {
   constructor(
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     // TODO: Inject proper Alert model when implemented
     super(null as any, auditLogger, cacheManager, 'Alert');

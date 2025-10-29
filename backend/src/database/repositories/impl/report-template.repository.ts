@@ -2,7 +2,7 @@
  * Report Template Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -29,8 +29,8 @@ export interface UpdateReportTemplateDTO {
 export class ReportTemplateRepository extends BaseRepository<any, ReportTemplateAttributes, CreateReportTemplateDTO> {
   constructor(
     @InjectModel(('' as any)) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'ReportTemplate');
   }

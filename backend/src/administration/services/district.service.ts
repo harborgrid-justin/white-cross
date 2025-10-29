@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { District } from '../entities/district.entity';
@@ -21,6 +21,7 @@ export class DistrictService {
     @InjectModel(License)
     private licenseModel: typeof License,
     private auditService: AuditService,
+    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

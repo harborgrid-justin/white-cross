@@ -30,8 +30,8 @@ export interface UpdateEmergencyBroadcastDTO {
 export class EmergencyBroadcastRepository extends BaseRepository<EmergencyBroadcast, EmergencyBroadcastAttributes, CreateEmergencyBroadcastDTO> {
   constructor(
     @InjectModel(EmergencyBroadcast) model: typeof EmergencyBroadcast,
-    @Inject('IAuditLogger') auditLogger: IAuditLogger,
-    @Inject('ICacheManager') cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'EmergencyBroadcast');
   }

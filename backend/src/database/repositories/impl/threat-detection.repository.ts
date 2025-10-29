@@ -2,7 +2,7 @@
  * Threat Detection Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -30,8 +30,8 @@ export interface UpdateThreatDetectionDTO {
 export class ThreatDetectionRepository extends BaseRepository<any, ThreatDetectionAttributes, CreateThreatDetectionDTO> {
   constructor(
     @InjectModel(ThreatDetection) model: typeof ThreatDetection,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'ThreatDetection');
   }

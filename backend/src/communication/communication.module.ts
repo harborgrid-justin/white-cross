@@ -13,6 +13,7 @@ import { TemplateController } from './controllers/template.controller';
 import { MessageService } from './services/message.service';
 import { BroadcastService } from './services/broadcast.service';
 import { TemplateService } from './services/template.service';
+import { CommunicationService } from './services/communication.service';
 
 @Module({
   imports: [
@@ -31,11 +32,13 @@ import { TemplateService } from './services/template.service';
     MessageService,
     BroadcastService,
     TemplateService,
+    CommunicationService,
   ],
   exports: [
     MessageService,
     BroadcastService,
     TemplateService,
+    CommunicationService,
   ],
 })
 export class CommunicationModule {}

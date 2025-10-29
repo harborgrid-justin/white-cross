@@ -2,7 +2,7 @@
  * Push Token Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -29,8 +29,8 @@ export interface UpdatePushTokenDTO {
 export class PushTokenRepository extends BaseRepository<any, PushTokenAttributes, CreatePushTokenDTO> {
   constructor(
     @InjectModel(('' as any)) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'PushToken');
   }

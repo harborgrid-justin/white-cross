@@ -9,6 +9,9 @@ import { HealthMetricSnapshot } from '../database/models/health-metric-snapshot.
 import { AnalyticsReport } from '../database/models/analytics-report.model';
 import { Student } from '../database/models/student.model';
 import { HealthRecord } from '../database/models/health-record.model';
+import { Appointment } from '../database/models/appointment.model';
+import { MedicationLog } from '../database/models/medication-log.model';
+import { IncidentReport } from '../database/models/incident-report.model';
 
 /**
  * Analytics Module
@@ -41,6 +44,9 @@ import { HealthRecord } from '../database/models/health-record.model';
       // External models for data aggregation
       Student,
       HealthRecord,
+      Appointment,
+      MedicationLog,
+      IncidentReport,
     ]),
   ],
   controllers: [AnalyticsController],

@@ -149,6 +149,7 @@ import { PolicyDocumentRepository } from './repositories/impl/policy-document.re
 import { DataRetentionPolicyRepository } from './repositories/impl/data-retention-policy.repository';
 import { ComplianceViolationRepository } from './repositories/impl/compliance-violation.repository';
 import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broadcast.repository';
+import { ComplianceReportRepository } from './repositories/impl/compliance-report.repository';
 
 /**
  * Database Module
@@ -392,6 +393,7 @@ import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broa
     ConsentFormRepository,
     ConsentSignatureRepository,
     ComplianceChecklistItemRepository,
+    ComplianceReportRepository,
     PolicyDocumentRepository,
     DataRetentionPolicyRepository,
     ComplianceViolationRepository,
@@ -414,6 +416,7 @@ import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broa
     ConsentFormRepository,
     ConsentSignatureRepository,
     ComplianceChecklistItemRepository,
+    ComplianceReportRepository,
     PolicyDocumentRepository,
     DataRetentionPolicyRepository,
     ComplianceViolationRepository,

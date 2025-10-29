@@ -2,7 +2,7 @@
  * Consent Signature Repository Implementation
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -55,8 +55,8 @@ export interface UpdateConsentSignatureDTO {
 export class ConsentSignatureRepository extends BaseRepository<any, ConsentSignatureAttributes, CreateConsentSignatureDTO> {
   constructor(
     @InjectModel(ConsentSignature) model: typeof ConsentSignature,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'ConsentSignature');
   }

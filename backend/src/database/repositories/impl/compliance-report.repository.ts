@@ -65,8 +65,8 @@ export interface UpdateComplianceReportDTO {
 export class ComplianceReportRepository extends BaseRepository<any, ComplianceReportAttributes, CreateComplianceReportDTO> {
   constructor(
     @InjectModel(ComplianceReport) model: typeof ComplianceReport,
-    @Inject('IAuditLogger') auditLogger: IAuditLogger,
-    @Inject('ICacheManager') cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'ComplianceReport');
   }

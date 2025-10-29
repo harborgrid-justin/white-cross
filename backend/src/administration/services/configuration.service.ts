@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { SystemConfig, ConfigCategory } from '../../database/models/system-config.model';
@@ -19,6 +19,7 @@ export class ConfigurationService {
     private configModel: typeof SystemConfig,
     @InjectModel(ConfigurationHistory)
     private historyModel: typeof ConfigurationHistory,
+    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

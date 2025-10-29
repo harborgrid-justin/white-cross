@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { DatabaseModule } from '../database/database.module';
 
 // Models
 import { ReportTemplate } from './models/report-template.model';
@@ -36,6 +37,7 @@ import { ReportsController } from './controllers/reports.controller';
  */
 @Module({
   imports: [
+    DatabaseModule,
     SequelizeModule.forFeature([
       // Report models
       ReportTemplate,

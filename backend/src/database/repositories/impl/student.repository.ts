@@ -23,8 +23,8 @@ export class StudentRepository
 {
   constructor(
     @InjectModel(Student) model: typeof Student,
-    @Inject('IAuditLogger') auditLogger: IAuditLogger,
-    @Inject('ICacheManager') cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'Student');
   }

@@ -3,7 +3,7 @@
  * Injectable NestJS repository for vaccine records with schedule tracking
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -57,8 +57,8 @@ export class ImmunizationRepository
 {
   constructor(
     @InjectModel(Immunization) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'Immunization');
   }

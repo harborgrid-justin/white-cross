@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Document } from './entities/document.entity';
 import { DocumentSignature } from './entities/document-signature.entity';
@@ -20,6 +20,7 @@ export class DocumentService {
     private signatureModel: typeof DocumentSignature,
     @InjectModel(DocumentAuditTrail)
     private auditModel: typeof DocumentAuditTrail,
+    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

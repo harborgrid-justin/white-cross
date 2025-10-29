@@ -10,7 +10,6 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export enum ComplianceCategory {
   HIPAA_PRIVACY = 'HIPAA_PRIVACY',

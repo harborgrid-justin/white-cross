@@ -3,7 +3,7 @@
  * Injectable NestJS repository for session tracking with expiration management
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -46,8 +46,8 @@ export class SessionRepository
 {
   constructor(
     @InjectModel(('' as any)) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'Session');
   }

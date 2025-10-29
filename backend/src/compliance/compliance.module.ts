@@ -20,20 +20,17 @@ import { DataRetentionService } from './services/data-retention.service';
 import { ViolationService } from './services/violation.service';
 import { StatisticsService } from './services/statistics.service';
 
-// Database and Local Repositories
-import { ComplianceReportRepository as DatabaseComplianceReportRepository } from '../database/repositories/impl/compliance-report.repository';
-import { ComplianceReportRepository as ComplianceReportLocalRepository } from './repositories/compliance-report.repository';
+// Database Repositories
+import { ComplianceReportRepository } from '../database/repositories/impl/compliance-report.repository';
 import { ChecklistRepository } from './repositories/checklist.repository';
 import { PolicyRepository } from './repositories/policy.repository';
 import { DataRetentionRepository } from './repositories/data-retention.repository';
 import { ViolationRepository } from './repositories/violation.repository';
 
-// Entities - now Sequelize models
+// Models needed for @InjectModel in services
 import { AuditLog } from '../database/models/audit-log.model';
 import { ConsentForm } from '../database/models/consent-form.model';
 import { ConsentSignature } from '../database/models/consent-signature.model';
-import { PhiDisclosure } from '../database/models/phi-disclosure.model';
-import { PhiDisclosureAudit } from '../database/models/phi-disclosure-audit.model';
 import { ComplianceReport } from '../database/models/compliance-report.model';
 import { ComplianceChecklistItem } from '../database/models/compliance-checklist-item.model';
 import { PolicyDocument } from '../database/models/policy-document.model';
@@ -68,25 +65,15 @@ import { RemediationAction } from '../database/models/remediation-action.model';
 @Module({
   imports: [
     DatabaseModule,
+    // Re-register models needed for @InjectModel() in this module's services
     SequelizeModule.forFeature([
-      // Audit & Tracking
       AuditLog,
-      PhiDisclosure,
-      PhiDisclosureAudit,
-
-      // Consent Management
       ConsentForm,
       ConsentSignature,
-
-      // Compliance Reporting
       ComplianceReport,
       ComplianceChecklistItem,
-
-      // Policy Management
       PolicyDocument,
       PolicyAcknowledgment,
-
-      // Data Retention & Violations
       DataRetentionPolicy,
       ComplianceViolation,
       RemediationAction,
@@ -100,7 +87,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
     // Domain services
     AuditService,
     ConsentService,
-    // ComplianceReportService, // Temporarily disabled to isolate issue
+    ComplianceReportService,
     ChecklistService,
     PolicyService,
     DataRetentionService,
@@ -109,13 +96,13 @@ import { RemediationAction } from '../database/models/remediation-action.model';
 
     // Repositories
     {
-      provide: 'ComplianceReportRepository', // Local repository for StatisticsService
-      useClass: ComplianceReportLocalRepository,
+      provide: 'ComplianceReportRepository',
+      useExisting: ComplianceReportRepository, // Use the repository from DatabaseModule
     },
-    // {
-    //   provide: 'DatabaseComplianceReportRepository', // Database repository for ComplianceReportService
-    //   useClass: DatabaseComplianceReportRepository,
-    // },
+    {
+      provide: 'DatabaseComplianceReportRepository',
+      useExisting: ComplianceReportRepository, // Use the repository from DatabaseModule
+    },
     ChecklistRepository,
     PolicyRepository,
     DataRetentionRepository,
@@ -126,7 +113,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
     ComplianceService,
     AuditService,
     ConsentService,
-    // ComplianceReportService, // Temporarily disabled
+    ComplianceReportService,
     ChecklistService,
     PolicyService,
     DataRetentionService,

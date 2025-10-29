@@ -3,7 +3,7 @@
  * Injectable NestJS repository for pediatric growth tracking
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
@@ -63,8 +63,8 @@ export class GrowthTrackingRepository
 {
   constructor(
     @InjectModel(GrowthTracking) model: any,
-    auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    @Inject('IAuditLogger') auditLogger,
+    @Inject('ICacheManager') cacheManager
   ) {
     super(model, auditLogger, cacheManager, 'GrowthTracking');
   }
