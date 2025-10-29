@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 /**
  * DTO for changing user password
  */
-export class ChangePasswordDto {
+export class UserChangePasswordDto {
   @ApiProperty({
     description: 'Current password for verification',
     example: 'OldPass123!',

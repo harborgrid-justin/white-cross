@@ -27,7 +27,7 @@ export enum IncidentSeverity {
 /**
  * DTO for creating a security incident
  */
-export class CreateSecurityIncidentDto {
+export class AccessControlCreateIncidentDto {
   @ApiProperty({
     description: 'Type of security incident',
     enum: SecurityIncidentType,

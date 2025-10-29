@@ -20,7 +20,7 @@ export enum ScanType {
   EQUIPMENT = 'equipment',
 }
 
-export class ScanBarcodeDto {
+export class AdvancedFeaturesScanBarcodeDto {
   @ApiProperty({
     description: 'Barcode string to scan',
     example: '123456789012',

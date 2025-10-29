@@ -35,7 +35,7 @@ import {
   GetNurseDashboardQueryDto,
   GetAdminDashboardQueryDto,
   GetPlatformSummaryQueryDto,
-  GenerateCustomReportDto,
+  AnalyticsGenerateCustomReportDto,
   GetReportParamDto,
   GetReportQueryDto,
 } from './dto';
@@ -350,7 +350,7 @@ export class AnalyticsController {
   @ApiResponse({ status: 400, description: 'Invalid report parameters' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Report generation failed' })
-  async generateCustomReport(@Body() dto: GenerateCustomReportDto, @Request() req: any) {
+  async generateCustomReport(@Body() dto: AnalyticsGenerateCustomReportDto, @Request() req: any) {
     const userId = req.user?.id || 'system';
     return this.analyticsService.generateCustomReport(dto, userId);
   }

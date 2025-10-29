@@ -11,7 +11,7 @@ import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
 import { AddInteractionDto } from '../dto/drug/add-interaction.dto';
 import { UpdateInteractionDto } from '../dto/drug/update-interaction.dto';
 import { AddAllergyDto } from '../dto/drug/add-allergy.dto';
-import { UpdateAllergyDto } from '../dto/drug/update-allergy.dto';
+import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 import { InteractionCheckDto } from '../dto/drug/interaction-check.dto';
 
 /**
@@ -328,7 +328,7 @@ export class DrugInteractionService {
   /**
    * Update student drug allergy
    */
-  async updateAllergy(id: string, updates: UpdateAllergyDto): Promise<StudentDrugAllergy> {
+  async updateAllergy(id: string, updates: ClinicalUpdateAllergyDto): Promise<StudentDrugAllergy> {
     const allergy = await this.studentDrugAllergyModel.findByPk(id);
 
     if (!allergy) {

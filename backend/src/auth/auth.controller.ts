@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, ChangePasswordDto, RefreshTokenDto, AuthResponseDto } from './dto';
+import { RegisterDto, LoginDto, AuthChangePasswordDto, RefreshTokenDto, AuthResponseDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -139,7 +139,7 @@ export class AuthController {
     summary: 'Change user password',
     description: 'Change the authenticated user\'s password',
   })
-  @ApiBody({ type: ChangePasswordDto })
+  @ApiBody({ type: AuthChangePasswordDto })
   @ApiResponse({
     status: 200,
     description: 'Password changed successfully',
@@ -158,7 +158,7 @@ export class AuthController {
   })
   async changePassword(
     @CurrentUser('id') userId: string,
-    @Body(new ValidationPipe({ transform: true, whitelist: true })) changePasswordDto: ChangePasswordDto,
+    @Body(new ValidationPipe({ transform: true, whitelist: true })) changePasswordDto: AuthChangePasswordDto,
   ) {
     return this.authService.changePassword(userId, changePasswordDto);
   }

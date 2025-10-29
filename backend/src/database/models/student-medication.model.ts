@@ -71,6 +71,7 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   })
   studentId: string;
 
+  @ForeignKey(() => require('./medication.model').Medication)
   @Column({
     type: DataType.UUID,
     allowNull: false,

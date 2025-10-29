@@ -14,7 +14,7 @@ import { Type } from 'class-transformer';
  * Used for POST /students/bulk-update endpoint
  * Allows applying same updates to multiple students at once
  */
-export class BulkUpdateDto {
+export class StudentBulkUpdateDto {
   @ApiProperty({
     description: 'Array of student UUIDs to update',
     example: ['123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174001'],

@@ -6,7 +6,7 @@ import { ReportFormat } from '../enums';
 /**
  * Generate Custom Report DTO
  */
-export class GenerateCustomReportDto {
+export class AnalyticsGenerateCustomReportDto {
   @ApiProperty({ description: 'Report name' })
   @IsString()
   reportName: string;

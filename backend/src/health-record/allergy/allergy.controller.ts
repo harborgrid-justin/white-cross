@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { AllergyService } from './allergy.service';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
-import { UpdateAllergyDto } from './dto/update-allergy.dto';
+import { HealthRecordUpdateAllergyDto } from './dto/update-allergy.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -118,7 +118,7 @@ export class AllergyController {
   @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Update allergy record' })
   @ApiParam({ name: 'id', description: 'Allergy UUID', type: 'string' })
-  @ApiBody({ type: UpdateAllergyDto })
+  @ApiBody({ type: HealthRecordUpdateAllergyDto })
   @ApiResponse({
     status: 200,
     description: 'Allergy updated successfully with audit entry',
@@ -129,7 +129,7 @@ export class AllergyController {
   @ApiResponse({ status: 404, description: 'Allergy not found' })
   async updateAllergy(
     @Param('id') id: string,
-    @Body() updateAllergyDto: UpdateAllergyDto,
+    @Body() updateAllergyDto: HealthRecordUpdateAllergyDto,
     @Request() req: any,
   ) {
     return this.allergyService.update(id, updateAllergyDto, req.user);

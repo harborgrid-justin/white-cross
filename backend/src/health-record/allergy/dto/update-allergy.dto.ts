@@ -6,6 +6,6 @@ import { OmitType } from '@nestjs/swagger';
  * DTO for updating an allergy record
  * All fields optional except studentId which cannot be changed
  */
-export class UpdateAllergyDto extends PartialType(
+export class HealthRecordUpdateAllergyDto extends PartialType(
   OmitType(CreateAllergyDto, ['studentId'] as const)
 ) {}

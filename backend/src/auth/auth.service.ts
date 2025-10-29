@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { User, UserRole } from '../database/models/user.model';
-import { RegisterDto, LoginDto, ChangePasswordDto, AuthResponseDto } from './dto';
+import { RegisterDto, LoginDto, AuthChangePasswordDto, AuthResponseDto } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 
 @Injectable()
@@ -204,7 +204,7 @@ export class AuthService {
   /**
    * Change user password
    */
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(userId: string, changePasswordDto: AuthChangePasswordDto): Promise<{ message: string }> {
     const { currentPassword, newPassword } = changePasswordDto;
 
     const user = await this.userModel.findByPk(userId);

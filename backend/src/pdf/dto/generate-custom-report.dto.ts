@@ -27,7 +27,7 @@ export class CustomReportTableDto {
   rows: any[][];
 }
 
-export class GenerateCustomReportDto {
+export class PdfGenerateCustomReportDto {
   @ApiProperty({ description: 'Report title' })
   @IsString()
   @IsNotEmpty()

@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 /**
  * DTO for updating device notification preferences
  */
-export class UpdatePreferencesDto {
+export class MobileUpdatePreferencesDto {
   @ApiProperty({ description: 'Allow notifications', required: false })
   @IsBoolean()
   @IsOptional()

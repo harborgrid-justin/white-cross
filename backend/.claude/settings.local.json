@@ -22,7 +22,10 @@
       "Bash(tee:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(node fix-import-types.js:*)"
+      "Bash(node fix-import-types.js:*)",
+      "Bash(node fix-duplicate-dtos.js:*)",
+      "Bash(node fix-dto-imports.js:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

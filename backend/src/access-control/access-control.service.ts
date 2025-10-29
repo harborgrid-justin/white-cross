@@ -10,8 +10,8 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { LogLoginAttemptDto } from './dto/log-login-attempt.dto';
-import { CreateIpRestrictionDto, IpRestrictionType } from './dto/create-ip-restriction.dto';
-import { CreateSecurityIncidentDto, SecurityIncidentType, IncidentSeverity } from './dto/create-security-incident.dto';
+import { AccessControlCreateIpRestrictionDto, IpRestrictionType } from './dto/create-ip-restriction.dto';
+import { AccessControlCreateIncidentDto, SecurityIncidentType, IncidentSeverity } from './dto/create-security-incident.dto';
 import { UserPermissionsResult, SecurityStatistics, IpRestrictionCheckResult } from './interfaces';
 
 /**
@@ -1169,7 +1169,7 @@ export class AccessControlService {
   /**
    * Add IP restriction
    */
-  async addIpRestriction(data: CreateIpRestrictionDto): Promise<any> {
+  async addIpRestriction(data: AccessControlCreateIpRestrictionDto): Promise<any> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
 
@@ -1278,7 +1278,7 @@ export class AccessControlService {
   /**
    * Create a security incident
    */
-  async createSecurityIncident(data: CreateSecurityIncidentDto): Promise<any> {
+  async createSecurityIncident(data: AccessControlCreateIncidentDto): Promise<any> {
     try {
       const SecurityIncident = this.getModel('SecurityIncident');
       const incident = await SecurityIncident.create({

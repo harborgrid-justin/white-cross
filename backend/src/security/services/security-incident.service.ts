@@ -10,7 +10,7 @@ import {
 } from '../enums';
 import { IncidentResponse } from '../interfaces';
 import {
-  CreateSecurityIncidentDto,
+  SecurityCreateIncidentDto,
   UpdateIncidentStatusDto,
   IncidentFilterDto,
 } from '../dto';
@@ -43,7 +43,7 @@ export class SecurityIncidentService {
    * Report a security incident
    */
   async reportIncident(
-    dto: CreateSecurityIncidentDto,
+    dto: SecurityCreateIncidentDto,
   ): Promise<SecurityIncidentEntity> {
     try {
       const incident = await this.incidentModel.create({

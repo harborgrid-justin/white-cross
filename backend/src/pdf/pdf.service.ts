@@ -6,7 +6,7 @@ import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-s
 import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
 import { GenerateImmunizationReportDto } from './dto/generate-immunization-report.dto';
 import { GenerateIncidentReportDto } from './dto/generate-incident-report.dto';
-import { GenerateCustomReportDto } from './dto/generate-custom-report.dto';
+import { PdfGenerateCustomReportDto } from './dto/generate-custom-report.dto';
 import { WatermarkPdfDto } from './dto/watermark-pdf.dto';
 
 // Extend jsPDF with autoTable
@@ -327,7 +327,7 @@ export class PdfService {
   /**
    * Generate custom report with tables
    */
-  async generateCustomReport(data: GenerateCustomReportDto): Promise<Buffer> {
+  async generateCustomReport(data: PdfGenerateCustomReportDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
       let yPosition = 20;

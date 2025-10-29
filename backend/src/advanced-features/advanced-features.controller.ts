@@ -27,7 +27,7 @@ import { AdvancedFeaturesService } from './advanced-features.service';
 import { RecordScreeningDto } from './dto/record-screening.dto';
 import { RecordMeasurementDto } from './dto/record-measurement.dto';
 import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.dto';
-import { ScanBarcodeDto } from './dto/scan-barcode.dto';
+import { AdvancedFeaturesScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
 @ApiTags('Advanced Features')
@@ -267,7 +267,7 @@ export class AdvancedFeaturesController {
     status: 400,
     description: 'Invalid barcode data',
   })
-  async scanBarcode(@Body() scanData: ScanBarcodeDto) {
+  async scanBarcode(@Body() scanData: AdvancedFeaturesScanBarcodeDto) {
     return this.advancedFeaturesService.scanBarcode(scanData);
   }
 

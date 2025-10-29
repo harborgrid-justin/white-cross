@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { ChronicCondition } from '../database/models/chronic-condition.model';
 import {
-  CreateChronicConditionDto,
-  UpdateChronicConditionDto,
+  ChronicConditionCreateDto,
+  ChronicConditionUpdateDto,
   ChronicConditionFiltersDto,
   PaginationDto,
 } from './dto';
@@ -40,7 +40,7 @@ export class ChronicConditionService {
    * Creates a new chronic condition record with validation and audit logging.
    */
   async createChronicCondition(
-    dto: CreateChronicConditionDto,
+    dto: ChronicConditionCreateDto,
   ): Promise<ChronicCondition> {
     try {
       // Convert date strings to Date objects
@@ -151,7 +151,7 @@ export class ChronicConditionService {
    */
   async updateChronicCondition(
     id: string,
-    dto: UpdateChronicConditionDto,
+    dto: ChronicConditionUpdateDto,
   ): Promise<ChronicCondition> {
     const condition = await this.getChronicConditionById(id);
 
@@ -483,7 +483,7 @@ export class ChronicConditionService {
    * Bulk creates multiple chronic condition records.
    */
   async bulkCreateChronicConditions(
-    conditionsData: CreateChronicConditionDto[],
+    conditionsData: ChronicConditionCreateDto[],
   ): Promise<ChronicCondition[]> {
     try {
       const conditions = conditionsData.map((dto) => ({

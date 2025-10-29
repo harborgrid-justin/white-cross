@@ -13,8 +13,8 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
 import {
-  CreateChronicConditionDto,
-  UpdateChronicConditionDto,
+  ChronicConditionCreateDto,
+  ChronicConditionUpdateDto,
   ChronicConditionFiltersDto,
   PaginationDto,
   UpdateCarePlanDto,
@@ -46,7 +46,7 @@ export class ChronicConditionController {
     description: 'Chronic condition successfully created',
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
-  create(@Body() dto: CreateChronicConditionDto) {
+  create(@Body() dto: ChronicConditionCreateDto) {
     return this.chronicConditionService.createChronicCondition(dto);
   }
 
@@ -102,7 +102,7 @@ export class ChronicConditionController {
     description: 'Chronic condition successfully updated',
   })
   @ApiResponse({ status: 404, description: 'Chronic condition not found' })
-  update(@Param('id') id: string, @Body() dto: UpdateChronicConditionDto) {
+  update(@Param('id') id: string, @Body() dto: ChronicConditionUpdateDto) {
     return this.chronicConditionService.updateChronicCondition(id, dto);
   }
 
@@ -247,7 +247,7 @@ export class ChronicConditionController {
     description: 'Chronic conditions successfully created',
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
-  bulkCreate(@Body() conditionsData: CreateChronicConditionDto[]) {
+  bulkCreate(@Body() conditionsData: ChronicConditionCreateDto[]) {
     return this.chronicConditionService.bulkCreateChronicConditions(
       conditionsData,
     );

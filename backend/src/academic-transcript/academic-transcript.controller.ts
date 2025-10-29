@@ -25,7 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { AcademicTranscriptService } from './academic-transcript.service';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
-import { GenerateReportDto } from './dto/generate-report.dto';
+import { AcademicGenerateReportDto } from './dto/generate-report.dto';
 import { SyncSISDto } from './dto/sync-sis.dto';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 
@@ -247,7 +247,7 @@ export class AcademicTranscriptController {
   })
   async generateReport(
     @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
-    @Body() reportDto: GenerateReportDto,
+    @Body() reportDto: AcademicGenerateReportDto,
   ) {
     const format = reportDto.format || 'json';
     return this.academicTranscriptService.generateTranscriptReport(

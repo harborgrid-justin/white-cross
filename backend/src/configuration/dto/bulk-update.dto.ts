@@ -23,7 +23,7 @@ class BulkConfigurationItem {
 /**
  * DTO for bulk configuration updates
  */
-export class BulkUpdateDto {
+export class ConfigurationBulkUpdateDto {
   @ApiProperty({ description: 'Array of configuration updates', type: [BulkConfigurationItem] })
   @IsArray()
   @ValidateNested({ each: true })

@@ -30,9 +30,9 @@ import {
   CreateContactDto,
   UpdateContactDto,
   ContactQueryDto,
-  CreateEmergencyContactDto,
-  UpdateEmergencyContactDto,
-  VerifyContactDto,
+  ContactCreateEmergencyDto,
+  ContactUpdateEmergencyDto,
+  ContactVerifyDto,
   EmergencyContactQueryDto
 } from './dto';
 import { ContactType } from './enums';
@@ -213,7 +213,7 @@ export class ContactController {
   @ApiResponse({ status: 201, description: 'Emergency contact created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @HttpCode(HttpStatus.CREATED)
-  async createEmergencyContact(@Body(ValidationPipe) dto: CreateEmergencyContactDto) {
+  async createEmergencyContact(@Body(ValidationPipe) dto: ContactCreateEmergencyDto) {
     return this.emergencyContactService.create(dto);
   }
 
@@ -224,7 +224,7 @@ export class ContactController {
   @ApiResponse({ status: 404, description: 'Emergency contact not found' })
   async updateEmergencyContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(ValidationPipe) dto: UpdateEmergencyContactDto
+    @Body(ValidationPipe) dto: ContactUpdateEmergencyDto
   ) {
     return this.emergencyContactService.update(id, dto);
   }
@@ -246,7 +246,7 @@ export class ContactController {
   @ApiResponse({ status: 404, description: 'Emergency contact not found' })
   async verifyEmergencyContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(ValidationPipe) dto: VerifyContactDto
+    @Body(ValidationPipe) dto: ContactVerifyDto
   ) {
     return this.emergencyContactService.verifyContact(id, dto);
   }

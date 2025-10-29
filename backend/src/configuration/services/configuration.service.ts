@@ -8,7 +8,7 @@ import {
   CreateConfigurationDto,
   UpdateConfigurationDto,
   FilterConfigurationDto,
-  BulkUpdateDto,
+  ConfigurationBulkUpdateDto,
   ImportConfigurationsDto
 } from '../dto';
 
@@ -341,7 +341,7 @@ export class ConfigurationService {
    * with its own transaction. Failures are logged but don't stop other updates.
    */
   async bulkUpdateConfigurations(
-    bulkUpdate: BulkUpdateDto
+    bulkUpdate: ConfigurationBulkUpdateDto
   ): Promise<Array<SystemConfig | { key: string; error: string }>> {
     const results: Array<SystemConfig | { key: string; error: string }> = [];
 

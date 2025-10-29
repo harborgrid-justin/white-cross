@@ -12,7 +12,7 @@ export enum VerificationMethod {
   VOICE = 'voice',
 }
 
-export class VerifyContactDto {
+export class EmergencyVerifyContactDto {
   @ApiProperty({
     description: 'Verification method to use',
     enum: VerificationMethod,

@@ -32,7 +32,7 @@ import { UserService } from './user.service';
 import {
   CreateUserDto,
   UpdateUserDto,
-  ChangePasswordDto,
+  UserChangePasswordDto,
   ResetPasswordDto,
   UserFiltersDto,
   UserResponseDto,
@@ -206,7 +206,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   async changePassword(
     @Param('id') id: string,
-    @Body() changePasswordDto: ChangePasswordDto,
+    @Body() changePasswordDto: UserChangePasswordDto,
   ) {
     return this.userService.changePassword(id, changePasswordDto);
   }

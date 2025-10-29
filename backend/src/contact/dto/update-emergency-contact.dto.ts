@@ -3,8 +3,8 @@
  * @description DTO for updating an existing emergency contact
  */
 import { PartialType, OmitType } from '@nestjs/swagger';
-import { CreateEmergencyContactDto } from './create-emergency-contact.dto';
+import { ContactCreateEmergencyDto } from './create-emergency-contact.dto';
 
-export class UpdateEmergencyContactDto extends PartialType(
-  OmitType(CreateEmergencyContactDto, ['studentId'] as const)
+export class ContactUpdateEmergencyDto extends PartialType(
+  OmitType(ContactCreateEmergencyDto, ['studentId'] as const)
 ) {}

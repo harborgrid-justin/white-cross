@@ -2,8 +2,8 @@
  * Emergency Contact DTOs
  * Barrel export for all Data Transfer Objects
  */
-export { CreateEmergencyContactDto } from './create-emergency-contact.dto';
-export { UpdateEmergencyContactDto } from './update-emergency-contact.dto';
+export { EmergencyContactCreateDto } from './create-emergency-contact.dto';
+export { EmergencyContactUpdateDto } from './update-emergency-contact.dto';
 export {
   NotificationDto,
   NotificationType,
@@ -15,6 +15,6 @@ export {
   ContactInfoDto,
 } from './notification-result.dto';
 export {
-  VerifyContactDto,
+  EmergencyVerifyContactDto,
   VerificationMethod,
 } from './verify-contact.dto';

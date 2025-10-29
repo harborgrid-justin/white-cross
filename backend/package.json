@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@apollo/server": "^5.1.0",
+    "@as-integrations/express5": "^1.1.2",
     "@hapi/boom": "^10.0.1",
     "@hapi/hapi": "^21.4.3",
     "@nestjs/apollo": "^13.2.1",

@@ -19,7 +19,7 @@ import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
 import { AddInteractionDto } from '../dto/drug/add-interaction.dto';
 import { UpdateInteractionDto } from '../dto/drug/update-interaction.dto';
 import { AddAllergyDto } from '../dto/drug/add-allergy.dto';
-import { UpdateAllergyDto } from '../dto/drug/update-allergy.dto';
+import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 
 /**
  * Drug Interaction Controller
@@ -204,7 +204,7 @@ export class DrugInteractionController {
   @ApiParam({ name: 'id', description: 'Allergy ID' })
   @ApiResponse({ status: 200, description: 'Allergy updated successfully' })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
-  async updateAllergy(@Param('id') id: string, @Body() updateAllergyDto: UpdateAllergyDto) {
+  async updateAllergy(@Param('id') id: string, @Body() updateAllergyDto: ClinicalUpdateAllergyDto) {
     return this.drugInteractionService.updateAllergy(id, updateAllergyDto);
   }
 

@@ -34,7 +34,7 @@ export enum BarcodeScanType {
  *
  * Used for quick identification and tracking
  */
-export class ScanBarcodeDto {
+export class StudentScanBarcodeDto {
   @ApiProperty({
     description: 'Barcode string data (alphanumeric)',
     example: 'STU-2024-12345',

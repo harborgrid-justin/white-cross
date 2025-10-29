@@ -8,7 +8,7 @@ import {
   IPCheckResult,
   IPRestrictionRule,
 } from '../interfaces';
-import { CreateIpRestrictionDto, UpdateIpRestrictionDto } from '../dto';
+import { SecurityCreateIpRestrictionDto, UpdateIpRestrictionDto } from '../dto';
 
 /**
  * IP Restriction Service
@@ -369,7 +369,7 @@ export class IpRestrictionService {
    * Add IP to blacklist
    */
   async addToBlacklist(
-    dto: CreateIpRestrictionDto,
+    dto: SecurityCreateIpRestrictionDto,
   ): Promise<IpRestrictionEntity> {
     try {
       const restriction = await this.ipRestrictionModel.create({
@@ -392,7 +392,7 @@ export class IpRestrictionService {
    * Add IP to whitelist
    */
   async addToWhitelist(
-    dto: CreateIpRestrictionDto,
+    dto: SecurityCreateIpRestrictionDto,
   ): Promise<IpRestrictionEntity> {
     try {
       const restriction = await this.ipRestrictionModel.create({

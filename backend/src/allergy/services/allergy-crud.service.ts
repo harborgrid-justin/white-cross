@@ -20,7 +20,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Model } from 'sequelize-typescript';
 import { Allergy } from '../models/allergy.model';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
-import { UpdateAllergyDto } from '../dto/update-allergy.dto';
+import { AllergyUpdateDto } from '../dto/update-allergy.dto';
 import { Student } from '../../student/models/student.model';
 
 @Injectable()
@@ -119,7 +119,7 @@ export class AllergyCrudService {
    */
   async updateAllergy(
     id: string,
-    updateAllergyDto: UpdateAllergyDto,
+    updateAllergyDto: AllergyUpdateDto,
   ): Promise<Allergy> {
     const allergy = await this.allergyModel.findByPk(id, {
       include: [{ model: Student, as: 'student' }],

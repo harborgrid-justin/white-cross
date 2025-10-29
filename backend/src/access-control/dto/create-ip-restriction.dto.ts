@@ -12,7 +12,7 @@ export enum IpRestrictionType {
 /**
  * DTO for creating an IP restriction
  */
-export class CreateIpRestrictionDto {
+export class AccessControlCreateIpRestrictionDto {
   @ApiProperty({
     description: 'IP address to restrict',
     example: '192.168.1.100',

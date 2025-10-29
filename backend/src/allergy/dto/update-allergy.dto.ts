@@ -8,7 +8,7 @@ import { IsBoolean, IsOptional } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateAllergyDto } from './create-allergy.dto';
 
-export class UpdateAllergyDto extends PartialType(CreateAllergyDto) {
+export class AllergyUpdateDto extends PartialType(CreateAllergyDto) {
   /**
    * Whether allergy has been clinically verified
    * Explicitly defined for update operations

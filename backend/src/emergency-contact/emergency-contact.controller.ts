@@ -29,10 +29,10 @@ import {
 } from '@nestjs/swagger';
 import { EmergencyContactService } from './emergency-contact.service';
 import {
-  CreateEmergencyContactDto,
-  UpdateEmergencyContactDto,
+  EmergencyContactCreateDto,
+  EmergencyContactUpdateDto,
   NotificationDto,
-  VerifyContactDto,
+  EmergencyVerifyContactDto,
 } from './dto';
 
 @ApiTags('Emergency Contacts')
@@ -149,7 +149,7 @@ export class EmergencyContactController {
     status: 500,
     description: 'Internal server error',
   })
-  async createEmergencyContact(@Body() createEmergencyContactDto: CreateEmergencyContactDto) {
+  async createEmergencyContact(@Body() createEmergencyContactDto: EmergencyContactCreateDto) {
     return this.emergencyContactService.createEmergencyContact(createEmergencyContactDto);
   }
 
@@ -186,7 +186,7 @@ export class EmergencyContactController {
   })
   async updateEmergencyContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateEmergencyContactDto: UpdateEmergencyContactDto,
+    @Body() updateEmergencyContactDto: EmergencyContactUpdateDto,
   ) {
     return this.emergencyContactService.updateEmergencyContact(id, updateEmergencyContactDto);
   }
@@ -373,7 +373,7 @@ export class EmergencyContactController {
   })
   async verifyContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() verifyContactDto: VerifyContactDto,
+    @Body() verifyContactDto: EmergencyVerifyContactDto,
   ) {
     return this.emergencyContactService.verifyContact(id, verifyContactDto.verificationMethod);
   }

@@ -19,7 +19,7 @@ export enum ReportFormat {
  * Used for POST /academic-transcript/:studentId/report endpoint
  * Specifies format and options for transcript report generation
  */
-export class GenerateReportDto {
+export class AcademicGenerateReportDto {
   @ApiProperty({
     description: 'Report format',
     enum: ReportFormat,

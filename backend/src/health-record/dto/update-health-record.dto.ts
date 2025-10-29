@@ -5,7 +5,7 @@
  */
 
 import { PartialType } from '@nestjs/swagger';
-import { CreateHealthRecordDto } from './create-health-record.dto';
+import { HealthRecordCreateDto } from './create-health-record.dto';
 
 /**
  * Update Health Record DTO
@@ -13,4 +13,4 @@ import { CreateHealthRecordDto } from './create-health-record.dto';
  * Extends CreateHealthRecordDto with all fields optional
  * Uses NestJS PartialType utility for DRY principle
  */
-export class UpdateHealthRecordDto extends PartialType(CreateHealthRecordDto) {}
+export class HealthRecordUpdateDto extends PartialType(HealthRecordCreateDto) {}

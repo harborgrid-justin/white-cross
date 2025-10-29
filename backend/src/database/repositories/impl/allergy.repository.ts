@@ -21,7 +21,7 @@ export interface AllergyAttributes {
   severity: string;
   reaction?: string;
   onsetDate?: Date;
-  isActive: boolean;
+  active: boolean;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -43,16 +43,16 @@ export interface UpdateAllergyDTO {
   severity?: string;
   reaction?: string;
   onsetDate?: Date;
-  isActive?: boolean;
+  active?: boolean;
   notes?: string;
 }
 
 @Injectable()
 export class AllergyRepository
-  extends BaseRepository<any, AllergyAttributes, CreateAllergyDTO>
+  extends BaseRepository<Allergy, AllergyAttributes, CreateAllergyDTO>
 {
   constructor(
-    @InjectModel(('Allergy' as any)) model: any,
+    @InjectModel(Allergy) model: typeof Allergy,
     @Inject('IAuditLogger') auditLogger,
     @Inject('ICacheManager') cacheManager
   ) {
@@ -62,7 +62,7 @@ export class AllergyRepository
   async findByStudent(studentId: string): Promise<AllergyAttributes[]> {
     try {
       const allergies = await this.model.findAll({
-        where: { studentId, isActive: true },
+        where: { studentId, active: true },
         order: [['severity', 'DESC'], ['allergen', 'ASC']]
       });
       return allergies.map((a: any) => this.mapToEntity(a));
@@ -80,7 +80,7 @@ export class AllergyRepository
   async findBySeverity(severity: string): Promise<AllergyAttributes[]> {
     try {
       const allergies = await this.model.findAll({
-        where: { severity, isActive: true },
+        where: { severity, active: true },
         order: [['studentId', 'ASC'], ['allergen', 'ASC']]
       });
       return allergies.map((a: any) => this.mapToEntity(a));
@@ -100,7 +100,7 @@ export class AllergyRepository
       const allergies = await this.model.findAll({
         where: {
           allergen: { [Op.iLike]: `%${allergen}%` },
-          isActive: true
+          active: true
         },
         order: [['severity', 'DESC']]
       });
@@ -118,7 +118,7 @@ export class AllergyRepository
 
   protected async validateCreate(data: CreateAllergyDTO): Promise<void> {
     const existing = await this.model.findOne({
-      where: { studentId: data.studentId, allergen: data.allergen, isActive: true }
+      where: { studentId: data.studentId, allergen: data.allergen, active: true }
     });
 
     if (existing) {

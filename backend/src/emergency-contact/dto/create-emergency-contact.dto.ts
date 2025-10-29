@@ -21,7 +21,7 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ContactPriority, PreferredContactMethod, NotificationChannel } from '../../contact/enums';
 
-export class CreateEmergencyContactDto {
+export class EmergencyContactCreateDto {
   @ApiProperty({
     description: 'Student ID (UUID)',
     example: '123e4567-e89b-12d3-a456-426614174000',

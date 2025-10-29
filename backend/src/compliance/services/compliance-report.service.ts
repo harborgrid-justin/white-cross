@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { ComplianceReportRepository } from '../../database/repositories/impl/compliance-report.repository';
-import { CreateComplianceReportDto, UpdateComplianceReportDto, GenerateReportDto, QueryComplianceReportDto } from '../dto/compliance-report.dto';
+import { CreateComplianceReportDto, UpdateComplianceReportDto, ComplianceGenerateReportDto, QueryComplianceReportDto } from '../dto/compliance-report.dto';
 import { ComplianceStatus } from '../entities/compliance-report.entity';
 import { ExecutionContext } from '../../database/types';
 
@@ -59,7 +59,7 @@ export class ComplianceReportService {
     return this.reportRepository.delete(id, context);
   }
 
-  async generateReport(dto: GenerateReportDto, createdById: string, context: ExecutionContext) {
+  async generateReport(dto: ComplianceGenerateReportDto, createdById: string, context: ExecutionContext) {
     // Automated report generation logic would go here
     // For now, create a basic report structure
     return this.createReport({

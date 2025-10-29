@@ -22,8 +22,8 @@ import { CreatePermissionDto } from './dto/create-permission.dto';
 import { AssignPermissionToRoleDto } from './dto/assign-permission-to-role.dto';
 import { AssignRoleToUserDto } from './dto/assign-role-to-user.dto';
 import { CheckPermissionDto } from './dto/check-permission.dto';
-import { CreateIpRestrictionDto } from './dto/create-ip-restriction.dto';
-import { CreateSecurityIncidentDto } from './dto/create-security-incident.dto';
+import { AccessControlCreateIpRestrictionDto } from './dto/create-ip-restriction.dto';
+import { AccessControlCreateIncidentDto } from './dto/create-security-incident.dto';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Permissions } from './decorators/permissions.decorator';
@@ -312,11 +312,11 @@ export class AccessControlController {
   @Post('security/incidents')
   @Permissions('security', 'manage')
   @ApiOperation({ summary: 'Create a security incident' })
-  @ApiBody({ type: CreateSecurityIncidentDto })
+  @ApiBody({ type: AccessControlCreateIncidentDto })
   @ApiResponse({ status: 201, description: 'Security incident created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - validation error' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async createSecurityIncident(@Body() dto: CreateSecurityIncidentDto, @Request() req: ExpressRequest) {
+  async createSecurityIncident(@Body() dto: AccessControlCreateIncidentDto, @Request() req: ExpressRequest) {
     return this.accessControlService.createSecurityIncident({
       ...dto,
       detectedBy: dto.detectedBy || (req.user as any)?.id,
@@ -344,11 +344,11 @@ export class AccessControlController {
   @Post('security/ip-restrictions')
   @Permissions('security', 'manage')
   @ApiOperation({ summary: 'Add an IP restriction' })
-  @ApiBody({ type: CreateIpRestrictionDto })
+  @ApiBody({ type: AccessControlCreateIpRestrictionDto })
   @ApiResponse({ status: 201, description: 'IP restriction added successfully' })
   @ApiResponse({ status: 400, description: 'IP restriction already exists' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async addIpRestriction(@Body() dto: CreateIpRestrictionDto, @Request() req: ExpressRequest) {
+  async addIpRestriction(@Body() dto: AccessControlCreateIpRestrictionDto, @Request() req: ExpressRequest) {
     return this.accessControlService.addIpRestriction({
       ...dto,
       createdBy: dto.createdBy || (req.user as any)?.id,

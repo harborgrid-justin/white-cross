@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  CreateHealthRecordDto,
-  UpdateHealthRecordDto,
+  HealthDomainCreateRecordDto,
+  HealthDomainUpdateRecordDto,
   CreateAllergyDto,
-  UpdateAllergyDto,
+  HealthDomainUpdateAllergyDto,
   CreateImmunizationDto,
   UpdateImmunizationDto,
-  CreateChronicConditionDto,
-  UpdateChronicConditionDto,
+  HealthDomainCreateChronicConditionDto,
+  HealthDomainUpdateChronicConditionDto,
   HealthRecordFiltersDto,
   AllergyFiltersDto,
   VaccinationFiltersDto,
@@ -25,7 +25,7 @@ export class HealthDomainService {
   /**
    * Health Records Operations
    */
-  async createHealthRecord(data: CreateHealthRecordDto): Promise<any> {
+  async createHealthRecord(data: HealthDomainCreateRecordDto): Promise<any> {
     // TODO: Implement health record creation with repository
     // Validate student exists
     // Validate vital signs if provided
@@ -41,7 +41,7 @@ export class HealthDomainService {
 
   async updateHealthRecord(
     id: string,
-    data: UpdateHealthRecordDto,
+    data: HealthDomainUpdateRecordDto,
   ): Promise<any> {
     // TODO: Implement health record update
     throw new Error('Method not implemented - requires database models');
@@ -83,7 +83,7 @@ export class HealthDomainService {
     throw new Error('Method not implemented - requires database models');
   }
 
-  async updateAllergy(id: string, data: UpdateAllergyDto): Promise<any> {
+  async updateAllergy(id: string, data: HealthDomainUpdateAllergyDto): Promise<any> {
     // TODO: Implement allergy update
     throw new Error('Method not implemented - requires database models');
   }
@@ -165,7 +165,7 @@ export class HealthDomainService {
    * Chronic Conditions Operations
    */
   async createChronicCondition(
-    data: CreateChronicConditionDto,
+    data: HealthDomainCreateChronicConditionDto,
   ): Promise<any> {
     // TODO: Implement chronic condition creation
     throw new Error('Method not implemented - requires database models');
@@ -173,7 +173,7 @@ export class HealthDomainService {
 
   async updateChronicCondition(
     id: string,
-    data: UpdateChronicConditionDto,
+    data: HealthDomainUpdateChronicConditionDto,
   ): Promise<any> {
     // TODO: Implement chronic condition update
     throw new Error('Method not implemented - requires database models');

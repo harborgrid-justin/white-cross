@@ -15,7 +15,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { RecordScreeningDto } from './dto/record-screening.dto';
 import { RecordMeasurementDto } from './dto/record-measurement.dto';
 import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.dto';
-import { ScanBarcodeDto } from './dto/scan-barcode.dto';
+import { AdvancedFeaturesScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
 @Injectable()
@@ -204,7 +204,7 @@ export class AdvancedFeaturesService {
   /**
    * Scan and identify a barcode
    */
-  async scanBarcode(scanData: ScanBarcodeDto) {
+  async scanBarcode(scanData: AdvancedFeaturesScanBarcodeDto) {
     this.logger.warn('scanBarcode called - stub implementation');
     this.logger.log(`Scanning ${scanData.scanType} barcode: ${scanData.barcodeString}`);
 

@@ -15,10 +15,10 @@ import { SecurityIncidentService } from './services/security-incident.service';
 import { SessionManagementService } from './services/session-management.service';
 import { ThreatDetectionService } from './services/threat-detection.service';
 import {
-  CreateIpRestrictionDto,
+  SecurityCreateIpRestrictionDto,
   UpdateIpRestrictionDto,
   IpCheckDto,
-  CreateSecurityIncidentDto,
+  SecurityCreateIncidentDto,
   UpdateIncidentStatusDto,
   IncidentFilterDto,
 } from './dto';
@@ -45,7 +45,7 @@ export class SecurityController {
     summary: 'Create IP restriction rule',
     description: 'Creates a new IP restriction rule for whitelist, blacklist, or geo-restriction. Supports individual IPs, CIDR notation, or geographic regions.'
   })
-  @ApiBody({ type: CreateIpRestrictionDto })
+  @ApiBody({ type: SecurityCreateIpRestrictionDto })
   @ApiResponse({ 
     status: 201, 
     description: 'IP restriction created successfully',
@@ -65,7 +65,7 @@ export class SecurityController {
   @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async createIpRestriction(@Body() dto: CreateIpRestrictionDto) {
+  async createIpRestriction(@Body() dto: SecurityCreateIpRestrictionDto) {
     if (dto.type === 'whitelist') {
       return await this.ipRestrictionService.addToWhitelist(dto);
     } else if (dto.type === 'blacklist') {
@@ -208,7 +208,7 @@ export class SecurityController {
     summary: 'Report security incident',
     description: 'Reports a new security incident with detailed information including type, severity, affected resources, and initial assessment. Triggers automated response workflows.'
   })
-  @ApiBody({ type: CreateSecurityIncidentDto })
+  @ApiBody({ type: SecurityCreateIncidentDto })
   @ApiResponse({ 
     status: 201, 
     description: 'Security incident reported successfully',
@@ -228,7 +228,7 @@ export class SecurityController {
   @ApiResponse({ status: 400, description: 'Invalid incident data or missing required fields' })
   @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async reportIncident(@Body() dto: CreateSecurityIncidentDto) {
+  async reportIncident(@Body() dto: SecurityCreateIncidentDto) {
     return await this.incidentService.reportIncident(dto);
   }
 

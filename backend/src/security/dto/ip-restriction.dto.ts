@@ -13,7 +13,7 @@ import { IpRestrictionType } from '../enums';
 /**
  * DTO for creating IP restriction rules
  */
-export class CreateIpRestrictionDto {
+export class SecurityCreateIpRestrictionDto {
   @ApiProperty({
     enum: IpRestrictionType,
     description: 'Type of IP restriction',
@@ -63,7 +63,7 @@ export class CreateIpRestrictionDto {
  * DTO for updating IP restriction rules
  */
 export class UpdateIpRestrictionDto extends PartialType(
-  CreateIpRestrictionDto,
+  SecurityCreateIpRestrictionDto,
 ) {
   @ApiPropertyOptional({ description: 'Active status of the restriction' })
   @IsOptional()

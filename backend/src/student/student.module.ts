@@ -6,9 +6,13 @@
 
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { StudentService } from './student-sequelize.service';
+import { StudentService } from './student.service';
 import { StudentController } from './student.controller';
 import { Student } from '../database/models/student.model';
+import { User } from '../database/models/user.model';
+import { HealthRecord } from '../database/models/health-record.model';
+import { MentalHealthRecord } from '../database/models/mental-health-record.model';
+import { AcademicTranscriptModule } from '../academic-transcript/academic-transcript.module';
 
 /**
  * Student Module
@@ -28,16 +32,16 @@ import { Student } from '../database/models/student.model';
  */
 @Module({
   imports: [
-    // Register Student model with Sequelize
-    SequelizeModule.forFeature([Student]),
+    // Register models with Sequelize
+    SequelizeModule.forFeature([
+      Student,
+      User,
+      HealthRecord,
+      MentalHealthRecord,
+    ]),
 
-    // TODO: Import related modules when available
-    // UserModule,           // For nurse validation
-    // HealthRecordModule,   // For statistics
-    // AllergyModule,        // For statistics
-    // MedicationModule,     // For statistics
-    // AppointmentModule,    // For statistics
-    // IncidentModule,       // For statistics
+    // Import AcademicTranscriptModule for transcript-related operations
+    AcademicTranscriptModule,
   ],
   controllers: [StudentController],
   providers: [StudentService],

@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
-import { RegisterDeviceDto, UpdatePreferencesDto } from '../dto';
+import { RegisterDeviceDto, MobileUpdatePreferencesDto } from '../dto';
 
 /**
  * Device Controller
@@ -49,7 +49,7 @@ export class DeviceController {
   async updatePreferences(
     @CurrentUser('id') userId: string,
     @Param('id') tokenId: string,
-    @Body() dto: UpdatePreferencesDto
+    @Body() dto: MobileUpdatePreferencesDto
   ) {
     return this.notificationService.updatePreferences(userId, tokenId, dto);
   }

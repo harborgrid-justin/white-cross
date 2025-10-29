@@ -12,9 +12,9 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';
 import {
-  CreateEmergencyContactDto,
-  UpdateEmergencyContactDto,
-  VerifyContactDto,
+  ContactCreateEmergencyDto,
+  ContactUpdateEmergencyDto,
+  ContactVerifyDto,
   EmergencyContactQueryDto
 } from '../dto';
 import { ContactPriority, VerificationStatus } from '../enums';
@@ -108,7 +108,7 @@ export class EmergencyContactService {
   /**
    * Create new emergency contact
    */
-  async create(dto: CreateEmergencyContactDto): Promise<EmergencyContact> {
+  async create(dto: ContactCreateEmergencyDto): Promise<EmergencyContact> {
     // Validate required fields
     if (!dto.studentId) {
       throw new BadRequestException('Student ID is required');
@@ -146,7 +146,7 @@ export class EmergencyContactService {
   /**
    * Update emergency contact
    */
-  async update(id: string, dto: UpdateEmergencyContactDto): Promise<EmergencyContact> {
+  async update(id: string, dto: ContactUpdateEmergencyDto): Promise<EmergencyContact> {
     const contact = await this.findOne(id);
 
     // Convert notification channels array to JSON string if provided
@@ -196,7 +196,7 @@ export class EmergencyContactService {
   /**
    * Verify contact
    */
-  async verifyContact(id: string, dto: VerifyContactDto): Promise<EmergencyContact> {
+  async verifyContact(id: string, dto: ContactVerifyDto): Promise<EmergencyContact> {
     const contact = await this.findOne(id);
 
     contact.verificationStatus = dto.verificationStatus;

@@ -45,7 +45,7 @@ import { StatisticsService } from './services/statistics.service';
 // DTOs
 import { CreateAuditLogDto } from './dto/create-audit-log.dto';
 import { SignConsentFormDto } from './dto/sign-consent-form.dto';
-import { CreateComplianceReportDto, UpdateComplianceReportDto, GenerateReportDto, QueryComplianceReportDto } from './dto/compliance-report.dto';
+import { CreateComplianceReportDto, UpdateComplianceReportDto, ComplianceGenerateReportDto, QueryComplianceReportDto } from './dto/compliance-report.dto';
 import { CreateChecklistDto, UpdateChecklistDto, QueryChecklistDto } from './dto/checklist.dto';
 import { CreatePolicyDto, UpdatePolicyDto, QueryPolicyDto } from './dto/policy.dto';
 import { CreateDataRetentionDto, UpdateDataRetentionDto, QueryDataRetentionDto } from './dto/data-retention.dto';
@@ -201,9 +201,9 @@ export class ComplianceController {
 
   @Post('reports/generate')
   @ApiOperation({ summary: 'Generate automated compliance report' })
-  @ApiBody({ type: GenerateReportDto })
+  @ApiBody({ type: ComplianceGenerateReportDto })
   @ApiResponse({ status: 201, description: 'Report generated successfully' })
-  async generateReport(@Body() dto: GenerateReportDto, @Req() req: Request) {
+  async generateReport(@Body() dto: ComplianceGenerateReportDto, @Req() req: Request) {
     // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
     const userRole = (req as any).user?.role || UserRole.ADMIN;

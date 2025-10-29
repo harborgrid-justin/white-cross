@@ -18,7 +18,7 @@ import {
   CreateConfigurationDto,
   UpdateConfigurationDto,
   FilterConfigurationDto,
-  BulkUpdateDto,
+  ConfigurationBulkUpdateDto,
   ImportConfigurationsDto
 } from './dto';
 import { ConfigCategory } from '../administration/enums/administration.enums';
@@ -323,7 +323,7 @@ export class ConfigurationController {
     description: 'Update multiple configurations in a single request'
   })
   @ApiResponse({ status: 200, description: 'Bulk update completed' })
-  async bulkUpdateConfigurations(@Body() bulkUpdateDto: BulkUpdateDto) {
+  async bulkUpdateConfigurations(@Body() bulkUpdateDto: ConfigurationBulkUpdateDto) {
     return this.configurationService.bulkUpdateConfigurations(bulkUpdateDto);
   }
 

@@ -33,7 +33,7 @@ import {
   UpdateStudentDto,
   StudentFilterDto,
   TransferStudentDto,
-  BulkUpdateDto,
+  StudentBulkUpdateDto,
   StudentHealthRecordsDto,
   MentalHealthRecordsDto,
   UploadPhotoDto,
@@ -43,7 +43,7 @@ import {
   PerformanceTrendsDto,
   BulkGradeTransitionDto,
   GraduatingStudentsDto,
-  ScanBarcodeDto,
+  StudentScanBarcodeDto,
   VerifyMedicationDto,
   AddWaitlistDto,
   WaitlistStatusDto,
@@ -367,7 +367,7 @@ export class StudentController {
     status: 400,
     description: 'Invalid input data',
   })
-  async bulkUpdate(@Body() bulkUpdateDto: BulkUpdateDto) {
+  async bulkUpdate(@Body() bulkUpdateDto: StudentBulkUpdateDto) {
     return this.studentService.bulkUpdate(bulkUpdateDto);
   }
 
@@ -906,7 +906,7 @@ export class StudentController {
     status: 404,
     description: 'Barcode not found in system',
   })
-  async scanBarcode(@Body() scanBarcodeDto: ScanBarcodeDto) {
+  async scanBarcode(@Body() scanBarcodeDto: StudentScanBarcodeDto) {
     return this.studentService.scanBarcode(scanBarcodeDto);
   }
 

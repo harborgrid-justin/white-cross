@@ -6,7 +6,7 @@ import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VerificationStatus } from '../enums';
 
-export class VerifyContactDto {
+export class ContactVerifyDto {
   @ApiProperty({
     enum: VerificationStatus,
     example: VerificationStatus.VERIFIED,

@@ -25,7 +25,7 @@ import {
   UpdateStudentDto,
   StudentFilterDto,
   TransferStudentDto,
-  BulkUpdateDto,
+  StudentBulkUpdateDto,
   StudentHealthRecordsDto,
   MentalHealthRecordsDto,
   UploadPhotoDto,
@@ -35,7 +35,7 @@ import {
   PerformanceTrendsDto,
   BulkGradeTransitionDto,
   GraduatingStudentsDto,
-  ScanBarcodeDto,
+  StudentScanBarcodeDto,
   VerifyMedicationDto,
   AddWaitlistDto,
   WaitlistStatusDto,
@@ -354,7 +354,7 @@ export class StudentService {
    * Bulk update students
    * Applies same updates to multiple students
    */
-  async bulkUpdate(bulkUpdateDto: BulkUpdateDto): Promise<{ updated: number }> {
+  async bulkUpdate(bulkUpdateDto: StudentBulkUpdateDto): Promise<{ updated: number }> {
     try {
       const { studentIds, nurseId, grade, isActive } = bulkUpdateDto;
 
@@ -1342,7 +1342,7 @@ export class StudentService {
    * Decodes barcode and retrieves associated entity
    * Supports student, medication, and equipment barcodes
    */
-  async scanBarcode(scanBarcodeDto: ScanBarcodeDto): Promise<any> {
+  async scanBarcode(scanBarcodeDto: StudentScanBarcodeDto): Promise<any> {
     try {
       const { barcodeString, scanType } = scanBarcodeDto;
 

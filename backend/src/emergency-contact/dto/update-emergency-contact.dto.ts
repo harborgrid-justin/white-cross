@@ -24,7 +24,7 @@ import {
   NotificationChannel,
 } from '../../contact/enums';
 
-export class UpdateEmergencyContactDto {
+export class EmergencyContactUpdateDto {
   @ApiPropertyOptional({
     description: 'Emergency contact first name',
     example: 'Jane',

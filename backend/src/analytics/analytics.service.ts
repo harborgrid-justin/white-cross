@@ -22,7 +22,7 @@ import {
   GetNurseDashboardQueryDto,
   GetAdminDashboardQueryDto,
   GetPlatformSummaryQueryDto,
-  GenerateCustomReportDto,
+  AnalyticsGenerateCustomReportDto,
   GetReportQueryDto,
 } from './dto';
 
@@ -804,7 +804,7 @@ export class AnalyticsService {
   /**
    * Generate custom report
    */
-  async generateCustomReport(dto: GenerateCustomReportDto, userId: string) {
+  async generateCustomReport(dto: AnalyticsGenerateCustomReportDto, userId: string) {
     try {
       const start = dto.startDate;
       const end = dto.endDate;

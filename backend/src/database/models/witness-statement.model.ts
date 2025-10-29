@@ -52,6 +52,7 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   @Column(DataType.UUID)
   declare id: string;
 
+  @ForeignKey(() => require('./incident-report.model').IncidentReport)
   @Column({
     type: DataType.UUID,
     allowNull: false,

@@ -6,7 +6,7 @@ import { ReportType, ReportFormat } from '../enums';
 /**
  * Generate Report Base DTO
  */
-export class GenerateReportDto {
+export class AnalyticsGenerateReportDto {
   @ApiProperty({ description: 'School ID' })
   @IsString()
   schoolId: string;
@@ -33,22 +33,22 @@ export class GenerateReportDto {
 /**
  * Generate Immunization Report DTO
  */
-export class GenerateImmunizationReportDto extends GenerateReportDto {}
+export class GenerateImmunizationReportDto extends AnalyticsGenerateReportDto {}
 
 /**
  * Generate Controlled Substance Report DTO
  */
-export class GenerateControlledSubstanceReportDto extends GenerateReportDto {}
+export class GenerateControlledSubstanceReportDto extends AnalyticsGenerateReportDto {}
 
 /**
  * Generate HIPAA Audit Report DTO
  */
-export class GenerateHIPAAAuditReportDto extends GenerateReportDto {}
+export class GenerateHIPAAAuditReportDto extends AnalyticsGenerateReportDto {}
 
 /**
  * Generate Screening Report DTO
  */
-export class GenerateScreeningReportDto extends GenerateReportDto {}
+export class GenerateScreeningReportDto extends AnalyticsGenerateReportDto {}
 
 /**
  * Schedule Recurring Report DTO

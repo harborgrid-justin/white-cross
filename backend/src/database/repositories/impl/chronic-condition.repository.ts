@@ -11,6 +11,7 @@ import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
+import { ChronicCondition } from '../../models/chronic-condition.model';
 
 export interface ChronicConditionAttributes {
   id: string;
@@ -44,10 +45,10 @@ export interface UpdateChronicConditionDTO {
 
 @Injectable()
 export class ChronicConditionRepository
-  extends BaseRepository<any, ChronicConditionAttributes, CreateChronicConditionDTO>
+  extends BaseRepository<ChronicCondition, ChronicConditionAttributes, CreateChronicConditionDTO>
 {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel(ChronicCondition) model: typeof ChronicCondition,
     @Inject('IAuditLogger') auditLogger,
     @Inject('ICacheManager') cacheManager
   ) {

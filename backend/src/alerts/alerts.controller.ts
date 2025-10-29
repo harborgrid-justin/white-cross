@@ -31,7 +31,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AlertsService } from './alerts.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { AlertFilterDto } from './dto/alert-filter.dto';
-import { UpdatePreferencesDto } from './dto/update-preferences.dto';
+import { AlertsUpdatePreferencesDto } from './dto/update-preferences.dto';
 
 @ApiTags('alerts')
 @Controller('alerts')
@@ -134,7 +134,7 @@ export class AlertsController {
   })
   async updatePreferences(
     @CurrentUser('id') userId: string,
-    @Body() updateDto: UpdatePreferencesDto,
+    @Body() updateDto: AlertsUpdatePreferencesDto,
   ) {
     return this.alertsService.updatePreferences(userId, updateDto);
   }

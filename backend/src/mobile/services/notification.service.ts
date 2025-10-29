@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { ConfigService } from '@nestjs/config';
 import { DeviceToken, PushNotification } from '../entities';
-import { RegisterDeviceDto, SendNotificationDto, UpdatePreferencesDto } from '../dto';
+import { RegisterDeviceDto, SendNotificationDto, MobileUpdatePreferencesDto } from '../dto';
 import { NotificationPlatform, NotificationStatus, DeliveryStatus, NotificationPriority, NotificationCategory } from '../enums';
 
 /**
@@ -407,7 +407,7 @@ export class NotificationService implements OnModuleInit {
   async updatePreferences(
     userId: string,
     tokenId: string,
-    dto: UpdatePreferencesDto
+    dto: MobileUpdatePreferencesDto
   ): Promise<DeviceToken> {
     const token = await this.deviceTokenModel.findOne({
       where: { id: tokenId, userId }

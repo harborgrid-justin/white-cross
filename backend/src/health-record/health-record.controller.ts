@@ -27,8 +27,8 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { HealthRecordService } from './health-record.service';
-import { CreateHealthRecordDto } from './dto/create-health-record.dto';
-import { UpdateHealthRecordDto } from './dto/update-health-record.dto';
+import { HealthRecordCreateDto } from './dto/create-health-record.dto';
+import { HealthRecordUpdateDto } from './dto/update-health-record.dto';
 import { HealthRecordFilterDto } from './dto/health-record-filter.dto';
 
 /**
@@ -57,7 +57,7 @@ export class HealthRecordController {
     description:
       'Creates a new health record entry for a student. Can include visit notes, diagnoses, treatments, and medications.',
   })
-  @ApiBody({ type: CreateHealthRecordDto })
+  @ApiBody({ type: HealthRecordCreateDto })
   @ApiResponse({
     status: 201,
     description: 'Health record created successfully',
@@ -74,7 +74,7 @@ export class HealthRecordController {
     status: 500,
     description: 'Internal server error',
   })
-  async create(@Body() createDto: CreateHealthRecordDto) {
+  async create(@Body() createDto: HealthRecordCreateDto) {
     return this.healthRecordService.createHealthRecord(createDto);
   }
 
@@ -156,7 +156,7 @@ export class HealthRecordController {
     description: 'Health record UUID',
     format: 'uuid',
   })
-  @ApiBody({ type: UpdateHealthRecordDto })
+  @ApiBody({ type: HealthRecordUpdateDto })
   @ApiResponse({
     status: 200,
     description: 'Health record updated successfully',
@@ -175,7 +175,7 @@ export class HealthRecordController {
   })
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() updateDto: UpdateHealthRecordDto,
+    @Body() updateDto: HealthRecordUpdateDto,
   ) {
     return this.healthRecordService.updateHealthRecord(id, updateDto);
   }

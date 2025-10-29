@@ -13,14 +13,14 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { HealthDomainService } from './health-domain.service';
 import {
-  CreateHealthRecordDto,
-  UpdateHealthRecordDto,
+  HealthDomainCreateRecordDto,
+  HealthDomainUpdateRecordDto,
   CreateAllergyDto,
-  UpdateAllergyDto,
+  HealthDomainUpdateAllergyDto,
   CreateImmunizationDto,
   UpdateImmunizationDto,
-  CreateChronicConditionDto,
-  UpdateChronicConditionDto,
+  HealthDomainCreateChronicConditionDto,
+  HealthDomainUpdateChronicConditionDto,
   HealthRecordFiltersDto,
   AllergyFiltersDto,
   VaccinationFiltersDto,
@@ -40,7 +40,7 @@ export class HealthDomainController {
   @Post('records')
   @ApiOperation({ summary: 'Create a new health record' })
   @ApiResponse({ status: 201, description: 'Health record created successfully' })
-  async createHealthRecord(@Body() createDto: CreateHealthRecordDto) {
+  async createHealthRecord(@Body() createDto: HealthDomainCreateRecordDto) {
     return this.healthDomainService.createHealthRecord(createDto);
   }
 
@@ -58,7 +58,7 @@ export class HealthDomainController {
   @ApiResponse({ status: 200, description: 'Health record updated successfully' })
   async updateHealthRecord(
     @Param('id') id: string,
-    @Body() updateDto: UpdateHealthRecordDto,
+    @Body() updateDto: HealthDomainUpdateRecordDto,
   ) {
     return this.healthDomainService.updateHealthRecord(id, updateDto);
   }
@@ -131,7 +131,7 @@ export class HealthDomainController {
   @ApiResponse({ status: 200, description: 'Allergy record updated successfully' })
   async updateAllergy(
     @Param('id') id: string,
-    @Body() updateDto: UpdateAllergyDto,
+    @Body() updateDto: HealthDomainUpdateAllergyDto,
   ) {
     return this.healthDomainService.updateAllergy(id, updateDto);
   }
@@ -250,7 +250,7 @@ export class HealthDomainController {
   @Post('chronic-conditions')
   @ApiOperation({ summary: 'Create a new chronic condition record' })
   @ApiResponse({ status: 201, description: 'Chronic condition record created successfully' })
-  async createChronicCondition(@Body() createDto: CreateChronicConditionDto) {
+  async createChronicCondition(@Body() createDto: HealthDomainCreateChronicConditionDto) {
     return this.healthDomainService.createChronicCondition(createDto);
   }
 
@@ -260,7 +260,7 @@ export class HealthDomainController {
   @ApiResponse({ status: 200, description: 'Chronic condition record updated successfully' })
   async updateChronicCondition(
     @Param('id') id: string,
-    @Body() updateDto: UpdateChronicConditionDto,
+    @Body() updateDto: HealthDomainUpdateChronicConditionDto,
   ) {
     return this.healthDomainService.updateChronicCondition(id, updateDto);
   }

@@ -14,7 +14,7 @@ import {
   StudentFilterInputDto,
   Gender
 } from '../dto';
-import { StudentService } from '../../../student/student-sequelize.service';
+import { StudentService } from '../../../student/student.service';
 
 /**
  * Student Resolver

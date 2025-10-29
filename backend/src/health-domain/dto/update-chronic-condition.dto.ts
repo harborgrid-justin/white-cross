@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateChronicConditionDto } from './create-chronic-condition.dto';
+import { HealthDomainCreateChronicConditionDto } from './create-chronic-condition.dto';
 
-export class UpdateChronicConditionDto extends PartialType(CreateChronicConditionDto) {}
+export class HealthDomainUpdateChronicConditionDto extends PartialType(HealthDomainCreateChronicConditionDto) {}

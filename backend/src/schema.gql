@@ -1,0 +1,172 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ContactDto {
+  address: String
+  city: String
+  createdAt: Timestamp!
+  createdBy: ID
+  customFields: JSON
+  displayName: String!
+  email: String
+  firstName: String!
+  fullName: String!
+  id: ID!
+  isActive: Boolean!
+  lastName: String!
+  notes: String
+  organization: String
+  phone: String
+  relationTo: ID
+  relationshipType: String
+  state: String
+  title: String
+  type: ContactType!
+  updatedAt: Timestamp!
+  updatedBy: ID
+  zip: String
+}
+
+input ContactFilterInputDto {
+  isActive: Boolean
+  relationTo: ID
+  search: String
+  type: ContactType
+  types: [ContactType!]
+}
+
+input ContactInputDto {
+  address: String
+  city: String
+  customFields: JSON
+  email: String
+  firstName: String!
+  isActive: Boolean = true
+  lastName: String!
+  notes: String
+  organization: String
+  phone: String
+  relationTo: ID
+  relationshipType: String
+  state: String
+  title: String
+  type: ContactType!
+  zip: String
+}
+
+type ContactListResponseDto {
+  contacts: [ContactDto!]!
+  pagination: PaginationDto!
+}
+
+type ContactStatsDto {
+  byType: JSON!
+  total: Float!
+}
+
+"""Type of contact (guardian, staff, vendor, provider, other)"""
+enum ContactType {
+  Guardian
+  Other
+  Provider
+  Staff
+  Vendor
+}
+
+input ContactUpdateInputDto {
+  address: String
+  city: String
+  customFields: JSON
+  email: String
+  firstName: String
+  isActive: Boolean
+  lastName: String
+  notes: String
+  organization: String
+  phone: String
+  relationTo: ID
+  relationshipType: String
+  state: String
+  title: String
+  type: ContactType
+  zip: String
+}
+
+type DeleteResponseDto {
+  message: String!
+  success: Boolean!
+}
+
+"""Student gender"""
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+type Mutation {
+  createContact(input: ContactInputDto!): ContactDto!
+  deactivateContact(id: ID!): ContactDto!
+  deleteContact(id: ID!): DeleteResponseDto!
+  reactivateContact(id: ID!): ContactDto!
+  updateContact(id: ID!, input: ContactUpdateInputDto!): ContactDto!
+}
+
+type PaginationDto {
+  limit: Float!
+  page: Float!
+  total: Float!
+  totalPages: Float!
+}
+
+type Query {
+  contact(id: ID!): ContactDto
+  contactStats: ContactStatsDto!
+  contacts(filters: ContactFilterInputDto, limit: Float! = 20, orderBy: String! = "lastName", orderDirection: String! = "ASC", page: Float! = 1): ContactListResponseDto!
+  contactsByRelation(relationTo: ID!, type: String): [ContactDto!]!
+  searchContacts(limit: Float! = 10, query: String!): [ContactDto!]!
+  student(id: ID!): StudentDto
+  students(filters: StudentFilterInputDto, limit: Float! = 20, orderBy: String! = "lastName", orderDirection: String! = "ASC", page: Float! = 1): StudentListResponseDto!
+}
+
+type StudentDto {
+  createdAt: Timestamp!
+  dateOfBirth: Timestamp!
+  enrollmentDate: Timestamp!
+  firstName: String!
+  fullName: String!
+  gender: Gender!
+  grade: String!
+  id: ID!
+  isActive: Boolean!
+  lastName: String!
+  medicalRecordNum: String
+  nurseId: ID
+  photo: String
+  studentNumber: String!
+  updatedAt: Timestamp!
+}
+
+input StudentFilterInputDto {
+  grade: String
+  isActive: Boolean
+  nurseId: ID
+  search: String
+}
+
+type StudentListResponseDto {
+  pagination: PaginationDto!
+  students: [StudentDto!]!
+}
+
+"""
+`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp

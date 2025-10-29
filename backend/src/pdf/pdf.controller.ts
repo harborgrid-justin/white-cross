@@ -13,7 +13,7 @@ import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-s
 import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
 import { GenerateImmunizationReportDto } from './dto/generate-immunization-report.dto';
 import { GenerateIncidentReportDto } from './dto/generate-incident-report.dto';
-import { GenerateCustomReportDto } from './dto/generate-custom-report.dto';
+import { PdfGenerateCustomReportDto } from './dto/generate-custom-report.dto';
 import { MergePdfsDto } from './dto/merge-pdfs.dto';
 import { WatermarkPdfDto } from './dto/watermark-pdf.dto';
 import { SignPdfDto } from './dto/sign-pdf.dto';
@@ -140,7 +140,7 @@ export class PdfController {
     type: Buffer,
   })
   async generateCustomReport(
-    @Body() dto: GenerateCustomReportDto,
+    @Body() dto: PdfGenerateCustomReportDto,
     @Res() res: Response,
   ): Promise<void> {
     const pdfBuffer = await this.pdfService.generateCustomReport(dto);

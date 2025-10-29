@@ -50,7 +50,7 @@ export class UpdateComplianceReportDto {
   reviewedBy?: string;
 }
 
-export class GenerateReportDto {
+export class ComplianceGenerateReportDto {
   @ApiProperty({ enum: ComplianceReportType, description: 'Report type to generate' })
   @IsEnum(ComplianceReportType)
   reportType: ComplianceReportType;

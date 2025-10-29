@@ -50,7 +50,7 @@ export class VitalSignsDto {
   bmi?: number;
 }
 
-export class CreateHealthRecordDto {
+export class HealthDomainCreateRecordDto {
   @ApiProperty()
   @IsString()
   studentId: string;

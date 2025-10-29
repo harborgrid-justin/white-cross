@@ -35,7 +35,7 @@ import { AllergyCrudService } from './services/allergy-crud.service';
 import { AllergyQueryService } from './services/allergy-query.service';
 import { AllergySafetyService } from './services/allergy-safety.service';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
-import { UpdateAllergyDto } from './dto/update-allergy.dto';
+import { AllergyUpdateDto } from './dto/update-allergy.dto';
 import { AllergyFiltersDto } from './dto/allergy-filters.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { VerifyAllergyDto } from './dto/verify-allergy.dto';
@@ -339,7 +339,7 @@ export class AllergyController {
   })
   async updateAllergy(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateAllergyDto: UpdateAllergyDto,
+    @Body() updateAllergyDto: AllergyUpdateDto,
   ) {
     return this.allergyCrudService.updateAllergy(id, updateAllergyDto);
   }

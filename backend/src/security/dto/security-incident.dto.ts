@@ -17,7 +17,7 @@ import {
 /**
  * DTO for creating security incidents
  */
-export class CreateSecurityIncidentDto {
+export class SecurityCreateIncidentDto {
   @ApiProperty({
     enum: SecurityIncidentType,
     description: 'Type of security incident',

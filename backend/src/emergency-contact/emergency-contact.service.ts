@@ -15,8 +15,8 @@ import { EmergencyContact } from '../database/models/emergency-contact.model';
 import { Student } from '../database/models/student.model';
 import { ContactPriority, VerificationStatus } from '../contact/enums';
 import {
-  CreateEmergencyContactDto,
-  UpdateEmergencyContactDto,
+  EmergencyContactCreateDto,
+  EmergencyContactUpdateDto,
   NotificationDto,
   NotificationResultDto,
 } from './dto';
@@ -59,7 +59,7 @@ export class EmergencyContactService {
   /**
    * Create new emergency contact
    */
-  async createEmergencyContact(data: CreateEmergencyContactDto): Promise<EmergencyContact> {
+  async createEmergencyContact(data: EmergencyContactCreateDto): Promise<EmergencyContact> {
     if (!this.emergencyContactModel.sequelize) {
       throw new Error('Database connection not available');
     }
@@ -168,7 +168,7 @@ export class EmergencyContactService {
    */
   async updateEmergencyContact(
     id: string,
-    data: UpdateEmergencyContactDto,
+    data: EmergencyContactUpdateDto,
   ): Promise<EmergencyContact> {
     if (!this.emergencyContactModel.sequelize) {
       throw new Error('Database connection not available');

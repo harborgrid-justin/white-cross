@@ -16,7 +16,7 @@ export enum ConditionSeverity {
   CRITICAL = 'CRITICAL'
 }
 
-export class CreateChronicConditionDto {
+export class HealthDomainCreateChronicConditionDto {
   @ApiProperty()
   @IsString()
   studentId: string;

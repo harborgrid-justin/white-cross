@@ -21,7 +21,7 @@ import { User } from './entities/user.entity';
 import {
   CreateUserDto,
   UpdateUserDto,
-  ChangePasswordDto,
+  UserChangePasswordDto,
   UserFiltersDto,
   UserStatisticsDto,
 } from './dto';
@@ -205,7 +205,7 @@ export class UserService {
    * @param changePasswordDto Password change data
    * @returns Success indicator
    */
-  async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
+  async changePassword(id: string, changePasswordDto: UserChangePasswordDto) {
     try {
       const user = await this.userModel.findByPk(id);
 
