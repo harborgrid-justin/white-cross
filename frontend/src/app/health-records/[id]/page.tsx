@@ -61,11 +61,18 @@ export default function HealthRecordDetailPage() {
         setLoading(true);
         setError(null);
 
-        const response = await apiClient.get<HealthRecord>(
+        const response = await apiClient.get<any>(
           API_ENDPOINTS.healthRecordById(recordId)
         );
 
-        setRecord(response);
+        console.log('[HealthRecordDetail] API response:', response);
+
+        // Handle different response structures
+        if (response.data && !Array.isArray(response.data)) {
+          setRecord(response.data);
+        } else {
+          setRecord(response);
+        }
         setLoading(false);
       } catch (err) {
         console.error('Error loading health record:', err);

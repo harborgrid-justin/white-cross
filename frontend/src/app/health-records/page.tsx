@@ -86,12 +86,22 @@ export default function HealthRecordsPage() {
           params.recordType = selectedType;
         }
 
-        const response = await apiClient.get<{ data: HealthRecord[] }>(
+        const response = await apiClient.get<any>(
           API_ENDPOINTS.healthRecords,
           params
         );
 
-        setRecords(response.data || []);
+        console.log('[HealthRecordsPage] API response:', response);
+
+        // Backend returns { data: [], meta: { ... } }
+        // Handle the response structure correctly
+        if (response.data && Array.isArray(response.data)) {
+          setRecords(response.data);
+        } else if (Array.isArray(response)) {
+          setRecords(response);
+        } else {
+          setRecords([]);
+        }
         setLoading(false);
       } catch (err) {
         console.error('Error loading health records:', err);

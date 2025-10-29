@@ -5,64 +5,58 @@
  * Calendar view of medication administrations with filtering and navigation.
  */
 
-import { Suspense } from 'react';
-import { Metadata } from 'next';
+'use client';
+
+import { useState, useEffect } from 'react';
 import MedicationCalendar from '@/components/medications/MedicationCalendar';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { apiClient } from '@/lib/api-client';
 import { API_ENDPOINTS } from '@/constants/api';
-
-export const metadata: Metadata = {
-  title: 'Administration Calendar | White Cross',
-  description: 'Calendar view of medication administrations and schedules'
-};
-
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
-
-interface CalendarPageProps {
-  searchParams: {
-    month?: string;
-    year?: string;
-    studentId?: string;
-  };
-}
-
-/**
- * Fetch calendar data
- */
-async function getCalendarData(searchParams: any) {
-  const now = new Date();
-  const params = new URLSearchParams({
-    month: searchParams.month || String(now.getMonth() + 1),
-    year: searchParams.year || String(now.getFullYear()),
-    ...(searchParams.studentId && { studentId: searchParams.studentId })
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/calendar?${params}`,
-      { next: { revalidate: 600 } } // 10 min cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch calendar data');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching calendar:', error);
-    return { events: [], stats: {} };
-  }
-}
 
 /**
  * Administration Calendar Page
  *
- * Server Component displaying interactive calendar view of medications.
+ * Client Component displaying interactive calendar view of medications.
  */
-export default async function AdministrationCalendarPage({ searchParams }: CalendarPageProps) {
-  const calendarData = await getCalendarData(searchParams);
+export default function AdministrationCalendarPage() {
+  const [calendarData, setCalendarData] = useState<any>({ events: [], stats: {} });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      try {
+        setLoading(true);
+        const now = new Date();
+        const params = {
+          month: now.getMonth() + 1,
+          year: now.getFullYear(),
+        };
+
+        const response = await apiClient.get<any>(
+          `${API_ENDPOINTS.MEDICATIONS.BASE}/calendar`,
+          params
+        );
+
+        console.log('[CalendarPage] API response:', response);
+
+        // Handle response structure
+        if (response.data) {
+          setCalendarData({ events: response.data || [], stats: response.meta || {} });
+        } else {
+          setCalendarData({ events: response.events || [], stats: response.stats || {} });
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching calendar:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load calendar');
+        setCalendarData({ events: [], stats: {} });
+        setLoading(false);
+      }
+    };
+
+    fetchCalendarData();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -73,14 +67,18 @@ export default async function AdministrationCalendarPage({ searchParams }: Calen
         backLabel="Back to Medications"
       />
 
-      <Suspense fallback={<CalendarLoadingSkeleton />}>
+      {loading ? (
+        <CalendarLoadingSkeleton />
+      ) : error ? (
+        <div className="rounded-lg bg-red-50 p-4 text-red-700">
+          {error}
+        </div>
+      ) : (
         <MedicationCalendar
-          events={calendarData.events}
+          medications={calendarData.events}
           stats={calendarData.stats}
-          initialMonth={searchParams.month}
-          initialYear={searchParams.year}
         />
-      </Suspense>
+      )}
     </div>
   );
 }

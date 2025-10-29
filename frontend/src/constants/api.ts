@@ -5,12 +5,12 @@
  * Centralized API endpoint definitions for the White Cross platform.
  * All backend routes are defined here to prevent hardcoded strings and improve maintainability.
  *
- * Backend Base: /api/v1
+ * Backend Base: Direct routes (no /api/v1 prefix)
  *
- * @see /backend/src/routes/v1/ for backend route definitions
+ * @see /backend/src/routes/ for backend route definitions
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
   // ==========================================

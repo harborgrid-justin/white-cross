@@ -43,7 +43,13 @@
       "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/students'' -Method Get; Write-Output $response\")",
       "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/students'' -Method Get\")",
       "Bash(powershell -Command \"Invoke-RestMethod -Uri ''http://localhost:3001/appointments'' -Method Get\")",
-      "Bash(powershell -Command \"$spec = Invoke-RestMethod -Uri ''http://localhost:3001/api-json'' -Method Get; $spec.paths.PSObject.Properties.Name | Sort-Object\")"
+      "Bash(powershell -Command \"$spec = Invoke-RestMethod -Uri ''http://localhost:3001/api-json'' -Method Get; $spec.paths.PSObject.Properties.Name | Sort-Object\")",
+      "Bash(powershell -Command:*)",
+      "Read(//f/temp/white-cross/frontend/**)",
+      "Bash(python:*)",
+      "Bash(for file in src/actions/admin.actions.ts src/actions/compliance.actions.ts src/actions/health-records.actions.ts src/actions/settings.actions.ts src/app/api/health/route.ts)",
+      "Bash(do sed -i \"s|http://localhost:3001/api/v1|http://localhost:3001|g\" \"$file\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

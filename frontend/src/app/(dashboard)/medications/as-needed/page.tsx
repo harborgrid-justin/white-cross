@@ -5,48 +5,87 @@
  * Manage PRN medications with symptom-based administration triggers.
  */
 
-import { Suspense } from 'react';
-import { Metadata } from 'next';
-import { Link } from 'next/link';
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import PRNMedicationsList from '@/components/medications/PRNMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { apiClient } from '@/lib/api-client';
 import { API_ENDPOINTS } from '@/constants/api';
-
-export const metadata: Metadata = {
-  title: 'PRN Medications | White Cross',
-  description: 'As-needed medications with symptom-based triggers'
-};
-
-// Force dynamic rendering due to auth requirements
-export const dynamic = "force-dynamic";
-
-/**
- * Fetch PRN medications
- */
-async function getPRNMedications() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}?type=as_needed`,
-      { next: { tags: ['medications-prn'], revalidate: 300 } }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch PRN medications');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching PRN medications:', error);
-    return { medications: [], total: 0, stats: {} };
-  }
-}
 
 /**
  * PRN Medications Page
  */
-export default async function PRNMedicationsPage() {
-  const { medications, total, stats } = await getPRNMedications();
+export default function PRNMedicationsPage() {
+  const [medications, setMedications] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPRNMedications = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get<any>(
+          `${API_ENDPOINTS.MEDICATIONS.BASE}`,
+          { type: 'as_needed' }
+        );
+
+        console.log('[PRN Medications] API response:', response);
+
+        // Handle response structure
+        if (response.data) {
+          setMedications(response.data || []);
+          setTotal(response.meta?.total || 0);
+          setStats(response.meta || {});
+        } else if (response.medications) {
+          setMedications(response.medications || []);
+          setTotal(response.total || 0);
+          setStats(response.stats || {});
+        } else {
+          setMedications([]);
+          setTotal(0);
+          setStats({});
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching PRN medications:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load PRN medications');
+        setMedications([]);
+        setTotal(0);
+        setStats({});
+        setLoading(false);
+      }
+    };
+
+    fetchPRNMedications();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">Loading PRN medications...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="PRN (As-Needed) Medications"
+          description="Medications administered based on symptoms or specific triggers"
+          backLink="/medications"
+          backLabel="Back to Medications"
+        />
+        <div className="rounded-lg bg-red-50 p-4 text-red-700">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -47,8 +47,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 /**
  * Get auth token from cookies
  */
-function getAuthToken(): string | undefined {
-  const cookieStore = cookies();
+async function getAuthToken(): Promise<string | undefined> {
+  const cookieStore = await cookies();
   const token = cookieStore.get('authToken')?.value || cookieStore.get('token')?.value;
   return token;
 }
@@ -60,7 +60,7 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getAuthToken();
+  const token = await getAuthToken();
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',

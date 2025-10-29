@@ -219,31 +219,64 @@ export class AuthApi {
     try {
       loginSchema.parse(credentials);
 
-      const response = await this.client.post<{success: boolean; data: {token: string; user: User}}>(
+      console.log('[AuthApi] Sending login request to:', API_ENDPOINTS.AUTH.LOGIN);
+
+      const response = await this.client.post<{
+        accessToken: string;
+        refreshToken: string;
+        user: User;
+        tokenType: string;
+        expiresIn: number;
+      }>(
         API_ENDPOINTS.AUTH.LOGIN,
         credentials
       );
 
-      // ApiClient wraps backend response: response.data contains the backend response
-      // Backend returns { success: true, data: { token: "...", user: {...} } }
-      if (!response.data.success || !response.data.data) {
-        throw new Error('Login failed');
+      console.log('[AuthApi] Login response received:', {
+        response: response,
+        hasData: !!response.data,
+        responseKeys: Object.keys(response || {})
+      });
+
+      // ApiClient returns response.data from axios, which is already the backend response
+      // Backend returns { accessToken, refreshToken, user, tokenType, expiresIn }
+      const responseData = response.data || response;
+      console.log('[AuthApi] Response data:', {
+        hasAccessToken: !!responseData.accessToken,
+        hasRefreshToken: !!responseData.refreshToken,
+        hasUser: !!responseData.user,
+        dataKeys: Object.keys(responseData || {})
+      });
+
+      const { accessToken, refreshToken, user, expiresIn } = responseData;
+
+      if (!accessToken) {
+        console.error('[AuthApi] Missing accessToken in response');
+        throw new Error('Login failed - missing access token');
       }
 
-      const { user, token } = response.data.data;
+      if (!refreshToken) {
+        console.error('[AuthApi] Missing refreshToken in response');
+        throw new Error('Login failed - missing refresh token');
+      }
+
+      console.log('[AuthApi] Storing tokens...');
 
       // Store tokens
-      tokenUtils.setToken(token);
-      // Note: Backend doesn't provide refreshToken yet, using token as placeholder
-      tokenUtils.setRefreshToken(token);
+      tokenUtils.setToken(accessToken);
+      tokenUtils.setRefreshToken(refreshToken);
+
+      console.log('[AuthApi] Login successful');
 
       return {
         user,
-        token,
-        refreshToken: token, // Placeholder until backend implements refresh tokens
-        expiresIn: 86400 // 24 hours in seconds
+        token: accessToken,
+        refreshToken: refreshToken,
+        expiresIn: expiresIn
       };
     } catch (error) {
+      console.error('[AuthApi] Login error:', error);
+
       if (error instanceof z.ZodError) {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
@@ -329,18 +362,29 @@ export class AuthApi {
     try {
       registerSchema.parse(userData);
 
-      const response = await this.client.post<AuthResponse>(
+      const response = await this.client.post<{
+        accessToken: string;
+        refreshToken: string;
+        user: User;
+        tokenType: string;
+        expiresIn: number;
+      }>(
         API_ENDPOINTS.AUTH.REGISTER,
         userData
       );
 
-      const { token, refreshToken } = response.data;
+      const { accessToken, refreshToken, user, expiresIn } = response.data;
 
       // Store tokens
-      tokenUtils.setToken(token);
+      tokenUtils.setToken(accessToken);
       tokenUtils.setRefreshToken(refreshToken);
 
-      return response.data;
+      return {
+        user,
+        token: accessToken,
+        refreshToken: refreshToken,
+        expiresIn: expiresIn
+      };
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
@@ -384,18 +428,28 @@ export class AuthApi {
         throw new Error('No refresh token available');
       }
 
-      const response = await this.client.post<RefreshTokenResponse>(
+      const response = await this.client.post<{
+        accessToken: string;
+        refreshToken: string;
+        user: User;
+        tokenType: string;
+        expiresIn: number;
+      }>(
         API_ENDPOINTS.AUTH.REFRESH,
         { refreshToken }
       );
 
-      const { token, refreshToken: newRefreshToken } = response.data;
+      const { accessToken, refreshToken: newRefreshToken, expiresIn } = response.data;
 
       // Update stored tokens
-      tokenUtils.setToken(token);
+      tokenUtils.setToken(accessToken);
       tokenUtils.setRefreshToken(newRefreshToken);
 
-      return response.data;
+      return {
+        token: accessToken,
+        refreshToken: newRefreshToken,
+        expiresIn: expiresIn
+      };
     } catch (error) {
       // Clear tokens on refresh failure
       tokenUtils.clearAll();

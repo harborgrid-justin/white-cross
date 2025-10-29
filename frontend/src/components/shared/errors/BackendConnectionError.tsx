@@ -19,7 +19,7 @@ interface BackendConnectionErrorProps {
  */
 const BackendConnectionError = React.memo<BackendConnectionErrorProps>(({
   onRetry,
-  apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api'
+  apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 }) => {
   const [isRetrying, setIsRetrying] = useState(false);
 

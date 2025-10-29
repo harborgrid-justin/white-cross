@@ -84,6 +84,15 @@ const PUBLIC_ROUTES = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/auth/forgot-password',
+  '/api/auth/refresh',
+  '/api/v1/auth/login',
+  '/api/v1/auth/register',
+  '/api/v1/auth/forgot-password',
+  '/api/v1/auth/refresh',
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/refresh',
 ];
 
 /**

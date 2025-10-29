@@ -47,7 +47,7 @@ import { verifyAccessToken } from '@/lib/auth';
 // Configuration
 // ============================================================================
 
-const BACKEND_URL = process.env.BACKEND_URL || process.env.API_BASE_URL || 'http://localhost:3001/api/v1';
+const BACKEND_URL = process.env.BACKEND_URL || process.env.API_BASE_URL || 'http://localhost:3001';
 const SECONDARY_LOG_ENABLED = process.env.ENABLE_SECONDARY_LOGGING === 'true';
 const AWS_S3_BUCKET = process.env.AWS_AUDIT_LOG_BUCKET;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';

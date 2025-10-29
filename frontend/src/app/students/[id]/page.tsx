@@ -19,9 +19,10 @@ import { ChevronLeft } from 'lucide-react';
 export async function generateMetadata({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const result = await getStudentById(params.id);
+  const { id } = await params;
+  const result = await getStudentById(id);
 
   if (!result.success || !result.data) {
     return {
@@ -46,10 +47,11 @@ export async function generateMetadata({
 export default async function StudentDetailsPage({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  // Fetch student data server-side
-  const result = await getStudentById(params.id);
+  // Await params and fetch student data server-side
+  const { id } = await params;
+  const result = await getStudentById(id);
 
   // Handle not found
   if (!result.success || !result.data) {

@@ -76,13 +76,25 @@ export default function StudentsPage() {
           params.grade = selectedGrade;
         }
 
-        const response = await apiClient.get<PaginatedStudentsResponse>(
+        const response = await apiClient.get<any>(
           API_ENDPOINTS.students,
           params
         );
 
-        setStudents(response.students);
-        setTotalStudents(response.pagination.total);
+        console.log('[StudentsPage] API response:', response);
+
+        // Backend returns { data: [], meta: { page, limit, total, pages } }
+        // Handle both old format (students/pagination) and new format (data/meta)
+        if (response.data) {
+          setStudents(response.data);
+          setTotalStudents(response.meta?.total || 0);
+        } else if (response.students) {
+          setStudents(response.students);
+          setTotalStudents(response.pagination?.total || 0);
+        } else {
+          setStudents([]);
+          setTotalStudents(0);
+        }
         setLoading(false);
       } catch (err) {
         console.error('Error loading students:', err);
@@ -114,12 +126,22 @@ export default function StudentsPage() {
       if (searchQuery) params.search = searchQuery;
       if (selectedGrade !== 'all') params.grade = selectedGrade;
 
-      const response = await apiClient.get<PaginatedStudentsResponse>(
+      const response = await apiClient.get<any>(
         API_ENDPOINTS.students,
         params
       );
-      setStudents(response.students);
-      setTotalStudents(response.pagination.total);
+
+      // Handle backend response format { data: [], meta: { total, ... } }
+      if (response.data) {
+        setStudents(response.data);
+        setTotalStudents(response.meta?.total || 0);
+      } else if (response.students) {
+        setStudents(response.students);
+        setTotalStudents(response.pagination?.total || 0);
+      } else {
+        setStudents([]);
+        setTotalStudents(0);
+      }
     } catch (err) {
       console.error('Failed to delete student:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete student');

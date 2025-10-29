@@ -58,30 +58,18 @@
  * @since 1.0.0
  */
 
-import { Suspense } from 'react';
-import { Metadata } from 'next';
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { apiClient } from '@/lib/api-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import MedicationList from '@/components/medications/core/MedicationList';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import type { MedicationStats, MedicationsResponse } from '@/types/medications';
 import type { Medication } from '@/components/medications/core/MedicationList';
-
-export const metadata: Metadata = {
-  title: 'Medications',
-  description: 'View and manage all medications'
-};
-
-/**
- * Dynamic Rendering Configuration
- *
- * Force dynamic rendering to allow authentication checks at request time.
- * This page requires access to headers/cookies for user authentication,
- * which is only available during request-time rendering, not at build time.
- */
 export const dynamic = 'force-dynamic';
 
 /**
@@ -345,16 +333,88 @@ async function getMedicationStats(): Promise<MedicationStats> {
  * @see {@link getMedications} for data fetching logic
  * @see {@link getMedicationStats} for statistics calculation
  */
-export default async function MedicationsPage({
-  searchParams
-}: MedicationsPageProps) {
-  // Await searchParams in Next.js 15
-  const resolvedSearchParams = await searchParams;
-  
-  const [medications, stats] = await Promise.all([
-    getMedications(resolvedSearchParams),
-    getMedicationStats()
-  ]);
+export default function MedicationsPage() {
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [stats, setStats] = useState<MedicationStats>({
+    totalMedications: 0,
+    activePrescriptions: 0,
+    administeredToday: 0,
+    adverseReactions: 0,
+    lowStockCount: 0,
+    expiringCount: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch medications
+        const medicationsResponse = await apiClient.get<any>(
+          API_ENDPOINTS.MEDICATIONS.BASE
+        );
+
+        console.log('[Medications] API response:', medicationsResponse);
+
+        // Handle response structure
+        if (medicationsResponse.data) {
+          setMedications(medicationsResponse.data || []);
+        } else if (Array.isArray(medicationsResponse)) {
+          setMedications(medicationsResponse);
+        } else {
+          setMedications([]);
+        }
+
+        // Fetch stats
+        try {
+          const statsResponse = await apiClient.get<any>(
+            `${API_ENDPOINTS.MEDICATIONS.BASE}/stats`
+          );
+
+          if (statsResponse.data) {
+            setStats(statsResponse.data);
+          } else {
+            setStats(statsResponse);
+          }
+        } catch (statsError) {
+          console.error('Error fetching stats:', statsError);
+          // Continue with default stats
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching medications:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load medications');
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">Loading medications...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Medications"
+          description="Manage and track all student medications"
+        />
+        <div className="rounded-lg bg-red-50 p-4 text-red-700">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

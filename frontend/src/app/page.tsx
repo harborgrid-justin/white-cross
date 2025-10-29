@@ -50,7 +50,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/stores/hooks';
 import Link from 'next/link';
 
@@ -108,6 +108,12 @@ import Link from 'next/link';
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -122,8 +128,8 @@ export default function Home() {
                 </h1>
               </div>
             </div>
-            <nav className="flex items-center space-x-4">
-              {isAuthenticated ? (
+            <nav className="flex items-center space-x-4" suppressHydrationWarning>
+              {mounted && (isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-700">
                     Welcome, {user?.firstName} {user?.lastName}
@@ -150,7 +156,7 @@ export default function Home() {
                     Get Started
                   </Link>
                 </div>
-              )}
+              ))}
             </nav>
           </div>
         </div>

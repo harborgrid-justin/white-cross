@@ -22,7 +22,7 @@ export interface MedicationCalendarProps {
 }
 
 export const MedicationCalendar: React.FC<MedicationCalendarProps> = ({
-  medications,
+  medications = [],
   onDateSelect,
   onMedicationClick,
 }) => {
@@ -37,7 +37,7 @@ export const MedicationCalendar: React.FC<MedicationCalendarProps> = ({
   };
 
   const getMedicationsForDate = (date: Date) => {
-    return medications.filter((med) => {
+    return (medications || []).filter((med) => {
       const medDate = new Date(med.scheduledTime);
       return (
         medDate.getDate() === date.getDate() &&

@@ -387,7 +387,12 @@ export class ApiClient {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean; _retryCount?: number };
 
         // Handle 401 - Token refresh
-        if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
+        // Skip token refresh for auth endpoints (login, register, refresh)
+        const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
+                               originalRequest.url?.includes('/auth/register') ||
+                               originalRequest.url?.includes('/auth/refresh');
+
+        if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry && !isAuthEndpoint) {
           originalRequest._retry = true;
 
           try {

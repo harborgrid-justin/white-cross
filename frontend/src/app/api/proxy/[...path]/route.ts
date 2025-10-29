@@ -51,7 +51,8 @@ async function proxyRequest(
   try {
     const backendPath = path.join('/');
     const searchParams = request.nextUrl.searchParams.toString();
-    const backendUrl = `${API_BASE_URL}/api/v1/${backendPath}${
+    // Backend doesn't use /api/v1 prefix
+    const backendUrl = `${API_BASE_URL}/${backendPath}${
       searchParams ? `?${searchParams}` : ''
     }`;
 

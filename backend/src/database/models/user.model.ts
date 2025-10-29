@@ -74,21 +74,21 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'firstName',
   })
-  firstName: string;
+  declare firstName: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     field: 'lastName',
   })
-  lastName: string;
+  declare lastName: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(UserRole) as string[])),
     allowNull: false,
     defaultValue: UserRole.NURSE,
   })
-  role: UserRole;
+  declare role: UserRole;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -96,35 +96,35 @@ export class User extends Model<UserAttributes> {
     defaultValue: true,
     field: 'isActive',
   })
-  isActive: boolean;
+  declare isActive: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
     field: 'lastLogin',
   })
-  lastLogin?: Date;
+  declare lastLogin?: Date;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
     field: 'schoolId',
   })
-  schoolId?: string;
+  declare schoolId?: string;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
     field: 'districtId',
   })
-  districtId?: string;
+  declare districtId?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
     field: 'phone',
   })
-  phone?: string;
+  declare phone?: string;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -132,42 +132,42 @@ export class User extends Model<UserAttributes> {
     defaultValue: false,
     field: 'emailVerified',
   })
-  emailVerified: boolean;
+  declare emailVerified: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
     field: 'emailVerificationToken',
   })
-  emailVerificationToken?: string;
+  declare emailVerificationToken?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
     field: 'emailVerificationExpires',
   })
-  emailVerificationExpires?: Date;
+  declare emailVerificationExpires?: Date;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
     field: 'passwordResetToken',
   })
-  passwordResetToken?: string;
+  declare passwordResetToken?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
     field: 'passwordResetExpires',
   })
-  passwordResetExpires?: Date;
+  declare passwordResetExpires?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
     field: 'passwordChangedAt',
   })
-  passwordChangedAt?: Date;
+  declare passwordChangedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -175,14 +175,14 @@ export class User extends Model<UserAttributes> {
     defaultValue: false,
     field: 'twoFactorEnabled',
   })
-  twoFactorEnabled: boolean;
+  declare twoFactorEnabled: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
     field: 'twoFactorSecret',
   })
-  twoFactorSecret?: string;
+  declare twoFactorSecret?: string;
 
   @Column({
     type: DataType.INTEGER,
@@ -190,21 +190,21 @@ export class User extends Model<UserAttributes> {
     defaultValue: 0,
     field: 'failedLoginAttempts',
   })
-  failedLoginAttempts: number;
+  declare failedLoginAttempts: number;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
     field: 'lockoutUntil',
   })
-  lockoutUntil?: Date;
+  declare lockoutUntil?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
     field: 'lastPasswordChange',
   })
-  lastPasswordChange?: Date;
+  declare lastPasswordChange?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -212,7 +212,7 @@ export class User extends Model<UserAttributes> {
     defaultValue: false,
     field: 'mustChangePassword',
   })
-  mustChangePassword: boolean;
+  declare mustChangePassword: boolean;
 
   @BeforeCreate
   static async hashPasswordBeforeCreate(user: User) {

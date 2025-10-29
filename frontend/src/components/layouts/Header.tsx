@@ -116,7 +116,13 @@ export const Header = memo(({
 
   // User dropdown state
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Handle user menu toggle
   const handleUserMenuToggle = useCallback(() => {
@@ -292,8 +298,8 @@ export const Header = memo(({
           </button>
 
           {/* User Menu Dropdown */}
-          {showUserMenu && user && (
-            <div className="relative" ref={userMenuRef}>
+          {showUserMenu && mounted && user && (
+            <div className="relative" ref={userMenuRef} suppressHydrationWarning>
               <button
                 type="button"
                 onClick={handleUserMenuToggle}

@@ -49,11 +49,11 @@ async function checkBackend(): Promise<HealthCheck> {
   try {
     // Use internal API URL for server-side requests (Docker network)
     // Fall back to public URL for development outside Docker
-    const internalUrl = process.env.INTERNAL_API_URL || 'http://backend:3001/api/v1';
-    const publicUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-    
-    // Remove /api/v1 suffix and use base URL for health endpoint
-    const baseUrl = internalUrl.replace('/api/v1', '') || publicUrl.replace('/api/v1', '') || 'http://localhost:3001';
+    const internalUrl = process.env.INTERNAL_API_URL || 'http://localhost:3001';
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    // Use base URL for health endpoint
+    const baseUrl = internalUrl || publicUrl;
     const response = await fetch(`${baseUrl}/health`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -225,11 +225,11 @@ export async function GET() {
 export async function HEAD() {
   try {
     // Use internal API URL for server-side requests (Docker network)
-    const internalUrl = process.env.INTERNAL_API_URL || 'http://backend:3001/api/v1';
-    const publicUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-    
-    // Remove /api/v1 suffix and use base URL for health endpoint
-    const baseUrl = internalUrl.replace('/api/v1', '') || publicUrl.replace('/api/v1', '') || 'http://localhost:3001';
+    const internalUrl = process.env.INTERNAL_API_URL || 'http://localhost:3001';
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    // Use base URL for health endpoint
+    const baseUrl = internalUrl || publicUrl;
     const response = await fetch(`${baseUrl}/health`, {
       method: 'HEAD',
       signal: AbortSignal.timeout(3000),
