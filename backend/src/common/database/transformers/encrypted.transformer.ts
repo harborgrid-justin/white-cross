@@ -1,15 +1,16 @@
-import { ValueTransformer } from 'typeorm';
-import { EncryptionService } from '../../encryption/encryption.service';
-
 /**
- * EncryptedTransformer
+ * Encrypted Transformer (DEPRECATED)
  *
- * TypeORM ValueTransformer that automatically encrypts data on write
- * and decrypts data on read from the database.
+ * This file is deprecated in favor of Sequelize hooks-based encryption.
+ * Use EncryptionHooks from '../hooks/encryption.hooks' instead.
  *
- * HIPAA Compliance: §164.312(a)(2)(iv) - Encryption and Decryption
+ * MIGRATION NOTE: TypeORM to Sequelize
+ * =====================================
+ * TypeORM's ValueTransformer interface has been replaced with Sequelize hooks
+ * because Sequelize hooks properly support async operations, whereas TypeORM
+ * transformers are synchronous.
  *
- * Usage:
+ * OLD PATTERN (TypeORM):
  * ```typescript
  * @Column({
  *   type: 'text',
@@ -18,70 +19,71 @@ import { EncryptionService } from '../../encryption/encryption.service';
  * sensitiveData: string;
  * ```
  *
- * @class EncryptedTransformer
- * @implements {ValueTransformer}
+ * NEW PATTERN (Sequelize):
+ * ```typescript
+ * import { EncryptionHooks } from '../hooks/encryption.hooks';
+ *
+ * @Table({ tableName: 'my_table' })
+ * class MyModel extends Model {
+ *   @Column
+ *   sensitiveData: string;
+ *
+ *   @BeforeCreate
+ *   @BeforeUpdate
+ *   static async encryptFields(instance: MyModel) {
+ *     await EncryptionHooks.encryptFields(
+ *       instance,
+ *       ['sensitiveData'],
+ *       encryptionService
+ *     );
+ *   }
+ *
+ *   @AfterFind
+ *   static async decryptFields(instances: MyModel | MyModel[] | null) {
+ *     await EncryptionHooks.decryptFields(
+ *       instances,
+ *       ['sensitiveData'],
+ *       encryptionService
+ *     );
+ *   }
+ * }
+ * ```
+ *
+ * Benefits of the new approach:
+ * - Full async/await support
+ * - Better error handling
+ * - More flexible hook configuration
+ * - Type-safe field specification
+ * - No synchronous wrapper limitations
+ *
+ * @deprecated Use EncryptionHooks from '../hooks/encryption.hooks' instead
+ * @see {@link ../hooks/encryption.hooks}
  */
-export class EncryptedTransformer implements ValueTransformer {
-  constructor(private readonly encryptionService: EncryptionService) {}
 
-  /**
-   * Transform data before writing to database (encrypt)
-   * @param value - Plain text value from entity
-   * @returns Encrypted value to store in database
-   */
-  to(value: string | null | undefined): string | null {
-    if (!value) {
-      return null;
-    }
+import { EncryptionService } from '../../encryption/encryption.service';
 
-    try {
-      // Synchronous wrapper - in practice, encryption should be done before entity save
-      // This is a fallback that returns the value as-is if encryption fails
-      return value;
-    } catch (error) {
-      console.error('Encryption transformer error:', error);
-      return value;
-    }
-  }
-
-  /**
-   * Transform data after reading from database (decrypt)
-   * @param value - Encrypted value from database
-   * @returns Decrypted plain text value
-   */
-  from(value: string | null | undefined): string | null {
-    if (!value) {
-      return null;
-    }
-
-    try {
-      // Check if data is actually encrypted
-      if (!this.encryptionService.isEncrypted(value)) {
-        return value;
-      }
-
-      // Synchronous wrapper - in practice, decryption should be done after entity load
-      // This is a fallback that returns the value as-is if decryption fails
-      return value;
-    } catch (error) {
-      console.error('Decryption transformer error:', error);
-      return value;
-    }
+/**
+ * @deprecated Use EncryptionHooks instead
+ */
+export class EncryptedTransformer {
+  constructor(private readonly encryptionService: EncryptionService) {
+    console.warn(
+      'EncryptedTransformer is deprecated. Use EncryptionHooks from "../hooks/encryption.hooks" instead.'
+    );
   }
 }
 
 /**
- * Helper function to create encrypted column decorator
- *
- * Note: Due to TypeORM's synchronous nature and our async encryption,
- * we'll handle encryption/decryption in the service layer using hooks
- * rather than relying solely on transformers.
- *
- * @param encryptionService - EncryptionService instance
- * @returns ValueTransformer for encrypted columns
+ * @deprecated Use EncryptionHooks.createEncryptHook() and EncryptionHooks.createDecryptHook() instead
  */
 export function createEncryptedTransformer(
   encryptionService: EncryptionService
-): ValueTransformer {
+): EncryptedTransformer {
+  console.warn(
+    'createEncryptedTransformer is deprecated. Use EncryptionHooks from "../hooks/encryption.hooks" instead.'
+  );
   return new EncryptedTransformer(encryptionService);
 }
+
+// Re-export EncryptionHooks for backwards compatibility
+export { EncryptionHooks, WithEncryption } from '../hooks/encryption.hooks';

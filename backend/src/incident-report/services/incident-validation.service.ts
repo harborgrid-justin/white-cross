@@ -1,6 +1,4 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
 import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
 import { CreateFollowUpActionDto } from '../dto/create-follow-up-action.dto';

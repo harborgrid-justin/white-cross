@@ -6,9 +6,8 @@
  * with metrics collection, alerting, and performance tracking
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
+import { Sequelize, QueryTypes } from 'sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as os from 'os';
 import * as v8 from 'v8';
@@ -115,8 +114,8 @@ export class MonitoringService implements OnModuleInit {
   private circuitBreakerService?: any;
 
   constructor(
-    @InjectConnection()
-    private readonly connection: Connection,
+    @Inject('SEQUELIZE')
+    private readonly sequelize: Sequelize,
     private readonly configService: ConfigService,
   ) {}
 
@@ -169,8 +168,10 @@ export class MonitoringService implements OnModuleInit {
    */
   async checkDatabaseHealth(): Promise<ComponentHealth> {
     try {
-      // Check if connection is initialized
-      if (!this.connection.isInitialized) {
+      // Check if connection is authenticated
+      try {
+        await this.sequelize.authenticate();
+      } catch (authError) {
         return {
           status: HealthStatus.UNHEALTHY,
           message: 'Database connection is not initialized',
@@ -179,13 +180,15 @@ export class MonitoringService implements OnModuleInit {
 
       // Execute simple query to verify database connectivity
       const startTime = Date.now();
-      await this.connection.query('SELECT 1 as health_check');
+      await this.sequelize.query('SELECT 1 as health_check', {
+        type: QueryTypes.SELECT
+      });
       const responseTime = Date.now() - startTime;
 
       // Get connection pool statistics
-      const driver = this.connection.driver as any;
-      const poolSize = driver.master?.pool?.totalCount || 0;
-      const idleConnections = driver.master?.pool?.idleCount || 0;
+      const pool = (this.sequelize.connectionManager as any).pool;
+      const poolSize = pool?.size || 0;
+      const idleConnections = pool?.available || 0;
       const activeConnections = poolSize - idleConnections;
 
       // Check if connection pool is near capacity
@@ -200,7 +203,7 @@ export class MonitoringService implements OnModuleInit {
         details: {
           connected: true,
           responseTime: `${responseTime}ms`,
-          database: this.connection.options.database,
+          database: this.sequelize.config.database,
           poolSize,
           activeConnections,
           idleConnections,
@@ -668,9 +671,9 @@ export class MonitoringService implements OnModuleInit {
     const requestsPerSecond = recentRequests.length / 60;
 
     // Database metrics
-    const driver = this.connection.driver as any;
-    const poolSize = driver.master?.pool?.totalCount || 0;
-    const idleConnections = driver.master?.pool?.idleCount || 0;
+    const pool = (this.sequelize.connectionManager as any).pool;
+    const poolSize = pool?.size || 0;
+    const idleConnections = pool?.available || 0;
     const activeConnections = poolSize - idleConnections;
 
     // Calculate average query time
