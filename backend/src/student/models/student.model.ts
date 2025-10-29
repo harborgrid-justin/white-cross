@@ -104,7 +104,7 @@ export class Student extends Model {
    * Student gender
    */
   @Column({
-    type: DataType.ENUM(...Object.values(Gender)),
+    type: DataType.ENUM(...(Object.values(Gender) as string[])),
     allowNull: false,
   })
   gender: Gender;

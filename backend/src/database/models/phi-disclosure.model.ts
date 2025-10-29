@@ -114,20 +114,20 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
   studentId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(DisclosureType)),
+    type: DataType.ENUM(...(Object.values(DisclosureType) as string[])),
     allowNull: false,
     field: 'disclosure_type',
   })
   disclosureType: DisclosureType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(DisclosurePurpose)),
+    type: DataType.ENUM(...(Object.values(DisclosurePurpose) as string[])),
     allowNull: false,
   })
   purpose: DisclosurePurpose;
 
   @Column({
-    type: DataType.ENUM(...Object.values(DisclosureMethod)),
+    type: DataType.ENUM(...(Object.values(DisclosureMethod) as string[])),
     allowNull: false,
   })
   method: DisclosureMethod;
@@ -154,7 +154,7 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
   minimumNecessary: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(RecipientType)),
+    type: DataType.ENUM(...(Object.values(RecipientType) as string[])),
     allowNull: false,
     field: 'recipient_type',
   })

@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, DeletedAt, Index } from 'sequelize-typescript';
-import { ContactType } from '../contact/enums/contact-type.enum';
+import { ContactType } from '../../contact/enums/contact-type.enum';
 
 /**
  * Contact Model
@@ -26,7 +26,7 @@ export class Contact extends Model<Contact> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.STRING(100),
@@ -53,7 +53,7 @@ export class Contact extends Model<Contact> {
   phone: string | null;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ContactType)),
+    type: DataType.ENUM(...(Object.values(ContactType) as string[])),
     allowNull: false,
   })
   type: ContactType;
@@ -148,14 +148,14 @@ export class Contact extends Model<Contact> {
     type: DataType.DATE,
     field: 'createdAt',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
     field: 'updatedAt',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @DeletedAt
   @Column({
@@ -163,7 +163,7 @@ export class Contact extends Model<Contact> {
     field: 'deletedAt',
     comment: 'Soft delete timestamp',
   })
-  deletedAt: Date | null;
+  declare deletedAt: Date | null;
 
   /**
    * Get full name

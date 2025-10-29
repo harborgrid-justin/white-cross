@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';
-import { ContactPriority } from '../../database/contact/enums/contact-priority.enum';
+import { ContactPriority } from '../../contact/enums';
 
 @Injectable()
 export class IncidentNotificationService {

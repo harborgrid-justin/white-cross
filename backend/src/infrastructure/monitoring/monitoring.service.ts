@@ -7,8 +7,8 @@
  */
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { InjectConnection } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { ConfigService } from '@nestjs/config';
 import * as os from 'os';
 import * as v8 from 'v8';
@@ -116,7 +116,7 @@ export class MonitoringService implements OnModuleInit {
 
   constructor(
     @InjectConnection()
-    private readonly connection: Connection,
+    private readonly sequelize: Sequelize,
     private readonly configService: ConfigService,
   ) {}
 
@@ -170,7 +170,9 @@ export class MonitoringService implements OnModuleInit {
   async checkDatabaseHealth(): Promise<ComponentHealth> {
     try {
       // Check if connection is initialized
-      if (!this.connection.isInitialized) {
+      try {
+        await this.sequelize.authenticate();
+      } catch (authError) {
         return {
           status: HealthStatus.UNHEALTHY,
           message: 'Database connection is not initialized',
@@ -179,14 +181,14 @@ export class MonitoringService implements OnModuleInit {
 
       // Execute simple query to verify database connectivity
       const startTime = Date.now();
-      await this.connection.query('SELECT 1 as health_check');
+      await this.sequelize.query('SELECT 1 as health_check');
       const responseTime = Date.now() - startTime;
 
-      // Get connection pool statistics
-      const driver = this.connection.driver as any;
-      const poolSize = driver.master?.pool?.totalCount || 0;
-      const idleConnections = driver.master?.pool?.idleCount || 0;
-      const activeConnections = poolSize - idleConnections;
+      // Get connection pool statistics from Sequelize
+      const pool = (this.sequelize.connectionManager as any).pool;
+      const poolSize = pool?.size || pool?.max || 10; // Default to 10 if unavailable
+      const idleConnections = pool?.available || pool?.idle || 0;
+      const activeConnections = pool?.using || (poolSize - idleConnections);
 
       // Check if connection pool is near capacity
       const poolUsage = poolSize > 0 ? (activeConnections / poolSize) * 100 : 0;
@@ -200,7 +202,7 @@ export class MonitoringService implements OnModuleInit {
         details: {
           connected: true,
           responseTime: `${responseTime}ms`,
-          database: this.connection.options.database,
+          database: this.sequelize.config.database,
           poolSize,
           activeConnections,
           idleConnections,
@@ -667,11 +669,11 @@ export class MonitoringService implements OnModuleInit {
     );
     const requestsPerSecond = recentRequests.length / 60;
 
-    // Database metrics
-    const driver = this.connection.driver as any;
-    const poolSize = driver.master?.pool?.totalCount || 0;
-    const idleConnections = driver.master?.pool?.idleCount || 0;
-    const activeConnections = poolSize - idleConnections;
+    // Database metrics using Sequelize
+    const pool = (this.sequelize.connectionManager as any).pool;
+    const poolSize = pool?.size || pool?.max || 10;
+    const idleConnections = pool?.available || pool?.idle || 0;
+    const activeConnections = pool?.using || (poolSize - idleConnections);
 
     // Calculate average query time
     const queryTimes = this.queryMetrics.queryTimes;
@@ -728,7 +730,6 @@ export class MonitoringService implements OnModuleInit {
         idleConnections,
         averageQueryTime: Math.round(avgQueryTime * 100) / 100,
         slowQueries: this.queryMetrics.slowQueries,
-        totalQueries: this.queryMetrics.totalQueries,
       },
       cache: {
         hitRate: cacheStats.hitRate,
@@ -741,15 +742,12 @@ export class MonitoringService implements OnModuleInit {
         connectedClients: wsConnectedClients,
         messagesPerSecond: Math.round((this.wsMetrics.lastMinuteMessages.length / 60) * 100) / 100,
         totalMessages: this.wsMetrics.messagesSent + this.wsMetrics.messagesReceived,
-        messagesSent: this.wsMetrics.messagesSent,
-        messagesReceived: this.wsMetrics.messagesReceived,
       },
       queue: {
         ...queueMetrics,
         averageProcessingTime: this.jobMetrics.processingTimes.length > 0
           ? Math.round((this.jobMetrics.processingTimes.reduce((a, b) => a + b, 0) / this.jobMetrics.processingTimes.length) * 100) / 100
           : 0,
-        totalJobsProcessed: this.jobMetrics.totalJobs,
       },
     };
   }

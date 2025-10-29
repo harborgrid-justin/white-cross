@@ -1,10 +1,17 @@
-import { ValueTransformer } from 'typeorm';
 import { EncryptionService } from '../../encryption/encryption.service';
+
+/**
+ * ValueTransformer interface for Sequelize column transformers
+ */
+export interface ValueTransformer {
+  to(value: any): any;
+  from(value: any): any;
+}
 
 /**
  * EncryptedTransformer
  *
- * TypeORM ValueTransformer that automatically encrypts data on write
+ * Sequelize ValueTransformer that automatically encrypts data on write
  * and decrypts data on read from the database.
  *
  * HIPAA Compliance: §164.312(a)(2)(iv) - Encryption and Decryption
@@ -12,8 +19,14 @@ import { EncryptionService } from '../../encryption/encryption.service';
  * Usage:
  * ```typescript
  * @Column({
- *   type: 'text',
- *   transformer: new EncryptedTransformer(encryptionService)
+ *   type: DataType.TEXT,
+ *   get(this: any) {
+ *     const rawValue = this.getDataValue('fieldName');
+ *     return transformer.from(rawValue);
+ *   },
+ *   set(this: any, value: string) {
+ *     this.setDataValue('fieldName', transformer.to(value));
+ *   }
  * })
  * sensitiveData: string;
  * ```

@@ -64,7 +64,7 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(DataRetentionCategory)),
+    type: DataType.ENUM(...(Object.values(DataRetentionCategory) as string[])),
     allowNull: false,
   })
   category: DataRetentionCategory;
@@ -90,7 +90,7 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
   legalBasis: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(RetentionStatus)),
+    type: DataType.ENUM(...(Object.values(RetentionStatus) as string[])),
     allowNull: false,
     defaultValue: RetentionStatus.ACTIVE,
   })

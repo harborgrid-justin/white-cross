@@ -76,13 +76,13 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(EmergencyType)),
+    type: DataType.ENUM(...(Object.values(EmergencyType) as string[])),
     allowNull: false,
   })
   type: EmergencyType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(EmergencyPriority)),
+    type: DataType.ENUM(...(Object.values(EmergencyPriority) as string[])),
     allowNull: false,
   })
   priority: EmergencyPriority;
@@ -147,7 +147,7 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   sentAt: Date;
 
   @Column({
-    type: DataType.ENUM(...Object.values(BroadcastStatus)),
+    type: DataType.ENUM(...(Object.values(BroadcastStatus) as string[])),
     allowNull: false,
     defaultValue: BroadcastStatus.DRAFT,
   })

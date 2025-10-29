@@ -90,13 +90,13 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
 
   @Default(AllergyType.OTHER)
   @Column({
-    type: DataType.ENUM(...Object.values(AllergyType)),
+    type: DataType.ENUM(...(Object.values(AllergyType) as string[])),
     allowNull: false,
   })
   allergyType: AllergyType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(AllergySeverity)),
+    type: DataType.ENUM(...(Object.values(AllergySeverity) as string[])),
     allowNull: false,
   })
   severity: AllergySeverity;

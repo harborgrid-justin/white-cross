@@ -68,14 +68,14 @@ export class Message extends Model<MessageAttributes> {
   content: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(MessagePriority)),
+    type: DataType.ENUM(...(Object.values(MessagePriority) as string[])),
     allowNull: false,
   })
   priority: MessagePriority;
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(MessageCategory)),
+    type: DataType.ENUM(...(Object.values(MessageCategory) as string[])),
     allowNull: false,
   })
   category: MessageCategory;

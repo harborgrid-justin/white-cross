@@ -59,7 +59,7 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   name: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
     field: 'report_type',
   })
@@ -77,7 +77,7 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   template?: ReportTemplate;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ScheduleFrequency)),
+    type: DataType.ENUM(...(Object.values(ScheduleFrequency) as string[])),
     allowNull: false,
   })
   frequency: ScheduleFrequency;
@@ -90,7 +90,7 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   cronExpression?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(OutputFormat)),
+    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
     defaultValue: OutputFormat.PDF,
     field: 'output_format',

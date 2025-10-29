@@ -66,7 +66,7 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(RecipientType)),
+    type: DataType.ENUM(...(Object.values(RecipientType) as string[])),
     allowNull: false,
   })
   recipientType: RecipientType;
@@ -80,14 +80,14 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(MessageType)),
+    type: DataType.ENUM(...(Object.values(MessageType) as string[])),
     allowNull: false,
   })
   channel: MessageType;
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(DeliveryStatus)),
+    type: DataType.ENUM(...(Object.values(DeliveryStatus) as string[])),
     allowNull: false,
   })
   status: DeliveryStatus;

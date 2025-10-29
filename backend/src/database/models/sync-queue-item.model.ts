@@ -106,14 +106,14 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   userId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncActionType)),
+    type: DataType.ENUM(...(Object.values(SyncActionType) as string[])),
     allowNull: false,
     field: 'action_type',
   })
   actionType: SyncActionType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncEntityType)),
+    type: DataType.ENUM(...(Object.values(SyncEntityType) as string[])),
     allowNull: false,
     field: 'entity_type',
   })
@@ -188,13 +188,13 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @AllowNull
   @Column({
-    type: DataType.ENUM(...Object.values(ConflictResolution)),
+    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[])),
     field: 'conflict_resolution',
   })
   conflictResolution?: ConflictResolution;
 
   @Column({
-    type: DataType.ENUM(...Object.values(SyncPriority)),
+    type: DataType.ENUM(...(Object.values(SyncPriority) as string[])),
     allowNull: false,
     defaultValue: SyncPriority.NORMAL,
   })

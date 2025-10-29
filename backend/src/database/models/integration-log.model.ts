@@ -39,7 +39,7 @@ export class IntegrationLog extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @ForeignKey(() => IntegrationConfig)
   @Column({

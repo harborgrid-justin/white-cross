@@ -1,9 +1,58 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import { Student } from './student.model';
-import { ContactPriority } from '../contact/enums/contact-priority.enum';
-import { VerificationStatus } from '../contact/enums/verification-status.enum';
-import { PreferredContactMethod } from '../contact/enums/preferred-contact-method.enum';
-import { NotificationChannel } from '../contact/enums/notification-channel.enum';
+import { ContactPriority } from '../../contact/enums/contact-priority.enum';
+import { VerificationStatus } from '../../contact/enums/verification-status.enum';
+import { PreferredContactMethod } from '../../contact/enums/preferred-contact-method.enum';
+import { NotificationChannel } from '../../contact/enums/notification-channel.enum';
+
+/**
+ * Emergency Contact Attributes
+ * Complete set of attributes for an emergency contact record
+ */
+export interface EmergencyContactAttributes {
+  id: string;
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  relationship: string;
+  phoneNumber: string;
+  email: string | null;
+  address: string | null;
+  priority: ContactPriority;
+  isActive: boolean;
+  preferredContactMethod: PreferredContactMethod | null;
+  verificationStatus: VerificationStatus | null;
+  lastVerifiedAt: Date | null;
+  notificationChannels: string | null;
+  canPickupStudent: boolean | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Emergency Contact Creation Attributes
+ * Attributes required/allowed when creating a new emergency contact
+ * Excludes auto-generated fields (id, createdAt, updatedAt)
+ */
+export interface EmergencyContactCreationAttributes
+  extends Optional<
+    EmergencyContactAttributes,
+    | 'id'
+    | 'email'
+    | 'address'
+    | 'priority'
+    | 'isActive'
+    | 'preferredContactMethod'
+    | 'verificationStatus'
+    | 'lastVerifiedAt'
+    | 'notificationChannels'
+    | 'canPickupStudent'
+    | 'notes'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 /**
  * Emergency Contact Model
@@ -20,16 +69,18 @@ import { NotificationChannel } from '../contact/enums/notification-channel.enum'
   timestamps: true,
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  indexes: [
+    { name: 'idx_emergency_contacts_student_id', fields: ['studentId'] },
+    { name: 'idx_emergency_contacts_is_active', fields: ['isActive'] },
+    { name: 'idx_emergency_contacts_priority', fields: ['priority'] },
+    { name: 'idx_emergency_contacts_verification_status', fields: ['verificationStatus'] },
+  ],
 })
-@Index(['studentId'])
-@Index(['isActive'])
-@Index(['priority'])
-@Index(['verificationStatus'])
-export class EmergencyContact extends Model<EmergencyContact> {
+export class EmergencyContact extends Model<EmergencyContactAttributes, EmergencyContactCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @ForeignKey(() => Student)
   @Column({
@@ -37,7 +88,6 @@ export class EmergencyContact extends Model<EmergencyContact> {
     allowNull: false,
     comment: 'Foreign key to students table - emergency contact owner',
   })
-  @Index()
   studentId: string;
 
   @Column({
@@ -77,7 +127,7 @@ export class EmergencyContact extends Model<EmergencyContact> {
   address: string | null;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ContactPriority)),
+    type: DataType.ENUM(...(Object.values(ContactPriority) as string[])),
     allowNull: false,
     defaultValue: ContactPriority.PRIMARY,
   })
@@ -91,14 +141,14 @@ export class EmergencyContact extends Model<EmergencyContact> {
   isActive: boolean;
 
   @Column({
-    type: DataType.ENUM(...Object.values(PreferredContactMethod)),
+    type: DataType.ENUM(...(Object.values(PreferredContactMethod) as string[])),
     allowNull: true,
     defaultValue: PreferredContactMethod.ANY,
   })
   preferredContactMethod: PreferredContactMethod | null;
 
   @Column({
-    type: DataType.ENUM(...Object.values(VerificationStatus)),
+    type: DataType.ENUM(...(Object.values(VerificationStatus) as string[])),
     allowNull: true,
     defaultValue: VerificationStatus.UNVERIFIED,
   })
@@ -135,14 +185,14 @@ export class EmergencyContact extends Model<EmergencyContact> {
     type: DataType.DATE,
     field: 'createdAt',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
     field: 'updatedAt',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   // Relationships
   @BelongsTo(() => Student, 'studentId')

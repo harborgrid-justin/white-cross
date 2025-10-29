@@ -55,7 +55,7 @@ export class IntegrationConfig extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.STRING(100),
@@ -65,7 +65,7 @@ export class IntegrationConfig extends Model {
   name: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(IntegrationType)),
+    type: DataType.ENUM(...(Object.values(IntegrationType) as string[])),
     allowNull: false,
     comment: 'Type of external system being integrated',
   })
@@ -73,7 +73,7 @@ export class IntegrationConfig extends Model {
   type: IntegrationType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(IntegrationStatus)),
+    type: DataType.ENUM(...(Object.values(IntegrationStatus) as string[])),
     allowNull: false,
     defaultValue: IntegrationStatus.INACTIVE,
     comment: 'Current status of the integration',

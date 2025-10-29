@@ -118,7 +118,7 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   type: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(FollowUpStatus)),
+    type: DataType.ENUM(...(Object.values(FollowUpStatus) as string[])),
     allowNull: false,
     defaultValue: FollowUpStatus.SCHEDULED,
   })

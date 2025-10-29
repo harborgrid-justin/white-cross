@@ -110,7 +110,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
 
   @Default(ActionPriority.MEDIUM)
   @Column({
-    type: DataType.ENUM(...Object.values(ActionPriority)),
+    type: DataType.ENUM(...(Object.values(ActionPriority) as string[])),
     allowNull: false,
     defaultValue: ActionPriority.MEDIUM,
     comment: 'Priority level of the action',
@@ -120,7 +120,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
 
   @Default(ActionStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...Object.values(ActionStatus)),
+    type: DataType.ENUM(...(Object.values(ActionStatus) as string[])),
     allowNull: false,
     defaultValue: ActionStatus.PENDING,
     comment: 'Current status of the action',

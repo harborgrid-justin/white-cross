@@ -92,6 +92,8 @@ export class StudentResolver {
       photo: student.photo || undefined,
       medicalRecordNum: student.medicalRecordNum || undefined,
       nurseId: student.nurseId || undefined,
+      createdAt: student.createdAt!,
+      updatedAt: student.updatedAt!,
       fullName: `${student.firstName} ${student.lastName}`
     };
   }

@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigCategory, ConfigValueType, ConfigScope } from '../../database/models/system-config.model';
@@ -36,13 +36,21 @@ interface ConfigurationValidationResult {
 @Injectable()
 export class ConfigurationService {
   private readonly logger = new Logger(ConfigurationService.name);
+  private readonly sequelize: Sequelize;
 
   constructor(
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
     @InjectModel(ConfigurationHistory)
     private readonly historyModel: typeof ConfigurationHistory,
-  ) {}
+  ) {
+    // Get Sequelize instance from the model
+    const sequelizeInstance = this.configModel.sequelize;
+    if (!sequelizeInstance) {
+      throw new Error('Sequelize instance not available from SystemConfig model');
+    }
+    this.sequelize = sequelizeInstance;
+  }
 
   /**
    * Get a single configuration by key with optional scope filtering
@@ -266,9 +274,7 @@ export class ConfigurationService {
     updateData: UpdateConfigurationDto,
     scopeId?: string
   ): Promise<SystemConfig> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
       // Get the current configuration
@@ -284,34 +290,35 @@ export class ConfigurationService {
       const oldValue = config.value;
 
       // Update the configuration within transaction
-      await queryRunner.manager.update(
-        SystemConfiguration,
-        { id: config.id },
+      await config.update(
         {
           value: updateData.value,
           updatedAt: new Date()
-        }
+        },
+        { transaction }
       );
 
       // Create history record within same transaction
-      const history = queryRunner.manager.create(ConfigurationHistory, {
-        configurationId: config.id,
-        configKey: key,
-        oldValue,
-        newValue: updateData.value,
-        changedBy: updateData.changedBy,
-        changedByName: updateData.changedByName,
-        changeReason: updateData.changeReason,
-        ipAddress: updateData.ipAddress,
-        userAgent: updateData.userAgent
-      });
-      await queryRunner.manager.save(history);
+      await this.historyModel.create(
+        {
+          configurationId: config.id,
+          configKey: key,
+          oldValue,
+          newValue: updateData.value,
+          changedBy: updateData.changedBy,
+          changedByName: updateData.changedByName,
+          changeReason: updateData.changeReason,
+          ipAddress: updateData.ipAddress,
+          userAgent: updateData.userAgent
+        } as any,
+        { transaction }
+      );
 
       // Commit transaction
-      await queryRunner.commitTransaction();
+      await transaction.commit();
 
       // Fetch updated config
-      const updatedConfig = await this.configRepository.findOne({ where: { id: config.id } });
+      const updatedConfig = await this.configModel.findOne({ where: { id: config.id } });
 
       if (!updatedConfig) {
         throw new NotFoundException(`Configuration ${key} not found after update`);
@@ -321,11 +328,9 @@ export class ConfigurationService {
       return updatedConfig;
     } catch (error) {
       // Rollback transaction on error
-      await queryRunner.rollbackTransaction();
+      await transaction.rollback();
       this.logger.error(`Error updating configuration ${key}:`, error);
       throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -400,7 +405,7 @@ export class ConfigurationService {
       } as any);
 
       this.logger.log(`Configuration created: ${data.key} in category ${data.category}`);
-      return savedConfig;
+      return config;
     } catch (error) {
       this.logger.error('Error creating configuration:', error);
       throw error;
@@ -489,11 +494,14 @@ export class ConfigurationService {
    */
   async getConfigChangesByUser(userId: string, limit: number = 50): Promise<ConfigurationHistory[]> {
     try {
-      const history = await this.historyRepository.find({
+      const history = await this.historyModel.findAll({
         where: { changedBy: userId },
-        relations: ['configuration'],
-        order: { createdAt: 'DESC' },
-        take: limit
+        include: [{
+          model: this.configModel,
+          as: 'configuration',
+        }],
+        order: [['createdAt', 'DESC']],
+        limit
       });
 
       return history;
@@ -511,10 +519,13 @@ export class ConfigurationService {
    */
   async getRecentChanges(limit: number = 100): Promise<ConfigurationHistory[]> {
     try {
-      const history = await this.historyRepository.find({
-        relations: ['configuration'],
-        order: { createdAt: 'DESC' },
-        take: limit
+      const history = await this.historyModel.findAll({
+        include: [{
+          model: this.configModel,
+          as: 'configuration',
+        }],
+        order: [['createdAt', 'DESC']],
+        limit
       });
 
       return history;
@@ -532,12 +543,12 @@ export class ConfigurationService {
    */
   async getConfigsRequiringRestart(): Promise<SystemConfig[]> {
     try {
-      const configs = await this.configRepository.find({
+      const configs = await this.configModel.findAll({
         where: { requiresRestart: true },
-        order: {
-          category: 'ASC',
-          key: 'ASC'
-        }
+        order: [
+          ['category', 'ASC'],
+          ['key', 'ASC']
+        ]
       });
 
       return configs;
@@ -590,7 +601,7 @@ export class ConfigurationService {
             continue;
           }
 
-          const existing = await this.configRepository.findOne({
+          const existing = await this.configModel.findOne({
             where: { key: config.key }
           });
 
@@ -644,21 +655,17 @@ export class ConfigurationService {
         publicCount,
         editableCount
       ] = await Promise.all([
-        this.configRepository.count(),
-        this.configRepository
-          .createQueryBuilder('config')
-          .select('config.category', 'category')
-          .addSelect('COUNT(*)', 'count')
-          .groupBy('config.category')
-          .getRawMany(),
-        this.configRepository
-          .createQueryBuilder('config')
-          .select('config.scope', 'scope')
-          .addSelect('COUNT(*)', 'count')
-          .groupBy('config.scope')
-          .getRawMany(),
-        this.configRepository.count({ where: { isPublic: true } }),
-        this.configRepository.count({ where: { isEditable: true } })
+        this.configModel.count(),
+        this.sequelize.query(
+          'SELECT category, COUNT(*) as count FROM system_configurations GROUP BY category',
+          { type: 'SELECT' }
+        ),
+        this.sequelize.query(
+          'SELECT scope, COUNT(*) as count FROM system_configurations GROUP BY scope',
+          { type: 'SELECT' }
+        ),
+        this.configModel.count({ where: { isPublic: true } }),
+        this.configModel.count({ where: { isEditable: true } })
       ]);
 
       const statistics = {
@@ -667,11 +674,11 @@ export class ConfigurationService {
         privateCount: totalCount - publicCount,
         editableCount,
         lockedCount: totalCount - editableCount,
-        categoryBreakdown: categoryBreakdown.reduce((acc: Record<string, number>, curr: any) => {
+        categoryBreakdown: (categoryBreakdown as any[]).reduce((acc: Record<string, number>, curr: any) => {
           acc[curr.category] = parseInt(curr.count, 10);
           return acc;
         }, {} as Record<string, number>),
-        scopeBreakdown: scopeBreakdown.reduce((acc: Record<string, number>, curr: any) => {
+        scopeBreakdown: (scopeBreakdown as any[]).reduce((acc: Record<string, number>, curr: any) => {
           acc[curr.scope] = parseInt(curr.count, 10);
           return acc;
         }, {} as Record<string, number>)

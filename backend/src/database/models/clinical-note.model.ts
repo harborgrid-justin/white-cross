@@ -78,7 +78,7 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   visit?: ClinicVisit;
 
   @Column({
-    type: DataType.ENUM(...Object.values(NoteType)),
+    type: DataType.ENUM(...(Object.values(NoteType) as string[])),
     allowNull: false,
     defaultValue: NoteType.GENERAL,
   })

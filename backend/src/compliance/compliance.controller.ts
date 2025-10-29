@@ -28,6 +28,10 @@ import {
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 
+// Execution Context
+import { createExecutionContext, createSystemExecutionContext } from '../database/types/execution-context.interface';
+import { UserRole } from '../database/models/user.model';
+
 // Services
 import { AuditService } from './services/audit.service';
 import { ConsentService } from './services/consent.service';
@@ -132,9 +136,21 @@ export class ComplianceController {
   @ApiBody({ type: CreateComplianceReportDto })
   @ApiResponse({ status: 201, description: 'Report created successfully' })
   async createReport(@Body() dto: CreateComplianceReportDto, @Req() req: Request) {
-    // In real implementation, get userId from JWT token
+    // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
-    return this.reportService.createReport(dto, userId);
+    const userRole = (req as any).user?.role || UserRole.ADMIN;
+
+    // Create execution context with request metadata for HIPAA compliance
+    const context = createExecutionContext(
+      userId,
+      userRole,
+      {
+        ip: req.ip,
+        headers: { 'user-agent': req.headers['user-agent'] }
+      }
+    );
+
+    return this.reportService.createReport(dto, userId, context);
   }
 
   @Put('reports/:id')
@@ -142,16 +158,44 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateComplianceReportDto })
   @ApiResponse({ status: 200, description: 'Report updated successfully' })
-  async updateReport(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateComplianceReportDto) {
-    return this.reportService.updateReport(id, dto);
+  async updateReport(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateComplianceReportDto, @Req() req: Request) {
+    // Extract user information from JWT token
+    const userId = (req as any).user?.id || 'system';
+    const userRole = (req as any).user?.role || UserRole.ADMIN;
+
+    // Create execution context with request metadata for HIPAA compliance
+    const context = createExecutionContext(
+      userId,
+      userRole,
+      {
+        ip: req.ip,
+        headers: { 'user-agent': req.headers['user-agent'] }
+      }
+    );
+
+    return this.reportService.updateReport(id, dto, context);
   }
 
   @Delete('reports/:id')
   @ApiOperation({ summary: 'Delete compliance report' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 204, description: 'Report deleted successfully' })
-  async deleteReport(@Param('id', ParseUUIDPipe) id: string) {
-    await this.reportService.deleteReport(id);
+  async deleteReport(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+    // Extract user information from JWT token
+    const userId = (req as any).user?.id || 'system';
+    const userRole = (req as any).user?.role || UserRole.ADMIN;
+
+    // Create execution context with request metadata for HIPAA compliance
+    const context = createExecutionContext(
+      userId,
+      userRole,
+      {
+        ip: req.ip,
+        headers: { 'user-agent': req.headers['user-agent'] }
+      }
+    );
+
+    await this.reportService.deleteReport(id, context);
     return { deleted: true };
   }
 
@@ -160,8 +204,21 @@ export class ComplianceController {
   @ApiBody({ type: GenerateReportDto })
   @ApiResponse({ status: 201, description: 'Report generated successfully' })
   async generateReport(@Body() dto: GenerateReportDto, @Req() req: Request) {
+    // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
-    return this.reportService.generateReport(dto, userId);
+    const userRole = (req as any).user?.role || UserRole.ADMIN;
+
+    // Create execution context with request metadata for HIPAA compliance
+    const context = createExecutionContext(
+      userId,
+      userRole,
+      {
+        ip: req.ip,
+        headers: { 'user-agent': req.headers['user-agent'] }
+      }
+    );
+
+    return this.reportService.generateReport(dto, userId, context);
   }
 
   // ==================== CHECKLIST ENDPOINTS ====================

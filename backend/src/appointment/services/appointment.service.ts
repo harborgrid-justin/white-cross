@@ -124,13 +124,16 @@ export class AppointmentService {
       // Map to entity format
       const data = rows.map(row => this.mapToEntity(row));
 
+      const totalPages = Math.ceil(count / limit);
       return {
         data,
         pagination: {
           page,
           limit,
           total: count,
-          pages: Math.ceil(count / limit),
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrevious: page > 1,
         },
       };
     } catch (error) {
@@ -664,16 +667,14 @@ export class AppointmentService {
       );
 
       slots.push({
-        start: new Date(currentSlotStart),
-        end: currentSlotEnd,
-        available: conflicts.length === 0,
-        conflictingAppointment:
+        startTime: new Date(currentSlotStart),
+        endTime: currentSlotEnd,
+        nurseId,
+        isAvailable: conflicts.length === 0,
+        duration: slotDuration,
+        unavailabilityReason:
           conflicts.length > 0
-            ? {
-                id: conflicts[0].id,
-                student: 'Student Name', // Would be populated from student service
-                reason: conflicts[0].reason || '',
-              }
+            ? `Conflicting appointment: ${conflicts[0].reason || 'Scheduled'}`
             : undefined,
       });
 
@@ -996,8 +997,9 @@ export class AppointmentService {
       id: appointment.id!,
       studentId: appointment.studentId,
       nurseId: appointment.nurseId,
+      type: appointment.type as any,
       appointmentType: appointment.type as any,
-      scheduledDate: appointment.scheduledAt,
+      scheduledAt: appointment.scheduledAt,
       duration: appointment.duration,
       reason: appointment.reason,
       notes: appointment.notes,
@@ -1009,7 +1011,7 @@ export class AppointmentService {
         firstName: appointment.nurse.firstName,
         lastName: appointment.nurse.lastName,
         email: appointment.nurse.email,
-        fullName: `\${appointment.nurse.firstName} \${appointment.nurse.lastName}`,
+        role: appointment.nurse.role || 'NURSE',
       } : undefined,
     };
   }

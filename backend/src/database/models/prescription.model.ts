@@ -185,7 +185,7 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   instructions?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(PrescriptionStatus)),
+    type: DataType.ENUM(...(Object.values(PrescriptionStatus) as string[])),
     allowNull: false,
     defaultValue: PrescriptionStatus.PENDING,
   })

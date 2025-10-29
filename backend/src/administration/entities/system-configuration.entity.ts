@@ -8,7 +8,7 @@
 // Re-export the Sequelize model and enums
 export {
   SystemConfig as SystemConfiguration
-} from '../../../database/models/system-config.model';
+} from '../../database/models/system-config.model';
 
 export {
   ConfigCategory,

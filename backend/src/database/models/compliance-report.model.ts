@@ -78,7 +78,7 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ComplianceReportType)),
+    type: DataType.ENUM(...(Object.values(ComplianceReportType) as string[])),
     allowNull: false,
     field: 'report_type',
   })
@@ -95,7 +95,7 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ComplianceStatus)),
+    type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
     allowNull: false,
     defaultValue: ComplianceStatus.PENDING,
   })

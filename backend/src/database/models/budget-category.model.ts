@@ -23,7 +23,7 @@ export class BudgetCategory extends Model<BudgetCategory> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.STRING(255),
@@ -72,14 +72,14 @@ export class BudgetCategory extends Model<BudgetCategory> {
     type: DataType.DATE,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   // Relationships
   @HasMany(() => BudgetTransaction, 'category_id')

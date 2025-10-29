@@ -105,7 +105,7 @@ export class PurchaseOrderService {
         shipping: 0,
         total: subtotal,
         status: PurchaseOrderStatus.PENDING,
-      }, { transaction });
+      } as any, { transaction });
 
       // Create purchase order items
       for (const item of orderItems) {

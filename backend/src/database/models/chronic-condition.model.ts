@@ -14,6 +14,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { Student } from './student.model';
 import { HealthRecord } from './health-record.model';
 
+// Re-export enums for convenience
+export { AccommodationType } from '../../chronic-condition/enums';
+
 /**
  * Chronic condition status indicating management phase and clinical state.
  *
@@ -130,7 +133,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   diagnosedBy?: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ConditionStatus)),
+    type: DataType.ENUM(...(Object.values(ConditionStatus) as string[])),
     allowNull: false,
     defaultValue: ConditionStatus.ACTIVE,
   })

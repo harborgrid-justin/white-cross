@@ -64,14 +64,14 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(MessageType)),
+    type: DataType.ENUM(...(Object.values(MessageType) as string[])),
     allowNull: false,
   })
   type: MessageType;
 
   @Index
   @Column({
-    type: DataType.ENUM(...Object.values(MessageCategory)),
+    type: DataType.ENUM(...(Object.values(MessageCategory) as string[])),
     allowNull: false,
   })
   category: MessageCategory;

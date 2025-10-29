@@ -62,14 +62,14 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   schedule?: ReportSchedule;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
     field: 'report_type',
   })
   reportType: ReportType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(OutputFormat)),
+    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
     field: 'output_format',
   })
@@ -80,7 +80,7 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   parameters?: Record<string, any>;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportStatus)),
+    type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
     allowNull: false,
     defaultValue: ReportStatus.PENDING,
   })

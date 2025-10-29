@@ -371,7 +371,7 @@ export class VaccinationService {
 
     // PHI Modification Audit Log
     this.logger.log(
-      `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student.firstName} ${vaccinationWithRelations.student.lastName}`,
+      `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student?.firstName ?? 'Unknown'} ${vaccinationWithRelations.student?.lastName ?? 'Unknown'}`,
     );
 
     return vaccinationWithRelations;
@@ -396,7 +396,7 @@ export class VaccinationService {
 
     // PHI Deletion Audit Log
     this.logger.warn(
-      `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student.firstName} ${vaccination.student.lastName}`,
+      `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student?.firstName ?? 'Unknown'} ${vaccination.student?.lastName ?? 'Unknown'}`,
     );
 
     return { success: true };

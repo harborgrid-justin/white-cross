@@ -104,6 +104,12 @@ export class OfflineSyncService {
   private readonly entityServiceRegistry: Map<SyncEntityType, IEntitySyncService> = new Map();
   private readonly syncWatermarks: Map<string, SyncWatermark> = new Map();
 
+  /**
+   * Maximum number of sync attempts before marking an item as permanently failed
+   * This should match the default maxAttempts value in SyncQueueItem model
+   */
+  private readonly MAX_SYNC_ATTEMPTS = 3;
+
   constructor(
     @InjectModel(SyncQueueItem)
     private readonly queueModel: typeof SyncQueueItem,
@@ -166,7 +172,7 @@ export class OfflineSyncService {
         conflictDetected: false,
         priority: dto.priority || SyncPriority.NORMAL,
         requiresOnline: true,
-      });
+      } as any);
 
       this.logger.log(`Sync action queued: ${queueItem.id} - ${dto.actionType} ${dto.entityType}`);
 
@@ -196,7 +202,7 @@ export class OfflineSyncService {
       };
 
       if (options?.retryFailed) {
-        whereCondition.attempts = { [Op.lt]: this.queueModel.rawAttributes.maxAttempts };
+        whereCondition.attempts = { [Op.lt]: this.MAX_SYNC_ATTEMPTS };
       }
 
       const pendingItems = await this.queueModel.findAll({
@@ -298,7 +304,7 @@ export class OfflineSyncService {
         deviceId,
         userId,
         synced: false,
-        attempts: { [Op.gte]: this.queueModel.rawAttributes.maxAttempts }
+        attempts: { [Op.gte]: this.MAX_SYNC_ATTEMPTS }
       }
     });
 

@@ -112,7 +112,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
 
   @Default(LicenseType.TRIAL)
   @Column({
-    type: DataType.ENUM(...Object.values(LicenseType)),
+    type: DataType.ENUM(...(Object.values(LicenseType) as string[])),
     allowNull: false,
     defaultValue: LicenseType.TRIAL,
     comment: 'Type of license',
@@ -121,7 +121,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
 
   @Default(LicenseStatus.ACTIVE)
   @Column({
-    type: DataType.ENUM(...Object.values(LicenseStatus)),
+    type: DataType.ENUM(...(Object.values(LicenseStatus) as string[])),
     allowNull: false,
     defaultValue: LicenseStatus.ACTIVE,
     comment: 'Current status of the license',

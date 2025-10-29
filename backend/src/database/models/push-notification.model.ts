@@ -69,7 +69,7 @@ export interface NotificationDeliveryResult {
 }
 
 export interface PushNotificationAttributes {
-  id: string;
+  id?: string;
   userIds: string[];
   deviceTokens?: string[];
   title: string;
@@ -106,6 +106,42 @@ export interface PushNotificationAttributes {
   updatedAt?: Date;
 }
 
+export interface PushNotificationCreationAttributes {
+  id?: string;
+  userIds: string[];
+  deviceTokens?: string[];
+  title: string;
+  body: string;
+  category: NotificationCategory;
+  priority?: NotificationPriority;
+  data?: Record<string, string>;
+  actions?: NotificationAction[];
+  imageUrl?: string;
+  iconUrl?: string;
+  sound?: string;
+  badge?: number;
+  ttl?: number;
+  collapseKey?: string;
+  requireInteraction?: boolean;
+  silent?: boolean;
+  scheduledFor?: Date;
+  expiresAt?: Date;
+  status?: NotificationStatus;
+  sentAt?: Date;
+  deliveredAt?: Date;
+  failedAt?: Date;
+  deliveryResults?: NotificationDeliveryResult[];
+  totalRecipients?: number;
+  successfulDeliveries?: number;
+  failedDeliveries?: number;
+  clickedCount?: number;
+  dismissedCount?: number;
+  retryCount?: number;
+  maxRetries?: number;
+  nextRetryAt?: Date;
+  createdBy: string;
+}
+
 @Table({
   tableName: 'push_notifications',
   timestamps: true,
@@ -121,11 +157,11 @@ export interface PushNotificationAttributes {
     },
   ],
 })
-export class PushNotification extends Model<PushNotificationAttributes> implements PushNotificationAttributes {
+export class PushNotification extends Model<PushNotificationAttributes, PushNotificationCreationAttributes> implements PushNotificationAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
-  declare id: string;
+  declare id?: string;
 
   // Recipients
   @Column({
@@ -156,14 +192,14 @@ export class PushNotification extends Model<PushNotificationAttributes> implemen
   body: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(NotificationCategory)),
+    type: DataType.ENUM(...(Object.values(NotificationCategory) as string[])),
     allowNull: false,
   })
   @Index
   category: NotificationCategory;
 
   @Column({
-    type: DataType.ENUM(...Object.values(NotificationPriority)),
+    type: DataType.ENUM(...(Object.values(NotificationPriority) as string[])),
     allowNull: false,
     defaultValue: NotificationPriority.NORMAL,
   })
@@ -246,7 +282,7 @@ export class PushNotification extends Model<PushNotificationAttributes> implemen
 
   // Delivery tracking
   @Column({
-    type: DataType.ENUM(...Object.values(NotificationStatus)),
+    type: DataType.ENUM(...(Object.values(NotificationStatus) as string[])),
     allowNull: false,
     defaultValue: NotificationStatus.PENDING,
   })

@@ -66,7 +66,7 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   inventoryItemId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(InventoryTransactionType)),
+    type: DataType.ENUM(...(Object.values(InventoryTransactionType) as string[])),
     allowNull: false,
   })
   type: InventoryTransactionType;

@@ -8,7 +8,7 @@
 // Re-export the Sequelize model and enum
 export {
   TrainingModule
-} from '../../../database/models/training-module.model';
+} from '../../database/models/training-module.model';
 
 export {
   TrainingCategory

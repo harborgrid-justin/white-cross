@@ -68,7 +68,7 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   witnessName: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(WitnessType)),
+    type: DataType.ENUM(...(Object.values(WitnessType) as string[])),
     allowNull: false,
     field: 'witness_type',
   })

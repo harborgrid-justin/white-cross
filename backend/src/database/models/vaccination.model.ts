@@ -190,7 +190,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...Object.values(VaccineType)),
+    type: DataType.ENUM(...(Object.values(VaccineType) as string[])),
     field: 'vaccine_type',
   })
   @Index
@@ -314,7 +314,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...Object.values(SiteOfAdministration)),
+    type: DataType.ENUM(...(Object.values(SiteOfAdministration) as string[])),
     field: 'site_of_administration',
   })
   siteOfAdministration?: SiteOfAdministration;
@@ -324,7 +324,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...Object.values(RouteOfAdministration)),
+    type: DataType.ENUM(...(Object.values(RouteOfAdministration) as string[])),
     field: 'route_of_administration',
   })
   routeOfAdministration?: RouteOfAdministration;
@@ -416,7 +416,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    * Compliance status (for school requirements)
    */
   @Column({
-    type: DataType.ENUM(...Object.values(ComplianceStatus)),
+    type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
     allowNull: false,
     defaultValue: ComplianceStatus.COMPLIANT,
     field: 'compliance_status',

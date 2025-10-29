@@ -153,16 +153,19 @@ export class DrugInteractionService {
 
       if (allergies.length > 0) {
         result.hasInteractions = true;
-        result.allergies = allergies.map((allergy) => ({
-          drug: {
-            id: allergy.drug.id,
-            genericName: allergy.drug.genericName,
-            brandNames: allergy.drug.brandNames,
-          },
-          allergyType: allergy.allergyType,
-          reaction: allergy.reaction,
-          severity: allergy.severity,
-        }));
+        // Filter out allergies with undefined drug data and map to result format
+        result.allergies = allergies
+          .filter((allergy) => allergy.drug != null)
+          .map((allergy) => ({
+            drug: {
+              id: allergy.drug!.id,
+              genericName: allergy.drug!.genericName,
+              brandNames: allergy.drug!.brandNames,
+            },
+            allergyType: allergy.allergyType,
+            reaction: allergy.reaction,
+            severity: allergy.severity,
+          }));
       }
     }
 

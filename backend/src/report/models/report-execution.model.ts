@@ -37,13 +37,13 @@ export class ReportExecution extends Model {
   schedule?: ReportSchedule;
 
   @Column({
-    type: DataType.ENUM(...Object.values(ReportType)),
+    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
   reportType: ReportType;
 
   @Column({
-    type: DataType.ENUM(...Object.values(OutputFormat)),
+    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
   outputFormat: OutputFormat;
@@ -56,7 +56,7 @@ export class ReportExecution extends Model {
 
   @Default(ReportStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...Object.values(ReportStatus)),
+    type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
     allowNull: false,
   })
   status: ReportStatus;

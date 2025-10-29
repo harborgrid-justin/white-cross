@@ -68,7 +68,7 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   endDate?: Date;
 
   @Column({
-    type: DataType.ENUM(...Object.values(TreatmentStatus)),
+    type: DataType.ENUM(...(Object.values(TreatmentStatus) as string[])),
     allowNull: false,
   })
   status: TreatmentStatus;

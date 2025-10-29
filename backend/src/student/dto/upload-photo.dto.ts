@@ -19,13 +19,21 @@ import { IsNotEmpty, IsString, IsOptional, IsObject } from 'class-validator';
  * All uploads are audited for compliance
  */
 export class UploadPhotoDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Base64 encoded image data (JPEG, PNG, or GIF)',
     example: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA...',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  imageData: string;
+  imageData?: string;
+
+  @ApiPropertyOptional({
+    description: 'Photo URL/path (alternative to imageData)',
+    example: 'https://example.com/photos/student-123.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Photo metadata including capture date, device info, location',
