@@ -77,7 +77,7 @@ export default function StudentsPage() {
         }
 
         const response = await apiClient.get<any>(
-          API_ENDPOINTS.students,
+          API_ENDPOINTS.STUDENTS.BASE,
           params
         );
 
@@ -96,9 +96,23 @@ export default function StudentsPage() {
           setTotalStudents(0);
         }
         setLoading(false);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error loading students:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load students');
+
+        // Handle different error types
+        let errorMessage = 'Failed to load students';
+
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (err && typeof err === 'object') {
+          // Handle response error objects
+          const errorObj = err as any;
+          errorMessage = errorObj.message || errorObj.error || JSON.stringify(err);
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+
+        setError(errorMessage);
         setLoading(false);
       }
     };
@@ -111,7 +125,7 @@ export default function StudentsPage() {
 
     try {
       setDeleteLoading(true);
-      await apiClient.post(API_ENDPOINTS.studentDeactivate(selectedStudent.id), {});
+      await apiClient.post(API_ENDPOINTS.STUDENTS.DEACTIVATE(selectedStudent.id), {});
       setShowDeleteModal(false);
       setSelectedStudent(null);
       setDeleteLoading(false);

@@ -289,9 +289,12 @@ export const Header = memo(({
               transition-colors duration-200
             "
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            suppressHydrationWarning
           >
-            {darkMode ? (
+            {mounted && darkMode ? (
               <Sun className="h-5 w-5" aria-hidden="true" />
+            ) : mounted ? (
+              <Moon className="h-5 w-5" aria-hidden="true" />
             ) : (
               <Moon className="h-5 w-5" aria-hidden="true" />
             )}

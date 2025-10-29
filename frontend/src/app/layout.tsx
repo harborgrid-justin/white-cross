@@ -184,7 +184,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // Prevents zoom - consider accessibility implications
+  // maximumScale removed for WCAG 2.1 AA compliance (2.5.5 - Zoom support)
 };
 
 /**

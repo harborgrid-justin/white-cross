@@ -12,7 +12,7 @@
  * LLM Context: Medication form component for White Cross healthcare platform
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -93,15 +93,9 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({
 
   const [errors, setErrors] = useState<Partial<Record<keyof MedicationFormData, string>>>({});
 
-  // Track if we've initialized to prevent infinite loops
-  const initializedRef = useRef(false);
-
-  useEffect(() => {
-    if (initialData && !initializedRef.current) {
-      setFormData((prev) => ({ ...prev, ...initialData }));
-      initializedRef.current = true;
-    }
-  }, [initialData]);
+  // Note: initialData is already spread into formData initial state above (line 91)
+  // No need for useEffect to update it, as this would cause infinite re-renders
+  // when initialData defaults to {} on every render
 
   /**
    * Validate form data

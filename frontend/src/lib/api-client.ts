@@ -5,10 +5,17 @@
  * Handles authentication, error handling, and request/response formatting
  *
  * @module lib/api-client
- * @version 1.0.0
+ * @version 2.0.0
+ * @updated 2025-10-29 - Production-grade improvements
  */
 
+import { ApiError as AppApiError, isApiError } from '@/types/errors';
+import { ErrorHandler } from '@/lib/errorHandler';
+
 const API_PROXY_BASE = '/api/proxy';
+
+// Re-export API endpoints from centralized location
+export { API_ENDPOINTS } from '@/constants/api';
 
 interface ApiError {
   message: string;
@@ -50,6 +57,7 @@ class ApiClient {
     };
 
     try {
+      console.log(`[API Client] ${endpoint} - Fetching from:`, url);
       const response = await fetch(url, config);
 
       // Handle non-JSON responses
@@ -57,37 +65,69 @@ class ApiClient {
       const isJson = contentType?.includes('application/json');
 
       if (!response.ok) {
+        console.error(`[API Client] ${endpoint} - HTTP ${response.status}`);
+
         const error: ApiError = {
           message: 'API request failed',
           statusCode: response.status,
         };
 
-        if (isJson) {
-          const errorData = await response.json();
-          error.message = errorData.message || error.message;
-          error.details = errorData;
-        } else {
-          error.message = await response.text();
+        try {
+          if (isJson) {
+            const errorData = await response.json();
+            error.message = errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+            error.details = errorData;
+          } else {
+            const textError = await response.text();
+            error.message = textError || `HTTP ${response.status}: ${response.statusText}`;
+          }
+        } catch (parseError) {
+          error.message = `HTTP ${response.status}: ${response.statusText}`;
+          console.error('[API Client] Error parsing error response:', parseError);
         }
 
-        throw error;
+        console.error(`[API Client] ${endpoint} - Error:`, error.message);
+
+        const errorInstance = new Error(error.message);
+        (errorInstance as any).statusCode = error.statusCode;
+        (errorInstance as any).details = error.details;
+        throw errorInstance;
       }
 
       if (isJson) {
-        return await response.json();
+        const data = await response.json();
+        console.log(`[API Client] ${endpoint} - Success:`, data);
+        return data;
       }
 
-      return (await response.text()) as unknown as T;
+      const textData = await response.text();
+      console.log(`[API Client] ${endpoint} - Success (text):`, textData);
+      return textData as unknown as T;
     } catch (error) {
-      if (error instanceof Error && 'statusCode' in error) {
+      // Network errors (connection refused, timeout, DNS failure, etc.)
+      if (error instanceof TypeError) {
+        console.error(`[API Client] ${endpoint} - Network error:`, error.message);
+        const networkError = new Error(
+          `Cannot connect to server. Please check if the backend is running at ${this.baseUrl}`
+        );
+        (networkError as any).statusCode = 0;
+        (networkError as any).details = { originalError: error.message, url };
+        throw networkError;
+      }
+
+      // If it's already a proper Error instance we created, re-throw it
+      if (error instanceof Error && (error as any).statusCode !== undefined) {
         throw error;
       }
 
-      throw {
-        message: error instanceof Error ? error.message : 'Network error',
-        statusCode: 0,
-        details: error,
-      } as ApiError;
+      // Other unexpected errors
+      console.error(`[API Client] ${endpoint} - Unexpected error:`, error);
+      const unexpectedError = new Error(
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
+      (unexpectedError as any).statusCode = 0;
+      (unexpectedError as any).details = error;
+      throw unexpectedError;
     }
   }
 
@@ -133,62 +173,3 @@ class ApiClient {
 
 export const apiClient = new ApiClient();
 export default apiClient;
-
-// Type-safe API endpoints
-export const API_ENDPOINTS = {
-  // Dashboard
-  dashboardStats: '/dashboard/stats',
-
-  // Students
-  students: '/students',
-  studentById: (id: string) => `/students/${id}`,
-  studentDeactivate: (id: string) => `/students/${id}/deactivate`,
-
-  // Health Records
-  healthRecords: '/health-records',
-  healthRecordById: (id: string) => `/health-records/${id}`,
-  healthRecordsByStudent: (studentId: string) => `/health-records/student/${studentId}`,
-
-  // Allergies
-  allergies: '/allergies',
-  allergiesByStudent: (studentId: string) => `/allergies/student/${studentId}`,
-
-  // Conditions
-  conditions: '/conditions',
-  conditionsByStudent: (studentId: string) => `/conditions/student/${studentId}`,
-
-  // Vaccinations
-  vaccinations: '/vaccinations',
-  vaccinationsByStudent: (studentId: string) => `/vaccinations/student/${studentId}`,
-
-  // Vital Signs
-  vitalSigns: '/vital-signs',
-  vitalSignsByStudent: (studentId: string) => `/vital-signs/student/${studentId}`,
-
-  // Growth Measurements
-  growthMeasurements: '/growth-measurements',
-  growthMeasurementsByStudent: (studentId: string) => `/growth-measurements/student/${studentId}`,
-
-  // Screenings
-  screenings: '/screenings',
-  screeningsByStudent: (studentId: string) => `/screenings/student/${studentId}`,
-
-  // Emergency Contacts
-  emergencyContacts: '/emergency-contacts',
-  emergencyContactsByStudent: (studentId: string) => `/emergency-contacts/student/${studentId}`,
-
-  // Appointments
-  appointments: '/appointments',
-  appointmentById: (id: string) => `/appointments/${id}`,
-
-  // Medications
-  medications: '/medications',
-  medicationById: (id: string) => `/medications/${id}`,
-
-  // Forms
-  forms: '/forms',
-  formById: (id: string) => `/forms/${id}`,
-  formResponses: (formId: string) => `/forms/${formId}/responses`,
-  formResponseCount: (formId: string) => `/forms/${formId}/responses/count`,
-  formVersions: (formId: string) => `/forms/${formId}/versions`,
-} as const;

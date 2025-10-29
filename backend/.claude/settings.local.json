@@ -49,7 +49,10 @@
       "Bash(python:*)",
       "Bash(for file in src/actions/admin.actions.ts src/actions/compliance.actions.ts src/actions/health-records.actions.ts src/actions/settings.actions.ts src/app/api/health/route.ts)",
       "Bash(do sed -i \"s|http://localhost:3001/api/v1|http://localhost:3001|g\" \"$file\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Read(//f/temp/white-cross/**)",
+      "Bash(test:*)",
+      "Bash(npx next build:*)"
     ],
     "deny": [],
     "ask": []

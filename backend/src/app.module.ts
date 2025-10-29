@@ -51,8 +51,8 @@ import { WebSocketModule } from './infrastructure/websocket/websocket.module';
 import { GraphQLModule } from './infrastructure/graphql/graphql.module';
 import { CoreMiddlewareModule } from './middleware/core/core-middleware.module';
 import { WorkersModule } from './workers/workers.module';
-import { RoutesModule } from './routes/routes.module';
 import { MedicationModule } from './medication/medication.module';
+import { StudentModule } from './student/student.module';
 
 @Module({
   imports: [
@@ -67,9 +67,6 @@ import { MedicationModule } from './medication/medication.module';
 
     // Core middleware (RBAC, validation, session management)
     CoreMiddlewareModule,
-
-    // API Routes (v1, v2, etc.)
-    RoutesModule,
 
     // Authentication module
     AuthModule,
@@ -164,6 +161,7 @@ import { MedicationModule } from './medication/medication.module';
 
     // Feature modules
     MedicationModule,
+    StudentModule,
   ],
   controllers: [],
   providers: [],
