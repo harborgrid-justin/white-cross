@@ -6,3 +6,8 @@
  */
 export * from './connection-confirmed.dto';
 export * from './broadcast-message.dto';
+export * from './message-event.dto';
+export * from './typing-indicator.dto';
+export * from './read-receipt.dto';
+export * from './message-delivery.dto';
+export * from './conversation-event.dto';

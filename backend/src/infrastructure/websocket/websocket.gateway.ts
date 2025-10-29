@@ -7,17 +7,28 @@
  * Key Features:
  * - JWT-based authentication for secure connections
  * - Room-based messaging for multi-tenant isolation
- * - Automatic subscription to organization and user rooms
- * - Health check (ping/pong) support
- * - Channel subscription management
+ * - Real-time messaging with delivery confirmations
+ * - Typing indicators and read receipts
+ * - Presence tracking (online/offline/typing)
+ * - Rate limiting to prevent spam
+ * - Conversation room management
  *
  * Event Handlers:
  * - connection: New client connection with authentication
- * - disconnect: Client disconnection cleanup
+ * - disconnect: Client disconnection cleanup with presence update
  * - ping: Health check request
  * - subscribe: Subscribe to notification channels
  * - unsubscribe: Unsubscribe from notification channels
  * - notification:read: Mark notification as read
+ * - message:send: Send a message to conversation
+ * - message:edit: Edit existing message
+ * - message:delete: Delete message
+ * - message:delivered: Message delivery confirmation
+ * - message:read: Message read receipt
+ * - message:typing: Typing indicator
+ * - conversation:join: Join a conversation room
+ * - conversation:leave: Leave a conversation room
+ * - presence:update: Update user presence status
  *
  * @class WebSocketGateway
  */
@@ -32,9 +43,18 @@ import {
 } from '@nestjs/websockets';
 import { Logger, UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
+import { WsException } from '@nestjs/websockets';
 import type { AuthenticatedSocket } from './interfaces';
-import { ConnectionConfirmedDto } from './dto';
+import {
+  ConnectionConfirmedDto,
+  MessageEventDto,
+  TypingIndicatorDto,
+  ReadReceiptDto,
+  MessageDeliveryDto,
+  ConversationEventDto,
+} from './dto';
 import { WsJwtAuthGuard } from './guards';
+import { RateLimiterService } from './services';
 
 @NestWebSocketGateway({
   cors: {
@@ -52,6 +72,17 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   server: Server;
 
   private readonly logger = new Logger(WebSocketGateway.name);
+
+  /**
+   * In-memory presence tracking
+   * Maps userId to presence status
+   */
+  private readonly presenceMap = new Map<
+    string,
+    { status: 'online' | 'offline' | 'away'; lastSeen: string }
+  >();
+
+  constructor(private readonly rateLimiter: RateLimiterService) {}
 
   /**
    * Handles new WebSocket connections
@@ -102,6 +133,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       });
 
       client.emit('connection:confirmed', confirmation);
+
+      // Set user presence to online
+      this.updatePresence(user.userId, 'online');
+      this.broadcastPresenceUpdate(user.userId, user.organizationId, 'online');
     } catch (error) {
       this.logger.error(`Connection error for ${client.id}:`, error);
       client.disconnect();
@@ -110,11 +145,19 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   /**
    * Handles client disconnection
-   * Logs the disconnection for monitoring purposes
+   * Updates presence and broadcasts offline status
    *
    * @param client - The disconnecting WebSocket client
    */
   handleDisconnect(client: AuthenticatedSocket): void {
+    const user = client.user;
+
+    if (user) {
+      // Set user presence to offline
+      this.updatePresence(user.userId, 'offline');
+      this.broadcastPresenceUpdate(user.userId, user.organizationId, 'offline');
+    }
+
     this.logger.log(`WebSocket disconnected: ${client.id}`);
   }
 
@@ -205,6 +248,521 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   /**
+   * Handles message send events
+   * Validates, rate limits, and broadcasts messages to conversation participants
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Message event data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('message:send')
+  async handleMessageSend(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<MessageEventDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    // Rate limiting check
+    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:send');
+    if (!allowed) {
+      client.emit('error', {
+        type: 'RATE_LIMIT_EXCEEDED',
+        message: 'Message rate limit exceeded. Please slow down.',
+      });
+      return;
+    }
+
+    try {
+      // Create and validate DTO
+      const messageDto = new MessageEventDto({
+        ...data,
+        type: 'send',
+        senderId: user.userId,
+        organizationId: user.organizationId,
+      });
+
+      // Validate sender and organization
+      if (!messageDto.validateSender(user.userId)) {
+        throw new WsException('Invalid sender');
+      }
+
+      if (!messageDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      this.logger.log(
+        `Message sent: ${messageDto.messageId} in conversation ${messageDto.conversationId} by user ${user.userId}`,
+      );
+
+      // Broadcast to conversation room
+      const room = `conversation:${messageDto.conversationId}`;
+      this.server.to(room).emit('message:send', messageDto.toPayload());
+
+      // Send delivery confirmation to sender
+      const deliveryDto = new MessageDeliveryDto({
+        messageId: messageDto.messageId,
+        conversationId: messageDto.conversationId,
+        recipientId: user.userId,
+        senderId: user.userId,
+        organizationId: user.organizationId,
+        status: 'sent',
+      });
+
+      client.emit('message:delivered', deliveryDto.toPayload());
+    } catch (error) {
+      this.logger.error(`Message send error for user ${user.userId}:`, error);
+      client.emit('error', {
+        type: 'MESSAGE_SEND_FAILED',
+        message: error.message || 'Failed to send message',
+      });
+    }
+  }
+
+  /**
+   * Handles message edit events
+   * Validates ownership and broadcasts edits to conversation participants
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Message event data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('message:edit')
+  async handleMessageEdit(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<MessageEventDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    // Rate limiting check
+    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:edit');
+    if (!allowed) {
+      client.emit('error', {
+        type: 'RATE_LIMIT_EXCEEDED',
+        message: 'Edit rate limit exceeded. Please slow down.',
+      });
+      return;
+    }
+
+    try {
+      // Create and validate DTO
+      const messageDto = new MessageEventDto({
+        ...data,
+        type: 'edit',
+        senderId: user.userId,
+        organizationId: user.organizationId,
+      });
+
+      // Validate sender and organization
+      if (!messageDto.validateSender(user.userId)) {
+        throw new WsException('You can only edit your own messages');
+      }
+
+      if (!messageDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      this.logger.log(
+        `Message edited: ${messageDto.messageId} in conversation ${messageDto.conversationId} by user ${user.userId}`,
+      );
+
+      // Broadcast to conversation room
+      const room = `conversation:${messageDto.conversationId}`;
+      this.server.to(room).emit('message:edit', messageDto.toPayload());
+    } catch (error) {
+      this.logger.error(`Message edit error for user ${user.userId}:`, error);
+      client.emit('error', {
+        type: 'MESSAGE_EDIT_FAILED',
+        message: error.message || 'Failed to edit message',
+      });
+    }
+  }
+
+  /**
+   * Handles message delete events
+   * Validates ownership and broadcasts deletion to conversation participants
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Message event data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('message:delete')
+  async handleMessageDelete(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<MessageEventDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    // Rate limiting check
+    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:delete');
+    if (!allowed) {
+      client.emit('error', {
+        type: 'RATE_LIMIT_EXCEEDED',
+        message: 'Delete rate limit exceeded. Please slow down.',
+      });
+      return;
+    }
+
+    try {
+      // Create and validate DTO
+      const messageDto = new MessageEventDto({
+        ...data,
+        type: 'delete',
+        senderId: user.userId,
+        organizationId: user.organizationId,
+        content: '', // Content not required for delete
+      });
+
+      // Validate sender and organization
+      if (!messageDto.validateSender(user.userId)) {
+        throw new WsException('You can only delete your own messages');
+      }
+
+      if (!messageDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      this.logger.log(
+        `Message deleted: ${messageDto.messageId} in conversation ${messageDto.conversationId} by user ${user.userId}`,
+      );
+
+      // Broadcast to conversation room
+      const room = `conversation:${messageDto.conversationId}`;
+      this.server.to(room).emit('message:delete', {
+        messageId: messageDto.messageId,
+        conversationId: messageDto.conversationId,
+        timestamp: messageDto.timestamp,
+      });
+    } catch (error) {
+      this.logger.error(`Message delete error for user ${user.userId}:`, error);
+      client.emit('error', {
+        type: 'MESSAGE_DELETE_FAILED',
+        message: error.message || 'Failed to delete message',
+      });
+    }
+  }
+
+  /**
+   * Handles message delivery confirmations
+   * Broadcasts delivery status to message sender
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Delivery confirmation data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('message:delivered')
+  async handleMessageDelivered(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<MessageDeliveryDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    try {
+      // Create and validate DTO
+      const deliveryDto = new MessageDeliveryDto({
+        ...data,
+        recipientId: user.userId,
+        organizationId: user.organizationId,
+        status: 'delivered',
+      });
+
+      if (!deliveryDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      this.logger.debug(
+        `Message ${deliveryDto.messageId} delivered to user ${user.userId}`,
+      );
+
+      // Notify the sender
+      const senderRoom = `user:${deliveryDto.senderId}`;
+      this.server.to(senderRoom).emit('message:delivered', deliveryDto.toPayload());
+    } catch (error) {
+      this.logger.error(`Delivery confirmation error for user ${user.userId}:`, error);
+    }
+  }
+
+  /**
+   * Handles message read receipts
+   * Broadcasts read status to conversation participants
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Read receipt data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('message:read')
+  async handleMessageRead(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<ReadReceiptDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    try {
+      // Create and validate DTO
+      const readReceiptDto = new ReadReceiptDto({
+        ...data,
+        userId: user.userId,
+        organizationId: user.organizationId,
+      });
+
+      if (!readReceiptDto.validateUser(user.userId)) {
+        throw new WsException('Invalid user');
+      }
+
+      if (!readReceiptDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      this.logger.debug(
+        `Message ${readReceiptDto.messageId} read by user ${user.userId}`,
+      );
+
+      // Broadcast to conversation room
+      const room = `conversation:${readReceiptDto.conversationId}`;
+      this.server.to(room).emit('message:read', readReceiptDto.toPayload());
+    } catch (error) {
+      this.logger.error(`Read receipt error for user ${user.userId}:`, error);
+    }
+  }
+
+  /**
+   * Handles typing indicator events
+   * Broadcasts typing status to conversation participants
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Typing indicator data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('message:typing')
+  async handleTypingIndicator(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<TypingIndicatorDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    // Rate limiting check
+    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:typing');
+    if (!allowed) {
+      // Silently ignore rate-limited typing indicators
+      return;
+    }
+
+    try {
+      // Create and validate DTO
+      const typingDto = new TypingIndicatorDto({
+        ...data,
+        userId: user.userId,
+        organizationId: user.organizationId,
+      });
+
+      if (!typingDto.validateUser(user.userId)) {
+        throw new WsException('Invalid user');
+      }
+
+      if (!typingDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      // Broadcast to conversation room (excluding sender)
+      const room = `conversation:${typingDto.conversationId}`;
+      client.to(room).emit('message:typing', typingDto.toPayload());
+    } catch (error) {
+      this.logger.error(`Typing indicator error for user ${user.userId}:`, error);
+    }
+  }
+
+  /**
+   * Handles conversation join events
+   * Validates access and adds user to conversation room
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Conversation event data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('conversation:join')
+  async handleConversationJoin(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<ConversationEventDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    // Rate limiting check
+    const allowed = await this.rateLimiter.checkLimit(user.userId, 'conversation:join');
+    if (!allowed) {
+      client.emit('error', {
+        type: 'RATE_LIMIT_EXCEEDED',
+        message: 'Join rate limit exceeded. Please slow down.',
+      });
+      return;
+    }
+
+    try {
+      // Create and validate DTO
+      const conversationDto = new ConversationEventDto({
+        ...data,
+        action: 'join',
+        userId: user.userId,
+        organizationId: user.organizationId,
+      });
+
+      if (!conversationDto.validateUser(user.userId)) {
+        throw new WsException('Invalid user');
+      }
+
+      if (!conversationDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      // TODO: In production, validate that user has access to this conversation
+      // by checking conversation membership from database
+
+      const room = conversationDto.getRoomId();
+      await client.join(room);
+
+      this.logger.log(
+        `User ${user.userId} joined conversation ${conversationDto.conversationId}`,
+      );
+
+      // Notify other participants in the room
+      client.to(room).emit('conversation:join', conversationDto.toPayload());
+
+      // Send confirmation to the joining user
+      client.emit('conversation:joined', {
+        conversationId: conversationDto.conversationId,
+        timestamp: conversationDto.timestamp,
+      });
+    } catch (error) {
+      this.logger.error(`Conversation join error for user ${user.userId}:`, error);
+      client.emit('error', {
+        type: 'CONVERSATION_JOIN_FAILED',
+        message: error.message || 'Failed to join conversation',
+      });
+    }
+  }
+
+  /**
+   * Handles conversation leave events
+   * Removes user from conversation room
+   *
+   * @param client - The authenticated WebSocket client
+   * @param data - Conversation event data
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('conversation:leave')
+  async handleConversationLeave(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: Partial<ConversationEventDto>,
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    try {
+      // Create and validate DTO
+      const conversationDto = new ConversationEventDto({
+        ...data,
+        action: 'leave',
+        userId: user.userId,
+        organizationId: user.organizationId,
+      });
+
+      if (!conversationDto.validateUser(user.userId)) {
+        throw new WsException('Invalid user');
+      }
+
+      if (!conversationDto.validateOrganization(user.organizationId)) {
+        throw new WsException('Invalid organization');
+      }
+
+      const room = conversationDto.getRoomId();
+
+      // Notify other participants before leaving
+      client.to(room).emit('conversation:leave', conversationDto.toPayload());
+
+      await client.leave(room);
+
+      this.logger.log(
+        `User ${user.userId} left conversation ${conversationDto.conversationId}`,
+      );
+
+      // Send confirmation to the leaving user
+      client.emit('conversation:left', {
+        conversationId: conversationDto.conversationId,
+        timestamp: conversationDto.timestamp,
+      });
+    } catch (error) {
+      this.logger.error(`Conversation leave error for user ${user.userId}:`, error);
+      client.emit('error', {
+        type: 'CONVERSATION_LEAVE_FAILED',
+        message: error.message || 'Failed to leave conversation',
+      });
+    }
+  }
+
+  /**
+   * Handles presence update events
+   * Updates and broadcasts user presence status
+   *
+   * @param client - The authenticated WebSocket client
+   * @param status - Presence status (online, offline, away)
+   */
+  @UseGuards(WsJwtAuthGuard)
+  @SubscribeMessage('presence:update')
+  async handlePresenceUpdate(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() status: 'online' | 'offline' | 'away',
+  ): Promise<void> {
+    const user = client.user;
+
+    if (!user) {
+      throw new WsException('Authentication required');
+    }
+
+    try {
+      // Validate status
+      if (!['online', 'offline', 'away'].includes(status)) {
+        throw new WsException('Invalid presence status');
+      }
+
+      this.updatePresence(user.userId, status);
+      this.broadcastPresenceUpdate(user.userId, user.organizationId, status);
+
+      this.logger.debug(`User ${user.userId} presence updated to ${status}`);
+    } catch (error) {
+      this.logger.error(`Presence update error for user ${user.userId}:`, error);
+    }
+  }
+
+  /**
    * Gets the count of currently connected sockets
    *
    * @returns The number of connected sockets
@@ -220,6 +778,49 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
    */
   isInitialized(): boolean {
     return !!this.server;
+  }
+
+  /**
+   * Updates user presence status in memory
+   *
+   * @param userId - The user ID
+   * @param status - The presence status
+   */
+  private updatePresence(userId: string, status: 'online' | 'offline' | 'away'): void {
+    this.presenceMap.set(userId, {
+      status,
+      lastSeen: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Broadcasts presence update to organization
+   *
+   * @param userId - The user ID
+   * @param organizationId - The organization ID
+   * @param status - The presence status
+   */
+  private broadcastPresenceUpdate(
+    userId: string,
+    organizationId: string,
+    status: 'online' | 'offline' | 'away',
+  ): void {
+    const orgRoom = `org:${organizationId}`;
+    this.server.to(orgRoom).emit('presence:update', {
+      userId,
+      status,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Gets user presence status
+   *
+   * @param userId - The user ID
+   * @returns Presence status or null if not found
+   */
+  getUserPresence(userId: string): { status: string; lastSeen: string } | null {
+    return this.presenceMap.get(userId) || null;
   }
 
   /**

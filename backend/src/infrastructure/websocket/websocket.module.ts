@@ -47,6 +47,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WsJwtAuthGuard } from './guards';
+import { RateLimiterService } from './services';
 
 /**
  * WebSocket Module
@@ -71,6 +72,7 @@ import { WsJwtAuthGuard } from './guards';
     WebSocketGateway,
     WebSocketService,
     WsJwtAuthGuard,
+    RateLimiterService,
   ],
   exports: [
     WebSocketService,
