@@ -7,6 +7,10 @@
  * Key Features:
  * - Room-based message broadcasting
  * - Type-safe message payloads with automatic timestamping
+ * - Real-time messaging methods for conversations
+ * - Typing indicators and read receipts
+ * - Message delivery confirmations
+ * - Presence tracking and updates
  * - Domain-specific broadcast methods (alerts, notifications, reminders)
  * - Graceful degradation when server is not initialized
  * - Comprehensive logging for monitoring and debugging
@@ -22,11 +26,25 @@
  * - broadcastStudentHealthAlert: Student health alerts to organization
  * - sendUserNotification: Notifications to specific user
  *
+ * Messaging Methods:
+ * - sendMessageToConversation: Send message to conversation room
+ * - sendMessageToUsers: Send direct message to specific users
+ * - broadcastTypingIndicator: Broadcast typing status to conversation
+ * - broadcastReadReceipt: Broadcast read receipt to conversation
+ * - broadcastMessageDelivery: Broadcast delivery confirmation
+ * - updateUserPresence: Update and broadcast user presence
+ *
  * @class WebSocketService
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
-import { BroadcastMessageDto } from './dto';
+import {
+  BroadcastMessageDto,
+  MessageEventDto,
+  TypingIndicatorDto,
+  ReadReceiptDto,
+  MessageDeliveryDto,
+} from './dto';
 
 @Injectable()
 export class WebSocketService {
@@ -276,6 +294,222 @@ export class WebSocketService {
    */
   async broadcastToStudent(studentId: string, event: string, data: any): Promise<void> {
     await this.broadcastToRoom(`student:${studentId}`, event, data);
+  }
+
+  /**
+   * Sends a message to a conversation room
+   * Broadcasts to all participants in the conversation
+   *
+   * @param conversationId - The conversation ID
+   * @param message - The message event DTO
+   * @throws Error if broadcast fails
+   */
+  async sendMessageToConversation(
+    conversationId: string,
+    message: MessageEventDto,
+  ): Promise<void> {
+    try {
+      const server = this.getServer();
+
+      if (!server) {
+        this.logger.warn('WebSocket server not initialized, cannot send message');
+        return;
+      }
+
+      const room = `conversation:${conversationId}`;
+      server.to(room).emit('message:send', message.toPayload());
+
+      this.logger.log(`Message sent to conversation ${conversationId}`, {
+        messageId: message.messageId,
+        senderId: message.senderId,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send message to conversation ${conversationId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sends a direct message to specific users
+   * Broadcasts to each user's personal room
+   *
+   * @param userIds - Array of user IDs to send to
+   * @param message - The message event DTO
+   * @throws Error if broadcast fails
+   */
+  async sendMessageToUsers(userIds: string[], message: MessageEventDto): Promise<void> {
+    try {
+      const server = this.getServer();
+
+      if (!server) {
+        this.logger.warn('WebSocket server not initialized, cannot send message');
+        return;
+      }
+
+      // Send to each user's room
+      for (const userId of userIds) {
+        const room = `user:${userId}`;
+        server.to(room).emit('message:send', message.toPayload());
+      }
+
+      this.logger.log(`Direct message sent to ${userIds.length} users`, {
+        messageId: message.messageId,
+        senderId: message.senderId,
+        recipientCount: userIds.length,
+      });
+    } catch (error) {
+      this.logger.error('Failed to send direct message', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Broadcasts a typing indicator to conversation participants
+   *
+   * @param conversationId - The conversation ID
+   * @param typingIndicator - The typing indicator DTO
+   * @throws Error if broadcast fails
+   */
+  async broadcastTypingIndicator(
+    conversationId: string,
+    typingIndicator: TypingIndicatorDto,
+  ): Promise<void> {
+    try {
+      const server = this.getServer();
+
+      if (!server) {
+        this.logger.warn('WebSocket server not initialized, cannot broadcast typing indicator');
+        return;
+      }
+
+      const room = `conversation:${conversationId}`;
+      server.to(room).emit('message:typing', typingIndicator.toPayload());
+
+      this.logger.debug(
+        `Typing indicator broadcasted to conversation ${conversationId}`,
+        {
+          userId: typingIndicator.userId,
+          isTyping: typingIndicator.isTyping,
+        },
+      );
+    } catch (error) {
+      this.logger.error(`Failed to broadcast typing indicator to conversation ${conversationId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Broadcasts a read receipt to conversation participants
+   *
+   * @param conversationId - The conversation ID
+   * @param readReceipt - The read receipt DTO
+   * @throws Error if broadcast fails
+   */
+  async broadcastReadReceipt(
+    conversationId: string,
+    readReceipt: ReadReceiptDto,
+  ): Promise<void> {
+    try {
+      const server = this.getServer();
+
+      if (!server) {
+        this.logger.warn('WebSocket server not initialized, cannot broadcast read receipt');
+        return;
+      }
+
+      const room = `conversation:${conversationId}`;
+      server.to(room).emit('message:read', readReceipt.toPayload());
+
+      this.logger.log(`Read receipt broadcasted to conversation ${conversationId}`, {
+        messageId: readReceipt.messageId,
+        userId: readReceipt.userId,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to broadcast read receipt to conversation ${conversationId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Broadcasts a message delivery confirmation
+   * Sends to the message sender's room
+   *
+   * @param senderId - The sender's user ID
+   * @param delivery - The delivery confirmation DTO
+   * @throws Error if broadcast fails
+   */
+  async broadcastMessageDelivery(
+    senderId: string,
+    delivery: MessageDeliveryDto,
+  ): Promise<void> {
+    try {
+      const server = this.getServer();
+
+      if (!server) {
+        this.logger.warn('WebSocket server not initialized, cannot broadcast delivery');
+        return;
+      }
+
+      const room = `user:${senderId}`;
+      server.to(room).emit('message:delivered', delivery.toPayload());
+
+      this.logger.debug(`Delivery confirmation sent to user ${senderId}`, {
+        messageId: delivery.messageId,
+        status: delivery.status,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to broadcast delivery confirmation to user ${senderId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates and broadcasts user presence status
+   * Broadcasts to the user's organization room
+   *
+   * @param userId - The user ID
+   * @param organizationId - The organization ID
+   * @param status - The presence status (online, offline, away)
+   * @throws Error if broadcast fails
+   */
+  async updateUserPresence(
+    userId: string,
+    organizationId: string,
+    status: 'online' | 'offline' | 'away',
+  ): Promise<void> {
+    try {
+      const server = this.getServer();
+
+      if (!server) {
+        this.logger.warn('WebSocket server not initialized, cannot update presence');
+        return;
+      }
+
+      const room = `org:${organizationId}`;
+      server.to(room).emit('presence:update', {
+        userId,
+        status,
+        timestamp: new Date().toISOString(),
+      });
+
+      this.logger.debug(`Presence update broadcasted for user ${userId}`, {
+        status,
+        organizationId,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to broadcast presence update for user ${userId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets user presence status from the gateway
+   *
+   * @param userId - The user ID
+   * @returns Presence status or null if not found
+   */
+  getUserPresence(userId: string): { status: string; lastSeen: string } | null {
+    return this.websocketGateway.getUserPresence(userId);
   }
 
   /**

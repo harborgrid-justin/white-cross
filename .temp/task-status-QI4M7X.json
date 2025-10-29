@@ -1,0 +1,80 @@
+{
+  "agentId": "typescript-architect-qi4m7x",
+  "taskId": "queue-integration-messaging",
+  "relatedAgentFiles": [
+    ".temp/architecture-notes-M7B2K9.md",
+    ".temp/architecture-notes-MQ7B8C.md",
+    ".temp/architecture-notes-MS8G2V.md",
+    ".temp/architecture-notes-WS8M3G.md"
+  ],
+  "description": "Integrate message queue system with EnhancedMessageService for asynchronous processing",
+  "startedAt": "2025-10-29T21:30:00Z",
+  "workstreams": [
+    {
+      "id": "queue-helper",
+      "name": "Queue Integration Helper",
+      "status": "pending",
+      "crossAgentReferences": [
+        "MessageQueueService from infrastructure",
+        "EnhancedMessageService integration"
+      ]
+    },
+    {
+      "id": "service-integration",
+      "name": "Service Integration",
+      "status": "pending",
+      "crossAgentReferences": [
+        "EnhancedMessageService modifications",
+        "Queue job creation"
+      ]
+    },
+    {
+      "id": "controller-enhancement",
+      "name": "Controller Enhancement",
+      "status": "pending",
+      "crossAgentReferences": [
+        "New queue-related endpoints",
+        "API documentation"
+      ]
+    },
+    {
+      "id": "monitoring-service",
+      "name": "Queue Monitoring Service",
+      "status": "pending",
+      "crossAgentReferences": [
+        "Queue health monitoring",
+        "Metrics aggregation"
+      ]
+    },
+    {
+      "id": "event-listeners",
+      "name": "Event Listeners",
+      "status": "pending",
+      "crossAgentReferences": [
+        "Job completion handling",
+        "WebSocket integration"
+      ]
+    },
+    {
+      "id": "module-config",
+      "name": "Module Configuration",
+      "status": "pending",
+      "crossAgentReferences": [
+        "CommunicationModule updates"
+      ]
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "documentation",
+      "name": "Documentation",
+      "status": "pending",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": []
+}
