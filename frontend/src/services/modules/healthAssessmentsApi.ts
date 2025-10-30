@@ -430,7 +430,7 @@ export class HealthAssessmentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<ApiResponse<{ assessment: HealthRiskAssessment }>>(
-        `/api/v1/health-assessments/risk/${studentId}`
+        `/health-assessments/risk/${studentId}`
       );
 
       // Audit PHI access
@@ -493,7 +493,7 @@ export class HealthAssessmentsApi {
       const allParams = params ? { ...paginationParams, ...params } : paginationParams;
 
       const response = await this.client.get<PaginatedResponse<HighRiskStudent>>(
-        '/api/v1/health-assessments/high-risk-students',
+        '/health-assessments/high-risk-students',
         { params: allParams }
       );
 
@@ -559,7 +559,7 @@ export class HealthAssessmentsApi {
       createScreeningSchema.parse(screeningData);
 
       const response = await this.client.post<ApiResponse<HealthScreening>>(
-        '/api/v1/health-assessments/screenings',
+        '/health-assessments/screenings',
         screeningData
       );
 
@@ -633,7 +633,7 @@ export class HealthAssessmentsApi {
       const allParams = params ? { ...paginationParams, ...params } : paginationParams;
 
       const response = await this.client.get<PaginatedResponse<HealthScreening>>(
-        `/api/v1/health-assessments/screenings/${studentId}`,
+        `/health-assessments/screenings/${studentId}`,
         { params: allParams }
       );
 
@@ -701,7 +701,7 @@ export class HealthAssessmentsApi {
       createGrowthMeasurementSchema.parse(measurementData);
 
       const response = await this.client.post<ApiResponse<GrowthMeasurement>>(
-        `/api/v1/health-assessments/growth/${studentId}`,
+        `/health-assessments/growth/${studentId}`,
         measurementData
       );
 
@@ -769,7 +769,7 @@ export class HealthAssessmentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<ApiResponse<GrowthAnalysis>>(
-        `/api/v1/health-assessments/growth/${studentId}/analysis`,
+        `/health-assessments/growth/${studentId}/analysis`,
         { params }
       );
 
@@ -831,7 +831,7 @@ export class HealthAssessmentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<ApiResponse<ImmunizationForecast>>(
-        `/api/v1/health-assessments/immunizations/${studentId}/forecast`,
+        `/health-assessments/immunizations/${studentId}/forecast`,
         { params }
       );
 
@@ -907,7 +907,7 @@ export class HealthAssessmentsApi {
       createEmergencyNotificationSchema.parse(notificationData);
 
       const response = await this.client.post<ApiResponse<EmergencyNotification>>(
-        '/api/v1/health-assessments/emergency/notify',
+        '/health-assessments/emergency/notify',
         notificationData
       );
 
@@ -988,7 +988,7 @@ export class HealthAssessmentsApi {
       const allParams = params ? { ...paginationParams, ...params } : paginationParams;
 
       const response = await this.client.get<PaginatedResponse<EmergencyNotification>>(
-        `/api/v1/health-assessments/emergency/${studentId}`,
+        `/health-assessments/emergency/${studentId}`,
         { params: allParams }
       );
 
@@ -1048,7 +1048,7 @@ export class HealthAssessmentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<ApiResponse<MedicationInteractionCheck>>(
-        `/api/v1/health-assessments/medication-interactions/${studentId}`
+        `/health-assessments/medication-interactions/${studentId}`
       );
 
       // Audit PHI access
@@ -1116,7 +1116,7 @@ export class HealthAssessmentsApi {
       checkNewMedicationSchema.parse(medicationData);
 
       const response = await this.client.post<ApiResponse<MedicationInteractionCheck>>(
-        `/api/v1/health-assessments/medication-interactions/${studentId}/check`,
+        `/health-assessments/medication-interactions/${studentId}/check`,
         medicationData
       );
 

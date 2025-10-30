@@ -210,7 +210,7 @@ export class MessagesApi {
     const params = buildPaginationParams(filters?.page, filters?.limit);
     const allParams = filters ? Object.assign({}, params, filters) : params;
     const response = await this.client.get<PaginatedResponse<Message>>(
-      '/api/v1/communications/messages',
+      '/communications/messages',
       { params: allParams }
     );
     return response.data;
@@ -221,7 +221,7 @@ export class MessagesApi {
    */
   async getById(messageId: string): Promise<Message> {
     const response = await this.client.get<ApiResponse<Message>>(
-      `/api/v1/communications/messages/${messageId}`
+      `/communications/messages/${messageId}`
     );
     return response.data.data!;
   }
@@ -231,7 +231,7 @@ export class MessagesApi {
    */
   async create(messageData: CreateMessageRequest): Promise<Message> {
     const response = await this.client.post<ApiResponse<Message>>(
-      '/api/v1/communications/messages',
+      '/communications/messages',
       messageData
     );
     return response.data.data!;
@@ -242,7 +242,7 @@ export class MessagesApi {
    */
   async update(messageId: string, messageData: UpdateMessageRequest): Promise<Message> {
     const response = await this.client.put<ApiResponse<Message>>(
-      `/api/v1/communications/messages/${messageId}`,
+      `/communications/messages/${messageId}`,
       messageData
     );
     return response.data.data!;
@@ -253,7 +253,7 @@ export class MessagesApi {
    */
   async delete(messageId: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
-      `/api/v1/communications/messages/${messageId}`
+      `/communications/messages/${messageId}`
     );
     return response.data.data!;
   }
@@ -266,7 +266,7 @@ export class MessagesApi {
     attachments?: string[];
   }): Promise<Message> {
     const response = await this.client.post<ApiResponse<Message>>(
-      `/api/v1/communications/messages/${messageId}/reply`,
+      `/communications/messages/${messageId}/reply`,
       replyData
     );
     return response.data.data!;
@@ -283,7 +283,7 @@ export class MessagesApi {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
     const response = await this.client.get<PaginatedResponse<Message>>(
-      '/api/v1/communications/messages/inbox',
+      '/communications/messages/inbox',
       { params: allParams }
     );
     return response.data;
@@ -298,7 +298,7 @@ export class MessagesApi {
   }): Promise<PaginatedResponse<Message>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const response = await this.client.get<PaginatedResponse<Message>>(
-      '/api/v1/communications/messages/sent',
+      '/communications/messages/sent',
       { params: paginationParams }
     );
     return response.data;
@@ -315,7 +315,7 @@ export class MessagesApi {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
     const response = await this.client.get<PaginatedResponse<MessageTemplate>>(
-      '/api/v1/communications/templates',
+      '/communications/templates',
       { params: allParams }
     );
     return response.data;
@@ -326,7 +326,7 @@ export class MessagesApi {
    */
   async createTemplate(templateData: CreateTemplateRequest): Promise<MessageTemplate> {
     const response = await this.client.post<ApiResponse<MessageTemplate>>(
-      '/api/v1/communications/templates',
+      '/communications/templates',
       templateData
     );
     return response.data.data!;
@@ -337,7 +337,7 @@ export class MessagesApi {
    */
   async getDeliveryStatus(messageId: string): Promise<DeliveryStatus> {
     const response = await this.client.get<ApiResponse<DeliveryStatus>>(
-      `/api/v1/communications/delivery-status/${messageId}`
+      `/communications/delivery-status/${messageId}`
     );
     return response.data.data!;
   }
@@ -350,7 +350,7 @@ export class MessagesApi {
     endDate?: string;
   }): Promise<MessageStatistics> {
     const response = await this.client.get<ApiResponse<MessageStatistics>>(
-      '/api/v1/communications/statistics',
+      '/communications/statistics',
       { params }
     );
     return response.data.data!;

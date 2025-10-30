@@ -25,7 +25,7 @@ import { SendMessageDto } from '../dto/send-message.dto';
 
 @ApiTags('Messages')
 @ApiBearerAuth()
-@Controller('api/v1/messages')
+@Controller('messages')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 

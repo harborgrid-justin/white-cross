@@ -42,7 +42,7 @@ export class MessageApi extends BaseApiService<
   UpdateMessageDto
 > {
   constructor(client: ApiClient) {
-    super(client, '/api/v1/messaging/messages', {
+    super(client, '/messaging/messages', {
       createSchema: createMessageSchema,
       updateSchema: updateMessageSchema,
     });

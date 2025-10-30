@@ -26,7 +26,7 @@ import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto
 
 @ApiTags('Message Templates')
 @ApiBearerAuth()
-@Controller('api/v1/templates')
+@Controller('templates')
 export class TemplateController {
   constructor(private readonly templateService: TemplateService) {}
 

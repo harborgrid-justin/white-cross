@@ -135,7 +135,7 @@ async function baseFetch<T>(
 export const getStudentsList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
   return baseFetch(
-    `/api/v1/students?${searchParams.toString()}`,
+    `/students?${searchParams.toString()}`,
     CACHE_TTL.PHI_STANDARD, // 60s
     [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI]
   );
@@ -150,7 +150,7 @@ export const getStudentsList = cache(async (params?: QueryParams): Promise<Pagin
  */
 export const getStudent = cache(async (id: string): Promise<any> => {
   return baseFetch(
-    `/api/v1/students/${id}`,
+    `/students/${id}`,
     CACHE_TTL.PHI_STANDARD, // 60s
     [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI, buildResourceTag('student', id)]
   );
@@ -202,7 +202,7 @@ export const fetchStudent = getStudent;
 export const getMedicationsList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
   return baseFetch(
-    `/api/v1/medications?${searchParams.toString()}`,
+    `/medications?${searchParams.toString()}`,
     CACHE_TTL.PHI_FREQUENT, // 30s - frequently accessed
     [CACHE_TAGS.MEDICATIONS, CACHE_TAGS.PHI]
   );
@@ -217,7 +217,7 @@ export const getMedicationsList = cache(async (params?: QueryParams): Promise<Pa
  */
 export const getMedication = cache(async (id: string): Promise<any> => {
   return baseFetch(
-    `/api/v1/medications/${id}`,
+    `/medications/${id}`,
     CACHE_TTL.PHI_FREQUENT, // 30s
     [CACHE_TAGS.MEDICATIONS, CACHE_TAGS.PHI, buildResourceTag('medication', id)]
   );
@@ -269,7 +269,7 @@ export const fetchMedication = getMedication;
 export const getAppointmentsList = cache(async (params?: QueryParams & { date?: string; nurseId?: string }): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
   return baseFetch(
-    `/api/v1/appointments?${searchParams.toString()}`,
+    `/appointments?${searchParams.toString()}`,
     CACHE_TTL.PHI_FREQUENT, // 30s - frequently changing
     [CACHE_TAGS.APPOINTMENTS, CACHE_TAGS.PHI]
   );
@@ -284,7 +284,7 @@ export const getAppointmentsList = cache(async (params?: QueryParams & { date?: 
  */
 export const getAppointment = cache(async (id: string): Promise<any> => {
   return baseFetch(
-    `/api/v1/appointments/${id}`,
+    `/appointments/${id}`,
     CACHE_TTL.PHI_FREQUENT, // 30s
     [CACHE_TAGS.APPOINTMENTS, CACHE_TAGS.PHI, buildResourceTag('appointment', id)]
   );
@@ -336,7 +336,7 @@ export const fetchAppointment = getAppointment;
 export const getIncidentsList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
   return baseFetch(
-    `/api/v1/incidents?${searchParams.toString()}`,
+    `/incidents?${searchParams.toString()}`,
     CACHE_TTL.PHI_STANDARD, // 60s
     [CACHE_TAGS.INCIDENTS, CACHE_TAGS.PHI]
   );
@@ -372,7 +372,7 @@ export const fetchIncidentsList = getIncidentsList;
  */
 export const getDashboardStats = cache(async (): Promise<any> => {
   return baseFetch(
-    '/api/v1/dashboard/stats',
+    '/dashboard/stats',
     CACHE_TTL.STATS, // 120s - aggregated stats
     [CACHE_TAGS.STATS]
   );
@@ -409,7 +409,7 @@ export const fetchDashboardStats = getDashboardStats;
 export const getUsersList = cache(async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
   const searchParams = new URLSearchParams(params as any);
   return baseFetch(
-    `/api/v1/users?${searchParams.toString()}`,
+    `/users?${searchParams.toString()}`,
     CACHE_TTL.STATIC, // 300s - users change infrequently
     [CACHE_TAGS.USERS]
   );
@@ -424,7 +424,7 @@ export const getUsersList = cache(async (params?: QueryParams): Promise<Paginate
  */
 export const getCurrentUser = cache(async (): Promise<any> => {
   return baseFetch(
-    '/api/v1/auth/me',
+    '/auth/me',
     CACHE_TTL.SESSION, // 300s
     [CACHE_TAGS.USERS]
   );

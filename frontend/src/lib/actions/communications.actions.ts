@@ -129,7 +129,7 @@ export async function getMessages(
     const validatedFilter = filter ? MessageFilterSchema.parse(filter) : {};
 
     const response = await fetchApi<{ messages: Message[]; total: number }>(
-      '/api/v1/communications/messages',
+      '/communications/messages',
       {
         method: 'GET',
         params: validatedFilter
@@ -164,7 +164,7 @@ export async function getMessageById(
 ): Promise<ActionResponse<Message>> {
   try {
     const response = await fetchApi<Message>(
-      `/api/v1/communications/messages/${messageId}`,
+      `/communications/messages/${messageId}`,
       { method: 'GET' }
     );
 
@@ -198,7 +198,7 @@ export async function getMessageThreads(
     const validatedFilter = filter ? MessageFilterSchema.parse(filter) : {};
 
     const response = await fetchApi<{ threads: MessageThread[]; total: number }>(
-      '/api/v1/communications/messages/threads',
+      '/communications/messages/threads',
       {
         method: 'GET',
         params: validatedFilter
@@ -235,7 +235,7 @@ export async function createMessage(
     const validatedData = CreateMessageSchema.parse(data);
 
     const response = await fetchApi<Message>(
-      '/api/v1/communications/messages',
+      '/communications/messages',
       {
         method: 'POST',
         body: validatedData
@@ -272,7 +272,7 @@ export async function updateMessage(
     const validatedData = UpdateMessageSchema.parse(data);
 
     const response = await fetchApi<Message>(
-      `/api/v1/communications/messages/${validatedData.id}`,
+      `/communications/messages/${validatedData.id}`,
       {
         method: 'PUT',
         body: validatedData
@@ -310,7 +310,7 @@ export async function markMessageAsRead(
     const validatedData = MarkAsReadSchema.parse({ messageId, threadId });
 
     const response = await fetchApi(
-      `/api/v1/communications/messages/${messageId}/read`,
+      `/communications/messages/${messageId}/read`,
       {
         method: 'POST',
         body: validatedData
@@ -344,7 +344,7 @@ export async function archiveMessages(
     const validatedData = ArchiveMessageSchema.parse({ messageIds });
 
     const response = await fetchApi(
-      '/api/v1/communications/messages/archive',
+      '/communications/messages/archive',
       {
         method: 'POST',
         body: validatedData
@@ -379,7 +379,7 @@ export async function deleteMessages(
     const validatedData = DeleteMessageSchema.parse({ messageIds, permanent });
 
     const response = await fetchApi(
-      '/api/v1/communications/messages',
+      '/communications/messages',
       {
         method: 'DELETE',
         body: validatedData
@@ -418,7 +418,7 @@ export async function uploadAttachment(
     }
 
     const response = await fetchApi<{ id: string; fileName: string; fileUrl: string }>(
-      '/api/v1/communications/messages/attachments',
+      '/communications/messages/attachments',
       {
         method: 'POST',
         body: formData,
@@ -462,7 +462,7 @@ export async function getBroadcasts(
     const validatedFilter = filter ? BroadcastFilterSchema.parse(filter) : {};
 
     const response = await fetchApi<{ broadcasts: Broadcast[]; total: number }>(
-      '/api/v1/communications/broadcasts',
+      '/communications/broadcasts',
       {
         method: 'GET',
         params: validatedFilter
@@ -497,7 +497,7 @@ export async function getBroadcastById(
 ): Promise<ActionResponse<Broadcast>> {
   try {
     const response = await fetchApi<Broadcast>(
-      `/api/v1/communications/broadcasts/${broadcastId}`,
+      `/communications/broadcasts/${broadcastId}`,
       { method: 'GET' }
     );
 
@@ -531,7 +531,7 @@ export async function createBroadcast(
     const validatedData = CreateBroadcastSchema.parse(data);
 
     const response = await fetchApi<Broadcast>(
-      '/api/v1/communications/broadcasts',
+      '/communications/broadcasts',
       {
         method: 'POST',
         body: validatedData
@@ -568,7 +568,7 @@ export async function updateBroadcast(
     const validatedData = UpdateBroadcastSchema.parse(data);
 
     const response = await fetchApi<Broadcast>(
-      `/api/v1/communications/broadcasts/${validatedData.id}`,
+      `/communications/broadcasts/${validatedData.id}`,
       {
         method: 'PUT',
         body: validatedData
@@ -606,7 +606,7 @@ export async function cancelBroadcast(
     const validatedData = CancelBroadcastSchema.parse({ id: broadcastId, reason });
 
     const response = await fetchApi(
-      `/api/v1/communications/broadcasts/${broadcastId}/cancel`,
+      `/communications/broadcasts/${broadcastId}/cancel`,
       {
         method: 'POST',
         body: validatedData
@@ -640,7 +640,7 @@ export async function acknowledgeBroadcast(
     const validatedData = AcknowledgeBroadcastSchema.parse({ broadcastId });
 
     const response = await fetchApi(
-      `/api/v1/communications/broadcasts/${broadcastId}/acknowledge`,
+      `/communications/broadcasts/${broadcastId}/acknowledge`,
       {
         method: 'POST',
         body: validatedData
@@ -678,7 +678,7 @@ export async function getNotifications(
     const validatedFilter = filter ? NotificationFilterSchema.parse(filter) : {};
 
     const response = await fetchApi<{ notifications: Notification[]; total: number }>(
-      '/api/v1/communications/notifications',
+      '/communications/notifications',
       {
         method: 'GET',
         params: validatedFilter
@@ -711,7 +711,7 @@ export async function getNotifications(
 export async function getNotificationCount(): Promise<ActionResponse<NotificationCount>> {
   try {
     const response = await fetchApi<NotificationCount>(
-      '/api/v1/communications/notifications/count',
+      '/communications/notifications/count',
       { method: 'GET' }
     );
 
@@ -745,7 +745,7 @@ export async function markNotificationsAsRead(
     const validatedData = MarkNotificationAsReadSchema.parse({ notificationIds });
 
     const response = await fetchApi(
-      '/api/v1/communications/notifications/read',
+      '/communications/notifications/read',
       {
         method: 'POST',
         body: validatedData
@@ -775,7 +775,7 @@ export async function markNotificationsAsRead(
 export async function markAllNotificationsAsRead(): Promise<ActionResponse<void>> {
   try {
     const response = await fetchApi(
-      '/api/v1/communications/notifications/read-all',
+      '/communications/notifications/read-all',
       { method: 'POST' }
     );
 
@@ -806,7 +806,7 @@ export async function archiveNotifications(
     const validatedData = ArchiveNotificationSchema.parse({ notificationIds });
 
     const response = await fetchApi(
-      '/api/v1/communications/notifications/archive',
+      '/communications/notifications/archive',
       {
         method: 'POST',
         body: validatedData
@@ -840,7 +840,7 @@ export async function deleteNotifications(
     const validatedData = DeleteNotificationSchema.parse({ notificationIds });
 
     const response = await fetchApi(
-      '/api/v1/communications/notifications',
+      '/communications/notifications',
       {
         method: 'DELETE',
         body: validatedData
@@ -870,7 +870,7 @@ export async function deleteNotifications(
 export async function getNotificationPreferences(): Promise<ActionResponse<NotificationPreferences>> {
   try {
     const response = await fetchApi<NotificationPreferences>(
-      '/api/v1/communications/notifications/preferences',
+      '/communications/notifications/preferences',
       { method: 'GET' }
     );
 
@@ -902,7 +902,7 @@ export async function updateNotificationPreferences(
 ): Promise<ActionResponse<NotificationPreferences>> {
   try {
     const response = await fetchApi<NotificationPreferences>(
-      '/api/v1/communications/notifications/preferences',
+      '/communications/notifications/preferences',
       {
         method: 'PUT',
         body: preferences
@@ -943,7 +943,7 @@ export async function getTemplates(
     const validatedFilter = filter ? TemplateFilterSchema.parse(filter) : {};
 
     const response = await fetchApi<{ templates: Template[]; total: number }>(
-      '/api/v1/communications/templates',
+      '/communications/templates',
       {
         method: 'GET',
         params: validatedFilter
@@ -978,7 +978,7 @@ export async function getTemplateById(
 ): Promise<ActionResponse<Template>> {
   try {
     const response = await fetchApi<Template>(
-      `/api/v1/communications/templates/${templateId}`,
+      `/communications/templates/${templateId}`,
       { method: 'GET' }
     );
 
@@ -1012,7 +1012,7 @@ export async function createTemplate(
     const validatedData = CreateTemplateSchema.parse(data);
 
     const response = await fetchApi<Template>(
-      '/api/v1/communications/templates',
+      '/communications/templates',
       {
         method: 'POST',
         body: validatedData
@@ -1049,7 +1049,7 @@ export async function updateTemplate(
     const validatedData = UpdateTemplateSchema.parse(data);
 
     const response = await fetchApi<Template>(
-      `/api/v1/communications/templates/${validatedData.id}`,
+      `/communications/templates/${validatedData.id}`,
       {
         method: 'PUT',
         body: validatedData
@@ -1084,7 +1084,7 @@ export async function deleteTemplate(
 ): Promise<ActionResponse<void>> {
   try {
     const response = await fetchApi(
-      `/api/v1/communications/templates/${templateId}`,
+      `/communications/templates/${templateId}`,
       { method: 'DELETE' }
     );
 
@@ -1116,7 +1116,7 @@ export async function duplicateTemplate(
     const validatedData = DuplicateTemplateSchema.parse({ id: templateId, name });
 
     const response = await fetchApi<Template>(
-      `/api/v1/communications/templates/${templateId}/duplicate`,
+      `/communications/templates/${templateId}/duplicate`,
       {
         method: 'POST',
         body: validatedData
@@ -1154,7 +1154,7 @@ export async function renderTemplate(
     const validatedData = RenderTemplateSchema.parse({ templateId, variables });
 
     const response = await fetchApi<RenderedTemplate>(
-      `/api/v1/communications/templates/${templateId}/render`,
+      `/communications/templates/${templateId}/render`,
       {
         method: 'POST',
         body: validatedData

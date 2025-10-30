@@ -530,7 +530,7 @@ export async function generateAppointmentReport(
 ): Promise<ActionResult<{ reportUrl: string }>> {
   try {
     const response = await apiClient.post<{ reportUrl: string }>(
-      '/api/v1/appointments/reports',
+      '/appointments/reports',
       filters
     );
 

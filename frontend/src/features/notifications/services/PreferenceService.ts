@@ -14,7 +14,7 @@ export class PreferenceService {
   private baseUrl: string;
   private cache: Map<string, NotificationPreferences> = new Map();
 
-  constructor(baseUrl: string = '/api/v1/notifications/preferences') {
+  constructor(baseUrl: string = '/notifications/preferences') {
     this.baseUrl = baseUrl;
   }
 

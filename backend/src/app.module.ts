@@ -53,6 +53,7 @@ import { CoreMiddlewareModule } from './middleware/core/core-middleware.module';
 import { WorkersModule } from './workers/workers.module';
 import { MedicationModule } from './medication/medication.module';
 import { StudentModule } from './student/student.module';
+import { DiscoveryExampleModule } from './discovery/discovery.module';
 
 @Module({
   imports: [
@@ -162,6 +163,9 @@ import { StudentModule } from './student/student.module';
     // Feature modules
     MedicationModule,
     StudentModule,
+
+    // Discovery module (for runtime introspection and metadata discovery)
+    DiscoveryExampleModule,
   ],
   controllers: [],
   providers: [],

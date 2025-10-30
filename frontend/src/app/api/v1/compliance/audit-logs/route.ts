@@ -8,12 +8,12 @@ import { withMinimumRole } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 
 /**
- * GET /api/v1/compliance/audit-logs
+ * GET /compliance/audit-logs
  * List audit logs (requires ADMIN role or higher)
  */
 export const GET = withMinimumRole('ADMIN', async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/compliance/audit-logs', {
+    const response = await proxyToBackend(request, '/compliance/audit-logs', {
       cache: {
         revalidate: 0, // No caching for audit logs
         tags: ['audit-logs']

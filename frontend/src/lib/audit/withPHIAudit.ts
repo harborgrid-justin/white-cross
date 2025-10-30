@@ -21,7 +21,7 @@
  *   AuditAction.CREATE_STUDENT,
  *   AuditResourceType.STUDENT
  * )(async (data: CreateStudentData): Promise<ActionResult<Student>> => {
- *   const response = await apiClient.post('/api/v1/students', data);
+ *   const response = await apiClient.post('/students', data);
  *   return { success: true, data: response.data };
  * });
  * ```
@@ -33,7 +33,7 @@
  *   AuditResourceType.STUDENT,
  *   { trackChanges: true }
  * )(async (id: string, data: UpdateStudentData, beforeState?: Student): Promise<ActionResult<Student>> => {
- *   const response = await apiClient.put(`/api/v1/students/${id}`, data);
+ *   const response = await apiClient.put(`/students/${id}`, data);
  *
  *   return {
  *     success: true,
@@ -212,7 +212,7 @@ function generateChanges(
  *   AuditAction.VIEW_STUDENT,
  *   AuditResourceType.STUDENT
  * )(async (id: string): Promise<ActionResult<Student>> => {
- *   const student = await apiClient.get(`/api/v1/students/${id}`);
+ *   const student = await apiClient.get(`/students/${id}`);
  *   return { success: true, data: student };
  * });
  * ```

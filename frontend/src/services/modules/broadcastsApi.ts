@@ -106,7 +106,7 @@ export class BroadcastsApi {
     const params = buildPaginationParams(filters?.page, filters?.limit);
     const allParams = filters ? Object.assign({}, params, filters) : params;
     const response = await this.client.get<PaginatedResponse<Broadcast>>(
-      '/api/v1/communications/broadcasts',
+      '/communications/broadcasts',
       { params: allParams }
     );
     return response.data;
@@ -117,7 +117,7 @@ export class BroadcastsApi {
    */
   async getById(broadcastId: string): Promise<Broadcast> {
     const response = await this.client.get<ApiResponse<Broadcast>>(
-      `/api/v1/communications/broadcasts/${broadcastId}`
+      `/communications/broadcasts/${broadcastId}`
     );
     return response.data.data!;
   }
@@ -127,7 +127,7 @@ export class BroadcastsApi {
    */
   async create(broadcastData: CreateBroadcastRequest): Promise<Broadcast> {
     const response = await this.client.post<ApiResponse<Broadcast>>(
-      '/api/v1/communications/broadcasts',
+      '/communications/broadcasts',
       broadcastData
     );
     return response.data.data!;
@@ -138,7 +138,7 @@ export class BroadcastsApi {
    */
   async update(broadcastId: string, broadcastData: UpdateBroadcastRequest): Promise<Broadcast> {
     const response = await this.client.put<ApiResponse<Broadcast>>(
-      `/api/v1/communications/broadcasts/${broadcastId}`,
+      `/communications/broadcasts/${broadcastId}`,
       broadcastData
     );
     return response.data.data!;
@@ -149,7 +149,7 @@ export class BroadcastsApi {
    */
   async delete(broadcastId: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.delete<ApiResponse<{ success: boolean; message: string }>>(
-      `/api/v1/communications/broadcasts/${broadcastId}`
+      `/communications/broadcasts/${broadcastId}`
     );
     return response.data.data!;
   }
@@ -159,7 +159,7 @@ export class BroadcastsApi {
    */
   async send(broadcastId: string): Promise<Broadcast> {
     const response = await this.client.post<ApiResponse<Broadcast>>(
-      `/api/v1/communications/broadcasts/${broadcastId}/send`
+      `/communications/broadcasts/${broadcastId}/send`
     );
     return response.data.data!;
   }
@@ -190,7 +190,7 @@ export class BroadcastsApi {
   }): Promise<PaginatedResponse<BroadcastDelivery>> {
     const paginationParams = buildPaginationParams(params?.page, params?.limit);
     const response = await this.client.get<PaginatedResponse<BroadcastDelivery>>(
-      `/api/v1/communications/broadcasts/${broadcastId}/deliveries`,
+      `/communications/broadcasts/${broadcastId}/deliveries`,
       { params: paginationParams }
     );
     return response.data;
@@ -204,7 +204,7 @@ export class BroadcastsApi {
     endDate?: string;
   }): Promise<BroadcastStatistics> {
     const response = await this.client.get<ApiResponse<BroadcastStatistics>>(
-      '/api/v1/communications/broadcasts/statistics',
+      '/communications/broadcasts/statistics',
       { params }
     );
     return response.data.data!;

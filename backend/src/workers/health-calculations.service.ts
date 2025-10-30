@@ -13,6 +13,16 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { WorkerPoolService } from './worker-pool.service';
+import {
+  CPUIntensive,
+  ResourcePool,
+  MemoryIntensive,
+  MemoryMonitoring,
+  Cleanup,
+  MemorySensitive,
+  ImmediateCleanup,
+  LeakProne
+} from '../discovery/modules/decorators/memory-optimization.decorators';
 
 /**
  * Input for single BMI calculation
@@ -62,6 +72,33 @@ export interface StatisticalAggregations {
   stdDev: number;
 }
 
+@CPUIntensive()
+@ResourcePool({
+  enabled: true,
+  resourceType: 'worker',
+  minSize: 1,
+  maxSize: 8, // Lower than worker pool since this is a wrapper service
+  priority: 8,
+  validationEnabled: true,
+  autoScale: true
+})
+@MemoryIntensive({
+  enabled: true,
+  threshold: 75, // 75MB threshold for health calculations
+  priority: 'high',
+  cleanupStrategy: 'aggressive',
+  monitoring: true
+})
+@MemoryMonitoring({
+  enabled: true,
+  interval: 20000, // 20 seconds for health calculations monitoring
+  threshold: 50, // 50MB
+  alerts: true
+})
+@LeakProne({
+  monitoring: true,
+  alertThreshold: 100 // 100MB for health calculation memory leaks
+})
 @Injectable()
 export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(HealthCalculationsService.name);
@@ -89,6 +126,8 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
   /**
    * Cleanup worker pool on module destroy
    */
+  @ImmediateCleanup()
+  @Cleanup('high')
   async onModuleDestroy(): Promise<void> {
     if (this.workerPool) {
       this.logger.log('Shutting down health calculations worker pool');
@@ -141,6 +180,7 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
    * console.log(bmis); // [23.1, 22.0]
    * ```
    */
+  @MemorySensitive(75) // 75MB threshold for batch calculations
   async batchCalculateBMI(records: BatchBMIInput[]): Promise<number[]> {
     const pool = this.getPool();
     return pool.executeTask<number[]>('bmi_batch', records);
@@ -163,6 +203,7 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
    * console.log(analysis.changeRate); // 8.3
    * ```
    */
+  @MemorySensitive(50) // 50MB threshold for trend analysis
   async analyzeVitalTrends(vitals: VitalDataPoint[]): Promise<VitalTrendAnalysis> {
     const pool = this.getPool();
     return pool.executeTask<VitalTrendAnalysis>('vital_trends', vitals);
@@ -182,6 +223,7 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
    * console.log(stats.stdDev); // 14.14
    * ```
    */
+  @MemorySensitive(60) // 60MB threshold for statistical calculations
   async calculateAggregations(values: number[]): Promise<StatisticalAggregations> {
     const pool = this.getPool();
     return pool.executeTask<StatisticalAggregations>('aggregations', values);

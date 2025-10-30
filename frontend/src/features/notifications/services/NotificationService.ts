@@ -19,7 +19,7 @@ import {
 export class NotificationService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '/api/v1/notifications') {
+  constructor(baseUrl: string = '/notifications') {
     this.baseUrl = baseUrl;
   }
 

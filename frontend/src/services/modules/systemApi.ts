@@ -464,7 +464,7 @@ export class SystemApi {
     try {
       const params = category ? `?category=${category}` : '';
       const response = await this.client.get<ApiResponse<SystemConfig[]>>(
-        `/api/v1/system/config${params}`
+        `/system/config${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -478,7 +478,7 @@ export class SystemApi {
   async getConfigValue(key: string): Promise<SystemConfig> {
     try {
       const response = await this.client.get<ApiResponse<SystemConfig>>(
-        `/api/v1/system/config/${key}`
+        `/system/config/${key}`
       );
       return response.data.data!;
     } catch (error) {
@@ -492,7 +492,7 @@ export class SystemApi {
   async updateConfig(key: string, data: UpdateSystemConfigRequest): Promise<SystemConfig> {
     try {
       const response = await this.client.put<ApiResponse<SystemConfig>>(
-        `/api/v1/system/config/${key}`,
+        `/system/config/${key}`,
         data
       );
       return response.data.data!;
@@ -511,7 +511,7 @@ export class SystemApi {
   async getFeatureFlags(): Promise<FeatureFlag[]> {
     try {
       const response = await this.client.get<ApiResponse<FeatureFlag[]>>(
-        '/api/v1/system/features'
+        '/system/features'
       );
       return response.data.data || [];
     } catch (error) {
@@ -525,7 +525,7 @@ export class SystemApi {
   async getFeatureFlag(key: string): Promise<FeatureFlag> {
     try {
       const response = await this.client.get<ApiResponse<FeatureFlag>>(
-        `/api/v1/system/features/${key}`
+        `/system/features/${key}`
       );
       return response.data.data!;
     } catch (error) {
@@ -540,7 +540,7 @@ export class SystemApi {
     try {
       const params = userId ? `?userId=${userId}` : '';
       const response = await this.client.get<ApiResponse<{ enabled: boolean }>>(
-        `/api/v1/system/features/${key}/enabled${params}`
+        `/system/features/${key}/enabled${params}`
       );
       return response.data.data!.enabled;
     } catch (error) {
@@ -555,7 +555,7 @@ export class SystemApi {
     try {
       featureFlagSchema.parse(data);
       const response = await this.client.post<ApiResponse<FeatureFlag>>(
-        '/api/v1/system/features',
+        '/system/features',
         data
       );
       return response.data.data!;
@@ -573,7 +573,7 @@ export class SystemApi {
   async updateFeatureFlag(key: string, data: UpdateFeatureFlagRequest): Promise<FeatureFlag> {
     try {
       const response = await this.client.put<ApiResponse<FeatureFlag>>(
-        `/api/v1/system/features/${key}`,
+        `/system/features/${key}`,
         data
       );
       return response.data.data!;
@@ -587,7 +587,7 @@ export class SystemApi {
    */
   async deleteFeatureFlag(key: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/system/features/${key}`);
+      await this.client.delete(`/system/features/${key}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete feature flag');
     }
@@ -603,7 +603,7 @@ export class SystemApi {
   async getGradeTransitionConfig(): Promise<GradeTransitionConfig> {
     try {
       const response = await this.client.get<ApiResponse<GradeTransitionConfig>>(
-        '/api/v1/system/grade-transition'
+        '/system/grade-transition'
       );
       return response.data.data!;
     } catch (error) {
@@ -617,7 +617,7 @@ export class SystemApi {
   async executeGradeTransition(data: ExecuteGradeTransitionRequest): Promise<GradeTransitionConfig> {
     try {
       const response = await this.client.post<ApiResponse<GradeTransitionConfig>>(
-        '/api/v1/system/grade-transition',
+        '/system/grade-transition',
         data
       );
       return response.data.data!;
@@ -636,7 +636,7 @@ export class SystemApi {
   async getHealth(): Promise<SystemHealth> {
     try {
       const response = await this.client.get<ApiResponse<SystemHealth>>(
-        '/api/v1/system/health'
+        '/system/health'
       );
       return response.data.data!;
     } catch (error) {
@@ -655,7 +655,7 @@ export class SystemApi {
     try {
       const params = type ? `?type=${type}` : '';
       const response = await this.client.get<ApiResponse<Integration[]>>(
-        `/api/v1/system/integrations${params}`
+        `/system/integrations${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -669,7 +669,7 @@ export class SystemApi {
   async getIntegration(id: string): Promise<Integration> {
     try {
       const response = await this.client.get<ApiResponse<Integration>>(
-        `/api/v1/system/integrations/${id}`
+        `/system/integrations/${id}`
       );
       return response.data.data!;
     } catch (error) {
@@ -683,7 +683,7 @@ export class SystemApi {
   async createIntegration(data: CreateIntegrationRequest): Promise<Integration> {
     try {
       const response = await this.client.post<ApiResponse<Integration>>(
-        '/api/v1/system/integrations',
+        '/system/integrations',
         data
       );
       return response.data.data!;
@@ -698,7 +698,7 @@ export class SystemApi {
   async updateIntegration(id: string, data: UpdateIntegrationRequest): Promise<Integration> {
     try {
       const response = await this.client.put<ApiResponse<Integration>>(
-        `/api/v1/system/integrations/${id}`,
+        `/system/integrations/${id}`,
         data
       );
       return response.data.data!;
@@ -712,7 +712,7 @@ export class SystemApi {
    */
   async deleteIntegration(id: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/system/integrations/${id}`);
+      await this.client.delete(`/system/integrations/${id}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete integration');
     }
@@ -724,7 +724,7 @@ export class SystemApi {
   async testIntegration(id: string): Promise<IntegrationTestResult> {
     try {
       const response = await this.client.post<ApiResponse<IntegrationTestResult>>(
-        `/api/v1/system/integrations/${id}/test`
+        `/system/integrations/${id}/test`
       );
       return response.data.data!;
     } catch (error) {
@@ -742,7 +742,7 @@ export class SystemApi {
   async getSyncStatus(): Promise<SyncStatus[]> {
     try {
       const response = await this.client.get<ApiResponse<SyncStatus[]>>(
-        '/api/v1/system/sync/status'
+        '/system/sync/status'
       );
       return response.data.data || [];
     } catch (error) {
@@ -757,7 +757,7 @@ export class SystemApi {
     try {
       const params = buildUrlParams({ integrationId, limit });
       const response = await this.client.get<ApiResponse<SyncLog[]>>(
-        `/api/v1/system/sync/logs?${params}`
+        `/system/sync/logs?${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -771,7 +771,7 @@ export class SystemApi {
   async syncStudents(data: SyncStudentsRequest): Promise<SyncLog> {
     try {
       const response = await this.client.post<ApiResponse<SyncLog>>(
-        '/api/v1/system/sync/students',
+        '/system/sync/students',
         data
       );
       return response.data.data!;
@@ -791,7 +791,7 @@ export class SystemApi {
     try {
       const params = districtId ? `?districtId=${districtId}` : '';
       const response = await this.client.get<ApiResponse<School[]>>(
-        `/api/v1/system/schools${params}`
+        `/system/schools${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -805,7 +805,7 @@ export class SystemApi {
   async getSchool(schoolId: string): Promise<School> {
     try {
       const response = await this.client.get<ApiResponse<School>>(
-        `/api/v1/system/schools/${schoolId}`
+        `/system/schools/${schoolId}`
       );
       return response.data.data!;
     } catch (error) {
@@ -820,7 +820,7 @@ export class SystemApi {
     try {
       schoolSchema.parse(data);
       const response = await this.client.post<ApiResponse<School>>(
-        '/api/v1/system/schools',
+        '/system/schools',
         data
       );
       return response.data.data!;
@@ -838,7 +838,7 @@ export class SystemApi {
   async updateSchool(schoolId: string, data: UpdateSchoolRequest): Promise<School> {
     try {
       const response = await this.client.put<ApiResponse<School>>(
-        `/api/v1/system/schools/${schoolId}`,
+        `/system/schools/${schoolId}`,
         data
       );
       return response.data.data!;
@@ -852,7 +852,7 @@ export class SystemApi {
    */
   async deleteSchool(schoolId: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/system/schools/${schoolId}`);
+      await this.client.delete(`/system/schools/${schoolId}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete school');
     }

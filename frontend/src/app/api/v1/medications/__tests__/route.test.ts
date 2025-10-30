@@ -1,6 +1,6 @@
 /**
  * Medications API Route Tests
- * Tests for /api/v1/medications endpoint
+ * Tests for /medications endpoint
  * Priority: HIGH - Patient safety risk, HIPAA compliance
  */
 
@@ -30,7 +30,7 @@ const mockCreateAuditContext = createAuditContext as jest.MockedFunction<
   typeof createAuditContext
 >;
 
-describe('/api/v1/medications', () => {
+describe('/medications', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -42,11 +42,11 @@ describe('/api/v1/medications', () => {
     } as any);
   });
 
-  describe('GET /api/v1/medications', () => {
+  describe('GET /medications', () => {
     it('should require authentication', async () => {
       // Arrange
       mockAuthenticateRequest.mockReturnValue(null);
-      const request = new NextRequest('http://localhost:3000/api/v1/medications');
+      const request = new NextRequest('http://localhost:3000/medications');
 
       // Act
       const response = await GET(request, {});
@@ -68,7 +68,7 @@ describe('/api/v1/medications', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -95,7 +95,7 @@ describe('/api/v1/medications', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -105,7 +105,7 @@ describe('/api/v1/medications', () => {
       // Assert
       expect(mockProxyToBackend).toHaveBeenCalledWith(
         expect.anything(),
-        '/api/v1/medications',
+        '/medications',
         expect.objectContaining({
           cache: expect.objectContaining({
             revalidate: 30, // Shorter cache time for sensitive data
@@ -126,7 +126,7 @@ describe('/api/v1/medications', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -156,7 +156,7 @@ describe('/api/v1/medications', () => {
       } as any);
 
       const request = new NextRequest(
-        `http://localhost:3000/api/v1/medications?studentId=${studentId}`,
+        `http://localhost:3000/medications?studentId=${studentId}`,
         {
           headers: { Authorization: `Bearer token-${nurse.id}` },
         }
@@ -186,7 +186,7 @@ describe('/api/v1/medications', () => {
       } as any);
 
       const request = new NextRequest(
-        'http://localhost:3000/api/v1/medications?status=active',
+        'http://localhost:3000/medications?status=active',
         {
           headers: { Authorization: `Bearer token-${nurse.id}` },
         }
@@ -208,7 +208,7 @@ describe('/api/v1/medications', () => {
       mockAuthenticateRequest.mockReturnValue(nurse);
       mockProxyToBackend.mockRejectedValue(new Error('Backend unavailable'));
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -230,7 +230,7 @@ describe('/api/v1/medications', () => {
         new Error('Medication error: Patient John Doe has adverse reaction')
       );
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -245,7 +245,7 @@ describe('/api/v1/medications', () => {
     });
   });
 
-  describe('POST /api/v1/medications', () => {
+  describe('POST /medications', () => {
     const validMedicationData = {
       studentId: '123e4567-e89b-12d3-a456-426614174000',
       name: 'Ibuprofen',
@@ -262,7 +262,7 @@ describe('/api/v1/medications', () => {
     it('should require authentication', async () => {
       // Arrange
       mockAuthenticateRequest.mockReturnValue(null);
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         body: JSON.stringify(validMedicationData),
       });
@@ -287,7 +287,7 @@ describe('/api/v1/medications', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -318,7 +318,7 @@ describe('/api/v1/medications', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -352,7 +352,7 @@ describe('/api/v1/medications', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -387,7 +387,7 @@ describe('/api/v1/medications', () => {
         status: 400,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -424,7 +424,7 @@ describe('/api/v1/medications', () => {
         status: 400,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -460,7 +460,7 @@ describe('/api/v1/medications', () => {
         status: 400,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -485,7 +485,7 @@ describe('/api/v1/medications', () => {
       mockAuthenticateRequest.mockReturnValue(nurse);
       mockProxyToBackend.mockRejectedValue(new Error('Database connection failed'));
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -516,7 +516,7 @@ describe('/api/v1/medications', () => {
         status: 403,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -548,7 +548,7 @@ describe('/api/v1/medications', () => {
         status: 404,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/medications', {
+      const request = new NextRequest('http://localhost:3000/medications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

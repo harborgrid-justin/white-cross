@@ -165,7 +165,7 @@ export function usePHIAudit() {
         }
 
         // Send to backend audit log
-        await fetch('/api/v1/audit/phi', {
+        await fetch('/audit/phi', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export function usePHIAudit() {
       if (!currentUser) return;
 
       try {
-        await fetch('/api/v1/audit/phi/bulk', {
+        await fetch('/audit/phi/bulk', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ export function usePHIAudit() {
       if (!currentUser) return;
 
       try {
-        await fetch('/api/v1/audit/phi/search', {
+        await fetch('/audit/phi/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -129,7 +129,7 @@ export async function createStudent(
 
     // Call backend API
     const response = await apiRequest<{ student: Student }>(
-      '/api/v1/students',
+      '/students',
       {
         method: 'POST',
         body: JSON.stringify(validation.data)
@@ -189,7 +189,7 @@ export async function updateStudent(
 
     // Call backend API
     const response = await apiRequest<{ student: Student }>(
-      `/api/v1/students/${id}`,
+      `/students/${id}`,
       {
         method: 'PUT',
         body: JSON.stringify(validation.data)
@@ -251,7 +251,7 @@ export async function deactivateStudent(
 
     // Call backend API
     const response = await apiRequest<{ student: Student }>(
-      `/api/v1/students/${id}/deactivate`,
+      `/students/${id}/deactivate`,
       {
         method: 'POST',
         body: JSON.stringify(validation.data)
@@ -299,7 +299,7 @@ export async function deleteStudent(id: string): Promise<ActionResult<void>> {
   );
 
   try {
-    await apiRequest<void>(`/api/v1/students/${id}`, {
+    await apiRequest<void>(`/students/${id}`, {
       method: 'DELETE'
     });
 
@@ -368,7 +368,7 @@ export async function getStudents(
     // Call backend API
     const queryString = params.toString();
     const response = await apiRequest<PaginatedStudentsResponse>(
-      `/api/v1/students${queryString ? `?${queryString}` : ''}`,
+      `/students${queryString ? `?${queryString}` : ''}`,
       {
         method: 'GET',
         next: { tags: ['students'] }
@@ -411,7 +411,7 @@ export async function getStudentById(
 ): Promise<ActionResult<Student>> {
   try {
     const response = await apiRequest<{ student: Student }>(
-      `/api/v1/students/${id}`,
+      `/students/${id}`,
       {
         method: 'GET',
         next: { tags: [`student-${id}`] }
@@ -466,7 +466,7 @@ export async function transferStudent(
 
     // Call backend API
     const response = await apiRequest<{ student: Student }>(
-      `/api/v1/students/${id}/transfer`,
+      `/students/${id}/transfer`,
       {
         method: 'POST',
         body: JSON.stringify(validation.data)
@@ -520,7 +520,7 @@ export async function searchStudents(
     }
 
     const response = await apiRequest<{ students: Student[] }>(
-      `/api/v1/students/search/${encodeURIComponent(query)}`,
+      `/students/search/${encodeURIComponent(query)}`,
       {
         method: 'GET'
       }
@@ -555,7 +555,7 @@ export async function getStudentsByGrade(
 ): Promise<ActionResult<Student[]>> {
   try {
     const response = await apiRequest<{ students: Student[] }>(
-      `/api/v1/students/grade/${encodeURIComponent(grade)}`,
+      `/students/grade/${encodeURIComponent(grade)}`,
       {
         method: 'GET'
       }
@@ -590,7 +590,7 @@ export async function getStudentsByGrade(
 export async function getAssignedStudents(): Promise<ActionResult<Student[]>> {
   try {
     const response = await apiRequest<{ students: Student[] }>(
-      '/api/v1/students/assigned',
+      '/students/assigned',
       {
         method: 'GET',
         next: { tags: ['students', 'assigned-students'] }

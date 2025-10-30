@@ -39,7 +39,7 @@ export class DeliveryService {
   private offlineQueue: QueuedDelivery[] = [];
   private retryIntervals = [1000, 5000, 15000, 60000, 300000]; // Exponential backoff
 
-  constructor(baseUrl: string = '/api/v1/notifications/delivery') {
+  constructor(baseUrl: string = '/notifications/delivery') {
     this.baseUrl = baseUrl;
     this.initializeOfflineQueue();
   }

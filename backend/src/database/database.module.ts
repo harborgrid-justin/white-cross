@@ -176,7 +176,7 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
             dialect: 'postgres',
             uri: databaseUrl,
             autoLoadModels: true,
-            synchronize: false,
+            synchronize: true,
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
             dialectOptions: databaseUrl.includes('sslmode=require') ? {
               ssl: {
@@ -207,7 +207,7 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
             password: configService.get('DB_PASSWORD'),
             database: configService.get('DB_NAME', 'whitecross'),
             autoLoadModels: true,
-            synchronize: false,
+            synchronize: true,
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
             // V6 recommended options
             define: {

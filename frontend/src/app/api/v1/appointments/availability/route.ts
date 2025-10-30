@@ -19,7 +19,7 @@ const availabilityQuerySchema = z.object({
 });
 
 /**
- * GET /api/v1/appointments/availability
+ * GET /appointments/availability
  *
  * Check availability and get suggested time slots.
  *
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * OPTIONS /api/v1/appointments/availability
+ * OPTIONS /appointments/availability
  *
  * CORS preflight handler
  */

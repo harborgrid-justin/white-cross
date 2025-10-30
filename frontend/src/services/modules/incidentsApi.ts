@@ -10,9 +10,9 @@
  * LLM Context: Comprehensive incident reporting system with evidence, witnesses, and compliance tracking
  *
  * RENAMED FROM: incidentReportsApi.ts
- * API PATH CORRECTED: /incident-reports/* → /api/v1/incidents/*
+ * API PATH CORRECTED: /incident-reports/* → /incidents/*
  *
- * Backend Alignment: /api/v1/incidents/*
+ * Backend Alignment: /incidents/*
  */
 
 import type { IIncidentsApi } from '../types'
@@ -61,7 +61,7 @@ import { extractApiData, handleApiError, buildUrlParams } from '../utils/apiUtil
  * Enterprise-grade incident reporting system with comprehensive type safety
  * Handles incidents, witness statements, follow-up actions, and compliance tracking
  *
- * Backend Base Path: /api/v1/incidents
+ * Backend Base Path: /incidents
  *
  * Features:
  * - Complete CRUD operations for incidents
@@ -102,7 +102,7 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: GET /api/v1/incidents
+   * Backend: GET /incidents
    */
   async getAll(params?: IncidentReportFilters): Promise<IncidentReportListResponse> {
     try {
@@ -120,7 +120,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       if (params?.followUpRequired !== undefined) queryParams.append('followUpRequired', params.followUpRequired.toString())
       if (params?.location) queryParams.append('location', params.location)
 
-      const response = await this.client.get(`/api/v1/incidents?${queryParams}`)
+      const response = await this.client.get(`/incidents?${queryParams}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -142,11 +142,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * console.log(incident.report.student?.name);
    * ```
    *
-   * Backend: GET /api/v1/incidents/{id}
+   * Backend: GET /incidents/{id}
    */
   async getById(id: string): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/${id}`)
+      const response = await this.client.get(`/incidents/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -265,11 +265,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @see {@link addFollowUpAction} to create follow-up tasks
    * @see {@link notifyParent} to send additional parent notifications
    *
-   * Backend: POST /api/v1/incidents
+   * Backend: POST /incidents
    */
   async create(data: CreateIncidentReportRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.post('/api/v1/incidents', data)
+      const response = await this.client.post('/incidents', data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -295,11 +295,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: PUT /api/v1/incidents/{id}
+   * Backend: PUT /incidents/{id}
    */
   async update(id: string, data: UpdateIncidentReportRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/${id}`, data)
+      const response = await this.client.put(`/incidents/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -316,11 +316,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @returns Success indicator
    * @throws ApiError if deletion not allowed or incident not found
    *
-   * Backend: DELETE /api/v1/incidents/{id}
+   * Backend: DELETE /incidents/{id}
    */
   async delete(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await this.client.delete(`/api/v1/incidents/${id}`)
+      const response = await this.client.delete(`/incidents/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -349,7 +349,7 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: GET /api/v1/incidents/search
+   * Backend: GET /incidents/search
    */
   async search(params: IncidentSearchParams): Promise<IncidentReportListResponse> {
     try {
@@ -358,7 +358,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       if (params.page) queryParams.append('page', params.page.toString())
       if (params.limit) queryParams.append('limit', params.limit.toString())
 
-      const response = await this.client.get(`/api/v1/incidents/search?${queryParams}`)
+      const response = await this.client.get(`/incidents/search?${queryParams}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -383,7 +383,7 @@ class IncidentsApiImpl implements IIncidentsApi {
    * console.log(stats.byType, stats.bySeverity);
    * ```
    *
-   * Backend: GET /api/v1/incidents/statistics
+   * Backend: GET /incidents/statistics
    */
   async getStatistics(params?: IncidentStatisticsFilters): Promise<IncidentStatistics> {
     try {
@@ -393,7 +393,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       if (params?.studentId) queryParams.append('studentId', params.studentId)
 
       const queryString = queryParams.toString() ? `?${queryParams}` : ''
-      const response = await this.client.get(`/api/v1/incidents/statistics${queryString}`)
+      const response = await this.client.get(`/incidents/statistics${queryString}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -408,11 +408,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    *
    * @returns List of incidents requiring follow-up
    *
-   * Backend: GET /api/v1/incidents (filtered by followUpRequired=true)
+   * Backend: GET /incidents (filtered by followUpRequired=true)
    */
   async getFollowUpRequired(): Promise<IncidentReportListResponse> {
     try {
-      const response = await this.client.get('/api/v1/incidents?followUpRequired=true&status=OPEN')
+      const response = await this.client.get('/incidents?followUpRequired=true&status=OPEN')
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -434,11 +434,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * const recent = await incidentsApi.getStudentRecentIncidents(studentId, 10);
    * ```
    *
-   * Backend: GET /api/v1/incidents/student/{studentId}
+   * Backend: GET /incidents/student/{studentId}
    */
   async getStudentRecentIncidents(studentId: string, limit: number = 5): Promise<IncidentReportListResponse> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/student/${studentId}?limit=${limit}`)
+      const response = await this.client.get(`/incidents/student/${studentId}?limit=${limit}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -459,11 +459,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Notification method and person who notified
    * @returns Updated incident report
    *
-   * Backend: PUT /api/v1/incidents/{id}/notify
+   * Backend: PUT /incidents/{id}/notify
    */
   async markParentNotified(id: string, data: MarkParentNotifiedRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/${id}/notify`, data)
+      const response = await this.client.put(`/incidents/${id}/notify`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -487,11 +487,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: POST /api/v1/incidents/{id}/notify
+   * Backend: POST /incidents/{id}/notify
    */
   async notifyParent(id: string, data: NotifyParentRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.post(`/api/v1/incidents/${id}/notify`, data)
+      const response = await this.client.post(`/incidents/${id}/notify`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -512,11 +512,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Follow-up notes
    * @returns Updated incident report
    *
-   * Backend: PUT /api/v1/incidents/{id}
+   * Backend: PUT /incidents/{id}
    */
   async addFollowUpNotes(id: string, data: AddFollowUpNotesRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/${id}`, {
+      const response = await this.client.put(`/incidents/${id}`, {
         followUpNotes: data.notes
       })
       return extractApiData(response)
@@ -545,11 +545,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: POST /api/v1/incidents/{incidentReportId}/follow-ups
+   * Backend: POST /incidents/{incidentReportId}/follow-ups
    */
   async addFollowUpAction(data: CreateFollowUpActionRequest): Promise<FollowUpActionResponse> {
     try {
-      const response = await this.client.post(`/api/v1/incidents/${data.incidentReportId}/follow-ups`, data)
+      const response = await this.client.post(`/incidents/${data.incidentReportId}/follow-ups`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -566,11 +566,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Partial update data
    * @returns Updated follow-up action
    *
-   * Backend: PUT /api/v1/incidents/follow-ups/{id}
+   * Backend: PUT /incidents/follow-ups/{id}
    */
   async updateFollowUpAction(id: string, data: UpdateFollowUpActionRequest): Promise<FollowUpActionResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/follow-ups/${id}`, data)
+      const response = await this.client.put(`/incidents/follow-ups/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -587,11 +587,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param notes - Optional completion notes
    * @returns Updated follow-up action
    *
-   * Backend: PUT /api/v1/incidents/follow-ups/{id}
+   * Backend: PUT /incidents/follow-ups/{id}
    */
   async completeFollowUpAction(id: string, notes?: string): Promise<FollowUpActionResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/follow-ups/${id}`, {
+      const response = await this.client.put(`/incidents/follow-ups/${id}`, {
         status: ActionStatus.COMPLETED,
         notes
       })
@@ -607,11 +607,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param incidentReportId - Incident report ID
    * @returns List of follow-up actions
    *
-   * Backend: GET /api/v1/incidents/{id}/follow-ups
+   * Backend: GET /incidents/{id}/follow-ups
    */
   async getFollowUpActions(incidentReportId: string): Promise<FollowUpActionListResponse> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/${incidentReportId}/follow-ups`)
+      const response = await this.client.get(`/incidents/${incidentReportId}/follow-ups`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -624,11 +624,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param id - Follow-up action ID
    * @returns Success indicator
    *
-   * Backend: DELETE /api/v1/incidents/follow-ups/{id}
+   * Backend: DELETE /incidents/follow-ups/{id}
    */
   async deleteFollowUpAction(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await this.client.delete(`/api/v1/incidents/follow-ups/${id}`)
+      const response = await this.client.delete(`/incidents/follow-ups/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -760,11 +760,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @see {@link updateWitnessStatement} to edit unverified statements
    * @see {@link getWitnessStatements} to retrieve all statements for incident
    *
-   * Backend: POST /api/v1/incidents/{incidentReportId}/witnesses
+   * Backend: POST /incidents/{incidentReportId}/witnesses
    */
   async addWitnessStatement(data: CreateWitnessStatementRequest): Promise<WitnessStatementResponse> {
     try {
-      const response = await this.client.post(`/api/v1/incidents/${data.incidentReportId}/witnesses`, data)
+      const response = await this.client.post(`/incidents/${data.incidentReportId}/witnesses`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -781,11 +781,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Partial update data
    * @returns Updated witness statement
    *
-   * Backend: PUT /api/v1/incidents/witnesses/{id}
+   * Backend: PUT /incidents/witnesses/{id}
    */
   async updateWitnessStatement(id: string, data: UpdateWitnessStatementRequest): Promise<WitnessStatementResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/witnesses/${id}`, data)
+      const response = await this.client.put(`/incidents/witnesses/${id}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -801,11 +801,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param statementId - Witness statement ID
    * @returns Updated witness statement with verification
    *
-   * Backend: PUT /api/v1/incidents/witnesses/{id}/verify
+   * Backend: PUT /incidents/witnesses/{id}/verify
    */
   async verifyWitnessStatement(statementId: string): Promise<WitnessStatementResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/witnesses/${statementId}/verify`)
+      const response = await this.client.put(`/incidents/witnesses/${statementId}/verify`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -818,11 +818,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param incidentReportId - Incident report ID
    * @returns List of witness statements
    *
-   * Backend: GET /api/v1/incidents/{id}/witnesses
+   * Backend: GET /incidents/{id}/witnesses
    */
   async getWitnessStatements(incidentReportId: string): Promise<WitnessStatementListResponse> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/${incidentReportId}/witnesses`)
+      const response = await this.client.get(`/incidents/${incidentReportId}/witnesses`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -835,11 +835,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param id - Witness statement ID
    * @returns Success indicator
    *
-   * Backend: DELETE /api/v1/incidents/witnesses/{id}
+   * Backend: DELETE /incidents/witnesses/{id}
    */
   async deleteWitnessStatement(id: string): Promise<{ success: boolean }> {
     try {
-      const response = await this.client.delete(`/api/v1/incidents/witnesses/${id}`)
+      const response = await this.client.delete(`/incidents/witnesses/${id}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -860,11 +860,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Evidence URLs and type
    * @returns Updated incident report
    *
-   * Backend: POST /api/v1/incidents/{id}/evidence
+   * Backend: POST /incidents/{id}/evidence
    */
   async addEvidence(id: string, data: AddEvidenceRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.post(`/api/v1/incidents/${id}/evidence`, data)
+      const response = await this.client.post(`/incidents/${id}/evidence`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -942,7 +942,7 @@ class IncidentsApiImpl implements IIncidentsApi {
    *   const formData = new FormData();
    *   files.forEach((file, i) => formData.append(`evidence_${i}`, file));
    *
-   *   const response = await fetch(`/api/v1/incidents/${incidentId}/evidence`, {
+   *   const response = await fetch(`/incidents/${incidentId}/evidence`, {
    *     method: 'POST',
    *     body: formData,
    *     onUploadProgress: (progressEvent) => {
@@ -980,7 +980,7 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @see {@link addEvidence} to link existing evidence URLs
    * @see {@link generateReport} to include evidence in generated reports
    *
-   * Backend: POST /api/v1/incidents/{id}/evidence (Content-Type: multipart/form-data)
+   * Backend: POST /incidents/{id}/evidence (Content-Type: multipart/form-data)
    */
   async uploadEvidence(incidentReportId: string, files: File[]): Promise<{ attachments: string[] }> {
     try {
@@ -989,7 +989,7 @@ class IncidentsApiImpl implements IIncidentsApi {
         formData.append(`evidence_${index}`, file)
       })
 
-      const response = await this.client.post(`/api/v1/incidents/${incidentReportId}/evidence`, formData, {
+      const response = await this.client.post(`/incidents/${incidentReportId}/evidence`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       return extractApiData(response)
@@ -1008,11 +1008,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param fileName - Evidence file name to delete
    * @returns Success indicator
    *
-   * Backend: DELETE /api/v1/incidents/{id}/evidence/{fileName}
+   * Backend: DELETE /incidents/{id}/evidence/{fileName}
    */
   async deleteEvidence(incidentReportId: string, fileName: string): Promise<{ success: boolean }> {
     try {
-      const response = await this.client.delete(`/api/v1/incidents/${incidentReportId}/evidence/${fileName}`)
+      const response = await this.client.delete(`/incidents/${incidentReportId}/evidence/${fileName}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -1033,11 +1033,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Insurance claim data
    * @returns Updated incident report
    *
-   * Backend: PUT /api/v1/incidents/{id}
+   * Backend: PUT /incidents/{id}
    */
   async updateInsuranceClaim(id: string, data: UpdateInsuranceClaimRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/${id}`, {
+      const response = await this.client.put(`/incidents/${id}`, {
         insuranceClaimNumber: data.claimNumber,
         insuranceClaimStatus: data.status
       })
@@ -1057,11 +1057,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param insuranceData - Insurance submission data
    * @returns Insurance submission record
    *
-   * Backend: POST /api/v1/incidents/{id}/insurance-submission
+   * Backend: POST /incidents/{id}/insurance-submission
    */
   async submitToInsurance(id: string, insuranceData: any): Promise<InsuranceSubmissionResponse> {
     try {
-      const response = await this.client.post(`/api/v1/incidents/${id}/insurance-submission`, insuranceData)
+      const response = await this.client.post(`/incidents/${id}/insurance-submission`, insuranceData)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -1077,11 +1077,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param incidentReportId - Incident report ID
    * @returns List of insurance submissions
    *
-   * Backend: GET /api/v1/incidents/{id}/insurance-submissions
+   * Backend: GET /incidents/{id}/insurance-submissions
    */
   async getInsuranceSubmissions(incidentReportId: string): Promise<InsuranceSubmissionsResponse> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/${incidentReportId}/insurance-submissions`)
+      const response = await this.client.get(`/incidents/${incidentReportId}/insurance-submissions`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -1098,11 +1098,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Compliance status data
    * @returns Updated incident report
    *
-   * Backend: PUT /api/v1/incidents/{id}
+   * Backend: PUT /incidents/{id}
    */
   async updateComplianceStatus(id: string, data: UpdateComplianceStatusRequest): Promise<IncidentReportResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/${id}`, {
+      const response = await this.client.put(`/incidents/${id}`, {
         legalComplianceStatus: data.status
       })
       return extractApiData(response)
@@ -1124,11 +1124,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param id - Incident report ID
    * @returns Structured document data
    *
-   * Backend: GET /api/v1/incidents/{id}/document
+   * Backend: GET /incidents/{id}/document
    */
   async generateDocument(id: string): Promise<{ document: IncidentReportDocument }> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/${id}/document`)
+      const response = await this.client.get(`/incidents/${id}/document`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -1154,11 +1154,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * link.click();
    * ```
    *
-   * Backend: GET /api/v1/incidents/{id}/generate
+   * Backend: GET /incidents/{id}/generate
    */
   async generateReport(id: string): Promise<Blob> {
     try {
-      const response = await this.client.get(`/api/v1/incidents/${id}/generate`, { responseType: 'blob' })
+      const response = await this.client.get(`/incidents/${id}/generate`, { responseType: 'blob' })
       return response.data
     } catch (error) {
       throw handleApiError(error as any)
@@ -1183,12 +1183,12 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: GET /api/v1/incidents/export
+   * Backend: GET /incidents/export
    */
   async exportReports(params?: IncidentReportFilters): Promise<Blob> {
     try {
       const queryParams = params ? `?${buildUrlParams(params)}` : ''
-      const response = await this.client.get(`/api/v1/incidents/export${queryParams}`, { responseType: 'blob' })
+      const response = await this.client.get(`/incidents/export${queryParams}`, { responseType: 'blob' })
       return response.data
     } catch (error) {
       throw handleApiError(error as any)
@@ -1215,7 +1215,7 @@ class IncidentsApiImpl implements IIncidentsApi {
    * const comments = await incidentsApi.getComments(incidentId, 1, 20);
    * ```
    *
-   * Backend: GET /api/v1/incidents/{id}/comments
+   * Backend: GET /incidents/{id}/comments
    */
   async getComments(incidentReportId: string, page?: number, limit?: number): Promise<CommentListResponse> {
     try {
@@ -1224,7 +1224,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       if (limit) queryParams.append('limit', limit.toString())
 
       const queryString = queryParams.toString() ? `?${queryParams}` : ''
-      const response = await this.client.get(`/api/v1/incidents/${incidentReportId}/comments${queryString}`)
+      const response = await this.client.get(`/incidents/${incidentReportId}/comments${queryString}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -1248,11 +1248,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * });
    * ```
    *
-   * Backend: POST /api/v1/incidents/{incidentReportId}/comments
+   * Backend: POST /incidents/{incidentReportId}/comments
    */
   async createComment(data: CreateCommentRequest): Promise<CommentResponse> {
     try {
-      const response = await this.client.post(`/api/v1/incidents/${data.incidentReportId}/comments`, {
+      const response = await this.client.post(`/incidents/${data.incidentReportId}/comments`, {
         text: data.text
       })
       return extractApiData(response)
@@ -1271,11 +1271,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param data - Update data
    * @returns Updated comment
    *
-   * Backend: PUT /api/v1/incidents/comments/{commentId}
+   * Backend: PUT /incidents/comments/{commentId}
    */
   async updateComment(commentId: string, data: UpdateCommentRequest): Promise<CommentResponse> {
     try {
-      const response = await this.client.put(`/api/v1/incidents/comments/${commentId}`, data)
+      const response = await this.client.put(`/incidents/comments/${commentId}`, data)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)
@@ -1291,11 +1291,11 @@ class IncidentsApiImpl implements IIncidentsApi {
    * @param commentId - Comment ID
    * @returns Success indicator
    *
-   * Backend: DELETE /api/v1/incidents/comments/{commentId}
+   * Backend: DELETE /incidents/comments/{commentId}
    */
   async deleteComment(commentId: string): Promise<{ success: boolean }> {
     try {
-      const response = await this.client.delete(`/api/v1/incidents/comments/${commentId}`)
+      const response = await this.client.delete(`/incidents/comments/${commentId}`)
       return extractApiData(response)
     } catch (error) {
       throw handleApiError(error as any)

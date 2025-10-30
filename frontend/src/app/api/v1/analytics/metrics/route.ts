@@ -8,12 +8,12 @@ import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 
 /**
- * GET /api/v1/analytics/metrics
+ * GET /analytics/metrics
  * Get analytics metrics
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/analytics/metrics', {
+    const response = await proxyToBackend(request, '/analytics/metrics', {
       cache: {
         revalidate: 300, // Cache for 5 minutes
         tags: ['analytics-metrics']

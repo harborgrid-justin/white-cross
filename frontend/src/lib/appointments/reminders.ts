@@ -147,7 +147,7 @@ export async function scheduleReminders(schedule: ReminderSchedule): Promise<Rem
     for (const [type, time] of reminderTimes.entries()) {
       try {
         const response = await apiClient.post<{ id: string }>(
-          `/api/v1/appointments/${appointmentId}/reminders`,
+          `/appointments/${appointmentId}/reminders`,
           {
             reminderType: type,
             scheduledFor: time.toISOString(),
@@ -182,7 +182,7 @@ export async function scheduleReminders(schedule: ReminderSchedule): Promise<Rem
  */
 export async function cancelReminders(appointmentId: string): Promise<boolean> {
   try {
-    await apiClient.delete(`/api/v1/appointments/${appointmentId}/reminders`);
+    await apiClient.delete(`/appointments/${appointmentId}/reminders`);
     return true;
   } catch (error) {
     console.error('Error cancelling reminders:', error);
@@ -195,7 +195,7 @@ export async function cancelReminders(appointmentId: string): Promise<boolean> {
  */
 export async function cancelReminder(reminderId: string): Promise<boolean> {
   try {
-    await apiClient.delete(`/api/v1/reminders/${reminderId}`);
+    await apiClient.delete(`/reminders/${reminderId}`);
     return true;
   } catch (error) {
     console.error('Error cancelling reminder:', error);
@@ -246,7 +246,7 @@ export async function sendImmediateReminder(
 ): Promise<{ sent: boolean; error?: string }> {
   try {
     const response = await apiClient.post<{ sent: boolean }>(
-      `/api/v1/appointments/${appointmentId}/send-reminder`,
+      `/appointments/${appointmentId}/send-reminder`,
       {
         method,
         customMessage,
@@ -273,7 +273,7 @@ export async function getReminderHistory(
 ): Promise<ScheduledReminder[]> {
   try {
     const response = await apiClient.get<ScheduledReminder[]>(
-      `/api/v1/appointments/${appointmentId}/reminders`
+      `/appointments/${appointmentId}/reminders`
     );
 
     return response.data;
@@ -433,7 +433,7 @@ export async function getReminderStatistics(params: {
       totalSent: number;
       totalFailed: number;
       totalCancelled: number;
-    }>('/api/v1/appointments/reminders/statistics', {
+    }>('/appointments/reminders/statistics', {
       params,
     });
 
@@ -467,7 +467,7 @@ export async function getReminderStatistics(params: {
 export async function getDefaultReminderSettings(): Promise<ReminderSettings> {
   try {
     const response = await apiClient.get<ReminderSettings>(
-      '/api/v1/appointments/settings/reminders'
+      '/appointments/settings/reminders'
     );
 
     return response.data;
@@ -489,7 +489,7 @@ export async function saveDefaultReminderSettings(
   settings: ReminderSettings
 ): Promise<boolean> {
   try {
-    await apiClient.put('/api/v1/appointments/settings/reminders', settings);
+    await apiClient.put('/appointments/settings/reminders', settings);
     return true;
   } catch (error) {
     console.error('Error saving default reminder settings:', error);

@@ -383,7 +383,7 @@ export class AnalyticsApi {
 
     // Fetch from API
     const response = await this.client.get<ApiResponse<HealthMetrics[]>>(
-      '/api/v1/analytics/health-metrics',
+      '/analytics/health-metrics',
       { params }
     );
 
@@ -408,7 +408,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<HealthTrends>>(
-      '/api/v1/analytics/health-trends',
+      '/analytics/health-trends',
       { params }
     );
 
@@ -431,7 +431,7 @@ export class AnalyticsApi {
     }
 
     const response = await this.client.get<ApiResponse<HealthMetrics[]>>(
-      `/api/v1/analytics/health-metrics/student/${studentId}`,
+      `/analytics/health-metrics/student/${studentId}`,
       { params }
     );
 
@@ -451,7 +451,7 @@ export class AnalyticsApi {
     }
 
     const response = await this.client.get<ApiResponse<HealthMetrics[]>>(
-      `/api/v1/analytics/health-metrics/school/${schoolId}`,
+      `/analytics/health-metrics/school/${schoolId}`,
       { params }
     );
 
@@ -476,7 +476,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<IncidentTrends>>(
-      '/api/v1/analytics/incidents/trends',
+      '/analytics/incidents/trends',
       { params }
     );
 
@@ -495,7 +495,7 @@ export class AnalyticsApi {
     schoolId?: string;
   }): Promise<IncidentLocationData[]> {
     const response = await this.client.get<ApiResponse<IncidentLocationData[]>>(
-      '/api/v1/analytics/incidents/by-location',
+      '/analytics/incidents/by-location',
       { params }
     );
 
@@ -525,7 +525,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<MedicationUsage[]>>(
-      '/api/v1/analytics/medications/usage',
+      '/analytics/medications/usage',
       { params }
     );
 
@@ -545,7 +545,7 @@ export class AnalyticsApi {
     schoolId?: string;
   }): Promise<MedicationAdherence[]> {
     const response = await this.client.get<ApiResponse<MedicationAdherence[]>>(
-      '/api/v1/analytics/medications/adherence',
+      '/analytics/medications/adherence',
       { params }
     );
 
@@ -570,7 +570,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<AppointmentTrends>>(
-      '/api/v1/analytics/appointments/trends',
+      '/analytics/appointments/trends',
       { params }
     );
 
@@ -589,7 +589,7 @@ export class AnalyticsApi {
     schoolId?: string;
   }): Promise<NoShowRate> {
     const response = await this.client.get<ApiResponse<NoShowRate>>(
-      '/api/v1/analytics/appointments/no-show-rate',
+      '/analytics/appointments/no-show-rate',
       { params }
     );
 
@@ -613,7 +613,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<NurseDashboard>>(
-      '/api/v1/analytics/dashboard/nurse',
+      '/analytics/dashboard/nurse',
       { params: { nurseId, ...params } }
     );
 
@@ -637,7 +637,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<AdminDashboard>>(
-      '/api/v1/analytics/dashboard/admin',
+      '/analytics/dashboard/admin',
       { params }
     );
 
@@ -664,7 +664,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<SchoolDashboard>>(
-      `/api/v1/analytics/dashboard/school/${schoolId}`,
+      `/analytics/dashboard/school/${schoolId}`,
       { params }
     );
 
@@ -691,7 +691,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<AnalyticsSummary>>(
-      '/api/v1/analytics/summary',
+      '/analytics/summary',
       { params }
     );
 
@@ -717,7 +717,7 @@ export class AnalyticsApi {
     // }
 
     const response = await this.client.post<ApiResponse<CustomReportResult>>(
-      '/api/v1/analytics/reports/custom',
+      '/analytics/reports/custom',
       request
     );
 
@@ -751,7 +751,7 @@ export class AnalyticsApi {
     if (cached) return cached;
 
     const response = await this.client.get<ApiResponse<ReportListResponse>>(
-      '/api/v1/analytics/reports',
+      '/analytics/reports',
       { params }
     );
 
@@ -770,7 +770,7 @@ export class AnalyticsApi {
     }
 
     const response = await this.client.get<ApiResponse<CustomReport>>(
-      `/api/v1/analytics/reports/${reportId}`
+      `/analytics/reports/${reportId}`
     );
 
     return response.data.data!;
@@ -784,7 +784,7 @@ export class AnalyticsApi {
       throw new Error('Report ID is required');
     }
 
-    await this.client.delete(`/api/v1/analytics/reports/${reportId}`);
+    await this.client.delete(`/analytics/reports/${reportId}`);
 
     // Clear report list cache
     this.clearCache(CacheKeys.REPORT_LIST);
@@ -809,7 +809,7 @@ export class AnalyticsApi {
     // }
 
     const response = await this.client.post<ApiResponse<ReportSchedule>>(
-      `/api/v1/analytics/reports/${reportId}/schedule`,
+      `/analytics/reports/${reportId}/schedule`,
       schedule
     );
 
@@ -829,7 +829,7 @@ export class AnalyticsApi {
     }
 
     const response = await this.client.patch<ApiResponse<ReportSchedule>>(
-      `/api/v1/analytics/reports/${reportId}/schedule/${scheduleId}`,
+      `/analytics/reports/${reportId}/schedule/${scheduleId}`,
       updates
     );
 
@@ -845,7 +845,7 @@ export class AnalyticsApi {
     }
 
     await this.client.delete(
-      `/api/v1/analytics/reports/${reportId}/schedule/${scheduleId}`
+      `/analytics/reports/${reportId}/schedule/${scheduleId}`
     );
   }
 
@@ -858,7 +858,7 @@ export class AnalyticsApi {
     }
 
     const response = await this.client.get<ApiResponse<ReportSchedule[]>>(
-      `/api/v1/analytics/reports/${reportId}/schedules`
+      `/analytics/reports/${reportId}/schedules`
     );
 
     return response.data.data || [];
@@ -923,7 +923,7 @@ export class AnalyticsApi {
     format: ReportExportFormat
   ): Promise<Blob> {
     const response = await this.client.get<Blob>(
-      `/api/v1/analytics/reports/${reportId}/export`,
+      `/analytics/reports/${reportId}/export`,
       {
         params: { format },
         responseType: 'blob'
@@ -967,7 +967,7 @@ export class AnalyticsApi {
     level: 'summary' | 'detail' | 'record'
   ): Promise<any> {
     const response = await this.client.get<ApiResponse<any>>(
-      '/api/v1/analytics/drill-down',
+      '/analytics/drill-down',
       {
         params: {
           metricType,
@@ -990,7 +990,7 @@ export class AnalyticsApi {
     schoolId?: string;
   }): Promise<any> {
     const response = await this.client.get<ApiResponse<any>>(
-      '/api/v1/analytics/forecast',
+      '/analytics/forecast',
       { params }
     );
 

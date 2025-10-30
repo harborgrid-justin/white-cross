@@ -418,7 +418,7 @@ export const useMedicationSafety = () => {
    * Console warning logged for development awareness.
    *
    * **PLANNED**: Integration with backend APIs:
-   * - `GET /api/v1/medications/safety-check?medicationId={id}&studentId={id}`
+   * - `GET /medications/safety-check?medicationId={id}&studentId={id}`
    * - Response includes all safety check results and warnings
    * - Caching strategy for frequently checked medications
    * - Offline fallback with locally stored patient allergy data

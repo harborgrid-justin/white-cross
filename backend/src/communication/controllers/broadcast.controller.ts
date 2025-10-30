@@ -22,7 +22,7 @@ import { CreateBroadcastDto } from '../dto/create-broadcast.dto';
 
 @ApiTags('Broadcasts')
 @ApiBearerAuth()
-@Controller('api/v1/broadcasts')
+@Controller('broadcasts')
 export class BroadcastController {
   constructor(private readonly broadcastService: BroadcastService) {}
 

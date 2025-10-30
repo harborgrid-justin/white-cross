@@ -27,7 +27,7 @@ import { Student } from '../student/entities/student.entity';
  * Handles API endpoints for automated grade transitions
  */
 @ApiTags('Grade Transition')
-@Controller('api/v1/student-management/grade-transitions')
+@Controller('student-management/grade-transitions')
 // @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
 // @ApiBearerAuth()
 export class GradeTransitionController {
@@ -37,7 +37,7 @@ export class GradeTransitionController {
 
   /**
    * Perform bulk grade transition for end of school year
-   * POST /api/v1/student-management/grade-transitions/bulk
+   * POST /student-management/grade-transitions/bulk
    */
   @Post('bulk')
   @HttpCode(HttpStatus.OK)
@@ -75,7 +75,7 @@ export class GradeTransitionController {
 
   /**
    * Get students eligible for graduation
-   * GET /api/v1/student-management/grade-transitions/graduating
+   * GET /student-management/grade-transitions/graduating
    */
   @Get('graduating')
   @ApiOperation({
@@ -98,7 +98,7 @@ export class GradeTransitionController {
 
   /**
    * Transition individual student to a new grade
-   * POST /api/v1/student-management/grade-transitions/:studentId
+   * POST /student-management/grade-transitions/:studentId
    */
   @Post(':studentId')
   @HttpCode(HttpStatus.OK)

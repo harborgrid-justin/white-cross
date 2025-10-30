@@ -424,37 +424,37 @@ export const API_ROUTES = {
   BASE: '/api/v1',
 
   /** Authentication */
-  AUTH_LOGIN: '/api/v1/auth/login',
-  AUTH_LOGOUT: '/api/v1/auth/logout',
-  AUTH_REGISTER: '/api/v1/auth/register',
-  AUTH_REFRESH: '/api/v1/auth/refresh',
-  AUTH_FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
-  AUTH_RESET_PASSWORD: '/api/v1/auth/reset-password',
-  AUTH_VERIFY_EMAIL: '/api/v1/auth/verify-email',
-  AUTH_MFA_SETUP: '/api/v1/auth/mfa/setup',
-  AUTH_MFA_VERIFY: '/api/v1/auth/mfa/verify',
+  AUTH_LOGIN: '/auth/login',
+  AUTH_LOGOUT: '/auth/logout',
+  AUTH_REGISTER: '/auth/register',
+  AUTH_REFRESH: '/auth/refresh',
+  AUTH_FORGOT_PASSWORD: '/auth/forgot-password',
+  AUTH_RESET_PASSWORD: '/auth/reset-password',
+  AUTH_VERIFY_EMAIL: '/auth/verify-email',
+  AUTH_MFA_SETUP: '/auth/mfa/setup',
+  AUTH_MFA_VERIFY: '/auth/mfa/verify',
 
   /** Users */
-  USERS: '/api/v1/users',
-  USER_BY_ID: '/api/v1/users/:id',
-  USER_ME: '/api/v1/users/me',
+  USERS: '/users',
+  USER_BY_ID: '/users/:id',
+  USER_ME: '/users/me',
 
   /** Students */
-  STUDENTS: '/api/v1/students',
-  STUDENT_BY_ID: '/api/v1/students/:id',
-  STUDENT_SEARCH: '/api/v1/students/search',
+  STUDENTS: '/students',
+  STUDENT_BY_ID: '/students/:id',
+  STUDENT_SEARCH: '/students/search',
 
   /** Health Records */
-  HEALTH_RECORDS: '/api/v1/health-records',
-  HEALTH_RECORD_BY_ID: '/api/v1/health-records/:id',
+  HEALTH_RECORDS: '/health-records',
+  HEALTH_RECORD_BY_ID: '/health-records/:id',
 
   /** Medications */
-  MEDICATIONS: '/api/v1/medications',
-  MEDICATION_BY_ID: '/api/v1/medications/:id',
+  MEDICATIONS: '/medications',
+  MEDICATION_BY_ID: '/medications/:id',
 
   /** Appointments */
-  APPOINTMENTS: '/api/v1/appointments',
-  APPOINTMENT_BY_ID: '/api/v1/appointments/:id',
+  APPOINTMENTS: '/appointments',
+  APPOINTMENT_BY_ID: '/appointments/:id',
 
   /** GraphQL endpoint */
   GRAPHQL: '/graphql',
@@ -546,11 +546,11 @@ export const RouteBuilders = {
   userPermissions: (id: string) => `/users/${id}/permissions`,
 
   /** Build API routes */
-  apiStudentById: (id: string) => `/api/v1/students/${id}`,
-  apiUserById: (id: string) => `/api/v1/users/${id}`,
-  apiHealthRecordById: (id: string) => `/api/v1/health-records/${id}`,
-  apiMedicationById: (id: string) => `/api/v1/medications/${id}`,
-  apiAppointmentById: (id: string) => `/api/v1/appointments/${id}`,
+  apiStudentById: (id: string) => `/students/${id}`,
+  apiUserById: (id: string) => `/users/${id}`,
+  apiHealthRecordById: (id: string) => `/health-records/${id}`,
+  apiMedicationById: (id: string) => `/medications/${id}`,
+  apiAppointmentById: (id: string) => `/appointments/${id}`,
 } as const;
 
 /**

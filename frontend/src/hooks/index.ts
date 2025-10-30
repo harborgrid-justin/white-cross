@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Main Hooks Export Hub
  *
  * Centralized export module for all domain-specific React hooks in the White Cross

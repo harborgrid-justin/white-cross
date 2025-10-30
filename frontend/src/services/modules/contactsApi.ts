@@ -319,7 +319,7 @@ export class ContactsApi {
     try {
       const params = filters ? buildUrlParams(filters) : '';
       const response = await this.client.get<PaginatedResponse<Contact>>(
-        `/api/v1/contacts${params ? `?${params}` : ''}`
+        `/contacts${params ? `?${params}` : ''}`
       );
       return response.data;
     } catch (error) {
@@ -333,7 +333,7 @@ export class ContactsApi {
   async getById(id: string): Promise<Contact> {
     try {
       const response = await this.client.get<ApiResponse<Contact>>(
-        `/api/v1/contacts/${id}`
+        `/contacts/${id}`
       );
       return response.data.data!;
     } catch (error) {
@@ -348,7 +348,7 @@ export class ContactsApi {
     try {
       const params = studentId ? `?studentId=${studentId}` : '';
       const response = await this.client.get<ApiResponse<Contact[]>>(
-        `/api/v1/contacts/by-relation/${relationTo}${params}`
+        `/contacts/by-relation/${relationTo}${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -363,7 +363,7 @@ export class ContactsApi {
     try {
       const params = buildUrlParams({ search: query, ...filters });
       const response = await this.client.get<ApiResponse<ContactSearchResult[]>>(
-        `/api/v1/contacts/search?${params}`
+        `/contacts/search?${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -378,7 +378,7 @@ export class ContactsApi {
     try {
       const params = studentId ? `?studentId=${studentId}` : '';
       const response = await this.client.get<ApiResponse<ContactStatistics>>(
-        `/api/v1/contacts/stats${params}`
+        `/contacts/stats${params}`
       );
       return response.data.data!;
     } catch (error) {
@@ -395,7 +395,7 @@ export class ContactsApi {
       createContactSchema.parse(contactData);
 
       const response = await this.client.post<ApiResponse<Contact>>(
-        '/api/v1/contacts',
+        '/contacts',
         contactData
       );
       return response.data.data!;
@@ -426,7 +426,7 @@ export class ContactsApi {
       updateContactSchema.parse(data);
 
       const response = await this.client.put<ApiResponse<Contact>>(
-        `/api/v1/contacts/${id}`,
+        `/contacts/${id}`,
         data
       );
       return response.data.data!;
@@ -453,7 +453,7 @@ export class ContactsApi {
    */
   async delete(id: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/contacts/${id}`);
+      await this.client.delete(`/contacts/${id}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete contact');
     }
@@ -465,7 +465,7 @@ export class ContactsApi {
   async verify(id: string): Promise<Contact> {
     try {
       const response = await this.client.post<ApiResponse<Contact>>(
-        `/api/v1/contacts/${id}/verify`
+        `/contacts/${id}/verify`
       );
       return response.data.data!;
     } catch (error) {
@@ -490,7 +490,7 @@ export class ContactsApi {
   async getAuthorizedPickups(studentId: string): Promise<Contact[]> {
     try {
       const response = await this.client.get<ApiResponse<Contact[]>>(
-        `/api/v1/contacts?studentId=${studentId}&canPickup=true`
+        `/contacts?studentId=${studentId}&canPickup=true`
       );
       return response.data.data || [];
     } catch (error) {
@@ -511,7 +511,7 @@ export class ContactsApi {
         imported: number;
         failed: number;
         errors: Array<{ index: number; error: string }>;
-      }>>('/api/v1/contacts/bulk-import', { contacts });
+      }>>('/contacts/bulk-import', { contacts });
       return response.data.data!;
     } catch (error) {
       throw createApiError(error, 'Failed to import contacts');

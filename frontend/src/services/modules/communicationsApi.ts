@@ -450,13 +450,13 @@ export class CommunicationsApi {
 
   /**
    * Get all broadcasts with optional filters
-   * @endpoint GET /api/v1/communications/broadcasts
+   * @endpoint GET /communications/broadcasts
    */
   async getBroadcasts(filters?: BroadcastFilters): Promise<PaginatedResponse<Broadcast>> {
     try {
       const params = filters ? buildUrlParams(filters) : '';
       const response = await this.client.get<PaginatedResponse<Broadcast>>(
-        `/api/v1/communications/broadcasts${params ? `?${params}` : ''}`
+        `/communications/broadcasts${params ? `?${params}` : ''}`
       );
       return response.data;
     } catch (error) {
@@ -466,12 +466,12 @@ export class CommunicationsApi {
 
   /**
    * Get single broadcast by ID
-   * @endpoint GET /api/v1/communications/broadcasts/{id}
+   * @endpoint GET /communications/broadcasts/{id}
    */
   async getBroadcast(id: string): Promise<Broadcast> {
     try {
       const response = await this.client.get<ApiResponse<Broadcast>>(
-        `/api/v1/communications/broadcasts/${id}`
+        `/communications/broadcasts/${id}`
       );
       return response.data.data!;
     } catch (error) {
@@ -481,13 +481,13 @@ export class CommunicationsApi {
 
   /**
    * Create new broadcast
-   * @endpoint POST /api/v1/communications/broadcasts
+   * @endpoint POST /communications/broadcasts
    */
   async createBroadcast(data: CreateBroadcastRequest): Promise<Broadcast> {
     try {
       broadcastSchema.parse(data);
       const response = await this.client.post<ApiResponse<Broadcast>>(
-        '/api/v1/communications/broadcasts',
+        '/communications/broadcasts',
         data
       );
       return response.data.data!;
@@ -501,12 +501,12 @@ export class CommunicationsApi {
 
   /**
    * Update broadcast
-   * @endpoint PUT /api/v1/communications/broadcasts/{id}
+   * @endpoint PUT /communications/broadcasts/{id}
    */
   async updateBroadcast(id: string, data: UpdateBroadcastRequest): Promise<Broadcast> {
     try {
       const response = await this.client.put<ApiResponse<Broadcast>>(
-        `/api/v1/communications/broadcasts/${id}`,
+        `/communications/broadcasts/${id}`,
         data
       );
       return response.data.data!;
@@ -517,12 +517,12 @@ export class CommunicationsApi {
 
   /**
    * Delete broadcast
-   * @endpoint DELETE /api/v1/communications/broadcasts/{id}
+   * @endpoint DELETE /communications/broadcasts/{id}
    * @NEW Added in consolidated version
    */
   async deleteBroadcast(id: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/communications/broadcasts/${id}`);
+      await this.client.delete(`/communications/broadcasts/${id}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete broadcast');
     }
@@ -612,12 +612,12 @@ export class CommunicationsApi {
    * @see {@link getBroadcastDeliveryReport} to view detailed delivery metrics
    * @see {@link cancelBroadcast} to cancel before/during sending
    *
-   * @endpoint POST /api/v1/communications/broadcasts/{id}/send
+   * @endpoint POST /communications/broadcasts/{id}/send
    */
   async sendBroadcast(id: string): Promise<Broadcast> {
     try {
       const response = await this.client.post<ApiResponse<Broadcast>>(
-        `/api/v1/communications/broadcasts/{id}/send`
+        `/communications/broadcasts/{id}/send`
       );
       return response.data.data!;
     } catch (error) {
@@ -627,12 +627,12 @@ export class CommunicationsApi {
 
   /**
    * Cancel broadcast
-   * @endpoint POST /api/v1/communications/broadcasts/{id}/cancel
+   * @endpoint POST /communications/broadcasts/{id}/cancel
    */
   async cancelBroadcast(id: string): Promise<Broadcast> {
     try {
       const response = await this.client.post<ApiResponse<Broadcast>>(
-        `/api/v1/communications/broadcasts/${id}/cancel`
+        `/communications/broadcasts/${id}/cancel`
       );
       return response.data.data!;
     } catch (error) {
@@ -642,13 +642,13 @@ export class CommunicationsApi {
 
   /**
    * Get broadcast recipients
-   * @endpoint GET /api/v1/communications/broadcasts/{id}/recipients
+   * @endpoint GET /communications/broadcasts/{id}/recipients
    */
   async getBroadcastRecipients(id: string, page?: number, limit?: number): Promise<PaginatedResponse<BroadcastRecipient>> {
     try {
       const params = buildUrlParams({ page, limit });
       const response = await this.client.get<PaginatedResponse<BroadcastRecipient>>(
-        `/api/v1/communications/broadcasts/${id}/recipients?${params}`
+        `/communications/broadcasts/${id}/recipients?${params}`
       );
       return response.data;
     } catch (error) {
@@ -658,12 +658,12 @@ export class CommunicationsApi {
 
   /**
    * Get broadcast delivery report
-   * @endpoint GET /api/v1/communications/broadcasts/{id}/delivery-report
+   * @endpoint GET /communications/broadcasts/{id}/delivery-report
    */
   async getBroadcastDeliveryReport(id: string): Promise<BroadcastDeliveryReport> {
     try {
       const response = await this.client.get<ApiResponse<BroadcastDeliveryReport>>(
-        `/api/v1/communications/broadcasts/${id}/delivery-report`
+        `/communications/broadcasts/${id}/delivery-report`
       );
       return response.data.data!;
     } catch (error) {
@@ -722,13 +722,13 @@ export class CommunicationsApi {
 
   /**
    * Get all messages with optional filters
-   * @endpoint GET /api/v1/communications/messages
+   * @endpoint GET /communications/messages
    */
   async getMessages(filters?: MessageFilters): Promise<PaginatedResponse<Message>> {
     try {
       const params = filters ? buildUrlParams(filters) : '';
       const response = await this.client.get<PaginatedResponse<Message>>(
-        `/api/v1/communications/messages${params ? `?${params}` : ''}`
+        `/communications/messages${params ? `?${params}` : ''}`
       );
       return response.data;
     } catch (error) {
@@ -738,13 +738,13 @@ export class CommunicationsApi {
 
   /**
    * Get inbox messages
-   * @endpoint GET /api/v1/communications/messages/inbox
+   * @endpoint GET /communications/messages/inbox
    */
   async getInbox(page?: number, limit?: number): Promise<PaginatedResponse<Message>> {
     try {
       const params = buildUrlParams({ page, limit });
       const response = await this.client.get<PaginatedResponse<Message>>(
-        `/api/v1/communications/messages/inbox?${params}`
+        `/communications/messages/inbox?${params}`
       );
       return response.data;
     } catch (error) {
@@ -754,13 +754,13 @@ export class CommunicationsApi {
 
   /**
    * Get sent messages
-   * @endpoint GET /api/v1/communications/messages/sent
+   * @endpoint GET /communications/messages/sent
    */
   async getSentMessages(page?: number, limit?: number): Promise<PaginatedResponse<Message>> {
     try {
       const params = buildUrlParams({ page, limit });
       const response = await this.client.get<PaginatedResponse<Message>>(
-        `/api/v1/communications/messages/sent?${params}`
+        `/communications/messages/sent?${params}`
       );
       return response.data;
     } catch (error) {
@@ -770,12 +770,12 @@ export class CommunicationsApi {
 
   /**
    * Get single message by ID
-   * @endpoint GET /api/v1/communications/messages/{id}
+   * @endpoint GET /communications/messages/{id}
    */
   async getMessage(id: string): Promise<Message> {
     try {
       const response = await this.client.get<ApiResponse<Message>>(
-        `/api/v1/communications/messages/${id}`
+        `/communications/messages/${id}`
       );
       return response.data.data!;
     } catch (error) {
@@ -785,13 +785,13 @@ export class CommunicationsApi {
 
   /**
    * Send new message
-   * @endpoint POST /api/v1/communications/messages
+   * @endpoint POST /communications/messages
    */
   async sendMessage(data: CreateMessageRequest): Promise<Message> {
     try {
       messageSchema.parse(data);
       const response = await this.client.post<ApiResponse<Message>>(
-        '/api/v1/communications/messages',
+        '/communications/messages',
         data
       );
       return response.data.data!;
@@ -805,13 +805,13 @@ export class CommunicationsApi {
 
   /**
    * Update message
-   * @endpoint PUT /api/v1/communications/messages/{id}
+   * @endpoint PUT /communications/messages/{id}
    * @NEW Added in consolidated version
    */
   async updateMessage(id: string, data: UpdateMessageRequest): Promise<Message> {
     try {
       const response = await this.client.put<ApiResponse<Message>>(
-        `/api/v1/communications/messages/${id}`,
+        `/communications/messages/${id}`,
         data
       );
       return response.data.data!;
@@ -822,12 +822,12 @@ export class CommunicationsApi {
 
   /**
    * Delete message
-   * @endpoint DELETE /api/v1/communications/messages/{id}
+   * @endpoint DELETE /communications/messages/{id}
    * @NEW Added in consolidated version
    */
   async deleteMessage(id: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/communications/messages/${id}`);
+      await this.client.delete(`/communications/messages/${id}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete message');
     }
@@ -835,12 +835,12 @@ export class CommunicationsApi {
 
   /**
    * Reply to message
-   * @endpoint POST /api/v1/communications/messages/{id}/reply
+   * @endpoint POST /communications/messages/{id}/reply
    */
   async replyToMessage(messageId: string, body: string, attachments?: Array<{filename: string; data: string}>): Promise<Message> {
     try {
       const response = await this.client.post<ApiResponse<Message>>(
-        `/api/v1/communications/messages/${messageId}/reply`,
+        `/communications/messages/${messageId}/reply`,
         { body, attachments }
       );
       return response.data.data!;
@@ -892,13 +892,13 @@ export class CommunicationsApi {
 
   /**
    * Get all message templates
-   * @endpoint GET /api/v1/communications/templates
+   * @endpoint GET /communications/templates
    */
   async getTemplates(filters?: TemplateFilters): Promise<PaginatedResponse<MessageTemplate>> {
     try {
       const params = filters ? buildUrlParams(filters) : '';
       const response = await this.client.get<PaginatedResponse<MessageTemplate>>(
-        `/api/v1/communications/templates${params ? `?${params}` : ''}`
+        `/communications/templates${params ? `?${params}` : ''}`
       );
       return response.data;
     } catch (error) {
@@ -908,13 +908,13 @@ export class CommunicationsApi {
 
   /**
    * Get single template by ID
-   * @endpoint GET /api/v1/communications/templates/{id}
+   * @endpoint GET /communications/templates/{id}
    * @NEW Added in consolidated version
    */
   async getTemplate(id: string): Promise<MessageTemplate> {
     try {
       const response = await this.client.get<ApiResponse<MessageTemplate>>(
-        `/api/v1/communications/templates/${id}`
+        `/communications/templates/${id}`
       );
       return response.data.data!;
     } catch (error) {
@@ -924,13 +924,13 @@ export class CommunicationsApi {
 
   /**
    * Create message template
-   * @endpoint POST /api/v1/communications/templates
+   * @endpoint POST /communications/templates
    */
   async createTemplate(data: CreateTemplateRequest): Promise<MessageTemplate> {
     try {
       templateSchema.parse(data);
       const response = await this.client.post<ApiResponse<MessageTemplate>>(
-        '/api/v1/communications/templates',
+        '/communications/templates',
         data
       );
       return response.data.data!;
@@ -944,13 +944,13 @@ export class CommunicationsApi {
 
   /**
    * Update message template
-   * @endpoint PUT /api/v1/communications/templates/{id}
+   * @endpoint PUT /communications/templates/{id}
    * @NEW Added in consolidated version
    */
   async updateTemplate(id: string, data: UpdateTemplateRequest): Promise<MessageTemplate> {
     try {
       const response = await this.client.put<ApiResponse<MessageTemplate>>(
-        `/api/v1/communications/templates/${id}`,
+        `/communications/templates/${id}`,
         data
       );
       return response.data.data!;
@@ -961,12 +961,12 @@ export class CommunicationsApi {
 
   /**
    * Delete message template
-   * @endpoint DELETE /api/v1/communications/templates/{id}
+   * @endpoint DELETE /communications/templates/{id}
    * @NEW Added in consolidated version
    */
   async deleteTemplate(id: string): Promise<void> {
     try {
-      await this.client.delete(`/api/v1/communications/templates/${id}`);
+      await this.client.delete(`/communications/templates/${id}`);
     } catch (error) {
       throw createApiError(error, 'Failed to delete template');
     }
@@ -994,12 +994,12 @@ export class CommunicationsApi {
 
   /**
    * Get delivery status for message
-   * @endpoint GET /api/v1/communications/delivery-status/{messageId}
+   * @endpoint GET /communications/delivery-status/{messageId}
    */
   async getDeliveryStatus(messageId: string): Promise<DeliveryStatus> {
     try {
       const response = await this.client.get<ApiResponse<DeliveryStatus>>(
-        `/api/v1/communications/delivery-status/${messageId}`
+        `/communications/delivery-status/${messageId}`
       );
       return response.data.data!;
     } catch (error) {
@@ -1026,13 +1026,13 @@ export class CommunicationsApi {
 
   /**
    * Get scheduled communications
-   * @endpoint GET /api/v1/communications/scheduled
+   * @endpoint GET /communications/scheduled
    */
   async getScheduled(type?: 'BROADCAST' | 'MESSAGE'): Promise<ScheduledCommunication[]> {
     try {
       const params = type ? `?type=${type}` : '';
       const response = await this.client.get<ApiResponse<ScheduledCommunication[]>>(
-        `/api/v1/communications/scheduled${params}`
+        `/communications/scheduled${params}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -1046,13 +1046,13 @@ export class CommunicationsApi {
 
   /**
    * Get communication statistics
-   * @endpoint GET /api/v1/communications/statistics
+   * @endpoint GET /communications/statistics
    */
   async getStatistics(startDate?: string, endDate?: string): Promise<CommunicationStatistics> {
     try {
       const params = buildUrlParams({ startDate, endDate });
       const response = await this.client.get<ApiResponse<CommunicationStatistics>>(
-        `/api/v1/communications/statistics?${params}`
+        `/communications/statistics?${params}`
       );
       return response.data.data!;
     } catch (error) {

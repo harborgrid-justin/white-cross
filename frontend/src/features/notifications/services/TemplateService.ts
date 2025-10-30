@@ -28,7 +28,7 @@ export class TemplateService {
   private baseUrl: string;
   private templates: Map<string, NotificationTemplate> = new Map();
 
-  constructor(baseUrl: string = '/api/v1/notifications/templates') {
+  constructor(baseUrl: string = '/notifications/templates') {
     this.baseUrl = baseUrl;
     this.initializeDefaultTemplates();
   }

@@ -117,7 +117,7 @@ export async function verifyToken(token: string): Promise<{
 
   // TODO: For production, add signature verification here
   // Option 1: Call backend API to validate token
-  // const backendValidation = await fetch('/api/v1/auth/verify', {
+  // const backendValidation = await fetch('/auth/verify', {
   //   method: 'POST',
   //   headers: { 'Content-Type': 'application/json' },
   //   body: JSON.stringify({ token }),
@@ -147,7 +147,7 @@ export async function verifyTokenViaBackend(token: string): Promise<{
 }> {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/v1/auth/verify`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/auth/verify`,
       {
         method: 'POST',
         headers: {

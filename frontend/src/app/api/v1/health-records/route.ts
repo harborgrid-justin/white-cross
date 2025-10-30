@@ -10,13 +10,13 @@ import { proxyToBackend } from '@/lib/apiProxy';
 import { logPHIAccess, createAuditContext } from '@/lib/audit';
 
 /**
- * GET /api/v1/health-records
+ * GET /health-records
  * List all health records with filtering and pagination
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Proxy request to backend with caching
-    const response = await proxyToBackend(request, '/api/v1/health-records', {
+    const response = await proxyToBackend(request, '/health-records', {
       cache: {
         revalidate: 30, // Cache for 30 seconds (highly sensitive PHI)
         tags: ['health-records']
@@ -46,13 +46,13 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
 });
 
 /**
- * POST /api/v1/health-records
+ * POST /health-records
  * Create new health record
  */
 export const POST = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Proxy request to backend
-    const response = await proxyToBackend(request, '/api/v1/health-records');
+    const response = await proxyToBackend(request, '/health-records');
 
     const data = await response.json();
 

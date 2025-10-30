@@ -10,12 +10,12 @@ import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, createAuditContext } from '@/lib/audit';
 
 /**
- * GET /api/v1/appointments
+ * GET /appointments
  * List all appointments
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/appointments', {
+    const response = await proxyToBackend(request, '/appointments', {
       cache: {
         revalidate: 30,
         tags: ['appointments']
@@ -36,12 +36,12 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
 });
 
 /**
- * POST /api/v1/appointments
+ * POST /appointments
  * Create new appointment
  */
 export const POST = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/appointments');
+    const response = await proxyToBackend(request, '/appointments');
 
     const data = await response.json();
 

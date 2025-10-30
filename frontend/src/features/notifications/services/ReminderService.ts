@@ -21,7 +21,7 @@ import {
 export class ReminderService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '/api/v1/reminders') {
+  constructor(baseUrl: string = '/reminders') {
     this.baseUrl = baseUrl;
   }
 

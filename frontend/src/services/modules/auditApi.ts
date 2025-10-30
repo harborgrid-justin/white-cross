@@ -286,7 +286,7 @@ export class AuditApi {
     };
     const allParams = filters ? { ...paginationParams, ...filters } : paginationParams;
     const response = await this.client.get<PaginatedResponse<AuditLog>>(
-      '/api/v1/audit/logs',
+      '/audit/logs',
       { params: allParams }
     );
     return response.data;
@@ -297,7 +297,7 @@ export class AuditApi {
    */
   async getLogById(logId: string): Promise<AuditLog> {
     const response = await this.client.get<ApiResponse<AuditLog>>(
-      `/api/v1/audit/logs/${logId}`
+      `/audit/logs/${logId}`
     );
     return response.data.data!;
   }
@@ -307,7 +307,7 @@ export class AuditApi {
    */
   async createLog(logData: Partial<AuditLog>): Promise<AuditLog> {
     const response = await this.client.post<ApiResponse<AuditLog>>(
-      '/api/v1/audit/logs',
+      '/audit/logs',
       logData
     );
     return response.data.data!;
@@ -323,7 +323,7 @@ export class AuditApi {
     };
     const allParams = filters ? { ...paginationParams, ...filters } : paginationParams;
     const response = await this.client.get<PaginatedResponse<PHIAccessLog>>(
-      '/api/v1/audit/phi-access',
+      '/audit/phi-access',
       { params: allParams }
     );
     return response.data;
@@ -334,7 +334,7 @@ export class AuditApi {
    */
   async logPHIAccess(accessData: Partial<PHIAccessLog>): Promise<PHIAccessLog> {
     const response = await this.client.post<ApiResponse<PHIAccessLog>>(
-      '/api/v1/audit/phi-access',
+      '/audit/phi-access',
       accessData
     );
     return response.data.data!;
@@ -348,7 +348,7 @@ export class AuditApi {
     endDate?: string;
   }): Promise<AuditStatistics> {
     const response = await this.client.get<ApiResponse<AuditStatistics>>(
-      '/api/v1/audit/statistics',
+      '/audit/statistics',
       { params }
     );
     return response.data.data!;
@@ -364,7 +364,7 @@ export class AuditApi {
     limit?: number;
   }): Promise<UserActivity> {
     const response = await this.client.get<ApiResponse<UserActivity>>(
-      `/api/v1/audit/user/${userId}/activity`,
+      `/audit/user/${userId}/activity`,
       { params }
     );
     return response.data.data!;
@@ -380,7 +380,7 @@ export class AuditApi {
     filters?: AuditFilters;
   }): Promise<Blob> {
     const response = await this.client.get<Blob>(
-      '/api/v1/audit/export',
+      '/audit/export',
       {
         params,
         responseType: 'blob'
@@ -399,7 +399,7 @@ export class AuditApi {
     endDate?: string;
   }): Promise<SecurityAnalysis> {
     const response = await this.client.get<ApiResponse<SecurityAnalysis>>(
-      '/api/v1/audit/security-analysis',
+      '/audit/security-analysis',
       { params }
     );
     return response.data.data!;
@@ -413,7 +413,7 @@ export class AuditApi {
     endDate?: string;
   }): Promise<SecurityAnalysis> {
     const response = await this.client.post<ApiResponse<SecurityAnalysis>>(
-      '/api/v1/audit/security-analysis/run',
+      '/audit/security-analysis/run',
       params
     );
     return response.data.data!;
@@ -427,7 +427,7 @@ export class AuditApi {
     endDate?: string;
   }): Promise<ComplianceReport> {
     const response = await this.client.get<ApiResponse<ComplianceReport>>(
-      '/api/v1/audit/compliance-report',
+      '/audit/compliance-report',
       { params }
     );
     return response.data.data!;
@@ -443,7 +443,7 @@ export class AuditApi {
     endDate?: string;
   }): Promise<Anomaly[]> {
     const response = await this.client.get<ApiResponse<Anomaly[]>>(
-      '/api/v1/audit/anomalies',
+      '/audit/anomalies',
       { params }
     );
     return response.data.data || [];
@@ -454,7 +454,7 @@ export class AuditApi {
    */
   async getSessionAudit(sessionId: string): Promise<SessionAudit> {
     const response = await this.client.get<ApiResponse<SessionAudit>>(
-      `/api/v1/audit/session/${sessionId}`
+      `/audit/session/${sessionId}`
     );
     return response.data.data!;
   }
@@ -471,7 +471,7 @@ export class AuditApi {
     }
   ): Promise<DataAccessLog[]> {
     const response = await this.client.get<ApiResponse<DataAccessLog[]>>(
-      `/api/v1/audit/data-access/${resourceType}/${resourceId}`,
+      `/audit/data-access/${resourceType}/${resourceId}`,
       { params }
     );
     return response.data.data || [];
@@ -484,7 +484,7 @@ export class AuditApi {
     beforeDate: string;
   }): Promise<{ success: boolean; archivedCount: number }> {
     const response = await this.client.post<ApiResponse<{ success: boolean; archivedCount: number }>>(
-      '/api/v1/audit/logs/archive',
+      '/audit/logs/archive',
       params
     );
     return response.data.data!;

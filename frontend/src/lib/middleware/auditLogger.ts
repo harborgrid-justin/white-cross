@@ -91,7 +91,7 @@ class AuditLogger {
 
     // In production, send to audit service
     // TODO: Integrate with backend audit service
-    // await fetch('/api/v1/audit/events', {
+    // await fetch('/audit/events', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify(event),

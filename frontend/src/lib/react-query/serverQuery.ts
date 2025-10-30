@@ -202,7 +202,7 @@ export const healthcarePrefetch = {
       ['students', 'list', params],
       async () => {
         // Fetch student list (IDs and names only, no PHI)
-        const response = await fetch(`/api/v1/students?${new URLSearchParams(params as any)}`);
+        const response = await fetch(`/students?${new URLSearchParams(params as any)}`);
         return response.json();
       },
       {
@@ -221,7 +221,7 @@ export const healthcarePrefetch = {
     await prefetchQuery(
       ['appointments', 'list', params],
       async () => {
-        const response = await fetch(`/api/v1/appointments?${new URLSearchParams(params as any)}`);
+        const response = await fetch(`/appointments?${new URLSearchParams(params as any)}`);
         return response.json();
       },
       {
@@ -238,7 +238,7 @@ export const healthcarePrefetch = {
     await prefetchQuery(
       ['dashboard', 'stats'],
       async () => {
-        const response = await fetch('/api/v1/dashboard/stats');
+        const response = await fetch('/dashboard/stats');
         return response.json();
       },
       {
@@ -255,7 +255,7 @@ export const healthcarePrefetch = {
     await prefetchQuery(
       ['users', userId, 'settings'],
       async () => {
-        const response = await fetch(`/api/v1/users/${userId}/settings`);
+        const response = await fetch(`/users/${userId}/settings`);
         return response.json();
       },
       {

@@ -177,7 +177,7 @@ export class UsersApi {
     const params = buildPaginationParams(filters?.page, filters?.limit);
     const allParams = filters ? Object.assign({}, params, filters) : params;
     const response = await this.client.get<PaginatedResponse<User>>(
-      '/api/v1/users',
+      '/users',
       { params: allParams }
     );
     return response.data;
@@ -188,7 +188,7 @@ export class UsersApi {
    */
   async getById(userId: string): Promise<User> {
     const response = await this.client.get<ApiResponse<User>>(
-      `/api/v1/users/${userId}`
+      `/users/${userId}`
     );
     return response.data.data!;
   }
@@ -198,7 +198,7 @@ export class UsersApi {
    */
   async create(userData: CreateUserRequest): Promise<User> {
     const response = await this.client.post<ApiResponse<User>>(
-      '/api/v1/users',
+      '/users',
       userData
     );
     return response.data.data!;
@@ -209,7 +209,7 @@ export class UsersApi {
    */
   async update(userId: string, userData: UpdateUserRequest): Promise<User> {
     const response = await this.client.put<ApiResponse<User>>(
-      `/api/v1/users/${userId}`,
+      `/users/${userId}`,
       userData
     );
     return response.data.data!;
@@ -223,7 +223,7 @@ export class UsersApi {
     passwordData: ChangePasswordRequest
   ): Promise<{ success: boolean; message: string }> {
     const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
-      `/api/v1/users/${userId}/change-password`,
+      `/users/${userId}/change-password`,
       passwordData
     );
     return response.data.data!;
@@ -237,7 +237,7 @@ export class UsersApi {
     passwordData: ResetPasswordRequest
   ): Promise<{ success: boolean; message: string }> {
     const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
-      `/api/v1/users/${userId}/reset-password`,
+      `/users/${userId}/reset-password`,
       passwordData
     );
     return response.data.data!;
@@ -248,7 +248,7 @@ export class UsersApi {
    */
   async deactivate(userId: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.post<ApiResponse<{ success: boolean; message: string }>>(
-      `/api/v1/users/${userId}/deactivate`
+      `/users/${userId}/deactivate`
     );
     return response.data.data!;
   }
@@ -258,7 +258,7 @@ export class UsersApi {
    */
   async reactivate(userId: string): Promise<User> {
     const response = await this.client.post<ApiResponse<User>>(
-      `/api/v1/users/${userId}/reactivate`
+      `/users/${userId}/reactivate`
     );
     return response.data.data!;
   }
@@ -268,7 +268,7 @@ export class UsersApi {
    */
   async getStatistics(): Promise<UserStatistics> {
     const response = await this.client.get<ApiResponse<UserStatistics>>(
-      '/api/v1/users/statistics'
+      '/users/statistics'
     );
     return response.data.data!;
   }
@@ -278,7 +278,7 @@ export class UsersApi {
    */
   async getByRole(role: string): Promise<User[]> {
     const response = await this.client.get<ApiResponse<User[]>>(
-      `/api/v1/users/role/${role}`
+      `/users/role/${role}`
     );
     return response.data.data || [];
   }
@@ -288,7 +288,7 @@ export class UsersApi {
    */
   async getAvailableNurses(schoolId?: string): Promise<AvailableNurse[]> {
     const response = await this.client.get<ApiResponse<AvailableNurse[]>>(
-      '/api/v1/users/nurses/available',
+      '/users/nurses/available',
       { params: { schoolId } }
     );
     return response.data.data || [];

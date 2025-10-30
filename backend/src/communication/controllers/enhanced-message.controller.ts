@@ -57,7 +57,7 @@ import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-par
  */
 @ApiTags('Enhanced Messaging')
 @ApiBearerAuth()
-@Controller('api/v1/enhanced-messages')
+@Controller('enhanced-messages')
 export class EnhancedMessageController {
   constructor(
     private readonly messageService: EnhancedMessageService,

@@ -32,6 +32,16 @@ import {
   CacheEvent,
   CacheMetadata,
 } from './cache.interfaces';
+import {
+  HighPerformance,
+  GCSchedule,
+  MemoryIntensive,
+  ResourcePool,
+  MemoryMonitoring,
+  Cleanup,
+  MemorySensitive,
+  ImmediateCleanup
+} from '../../discovery/modules/decorators/memory-optimization.decorators';
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
@@ -48,7 +58,41 @@ interface L1Entry<T = any> {
 
 /**
  * Redis cache service with multi-tier support
+ * Enhanced with Discovery Service memory optimization patterns
  */
+@HighPerformance()
+@GCSchedule({
+  gcTriggerThreshold: 256, // 256MB
+  aggressiveGcThreshold: 512, // 512MB
+  maxRequestsBeforeGC: 10000,
+  timeBasedGC: true,
+  gcInterval: 300000, // 5 minutes
+  priority: 'critical',
+  leakDetectionEnabled: true,
+  preventiveGC: true
+})
+@MemoryIntensive({
+  enabled: true,
+  threshold: 200, // 200MB
+  priority: 'high',
+  cleanupStrategy: 'aggressive',
+  monitoring: true
+})
+@ResourcePool({
+  enabled: true,
+  resourceType: 'connection',
+  minSize: 2,
+  maxSize: 20,
+  priority: 9,
+  validationEnabled: true,
+  autoScale: true
+})
+@MemoryMonitoring({
+  enabled: true,
+  interval: 30000, // 30 seconds
+  threshold: 150, // 150MB
+  alerts: true
+})
 @Injectable()
 export class CacheService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
@@ -193,6 +237,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * @param options - Cache options
    * @returns Cached value or null
    */
+  @MemorySensitive(50) // 50MB threshold for cleanup
   async get<T = any>(
     key: string,
     options: CacheOptions = {},
@@ -252,6 +297,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * @description Attempts to set value in both L2 (Redis) and L1 (memory) cache.
    * If Redis is unavailable, gracefully degrades to L1 cache only and logs warning.
    */
+  @MemorySensitive(75) // 75MB threshold for memory-intensive set operations
   async set<T = any>(
     key: string,
     value: T,
@@ -778,6 +824,8 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   /**
    * Clear all cache (use with caution)
    */
+  @ImmediateCleanup()
+  @Cleanup('high')
   async clear(): Promise<void> {
     this.l1Cache.clear();
     this.tagIndex.clear();
@@ -996,6 +1044,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
    * Cleanup expired entries from L1 cache
    * @private
    */
+  @Cleanup('normal')
   private cleanupL1(): void {
     const now = Date.now();
     let removed = 0;

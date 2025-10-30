@@ -10,13 +10,13 @@ import { proxyToBackend } from '@/lib/apiProxy';
 import { logPHIAccess, createAuditContext } from '@/lib/audit';
 
 /**
- * GET /api/v1/medications
+ * GET /medications
  * List all medications with filtering and pagination
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Proxy request to backend with caching
-    const response = await proxyToBackend(request, '/api/v1/medications', {
+    const response = await proxyToBackend(request, '/medications', {
       cache: {
         revalidate: 30, // Cache for 30 seconds (sensitive healthcare data)
         tags: ['medications']
@@ -46,13 +46,13 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
 });
 
 /**
- * POST /api/v1/medications
+ * POST /medications
  * Create new medication record
  */
 export const POST = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Proxy request to backend
-    const response = await proxyToBackend(request, '/api/v1/medications');
+    const response = await proxyToBackend(request, '/medications');
 
     const data = await response.json();
 

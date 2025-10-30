@@ -20,7 +20,7 @@ describe('Test Infrastructure', () => {
   });
 
   it('should have environment variables set', () => {
-    expect(process.env.NEXT_PUBLIC_API_URL).toBe('http://localhost:3001/api/v1');
+    expect(process.env.NEXT_PUBLIC_API_URL).toBe('http://localhost:3001');
     expect(process.env.NEXT_PUBLIC_GRAPHQL_URL).toBe('http://localhost:3001/graphql');
   });
 });

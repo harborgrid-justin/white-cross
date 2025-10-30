@@ -10,7 +10,7 @@ import type { EncryptionKeyDto } from './types';
 
 export class EncryptionApi {
   private client: ApiClient;
-  private baseEndpoint = '/api/v1/messaging/encryption';
+  private baseEndpoint = '/messaging/encryption';
 
   constructor(client: ApiClient) {
     this.client = client;

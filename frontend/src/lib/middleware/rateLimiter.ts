@@ -204,7 +204,7 @@ export function getIdentifier(
  * Determine route type from path
  */
 export function getRouteType(path: string): keyof typeof RATE_LIMIT_CONFIGS {
-  if (path.startsWith('/api/v1/auth') || path.startsWith('/login')) {
+  if (path.startsWith('/auth') || path.startsWith('/login')) {
     return 'auth';
   }
   if (path.startsWith('/admin')) {

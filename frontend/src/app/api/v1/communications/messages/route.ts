@@ -10,12 +10,12 @@ import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, createAuditContext } from '@/lib/audit';
 
 /**
- * GET /api/v1/communications/messages
+ * GET /communications/messages
  * List all messages
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/communications/messages', {
+    const response = await proxyToBackend(request, '/communications/messages', {
       cache: {
         revalidate: 10, // Short cache for real-time messaging
         tags: ['messages']
@@ -31,12 +31,12 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
 });
 
 /**
- * POST /api/v1/communications/messages
+ * POST /communications/messages
  * Send new message
  */
 export const POST = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/communications/messages');
+    const response = await proxyToBackend(request, '/communications/messages');
     const data = await response.json();
 
     if (response.status === 201 && data.data) {

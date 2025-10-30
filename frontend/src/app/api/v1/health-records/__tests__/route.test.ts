@@ -1,6 +1,6 @@
 /**
  * Health Records API Route Tests
- * Tests for /api/v1/health-records endpoint
+ * Tests for /health-records endpoint
  * Priority: HIGH - HIPAA compliance risk, highly sensitive PHI
  */
 
@@ -36,7 +36,7 @@ const mockCreateAuditContext = createAuditContext as jest.MockedFunction<
   typeof createAuditContext
 >;
 
-describe('/api/v1/health-records', () => {
+describe('/health-records', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -48,11 +48,11 @@ describe('/api/v1/health-records', () => {
     } as any);
   });
 
-  describe('GET /api/v1/health-records', () => {
+  describe('GET /health-records', () => {
     it('should require authentication', async () => {
       // Arrange
       mockAuthenticateRequest.mockReturnValue(null);
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records');
+      const request = new NextRequest('http://localhost:3000/health-records');
 
       // Act
       const response = await GET(request, {});
@@ -77,7 +77,7 @@ describe('/api/v1/health-records', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -102,7 +102,7 @@ describe('/api/v1/health-records', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -112,7 +112,7 @@ describe('/api/v1/health-records', () => {
       // Assert
       expect(mockProxyToBackend).toHaveBeenCalledWith(
         expect.anything(),
-        '/api/v1/health-records',
+        '/health-records',
         expect.objectContaining({
           cache: expect.objectContaining({
             revalidate: 30, // Short cache time for highly sensitive data
@@ -133,7 +133,7 @@ describe('/api/v1/health-records', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -161,7 +161,7 @@ describe('/api/v1/health-records', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -188,7 +188,7 @@ describe('/api/v1/health-records', () => {
       } as any);
 
       const request = new NextRequest(
-        `http://localhost:3000/api/v1/health-records?studentId=${studentId}`,
+        `http://localhost:3000/health-records?studentId=${studentId}`,
         {
           headers: { Authorization: `Bearer token-${nurse.id}` },
         }
@@ -218,7 +218,7 @@ describe('/api/v1/health-records', () => {
       } as any);
 
       const request = new NextRequest(
-        'http://localhost:3000/api/v1/health-records?type=vaccination',
+        'http://localhost:3000/health-records?type=vaccination',
         {
           headers: { Authorization: `Bearer token-${nurse.id}` },
         }
@@ -240,7 +240,7 @@ describe('/api/v1/health-records', () => {
       mockAuthenticateRequest.mockReturnValue(nurse);
       mockProxyToBackend.mockRejectedValue(new Error('Backend unavailable'));
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -262,7 +262,7 @@ describe('/api/v1/health-records', () => {
         new Error('Database error: Patient John Doe diagnosed with condition X')
       );
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -277,7 +277,7 @@ describe('/api/v1/health-records', () => {
     });
   });
 
-  describe('POST /api/v1/health-records', () => {
+  describe('POST /health-records', () => {
     const validHealthRecordData = {
       studentId: '123e4567-e89b-12d3-a456-426614174000',
       type: 'vaccination',
@@ -292,7 +292,7 @@ describe('/api/v1/health-records', () => {
     it('should require authentication', async () => {
       // Arrange
       mockAuthenticateRequest.mockReturnValue(null);
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         body: JSON.stringify(validHealthRecordData),
       });
@@ -317,7 +317,7 @@ describe('/api/v1/health-records', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ describe('/api/v1/health-records', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,7 +382,7 @@ describe('/api/v1/health-records', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -421,7 +421,7 @@ describe('/api/v1/health-records', () => {
         status: 400,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -459,7 +459,7 @@ describe('/api/v1/health-records', () => {
         status: 400,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -484,7 +484,7 @@ describe('/api/v1/health-records', () => {
       mockAuthenticateRequest.mockReturnValue(nurse);
       mockProxyToBackend.mockRejectedValue(new Error('Database connection failed'));
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -515,7 +515,7 @@ describe('/api/v1/health-records', () => {
         status: 403,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -547,7 +547,7 @@ describe('/api/v1/health-records', () => {
         status: 404,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -576,7 +576,7 @@ describe('/api/v1/health-records', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/health-records', {
+      const request = new NextRequest('http://localhost:3000/health-records', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

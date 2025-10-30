@@ -487,7 +487,7 @@ export class MetricsService {
       tags: Object.entries(m.tags).map(([k, v]) => `${k}:${v}`),
     }));
 
-    const response = await fetch(`${backend.endpoint}/api/v1/series`, {
+    const response = await fetch(`${backend.endpoint}/series`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -22,7 +22,7 @@ const reminderHistorySchema = z.object({
 });
 
 /**
- * POST /api/v1/appointments/reminders
+ * POST /appointments/reminders
  *
  * Send an immediate reminder for an appointment.
  *
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/v1/appointments/reminders
+ * GET /appointments/reminders
  *
  * Get reminder history for an appointment.
  *
@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * OPTIONS /api/v1/appointments/reminders
+ * OPTIONS /appointments/reminders
  *
  * CORS preflight handler
  */

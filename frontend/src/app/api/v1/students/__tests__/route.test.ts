@@ -1,6 +1,6 @@
 /**
  * Students API Route Tests
- * Tests for /api/v1/students endpoint
+ * Tests for /students endpoint
  * Priority: HIGH - PHI exposure risk, HIPAA compliance
  */
 
@@ -30,7 +30,7 @@ const mockCreateAuditContext = createAuditContext as jest.MockedFunction<
   typeof createAuditContext
 >;
 
-describe('/api/v1/students', () => {
+describe('/students', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -42,11 +42,11 @@ describe('/api/v1/students', () => {
     } as any);
   });
 
-  describe('GET /api/v1/students', () => {
+  describe('GET /students', () => {
     it('should require authentication', async () => {
       // Arrange
       mockAuthenticateRequest.mockReturnValue(null);
-      const request = new NextRequest('http://localhost:3000/api/v1/students');
+      const request = new NextRequest('http://localhost:3000/students');
 
       // Act
       const response = await GET(request, {});
@@ -68,7 +68,7 @@ describe('/api/v1/students', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -93,7 +93,7 @@ describe('/api/v1/students', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -103,7 +103,7 @@ describe('/api/v1/students', () => {
       // Assert
       expect(mockProxyToBackend).toHaveBeenCalledWith(
         expect.anything(),
-        '/api/v1/students',
+        '/students',
         expect.objectContaining({
           cache: expect.objectContaining({
             revalidate: 60,
@@ -124,7 +124,7 @@ describe('/api/v1/students', () => {
         status: 200,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -153,7 +153,7 @@ describe('/api/v1/students', () => {
       } as any);
 
       const request = new NextRequest(
-        'http://localhost:3000/api/v1/students?grade=5&status=active',
+        'http://localhost:3000/students?grade=5&status=active',
         {
           headers: { Authorization: `Bearer token-${nurse.id}` },
         }
@@ -166,7 +166,7 @@ describe('/api/v1/students', () => {
       expect(response.status).toBe(200);
       expect(mockProxyToBackend).toHaveBeenCalledWith(
         expect.anything(),
-        '/api/v1/students',
+        '/students',
         expect.anything()
       );
     });
@@ -178,7 +178,7 @@ describe('/api/v1/students', () => {
       mockAuthenticateRequest.mockReturnValue(nurse);
       mockProxyToBackend.mockRejectedValue(new Error('Backend unavailable'));
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -200,7 +200,7 @@ describe('/api/v1/students', () => {
         new Error('Database error: SELECT * FROM students WHERE ssn=123-45-6789')
       );
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         headers: { Authorization: `Bearer token-${nurse.id}` },
       });
 
@@ -215,7 +215,7 @@ describe('/api/v1/students', () => {
     });
   });
 
-  describe('POST /api/v1/students', () => {
+  describe('POST /students', () => {
     const validStudentData = {
       firstName: 'John',
       lastName: 'Doe',
@@ -227,7 +227,7 @@ describe('/api/v1/students', () => {
     it('should require authentication', async () => {
       // Arrange
       mockAuthenticateRequest.mockReturnValue(null);
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         body: JSON.stringify(validStudentData),
       });
@@ -252,7 +252,7 @@ describe('/api/v1/students', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,7 +282,7 @@ describe('/api/v1/students', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -316,7 +316,7 @@ describe('/api/v1/students', () => {
         status: 201,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ describe('/api/v1/students', () => {
         status: 400,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -373,7 +373,7 @@ describe('/api/v1/students', () => {
       mockAuthenticateRequest.mockReturnValue(nurse);
       mockProxyToBackend.mockRejectedValue(new Error('Database connection failed'));
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ describe('/api/v1/students', () => {
         status: 403,
       } as any);
 
-      const request = new NextRequest('http://localhost:3000/api/v1/students', {
+      const request = new NextRequest('http://localhost:3000/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

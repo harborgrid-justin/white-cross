@@ -49,7 +49,7 @@ export class ConversationApi extends BaseApiService<
   UpdateConversationDto
 > {
   constructor(client: ApiClient) {
-    super(client, '/api/v1/messaging/conversations', {
+    super(client, '/messaging/conversations', {
       createSchema: createConversationSchema,
       updateSchema: updateConversationSchema,
     });

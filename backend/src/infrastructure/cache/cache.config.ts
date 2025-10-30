@@ -26,31 +26,25 @@ export class CacheConfigService {
    * @private
    */
   private loadConfiguration(): CacheConfig {
+    const connectionTimeoutStr = this.configService.get<string>('REDIS_CONNECTION_TIMEOUT', '5000');
+    const connectionTimeout = parseInt(connectionTimeoutStr, 10);
+    
     return {
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
-      port: this.configService.get<number>('REDIS_PORT', 6379),
+      port: parseInt(this.configService.get<string>('REDIS_PORT', '6379'), 10),
       password: this.configService.get<string>('REDIS_PASSWORD'),
-      db: this.configService.get<number>('REDIS_DB', 0),
-      ttl: this.configService.get<number>('REDIS_TTL_DEFAULT', 300),
+      db: parseInt(this.configService.get<string>('REDIS_DB', '0'), 10),
+      ttl: parseInt(this.configService.get<string>('REDIS_TTL_DEFAULT', '300'), 10),
       keyPrefix: this.configService.get<string>('CACHE_KEY_PREFIX', 'cache'),
-      enableCompression: this.configService.get<boolean>(
-        'CACHE_ENABLE_COMPRESSION',
-        false,
-      ),
-      compressionThreshold: this.configService.get<number>(
-        'CACHE_COMPRESSION_THRESHOLD',
-        1024,
-      ),
-      enableL1Cache: this.configService.get<boolean>('CACHE_ENABLE_L1', true),
-      l1MaxSize: this.configService.get<number>('CACHE_L1_MAX_SIZE', 1000),
-      l1Ttl: this.configService.get<number>('CACHE_L1_TTL', 60),
-      connectionTimeout: this.configService.get<number>(
-        'REDIS_CONNECTION_TIMEOUT',
-        5000,
-      ),
-      maxRetries: this.configService.get<number>('REDIS_MAX_RETRIES', 3),
-      retryDelay: this.configService.get<number>('REDIS_RETRY_DELAY', 1000),
-      enableLogging: this.configService.get<boolean>('CACHE_ENABLE_LOGGING', false),
+      enableCompression: this.configService.get<string>('CACHE_ENABLE_COMPRESSION', 'false') === 'true',
+      compressionThreshold: parseInt(this.configService.get<string>('CACHE_COMPRESSION_THRESHOLD', '1024'), 10),
+      enableL1Cache: this.configService.get<string>('CACHE_ENABLE_L1', 'true') === 'true',
+      l1MaxSize: parseInt(this.configService.get<string>('CACHE_L1_MAX_SIZE', '1000'), 10),
+      l1Ttl: parseInt(this.configService.get<string>('CACHE_L1_TTL', '60'), 10),
+      connectionTimeout: isNaN(connectionTimeout) ? 5000 : connectionTimeout,
+      maxRetries: parseInt(this.configService.get<string>('REDIS_MAX_RETRIES', '3'), 10),
+      retryDelay: parseInt(this.configService.get<string>('REDIS_RETRY_DELAY', '1000'), 10),
+      enableLogging: this.configService.get<string>('CACHE_ENABLE_LOGGING', 'false') === 'true',
     };
   }
 

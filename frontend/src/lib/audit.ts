@@ -28,7 +28,7 @@ export interface AuditLogEntry {
 export async function auditLog(entry: AuditLogEntry): Promise<void> {
   try {
     // Send audit log to backend service
-    await fetch(`${BACKEND_URL}/api/v1/audit/log`, {
+    await fetch(`${BACKEND_URL}/audit/log`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

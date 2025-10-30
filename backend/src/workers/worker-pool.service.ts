@@ -3,6 +3,7 @@
  *
  * Manages a pool of worker threads for CPU-intensive operations
  * Integrates with NestJS lifecycle for proper initialization and cleanup
+ * Enhanced with Discovery Service memory optimization patterns
  *
  * Features:
  * - Dynamic pool sizing based on CPU cores
@@ -10,9 +11,12 @@
  * - Worker health monitoring
  * - Automatic worker restart on failure
  * - Graceful shutdown with task cleanup
+ * - Memory optimization and leak detection
+ * - Resource pool management
+ * - CPU-intensive task optimization
  */
 
-import { OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { OnModuleInit, OnModuleDestroy, Logger, Injectable } from '@nestjs/common';
 import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
@@ -22,7 +26,45 @@ import type {
   WorkerPoolOptions,
   WorkerPoolStats,
 } from './worker-pool.interfaces';
+import {
+  CPUIntensive,
+  ResourcePool,
+  MemoryIntensive,
+  MemoryMonitoring,
+  Cleanup,
+  MemorySensitive,
+  ImmediateCleanup,
+  LeakProne
+} from '../discovery/modules/decorators/memory-optimization.decorators';
 
+@CPUIntensive()
+@ResourcePool({
+  enabled: true,
+  resourceType: 'worker',
+  minSize: 2,
+  maxSize: 16, // Based on typical CPU core counts
+  priority: 10,
+  validationEnabled: true,
+  autoScale: true
+})
+@MemoryIntensive({
+  enabled: true,
+  threshold: 150, // 150MB threshold for worker threads
+  priority: 'high',
+  cleanupStrategy: 'aggressive',
+  monitoring: true
+})
+@MemoryMonitoring({
+  enabled: true,
+  interval: 15000, // 15 seconds - more frequent for worker monitoring
+  threshold: 100, // 100MB
+  alerts: true
+})
+@LeakProne({
+  monitoring: true,
+  alertThreshold: 200 // 200MB for worker memory leaks
+})
+@Injectable()
 export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WorkerPoolService.name);
   private workers: WorkerInfo[] = [];
@@ -254,6 +296,7 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
    * const result = await workerPool.executeTask<number>('bmi', { height: 180, weight: 75 });
    * ```
    */
+  @MemorySensitive(100) // 100MB threshold for CPU-intensive tasks
   public async executeTask<T>(
     type: string,
     data: any,
@@ -311,6 +354,8 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
    *
    * @returns Promise that resolves when shutdown is complete
    */
+  @ImmediateCleanup()
+  @Cleanup('high')
   public async shutdown(): Promise<void> {
     if (this.isShuttingDown) {
       this.logger.warn('Worker pool already shutting down');

@@ -9,12 +9,12 @@ import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 
 /**
- * GET /api/v1/compliance/reports
+ * GET /compliance/reports
  * List compliance reports (requires ADMIN role or higher)
  */
 export const GET = withMinimumRole('ADMIN', async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/compliance/reports', {
+    const response = await proxyToBackend(request, '/compliance/reports', {
       cache: {
         revalidate: 300, // Cache for 5 minutes
         tags: ['compliance-reports']
@@ -30,12 +30,12 @@ export const GET = withMinimumRole('ADMIN', async (request: NextRequest, context
 });
 
 /**
- * POST /api/v1/compliance/reports
+ * POST /compliance/reports
  * Generate new compliance report (requires ADMIN role or higher)
  */
 export const POST = withMinimumRole('ADMIN', async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/compliance/reports');
+    const response = await proxyToBackend(request, '/compliance/reports');
     const data = await response.json();
 
     if (response.status === 201 && data.data) {

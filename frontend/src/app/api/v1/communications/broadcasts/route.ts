@@ -10,12 +10,12 @@ import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, createAuditContext } from '@/lib/audit';
 
 /**
- * GET /api/v1/communications/broadcasts
+ * GET /communications/broadcasts
  * List all broadcasts
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/communications/broadcasts', {
+    const response = await proxyToBackend(request, '/communications/broadcasts', {
       cache: {
         revalidate: 60,
         tags: ['broadcasts']
@@ -31,12 +31,12 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
 });
 
 /**
- * POST /api/v1/communications/broadcasts
+ * POST /communications/broadcasts
  * Send new broadcast (requires NURSE role or higher)
  */
 export const POST = withMinimumRole('NURSE', async (request: NextRequest, context, auth) => {
   try {
-    const response = await proxyToBackend(request, '/api/v1/communications/broadcasts');
+    const response = await proxyToBackend(request, '/communications/broadcasts');
     const data = await response.json();
 
     if (response.status === 201 && data.data) {
